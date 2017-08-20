@@ -1,0 +1,3 @@
+This is source code for both server (hl.dll) and client (client.dll) for creating a mod for Half-Life. No changes to the original game logic have been made. Compiling this project will give you Vanilla Half-Life. The files are taken from the "Multiplayer Source" folder in the official HL SDK by Valve, and the code has been updated to work with modern C++ in Visual Studio 2017.
+
+Feel free to fork. Absolutely no warranties whatsoever. The original SDK EULA by Valve applies.

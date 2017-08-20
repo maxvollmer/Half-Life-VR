@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.15
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hl", "dlls\hl.vcxproj", "{C4CD1E9E-A484-4436-A729-9B913BAE6A26}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cl_dll", "cl_dll\cl_dll.vcxproj", "{63DEED01-E58B-43FC-9723-FD8987454C75}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C4CD1E9E-A484-4436-A729-9B913BAE6A26}.Debug|x86.ActiveCfg = Debug|Win32
+		{C4CD1E9E-A484-4436-A729-9B913BAE6A26}.Debug|x86.Build.0 = Debug|Win32
+		{C4CD1E9E-A484-4436-A729-9B913BAE6A26}.Release|x86.ActiveCfg = Release|Win32
+		{C4CD1E9E-A484-4436-A729-9B913BAE6A26}.Release|x86.Build.0 = Release|Win32
+		{63DEED01-E58B-43FC-9723-FD8987454C75}.Debug|x86.ActiveCfg = Debug|Win32
+		{63DEED01-E58B-43FC-9723-FD8987454C75}.Debug|x86.Build.0 = Debug|Win32
+		{63DEED01-E58B-43FC-9723-FD8987454C75}.Release|x86.ActiveCfg = Release|Win32
+		{63DEED01-E58B-43FC-9723-FD8987454C75}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
