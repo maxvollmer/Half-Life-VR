@@ -139,17 +139,14 @@ void CGib :: SpawnHeadGib( entvars_t *pevVictim )
 
 	if ( pevVictim )
 	{
-		pGib->pev->origin = pevVictim->origin + pevVictim->view_ofs;
-		
+		pGib->pev->origin = CBaseEntity::Instance(pevVictim)->EyePosition();
+
 		edict_t		*pentPlayer = FIND_CLIENT_IN_PVS( pGib->edict() );
-		
+
+		// 5% chance head will be thrown at player's face.
 		if ( RANDOM_LONG ( 0, 100 ) <= 5 && pentPlayer )
 		{
-			// 5% chance head will be thrown at player's face.
-			entvars_t	*pevPlayer;
-
-			pevPlayer = VARS( pentPlayer );
-			pGib->pev->velocity = ( ( pevPlayer->origin + pevPlayer->view_ofs ) - pGib->pev->origin ).Normalize() * 300;
+			pGib->pev->velocity = ( CBaseEntity::Instance(pentPlayer)->EyePosition() - pGib->pev->origin ).Normalize() * 300;
 			pGib->pev->velocity.z += 100;
 		}
 		else
@@ -1233,7 +1230,7 @@ BOOL CBaseEntity :: FVisible ( CBaseEntity *pEntity )
 		|| (pev->waterlevel == 3 && pEntity->pev->waterlevel == 0))
 		return FALSE;
 
-	vecLookerOrigin = pev->origin + pev->view_ofs;//look through the caller's 'eyes'
+	vecLookerOrigin = EyePosition();//look through the caller's 'eyes'
 	vecTargetOrigin = pEntity->EyePosition();
 
 	UTIL_TraceLine(vecLookerOrigin, vecTargetOrigin, ignore_monsters, ignore_glass, ENT(pev)/*pentIgnore*/, &tr);

@@ -1942,7 +1942,7 @@ void PM_UnDuck( void )
 
 		pmove->flags &= ~FL_DUCKING;
 		pmove->bInDuck  = false;
-		pmove->view_ofs[2] = VEC_VIEW;
+		//pmove->view_ofs[2] = VEC_VIEW;
 		pmove->flDuckTime = 0;
 		
 		VectorCopy( newOrigin, pmove->origin );
@@ -2011,7 +2011,7 @@ void PM_Duck( void )
 					 ( pmove->onground == -1 ) )
 				{
 					pmove->usehull = 1;
-					pmove->view_ofs[2] = VEC_DUCK_VIEW;
+					//pmove->view_ofs[2] = VEC_DUCK_VIEW;
 					pmove->flags |= FL_DUCKING;
 					pmove->bInDuck = false;
 
@@ -2035,7 +2035,7 @@ void PM_Duck( void )
 
 					// Calc parametric time
 					duckFraction = PM_SplineFraction( time, (1.0/TIME_TO_DUCK) );
-					pmove->view_ofs[2] = ((VEC_DUCK_VIEW - fMore ) * duckFraction) + (VEC_VIEW * (1-duckFraction));
+					//pmove->view_ofs[2] = ((VEC_DUCK_VIEW - fMore ) * duckFraction) + (VEC_VIEW * (1-duckFraction));
 				}
 			}
 		}
@@ -2802,7 +2802,6 @@ void PM_CheckParamters( void )
 {
 	float spd;
 	float maxspeed;
-	vec3_t	v_angle;
 
 	spd = ( pmove->cmd.forwardmove * pmove->cmd.forwardmove ) +
 		  ( pmove->cmd.sidemove * pmove->cmd.sidemove ) +
@@ -2836,6 +2835,9 @@ void PM_CheckParamters( void )
 
 	PM_DropPunchAngle( pmove->punchangle );
 
+	VectorCopy(pmove->cmd.viewangles, pmove->angles);
+
+	/*
 	// Take angles from command.
 	if ( !pmove->dead )
 	{
@@ -2857,13 +2859,13 @@ void PM_CheckParamters( void )
 	{
 		pmove->view_ofs[2] = PM_DEAD_VIEWHEIGHT;
 	}
+	*/
 
 	// Adjust client view angles to match values used on server.
 	if (pmove->angles[YAW] > 180.0f)
 	{
 		pmove->angles[YAW] -= 360.0f;
 	}
-
 }
 
 void PM_ReduceTimers( void )

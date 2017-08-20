@@ -15,14 +15,19 @@
 // mathlib.h
 
 typedef float vec_t;
+typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];	// x,y,z,w
 typedef vec_t vec5_t[5];
 
 typedef short vec_s_t;
+typedef vec_s_t vec2s_t[2];
 typedef vec_s_t vec3s_t[3];
 typedef vec_s_t vec4s_t[4];	// x,y,z,w
 typedef vec_s_t vec5s_t[5];
+
+typedef vec_t		matrix3x4[3][4];
+typedef vec_t		matrix4x4[4][4];
 
 typedef	int	fixed4_t;
 typedef	int	fixed8_t;

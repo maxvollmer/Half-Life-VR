@@ -102,6 +102,7 @@ Figure out the height of the gun
 */
 void EV_GetGunPosition( event_args_t *args, float *pos, float *origin )
 {
+	/*
 	int idx;
 	vec3_t view_ofs;
 
@@ -125,6 +126,13 @@ void EV_GetGunPosition( event_args_t *args, float *pos, float *origin )
 	}
 
 	VectorAdd( origin, view_ofs, pos );
+	*/
+
+	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
+	if (viewModel != nullptr)
+	{
+		viewModel->curstate.origin.CopyToArray(pos);
+	}
 }
 
 /*
@@ -151,6 +159,7 @@ Determine where to eject shells from
 */
 void EV_GetDefaultShellInfo( event_args_t *args, float *origin, float *velocity, float *ShellVelocity, float *ShellOrigin, float *forward, float *right, float *up, float forwardScale, float upScale, float rightScale )
 {
+	/*
 	int i;
 	vec3_t view_ofs;
 	float fR, fU;
@@ -173,14 +182,19 @@ void EV_GetDefaultShellInfo( event_args_t *args, float *origin, float *velocity,
 			view_ofs[2] = VEC_DUCK_VIEW;
 		}
 	}
+	*/
 
-	fR = gEngfuncs.pfnRandomFloat( 50, 70 );
-	fU = gEngfuncs.pfnRandomFloat( 100, 150 );
-
-	for ( i = 0; i < 3; i++ )
+	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
+	if (viewModel != nullptr)
 	{
-		ShellVelocity[i] = velocity[i] + right[i] * fR + up[i] * fU + forward[i] * 25;
-		ShellOrigin[i]   = origin[i] + view_ofs[i] + up[i] * upScale + forward[i] * forwardScale + right[i] * rightScale;
+		float fR = gEngfuncs.pfnRandomFloat(50, 70);
+		float fU = gEngfuncs.pfnRandomFloat(100, 150);
+
+		for (int i = 0; i < 3; i++)
+		{
+			ShellVelocity[i] = viewModel->curstate.velocity[i] + right[i] * fR + up[i] * fU + forward[i] * 25;
+			ShellOrigin[i] = viewModel->curstate.origin[i] + up[i] * upScale + forward[i] * forwardScale + right[i] * rightScale;
+		}
 	}
 }
 

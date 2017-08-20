@@ -498,22 +498,23 @@ private:
 class CCrowbar : public CBasePlayerWeapon
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 1; }
-	void EXPORT SwingAgain( void );
-	void EXPORT Smack( void );
+	void Spawn(void);
+	void Precache(void);
+	int iItemSlot(void) { return 1; }
+	//void EXPORT SwingAgain( void );
+	void EXPORT Smack(void);
 	int GetItemInfo(ItemInfo *p);
 
-	void PrimaryAttack( void );
-	int Swing( int fFirst );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
+	virtual void ItemPostFrame(void);
+
+	void CheckSmack(float speed);
+	BOOL Deploy(void);
+	void Holster(int skiplocal = 0);
 	int m_iSwing;
 	TraceResult m_trHit;
 
-	virtual BOOL UseDecrement( void )
-	{ 
+	virtual BOOL UseDecrement(void)
+	{
 #if defined( CLIENT_WEAPONS )
 		return TRUE;
 #else
@@ -522,6 +523,17 @@ public:
 	}
 private:
 	unsigned short m_usCrowbar;
+
+#ifndef CLIENT_DLL
+	// Stuff for VR swinging
+	bool playedWooshSound = false;
+	float lastWooshSoundTime = 0;
+	float hitCount = 0;
+	bool HasNotHitThisEntityThisSwing(CBaseEntity *pEntity);
+	void RememberHasHitThisEntityThisSwing(CBaseEntity *pEntity);
+	void ClearEntitiesHitThisSwing();
+	EHANDLE hitEntities[128];	// TODO: Use std::unordered_set
+#endif
 };
 
 class CPython : public CBasePlayerWeapon

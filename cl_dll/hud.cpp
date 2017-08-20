@@ -31,6 +31,7 @@
 #include "demo_api.h"
 #include "vgui_scorepanel.h"
 
+#include "vr_renderer.h"
 
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
@@ -309,7 +310,7 @@ void CHud :: Init( void )
 	m_iFOV = 0;
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", 0 );
-	default_fov = CVAR_CREATE( "default_fov", "90", 0 );
+	default_fov = CVAR_CREATE( "default_fov", "180", 0 );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
@@ -495,6 +496,8 @@ void CHud :: VidInit( void )
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
 	GetClientVoiceMgr()->VidInit();
+
+	gVRRenderer.VidInit();
 }
 
 int CHud::MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf)
@@ -625,18 +628,6 @@ int CHud::MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf)
 
 	// the clients fov is actually set in the client data update section of the hud
 
-	// Set a new sensitivity
-	if ( m_iFOV == def_fov )
-	{  
-		// reset to saved sensitivity
-		m_flMouseSensitivity = 0;
-	}
-	else
-	{  
-		// set a new sensitivity that is proportional to the change from the FOV default
-		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)def_fov) * CVAR_GET_FLOAT("zoom_sensitivity_ratio");
-	}
-
 	return 1;
 }
 
@@ -670,10 +661,3 @@ void CHud::AddHudElem(CHudBase *phudelem)
 
 	ptemp->pNext = pdl;
 }
-
-float CHud::GetSensitivity( void )
-{
-	return m_flMouseSensitivity;
-}
-
-

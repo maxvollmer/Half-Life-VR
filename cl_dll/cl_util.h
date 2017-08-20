@@ -158,3 +158,11 @@ inline void UnpackRGB(int &r, int &g, int &b, unsigned long ulRGB)\
 }
 
 HSPRITE_VALVE LoadSprite(const char *pszName);
+
+
+// Added NormalizeAngles and GetAnglesFromVectors - Max Vollmer, 2017-08-17
+#ifndef EPSILON
+#define EPSILON 0.001f
+#endif
+void NormalizeAngles(Vector &angles);
+void GetAnglesFromVectors(const Vector &forward, const Vector &right, const Vector &up, Vector &angles);

@@ -128,11 +128,14 @@ void CHandGrenade::WeaponIdle( void )
 	if ( m_flReleaseThrow == 0 && m_flStartThrow )
 		 m_flReleaseThrow = gpGlobals->time;
 
+	/*
 	if ( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
+	*/
 
 	if ( m_flStartThrow )
 	{
+		/*
 		Vector angThrow = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
 
 		if ( angThrow.x < 0 )
@@ -169,6 +172,14 @@ void CHandGrenade::WeaponIdle( void )
 		{
 			SendWeaponAnim( HANDGRENADE_THROW3 );
 		}
+		*/
+
+		// alway explode 3 seconds after the pin was pulled
+		float time = m_flStartThrow - gpGlobals->time + 3.0;
+		if (time < 0)
+			time = 0;
+
+		CGrenade::ShootTimed(m_pPlayer->pev, m_pPlayer->GetWeaponPosition(), m_pPlayer->GetWeaponVelocity() * 2, time);
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -187,6 +198,7 @@ void CHandGrenade::WeaponIdle( void )
 			// animation, weapon idle will automatically retire the weapon for us.
 			m_flTimeWeaponIdle = m_flNextSecondaryAttack = m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;// ensure that the animation can finish playing
 		}
+
 		return;
 	}
 	else if ( m_flReleaseThrow > 0 )

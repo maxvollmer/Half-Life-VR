@@ -549,12 +549,11 @@ class CHud
 {
 private:
 	HUDLIST						*m_pHudList;
-	HSPRITE_VALVE						m_hsprLogo;
+	HSPRITE_VALVE				m_hsprLogo;
 	int							m_iLogo;
 	client_sprite_t				*m_pSpriteList;
 	int							m_iSpriteCount;
 	int							m_iSpriteCountAllRes;
-	float						m_flMouseSensitivity;
 	int							m_iConcussionEffect; 
 
 public:
@@ -649,8 +648,6 @@ public:
 
 
 	void AddHudElem(CHudBase *p);
-
-	float GetSensitivity();
 
 };
 

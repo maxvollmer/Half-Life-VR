@@ -26,6 +26,8 @@
 #include "shake.h"
 #include "hltv.h"
 
+#include "vr_renderer.h"
+
 // Spectator Mode
 extern "C" 
 {
@@ -115,64 +117,6 @@ cvar_t	v_ipitch_level		= {"v_ipitch_level", "0.3", 0, 0.3};
 
 float	v_idlescale;  // used by TFC for concussion grenade effect
 
-//=============================================================================
-/*
-void V_NormalizeAngles( float *angles )
-{
-	int i;
-	// Normalize angles
-	for ( i = 0; i < 3; i++ )
-	{
-		if ( angles[i] > 180.0 )
-		{
-			angles[i] -= 360.0;
-		}
-		else if ( angles[i] < -180.0 )
-		{
-			angles[i] += 360.0;
-		}
-	}
-}
-
-/*
-===================
-V_InterpolateAngles
-
-Interpolate Euler angles.
-FIXME:  Use Quaternions to avoid discontinuities
-Frac is 0.0 to 1.0 ( i.e., should probably be clamped, but doesn't have to be )
-===================
-
-void V_InterpolateAngles( float *start, float *end, float *output, float frac )
-{
-	int i;
-	float ang1, ang2;
-	float d;
-	
-	V_NormalizeAngles( start );
-	V_NormalizeAngles( end );
-
-	for ( i = 0 ; i < 3 ; i++ )
-	{
-		ang1 = start[i];
-		ang2 = end[i];
-
-		d = ang2 - ang1;
-		if ( d > 180 )
-		{
-			d -= 360;
-		}
-		else if ( d < -180 )
-		{	
-			d += 360;
-		}
-
-		output[i] = ang1 + d * frac;
-	}
-
-	V_NormalizeAngles( output );
-} */
-
 // Quakeworld bob code, this fixes jitters in the mutliplayer since the clock (pparams->time) isn't quite linear
 float V_CalcBob ( struct ref_params_s *pparams )
 {
@@ -218,210 +162,11 @@ float V_CalcBob ( struct ref_params_s *pparams )
 	
 }
 
-/*
-===============
-V_CalcRoll
-Used by view and sv_user
-===============
-*/
-float V_CalcRoll (vec3_t angles, vec3_t velocity, float rollangle, float rollspeed )
-{
-    float   sign;
-    float   side;
-    float   value;
-	vec3_t  forward, right, up;
-    
-	AngleVectors ( angles, forward, right, up );
-    
-	side = DotProduct (velocity, right);
-    sign = side < 0 ? -1 : 1;
-    side = fabs( side );
-    
-	value = rollangle;
-    if (side < rollspeed)
-	{
-		side = side * value / rollspeed;
-	}
-    else
-	{
-		side = value;
-	}
-	return side * sign;
-}
-
-typedef struct pitchdrift_s
-{
-	float		pitchvel;
-	int			nodrift;
-	float		driftmove;
-	double		laststop;
-} pitchdrift_t;
-
-static pitchdrift_t pd;
-
-void V_StartPitchDrift( void )
-{
-	if ( pd.laststop == gEngfuncs.GetClientTime() )
-	{
-		return;		// something else is keeping it from drifting
-	}
-
-	if ( pd.nodrift || !pd.pitchvel )
-	{
-		pd.pitchvel = v_centerspeed->value;
-		pd.nodrift = 0;
-		pd.driftmove = 0;
-	}
-}
-
-void V_StopPitchDrift ( void )
-{
-	pd.laststop = gEngfuncs.GetClientTime();
-	pd.nodrift = 1;
-	pd.pitchvel = 0;
-}
-
-/*
-===============
-V_DriftPitch
-
-Moves the client pitch angle towards idealpitch sent by the server.
-
-If the user is adjusting pitch manually, either with lookup/lookdown,
-mlook and mouse, or klook and keyboard, pitch drifting is constantly stopped.
-===============
-*/
-void V_DriftPitch ( struct ref_params_s *pparams )
-{
-	float		delta, move;
-
-	if ( gEngfuncs.IsNoClipping() || !pparams->onground || pparams->demoplayback || pparams->spectator )
-	{
-		pd.driftmove = 0;
-		pd.pitchvel = 0;
-		return;
-	}
-
-	// don't count small mouse motion
-	if (pd.nodrift)
-	{
-		if ( fabs( pparams->cmd->forwardmove ) < cl_forwardspeed->value )
-			pd.driftmove = 0;
-		else
-			pd.driftmove += pparams->frametime;
-	
-		if ( pd.driftmove > v_centermove->value)
-		{
-			V_StartPitchDrift ();
-		}
-		return;
-	}
-	
-	delta = pparams->idealpitch - pparams->cl_viewangles[PITCH];
-
-	if (!delta)
-	{
-		pd.pitchvel = 0;
-		return;
-	}
-
-	move = pparams->frametime * pd.pitchvel;
-	pd.pitchvel += pparams->frametime * v_centerspeed->value;
-	
-	if (delta > 0)
-	{
-		if (move > delta)
-		{
-			pd.pitchvel = 0;
-			move = delta;
-		}
-		pparams->cl_viewangles[PITCH] += move;
-	}
-	else if (delta < 0)
-	{
-		if (move > -delta)
-		{
-			pd.pitchvel = 0;
-			move = -delta;
-		}
-		pparams->cl_viewangles[PITCH] -= move;
-	}
-}
-
 /* 
 ============================================================================== 
 						VIEW RENDERING 
 ============================================================================== 
 */ 
-
-/*
-==================
-V_CalcGunAngle
-==================
-*/
-void V_CalcGunAngle ( struct ref_params_s *pparams )
-{	
-	cl_entity_t *viewent;
-	
-	viewent = gEngfuncs.GetViewModel();
-	if ( !viewent )
-		return;
-
-	viewent->angles[YAW]   =  pparams->viewangles[YAW]   + pparams->crosshairangle[YAW];
-	viewent->angles[PITCH] = -pparams->viewangles[PITCH] + pparams->crosshairangle[PITCH] * 0.25;
-	viewent->angles[ROLL]  -= v_idlescale * sin(pparams->time*v_iroll_cycle.value) * v_iroll_level.value;
-	
-	// don't apply all of the v_ipitch to prevent normally unseen parts of viewmodel from coming into view.
-	viewent->angles[PITCH] -= v_idlescale * sin(pparams->time*v_ipitch_cycle.value) * (v_ipitch_level.value * 0.5);
-	viewent->angles[YAW]   -= v_idlescale * sin(pparams->time*v_iyaw_cycle.value) * v_iyaw_level.value;
-
-	VectorCopy( viewent->angles, viewent->curstate.angles );
-	VectorCopy( viewent->angles, viewent->latched.prevangles );
-}
-
-/*
-==============
-V_AddIdle
-
-Idle swaying
-==============
-*/
-void V_AddIdle ( struct ref_params_s *pparams )
-{
-	pparams->viewangles[ROLL] += v_idlescale * sin(pparams->time*v_iroll_cycle.value) * v_iroll_level.value;
-	pparams->viewangles[PITCH] += v_idlescale * sin(pparams->time*v_ipitch_cycle.value) * v_ipitch_level.value;
-	pparams->viewangles[YAW] += v_idlescale * sin(pparams->time*v_iyaw_cycle.value) * v_iyaw_level.value;
-}
-
-
-/*
-==============
-V_CalcViewRoll
-
-Roll is induced by movement and damage
-==============
-*/
-void V_CalcViewRoll ( struct ref_params_s *pparams )
-{
-	float		side;
-	cl_entity_t *viewentity;
-	
-	viewentity = gEngfuncs.GetEntityByIndex( pparams->viewentity );
-	if ( !viewentity )
-		return;
-
-	side = V_CalcRoll ( viewentity->angles, pparams->simvel, pparams->movevars->rollangle, pparams->movevars->rollspeed );
-
-	pparams->viewangles[ROLL] += side;
-
-	if ( pparams->health <= 0 && ( pparams->viewheight[2] != 0 ) )
-	{
-		// only roll the view if the player is dead and the viewheight[2] is nonzero 
-		// this is so deadcam in multiplayer will work.
-		pparams->viewangles[ROLL] = 80;	// dead view angle
-		return;
-	}
-}
 
 
 /*
@@ -444,13 +189,14 @@ void V_CalcIntermissionRefdef ( struct ref_params_s *pparams )
 	VectorCopy ( pparams->simorg, pparams->vieworg );
 	VectorCopy ( pparams->cl_viewangles, pparams->viewangles );
 
-	view->model = NULL;
+	if (view != nullptr)
+	{
+		view->model = NULL;
+	}
 
 	// allways idle in intermission
 	old = v_idlescale;
 	v_idlescale = 1;
-
-	V_AddIdle ( pparams );
 
 	if ( gEngfuncs.IsSpectateOnly() )
 	{
@@ -489,7 +235,7 @@ V_CalcRefdef
 */
 void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 {
-	cl_entity_t		*ent, *view;
+	cl_entity_t		*ent;
 	int				i;
 	vec3_t			angles;
 	float			bob, waterOffset;
@@ -501,8 +247,6 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	vec3_t camAngles, camForward, camRight, camUp;
 	cl_entity_t *pwater;
 
-	V_DriftPitch ( pparams );
-
 	if ( gEngfuncs.IsSpectateOnly() )
 	{
 		ent = gEngfuncs.GetEntityByIndex( g_iUser2 );
@@ -512,9 +256,6 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		// ent is the player model ( visible when out of body )
 		ent = gEngfuncs.GetLocalPlayer();
 	}
-	
-	// view is the weapon model (only visible from inside body )
-	view = gEngfuncs.GetViewModel();
 
 	// transform the view offset by the model's matrix to get the offset from
 	// model origin for the view
@@ -598,10 +339,6 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	}
 
 	pparams->vieworg[2] += waterOffset;
-	
-	V_CalcViewRoll ( pparams );
-	
-	V_AddIdle ( pparams );
 
 	// offsets
 	VectorCopy( pparams->cl_viewangles, angles );
@@ -636,55 +373,6 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 			pparams->vieworg[ i ] += -ofs[2] * camForward[ i ];
 		}
 	}
-	
-	// Give gun our viewangles
-	VectorCopy ( pparams->cl_viewangles, view->angles );
-	
-	// set up gun position
-	V_CalcGunAngle ( pparams );
-
-	// Use predicted origin as view origin.
-	VectorCopy ( pparams->simorg, view->origin );      
-	view->origin[2] += ( waterOffset );
-	VectorAdd( view->origin, pparams->viewheight, view->origin );
-
-	// Let the viewmodel shake at about 10% of the amplitude
-	gEngfuncs.V_ApplyShake( view->origin, view->angles, 0.9 );
-
-	for ( i = 0; i < 3; i++ )
-	{
-		view->origin[ i ] += bob * 0.4 * pparams->forward[ i ];
-	}
-	view->origin[2] += bob;
-
-	// throw in a little tilt.
-	view->angles[YAW]   -= bob * 0.5;
-	view->angles[ROLL]  -= bob * 1;
-	view->angles[PITCH] -= bob * 0.3;
-
-	// pushing the view origin down off of the same X/Z plane as the ent's origin will give the
-	// gun a very nice 'shifting' effect when the player looks up/down. If there is a problem
-	// with view model distortion, this may be a cause. (SJB). 
-	view->origin[2] -= 1;
-
-	// fudge position around to keep amount of weapon visible
-	// roughly equal with different FOV
-	if (pparams->viewsize == 110)
-	{
-		view->origin[2] += 1;
-	}
-	else if (pparams->viewsize == 100)
-	{
-		view->origin[2] += 2;
-	}
-	else if (pparams->viewsize == 90)
-	{
-		view->origin[2] += 1;
-	}
-	else if (pparams->viewsize == 80)
-	{
-		view->origin[2] += 0.5;
-	}
 
 	// Add in the punchangle, if any
 	VectorAdd ( pparams->viewangles, pparams->punchangle, pparams->viewangles );
@@ -711,7 +399,6 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		if (pparams->simorg[2] - oldz > 18)
 			oldz = pparams->simorg[2]- 18;
 		pparams->vieworg[2] += oldz - pparams->simorg[2];
-		view->origin[2] += oldz - pparams->simorg[2];
 	}
 	else
 	{
@@ -780,37 +467,13 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 
 					VectorAdd( pparams->simorg, delta, pparams->simorg );
 					VectorAdd( pparams->vieworg, delta, pparams->vieworg );
-					VectorAdd( view->origin, delta, view->origin );
-
 				}
 			}
 		}
 	}
 
-	// Store off v_angles before munging for third person
 	v_angles = pparams->viewangles;
 	v_lastAngles = pparams->viewangles;
-//	v_cl_angles = pparams->cl_viewangles;	// keep old user mouse angles !
-	if ( CL_IsThirdPerson() )
-	{
-		VectorCopy( camAngles, pparams->viewangles);
-		float pitch = camAngles[ 0 ];
-
-		// Normalize angles
-		if ( pitch > 180 ) 
-			pitch -= 360.0;
-		else if ( pitch < -180 )
-			pitch += 360;
-
-		// Player pitch is inverted
-		pitch /= -3.0;
-
-		// Slam local player's pitch value
-		ent->angles[ 0 ] = pitch;
-		ent->curstate.angles[ 0 ] = pitch;
-		ent->prevstate.angles[ 0 ] = pitch;
-		ent->latched.prevangles[ 0 ] = pitch;
-	}
 
 	// override all previous settings if the viewent isn't the client
 	if ( pparams->viewentity > pparams->maxclients )
@@ -1414,7 +1077,7 @@ int V_FindViewModelByWeaponModel(int weaponindex)
 
 		while ( modelmap[i] != NULL )
 		{
-			if ( !_strnicmp( weaponModel->name, modelmap[i][0], len ) )
+			if ( !strnicmp( weaponModel->name, modelmap[i][0], len ) )
 			{
 				return gEngfuncs.pEventAPI->EV_FindModelIndex( modelmap[i][1] );
 			}
@@ -1600,42 +1263,25 @@ void V_CalcSpectatorRefdef ( struct ref_params_s * pparams )
 
 }
 
-
-
 void DLLEXPORT V_CalcRefdef( struct ref_params_s *pparams )
 {
-	// intermission / finale rendering
-	if ( pparams->intermission )
-	{	
-		V_CalcIntermissionRefdef ( pparams );	
-	}
-	else if ( pparams->spectator || g_iUser1 )	// g_iUser true if in spectator mode
+	if (pparams->nextView == 0)
 	{
-		V_CalcSpectatorRefdef ( pparams );	
+		// intermission / finale rendering
+		if (pparams->intermission)
+		{
+			V_CalcIntermissionRefdef(pparams);
+		}
+		else if (pparams->spectator || g_iUser1)	// g_iUser true if in spectator mode
+		{
+			V_CalcSpectatorRefdef(pparams);
+		}
+		else if (!pparams->paused)
+		{
+			V_CalcNormalRefdef(pparams);
+		}
 	}
-	else if ( !pparams->paused )
-	{
-		V_CalcNormalRefdef ( pparams );
-	}
-
-/*
-// Example of how to overlay the whole screen with red at 50 % alpha
-#define SF_TEST
-#if defined SF_TEST
-	{
-		screenfade_t sf;
-		gEngfuncs.pfnGetScreenFade( &sf );
-
-		sf.fader = 255;
-		sf.fadeg = 0;
-		sf.fadeb = 0;
-		sf.fadealpha = 128;
-		sf.fadeFlags = FFADE_STAYOUT | FFADE_OUT;
-
-		gEngfuncs.pfnSetScreenFade( &sf );
-	}
-#endif
-*/
+	gVRRenderer.CalcRefdef(pparams);
 }
 
 /*
@@ -1673,8 +1319,6 @@ V_Init
 */
 void V_Init (void)
 {
-	gEngfuncs.pfnAddCommand ("centerview", V_StartPitchDrift );
-
 	scr_ofsx			= gEngfuncs.pfnRegisterVariable( "scr_ofsx","0", 0 );
 	scr_ofsy			= gEngfuncs.pfnRegisterVariable( "scr_ofsy","0", 0 );
 	scr_ofsz			= gEngfuncs.pfnRegisterVariable( "scr_ofsz","0", 0 );
@@ -1690,84 +1334,3 @@ void V_Init (void)
 }
 
 
-//#define TRACE_TEST
-#if defined( TRACE_TEST )
-
-extern float in_fov;
-/*
-====================
-CalcFov
-====================
-*/
-float CalcFov (float fov_x, float width, float height)
-{
-	float	a;
-	float	x;
-
-	if (fov_x < 1 || fov_x > 179)
-		fov_x = 90;	// error, set to 90
-
-	x = width/tan(fov_x/360*M_PI);
-
-	a = atan (height/x);
-
-	a = a*360/M_PI;
-
-	return a;
-}
-
-int hitent = -1;
-
-void V_Move( int mx, int my )
-{
-	float fov;
-	float fx, fy;
-	float dx, dy;
-	float c_x, c_y;
-	float dX, dY;
-	vec3_t forward, up, right;
-	vec3_t newangles;
-
-	vec3_t farpoint;
-	pmtrace_t tr;
-
-	fov = CalcFov( in_fov, (float)ScreenWidth, (float)ScreenHeight );
-
-	c_x = (float)ScreenWidth / 2.0;
-	c_y = (float)ScreenHeight / 2.0;
-
-	dx = (float)mx - c_x;
-	dy = (float)my - c_y;
-
-	// Proportion we moved in each direction
-	fx = dx / c_x;
-	fy = dy / c_y;
-
-	dX = fx * in_fov / 2.0 ;
-	dY = fy * fov / 2.0;
-
-	newangles = v_angles;
-
-	newangles[ YAW ] -= dX;
-	newangles[ PITCH ] += dY;
-
-	// Now rotate v_forward around that point
-	AngleVectors ( newangles, forward, right, up );
-
-	farpoint = v_origin + 8192 * forward;
-
-	// Trace
-	tr = *(gEngfuncs.PM_TraceLine( (float *)&v_origin, (float *)&farpoint, PM_TRACELINE_PHYSENTSONLY, 2 /*point sized hull*/, -1 ));
-
-	if ( tr.fraction != 1.0 && tr.ent != 0 )
-	{
-		hitent = PM_GetPhysEntInfo( tr.ent );
-		PM_ParticleLine( (float *)&v_origin, (float *)&tr.endpos, 5, 1.0, 0.0 );
-	}
-	else
-	{
-		hitent = -1;
-	}
-}
-
-#endif

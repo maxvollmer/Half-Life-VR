@@ -141,6 +141,8 @@ void CPython::SecondaryAttack( void )
 		return;
 	}
 
+	// No zoom in VR :(
+	/*
 	if ( m_pPlayer->pev->fov != 0 )
 	{
 		m_fInZoom = FALSE;
@@ -153,12 +155,13 @@ void CPython::SecondaryAttack( void )
 	}
 
 	m_flNextSecondaryAttack = 0.5;
+	*/
 }
 
 void CPython::PrimaryAttack()
 {
 	// don't fire underwater
-	if (m_pPlayer->pev->waterlevel == 3)
+	if (m_pPlayer->IsWeaponUnderWater())
 	{
 		PlayEmptySound( );
 		m_flNextPrimaryAttack = 0.15;
@@ -189,7 +192,7 @@ void CPython::PrimaryAttack()
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 
-	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
+	UTIL_MakeVectors( m_pPlayer->GetWeaponViewAngles() );
 
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );

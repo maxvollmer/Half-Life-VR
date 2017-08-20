@@ -131,3 +131,63 @@ HSPRITE_VALVE LoadSprite(const char *pszName)
 	return SPR_Load(sz);
 }
 
+
+// Added NormalizeAngles and GetAnglesFromVectors - Max Vollmer, 2017-08-17
+void NormalizeAngles(Vector &angles)
+{
+	while (angles.x >= 360) angles.x -= 360;
+	while (angles.y >= 360) angles.y -= 360;
+	while (angles.z >= 360) angles.z -= 360;
+	while (angles.x < 0) angles.x += 360;
+	while (angles.y < 0) angles.y += 360;
+	while (angles.z < 0) angles.z += 360;
+}
+
+void GetAnglesFromVectors(const Vector &forward, const Vector &right, const Vector &up, Vector &angles)
+{
+	float sr, sp, sy, cr, cp, cy;
+
+	sp = -forward[2];
+
+	float cp_x_cy = forward[0];
+	float cp_x_sy = forward[1];
+	float cp_x_sr = -right[2];
+	float cp_x_cr = up[2];
+
+	float yaw = atan2(cp_x_sy, cp_x_cy);
+	float roll = atan2(cp_x_sr, cp_x_cr);
+
+	cy = cos(yaw);
+	sy = sin(yaw);
+	cr = cos(roll);
+	sr = sin(roll);
+
+	if (fabs(cy) > EPSILON)
+	{
+		cp = cp_x_cy / cy;
+	}
+	else if (fabs(sy) > EPSILON)
+	{
+		cp = cp_x_sy / sy;
+	}
+	else if (fabs(sr) > EPSILON)
+	{
+		cp = cp_x_sr / sr;
+	}
+	else if (fabs(cr) > EPSILON)
+	{
+		cp = cp_x_cr / cr;
+	}
+	else
+	{
+		cp = cos(asin(sp));
+	}
+
+	float pitch = atan2(sp, cp);
+
+	angles[0] = pitch / (M_PI*2.f / 360.f);
+	angles[1] = yaw / (M_PI*2.f / 360.f);
+	angles[2] = roll / (M_PI*2.f / 360.f);
+
+	NormalizeAngles(angles);
+}

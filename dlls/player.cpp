@@ -271,50 +271,6 @@ Vector VecVelocityForDamage(float flDamage)
 	return vec;
 }
 
-#if 0 /*
-static void ThrowGib(entvars_t *pev, char *szGibModel, float flDamage)
-{
-	edict_t *pentNew = CREATE_ENTITY();
-	entvars_t *pevNew = VARS(pentNew);
-
-	pevNew->origin = pev->origin;
-	SET_MODEL(ENT(pevNew), szGibModel);
-	UTIL_SetSize(pevNew, g_vecZero, g_vecZero);
-
-	pevNew->velocity		= VecVelocityForDamage(flDamage);
-	pevNew->movetype		= MOVETYPE_BOUNCE;
-	pevNew->solid			= SOLID_NOT;
-	pevNew->avelocity.x		= RANDOM_FLOAT(0,600);
-	pevNew->avelocity.y		= RANDOM_FLOAT(0,600);
-	pevNew->avelocity.z		= RANDOM_FLOAT(0,600);
-	CHANGE_METHOD(ENT(pevNew), em_think, SUB_Remove);
-	pevNew->ltime		= gpGlobals->time;
-	pevNew->nextthink	= gpGlobals->time + RANDOM_FLOAT(10,20);
-	pevNew->frame		= 0;
-	pevNew->flags		= 0;
-}
-	
-	
-static void ThrowHead(entvars_t *pev, char *szGibModel, floatflDamage)
-{
-	SET_MODEL(ENT(pev), szGibModel);
-	pev->frame			= 0;
-	pev->nextthink		= -1;
-	pev->movetype		= MOVETYPE_BOUNCE;
-	pev->takedamage		= DAMAGE_NO;
-	pev->solid			= SOLID_NOT;
-	pev->view_ofs		= Vector(0,0,8);
-	UTIL_SetSize(pev, Vector(-16,-16,0), Vector(16,16,56));
-	pev->velocity		= VecVelocityForDamage(flDamage);
-	pev->avelocity		= RANDOM_FLOAT(-1,1) * Vector(0,600,0);
-	pev->origin.z -= 24;
-	ClearBits(pev->flags, FL_ONGROUND);
-}
-
-
-*/ 
-#endif
-
 int TrainSpeed(int iSpeed, int iMax)
 {
 	float fSpeed, fMax;
@@ -379,13 +335,7 @@ int CBasePlayer :: TakeHealth( float flHealth, int bitsDamageType )
 
 Vector CBasePlayer :: GetGunPosition( )
 {
-//	UTIL_MakeVectors(pev->v_angle);
-//	m_HackedGunPos = pev->view_ofs;
-	Vector origin;
-	
-	origin = pev->origin + pev->view_ofs;
-
-	return origin;
+	return GetWeaponPosition();
 }
 
 //=========================================================
@@ -2929,8 +2879,8 @@ int CBasePlayer::Restore( CRestore &restore )
 
 		// default to normal spawn
 		edict_t* pentSpawnSpot = EntSelectSpawnPoint( this );
-		pev->origin = VARS(pentSpawnSpot)->origin + Vector(0,0,1);
-		pev->angles = VARS(pentSpawnSpot)->angles;
+		pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
+		ClearClientOriginOffset();
 	}
 	pev->v_angle.z = 0;	// Clear out roll
 	pev->angles = pev->v_angle;
@@ -3539,7 +3489,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 
 			edict_t		*pWorld = g_engfuncs.pfnPEntityOfEntIndex( 0 );
 
-			Vector start = pev->origin + pev->view_ofs;
+			Vector start = EyePosition();
 			Vector end = start + gpGlobals->v_forward * 1024;
 			UTIL_TraceLine( start, end, ignore_monsters, edict(), &tr );
 			if ( tr.pHit )
@@ -3572,7 +3522,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 	case	202:// Random blood splatter
 		UTIL_MakeVectors(pev->v_angle);
-		UTIL_TraceLine ( pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128, ignore_monsters, ENT(pev), & tr);
+		UTIL_TraceLine ( pev->origin + pev->view_ofs, EyePosition() + gpGlobals->v_forward * 128, ignore_monsters, ENT(pev), & tr);
 
 		if ( tr.flFraction != 1.0 )
 		{// line hit something, so paint a decal
@@ -4161,218 +4111,22 @@ void CBasePlayer :: EnableControl(BOOL fControl)
 //=========================================================
 Vector CBasePlayer :: GetAutoaimVector( float flDelta )
 {
-	if (g_iSkillLevel == SKILL_HARD)
-	{
-		UTIL_MakeVectors( pev->v_angle + pev->punchangle );
-		return gpGlobals->v_forward;
-	}
-
-	Vector vecSrc = GetGunPosition( );
-	float flDist = 8192;
-
-	// always use non-sticky autoaim
-	// UNDONE: use sever variable to chose!
-	if (1 || g_iSkillLevel == SKILL_MEDIUM)
-	{
-		m_vecAutoAim = Vector( 0, 0, 0 );
-		// flDelta *= 0.5;
-	}
-
-	BOOL m_fOldTargeting = m_fOnTarget;
-	Vector angles = AutoaimDeflection(vecSrc, flDist, flDelta );
-
-	// update ontarget if changed
-	if ( !g_pGameRules->AllowAutoTargetCrosshair() )
-		m_fOnTarget = 0;
-	else if (m_fOldTargeting != m_fOnTarget)
-	{
-		m_pActiveItem->UpdateItemInfo( );
-	}
-
-	if (angles.x > 180)
-		angles.x -= 360;
-	if (angles.x < -180)
-		angles.x += 360;
-	if (angles.y > 180)
-		angles.y -= 360;
-	if (angles.y < -180)
-		angles.y += 360;
-
-	if (angles.x > 25)
-		angles.x = 25;
-	if (angles.x < -25)
-		angles.x = -25;
-	if (angles.y > 12)
-		angles.y = 12;
-	if (angles.y < -12)
-		angles.y = -12;
-
-
-	// always use non-sticky autoaim
-	// UNDONE: use sever variable to chose!
-	if (0 || g_iSkillLevel == SKILL_EASY)
-	{
-		m_vecAutoAim = m_vecAutoAim * 0.67 + angles * 0.33;
-	}
-	else
-	{
-		m_vecAutoAim = angles * 0.9;
-	}
-
-	// m_vecAutoAim = m_vecAutoAim * 0.99;
-
-	// Don't send across network if sv_aim is 0
-	if ( g_psv_aim->value != 0 )
-	{
-		if ( m_vecAutoAim.x != m_lastx ||
-			 m_vecAutoAim.y != m_lasty )
-		{
-			SET_CROSSHAIRANGLE( edict(), -m_vecAutoAim.x, m_vecAutoAim.y );
-			
-			m_lastx = m_vecAutoAim.x;
-			m_lasty = m_vecAutoAim.y;
-		}
-	}
-
-	// ALERT( at_console, "%f %f\n", angles.x, angles.y );
-
-	UTIL_MakeVectors( pev->v_angle + pev->punchangle + m_vecAutoAim );
+	// no auto aim in VR
+	UTIL_MakeVectors(GetWeaponViewAngles());
 	return gpGlobals->v_forward;
 }
 
 
 Vector CBasePlayer :: AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  )
 {
-	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex( 1 );
-	CBaseEntity	*pEntity;
-	float		bestdot;
-	Vector		bestdir;
-	edict_t		*bestent;
-	TraceResult tr;
-
-	if ( g_psv_aim->value == 0 )
-	{
-		m_fOnTarget = FALSE;
-		return g_vecZero;
-	}
-
-	UTIL_MakeVectors( pev->v_angle + pev->punchangle + m_vecAutoAim );
-
-	// try all possible entities
-	bestdir = gpGlobals->v_forward;
-	bestdot = flDelta; // +- 10 degrees
-	bestent = NULL;
-
-	m_fOnTarget = FALSE;
-
-	UTIL_TraceLine( vecSrc, vecSrc + bestdir * flDist, dont_ignore_monsters, edict(), &tr );
-
-
-	if ( tr.pHit && tr.pHit->v.takedamage != DAMAGE_NO)
-	{
-		// don't look through water
-		if (!((pev->waterlevel != 3 && tr.pHit->v.waterlevel == 3) 
-			|| (pev->waterlevel == 3 && tr.pHit->v.waterlevel == 0)))
-		{
-			if (tr.pHit->v.takedamage == DAMAGE_AIM)
-				m_fOnTarget = TRUE;
-
-			return m_vecAutoAim;
-		}
-	}
-
-	for ( int i = 1; i < gpGlobals->maxEntities; i++, pEdict++ )
-	{
-		Vector center;
-		Vector dir;
-		float dot;
-
-		if ( pEdict->free )	// Not in use
-			continue;
-		
-		if (pEdict->v.takedamage != DAMAGE_AIM)
-			continue;
-		if (pEdict == edict())
-			continue;
-//		if (pev->team > 0 && pEdict->v.team == pev->team)
-//			continue;	// don't aim at teammate
-		if ( !g_pGameRules->ShouldAutoAim( this, pEdict ) )
-			continue;
-
-		pEntity = Instance( pEdict );
-		if (pEntity == NULL)
-			continue;
-
-		if (!pEntity->IsAlive())
-			continue;
-
-		// don't look through water
-		if ((pev->waterlevel != 3 && pEntity->pev->waterlevel == 3) 
-			|| (pev->waterlevel == 3 && pEntity->pev->waterlevel == 0))
-			continue;
-
-		center = pEntity->BodyTarget( vecSrc );
-
-		dir = (center - vecSrc).Normalize( );
-
-		// make sure it's in front of the player
-		if (DotProduct (dir, gpGlobals->v_forward ) < 0)
-			continue;
-
-		dot = fabs( DotProduct (dir, gpGlobals->v_right ) ) 
-			+ fabs( DotProduct (dir, gpGlobals->v_up ) ) * 0.5;
-
-		// tweek for distance
-		dot *= 1.0 + 0.2 * ((center - vecSrc).Length() / flDist);
-
-		if (dot > bestdot)
-			continue;	// to far to turn
-
-		UTIL_TraceLine( vecSrc, center, dont_ignore_monsters, edict(), &tr );
-		if (tr.flFraction != 1.0 && tr.pHit != pEdict)
-		{
-			// ALERT( at_console, "hit %s, can't see %s\n", STRING( tr.pHit->v.classname ), STRING( pEdict->v.classname ) );
-			continue;
-		}
-
-		// don't shoot at friends
-		if (IRelationship( pEntity ) < 0)
-		{
-			if ( !pEntity->IsPlayer() && !g_pGameRules->IsDeathmatch())
-				// ALERT( at_console, "friend\n");
-				continue;
-		}
-
-		// can shoot at this one
-		bestdot = dot;
-		bestent = pEdict;
-		bestdir = dir;
-	}
-
-	if (bestent)
-	{
-		bestdir = UTIL_VecToAngles (bestdir);
-		bestdir.x = -bestdir.x;
-		bestdir = bestdir - pev->v_angle - pev->punchangle;
-
-		if (bestent->v.takedamage == DAMAGE_AIM)
-			m_fOnTarget = TRUE;
-
-		return bestdir;
-	}
-
-	return Vector( 0, 0, 0 );
+	// no auto aim in VR
+	return Vector();
 }
 
 
 void CBasePlayer :: ResetAutoaim( )
 {
-	if (m_vecAutoAim.x != 0 || m_vecAutoAim.y != 0)
-	{
-		m_vecAutoAim = Vector( 0, 0, 0 );
-		SET_CROSSHAIRANGLE( edict(), 0, 0 );
-	}
-	m_fOnTarget = FALSE;
+	// no auto aim in VR
 }
 
 /*
@@ -4787,3 +4541,110 @@ void CInfoIntermission::Think ( void )
 
 LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 
+
+
+// Methods and members for VR stuff - Max Vollmer, 2017-08-18
+// Called by Util_SetOrigin
+void CBasePlayer::ClearClientOriginOffset()
+{
+	vr_ClientOriginOffset.x = 0;
+	vr_ClientOriginOffset.y = 0;
+}
+void CBasePlayer::UpdateVRRelatedPositions(const Vector & hmdOffset, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity)
+{
+	// First get origin where the client thinks it is:
+	Vector clientOrigin = GetClientOrigin();
+
+	// Then get headset position:
+	Vector hmdPosition = clientOrigin + hmdOffset;
+
+	// TODO: Check if headset position is in wall, if so: take previous position (from the player's perspective, this will feel like pushing the level away when they run into a wall)
+	/*
+	if (hmdPosition is in wall)
+	{
+		hmdPosition = clientOrigin + vr_lastHMDOffset;
+		pev->view_ofs = vr_lastHMDOffset;
+	}
+	else
+	{
+		pev->view_ofs = hmdOffset;
+		vr_lastHMDOffset = hmdOffset;
+	}
+	*/
+
+	// Get new server origin from headset x/y coordinates
+	Vector newOrigin = Vector(hmdPosition.x, hmdPosition.y, clientOrigin.z);
+
+	/*
+	// TODO: Check if newOrigin is in wall, if so: check if this is something we can step on
+	if (newOrigin is in wall)
+	{
+		get height of floor (trace from (newOrigin.z + MAX_STEP_SIZE + 1) to newOrigin.z)
+		if (height of floor <= MAX_STEP_SIZE)
+		{
+			move newOrigin.z up to floor level
+			move hmdPosition.z by same delta
+			if (hmdPosition is now in wall)
+			{
+				move both back (better having feed in floor, than head in ceiling)
+			}
+		}
+	}
+	*/
+	pev->origin = newOrigin;
+
+	vr_ClientOriginOffset.x = clientOrigin.x - pev->origin.x;
+	vr_ClientOriginOffset.y = clientOrigin.y - pev->origin.y;
+
+	vr_weaponOffset = weaponOffset;
+	vr_weaponAngles = weaponAngles;
+	vr_weaponVelocity = weaponVelocity;
+
+	/*
+	// TODO: Check view_ofs.z and (un)set player in duck mode, depending on height
+	if (pev->view_ofs.z <= duck height)
+	{
+		set player in duck (hullsize and flags)
+	}
+	else
+	{
+		unset player in duck (hullsize and flags)
+	}
+	*/
+
+}
+const Vector CBasePlayer::GetWeaponPosition()
+{
+	return Vector(pev->origin + vr_weaponOffset);
+}
+const Vector CBasePlayer::GetWeaponAngles()
+{
+	return vr_weaponAngles;
+}
+const Vector CBasePlayer::GetWeaponViewAngles()
+{
+	Vector angles = GetWeaponAngles();
+	angles.x = -angles.x;
+	return angles;
+}
+const Vector CBasePlayer::GetWeaponVelocity()
+{
+	return vr_weaponVelocity;
+}
+const Vector CBasePlayer::GetClientOrigin()
+{
+	return Vector(pev->origin.x + vr_ClientOriginOffset.x, pev->origin.y + vr_ClientOriginOffset.y, pev->origin.z);
+}
+const Vector CBasePlayer::GetClientViewOfs()
+{
+	return Vector((pev->origin + pev->view_ofs) - GetClientOrigin());
+}
+bool CBasePlayer::IsWeaponUnderWater()
+{
+	return UTIL_PointContents(GetWeaponPosition()) == CONTENTS_WATER;
+}
+bool CBasePlayer::IsWeaponPositionValid()
+{
+	int weaponOriginContent = UTIL_PointContents(GetWeaponPosition());
+	return weaponOriginContent == CONTENTS_EMPTY || weaponOriginContent == CONTENTS_WATER;
+}

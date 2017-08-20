@@ -173,8 +173,6 @@ public:
 	int	m_rgAmmo[MAX_AMMO_SLOTS];
 	int	m_rgAmmoLast[MAX_AMMO_SLOTS];
 
-	Vector				m_vecAutoAim;
-	BOOL				m_fOnTarget;
 	int					m_iDeaths;
 	float				m_iRespawnFrames;	// used in PlayerDeathThink() to make sure players can always respawn
 
@@ -307,9 +305,28 @@ public:
 	float m_flStatusBarDisappearDelay;
 	char m_SbarString0[ SBAR_STRING_SIZE ];
 	char m_SbarString1[ SBAR_STRING_SIZE ];
-	
+
 	float m_flNextChatTime;
-	
+
+
+	// Methods and members for VR stuff - Max Vollmer, 2017-08-18
+private:
+	Vector vr_weaponOffset;
+	Vector vr_weaponAngles;
+	Vector vr_weaponVelocity;
+	Vector vr_lastHMDOffset;
+	Vector2D vr_ClientOriginOffset;
+public:
+	const Vector GetWeaponPosition();
+	const Vector GetWeaponAngles();
+	const Vector GetWeaponViewAngles();
+	const Vector GetWeaponVelocity();
+	const Vector GetClientOrigin();			// Used by UpdateClientData to send player origin to client
+	const Vector GetClientViewOfs();		// Used by UpdateClientData to send player view_ofs to client
+	bool IsWeaponUnderWater();
+	bool IsWeaponPositionValid();
+	void ClearClientOriginOffset();			// Called by Util_SetOrigin
+	void UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & vr_weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity);
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

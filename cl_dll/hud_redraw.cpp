@@ -31,8 +31,6 @@ int grgLogoFrame[MAX_LOGO_FRAMES] =
 };
 
 
-extern int g_iVisibleMouse;
-
 float HUD_GetFOV( void );
 
 extern cvar_t *sensitivity;
@@ -61,18 +59,6 @@ void CHud::Think(void)
 	}
 
 	// the clients fov is actually set in the client data update section of the hud
-
-	// Set a new sensitivity
-	if ( m_iFOV == default_fov->value )
-	{  
-		// reset to saved sensitivity
-		m_flMouseSensitivity = 0;
-	}
-	else
-	{  
-		// set a new sensitivity that is proportional to the change from the FOV default
-		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)default_fov->value) * CVAR_GET_FLOAT("zoom_sensitivity_ratio");
-	}
 
 	// think about default fov
 	if ( m_iFOV == 0 )
@@ -172,28 +158,6 @@ int CHud :: Redraw( float flTime, int intermission )
 
 		SPR_DrawAdditive(i, x, y, NULL);
 	}
-
-	/*
-	if ( g_iVisibleMouse )
-	{
-		void IN_GetMousePos( int *mx, int *my );
-		int mx, my;
-
-		IN_GetMousePos( &mx, &my );
-		
-		if (m_hsprCursor == 0)
-		{
-			char sz[256];
-			sprintf( sz, "sprites/cursor.spr" );
-			m_hsprCursor = SPR_Load( sz );
-		}
-
-		SPR_Set(m_hsprCursor, 250, 250, 250 );
-		
-		// Draw the logo at 20 fps
-		SPR_DrawAdditive( 0, mx, my, NULL );
-	}
-	*/
 
 	return 1;
 }

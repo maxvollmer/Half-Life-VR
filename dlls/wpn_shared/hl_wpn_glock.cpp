@@ -146,14 +146,14 @@ void CGlock::GlockFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
 
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
 	Vector vecAiming;
-	
+
 	if ( fUseAutoAim )
 	{
 		vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );
 	}
 	else
 	{
-		vecAiming = gpGlobals->v_forward;
+		UTIL_MakeVectorsPrivate(m_pPlayer->GetWeaponViewAngles(), vecAiming, NULL, NULL);
 	}
 
 	Vector vecDir;
@@ -164,8 +164,10 @@ void CGlock::GlockFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + flCycleTime;
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
+	{
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
+	}
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }

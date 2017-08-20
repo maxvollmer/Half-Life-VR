@@ -438,6 +438,24 @@ void ClientCommand( edict_t *pEntity )
 		edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
 		pPlayer->StartObserver( pev->origin, VARS(pentSpawnSpot)->angles);
 	}
+	else if (FStrEq(pcmd, "updatevr"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
+	{
+		int size = CMD_ARGC();
+		if (size == 13)
+		{
+			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+			pPlayer->UpdateVRRelatedPositions(
+				Vector(atof(CMD_ARGV(1)), atof(CMD_ARGV(2)), atof(CMD_ARGV(3))),
+				Vector(atof(CMD_ARGV(4)), atof(CMD_ARGV(5)), atof(CMD_ARGV(6))),
+				Vector(atof(CMD_ARGV(7)), atof(CMD_ARGV(8)), atof(CMD_ARGV(9))),
+				Vector(atof(CMD_ARGV(10)), atof(CMD_ARGV(11)), atof(CMD_ARGV(12)))
+			);
+		}
+		else
+		{
+			ClientPrint(&pEntity->v, HUD_PRINTCONSOLE, "Invalid vr update!\n");
+		}
+	}
 	else if ( g_pGameRules->ClientCommand( GetClassPtr((CBasePlayer *)pev), pcmd ) )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
@@ -1499,6 +1517,9 @@ engine sets cd to 0 before calling.
 */
 void UpdateClientData ( const struct edict_s *ent, int sendweapons, struct clientdata_s *cd )
 {
+	entvars_t *pev = (entvars_t *)&ent->v;
+	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance(pev);
+
 	cd->flags			= ent->v.flags;
 	cd->health			= ent->v.health;
 
@@ -1509,9 +1530,17 @@ void UpdateClientData ( const struct edict_s *ent, int sendweapons, struct clien
 	cd->weapons			= ent->v.weapons;
 
 	// Vectors
-	cd->origin			= ent->v.origin;
+	if (pl != nullptr)
+	{
+		cd->origin = pl->GetClientOrigin();
+		cd->view_ofs = pl->GetClientViewOfs();
+	}
+	else
+	{
+		cd->origin = ent->v.origin;
+		cd->view_ofs = ent->v.view_ofs;
+	}
 	cd->velocity		= ent->v.velocity;
-	cd->view_ofs		= ent->v.view_ofs;
 	cd->punchangle		= ent->v.punchangle;
 
 	cd->bInDuck			= ent->v.bInDuck;
@@ -1531,9 +1560,6 @@ void UpdateClientData ( const struct edict_s *ent, int sendweapons, struct clien
 #if defined( CLIENT_WEAPONS )
 	if ( sendweapons )
 	{
-		entvars_t *pev = (entvars_t *)&ent->v;
-		CBasePlayer *pl = ( CBasePlayer *) CBasePlayer::Instance( pev );
-
 		if ( pl )
 		{
 			cd->m_flNextAttack	= pl->m_flNextAttack;

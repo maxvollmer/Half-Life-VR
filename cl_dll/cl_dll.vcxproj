@@ -105,7 +105,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Debug\client.dll</OutputFile>
       <ImportLibrary>.\Debug\client.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;EasyHook/EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -147,7 +147,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\client.dll</OutputFile>
       <ImportLibrary>.\Release\client.lib</ImportLibrary>
-      <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;EasyHook/EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -207,6 +207,7 @@
     <ClCompile Include="input.cpp" />
     <ClCompile Include="inputw32.cpp" />
     <ClCompile Include="in_camera.cpp" />
+    <ClCompile Include="Matrices.cpp" />
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="message.cpp" />
     <ClCompile Include="overview.cpp">
@@ -236,6 +237,9 @@
     <ClCompile Include="vgui_TeamFortressViewport.cpp" />
     <ClCompile Include="vgui_teammenu.cpp" />
     <ClCompile Include="view.cpp" />
+    <ClCompile Include="vr_gl.cpp" />
+    <ClCompile Include="vr_helper.cpp" />
+    <ClCompile Include="vr_renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\itrackeruser.h" />
@@ -265,12 +269,14 @@
     <ClInclude Include="hud_spectator.h" />
     <ClInclude Include="in_defs.h" />
     <ClInclude Include="kbutton.h" />
+    <ClInclude Include="Matrices.h" />
     <ClInclude Include="overview.h" />
     <ClInclude Include="parsemsg.h" />
     <ClInclude Include="StudioModelRenderer.h" />
     <ClInclude Include="studio_util.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="util_vector.h" />
+    <ClInclude Include="Vectors.h" />
     <ClInclude Include="vgui_ConsolePanel.h" />
     <ClInclude Include="vgui_ControlConfigPanel.h" />
     <ClInclude Include="vgui_int.h" />
@@ -280,6 +286,9 @@
     <ClInclude Include="vgui_SpectatorPanel.h" />
     <ClInclude Include="vgui_TeamFortressViewport.h" />
     <ClInclude Include="view.h" />
+    <ClInclude Include="vr_gl.h" />
+    <ClInclude Include="vr_helper.h" />
+    <ClInclude Include="vr_renderer.h" />
     <ClInclude Include="wrect.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

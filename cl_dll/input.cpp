@@ -28,6 +28,7 @@ extern "C"
 #include <ctype.h>
 
 #include "vgui_TeamFortressViewport.h"
+#include "vr_renderer.h"
 
 
 extern "C" 
@@ -54,7 +55,6 @@ void VectorAngles( const float *forward, float *angles );
 int CL_ButtonBits( int );
 
 // xxx need client dll function to get and clear impuse
-extern cvar_t *in_joystick;
 
 int	in_impulse	= 0;
 int	in_cancel	= 0;
@@ -537,10 +537,6 @@ void IN_ScoreUp(void)
 void IN_MLookUp (void)
 {
 	KeyUp( &in_mlook );
-	if ( !( in_mlook.state & 1 ) && lookspring->value )
-	{
-		V_StartPitchDrift();
-	}
 }
 
 /*
@@ -599,59 +595,6 @@ float CL_KeyState (kbutton_t *key)
 	return val;
 }
 
-/*
-================
-CL_AdjustAngles
-
-Moves the local angle positions
-================
-*/
-void CL_AdjustAngles ( float frametime, float *viewangles )
-{
-	float	speed;
-	float	up, down;
-	
-	if (in_speed.state & 1)
-	{
-		speed = frametime * cl_anglespeedkey->value;
-	}
-	else
-	{
-		speed = frametime;
-	}
-
-	if (!(in_strafe.state & 1))
-	{
-		viewangles[YAW] -= speed*cl_yawspeed->value*CL_KeyState (&in_right);
-		viewangles[YAW] += speed*cl_yawspeed->value*CL_KeyState (&in_left);
-		viewangles[YAW] = anglemod(viewangles[YAW]);
-	}
-	if (in_klook.state & 1)
-	{
-		V_StopPitchDrift ();
-		viewangles[PITCH] -= speed*cl_pitchspeed->value * CL_KeyState (&in_forward);
-		viewangles[PITCH] += speed*cl_pitchspeed->value * CL_KeyState (&in_back);
-	}
-	
-	up = CL_KeyState (&in_lookup);
-	down = CL_KeyState(&in_lookdown);
-	
-	viewangles[PITCH] -= speed*cl_pitchspeed->value * up;
-	viewangles[PITCH] += speed*cl_pitchspeed->value * down;
-
-	if (up || down)
-		V_StopPitchDrift ();
-		
-	if (viewangles[PITCH] > cl_pitchdown->value)
-		viewangles[PITCH] = cl_pitchdown->value;
-	if (viewangles[PITCH] < -cl_pitchup->value)
-		viewangles[PITCH] = -cl_pitchup->value;
-
-	if (viewangles[ROLL] > 50)
-		viewangles[ROLL] = 50;
-	if (viewangles[ROLL] < -50)
-		viewangles[ROLL] = -50;
-}
 
 /*
 ================
@@ -665,20 +608,10 @@ if active == 1 then we are 1) not playing back demos ( where our commands are ig
 void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int active )
 {	
 	float spd;
-	vec3_t viewangles;
-	static vec3_t oldangles;
 
 	if ( active )
 	{
-		//memset( viewangles, 0, sizeof( vec3_t ) );
-		//viewangles[ 0 ] = viewangles[ 1 ] = viewangles[ 2 ] = 0.0;
-		gEngfuncs.GetViewAngles( (float *)viewangles );
-
-		CL_AdjustAngles ( frametime, viewangles );
-
 		memset (cmd, 0, sizeof(*cmd));
-		
-		gEngfuncs.SetViewAngles( (float *)viewangles );
 
 		if ( in_strafe.state & 1 )
 		{
@@ -721,9 +654,6 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 				cmd->upmove *= fratio;
 			}
 		}
-
-		// Allow mice and other controllers to add their inputs
-		IN_Move ( frametime, cmd );
 	}
 
 	cmd->impulse = in_impulse;
@@ -740,32 +670,11 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 	if(GetClientVoiceMgr()->IsInSquelchMode())
 		cmd->buttons &= ~IN_ATTACK;
 
-	// Using joystick?
-	if ( in_joystick->value )
-	{
-		if ( cmd->forwardmove > 0 )
-		{
-			cmd->buttons |= IN_FORWARD;
-		}
-		else if ( cmd->forwardmove < 0 )
-		{
-			cmd->buttons |= IN_BACK;
-		}
-	}
-
-	gEngfuncs.GetViewAngles( (float *)viewangles );
 	// Set current view angles.
-
-	if ( g_iAlive )
-	{
-		VectorCopy( viewangles, cmd->viewangles );
-		VectorCopy( viewangles, oldangles );
-	}
-	else
-	{
-		VectorCopy( oldangles, cmd->viewangles );
-	}
-
+	vec3_t viewangles;
+	gVRRenderer.GetViewAngles(viewangles);
+	gEngfuncs.SetViewAngles(viewangles);
+	VectorCopy(viewangles, cmd->viewangles);
 }
 
 /*
@@ -927,28 +836,31 @@ InitInput
 */
 void InitInput (void)
 {
-	gEngfuncs.pfnAddCommand ("+moveup",IN_UpDown);
-	gEngfuncs.pfnAddCommand ("-moveup",IN_UpUp);
-	gEngfuncs.pfnAddCommand ("+movedown",IN_DownDown);
-	gEngfuncs.pfnAddCommand ("-movedown",IN_DownUp);
-	gEngfuncs.pfnAddCommand ("+left",IN_LeftDown);
-	gEngfuncs.pfnAddCommand ("-left",IN_LeftUp);
-	gEngfuncs.pfnAddCommand ("+right",IN_RightDown);
-	gEngfuncs.pfnAddCommand ("-right",IN_RightUp);
-	gEngfuncs.pfnAddCommand ("+forward",IN_ForwardDown);
-	gEngfuncs.pfnAddCommand ("-forward",IN_ForwardUp);
-	gEngfuncs.pfnAddCommand ("+back",IN_BackDown);
-	gEngfuncs.pfnAddCommand ("-back",IN_BackUp);
+	gEngfuncs.pfnAddCommand("+moveup", IN_UpDown);
+	gEngfuncs.pfnAddCommand("-moveup", IN_UpUp);
+	gEngfuncs.pfnAddCommand("+movedown", IN_DownDown);
+	gEngfuncs.pfnAddCommand("-movedown", IN_DownUp);
+	gEngfuncs.pfnAddCommand("+left", IN_LeftDown);
+	gEngfuncs.pfnAddCommand("-left", IN_LeftUp);
+	gEngfuncs.pfnAddCommand("+right", IN_RightDown);
+	gEngfuncs.pfnAddCommand("-right", IN_RightUp);
+	gEngfuncs.pfnAddCommand("+forward", IN_ForwardDown);
+	gEngfuncs.pfnAddCommand("-forward", IN_ForwardUp);
+	gEngfuncs.pfnAddCommand("+back", IN_BackDown);
+	gEngfuncs.pfnAddCommand("-back", IN_BackUp);
+	gEngfuncs.pfnAddCommand("+strafe", IN_StrafeDown);
+	gEngfuncs.pfnAddCommand("-strafe", IN_StrafeUp);
+	gEngfuncs.pfnAddCommand("+moveleft", IN_MoveleftDown);
+	gEngfuncs.pfnAddCommand("-moveleft", IN_MoveleftUp);
+	gEngfuncs.pfnAddCommand("+moveright", IN_MoverightDown);
+	gEngfuncs.pfnAddCommand("-moveright", IN_MoverightUp);
+
+	gEngfuncs.pfnAddCommand("impulse", IN_Impulse);
+
 	gEngfuncs.pfnAddCommand ("+lookup", IN_LookupDown);
 	gEngfuncs.pfnAddCommand ("-lookup", IN_LookupUp);
 	gEngfuncs.pfnAddCommand ("+lookdown", IN_LookdownDown);
 	gEngfuncs.pfnAddCommand ("-lookdown", IN_LookdownUp);
-	gEngfuncs.pfnAddCommand ("+strafe", IN_StrafeDown);
-	gEngfuncs.pfnAddCommand ("-strafe", IN_StrafeUp);
-	gEngfuncs.pfnAddCommand ("+moveleft", IN_MoveleftDown);
-	gEngfuncs.pfnAddCommand ("-moveleft", IN_MoveleftUp);
-	gEngfuncs.pfnAddCommand ("+moveright", IN_MoverightDown);
-	gEngfuncs.pfnAddCommand ("-moveright", IN_MoverightUp);
 	gEngfuncs.pfnAddCommand ("+speed", IN_SpeedDown);
 	gEngfuncs.pfnAddCommand ("-speed", IN_SpeedUp);
 	gEngfuncs.pfnAddCommand ("+attack", IN_AttackDown);
@@ -959,7 +871,6 @@ void InitInput (void)
 	gEngfuncs.pfnAddCommand ("-use", IN_UseUp);
 	gEngfuncs.pfnAddCommand ("+jump", IN_JumpDown);
 	gEngfuncs.pfnAddCommand ("-jump", IN_JumpUp);
-	gEngfuncs.pfnAddCommand ("impulse", IN_Impulse);
 	gEngfuncs.pfnAddCommand ("+klook", IN_KLookDown);
 	gEngfuncs.pfnAddCommand ("-klook", IN_KLookUp);
 	gEngfuncs.pfnAddCommand ("+mlook", IN_MLookDown);
@@ -1001,8 +912,6 @@ void InitInput (void)
 	m_forward			= gEngfuncs.pfnRegisterVariable ( "m_forward","1", FCVAR_ARCHIVE );
 	m_side				= gEngfuncs.pfnRegisterVariable ( "m_side","0.8", FCVAR_ARCHIVE );
 
-	// Initialize third person camera controls.
-	CAM_Init();
 	// Initialize inputs
 	IN_Init();
 	// Initialize keyboard
