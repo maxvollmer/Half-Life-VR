@@ -382,14 +382,13 @@ void CSatchel::SecondaryAttack( void )
 	}
 }
 
-
 void CSatchel::Throw( void )
 {
 	if ( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
-		Vector vecSrc = m_pPlayer->pev->origin;
+		Vector vecSrc = m_pPlayer->GetWeaponPosition();
+		Vector vecThrow = m_pPlayer->GetWeaponVelocity() * 1.5f;
 
-		Vector vecThrow = gpGlobals->v_forward * 274 + m_pPlayer->pev->velocity;
 
 #ifndef CLIENT_DLL
 		CBaseEntity *pSatchel = Create( "monster_satchel", vecSrc, Vector( 0, 0, 0), m_pPlayer->edict() );

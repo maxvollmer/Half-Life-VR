@@ -808,10 +808,7 @@ int CBasePlayerWeapon::UpdateClientData( CBasePlayer *pPlayer )
 	int state = 0;
 	if ( pPlayer->m_pActiveItem == this )
 	{
-		if ( pPlayer->m_fOnTarget )
-			state = WEAPON_IS_ONTARGET;
-		else
-			state = 1;
+		state = 1;
 	}
 
 	// Forcing send of all data!

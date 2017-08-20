@@ -192,8 +192,6 @@ typedef	enum
 #define ITEM_FLAG_LIMITINWORLD		8
 #define ITEM_FLAG_EXHAUSTIBLE		16 // A player can totally exhaust their ammo supply and lose this weapon
 
-#define WEAPON_IS_ONTARGET 0x40
-
 typedef struct
 {
 	int		iSlot;
@@ -617,7 +615,8 @@ public:
 	void Reload( void );
 	void WeaponIdle( void );
 
-	int m_fInZoom; // don't save this
+	// no zoom in VR!
+	//int m_fInZoom; // don't save this
 
 	virtual BOOL UseDecrement( void )
 	{ 

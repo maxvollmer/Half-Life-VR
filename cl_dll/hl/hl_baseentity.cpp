@@ -30,6 +30,9 @@ This file contains "stubs" of class member implementations so that we can predic
 #include	"soundent.h"
 #include	"skill.h"
 #include	"cl_entity.h"
+#include	"../hud_iface.h"
+#include	"../wrect.h"
+#include	"cdll_int.h"
 
 // Globals used by game logic
 const Vector g_vecZero = Vector( 0, 0, 0 );
@@ -343,6 +346,21 @@ const Vector CBasePlayer::GetWeaponVelocity()
 	{
 		return g_vecZero;
 	}
+}
+bool CBasePlayer::IsWeaponUnderWater()
+{
+	extern cl_enginefunc_t gEngfuncs;
+	float weaponPos[3];
+	GetWeaponPosition().CopyToArray(weaponPos);
+	return gEngfuncs.PM_PointContents(weaponPos, NULL) == CONTENTS_WATER;
+}
+bool CBasePlayer::IsWeaponPositionValid()
+{
+	extern cl_enginefunc_t gEngfuncs;
+	float weaponPos[3];
+	GetWeaponPosition().CopyToArray(weaponPos);
+	int weaponOriginContent = gEngfuncs.PM_PointContents(weaponPos, NULL);
+	return weaponOriginContent == CONTENTS_EMPTY || weaponOriginContent == CONTENTS_WATER;
 }
 
 

@@ -304,10 +304,13 @@ void CCrossbow::Holster( int skiplocal /* = 0 */ )
 {
 	m_fInReload = FALSE;// cancel any reload in progress.
 
+	// no zoom in VR!
+	/*
 	if ( m_fInZoom )
 	{
 		SecondaryAttack( );
 	}
+	*/
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	if (m_iClip)
@@ -318,7 +321,8 @@ void CCrossbow::Holster( int skiplocal /* = 0 */ )
 
 void CCrossbow::PrimaryAttack( void )
 {
-
+	// no zoom in VR!
+	/*
 #ifdef CLIENT_DLL
 	if ( m_fInZoom && bIsMultiplayer() )
 #else
@@ -328,11 +332,34 @@ void CCrossbow::PrimaryAttack( void )
 		FireSniperBolt();
 		return;
 	}
+	*/
 
 	FireBolt();
 }
 
-// this function only gets called in multiplayer
+void CCrossbow::SecondaryAttack()
+{
+	// no zoom in VR!
+	/*
+	if ( m_pPlayer->pev->fov != 0 )
+	{
+	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0; // 0 means reset to default fov
+	m_fInZoom = 0;
+	}
+	else if ( m_pPlayer->pev->fov != 20 )
+	{
+	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 20;
+	m_fInZoom = 1;
+	}
+
+	pev->nextthink = UTIL_WeaponTimeBase() + 0.1;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
+	*/
+
+	FireSniperBolt();
+}
+
+
 void CCrossbow::FireSniperBolt()
 {
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.75;
@@ -359,9 +386,8 @@ void CCrossbow::FireSniperBolt()
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
-	
-	Vector anglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
-	UTIL_MakeVectors( anglesAim );
+
+	UTIL_MakeVectors( m_pPlayer->GetWeaponViewAngles() );
 	Vector vecSrc = m_pPlayer->GetGunPosition( ) - gpGlobals->v_up * 2;
 	Vector vecDir = gpGlobals->v_forward;
 
@@ -439,24 +465,6 @@ void CCrossbow::FireBolt()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
 	else
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
-}
-
-
-void CCrossbow::SecondaryAttack()
-{
-	if ( m_pPlayer->pev->fov != 0 )
-	{
-		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0; // 0 means reset to default fov
-		m_fInZoom = 0;
-	}
-	else if ( m_pPlayer->pev->fov != 20 )
-	{
-		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 20;
-		m_fInZoom = 1;
-	}
-	
-	pev->nextthink = UTIL_WeaponTimeBase() + 0.1;
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
 }
 
 
