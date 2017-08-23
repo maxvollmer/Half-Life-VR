@@ -111,7 +111,8 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 
 void VRRenderer::DrawNormal()
 {
-	vrHelper->TestRenderControllerPosition();
+	vrHelper->TestRenderControllerPosition(true);
+	vrHelper->TestRenderControllerPosition(false);
 }
 
 void VRRenderer::DrawTransparent()

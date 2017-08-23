@@ -500,9 +500,9 @@ void RenderLine(Vector v1, Vector v2, Vector color)
 	glEnd();
 }
 
-void VRHelper::TestRenderControllerPosition()
+void VRHelper::TestRenderControllerPosition(bool leftOrRight)
 {
-	vr::TrackedDeviceIndex_t controllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
+	vr::TrackedDeviceIndex_t controllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(leftOrRight ? vr::ETrackedControllerRole::TrackedControllerRole_LeftHand  : vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
 
 	if (controllerIndex > 0 && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
 	{
@@ -510,7 +510,12 @@ void VRHelper::TestRenderControllerPosition()
 		Vector4 originInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(0, 0, 0, 1);
 		Vector originInRelativeHLSpace(originInVRSpace.x * VR_TO_HL.x * 10, -originInVRSpace.z * VR_TO_HL.z * 10, originInVRSpace.y * VR_TO_HL.y * 10);
 
-		Vector originInHLSpace = Vector(484, 318, -175);
+		//Vector originInHLSpace = Vector(484, 318, -175);
+
+		cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
+		Vector clientGroundPosition = localPlayer->curstate.origin;
+		clientGroundPosition.z += localPlayer->curstate.mins.z;
+		Vector originInHLSpace = clientGroundPosition + originInRelativeHLSpace;
 
 		glDisable(GL_CULL_FACE);
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -522,6 +527,11 @@ void VRHelper::TestRenderControllerPosition()
 		Vector forward(forwardInVRSpace.x * VR_TO_HL.x * 10, -forwardInVRSpace.z * VR_TO_HL.z * 10, forwardInVRSpace.y * VR_TO_HL.y * 10);
 		Vector right(rightInVRSpace.x * VR_TO_HL.x * 10, -rightInVRSpace.z * VR_TO_HL.z * 10, rightInVRSpace.y * VR_TO_HL.y * 10);
 		Vector up(upInVRSpace.x * VR_TO_HL.x * 10, -upInVRSpace.z * VR_TO_HL.z * 10, upInVRSpace.y * VR_TO_HL.y * 10);
+
+		if (leftOrRight)
+		{
+			right = -right; // left
+		}
 
 		RenderLine(originInHLSpace, originInHLSpace + forward, Vector(1, 0, 0));
 		RenderLine(originInHLSpace, originInHLSpace + right, Vector(0, 1, 0));

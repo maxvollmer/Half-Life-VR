@@ -180,42 +180,6 @@ void CCrowbar::ItemPostFrame()
 
 #ifndef CLIENT_DLL
 
-bool CCrowbar::HasNotHitThisEntityThisSwing(CBaseEntity *pEntity)
-{
-	for (int i = 0; i < sizeof(hitEntities); i++)
-	{
-		if (((CBaseEntity*)hitEntities[i]) == pEntity)
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-void CCrowbar::RememberHasHitThisEntityThisSwing(CBaseEntity *pEntity)
-{
-	for (int i = 0; i < sizeof(hitEntities); i++)
-	{
-		if (hitEntities[i])
-		{
-			continue;
-		}
-		else
-		{
-			hitEntities[i] = pEntity;
-			return;
-		}
-	}
-}
-
-void CCrowbar::ClearEntitiesHitThisSwing()
-{
-	for (int i = 0; i < sizeof(hitEntities); i++)
-	{
-		hitEntities[i] = NULL;
-	}
-}
-
 void CCrowbar::CheckSmack(float speed)
 {
 	UTIL_MakeVectors (m_pPlayer->GetWeaponViewAngles());
@@ -265,14 +229,11 @@ void CCrowbar::CheckSmack(float speed)
 			}
 			else
 			{
-				float fvolbar = TEXTURETYPE_PlaySound(&tr, vecSrc, vecSrc + (vecEnd - vecSrc) * 2, BULLET_PLAYER_CROWBAR);
+				float fvolbar = 1;
 
-				if (g_pGameRules->IsMultiplayer())
+				if (!g_pGameRules->IsMultiplayer())
 				{
-					// override the volume here, cause we don't play texture sounds in multiplayer, 
-					// and fvolbar is going to be 0 from the above call.
-
-					fvolbar = 1;
+					fvolbar = TEXTURETYPE_PlaySound(&tr, vecSrc, vecSrc + (vecEnd - vecSrc) * 2, BULLET_PLAYER_CROWBAR);
 				}
 
 				// also play crowbar strike
@@ -290,6 +251,45 @@ void CCrowbar::CheckSmack(float speed)
 			m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
 			DecalGunshot(&tr, BULLET_PLAYER_CROWBAR);
 		}
+	}
+}
+
+bool CCrowbar::HasNotHitThisEntityThisSwing(CBaseEntity *pEntity)
+{
+	int hitEntitiesCount = sizeof(hitEntities) / sizeof(EHANDLE);
+	for (int i = 0; i < hitEntitiesCount; i++)
+	{
+		if (((CBaseEntity*)hitEntities[i]) == pEntity)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+void CCrowbar::RememberHasHitThisEntityThisSwing(CBaseEntity *pEntity)
+{
+	int hitEntitiesCount = sizeof(hitEntities) / sizeof(EHANDLE);
+	for (int i = 0; i < hitEntitiesCount; i++)
+	{
+		if (hitEntities[i])
+		{
+			continue;
+		}
+		else
+		{
+			hitEntities[i] = pEntity;
+			return;
+		}
+	}
+}
+
+void CCrowbar::ClearEntitiesHitThisSwing()
+{
+	int hitEntitiesCount = sizeof(hitEntities) / sizeof(EHANDLE);
+	for (int i = 0; i < hitEntitiesCount; i++)
+	{
+		hitEntities[i] = NULL;
 	}
 }
 

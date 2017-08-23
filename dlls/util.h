@@ -388,6 +388,11 @@ extern DLL_GLOBAL int			g_Language;
 #define LFO_TRIANGLE		2
 #define LFO_RANDOM			3
 
+
+// Scale up human models for VR - Max Vollmer, 2017-08-22
+#define VR_SCALE_HUMANS		1.2
+
+
 // func_rotating
 #define SF_BRUSH_ROTATE_Y_AXIS		0
 #define SF_BRUSH_ROTATE_INSTANT		1

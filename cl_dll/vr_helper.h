@@ -30,7 +30,7 @@ public:
 
 	void GetViewAngles(float * angles);
 
-	void TestRenderControllerPosition();
+	void TestRenderControllerPosition(bool leftOrRight);
 
 private:
 

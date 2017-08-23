@@ -207,8 +207,20 @@ public:
 	void (CBaseEntity ::*m_pfnUse)( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void (CBaseEntity ::*m_pfnBlocked)( CBaseEntity *pOther );
 
-	virtual void Think( void ) { if (m_pfnThink) (this->*m_pfnThink)(); };
-	virtual void Touch( CBaseEntity *pOther ) { if (m_pfnTouch) (this->*m_pfnTouch)( pOther ); };
+	virtual void Think( void )
+	{
+		if (m_pfnThink)
+		{
+			(this->*m_pfnThink)();
+		}
+	};
+	virtual void Touch( CBaseEntity *pOther )
+	{
+		if (m_pfnTouch)
+		{
+			(this->*m_pfnTouch)(pOther);
+		}
+	};
 	virtual void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) 
 	{ 
 		if (m_pfnUse) 
