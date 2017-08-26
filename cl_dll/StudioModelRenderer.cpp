@@ -904,6 +904,17 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 		}
 	}
 
+	// Added studio model scaling - Max Vollmer, 2017-08-26
+	if (m_pCurrentEntity->curstate.scale > 0)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			for (int k = 0; k < 3; k++)
+			{
+				(*m_protationmatrix)[j][k] *= m_pCurrentEntity->curstate.scale;
+			}
+		}
+	}
 
 	for (i = 0; i < m_pStudioHeader->numbones; i++) 
 	{
