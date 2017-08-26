@@ -1138,9 +1138,73 @@ BOOL UTIL_ShouldShowBlood( int color )
 	return FALSE;
 }
 
-int UTIL_PointContents(	const Vector &vec )
+// Convenience method to check if a point is inside a brush model (Algorithm could be more performant, but this is HL after all) - Max Vollmer, 2017-08-26
+bool UTIL_PointInsideBSPModel(const Vector &vec, const Vector &absmin, const Vector &absmax)
 {
-	return POINT_CONTENTS(vec);
+	bool inside = false;
+	TraceResult tr;
+	Vector startPos = absmin;
+	Vector vecDirEpsilon = (vec - startPos).Normalize() * 0.01f;
+	startPos = startPos - vecDirEpsilon;
+	while (startPos.x < vec.x && startPos.y < vec.y && startPos.z < vec.z)
+	{
+		if (inside)
+		{
+			UTIL_TraceLine(vec, startPos, ignore_monsters, NULL, &tr);
+		}
+		else
+		{
+			UTIL_TraceLine(startPos, vec, ignore_monsters, NULL, &tr);
+		}
+		if (tr.flFraction < 1.f)
+		{
+			inside = !inside;
+			startPos = tr.vecEndPos + vecDirEpsilon;
+		}
+		else
+		{
+			break;
+		}
+	}
+	return inside;
+}
+
+// Extended UTIL_PointContents to also detect solid entities - Max Vollmer, 2017-08-26
+int UTIL_PointContents(const Vector &vec, bool detectSolidEntities)
+{
+	int pointContents = POINT_CONTENTS(vec);
+	if (pointContents != CONTENTS_SOLID && detectSolidEntities)
+	{
+		edict_t* pEnt = g_engfuncs.pfnPEntityOfEntIndex(1);
+		if (pEnt != nullptr)
+		{
+			for (int i = 1; i < gpGlobals->maxEntities; i++, pEnt++)
+			{
+				if (pEnt->free)
+				{
+					continue;
+				}
+				if (vec.x > pEnt->v.absmax.x ||
+					vec.y > pEnt->v.absmax.y ||
+					vec.z > pEnt->v.absmax.z ||
+					vec.x < pEnt->v.absmin.x ||
+					vec.y < pEnt->v.absmin.y ||
+					vec.z < pEnt->v.absmin.z)
+				{
+					continue;
+				}
+				if (pEnt->v.solid == SOLID_BSP && UTIL_PointInsideBSPModel(vec, pEnt->v.absmin, pEnt->v.absmax)) // Trace actual brush model to see if point really is inside the entity!
+				{
+					pointContents = CONTENTS_SOLID;
+				}
+				else if (pEnt->v.movetype == MOVETYPE_PUSHSTEP && pEnt->v.solid != SOLID_NOT && pEnt->v.solid != SOLID_TRIGGER)
+				{
+					pointContents = CONTENTS_SOLID;
+				}
+			}
+		}
+	}
+	return pointContents;
 }
 
 void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount )

@@ -250,7 +250,7 @@ extern void			UTIL_TraceHull			(const Vector &vecStart, const Vector &vecEnd, IG
 extern TraceResult	UTIL_GetGlobalTrace		(void);
 extern void			UTIL_TraceModel			(const Vector &vecStart, const Vector &vecEnd, int hullNumber, edict_t *pentModel, TraceResult *ptr);
 extern Vector		UTIL_GetAimVector		(edict_t* pent, float flSpeed);
-extern int			UTIL_PointContents		(const Vector &vec);
+extern int			UTIL_PointContents		(const Vector &vec, bool detectSolidEntities = false);
 
 extern int			UTIL_IsMasterTriggered	(string_t sMaster, CBaseEntity *pActivator);
 extern void			UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount );
@@ -390,7 +390,7 @@ extern DLL_GLOBAL int			g_Language;
 
 
 // Scale up human models for VR - Max Vollmer, 2017-08-22
-#define VR_SCALE_HUMANS		1.2
+#define VR_SCALE_HUMANS		1.5
 
 
 // func_rotating

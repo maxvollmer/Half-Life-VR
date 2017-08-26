@@ -4559,46 +4559,48 @@ void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Ve
 	// Then get headset position:
 	Vector hmdPosition = clientOrigin + hmdOffset;
 
-	int hmdPositionContent = UTIL_PointContents(hmdPosition);
 	// Check if headset position is in wall
+	int hmdPositionContent = UTIL_PointContents(hmdPosition, true);
 	if (hmdPositionContent == CONTENTS_SOLID || hmdPositionContent == CONTENTS_SKY)
 	{
-		//ALERT(at_console, "CONTENTS_SOLID\n", hmdOffset.x, hmdOffset.y, hmdOffset.z);
+		//ALERT(at_console, "CONTENTS_SOLID\n");
 
-		// player put their head into a wall... we need to counter act
-		// take previous position(from the player's perspective, this will feel like pushing the level away when they run into a wall)
-		hmdPosition = clientOrigin + vr_lastHMDOffset;
-		pev->view_ofs = vr_lastHMDOffset;
+		// player put their head into a wall... we need to counteract
+		// take previous position (from the player's perspective, this will feel like pushing the level away when they run into a wall)
+		Vector delta = vr_lastHMDOffset - hmdOffset;
+		clientOrigin = clientOrigin + delta;
+		pev->origin = pev->origin + delta;
+		hmdPosition = hmdPosition + delta;
 	}
 	else
 	{
-		//ALERT(at_console, "CONTENTS_EMPTY\n", hmdOffset.x, hmdOffset.y, hmdOffset.z);
-
-		pev->view_ofs = hmdOffset;
-		vr_lastHMDOffset = hmdOffset;
+		//ALERT(at_console, "CONTENTS_EMPTY\n");
 	}
 
 	// Get new server origin from headset x/y coordinates
 	Vector newOrigin = Vector(hmdPosition.x, hmdPosition.y, clientOrigin.z);
 
+	// Check if groundPosition is in wall, if so: check if this is something we can step on
 	Vector groundPosition = newOrigin;
 	groundPosition.z += pev->mins.z;
-	/*
-	// TODO: Check if groundPosition is in wall, if so: check if this is something we can step on
-	if (groundPosition is in wall)
+	int groundPositionContent = UTIL_PointContents(groundPosition, true);
+	if (groundPositionContent == CONTENTS_SOLID || groundPositionContent == CONTENTS_SKY)
 	{
-		get height of floor (trace from (groundPosition.z + MAX_STEP_SIZE + 1) to groundPosition.z)
-		if (height of floor <= MAX_STEP_SIZE)
+		TraceResult tr;
+		UTIL_TraceLine(groundPosition + Vector(0, 0, 18), groundPosition, ignore_monsters, edict(), &tr);
+		if (!tr.fAllSolid && !tr.fStartSolid)
 		{
-			get delta between groundPosition.z and floor level
-			move newOrigin.z and hmdPosition.z by delta
-			if (hmdPosition is now in wall)
+			//get delta between groundPosition.z and floor level
+			float delta = tr.vecEndPos.z - groundPosition.z;
+			// check that head won't get pushed into ceiling (better having feet in floor, than head in ceiling)
+			int newHMDPositionContent = UTIL_PointContents(hmdPosition + Vector(0, 0, delta), true);
+			if (newHMDPositionContent != CONTENTS_SOLID && groundPositionContent != CONTENTS_SKY)
 			{
-				move both back (better having feed in floor, than head in ceiling)
+				newOrigin.z += delta;
+				hmdPosition.z += delta;
 			}
 		}
 	}
-	*/
 	pev->origin = newOrigin;
 
 	vr_ClientOriginOffset.x = clientOrigin.x - pev->origin.x;
@@ -4607,6 +4609,12 @@ void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Ve
 	vr_weaponOffset = weaponOffset;
 	vr_weaponAngles = weaponAngles;
 	vr_weaponVelocity = weaponVelocity;
+
+	// Set view_ofs
+	pev->view_ofs = hmdPosition - pev->origin;
+
+	// Remember offset for wallcheck next call
+	vr_lastHMDOffset = hmdOffset;
 
 	/*
 	// TODO: Check view_ofs.z and (un)set player in duck mode, depending on height
@@ -4623,7 +4631,7 @@ void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Ve
 }
 const Vector CBasePlayer::GetWeaponPosition()
 {
-	return Vector(pev->origin + vr_weaponOffset);
+	return GetClientOrigin() + vr_weaponOffset;
 }
 const Vector CBasePlayer::GetWeaponAngles()
 {
