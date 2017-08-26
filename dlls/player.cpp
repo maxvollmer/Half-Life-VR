@@ -4550,40 +4550,48 @@ void CBasePlayer::ClearClientOriginOffset()
 	vr_ClientOriginOffset.x = 0;
 	vr_ClientOriginOffset.y = 0;
 }
-void CBasePlayer::UpdateVRRelatedPositions(const Vector & hmdOffset, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity)
+void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity)
 {
 	// First get origin where the client thinks it is:
 	Vector clientOrigin = GetClientOrigin();
+	Vector hmdOffset = vr_hmdOffset;
 
 	// Then get headset position:
 	Vector hmdPosition = clientOrigin + hmdOffset;
 
-	// TODO: Check if headset position is in wall, if so: take previous position (from the player's perspective, this will feel like pushing the level away when they run into a wall)
-	/*
-	if (hmdPosition is in wall)
+	int hmdPositionContent = UTIL_PointContents(hmdPosition);
+	// Check if headset position is in wall
+	if (hmdPositionContent == CONTENTS_SOLID || hmdPositionContent == CONTENTS_SKY)
 	{
+		//ALERT(at_console, "CONTENTS_SOLID\n", hmdOffset.x, hmdOffset.y, hmdOffset.z);
+
+		// player put their head into a wall... we need to counter act
+		// take previous position(from the player's perspective, this will feel like pushing the level away when they run into a wall)
 		hmdPosition = clientOrigin + vr_lastHMDOffset;
 		pev->view_ofs = vr_lastHMDOffset;
 	}
 	else
 	{
+		//ALERT(at_console, "CONTENTS_EMPTY\n", hmdOffset.x, hmdOffset.y, hmdOffset.z);
+
 		pev->view_ofs = hmdOffset;
 		vr_lastHMDOffset = hmdOffset;
 	}
-	*/
 
 	// Get new server origin from headset x/y coordinates
 	Vector newOrigin = Vector(hmdPosition.x, hmdPosition.y, clientOrigin.z);
 
+	Vector groundPosition = newOrigin;
+	groundPosition.z += pev->mins.z;
 	/*
-	// TODO: Check if newOrigin is in wall, if so: check if this is something we can step on
-	if (newOrigin is in wall)
+	// TODO: Check if groundPosition is in wall, if so: check if this is something we can step on
+	if (groundPosition is in wall)
 	{
-		get height of floor (trace from (newOrigin.z + MAX_STEP_SIZE + 1) to newOrigin.z)
+		get height of floor (trace from (groundPosition.z + MAX_STEP_SIZE + 1) to groundPosition.z)
 		if (height of floor <= MAX_STEP_SIZE)
 		{
-			move newOrigin.z up to floor level
-			move hmdPosition.z by same delta
+			get delta between groundPosition.z and floor level
+			move newOrigin.z and hmdPosition.z by delta
 			if (hmdPosition is now in wall)
 			{
 				move both back (better having feed in floor, than head in ceiling)

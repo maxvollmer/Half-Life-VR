@@ -78,20 +78,27 @@ void VRRenderer::Frame(double time)
 	vrHelper->PollEvents();
 }
 
-void TestRenderMapInVR(vr::EVREye eEye);
-
 void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 {
 	if (pparams->nextView == 0)
 	{
+		m_vBackupViewOrg = pparams->vieworg;
+		m_vBackupViewAngles = pparams->viewangles;
+
 		vrHelper->UpdatePositions(pparams);
 		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left, pparams);
+		vrHelper->GetViewOrg(pparams->vieworg);
+		vrHelper->GetViewAngles(pparams->viewangles);
+
 		pparams->nextView = 1;
 	}
 	else if (pparams->nextView == 1)
 	{
 		vrHelper->FinishVRScene(pparams);
 		vrHelper->PrepareVRScene(vr::EVREye::Eye_Right, pparams);
+		vrHelper->GetViewOrg(pparams->vieworg);
+		vrHelper->GetViewAngles(pparams->viewangles);
+
 		pparams->nextView = 2;
 	}
 	else
@@ -99,10 +106,13 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		vrHelper->FinishVRScene(pparams);
 		vrHelper->SubmitImages();
 		pparams->nextView = 0;
-		pparams->onlyClientDraw = 1;
+		//pparams->onlyClientDraw = 1;
 
-		glClearColor(0, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		m_vBackupViewOrg.CopyToArray(pparams->vieworg);
+		m_vBackupViewAngles.CopyToArray(pparams->viewangles);
+
+		//glClearColor(0, 0, 0, 0);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Update player viewangles from HMD pose
 		gEngfuncs.SetViewAngles(pparams->viewangles);
@@ -111,8 +121,13 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 
 void VRRenderer::DrawNormal()
 {
+	glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_TEXTURE_BIT);
+
 	vrHelper->TestRenderControllerPosition(true);
 	vrHelper->TestRenderControllerPosition(false);
+	RenderWorldBackfaces();
+
+	glPopAttrib();
 }
 
 void VRRenderer::DrawTransparent()
@@ -122,9 +137,10 @@ void VRRenderer::DrawTransparent()
 void VRRenderer::InterceptHUDRedraw(float time, int intermission)
 {
 	isInMenu = false;
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClearColor(0, 0, 0, 0);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	gHUD.Redraw(time, intermission);
+	// TODO: Capture HUD texture
 }
 
 void VRRenderer::GetViewAngles(float * angles)
@@ -133,10 +149,14 @@ void VRRenderer::GetViewAngles(float * angles)
 }
 
 
-void TestRenderMapInVR(vr::EVREye eEye)
+// This method just draws the backfaces of the entire map in black, so the player can't peak "through" walls with their VR headset
+void VRRenderer::RenderWorldBackfaces()
 {
-	glDisable(GL_CULL_FACE);
-	glCullFace(GL_NONE);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	//glColor4f(1.f, 0.08f, 1.f, 0.58f);
+	glColor4f(0, 0, 0, 1);
 
 	cl_entity_s* map = gEngfuncs.GetEntityByIndex(0);
 	if (map != nullptr)
@@ -148,19 +168,12 @@ void TestRenderMapInVR(vr::EVREye eEye)
 			{
 				int surfaceIndex = model->firstmodelsurface + i;
 				msurface_t *surface = &model->surfaces[surfaceIndex];
-				mtexinfo_t *texinfo = surface->texinfo;
-				if (texinfo != nullptr && texinfo->texture != nullptr)
+				glBegin(GL_POLYGON);
+				for (int k = surface->polys->numverts - 1; k >= 0; k--)
 				{
-					glBindTexture(GL_TEXTURE_2D, texinfo->texture->gl_texturenum);
-					glBegin(GL_POLYGON);
-					for (int k = surface->polys->numverts-1; k >= 0; k--)
-					{
-						glTexCoord2f(surface->polys->verts[k][3], surface->polys->verts[k][4]);
-						glVertex3fv(surface->polys->verts[k]);
-					}
-					glEnd();
-					glBindTexture(GL_TEXTURE_2D, 0);
+					glVertex3fv(surface->polys->verts[k]);
 				}
+				glEnd();
 			}
 		}
 	}

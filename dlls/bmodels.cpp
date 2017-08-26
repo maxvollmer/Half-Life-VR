@@ -62,9 +62,14 @@ public:
 
 LINK_ENTITY_TO_CLASS( func_wall, CFuncWall );
 
+#define SF_USEANGLES 2
+
 void CFuncWall :: Spawn( void )
 {
-	pev->angles		= g_vecZero;
+	if (!FBitSet(pev->spawnflags, SF_USEANGLES))
+	{
+		pev->angles = g_vecZero;
+	}
 	pev->movetype	= MOVETYPE_PUSH;  // so it doesn't get pushed by anything
 	pev->solid		= SOLID_BSP;
 	SET_MODEL( ENT(pev), STRING(pev->model) );

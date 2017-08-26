@@ -84,7 +84,7 @@ void VRHelper::Init()
 
 bool VRHelper::AcceptsDisclaimer()
 {
-	return MessageBox(NULL, TEXT("This software is provided as is with no warranties whatsoever. This mod uses a custom opengl32.dll that might get you VAC banned. The VR experience might be unpleasant and nauseating. Only continue if you're aware of the risks and know what you are doing.\n\nDo you want to continue?"), TEXT("Disclaimer"), MB_YESNO) == IDYES;
+	return MessageBox(WindowFromDC(wglGetCurrentDC()), TEXT("This software is provided as is with no warranties whatsoever. This mod uses a custom opengl32.dll that might get you VAC banned. The VR experience might be unpleasant and nauseating. Only continue if you're aware of the risks and know what you are doing.\n\nDo you want to continue?"), TEXT("Disclaimer"), MB_YESNO) == IDYES;
 }
 
 void VRHelper::Exit(const char* lpErrorMessage)
@@ -189,6 +189,23 @@ Matrix4 GetModelViewMatrixFromAbsoluteTrackingMatrix(Matrix4 &absoluteTrackingMa
 	Matrix4 modelViewMatrix = absoluteTrackingMatrix * hlToVRScaleMatrix * switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
 	modelViewMatrix.scale(10);
 	return modelViewMatrix;
+}
+
+Vector GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & absoluteTrackingMatrix)
+{
+	Vector4 originInVRSpace = absoluteTrackingMatrix * Vector4(0, 0, 0, 1);
+	return Vector(originInVRSpace.x * VR_TO_HL.x * 10, -originInVRSpace.z * VR_TO_HL.z * 10, originInVRSpace.y * VR_TO_HL.y * 10);
+}
+
+Vector GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & absoluteTrackingMatrix)
+{
+	Vector originInRelativeHLSpace = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(absoluteTrackingMatrix);
+
+	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
+	Vector clientGroundPosition = localPlayer->curstate.origin;
+	clientGroundPosition.z += localPlayer->curstate.mins.z;
+
+	return clientGroundPosition + originInRelativeHLSpace;
 }
 
 void VRHelper::PollEvents()
@@ -430,6 +447,11 @@ void VRHelper::GetViewAngles(float * angles)
 	GetHLViewAnglesFromVRMatrix(positions.m_mat4LeftModelView).CopyToArray(angles);
 }
 
+void VRHelper::GetViewOrg(float * org)
+{
+	GetPositionInHLSpaceFromAbsoluteTrackingMatrix(ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking)).CopyToArray(org);
+}
+
 void VRHelper::UpdateGunPosition(struct ref_params_s* pparams)
 {
 	cl_entity_t *viewent = gEngfuncs.GetViewModel();
@@ -474,7 +496,8 @@ void VRHelper::SendPositionUpdateToServer()
 {
 	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
 	cl_entity_t *viewent = gEngfuncs.GetViewModel();
-	Vector hmdOffset; // TODO
+	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking));
+	hmdOffset.z += localPlayer->curstate.mins.z;
 	Vector weaponOrigin = viewent ? viewent->curstate.origin : Vector();
 	Vector weaponOffset = weaponOrigin - localPlayer->curstate.origin;
 	Vector weaponAngles = viewent ? viewent->curstate.angles : Vector();
@@ -507,18 +530,8 @@ void VRHelper::TestRenderControllerPosition(bool leftOrRight)
 	if (controllerIndex > 0 && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
 	{
 		Matrix4 controllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking);
-		Vector4 originInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(0, 0, 0, 1);
-		Vector originInRelativeHLSpace(originInVRSpace.x * VR_TO_HL.x * 10, -originInVRSpace.z * VR_TO_HL.z * 10, originInVRSpace.y * VR_TO_HL.y * 10);
 
-		//Vector originInHLSpace = Vector(484, 318, -175);
-
-		cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
-		Vector clientGroundPosition = localPlayer->curstate.origin;
-		clientGroundPosition.z += localPlayer->curstate.mins.z;
-		Vector originInHLSpace = clientGroundPosition + originInRelativeHLSpace;
-
-		glDisable(GL_CULL_FACE);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		Vector originInHLSpace = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(controllerAbsoluteTrackingMatrix);
 
 		Vector4 forwardInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(0, 0, -1, 0);
 		Vector4 rightInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(1, 0, 0, 0);

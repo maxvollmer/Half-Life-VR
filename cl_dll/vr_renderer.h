@@ -23,10 +23,15 @@ public:
 
 private:
 
+	void RenderWorldBackfaces();
+
 	unsigned int vrGLMenuTexture = 0;
 	unsigned int vrGLHUDTexture = 0;
 
 	bool isInMenu = true;
+
+	Vector m_vBackupViewOrg;
+	Vector m_vBackupViewAngles;
 
 	VRHelper *vrHelper = nullptr;
 };

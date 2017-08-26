@@ -29,8 +29,10 @@ public:
 	void FinishVRScene(struct ref_params_s* pparams);
 
 	void GetViewAngles(float * angles);
+	void GetViewOrg(float * angles);
 
 	void TestRenderControllerPosition(bool leftOrRight);
+
 
 private:
 
