@@ -195,6 +195,8 @@ void CCrowbar::CheckSmack(float speed)
 
 		if (pEntity && HasNotHitThisEntityThisSwing(pEntity))
 		{
+			RememberHasHitThisEntityThisSwing(pEntity);
+
 			// play thwack, smack, or dong sound
 			float flVol = 1.0;
 
