@@ -24,6 +24,7 @@ public:
 private:
 
 	void RenderWorldBackfaces();
+	void RenderBSPBackfaces(struct model_s* model);
 
 	unsigned int vrGLMenuTexture = 0;
 	unsigned int vrGLHUDTexture = 0;

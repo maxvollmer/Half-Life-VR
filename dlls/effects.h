@@ -63,15 +63,6 @@ public:
 	void TurnOff( void );
 	void TurnOn( void );
 	inline float Frames( void ) { return m_maxFrame; }
-	inline void SetTransparency( int rendermode, int r, int g, int b, int a, int fx )
-	{
-		pev->rendermode = rendermode;
-		pev->rendercolor.x = r;
-		pev->rendercolor.y = g;
-		pev->rendercolor.z = b;
-		pev->renderamt = a;
-		pev->renderfx = fx;
-	}
 	inline void SetTexture( int spriteIndex ) { pev->modelindex = spriteIndex; }
 	inline void SetScale( float scale ) { pev->scale = scale; }
 	inline void SetColor( int r, int g, int b ) { pev->rendercolor.x = r; pev->rendercolor.y = g; pev->rendercolor.z = b; }

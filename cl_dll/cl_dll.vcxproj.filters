@@ -277,6 +277,9 @@
     <ClCompile Include="vr_helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vr_input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parsemsg.h">
@@ -421,6 +424,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vr_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vr_input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

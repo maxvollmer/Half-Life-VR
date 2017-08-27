@@ -7,6 +7,7 @@
 #include "ref_params.h"
 #include "vr_helper.h"
 #include "vr_gl.h"
+#include "vr_input.h"
 
 #ifndef MAX_COMMAND_SIZE
 #define MAX_COMMAND_SIZE 256
@@ -224,123 +225,19 @@ void VRHelper::PollEvents()
 			return;
 		case vr::EVREventType::VREvent_ButtonPress:
 		case vr::EVREventType::VREvent_ButtonUnpress:
-			HandleButtonPress(vrEvent.trackedDeviceIndex, vrEvent.data.controller.button, vrEvent.eventType == vr::EVREventType::VREvent_ButtonPress);
+			{
+				vr::ETrackedControllerRole controllerRole = vrSystem->GetControllerRoleForTrackedDeviceIndex(vrEvent.trackedDeviceIndex);
+				if (controllerRole != vr::ETrackedControllerRole::TrackedControllerRole_Invalid)
+				{
+					vr::VRControllerState_t controllerState;
+					vrSystem->GetControllerState(vrEvent.trackedDeviceIndex, &controllerState, sizeof(controllerState));
+					g_vrInput.HandleButtonPress(vrEvent.data.controller.button, controllerState, controllerRole == vr::ETrackedControllerRole::TrackedControllerRole_LeftHand, vrEvent.eventType == vr::EVREventType::VREvent_ButtonPress);
+				}
+			}
 			break;
 		case vr::EVREventType::VREvent_ButtonTouch:
 		case vr::EVREventType::VREvent_ButtonUntouch:
 		default:
-			break;
-		}
-	}
-}
-
-void VRHelper::HandleButtonPress(vr::TrackedDeviceIndex_t trackedDeviceIndex, uint32_t button, bool downOrUp)
-{
-	vr::ETrackedControllerRole controllerRole = vrSystem->GetControllerRoleForTrackedDeviceIndex(trackedDeviceIndex);
-	if (controllerRole == vr::ETrackedControllerRole::TrackedControllerRole_Invalid)
-	{
-		return;
-	}
-
-	if (controllerRole == vr::ETrackedControllerRole::TrackedControllerRole_RightHand)
-	{
-		switch (button)
-		{
-		case vr::EVRButtonId::k_EButton_Grip:
-			{
-				downOrUp ? ClientCmd("+reload") : ClientCmd("-reload");
-			}
-			break;
-		case vr::EVRButtonId::k_EButton_ApplicationMenu:
-			{
-				downOrUp ? ClientCmd("+attack2") : ClientCmd("-attack2");
-			}
-			break;
-		case vr::EVRButtonId::k_EButton_SteamVR_Trigger:
-			{
-				downOrUp ? ClientCmd("+attack") : ClientCmd("-attack");
-			}
-			break;
-		case vr::EVRButtonId::k_EButton_SteamVR_Touchpad:
-			{
-				vr::VRControllerState_t controllerState;
-				vrSystem->GetControllerState(trackedDeviceIndex, &controllerState, sizeof(controllerState));
-				vr::VRControllerAxis_t touchPadAxis = controllerState.rAxis[vr::EVRButtonId::k_EButton_SteamVR_Touchpad - vr::EVRButtonId::k_EButton_Axis0];
-
-				if (touchPadAxis.y > 0.5f && !downOrUp)
-				{
-					gHUD.m_Ammo.UserCmd_NextWeapon();
-					gHUD.m_iKeyBits |= IN_ATTACK;
-					gHUD.m_Ammo.Think();
-				}
-				else if (touchPadAxis.y < -0.5f && !downOrUp)
-				{
-					gHUD.m_Ammo.UserCmd_PrevWeapon();
-					gHUD.m_iKeyBits |= IN_ATTACK;
-					gHUD.m_Ammo.Think();
-				}
-			}
-			break;
-		}
-	}
-	else if (controllerRole == vr::ETrackedControllerRole::TrackedControllerRole_LeftHand)
-	{
-		switch (button)
-		{
-		case vr::EVRButtonId::k_EButton_ApplicationMenu:
-			{
-				ClientCmd("escape");
-			}
-			break;
-		case vr::EVRButtonId::k_EButton_SteamVR_Trigger:
-			{
-				downOrUp ? ClientCmd("+jump") : ClientCmd("-jump");
-			}
-			break;
-		case vr::EVRButtonId::k_EButton_SteamVR_Touchpad:
-			{
-				vr::VRControllerState_t controllerState;
-				vrSystem->GetControllerState(trackedDeviceIndex, &controllerState, sizeof(controllerState));
-				vr::VRControllerAxis_t touchPadAxis = controllerState.rAxis[vr::EVRButtonId::k_EButton_SteamVR_Touchpad - vr::EVRButtonId::k_EButton_Axis0];
-
-				// TODO: Move in direction controller is pointing, not direction player is looking!
-
-				if (touchPadAxis.x < -0.5f && downOrUp)
-				{
-					ClientCmd("+moveleft");
-				}
-				else
-				{
-					ClientCmd("-moveleft");
-				}
-
-				if (touchPadAxis.x > 0.5f && downOrUp)
-				{
-					ClientCmd("+moveright");
-				}
-				else
-				{
-					ClientCmd("-moveright");
-				}
-
-				if (touchPadAxis.y > 0.5f && downOrUp)
-				{
-					ClientCmd("+forward");
-				}
-				else
-				{
-					ClientCmd("-forward");
-				}
-				
-				if (touchPadAxis.y < -0.5f && downOrUp)
-				{
-					ClientCmd("+back");
-				}
-				else
-				{
-					ClientCmd("-back");
-				}
-			}
 			break;
 		}
 	}
@@ -496,17 +393,32 @@ void VRHelper::SendPositionUpdateToServer()
 {
 	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
 	cl_entity_t *viewent = gEngfuncs.GetViewModel();
+
 	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking));
 	hmdOffset.z += localPlayer->curstate.mins.z;
+
+	Vector leftControllerOffset;
+	Vector leftControllerAngles;
+	vr::TrackedDeviceIndex_t leftControllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_LeftHand);
+	if (leftControllerIndex > 0 && positions.m_rTrackedDevicePose[leftControllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[leftControllerIndex].bPoseIsValid)
+	{
+		Matrix4 leftControllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[leftControllerIndex].mDeviceToAbsoluteTracking);
+		leftControllerOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(leftControllerAbsoluteTrackingMatrix);
+		leftControllerOffset.z += localPlayer->curstate.mins.z;
+		leftControllerAngles = GetHLAnglesFromVRMatrix(leftControllerAbsoluteTrackingMatrix);
+	}
+
 	Vector weaponOrigin = viewent ? viewent->curstate.origin : Vector();
 	Vector weaponOffset = weaponOrigin - localPlayer->curstate.origin;
 	Vector weaponAngles = viewent ? viewent->curstate.angles : Vector();
 	Vector weaponVelocity = viewent ? viewent->curstate.velocity : Vector();
 
-	// void CBasePlayer::UpdateVRRelatedPositions(const Vector & hmdOffset, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity)
+	// void CBasePlayer::UpdateVRRelatedPositions(const Vector & hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity)
 	char cmd[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmd, "updatevr %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f", 
+	sprintf_s(cmd, "updatevr %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f", 
 		hmdOffset.x, hmdOffset.y, hmdOffset.z,
+		leftControllerOffset.x, leftControllerOffset.y, leftControllerOffset.z,
+		leftControllerAngles.x, leftControllerAngles.y, leftControllerAngles.z,
 		weaponOffset.x, weaponOffset.y, weaponOffset.z,
 		weaponAngles.x, weaponAngles.y, weaponAngles.z,
 		weaponVelocity.x, weaponVelocity.y, weaponVelocity.z

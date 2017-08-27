@@ -784,8 +784,6 @@ public:
 	void	Move( CBaseEntity *pMover, int push );
 	void	KeyValue( KeyValueData *pkvd );
 	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void	EXPORT StopSound( void );
-//	virtual void	SetActivator( CBaseEntity *pActivator ) { m_pPusher = pActivator; }
 
 	virtual int	ObjectCaps( void ) { return (CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_CONTINUOUS_USE; }
 	virtual int		Save( CSave &save );
@@ -976,23 +974,12 @@ void CPushable :: Move( CBaseEntity *pOther, int push )
 			{
 				m_lastSound = RANDOM_LONG(0,2);
 				EMIT_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5, ATTN_NORM);
-	//			SetThink(&CPushable:: StopSound );
-	//			pev->nextthink = pev->ltime + 0.1;
 			}
 			else
 				STOP_SOUND( ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound] );
 		}
 	}
 }
-
-#if 0
-void CPushable::StopSound( void )
-{
-	Vector dist = pev->oldorigin - pev->origin;
-	if ( dist.Length() <= 0 )
-		STOP_SOUND( ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound] );
-}
-#endif
 
 int CPushable::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
 {

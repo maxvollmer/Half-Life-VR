@@ -1495,6 +1495,7 @@ void EV_EgonFire( event_args_t *args )
 		{
 			VectorCopy(viewModel->curstate.angles, angles);
 			angles.x = -angles.x;
+			AngleVectors(angles, forward, NULL, NULL);
 
 			EV_GetGunPosition( args, vecSrc, pl->origin );
 

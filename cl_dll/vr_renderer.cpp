@@ -31,8 +31,9 @@
 #include "vr_gl.h"
 
 
-VRRenderer gVRRenderer;
+extern globalvars_t *gpGlobals;
 
+VRRenderer gVRRenderer;
 
 
 VRRenderer::VRRenderer()
@@ -159,23 +160,40 @@ void VRRenderer::RenderWorldBackfaces()
 	glColor4f(0, 0, 0, 1);
 
 	cl_entity_s* map = gEngfuncs.GetEntityByIndex(0);
-	if (map != nullptr)
+	if (map != nullptr && map->model != nullptr)
 	{
-		model_t* model = map->model;
-		if (model != nullptr)
+		RenderBSPBackfaces(map->model);
+
+		int currentmessagenum = gEngfuncs.GetLocalPlayer()->curstate.messagenum;
+
+		for (int i = 1; i < gpGlobals->maxEntities; i++)
 		{
-			for (int i = 0; i < model->nummodelsurfaces; i++)
+			cl_entity_t *ent = gEngfuncs.GetEntityByIndex(i);
+			if (ent != nullptr && ent->model != nullptr && ent->model->name != nullptr && ent->model->name[0] == '*' && ent->curstate.messagenum == currentmessagenum)
 			{
-				int surfaceIndex = model->firstmodelsurface + i;
-				msurface_t *surface = &model->surfaces[surfaceIndex];
-				glBegin(GL_POLYGON);
-				for (int k = surface->polys->numverts - 1; k >= 0; k--)
-				{
-					glVertex3fv(surface->polys->verts[k]);
-				}
-				glEnd();
+				glPushMatrix();
+				glTranslatef(ent->curstate.origin.x, ent->curstate.origin.y, ent->curstate.origin.z);
+				glRotatef(ent->curstate.angles.x, 1, 0, 0);
+				glRotatef(ent->curstate.angles.y, 0, 0, 1);
+				glRotatef(ent->curstate.angles.z, 0, 1, 0);
+				RenderBSPBackfaces(ent->model);
+				glPopMatrix();
 			}
 		}
 	}
 }
 
+void VRRenderer::RenderBSPBackfaces(model_t* model)
+{
+	for (int i = 0; i < model->nummodelsurfaces; i++)
+	{
+		int surfaceIndex = model->firstmodelsurface + i;
+		msurface_t *surface = &model->surfaces[surfaceIndex];
+		glBegin(GL_POLYGON);
+		for (int k = surface->polys->numverts - 1; k >= 0; k--)
+		{
+			glVertex3fv(surface->polys->verts[k]);
+		}
+		glEnd();
+	}
+}

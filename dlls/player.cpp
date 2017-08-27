@@ -2880,7 +2880,6 @@ int CBasePlayer::Restore( CRestore &restore )
 		// default to normal spawn
 		edict_t* pentSpawnSpot = EntSelectSpawnPoint( this );
 		pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
-		ClearClientOriginOffset();
 	}
 	pev->v_angle.z = 0;	// Clear out roll
 	pev->angles = pev->v_angle;
@@ -4544,13 +4543,8 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 
 
 // Methods and members for VR stuff - Max Vollmer, 2017-08-18
-// Called by Util_SetOrigin
-void CBasePlayer::ClearClientOriginOffset()
-{
-	vr_ClientOriginOffset.x = 0;
-	vr_ClientOriginOffset.y = 0;
-}
-void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity)
+
+void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity)
 {
 	// First get origin where the client thinks it is:
 	Vector clientOrigin = GetClientOrigin();
@@ -4628,6 +4622,7 @@ void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Ve
 	}
 	*/
 
+	UpdateVRTele(GetClientOrigin() + leftControllerOffset, leftControllerAngles);
 }
 const Vector CBasePlayer::GetWeaponPosition()
 {
@@ -4661,6 +4656,67 @@ bool CBasePlayer::IsWeaponUnderWater()
 }
 bool CBasePlayer::IsWeaponPositionValid()
 {
-	int weaponOriginContent = UTIL_PointContents(GetWeaponPosition());
+	int weaponOriginContent = UTIL_PointContents(GetWeaponPosition(), true);
 	return weaponOriginContent == CONTENTS_EMPTY || weaponOriginContent == CONTENTS_WATER;
+}
+void CBasePlayer::StartVRTele()
+{
+	if (!vr_pTeleSprite)
+	{
+		vr_pTeleSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", GetClientOrigin(), FALSE);
+		vr_pTeleSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation);
+		vr_pTeleSprite->pev->owner = edict();
+	}
+	if (!vr_pTeleBeam)
+	{
+		vr_pTeleBeam = CBeam::BeamCreate("sprites/xbeam1.spr", 20);
+		vr_pTeleBeam->PointsInit(pev->origin, pev->origin);
+		vr_pTeleBeam->pev->owner = edict();
+	}
+	vr_pTeleSprite->pev->effects &= ~EF_NODRAW;
+	vr_pTeleBeam->pev->effects &= ~EF_NODRAW;
+}
+void CBasePlayer::StopVRTele()
+{
+	if (vr_pTeleSprite)
+	{
+		pev->origin = vr_pTeleSprite->pev->origin;
+		pev->origin.z -= pev->mins.z;
+		UTIL_SetOrigin(pev, pev->origin);
+		vr_pTeleSprite->pev->effects |= EF_NODRAW;
+		UTIL_Remove(vr_pTeleSprite);
+		vr_pTeleSprite = nullptr;
+	}
+	if (vr_pTeleBeam)
+	{
+		vr_pTeleBeam->pev->effects |= EF_NODRAW;
+		UTIL_Remove(vr_pTeleBeam);
+		vr_pTeleBeam = nullptr;
+	}
+}
+void CBasePlayer::UpdateVRTele(const Vector & vecPos, const Vector & vecAngles)
+{
+	if (!vr_pTeleBeam || !vr_pTeleSprite)
+	{
+		return;
+	}
+
+	Vector forward;
+	UTIL_MakeAimVectorsPrivate(vecAngles, forward, NULL, NULL);
+
+	TraceResult tr;
+	UTIL_TraceLine(vecPos, vecPos + forward * 500, ignore_monsters, edict(), &tr);
+
+	if (tr.flFraction < 1.f)
+	{
+		vr_pTeleSprite->pev->effects &= ~EF_NODRAW;
+		UTIL_SetOrigin(vr_pTeleSprite->pev, tr.vecEndPos);
+	}
+	else
+	{
+		vr_pTeleSprite->pev->effects |= EF_NODRAW;
+	}
+
+	vr_pTeleBeam->SetStartPos(vecPos);
+	vr_pTeleBeam->SetEndPos(tr.vecEndPos);
 }

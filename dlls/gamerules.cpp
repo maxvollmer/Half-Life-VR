@@ -65,7 +65,6 @@ edict_t *CGameRules :: GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 	edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer );
 
 	pPlayer->pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
-	pPlayer->ClearClientOriginOffset();
 	//pPlayer->pev->v_angle  = g_vecZero;
 	pPlayer->pev->velocity = g_vecZero;
 	//pPlayer->pev->angles = VARS(pentSpawnSpot)->angles;

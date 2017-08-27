@@ -441,19 +441,33 @@ void ClientCommand( edict_t *pEntity )
 	else if (FStrEq(pcmd, "updatevr"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
-		if (size == 13)
+		if (size == 19)
 		{
 			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
 			pPlayer->UpdateVRRelatedPositions(
 				Vector(atof(CMD_ARGV(1)), atof(CMD_ARGV(2)), atof(CMD_ARGV(3))),
 				Vector(atof(CMD_ARGV(4)), atof(CMD_ARGV(5)), atof(CMD_ARGV(6))),
 				Vector(atof(CMD_ARGV(7)), atof(CMD_ARGV(8)), atof(CMD_ARGV(9))),
-				Vector(atof(CMD_ARGV(10)), atof(CMD_ARGV(11)), atof(CMD_ARGV(12)))
+				Vector(atof(CMD_ARGV(10)), atof(CMD_ARGV(11)), atof(CMD_ARGV(12))),
+				Vector(atof(CMD_ARGV(13)), atof(CMD_ARGV(14)), atof(CMD_ARGV(15))),
+				Vector(atof(CMD_ARGV(16)), atof(CMD_ARGV(17)), atof(CMD_ARGV(18)))
 			);
 		}
 		else
 		{
 			ClientPrint(&pEntity->v, HUD_PRINTCONSOLE, "Invalid vr update!\n");
+		}
+	}
+	else if (FStrEq(pcmd, "vrtele"))
+	{
+		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		if (atoi(CMD_ARGV(1)))
+		{
+			pPlayer->StartVRTele();
+		}
+		else
+		{
+			pPlayer->StopVRTele();
 		}
 	}
 	else if ( g_pGameRules->ClientCommand( GetClassPtr((CBasePlayer *)pev), pcmd ) )

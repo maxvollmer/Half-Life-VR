@@ -223,9 +223,16 @@ extern void			UTIL_MakeVectors		(const Vector &vecAngles);
 extern int			UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &center, float radius );
 extern int			UTIL_EntitiesInBox( CBaseEntity **pList, int listMax, const Vector &mins, const Vector &maxs, int flagMask );
 
-inline void UTIL_MakeVectorsPrivate( const Vector &vecAngles, float *p_vForward, float *p_vRight, float *p_vUp )
+inline void UTIL_MakeVectorsPrivate(const Vector &vecAngles, float *p_vForward, float *p_vRight, float *p_vUp)
 {
-	g_engfuncs.pfnAngleVectors( vecAngles, p_vForward, p_vRight, p_vUp );
+	g_engfuncs.pfnAngleVectors(vecAngles, p_vForward, p_vRight, p_vUp);
+}
+
+inline void UTIL_MakeAimVectorsPrivate(const Vector &vecAngles, float *p_vForward, float *p_vRight, float *p_vUp)
+{
+	Vector vecAimAngles = vecAngles;
+	vecAimAngles.x = -vecAimAngles.x;
+	g_engfuncs.pfnAngleVectors(vecAimAngles, p_vForward, p_vRight, p_vUp);
 }
 
 extern void			UTIL_MakeAimVectors		( const Vector &vecAngles ); // like MakeVectors, but assumes pitch isn't inverted

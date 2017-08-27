@@ -197,6 +197,16 @@ public:
 	virtual BOOL	IsNetClient( void ) { return FALSE; }
 	virtual const char *TeamID( void ) { return ""; }
 
+	// Moved SetTransparency from CSprite to CBaseEntity - Max Vollmer, 2017-08-27
+	inline void SetTransparency(int rendermode, int r, int g, int b, int a, int fx)
+	{
+		pev->rendermode = rendermode;
+		pev->rendercolor.x = r;
+		pev->rendercolor.y = g;
+		pev->rendercolor.z = b;
+		pev->renderamt = a;
+		pev->renderfx = fx;
+	}
 
 //	virtual void	SetActivator( CBaseEntity *pActivator ) {}
 	virtual CBaseEntity *GetNextTarget( void );

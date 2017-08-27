@@ -239,6 +239,7 @@
     <ClCompile Include="view.cpp" />
     <ClCompile Include="vr_gl.cpp" />
     <ClCompile Include="vr_helper.cpp" />
+    <ClCompile Include="vr_input.cpp" />
     <ClCompile Include="vr_renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -288,6 +289,7 @@
     <ClInclude Include="view.h" />
     <ClInclude Include="vr_gl.h" />
     <ClInclude Include="vr_helper.h" />
+    <ClInclude Include="vr_input.h" />
     <ClInclude Include="vr_renderer.h" />
     <ClInclude Include="wrect.h" />
   </ItemGroup>

@@ -83,6 +83,9 @@ enum sbar_data
 	SBAR_END,
 };
 
+class CSprite;
+class CBeam;
+
 #define CHAT_INTERVAL 1.0f
 
 class CBasePlayer : public CBaseMonster
@@ -316,6 +319,9 @@ private:
 	Vector vr_weaponVelocity;
 	Vector vr_lastHMDOffset;
 	Vector2D vr_ClientOriginOffset;
+
+	CSprite* vr_pTeleSprite = nullptr;
+	CBeam* vr_pTeleBeam = nullptr;
 public:
 	const Vector GetWeaponPosition();
 	const Vector GetWeaponAngles();
@@ -325,8 +331,12 @@ public:
 	const Vector GetClientViewOfs();		// Used by UpdateClientData to send player view_ofs to client
 	bool IsWeaponUnderWater();
 	bool IsWeaponPositionValid();
-	void ClearClientOriginOffset();			// Called by Util_SetOrigin
-	void UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & vr_weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity);
+
+	void UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity);
+
+	void StartVRTele();
+	void StopVRTele();
+	void UpdateVRTele(const Vector & vecPos, const Vector & vecAngles);
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

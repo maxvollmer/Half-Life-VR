@@ -52,8 +52,6 @@ private:
 	Vector GetHLViewAnglesFromVRMatrix(const Matrix4 &mat);
 	Vector GetHLAnglesFromVRMatrix(const Matrix4 &mat);
 
-	void HandleButtonPress(vr::TrackedDeviceIndex_t trackedDeviceIndex, uint32_t button, bool downOrUp);
-
 	Positions positions;
 
 	bool isVRRoomScale = true;
