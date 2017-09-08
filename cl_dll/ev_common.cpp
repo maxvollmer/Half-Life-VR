@@ -102,32 +102,6 @@ Figure out the height of the gun
 */
 void EV_GetGunPosition( event_args_t *args, float *pos, float *origin )
 {
-	/*
-	int idx;
-	vec3_t view_ofs;
-
-	idx = args->entindex;
-
-	VectorClear( view_ofs );
-	view_ofs[2] = DEFAULT_VIEWHEIGHT;
-
-	if ( EV_IsPlayer( idx ) )
-	{
-		// in spec mode use entity viewheigh, not own
-		if ( EV_IsLocal( idx ) && !IS_FIRSTPERSON_SPEC )
-		{
-			// Grab predicted result for local player
-			gEngfuncs.pEventAPI->EV_LocalPlayerViewheight( view_ofs );
-		}
-		else if ( args->ducking == 1 )
-		{
-			view_ofs[2] = VEC_DUCK_VIEW;
-		}
-	}
-
-	VectorAdd( origin, view_ofs, pos );
-	*/
-
 	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
 	if (viewModel != nullptr)
 	{
@@ -159,31 +133,6 @@ Determine where to eject shells from
 */
 void EV_GetDefaultShellInfo( event_args_t *args, float *origin, float *velocity, float *ShellVelocity, float *ShellOrigin, float *forward, float *right, float *up, float forwardScale, float upScale, float rightScale )
 {
-	/*
-	int i;
-	vec3_t view_ofs;
-	float fR, fU;
-
-	int idx;
-
-	idx = args->entindex;
-
-	VectorClear( view_ofs );
-	view_ofs[2] = DEFAULT_VIEWHEIGHT;
-
-	if ( EV_IsPlayer( idx ) )
-	{
-		if ( EV_IsLocal( idx ) )
-		{
-			gEngfuncs.pEventAPI->EV_LocalPlayerViewheight( view_ofs );
-		}
-		else if ( args->ducking == 1 )
-		{
-			view_ofs[2] = VEC_DUCK_VIEW;
-		}
-	}
-	*/
-
 	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
 	if (viewModel != nullptr)
 	{

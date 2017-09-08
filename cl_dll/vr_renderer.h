@@ -31,9 +31,6 @@ private:
 
 	bool isInMenu = true;
 
-	Vector m_vBackupViewOrg;
-	Vector m_vBackupViewAngles;
-
 	VRHelper *vrHelper = nullptr;
 };
 

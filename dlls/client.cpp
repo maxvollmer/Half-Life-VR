@@ -441,7 +441,7 @@ void ClientCommand( edict_t *pEntity )
 	else if (FStrEq(pcmd, "updatevr"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
-		if (size == 19)
+		if (size == 21)
 		{
 			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
 			pPlayer->UpdateVRRelatedPositions(
@@ -450,7 +450,8 @@ void ClientCommand( edict_t *pEntity )
 				Vector(atof(CMD_ARGV(7)), atof(CMD_ARGV(8)), atof(CMD_ARGV(9))),
 				Vector(atof(CMD_ARGV(10)), atof(CMD_ARGV(11)), atof(CMD_ARGV(12))),
 				Vector(atof(CMD_ARGV(13)), atof(CMD_ARGV(14)), atof(CMD_ARGV(15))),
-				Vector(atof(CMD_ARGV(16)), atof(CMD_ARGV(17)), atof(CMD_ARGV(18)))
+				Vector(atof(CMD_ARGV(16)), atof(CMD_ARGV(17)), atof(CMD_ARGV(18))),
+				atoi(CMD_ARGV(19)) != 0, atoi(CMD_ARGV(20)) != 0
 			);
 		}
 		else
@@ -941,10 +942,6 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 	}
 
 	org = pView->v.origin + pView->v.view_ofs;
-	if ( pView->v.flags & FL_DUCKING )
-	{
-		org = org + ( VEC_HULL_MIN - VEC_DUCK_HULL_MIN );
-	}
 
 	*pvs = ENGINE_SET_PVS ( (float *)&org );
 	*pas = ENGINE_SET_PAS ( (float *)&org );
@@ -1171,8 +1168,10 @@ void CreateBaseline( int player, int eindex, struct entity_state_s *baseline, st
 
 	if ( player )
 	{
-		baseline->mins			= player_mins;
-		baseline->maxs			= player_maxs;
+		//baseline->mins			= player_mins;
+		//baseline->maxs			= player_maxs;
+		baseline->mins = entity->v.mins;
+		baseline->maxs = entity->v.maxs;
 
 		baseline->colormap		= eindex;
 		baseline->modelindex	= playermodelindex;
@@ -1684,6 +1683,8 @@ int	ConnectionlessPacket( const struct netadr_s *net_from, const char *args, cha
 	return 0;
 }
 
+
+
 /*
 ================================
 GetHullBounds
@@ -1691,6 +1692,9 @@ GetHullBounds
   Engine calls this to enumerate player collision hulls, for prediction.  Return 0 if the hullnumber doesn't exist.
 ================================
 */
+float *g_pEnginePlayerMaxs = nullptr;
+float *g_pEnginePlayerDuckMaxs = nullptr;
+
 int GetHullBounds( int hullnumber, float *mins, float *maxs )
 {
 	int iret = 0;
@@ -1698,13 +1702,17 @@ int GetHullBounds( int hullnumber, float *mins, float *maxs )
 	switch ( hullnumber )
 	{
 	case 0:				// Normal player
-		mins = VEC_HULL_MIN;
-		maxs = VEC_HULL_MAX;
+		VEC_HULL_MIN.CopyToArray(mins);
+		VEC_HULL_MAX.CopyToArray(maxs);
+		//g_pEnginePlayerMins = mins;
+		g_pEnginePlayerMaxs = maxs;
 		iret = 1;
 		break;
 	case 1:				// Crouched player
-		mins = VEC_DUCK_HULL_MIN;
-		maxs = VEC_DUCK_HULL_MAX;
+		VEC_DUCK_HULL_MIN.CopyToArray(mins);
+		VEC_DUCK_HULL_MAX.CopyToArray(maxs);
+		//g_pEnginePlayerDuckMins = mins;
+		g_pEnginePlayerDuckMaxs = maxs;
 		iret = 1;
 		break;
 	case 2:				// Point based hull

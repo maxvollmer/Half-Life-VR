@@ -592,7 +592,6 @@ CBaseEntity	*UTIL_PlayerByIndex( int playerIndex )
 	return pPlayer;
 }
 
-
 void UTIL_MakeVectors( const Vector &vecAngles )
 {
 	MAKE_VECTORS( vecAngles );

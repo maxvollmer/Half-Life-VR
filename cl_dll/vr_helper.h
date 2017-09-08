@@ -33,7 +33,6 @@ public:
 
 	void TestRenderControllerPosition(bool leftOrRight);
 
-
 private:
 
 	bool AcceptsDisclaimer();

@@ -695,10 +695,6 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 	if ( m_flNextObserverInput > time )
 		return;
 
-	// enable spectator screen
-	if ( ButtonPressed & IN_DUCK )
-		gViewPort->m_pSpectatorPanel->ShowMenu(!gViewPort->m_pSpectatorPanel->m_menuVisible);
-
 	//  'Use' changes inset window mode
 	if ( ButtonPressed & IN_USE )
 	{
@@ -709,28 +705,6 @@ void CHudSpectator::HandleButtonsDown( int ButtonPressed )
 	if ( gEngfuncs.IsSpectateOnly() )
 	{
 		// changing target or chase mode not in overviewmode without inset window
-
-		// Jump changes main window modes
-		if ( ButtonPressed & IN_JUMP )
-		{
-			if ( g_iUser1 == OBS_CHASE_LOCKED )
-				newMainMode = OBS_CHASE_FREE;
-
-			else if ( g_iUser1 == OBS_CHASE_FREE )
-				newMainMode = OBS_IN_EYE;
-
-			else if ( g_iUser1 == OBS_IN_EYE )
-				newMainMode = OBS_ROAMING;
-
-			else if ( g_iUser1 == OBS_ROAMING )
-				newMainMode = OBS_MAP_FREE;
-
-			else if ( g_iUser1 == OBS_MAP_FREE )
-				newMainMode = OBS_MAP_CHASE;
-
-			else
-				newMainMode = OBS_CHASE_FREE;	// don't use OBS_CHASE_LOCKED anymore
-		}
 
 		// Attack moves to the next player
 		if ( ButtonPressed & (IN_ATTACK | IN_ATTACK2) )

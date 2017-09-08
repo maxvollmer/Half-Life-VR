@@ -32,7 +32,7 @@
 #define		PFLAG_ONSWING		( 1<<0 )
 #define		PFLAG_ONTRAIN		( 1<<1 )
 #define		PFLAG_ONBARNACLE	( 1<<2 )
-#define		PFLAG_DUCKING		( 1<<3 )		// In the process of ducking, but totally squatted yet
+//#define		PFLAG_DUCKING		( 1<<3 )		// In the process of ducking, but totally squatted yet
 #define		PFLAG_USING			( 1<<4 )		// Using a continuous entity
 #define		PFLAG_OBSERVER		( 1<<5 )		// player is locked in stationary cam mode. Spectators can move, observers can't.
 
@@ -320,8 +320,14 @@ private:
 	Vector vr_lastHMDOffset;
 	Vector2D vr_ClientOriginOffset;
 
+	bool vr_isLeftControllerValid = false;
+	bool vr_isRightControllerValid = false;
+
 	CSprite* vr_pTeleSprite = nullptr;
 	CBeam* vr_pTeleBeam = nullptr;
+	bool m_fValidTelePosition = false;
+
+	bool CanTeleportHere(const Vector & vecTele);
 public:
 	const Vector GetWeaponPosition();
 	const Vector GetWeaponAngles();
@@ -332,7 +338,7 @@ public:
 	bool IsWeaponUnderWater();
 	bool IsWeaponPositionValid();
 
-	void UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity);
+	void UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity, bool isLeftControllerValid, bool isRightControllerValid);
 
 	void StartVRTele();
 	void StopVRTele();

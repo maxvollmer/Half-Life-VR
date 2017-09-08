@@ -356,7 +356,7 @@ void VRHelper::UpdateGunPosition(struct ref_params_s* pparams)
 	{
 		vr::TrackedDeviceIndex_t controllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
 
-		if (controllerIndex > 0 && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
+		if (controllerIndex > 0 && controllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
 		{
 			Matrix4 controllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking);
 
@@ -397,31 +397,46 @@ void VRHelper::SendPositionUpdateToServer()
 	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking));
 	hmdOffset.z += localPlayer->curstate.mins.z;
 
-	Vector leftControllerOffset;
-	Vector leftControllerAngles;
 	vr::TrackedDeviceIndex_t leftControllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_LeftHand);
-	if (leftControllerIndex > 0 && positions.m_rTrackedDevicePose[leftControllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[leftControllerIndex].bPoseIsValid)
+	bool isLeftControllerValid = leftControllerIndex > 0 && leftControllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[leftControllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[leftControllerIndex].bPoseIsValid;
+
+	vr::TrackedDeviceIndex_t rightControllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
+	bool isRightControllerValid = leftControllerIndex > 0 && leftControllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[leftControllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[leftControllerIndex].bPoseIsValid;
+
+	Vector leftControllerOffset(0, 0, 0);
+	Vector leftControllerAngles(0, 0, 0);
+	if (isLeftControllerValid)
 	{
 		Matrix4 leftControllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[leftControllerIndex].mDeviceToAbsoluteTracking);
 		leftControllerOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(leftControllerAbsoluteTrackingMatrix);
 		leftControllerOffset.z += localPlayer->curstate.mins.z;
 		leftControllerAngles = GetHLAnglesFromVRMatrix(leftControllerAbsoluteTrackingMatrix);
+		isLeftControllerValid = true;
 	}
 
-	Vector weaponOrigin = viewent ? viewent->curstate.origin : Vector();
-	Vector weaponOffset = weaponOrigin - localPlayer->curstate.origin;
-	Vector weaponAngles = viewent ? viewent->curstate.angles : Vector();
-	Vector weaponVelocity = viewent ? viewent->curstate.velocity : Vector();
+	Vector weaponOrigin(0, 0, 0);
+	Vector weaponOffset(0, 0, 0);
+	Vector weaponAngles(0, 0, 0);
+	Vector weaponVelocity(0, 0, 0);
+	if (isLeftControllerValid && viewent)
+	{
+		weaponOrigin = viewent ? viewent->curstate.origin : Vector();
+		weaponOffset = weaponOrigin - localPlayer->curstate.origin;
+		weaponAngles = viewent ? viewent->curstate.angles : Vector();
+		weaponVelocity = viewent ? viewent->curstate.velocity : Vector();
+	}
 
 	// void CBasePlayer::UpdateVRRelatedPositions(const Vector & hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity)
 	char cmd[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmd, "updatevr %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f", 
+	sprintf_s(cmd, "updatevr %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i %i", 
 		hmdOffset.x, hmdOffset.y, hmdOffset.z,
 		leftControllerOffset.x, leftControllerOffset.y, leftControllerOffset.z,
 		leftControllerAngles.x, leftControllerAngles.y, leftControllerAngles.z,
 		weaponOffset.x, weaponOffset.y, weaponOffset.z,
 		weaponAngles.x, weaponAngles.y, weaponAngles.z,
-		weaponVelocity.x, weaponVelocity.y, weaponVelocity.z
+		weaponVelocity.x, weaponVelocity.y, weaponVelocity.z,
+		isLeftControllerValid ? 1 : 0,
+		isRightControllerValid ? 1 : 0
 	);
 	gEngfuncs.pfnClientCmd(cmd);
 }
@@ -439,7 +454,7 @@ void VRHelper::TestRenderControllerPosition(bool leftOrRight)
 {
 	vr::TrackedDeviceIndex_t controllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(leftOrRight ? vr::ETrackedControllerRole::TrackedControllerRole_LeftHand  : vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
 
-	if (controllerIndex > 0 && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
+	if (controllerIndex > 0 && controllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
 	{
 		Matrix4 controllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking);
 

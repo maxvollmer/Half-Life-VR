@@ -19,8 +19,8 @@
 #endif
 
 #define IN_ATTACK	(1 << 0)
-#define IN_JUMP		(1 << 1)
-#define IN_DUCK		(1 << 2)
+//#define IN_JUMP		(1 << 1)
+//#define IN_DUCK		(1 << 2)
 #define IN_FORWARD	(1 << 3)
 #define IN_BACK		(1 << 4)
 #define IN_USE		(1 << 5)

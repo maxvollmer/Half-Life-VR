@@ -1388,7 +1388,7 @@ void CBasePlayer::PlayerUse ( void )
 			{	// Start controlling the train!
 				CBaseEntity *pTrain = CBaseEntity::Instance( pev->groundentity );
 
-				if ( pTrain && !(pev->button & IN_JUMP) && FBitSet(pev->flags, FL_ONGROUND) && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pTrain->OnControls(pev) )
+				if ( pTrain && FBitSet(pev->flags, FL_ONGROUND) && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pTrain->OnControls(pev) )
 				{
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
@@ -1468,82 +1468,13 @@ void CBasePlayer::PlayerUse ( void )
 
 void CBasePlayer::Jump()
 {
-	Vector		vecWallCheckDir;// direction we're tracing a line to find a wall when walljumping
-	Vector		vecAdjustedVelocity;
-	Vector		vecSpot;
-	TraceResult	tr;
-	
-	if (FBitSet(pev->flags, FL_WATERJUMP))
-		return;
-	
-	if (pev->waterlevel >= 2)
-	{
-		return;
-	}
-
-	// jump velocity is sqrt( height * gravity * 2)
-
-	// If this isn't the first frame pressing the jump button, break out.
-	if ( !FBitSet( m_afButtonPressed, IN_JUMP ) )
-		return;         // don't pogo stick
-
-	if ( !(pev->flags & FL_ONGROUND) || !pev->groundentity )
-	{
-		return;
-	}
-
-// many features in this function use v_forward, so makevectors now.
-	UTIL_MakeVectors (pev->angles);
-
-	// ClearBits(pev->flags, FL_ONGROUND);		// don't stairwalk
-	
-	SetAnimation( PLAYER_JUMP );
-
-	if ( m_fLongJump &&
-		(pev->button & IN_DUCK) &&
-		( pev->flDuckTime > 0 ) &&
-		pev->velocity.Length() > 50 )
-	{
-		SetAnimation( PLAYER_SUPERJUMP );
-	}
-
-	// If you're standing on a conveyor, add it's velocity to yours (for momentum)
-	entvars_t *pevGround = VARS(pev->groundentity);
-	if ( pevGround && (pevGround->flags & FL_CONVEYOR) )
-	{
-		pev->velocity = pev->velocity + pev->basevelocity;
-	}
+	// Disable jump in VR
 }
 
-
-
-// This is a glorious hack to find free space when you've crouched into some solid space
-// Our crouching collisions do not work correctly for some reason and this is easier
-// than fixing the problem :(
-void FixPlayerCrouchStuck( edict_t *pPlayer )
-{
-	TraceResult trace;
-
-	// Move up as many as 18 pixels if the player is stuck.
-	for ( int i = 0; i < 18; i++ )
-	{
-		UTIL_TraceHull( pPlayer->v.origin, pPlayer->v.origin, dont_ignore_monsters, head_hull, pPlayer, &trace );
-		if ( trace.fStartSolid )
-			pPlayer->v.origin.z ++;
-		else
-			break;
-	}
-}
 
 void CBasePlayer::Duck( )
 {
-	if (pev->button & IN_DUCK) 
-	{
-		if ( m_IdealActivity != ACT_LEAP )
-		{
-			SetAnimation( PLAYER_WALK );
-		}
-	}
+	// Disable ducking in VR (ducking is realized by real "ducking")
 }
 
 //
@@ -1812,18 +1743,6 @@ void CBasePlayer::PreThink(void)
 
 	} else if (m_iTrain & TRAIN_ACTIVE)
 		m_iTrain = TRAIN_NEW; // turn off train
-
-	if (pev->button & IN_JUMP)
-	{
-		// If on a ladder, jump off the ladder
-		// else Jump
-		Jump();
-	}
-
-
-	// If trying to duck, already ducked, or in the process of ducking
-	if ((pev->button & IN_DUCK) || FBitSet(pev->flags,FL_DUCKING) || (m_afPhysicsFlags & PFLAG_DUCKING) )
-		Duck();
 
 	if ( !FBitSet ( pev->flags, FL_ONGROUND ) )
 	{
@@ -2337,11 +2256,6 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 	else
 	{
 		iBodyVolume = 0;
-	}
-
-	if ( pev->button & IN_JUMP )
-	{
-		iBodyVolume += 100;
 	}
 
 // convert player move speed and actions into sound audible by monsters.
@@ -4543,9 +4457,29 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 
 
 // Methods and members for VR stuff - Max Vollmer, 2017-08-18
-
-void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity)
+#define VR_DUCK_START_HEIGHT 0
+#define VR_DUCK_STOP_HEIGHT 20
+#include "pm_defs.h"
+extern  "C"  playermove_t *pmove;
+void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity, bool isLeftControllerValid, bool isRightControllerValid)
 {
+	// Check height of headset and (un)set player in duck mode, depending on height
+	float flDuckHeightDelta = VEC_HULL_MIN.z - VEC_DUCK_HULL_MIN.z;
+	if (!(pev->flags & FL_DUCKING) && vr_hmdOffset.z < VR_DUCK_START_HEIGHT)
+	{
+		ALERT(at_console, "START DUCKING!\n");
+		pev->flags |= FL_DUCKING;
+		UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+		pev->origin.z = pev->origin.z + flDuckHeightDelta;
+	}
+	else if ((pev->flags & FL_DUCKING) && vr_hmdOffset.z > VR_DUCK_STOP_HEIGHT)
+	{
+		ALERT(at_console, "STOP DUCKING!\n");
+		pev->flags &= ~FL_DUCKING;
+		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
+		pev->origin.z = pev->origin.z - flDuckHeightDelta;
+	}
+
 	// First get origin where the client thinks it is:
 	Vector clientOrigin = GetClientOrigin();
 	Vector hmdOffset = vr_hmdOffset;
@@ -4600,27 +4534,36 @@ void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Ve
 	vr_ClientOriginOffset.x = clientOrigin.x - pev->origin.x;
 	vr_ClientOriginOffset.y = clientOrigin.y - pev->origin.y;
 
-	vr_weaponOffset = weaponOffset;
-	vr_weaponAngles = weaponAngles;
-	vr_weaponVelocity = weaponVelocity;
+	// Remember offset for wallcheck next call
+	vr_lastHMDOffset = hmdOffset;
 
 	// Set view_ofs
 	pev->view_ofs = hmdPosition - pev->origin;
 
-	// Remember offset for wallcheck next call
-	vr_lastHMDOffset = hmdOffset;
-
-	/*
-	// TODO: Check view_ofs.z and (un)set player in duck mode, depending on height
-	if (pev->view_ofs.z <= duck height)
+	// Update bounding box
+	pev->maxs.z = max(0, pev->view_ofs.z) + 20;
+	if (pev->flags & FL_DUCKING)
 	{
-		set player in duck (hullsize and flags)
+		//pev->maxs.z = max(VEC_DUCK_HULL_MAX.z, pev->view_ofs.z + 20);
+		extern float *g_pEnginePlayerDuckMaxs;
+		if (g_pEnginePlayerDuckMaxs != nullptr) Vector(pev->maxs).CopyToArray(g_pEnginePlayerDuckMaxs);
+		if (pmove != nullptr) Vector(pev->maxs).CopyToArray(pmove->player_maxs[1]);
 	}
 	else
 	{
-		unset player in duck (hullsize and flags)
+		//pev->maxs.z = max(VEC_HULL_MAX.z, pev->view_ofs.z + 20);
+		extern float *g_pEnginePlayerMaxs;
+		if (g_pEnginePlayerMaxs != nullptr) Vector(pev->maxs).CopyToArray(g_pEnginePlayerMaxs);
+		if (pmove != nullptr) Vector(pev->maxs).CopyToArray(pmove->player_maxs[0]);
 	}
-	*/
+	UTIL_SetSize(pev, pev->mins, pev->maxs);
+
+	vr_weaponOffset = weaponOffset;
+	vr_weaponAngles = weaponAngles;
+	vr_weaponVelocity = weaponVelocity;
+
+	vr_isLeftControllerValid = isLeftControllerValid;
+	vr_isRightControllerValid = isRightControllerValid;
 
 	UpdateVRTele(GetClientOrigin() + leftControllerOffset, leftControllerAngles);
 }
@@ -4656,16 +4599,30 @@ bool CBasePlayer::IsWeaponUnderWater()
 }
 bool CBasePlayer::IsWeaponPositionValid()
 {
-	int weaponOriginContent = UTIL_PointContents(GetWeaponPosition(), true);
-	return weaponOriginContent == CONTENTS_EMPTY || weaponOriginContent == CONTENTS_WATER;
+	if (vr_isRightControllerValid)
+	{
+		int weaponOriginContent = UTIL_PointContents(GetWeaponPosition(), true);
+		return weaponOriginContent == CONTENTS_EMPTY || weaponOriginContent == CONTENTS_WATER;
+	}
+	else
+	{
+		return false;
+	}
 }
 void CBasePlayer::StartVRTele()
 {
+	if (!vr_isLeftControllerValid)
+	{
+		m_fValidTelePosition = false;
+		StopVRTele();
+		return;
+	}
 	if (!vr_pTeleSprite)
 	{
 		vr_pTeleSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", GetClientOrigin(), FALSE);
 		vr_pTeleSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation);
 		vr_pTeleSprite->pev->owner = edict();
+		vr_pTeleSprite->TurnOn();
 	}
 	if (!vr_pTeleBeam)
 	{
@@ -4673,31 +4630,34 @@ void CBasePlayer::StartVRTele()
 		vr_pTeleBeam->PointsInit(pev->origin, pev->origin);
 		vr_pTeleBeam->pev->owner = edict();
 	}
-	vr_pTeleSprite->pev->effects &= ~EF_NODRAW;
-	vr_pTeleBeam->pev->effects &= ~EF_NODRAW;
+	m_fValidTelePosition = false;
 }
 void CBasePlayer::StopVRTele()
 {
-	if (vr_pTeleSprite)
+	if (vr_pTeleSprite && vr_isLeftControllerValid && m_fValidTelePosition)
 	{
 		pev->origin = vr_pTeleSprite->pev->origin;
 		pev->origin.z -= pev->mins.z;
 		UTIL_SetOrigin(pev, pev->origin);
-		vr_pTeleSprite->pev->effects |= EF_NODRAW;
+	}
+	if (vr_pTeleSprite)
+	{
 		UTIL_Remove(vr_pTeleSprite);
 		vr_pTeleSprite = nullptr;
 	}
 	if (vr_pTeleBeam)
 	{
-		vr_pTeleBeam->pev->effects |= EF_NODRAW;
 		UTIL_Remove(vr_pTeleBeam);
 		vr_pTeleBeam = nullptr;
 	}
+	m_fValidTelePosition = false;
 }
 void CBasePlayer::UpdateVRTele(const Vector & vecPos, const Vector & vecAngles)
 {
-	if (!vr_pTeleBeam || !vr_pTeleSprite)
+	if (!vr_isLeftControllerValid || !vr_pTeleBeam || !vr_pTeleSprite)
 	{
+		m_fValidTelePosition = false;
+		StopVRTele();
 		return;
 	}
 
@@ -4705,18 +4665,26 @@ void CBasePlayer::UpdateVRTele(const Vector & vecPos, const Vector & vecAngles)
 	UTIL_MakeAimVectorsPrivate(vecAngles, forward, NULL, NULL);
 
 	TraceResult tr;
-	UTIL_TraceLine(vecPos, vecPos + forward * 500, ignore_monsters, edict(), &tr);
+	UTIL_TraceLine(vecPos, vecPos + forward * 250, ignore_monsters, edict(), &tr);
 
-	if (tr.flFraction < 1.f)
+	UTIL_SetOrigin(vr_pTeleSprite->pev, tr.vecEndPos);
+
+	if (tr.flFraction < 1.f && !tr.fAllSolid && DotProduct(Vector(0,0,1), tr.vecPlaneNormal) > 0.5f && CanTeleportHere(tr.vecEndPos))
 	{
-		vr_pTeleSprite->pev->effects &= ~EF_NODRAW;
-		UTIL_SetOrigin(vr_pTeleSprite->pev, tr.vecEndPos);
+		vr_pTeleSprite->pev->rendercolor = Vector(0, 1, 0);
+		m_fValidTelePosition = true;
 	}
 	else
 	{
-		vr_pTeleSprite->pev->effects |= EF_NODRAW;
+		vr_pTeleSprite->pev->rendercolor = Vector(1, 0, 0);
+		m_fValidTelePosition = false;
 	}
 
 	vr_pTeleBeam->SetStartPos(vecPos);
 	vr_pTeleBeam->SetEndPos(tr.vecEndPos);
+}
+bool CBasePlayer::CanTeleportHere(const Vector & vecTele)
+{
+	// TODO!
+	return true;
 }

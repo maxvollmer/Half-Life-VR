@@ -83,9 +83,6 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 {
 	if (pparams->nextView == 0)
 	{
-		m_vBackupViewOrg = pparams->vieworg;
-		m_vBackupViewAngles = pparams->viewangles;
-
 		vrHelper->UpdatePositions(pparams);
 		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left, pparams);
 		vrHelper->GetViewOrg(pparams->vieworg);
@@ -106,18 +103,13 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 	{
 		vrHelper->FinishVRScene(pparams);
 		vrHelper->SubmitImages();
+
 		pparams->nextView = 0;
 		//pparams->onlyClientDraw = 1;
-
-		m_vBackupViewOrg.CopyToArray(pparams->vieworg);
-		m_vBackupViewAngles.CopyToArray(pparams->viewangles);
-
-		//glClearColor(0, 0, 0, 0);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Update player viewangles from HMD pose
-		gEngfuncs.SetViewAngles(pparams->viewangles);
 	}
+
+	// Update player viewangles from HMD pose
+	gEngfuncs.SetViewAngles(pparams->viewangles);
 }
 
 void VRRenderer::DrawNormal()
@@ -148,7 +140,6 @@ void VRRenderer::GetViewAngles(float * angles)
 {
 	vrHelper->GetViewAngles(angles);
 }
-
 
 // This method just draws the backfaces of the entire map in black, so the player can't peak "through" walls with their VR headset
 void VRRenderer::RenderWorldBackfaces()

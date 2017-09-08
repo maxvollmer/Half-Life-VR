@@ -71,6 +71,11 @@ void	DLLEXPORT HUD_VoiceStatus(int entindex, qboolean bTalking);
 void	DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf );
 }
 
+#define VEC_HULL_MIN		Vector(-16, -16, -36)
+#define VEC_HULL_MAX		Vector( 16,  16,  36)
+#define VEC_DUCK_HULL_MIN	Vector(-16, -16, -18 )
+#define VEC_DUCK_HULL_MAX	Vector( 16,  16,  18)
+
 /*
 ================================
 HUD_GetHullBounds
@@ -85,13 +90,13 @@ int DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs )
 	switch ( hullnumber )
 	{
 	case 0:				// Normal player
-		mins = Vector(-16, -16, -36);
-		maxs = Vector(16, 16, 36);
+		mins = VEC_HULL_MIN;
+		maxs = VEC_HULL_MAX;
 		iret = 1;
 		break;
 	case 1:				// Crouched player
-		mins = Vector(-16, -16, -18 );
-		maxs = Vector(16, 16, 18 );
+		mins = VEC_DUCK_HULL_MIN;
+		maxs = VEC_DUCK_HULL_MAX;
 		iret = 1;
 		break;
 	case 2:				// Point based hull

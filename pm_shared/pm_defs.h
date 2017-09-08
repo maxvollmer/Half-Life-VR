@@ -102,12 +102,12 @@ typedef struct playermove_s
 	vec3_t			velocity;      // Current movement direction.
 	vec3_t			movedir;       // For waterjumping, a forced forward velocity so we can fly over lip of ledge.
 	vec3_t			basevelocity;  // Velocity of the conveyor we are standing, e.g.
-	
+
 	// For ducking/dead
 	vec3_t			view_ofs;      // Our eye position.
 	float			flDuckTime;    // Time we started duck
 	qboolean		bInDuck;       // In process of ducking or ducked already?
-	
+
 	// For walking/falling
 	int				flTimeStepSound;  // Next time we can play a step sound
 	int				iStepLeft;

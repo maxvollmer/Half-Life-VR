@@ -969,6 +969,7 @@ void V_GetInEyePos(int target, float * origin, float * angles )
 
 	angles[PITCH]*=-3.0f;	// see CL_ProcessEntityUpdate()
 
+	/*
 	if ( ent->curstate.solid == SOLID_NOT )
 	{
 		angles[ROLL] = 80;	// dead view angle
@@ -979,6 +980,7 @@ void V_GetInEyePos(int target, float * origin, float * angles )
 	else
 		// exacty eye position can't be caluculated since it depends on
 		// client values like cl_bobcycle, this offset matches the default values
+	*/
 		origin[2]+= 28; // DEFAULT_VIEWHEIGHT
 }
 
