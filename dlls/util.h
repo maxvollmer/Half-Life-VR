@@ -397,7 +397,7 @@ extern DLL_GLOBAL int			g_Language;
 
 
 // Scale up human models for VR - Max Vollmer, 2017-08-22
-#define VR_SCALE_HUMANS		1.5
+#define VR_SCALE_HUMANS		10
 
 
 // func_rotating

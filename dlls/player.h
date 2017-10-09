@@ -32,10 +32,10 @@
 #define		PFLAG_ONSWING		( 1<<0 )
 #define		PFLAG_ONTRAIN		( 1<<1 )
 #define		PFLAG_ONBARNACLE	( 1<<2 )
-//#define		PFLAG_DUCKING		( 1<<3 )		// In the process of ducking, but totally squatted yet
+#define		PFLAG_DUCKING		( 1<<3 )		// In the process of ducking, but totally squatted yet
 #define		PFLAG_USING			( 1<<4 )		// Using a continuous entity
 #define		PFLAG_OBSERVER		( 1<<5 )		// player is locked in stationary cam mode. Spectators can move, observers can't.
-
+#define		IN_DUCK				(1 << 2)
 //
 // generic player
 //
@@ -338,10 +338,11 @@ public:
 	bool IsWeaponUnderWater();
 	bool IsWeaponPositionValid();
 
-	void UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity, bool isLeftControllerValid, bool isRightControllerValid);
+	void UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity, bool isLeftControllerValid, bool isRightControllerValid, bool buttonCrouch);
 
 	void StartVRTele();
 	void StopVRTele();
+	void CancelVRTele();
 	void UpdateVRTele(const Vector & vecPos, const Vector & vecAngles);
 };
 

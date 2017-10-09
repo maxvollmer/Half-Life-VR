@@ -31,6 +31,8 @@ public:
 	void GetViewAngles(float * angles);
 	void GetViewOrg(float * angles);
 
+	void GetWalkAngles(float * angles);
+
 	void TestRenderControllerPosition(bool leftOrRight);
 
 private:
@@ -52,6 +54,8 @@ private:
 	Vector GetHLAnglesFromVRMatrix(const Matrix4 &mat);
 
 	Positions positions;
+
+	Vector walkAngles;
 
 	bool isVRRoomScale = true;
 

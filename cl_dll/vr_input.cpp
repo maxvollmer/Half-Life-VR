@@ -26,59 +26,38 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 		{
 		case vr::EVRButtonId::k_EButton_ApplicationMenu:
 		{
-			ClientCmd("escape");
+			ClientCmd("save quick");
 		}
 		break;
 		case vr::EVRButtonId::k_EButton_SteamVR_Trigger:
 		{
-			//downOrUp ? ClientCmd("+jump") : ClientCmd("-jump");
+			downOrUp ? ClientCmd("+use") : ClientCmd("-use");
 		}
 		break;
 		case vr::EVRButtonId::k_EButton_SteamVR_Touchpad:
 		{
-			ServerCmd(downOrUp?"vrtele 1":"vrtele 0");
 
-			/*
-			vr::VRControllerAxis_t touchPadAxis = controllerState.rAxis[vr::EVRButtonId::k_EButton_SteamVR_Touchpad - vr::EVRButtonId::k_EButton_Axis0];
-
-			// TODO: Move in direction controller is pointing, not direction player is looking!
-
-			if (touchPadAxis.x < -0.5f && downOrUp)
+			if (vr_control_teleport->value == 1.f)
 			{
-				ClientCmd("+moveleft");
+				if (downOrUp && isTeleActive) {
+					ServerCmd("vrtele 0");
+					isTeleActive = false;
+				}
 			}
 			else
-			{
-				ClientCmd("-moveleft");
-			}
+				downOrUp ? ClientCmd("+jump") : ClientCmd("-jump");
+		}
+		break;
+		case vr::EVRButtonId::k_EButton_Grip:
+		{
+			
+	downOrUp ? ClientCmd("Impulse 100"): ClientCmd("Impulse");
+			//downOrUp ? ServerCmd("vr_grabweapon 1") : ServerCmd("vr_grabweapon 0");
 
-			if (touchPadAxis.x > 0.5f && downOrUp)
-			{
-				ClientCmd("+moveright");
-			}
-			else
-			{
-				ClientCmd("-moveright");
-			}
-
-			if (touchPadAxis.y > 0.5f && downOrUp)
-			{
-				ClientCmd("+forward");
-			}
-			else
-			{
-				ClientCmd("-forward");
-			}
-
-			if (touchPadAxis.y < -0.5f && downOrUp)
-			{
-				ClientCmd("+back");
-			}
-			else
-			{
-				ClientCmd("-back");
-			}
-			*/
+			//I decided not to atempt this now. A quick and dirty way to make two handed
+			//	weapons is a quaternion/matrix lookat function. The weapon rotation is in
+			//  Euler angles though, so a little bit of conversion is necessary. Needs to
+			//	be done in UpdateGunPosition.
 		}
 		break;
 		}
@@ -88,11 +67,6 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 		switch (button)
 		{
 		case vr::EVRButtonId::k_EButton_Grip:
-		{
-			downOrUp ? ClientCmd("+reload") : ClientCmd("-reload");
-		}
-		break;
-		case vr::EVRButtonId::k_EButton_ApplicationMenu:
 		{
 			downOrUp ? ClientCmd("+attack2") : ClientCmd("-attack2");
 		}
@@ -104,22 +78,111 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 		break;
 		case vr::EVRButtonId::k_EButton_SteamVR_Touchpad:
 		{
-			vr::VRControllerAxis_t touchPadAxis = controllerState.rAxis[vr::EVRButtonId::k_EButton_SteamVR_Touchpad - vr::EVRButtonId::k_EButton_Axis0];
+			//ServerCmd(downOrUp ? "vrtele 1" : "vrtele 0");
+			vr::VRControllerAxis_t touchPadAxis = controllerState.rAxis[0];
 
-			if (touchPadAxis.y > 0.5f && !downOrUp)
+			if (touchPadAxis.x < -0.5f && !downOrUp)
 			{
 				gHUD.m_Ammo.UserCmd_NextWeapon();
 				gHUD.m_iKeyBits |= IN_ATTACK;
 				gHUD.m_Ammo.Think();
 			}
-			else if (touchPadAxis.y < -0.5f && !downOrUp)
+			else if (touchPadAxis.x > 0.5f && !downOrUp)
 			{
 				gHUD.m_Ammo.UserCmd_PrevWeapon();
 				gHUD.m_iKeyBits |= IN_ATTACK;
 				gHUD.m_Ammo.Think();
 			}
+
+			if (touchPadAxis.y > 0.5f && downOrUp)
+			{
+				ClientCmd("+reload");
+			}
+			else
+			{
+				ClientCmd("-reload");
+			}
+
+			if (touchPadAxis.y < -0.5f && downOrUp)
+			{
+				ServerCmd("vrtele 1");
+			}
+			else
+			{
+				ServerCmd("vrtele 0");
+			}
+
 		}
 		break;
 		}
 	}
 }
+
+void VRInput::HandleTrackpad(unsigned int button, vr::VRControllerState_t controllerState, bool leftOrRight, bool downOrUp)
+{
+	vr::VRControllerAxis_t touchPadAxis = controllerState.rAxis[0];
+	downOrUp = (
+		touchPadAxis.x < -vr_control_deadzone->value ||
+		touchPadAxis.x > vr_control_deadzone->value ||
+		touchPadAxis.y < -vr_control_deadzone->value ||
+		touchPadAxis.y > vr_control_deadzone->value
+		);
+
+	if (leftOrRight && vr_control_teleport->value != 1.f)
+	{
+		if (vr_control_alwaysforward->value == 1.f)
+			downOrUp ? ClientCmd("+forward") : ClientCmd("-forward");
+		else
+		{
+			if (touchPadAxis.x < -vr_control_deadzone->value)
+			{
+				ClientCmd("+moveleft");
+			}
+			else
+			{
+				ClientCmd("-moveleft");
+			}
+
+			if (touchPadAxis.x > vr_control_deadzone->value)
+			{
+				ClientCmd("+moveright");
+			}
+			else
+			{
+				ClientCmd("-moveright");
+			}
+
+			if (touchPadAxis.y > vr_control_deadzone->value)
+			{
+				ClientCmd("+forward");
+			}
+			else
+			{
+				ClientCmd("-forward");
+			}
+
+			if (touchPadAxis.y < -vr_control_deadzone->value)
+			{
+				ClientCmd("+back");
+			}
+			else
+			{
+				ClientCmd("-back");
+			}
+		}
+	}
+	else if (leftOrRight && vr_control_teleport->value == 1.f)
+	{
+		if (downOrUp && !isTeleActive)
+		{
+			ServerCmd("vrtele 1");
+			isTeleActive = true;
+		}
+		else if (!downOrUp && isTeleActive)
+		{
+			ServerCmd("vrtele 2");
+			isTeleActive = false;
+		}
+	}
+}
+

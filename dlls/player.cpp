@@ -36,7 +36,7 @@
 #include "game.h"
 #include "hltv.h"
 
-// #define DUCKFIX
+#define DUCKFIX
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -1388,7 +1388,7 @@ void CBasePlayer::PlayerUse ( void )
 			{	// Start controlling the train!
 				CBaseEntity *pTrain = CBaseEntity::Instance( pev->groundentity );
 
-				if ( pTrain && FBitSet(pev->flags, FL_ONGROUND) && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pTrain->OnControls(pev) )
+				if ( pTrain && !(pev->button & IN_JUMP) && FBitSet(pev->flags, FL_ONGROUND) && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pTrain->OnControls(pev) )
 				{
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
@@ -1468,7 +1468,51 @@ void CBasePlayer::PlayerUse ( void )
 
 void CBasePlayer::Jump()
 {
-	// Disable jump in VR
+	Vector		vecWallCheckDir;// direction we're tracing a line to find a wall when walljumping
+	Vector		vecAdjustedVelocity;
+	Vector		vecSpot;
+	TraceResult	tr;
+
+	if (FBitSet(pev->flags, FL_WATERJUMP))
+		return;
+
+	if (pev->waterlevel >= 2)
+	{
+		return;
+	}
+
+	// jump velocity is sqrt( height * gravity * 2)
+
+	// If this isn't the first frame pressing the jump button, break out.
+	if (!FBitSet(m_afButtonPressed, IN_JUMP))
+		return;         // don't pogo stick
+
+	if (!(pev->flags & FL_ONGROUND) || !pev->groundentity)
+	{
+		return;
+	}
+
+	// many features in this function use v_forward, so makevectors now.
+	UTIL_MakeVectors(pev->angles);
+
+	// ClearBits(pev->flags, FL_ONGROUND);		// don't stairwalk
+
+	SetAnimation(PLAYER_JUMP);
+	
+	if (m_fLongJump &&
+		(pev->button & IN_DUCK) &&
+		(pev->flDuckTime > 0) &&
+		pev->velocity.Length() > 50)
+	{
+		SetAnimation(PLAYER_SUPERJUMP);
+	}
+	
+	// If you're standing on a conveyor, add it's velocity to yours (for momentum)
+	entvars_t *pevGround = VARS(pev->groundentity);
+	if (pevGround && (pevGround->flags & FL_CONVEYOR))
+	{
+		pev->velocity = pev->velocity + pev->basevelocity;
+	}
 }
 
 
@@ -1743,6 +1787,14 @@ void CBasePlayer::PreThink(void)
 
 	} else if (m_iTrain & TRAIN_ACTIVE)
 		m_iTrain = TRAIN_NEW; // turn off train
+
+	if (pev->button & IN_JUMP)
+	{
+		// If on a ladder, jump off the ladder
+		// else Jump
+		Jump();
+	}
+
 
 	if ( !FBitSet ( pev->flags, FL_ONGROUND ) )
 	{
@@ -2256,6 +2308,11 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 	else
 	{
 		iBodyVolume = 0;
+	}
+
+	if (pev->button & IN_JUMP)
+	{
+		iBodyVolume += 100;
 	}
 
 // convert player move speed and actions into sound audible by monsters.
@@ -4461,25 +4518,44 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 #define VR_DUCK_STOP_HEIGHT 20
 #include "pm_defs.h"
 extern  "C"  playermove_t *pmove;
-void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity, bool isLeftControllerValid, bool isRightControllerValid)
+void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity, bool isLeftControllerValid, bool isRightControllerValid, bool buttonCrouch)
 {
-	// Check height of headset and (un)set player in duck mode, depending on height
 	float flDuckHeightDelta = VEC_HULL_MIN.z - VEC_DUCK_HULL_MIN.z;
-	if (!(pev->flags & FL_DUCKING) && vr_hmdOffset.z < VR_DUCK_START_HEIGHT)
+	if (buttonCrouch) 
 	{
-		ALERT(at_console, "START DUCKING!\n");
-		pev->flags |= FL_DUCKING;
-		UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-		pev->origin.z = pev->origin.z + flDuckHeightDelta;
+		// Check height of headset and (un)set player in duck mode, depending on height
+		if (!(pev->flags & FL_DUCKING) && vr_hmdOffset.z < VR_DUCK_START_HEIGHT)
+		{
+			ALERT(at_console, "START DUCKING!\n");
+			pev->flags |= FL_DUCKING;
+			UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			pev->origin.z = pev->origin.z + flDuckHeightDelta;
+		}
+		else if ((pev->flags & FL_DUCKING) && vr_hmdOffset.z > VR_DUCK_STOP_HEIGHT)
+		{
+			ALERT(at_console, "STOP DUCKING!\n");
+			pev->flags &= ~FL_DUCKING;
+			UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
+			pev->origin.z = pev->origin.z - flDuckHeightDelta;
+		}
 	}
-	else if ((pev->flags & FL_DUCKING) && vr_hmdOffset.z > VR_DUCK_STOP_HEIGHT)
+	else
 	{
-		ALERT(at_console, "STOP DUCKING!\n");
-		pev->flags &= ~FL_DUCKING;
-		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
-		pev->origin.z = pev->origin.z - flDuckHeightDelta;
+		if (!(pev->flags & FL_DUCKING) && pev->button & IN_DUCK)
+		{
+			ALERT(at_console, "START DUCKING!\n");
+			pev->flags |= FL_DUCKING;
+			UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			pev->origin.z = pev->origin.z + flDuckHeightDelta;
+		}
+		else if ((pev->flags & FL_DUCKING) && !(pev->button & IN_DUCK))
+		{
+			ALERT(at_console, "STOP DUCKING!\n");
+			pev->flags &= ~FL_DUCKING;
+			UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
+			pev->origin.z = pev->origin.z - flDuckHeightDelta;
+		}
 	}
-
 	// First get origin where the client thinks it is:
 	Vector clientOrigin = GetClientOrigin();
 	Vector hmdOffset = vr_hmdOffset;
@@ -4651,6 +4727,11 @@ void CBasePlayer::StopVRTele()
 		vr_pTeleBeam = nullptr;
 	}
 	m_fValidTelePosition = false;
+}
+void CBasePlayer::CancelVRTele()
+{
+	m_fValidTelePosition = false;
+	StopVRTele();
 }
 void CBasePlayer::UpdateVRTele(const Vector & vecPos, const Vector & vecAngles)
 {

@@ -1696,7 +1696,7 @@ int PM_CheckStuck (void)
 
 	// If player is flailing while stuck in another player ( should never happen ), then see
 	//  if we can't "unstick" them forceably.
-	if ( pmove->cmd.buttons & ( IN_ATTACK ) && ( pmove->physents[ hitent ].player != 0 ) )
+	if ( pmove->cmd.buttons & (IN_JUMP | IN_ATTACK ) && ( pmove->physents[ hitent ].player != 0 ) )
 	{
 		float x, y, z;
 		float xystep = 8.0;
@@ -1890,12 +1890,137 @@ void PM_Duck( void )
 
 void PM_LadderMove( physent_t *pLadder )
 {
-	// We deal with ladders differently in VR
+	vec3_t		ladderCenter;
+	trace_t		trace;
+	qboolean	onFloor;
+	vec3_t		floor;
+	vec3_t		modelmins, modelmaxs;
+
+	if (pmove->movetype == MOVETYPE_NOCLIP)
+		return;
+
+	pmove->PM_GetModelBounds(pLadder->model, modelmins, modelmaxs);
+
+	VectorAdd(modelmins, modelmaxs, ladderCenter);
+	VectorScale(ladderCenter, 0.5, ladderCenter);
+
+	pmove->movetype = MOVETYPE_FLY;
+
+	// On ladder, convert movement to be relative to the ladder
+
+	VectorCopy(pmove->origin, floor);
+	floor[2] += pmove->player_mins[pmove->usehull][2] - 1;
+
+	if (pmove->PM_PointContents(floor, NULL) == CONTENTS_SOLID)
+		onFloor = true;
+	else
+		onFloor = false;
+
+	pmove->gravity = 0;
+	pmove->PM_TraceModel(pLadder, pmove->origin, ladderCenter, &trace);
+	if (trace.fraction != 1.0)
+	{
+		float forward = 0, right = 0;
+		vec3_t vpn, v_right;
+
+		AngleVectors(pmove->angles, vpn, v_right, NULL);
+		if (pmove->cmd.buttons & IN_BACK)
+			forward -= MAX_CLIMB_SPEED;
+		if (pmove->cmd.buttons & IN_FORWARD)
+			forward += MAX_CLIMB_SPEED;
+		if (pmove->cmd.buttons & IN_MOVELEFT)
+			right -= MAX_CLIMB_SPEED;
+		if (pmove->cmd.buttons & IN_MOVERIGHT)
+			right += MAX_CLIMB_SPEED;
+
+		if (pmove->cmd.buttons & IN_JUMP)
+		{
+			pmove->movetype = MOVETYPE_WALK;
+			VectorScale(trace.plane.normal, 270, pmove->velocity);
+		}
+		else
+		{
+			if (forward != 0 || right != 0)
+			{
+				vec3_t velocity, perp, cross, lateral, tmp;
+				float normal;
+
+				//ALERT(at_console, "pev %.2f %.2f %.2f - ",
+				//	pev->velocity.x, pev->velocity.y, pev->velocity.z);
+				// Calculate player's intended velocity
+				//Vector velocity = (forward * gpGlobals->v_forward) + (right * gpGlobals->v_right);
+				VectorScale(vpn, forward, velocity);
+				VectorMA(velocity, right, v_right, velocity);
+
+
+				// Perpendicular in the ladder plane
+				//					Vector perp = CrossProduct( Vector(0,0,1), trace.vecPlaneNormal );
+				//					perp = perp.Normalize();
+				VectorClear(tmp);
+				tmp[2] = 1;
+				CrossProduct(tmp, trace.plane.normal, perp);
+				VectorNormalize(perp);
+
+
+				// decompose velocity into ladder plane
+				normal = DotProduct(velocity, trace.plane.normal);
+				// This is the velocity into the face of the ladder
+				VectorScale(trace.plane.normal, normal, cross);
+
+
+				// This is the player's additional velocity
+				VectorSubtract(velocity, cross, lateral);
+
+				// This turns the velocity into the face of the ladder into velocity that
+				// is roughly vertically perpendicular to the face of the ladder.
+				// NOTE: It IS possible to face up and move down or face down and move up
+				// because the velocity is a sum of the directional velocity and the converted
+				// velocity through the face of the ladder -- by design.
+				CrossProduct(trace.plane.normal, perp, tmp);
+				VectorMA(lateral, -normal, tmp, pmove->velocity);
+				if (onFloor && normal > 0)	// On ground moving away from the ladder
+				{
+					VectorMA(pmove->velocity, MAX_CLIMB_SPEED, trace.plane.normal, pmove->velocity);
+				}
+				//pev->velocity = lateral - (CrossProduct( trace.vecPlaneNormal, perp ) * normal);
+			}
+			else
+			{
+				VectorClear(pmove->velocity);
+			}
+		}
+	}
 }
 
 physent_t *PM_Ladder( void )
 {
-	// We deal with ladders differently in VR
+	int			i;
+	physent_t	*pe;
+	hull_t		*hull;
+	int			num;
+	vec3_t		test;
+
+	for (i = 0; i < pmove->nummoveent; i++)
+	{
+		pe = &pmove->moveents[i];
+
+		if (pe->model && (modtype_t)pmove->PM_GetModelType(pe->model) == mod_brush && pe->skin == CONTENTS_LADDER)
+		{
+
+			hull = (hull_t *)pmove->PM_HullForBsp(pe, test);
+			num = hull->firstclipnode;
+
+			// Offset the test point appropriately for this hull.
+			VectorSubtract(pmove->origin, test, test);
+
+			// Test the player's hull for intersection with this model
+			if (pmove->PM_HullPointContents(hull, num, test) == CONTENTS_EMPTY)
+				continue;
+
+			return pe;
+		}
+	}
+
 	return NULL;
 }
 
@@ -2153,7 +2278,141 @@ PM_Jump
 */
 void PM_Jump (void)
 {
-	// No jumping in VR
+	int i;
+	qboolean tfc = false;
+
+	qboolean cansuperjump = false;
+
+	if (pmove->dead)
+	{
+		pmove->oldbuttons |= IN_JUMP;	// don't jump again until released
+		return;
+	}
+
+	tfc = atoi(pmove->PM_Info_ValueForKey(pmove->physinfo, "tfc")) == 1 ? true : false;
+
+	// Spy that's feigning death cannot jump
+	if (tfc &&
+		(pmove->deadflag == (DEAD_DISCARDBODY + 1)))
+	{
+		return;
+	}
+
+	// See if we are waterjumping.  If so, decrement count and return.
+	if (pmove->waterjumptime)
+	{
+		pmove->waterjumptime -= pmove->cmd.msec;
+		if (pmove->waterjumptime < 0)
+		{
+			pmove->waterjumptime = 0;
+		}
+		return;
+	}
+
+	// If we are in the water most of the way...
+	if (pmove->waterlevel >= 2)
+	{	// swimming, not jumping
+		pmove->onground = -1;
+
+		if (pmove->watertype == CONTENTS_WATER)    // We move up a certain amount
+			pmove->velocity[2] = 100;
+		else if (pmove->watertype == CONTENTS_SLIME)
+			pmove->velocity[2] = 80;
+		else  // LAVA
+			pmove->velocity[2] = 50;
+
+		// play swiming sound
+		if (pmove->flSwimTime <= 0)
+		{
+			// Don't play sound again for 1 second
+			pmove->flSwimTime = 1000;
+			switch (pmove->RandomLong(0, 3))
+			{
+			case 0:
+				pmove->PM_PlaySound(CHAN_BODY, "player/pl_wade1.wav", 1, ATTN_NORM, 0, PITCH_NORM);
+				break;
+			case 1:
+				pmove->PM_PlaySound(CHAN_BODY, "player/pl_wade2.wav", 1, ATTN_NORM, 0, PITCH_NORM);
+				break;
+			case 2:
+				pmove->PM_PlaySound(CHAN_BODY, "player/pl_wade3.wav", 1, ATTN_NORM, 0, PITCH_NORM);
+				break;
+			case 3:
+				pmove->PM_PlaySound(CHAN_BODY, "player/pl_wade4.wav", 1, ATTN_NORM, 0, PITCH_NORM);
+				break;
+			}
+		}
+
+		return;
+	}
+
+	// No more effect
+	if (pmove->onground == -1)
+	{
+		// Flag that we jumped.
+		// HACK HACK HACK
+		// Remove this when the game .dll no longer does physics code!!!!
+		pmove->oldbuttons |= IN_JUMP;	// don't jump again until released
+		return;		// in air, so no effect
+	}
+
+	if (pmove->oldbuttons & IN_JUMP)
+		return;		// don't pogo stick
+
+					// In the air now.
+	pmove->onground = -1;
+
+	PM_PreventMegaBunnyJumping();
+
+	if (tfc)
+	{
+		pmove->PM_PlaySound(CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM);
+	}
+	else
+	{
+		PM_PlayStepSound(PM_MapTextureTypeStepType(pmove->chtexturetype), 1.0);
+	}
+
+	// See if user can super long jump?
+	//cansuperjump = atoi(pmove->PM_Info_ValueForKey(pmove->physinfo, "slj")) == 1 ? true : false;
+
+	// Acclerate upward
+	// If we are ducking...
+	/*
+	if ((pmove->bInDuck) || (pmove->flags & FL_DUCKING))
+	{
+		// Adjust for super long jump module
+		// UNDONE -- note this should be based on forward angles, not current velocity.
+		if (cansuperjump &&
+			(pmove->cmd.buttons & IN_DUCK) &&
+			(pmove->flDuckTime > 0) &&
+			Length(pmove->velocity) > 50)
+		{
+			pmove->punchangle[0] = -5;
+
+			for (i = 0; i < 2; i++)
+			{
+				pmove->velocity[i] = pmove->forward[i] * PLAYER_LONGJUMP_SPEED * 1.6;
+			}
+
+			pmove->velocity[2] = sqrt(2 * 800 * 56.0);
+		}
+		else
+		{
+			pmove->velocity[2] = sqrt(2 * 800 * 45.0);
+		}
+	}
+	else*/
+	for (i = 0; i < 2; i++)
+	{
+		pmove->velocity[2] = sqrt(2 * 800 * 45.0);
+	}
+	
+	// Decay it for simulation
+	PM_FixupGravityVelocity();
+
+	// Flag that we jumped.
+	pmove->oldbuttons |= IN_JUMP;	// don't jump again until released
 }
 
 /*
@@ -2217,7 +2476,7 @@ void PM_CheckWaterJump (void)
 		{
 			pmove->waterjumptime = 2000;
 			pmove->velocity[2] = 225;
-			//pmove->oldbuttons |= IN_JUMP;
+			pmove->oldbuttons |= IN_JUMP;
 			pmove->flags |= FL_WATERJUMP;
 		}
 	}
@@ -2570,6 +2829,21 @@ void PM_PlayerMove ( qboolean server )
 	
 		PM_CheckWater();
 
+		// Was jump button pressed?
+		// If so, set velocity to 270 away from ladder.  This is currently wrong.
+		// Also, set MOVE_TYPE to walk, too.
+		if (pmove->cmd.buttons & IN_JUMP)
+		{
+			if (!pLadder)
+			{
+				PM_Jump();
+			}
+		}
+		else
+		{
+			pmove->oldbuttons &= ~IN_JUMP;
+		}
+
 		// Perform the move accounting for any base velocity.
 		VectorAdd (pmove->velocity, pmove->basevelocity, pmove->velocity);
 		PM_FlyMove ();
@@ -2620,6 +2894,17 @@ void PM_PlayerMove ( qboolean server )
 
 		// Not underwater
 		{
+
+			// Was jump button pressed?
+			if (pmove->cmd.buttons & IN_JUMP)
+			{
+				PM_Jump();
+			}
+			else
+			{
+				pmove->oldbuttons &= ~IN_JUMP;
+			}
+
 			// Fricion is handled before we add in any base velocity. That way, if we are on a conveyor, 
 			//  we don't slow when standing still, relative to the conveyor.
 			if ( pmove->onground != -1 )

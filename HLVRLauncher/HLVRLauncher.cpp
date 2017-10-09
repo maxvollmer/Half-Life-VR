@@ -7,7 +7,10 @@
 #include <Aclapi.h>
 #include <string>
 
-#pragma warning( disable : 4996 ) 
+
+
+#include <chrono>
+#include <thread>
 
 void RunCommandAndWait(std::wstring command, const wchar_t* directory = NULL)
 {
@@ -49,22 +52,35 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	std::wstring icaclsDisableDeletionOnFileCommandLine = TEXT("icacls ") + hlDirectory + TEXT("\\opengl32.dll /deny Everyone:(DE,DC)");
 	std::wstring icaclsReenableDeletionOnFolderCommandLine = TEXT("icacls ") + hlDirectory + TEXT(" /remove:d Everyone");
 	std::wstring icaclsReenableDeletionOnFileCommandLine = TEXT("icacls ") + hlDirectory + TEXT("\\opengl32.dll /remove:d Everyone");
+	
+	std::wstring attribDisableOnFileCommandLine = TEXT("attrib -R ") + hlDirectory + TEXT("\\opengl32.dll");
+	std::wstring attribRenableOnFileCommandLine = TEXT("attrib +R ") + hlDirectory + TEXT("\\opengl32.dll");
+
 	std::wstring hlExeCommandLine = hlDirectory + TEXT("\\hl.exe -game vr -dev -env -console -insecure -nomouse -nojoy +sv_lan 1");
 
+	RunCommandAndWait(attribRenableOnFileCommandLine);
 	RunCommandAndWait(icaclsSetInheritanceCommandLine);
-
 	RunCommandAndWait(icaclsReenableDeletionOnFolderCommandLine);
 	RunCommandAndWait(icaclsReenableDeletionOnFileCommandLine);
-	DeleteFile((hlDirectory + TEXT("\\opengl32.dll")).c_str());
 
+
+	RunCommandAndWait(attribDisableOnFileCommandLine);	
+
+	DeleteFile((hlDirectory + TEXT("\\opengl32.dll")).c_str());
 	CopyFile((vrDirectory + TEXT("\\opengl32.dll")).c_str(), (hlDirectory + TEXT("\\opengl32.dll")).c_str(), FALSE);
+	RunCommandAndWait(attribRenableOnFileCommandLine);
+
 	RunCommandAndWait(icaclsDisableDeletionOnFolderCommandLine);
 	RunCommandAndWait(icaclsDisableDeletionOnFileCommandLine);
-
 	RunCommandAndWait(hlExeCommandLine, hlDirectory.c_str());
-
+	
 	RunCommandAndWait(icaclsReenableDeletionOnFolderCommandLine);
 	RunCommandAndWait(icaclsReenableDeletionOnFileCommandLine);
+
+	
+
+	RunCommandAndWait(attribDisableOnFileCommandLine);
+	
 	DeleteFile((hlDirectory + TEXT("\\opengl32.dll")).c_str());
 
     return 0;

@@ -141,6 +141,11 @@ void VRRenderer::GetViewAngles(float * angles)
 	vrHelper->GetViewAngles(angles);
 }
 
+void VRRenderer::GetWalkAngles(float * angles)
+{
+	vrHelper->GetWalkAngles(angles);
+}
+
 // This method just draws the backfaces of the entire map in black, so the player can't peak "through" walls with their VR headset
 void VRRenderer::RenderWorldBackfaces()
 {

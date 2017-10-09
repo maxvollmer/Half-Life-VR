@@ -545,6 +545,7 @@ void CStudioModelRenderer::StudioSetUpTransform (int trivial_accept)
 	(*m_protationmatrix)[0][3] = modelpos[0];
 	(*m_protationmatrix)[1][3] = modelpos[1];
 	(*m_protationmatrix)[2][3] = modelpos[2];
+
 }
 
 
@@ -905,17 +906,18 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 	}
 
 	// Added studio model scaling - Max Vollmer, 2017-08-26
-	if (m_pCurrentEntity->curstate.scale > 0)
+/*	if (m_pCurrentEntity->curstate.scale > 0)
 	{
-		for (int j = 0; j < 3; j++)
+		for (int j = 0; j <= 3; j++)
 		{
-			for (int k = 0; k < 3; k++)
+			for (int k = 0; k <= 3; k++)
 			{
 				(*m_protationmatrix)[j][k] *= m_pCurrentEntity->curstate.scale;
 			}
 		}
 	}
-
+*/
+	
 	for (i = 0; i < m_pStudioHeader->numbones; i++) 
 	{
 		QuaternionMatrix( q[i], bonematrix );

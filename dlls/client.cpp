@@ -441,7 +441,7 @@ void ClientCommand( edict_t *pEntity )
 	else if (FStrEq(pcmd, "updatevr"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
-		if (size == 21)
+		if (size == 22)
 		{
 			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
 			pPlayer->UpdateVRRelatedPositions(
@@ -451,7 +451,7 @@ void ClientCommand( edict_t *pEntity )
 				Vector(atof(CMD_ARGV(10)), atof(CMD_ARGV(11)), atof(CMD_ARGV(12))),
 				Vector(atof(CMD_ARGV(13)), atof(CMD_ARGV(14)), atof(CMD_ARGV(15))),
 				Vector(atof(CMD_ARGV(16)), atof(CMD_ARGV(17)), atof(CMD_ARGV(18))),
-				atoi(CMD_ARGV(19)) != 0, atoi(CMD_ARGV(20)) != 0
+				atoi(CMD_ARGV(19)) != 0, atoi(CMD_ARGV(20)) != 0, atoi(CMD_ARGV(21)) != 0
 			);
 		}
 		else
@@ -462,9 +462,13 @@ void ClientCommand( edict_t *pEntity )
 	else if (FStrEq(pcmd, "vrtele"))
 	{
 		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
-		if (atoi(CMD_ARGV(1)))
+		if (FStrEq(CMD_ARGV(1), "1"))
 		{
 			pPlayer->StartVRTele();
+		}
+		else if (FStrEq(CMD_ARGV(1), "2"))
+		{
+			pPlayer->CancelVRTele();
 		}
 		else
 		{

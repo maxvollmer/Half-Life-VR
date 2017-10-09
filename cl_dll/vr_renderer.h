@@ -21,6 +21,8 @@ public:
 
 	void GetViewAngles(float * angles);
 
+	void GetWalkAngles(float * angles);
+
 private:
 
 	void RenderWorldBackfaces();

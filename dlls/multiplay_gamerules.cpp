@@ -542,7 +542,7 @@ void CHalfLifeMultiplay :: PlayerThink( CBasePlayer *pPlayer )
 	if ( g_fGameOver )
 	{
 		// check for button presses
-		if ( pPlayer->m_afButtonPressed & ( IN_ATTACK | IN_ATTACK2 | IN_USE ) )
+		if ( pPlayer->m_afButtonPressed & ( IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP) )
 			m_iEndIntermissionButtonHit = TRUE;
 
 		// clear attack/use commands from player
