@@ -9,17 +9,17 @@ vr_weapontilt			angle	Angle of offset for the weapon (-30 has been set to defaul
 Configure Cvars in \Half-Life\vr\config.cfg
 
 Controls!
-Left Controller:					                                  	Right Controller:
-Top Menu						                                        	Top Menu
-	    -quicksave			                                         	   -n/a
-Touchpad							                                        TouchPad
-	    -MOVEMENT					                                           -PREVIOUS/NEXT WEAPON(left and right)
-      -Teleport(only active when smooth locomotion disabled)	   	 -Teleport(up) only active whith smooth locomotion
-                                                                   -RELOAD(down) 
-Trigger								                                        Trigger
-	    -Use						                                             -FIRE
-Grip								                                          Grip
-	    -Flashlight							                                     -ALT-FIRE
+Left Controller:						Right Controller:
+Top Menu							Top Menu
+	-quicksave							-n/a
+Touchpad							TouchPad
+	-MOVEMENT							-PREVIOUS/NEXT WEAPON(left and right)
+	-Teleport(only active when smooth locomotion disabled)		-Teleport(up) only active whith smooth locomotion
+									-RELOAD(down)
+Trigger								Trigger
+	-Use								-FIRE
+Grip								Grip
+	-Flashlight							-ALT-FIRE
 
 1. Extract the archived files (except source folder unless you are compiling) into the root directory of Half-life.
 
