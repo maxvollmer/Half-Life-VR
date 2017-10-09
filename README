@@ -50,7 +50,7 @@ The following changes have been made to the source:
 -touchpad deadzone cvar added. (thanks to Mr.SoAndSo)
 -disabled the 9mm pistol alternate fire because it crashes the game.
 -quicksave added
+
 HLVR was created by Max Vollmer and can be found at: https://github.com/maxvollmer/Half-Life-VR/
-The modified Half-Life VR source has been included in this archive under the source folder.
 
 Have fun! (Feel free to do whatever with the code!)
