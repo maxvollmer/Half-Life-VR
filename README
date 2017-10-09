@@ -1,3 +1,56 @@
-This is source code for a VR mod for Half-Life. You may use or reuse this code with giving credit.
+CVARS!
+vr_control_alwaysforward	0,1 	Position of the touchpad/joystic is ignored and is always interpreted as forwards
+vr_control_deadzone		0->1	Percentage as a decimal of deadzone on the touchpad/joystick
+vr_control_hand			0,1,2	Head/Left/Right hand that locomotion is relative to (Think Onward)
+vr_control_teleport		0,1	Use teleport instead of smooth locomotion. Still a beam and not an arc.
+vr_roomcrouch			0,1	Use +-duck, or physical roomscale crouching? (+duck/-duck need to be manually bound)
+vr_weapontilt			angle	Angle of offset for the weapon (-30 has been set to default)
 
-No warranties whatsoever.
+Configure Cvars in \Half-Life\vr\config.cfg
+
+Controls!
+Left Controller:					                                  	Right Controller:
+Top Menu						                                        	Top Menu
+	    -quicksave			                                         	   -n/a
+Touchpad							                                        TouchPad
+	    -MOVEMENT					                                           -PREVIOUS/NEXT WEAPON(left and right)
+      -Teleport(only active when smooth locomotion disabled)	   	 -Teleport(up) only active whith smooth locomotion
+                                                                   -RELOAD(down) 
+Trigger								                                        Trigger
+	    -Use						                                             -FIRE
+Grip								                                          Grip
+	    -Flashlight							                                     -ALT-FIRE
+
+1. Extract the archived files (except source folder unless you are compiling) into the root directory of Half-life.
+
+2. You will need to set opengl32.dll to read-only to disallow file deletion.
+(The latest version of half-life prevents a modified opengl32.dll and will actively remove opengl32.dll if it is not changed to read-only.)
+
+3. Use the Half-Life VR shortcut and accept the steam dialog prompt to launch the vr mod.
+	3a. You can also launch by copying "-game vr -dev -env -console -insecure -nomouse -nojoy +sv_lan 1" to the launch parameters in the steam half-life properties panel.
+		
+If you try to play Half-life multiplayer with opengl32.dll in the root directory you CAN be VAC banned.
+
+The following changes have been made to the source:
+-commented out the vac warning.
+-teleport has been added to the smooth locomotion option.
+-changed weapon model locations to be more aligned with vive controller.
+-removed debug controller lasers.
+-commented out dynamic scaling code on npcs because it was causing weird alignment issues and other such wackiness.
+-tweaked scale of world.
+-restored jumping.
+-restored ladder climbing.
+-restored super jumping, but forward speed of 175 is too slow to activate.
+-forward, side, and back speed has been reduced from 400 to 175.
+-flashlight command added to left grip.
+-configurable onward style movement cvar added. (thanks to Mr.SoAndSo)
+-roomcrouch or bindable +-duck cvar added. (thanks to Mr.SoAndSo)
+-configurable weapon tilt cvar added. (thanks to Mr.SoAndSo)
+-controller always forward option cvar added.(thanks to Mr.SoAndSo)
+-touchpad deadzone cvar added. (thanks to Mr.SoAndSo)
+-disabled the 9mm pistol alternate fire because it crashes the game.
+-quicksave added
+HLVR was created by Max Vollmer and can be found at: https://github.com/maxvollmer/Half-Life-VR/
+The modified Half-Life VR source has been included in this archive under the source folder.
+
+Have fun! (Feel free to do whatever with the code!)
