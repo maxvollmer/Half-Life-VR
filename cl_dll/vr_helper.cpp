@@ -18,7 +18,7 @@ extern engine_studio_api_t IEngineStudio;
 
 const Vector3 HL_TO_VR(2.3f / 10.f, 2.2f / 10.f, 2.3f / 10.f);
 const Vector3 VR_TO_HL(1.f / HL_TO_VR.x, 1.f / HL_TO_VR.y, 1.f / HL_TO_VR.z);
-const float FLOOR_OFFSET = 30;
+const float FLOOR_OFFSET = 10;
 
 cvar_t *vr_weapontilt;
 cvar_t *vr_roomcrouch;
