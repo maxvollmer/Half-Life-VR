@@ -184,7 +184,8 @@ void CCrowbar::CheckSmack(float speed)
 {
 	UTIL_MakeVectors (m_pPlayer->GetWeaponViewAngles());
 	Vector vecSrc	= m_pPlayer->GetGunPosition();
-	Vector vecEnd	= vecSrc + gpGlobals->v_forward * 32;
+	Vector vecEnd	= vecSrc + gpGlobals-> v_forward * 32;
+	
 
 	TraceResult tr;
 	UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr);

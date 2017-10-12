@@ -18,7 +18,7 @@ extern engine_studio_api_t IEngineStudio;
 
 const Vector3 HL_TO_VR(2.3f / 10.f, 2.2f / 10.f, 2.3f / 10.f);
 const Vector3 VR_TO_HL(1.f / HL_TO_VR.x, 1.f / HL_TO_VR.y, 1.f / HL_TO_VR.z);
-const float FLOOR_OFFSET = 10;
+const float FLOOR_OFFSET = 30;
 
 cvar_t *vr_weapontilt;
 cvar_t *vr_roomcrouch;
@@ -202,14 +202,14 @@ Matrix4 GetModelViewMatrixFromAbsoluteTrackingMatrix(Matrix4 &absoluteTrackingMa
 	switchYAndZTransitionMatrix[9] = 1;
 	switchYAndZTransitionMatrix[10] = 0;
 
-	Matrix4 modelViewMatrix = absoluteTrackingMatrix * hlToVRScaleMatrix * switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
-	modelViewMatrix.scale(11.1);
+	Matrix4 modelViewMatrix = absoluteTrackingMatrix * hlToVRScaleMatrix *switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
+	modelViewMatrix.scale(13);
 	return modelViewMatrix;
 }
 
 Vector GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & absoluteTrackingMatrix)
 {
-	Vector4 originInVRSpace = absoluteTrackingMatrix * Vector4(0, 0, 0, 1);
+	Vector4 originInVRSpace = absoluteTrackingMatrix * Vector4(0, 0, .10, 1);
 	return Vector(originInVRSpace.x * VR_TO_HL.x * 10, -originInVRSpace.z * VR_TO_HL.z * 10, originInVRSpace.y * VR_TO_HL.y * 10);
 }
 
@@ -277,7 +277,7 @@ bool VRHelper::UpdatePositions(struct ref_params_s* pparams)
 			&& positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].eTrackingResult == vr::TrackingResult_Running_OK)
 		{
 			//Matrix4 m_mat4SeatedPose = ConvertSteamVRMatrixToMatrix4(vrSystem->GetSeatedZeroPoseToStandingAbsoluteTrackingPose()).invert();
-			//Matrix4 m_mat4StandingPose = ConvertSteamVRMatrixToMatrix4(vrSystem->GetRawZeroPoseToStandingAbsoluteTrackingPose()).invert();
+			Matrix4 m_mat4StandingPose = ConvertSteamVRMatrixToMatrix4(vrSystem->GetRawZeroPoseToStandingAbsoluteTrackingPose()).invert();
 
 			Matrix4 m_mat4HMDPose = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking).invert();
 
@@ -386,7 +386,7 @@ void VRHelper::UpdateGunPosition(struct ref_params_s* pparams)
 		{
 			Matrix4 controllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking);
 
-			Vector4 originInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(-.135, .23, .19, 1);
+			Vector4 originInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(-.135, .23, .10, 1);
 			Vector originInRelativeHLSpace(originInVRSpace.x * VR_TO_HL.x * 10, -originInVRSpace.z * VR_TO_HL.z * 10, originInVRSpace.y * VR_TO_HL.y * 10);
 
 			cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
@@ -472,7 +472,7 @@ void VRHelper::SendPositionUpdateToServer()
 	gEngfuncs.pfnClientCmd(cmd);
 }
 
-/*
+
 void RenderLine(Vector v1, Vector v2, Vector color)
 {
 	glColor4f(color.x, color.y, color.z, 1.0f);
@@ -481,34 +481,34 @@ void RenderLine(Vector v1, Vector v2, Vector color)
 	glVertex3f(v2.x, v2.y, v2.z);
 	glEnd();
 }
-*/
+
 
 void VRHelper::TestRenderControllerPosition(bool leftOrRight)
 {
- 	vr::TrackedDeviceIndex_t controllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(leftOrRight ? vr::ETrackedControllerRole::TrackedControllerRole_LeftHand : vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
+ 	vr::TrackedDeviceIndex_t controllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(leftOrRight ? vr::ETrackedControllerRole::TrackedControllerRole_LeftHand : vr::ETrackedControllerRole::TrackedControllerRole_LeftHand);
 
 	if (controllerIndex > 0 && controllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
 	{
 		Matrix4 controllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking);
 
 		Vector originInHLSpace = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(controllerAbsoluteTrackingMatrix);
-
+		
 		Vector4 forwardInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(0, 0, -1, 0);
-		Vector4 rightInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(1, 0, 0, 0);
+		Vector4 rightInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(-1, 0, 0, 0);
 		Vector4 upInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(0, 1, 0, 0);
 
-		Vector forward(forwardInVRSpace.x * VR_TO_HL.x * 10, -forwardInVRSpace.z * VR_TO_HL.z * 10, forwardInVRSpace.y * VR_TO_HL.y * 10);
-		Vector right(rightInVRSpace.x * VR_TO_HL.x * 10, -rightInVRSpace.z * VR_TO_HL.z * 10, rightInVRSpace.y * VR_TO_HL.y * 10);
-		Vector up(upInVRSpace.x * VR_TO_HL.x * 10, -upInVRSpace.z * VR_TO_HL.z * 10, upInVRSpace.y * VR_TO_HL.y * 10);
-
+		Vector forward(forwardInVRSpace.x * VR_TO_HL.x * 3, -forwardInVRSpace.z * VR_TO_HL.z * 3, forwardInVRSpace.y * VR_TO_HL.y * 3);
+		Vector right(rightInVRSpace.x * VR_TO_HL.x * 3, -rightInVRSpace.z * VR_TO_HL.z * 3, rightInVRSpace.y * VR_TO_HL.y * 3);
+		Vector up(upInVRSpace.x * VR_TO_HL.x * 3, -upInVRSpace.z * VR_TO_HL.z * 3, upInVRSpace.y * VR_TO_HL.y * 3);
+/*
 		if (leftOrRight)
 		{
 			right = -right; // left
 		}
-	
-		//RenderLine(originInHLSpace, originInHLSpace + forward, Vector(1, 0, 0));
-		//RenderLine(originInHLSpace, originInHLSpace + right, Vector(0, 1, 0));
-		//RenderLine(originInHLSpace, originInHLSpace + up, Vector(0, 0, 1));
+*/	
+		RenderLine(originInHLSpace, originInHLSpace + forward, Vector(1, 0, 0));
+		RenderLine(originInHLSpace, originInHLSpace + right, Vector(0, 1, 0));
+		RenderLine(originInHLSpace, originInHLSpace + up, Vector(0, 0, 1));
 	}
 }
 

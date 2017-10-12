@@ -905,8 +905,8 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 		}
 	}
 
-	// Added studio model scaling - Max Vollmer, 2017-08-26
-/*	if (m_pCurrentEntity->curstate.scale > 0)
+/*	// Added studio model scaling - Max Vollmer, 2017-08-26
+	if (m_pCurrentEntity->curstate.scale > 0)
 	{
 		for (int j = 0; j <= 3; j++)
 		{

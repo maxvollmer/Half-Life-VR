@@ -66,6 +66,10 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 	{
 		switch (button)
 		{
+		case vr::EVRButtonId::k_EButton_ApplicationMenu:
+		{
+			downOrUp ? ClientCmd("+duck") : ClientCmd("-duck");
+		}
 		case vr::EVRButtonId::k_EButton_Grip:
 		{
 			downOrUp ? ClientCmd("+attack2") : ClientCmd("-attack2");
