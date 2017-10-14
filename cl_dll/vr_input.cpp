@@ -36,7 +36,6 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 		break;
 		case vr::EVRButtonId::k_EButton_SteamVR_Touchpad:
 		{
-
 			if (vr_control_teleport->value == 1.f)
 			{
 				if (downOrUp && isTeleActive) {
@@ -45,7 +44,9 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 				}
 			}
 			else
-				downOrUp ? ClientCmd("+jump") : ClientCmd("-jump");
+				downOrUp ? ClientCmd("cl_forwardspeed 400") : ClientCmd("cl_forwardspeed 175");
+				downOrUp ? ClientCmd("cl_backwardspeed 400") : ClientCmd("cl_backwardspeed 175");
+				downOrUp ? ClientCmd("cl_sidespeed 400") : ClientCmd("cl_sidespeed 175");
 		}
 		break;
 		case vr::EVRButtonId::k_EButton_Grip:
@@ -68,8 +69,9 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 		{
 		case vr::EVRButtonId::k_EButton_ApplicationMenu:
 		{
-			downOrUp ? ClientCmd("+duck") : ClientCmd("-duck");
+			downOrUp ? ClientCmd("+jump") : ClientCmd("-jump");
 		}
+		break;
 		case vr::EVRButtonId::k_EButton_Grip:
 		{
 			downOrUp ? ClientCmd("+attack2") : ClientCmd("-attack2");
@@ -98,16 +100,19 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 				gHUD.m_Ammo.Think();
 			}
 
-			if (touchPadAxis.y > 0.5f && downOrUp)
+			if (touchPadAxis.y < -0.5f && downOrUp)
 			{
 				ClientCmd("+reload");
+				ClientCmd("+duck"); //no idea where else to put this
+
 			}
 			else
 			{
 				ClientCmd("-reload");
+				ClientCmd("-duck"); //no idea where else to put this
 			}
 
-			if (touchPadAxis.y < -0.5f && downOrUp)
+			if (touchPadAxis.y > 0.5f && downOrUp)
 			{
 				ServerCmd("vrtele 1");
 			}
