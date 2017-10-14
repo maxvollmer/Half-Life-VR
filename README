@@ -10,7 +10,10 @@ vr_weapontilt			angle	Angle of offset for the weapon (-30 has been set to defaul
 
 Configure Cvars in \Half-Life\vr\config.cfg or enter them in the console while the game is running.
 
+
+_________
 Controls!
+_________
 Left Controller:						Right Controller:
 Top Menu							Top Menu
 	-quicksave							-n/a
