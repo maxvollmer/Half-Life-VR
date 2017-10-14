@@ -16,11 +16,11 @@ Controls!
 _________
 Left Controller:						Right Controller:
 Top Menu							Top Menu
-	-quicksave							-n/a
+	-quicksave							-Jump
 Touchpad							TouchPad
 	-MOVEMENT							-PREVIOUS/NEXT WEAPON(left and right)
-	-Teleport(only active when smooth locomotion CVAR isdisabled)	-Teleport(up) only active whith smooth locomotion
-									-RELOAD(down)
+	-Teleport(only active when smooth locomotion CVAR is disabled)	-Teleport(Down) only active with smooth locomotion
+										-RELOAD(up)
 Trigger								Trigger
 	-Use								-FIRE
 Grip								Grip
@@ -43,14 +43,13 @@ If you try to play Half-life multiplayer with opengl32.dll in the root directory
 The following changes have been made to the source:
 -commented out the vac warning.
 -teleport has been added to the smooth locomotion option.
--changed weapon model locations to be more aligned with vive controller.
--removed debug controller lasers.
+-removed right debug controller lasers.
 -commented out dynamic scaling code on npcs because it was causing weird alignment issues and other such wackiness.
 -tweaked scale of world.
--restored jumping.
+-jumping added to top right menu button
 -restored ladder climbing.
--restored super jumping, but forward speed of 175 is too slow to activate.
--forward, side, and back speed has been reduced from 400 to 175.
+-restored super jumping.
+-sprint added by pressing left touchpad
 -flashlight command added to left grip.
 -configurable onward style movement cvar added. (thanks to Mr.SoAndSo)
 -roomcrouch or bindable +-duck cvar added. (thanks to Mr.SoAndSo)
