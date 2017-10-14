@@ -102,14 +102,11 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 
 			if (touchPadAxis.y < -0.5f && downOrUp)
 			{
-				ClientCmd("+reload");
-				ClientCmd("+duck"); //no idea where else to put this
-
+				ClientCmd("+reload");				
 			}
 			else
 			{
-				ClientCmd("-reload");
-				ClientCmd("-duck"); //no idea where else to put this
+				ClientCmd("-reload");				
 			}
 
 			if (touchPadAxis.y > 0.5f && downOrUp)
