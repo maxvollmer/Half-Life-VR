@@ -1,12 +1,14 @@
-CVARS!
-vr_control_alwaysforward	0,1 	Position of the touchpad/joystic is ignored and is always interpreted as forwards
-vr_control_deadzone		0->1	Percentage as a decimal of deadzone on the touchpad/joystick
-vr_control_hand			0,1,2	Head/Left/Right hand that locomotion is relative to (Think Onward)
-vr_control_teleport		0,1	Use teleport instead of smooth locomotion. Still a beam and not an arc.
-vr_roomcrouch			0,1	Use +-duck, or physical roomscale crouching? (+duck/-duck need to be manually bound)
-vr_weapontilt			angle	Angle of offset for the weapon (-30 has been set to default)
+______________________
+CVARS! (Game settings)
+______________________
+vr_control_alwaysforward	0,1 	1 = Position of the touchpad/joystic is ignored and is always interpreted as forwards
+vr_control_deadzone		0->1	Percentage as a decimal of deadzone on the touchpad/joystick (0 = no deadzone)
+vr_control_hand			0,1,2	0 = Head/ 1 = Left/ 2 = Right hand that locomotion is relative to (Think Onward)
+vr_control_teleport		0,1	1 = Use teleport instead of smooth locomotion. (to do: make into an arc using valve sample code)
+vr_roomcrouch			0,1	1 = Use +-duck, 0 = physical roomscale crouching? (+duck/-duck is currently boud to menu button on right controller)
+vr_weapontilt			angle	Angle of offset for the weapon (-30 has been set to default, optimized for oculus)
 
-Configure Cvars in \Half-Life\vr\config.cfg
+Configure Cvars in \Half-Life\vr\config.cfg or enter them in the console while the game is running.
 
 Controls!
 Left Controller:						Right Controller:
@@ -14,13 +16,17 @@ Top Menu							Top Menu
 	-quicksave							-n/a
 Touchpad							TouchPad
 	-MOVEMENT							-PREVIOUS/NEXT WEAPON(left and right)
-	-Teleport(only active when smooth locomotion disabled)		-Teleport(up) only active whith smooth locomotion
+	-Teleport(only active when smooth locomotion CVAR isdisabled)	-Teleport(up) only active whith smooth locomotion
 									-RELOAD(down)
 Trigger								Trigger
 	-Use								-FIRE
 Grip								Grip
 	-Flashlight							-ALT-FIRE
 
+
+_______________
+How to install:
+_______________
 1. Extract the archived files (except source folder unless you are compiling) into the root directory of Half-life.
 
 2. You will need to set opengl32.dll to read-only to disallow file deletion.
@@ -53,4 +59,4 @@ The following changes have been made to the source:
 
 HLVR was created by Max Vollmer and can be found at: https://github.com/maxvollmer/Half-Life-VR/
 
-Have fun! (Feel free to do whatever with the code!)
+Have fun! (Feel free to do whatever with the code as long as you attribute Max Vollmer as the original creator!)
