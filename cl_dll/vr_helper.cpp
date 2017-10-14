@@ -386,7 +386,7 @@ void VRHelper::UpdateGunPosition(struct ref_params_s* pparams)
 		{
 			Matrix4 controllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking);
 
-			Vector4 originInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(-.135, .23, .10, 1);
+			Vector4 originInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(0, 0, 0, 1);
 			Vector originInRelativeHLSpace(originInVRSpace.x * VR_TO_HL.x * 10, -originInVRSpace.z * VR_TO_HL.z * 10, originInVRSpace.y * VR_TO_HL.y * 10);
 
 			cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
