@@ -3446,3 +3446,8 @@ BOOL CBaseMonster :: ShouldFadeOnDeath( void )
 
 	return FALSE;
 }
+
+bool CBaseMonster::HasClearSight(const Vector & pos)
+{
+	return UTIL_CheckClearSight(EyePosition(), pos, dont_ignore_monsters, dont_ignore_glass, edict());
+}

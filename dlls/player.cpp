@@ -35,6 +35,11 @@
 #include "gamerules.h"
 #include "game.h"
 #include "hltv.h"
+#include "func_break.h"
+#include "explode.h"
+#include "talkmonster.h"
+
+#include "VRPhysicsHelper.h"
 
 // #define DUCKFIX
 
@@ -838,7 +843,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	pev->modelindex = g_ulModelIndexPlayer;    // don't use eyes
 
 	pev->deadflag		= DEAD_DYING;
-	pev->movetype		= MOVETYPE_TOSS;
+	pev->movetype		= MOVETYPE_NONE;	// MOVETYPE_TOSS;
 	ClearBits( pev->flags, FL_ONGROUND );
 	if (pev->velocity.z < 10)
 		pev->velocity.z += RANDOM_FLOAT(0,300);
@@ -1090,8 +1095,10 @@ void CBasePlayer::WaterMove()
 {
 	int air;
 
+	/*
 	if (pev->movetype == MOVETYPE_NOCLIP)
 		return;
+	*/
 
 	if (pev->health < 0)
 		return;
@@ -1204,7 +1211,7 @@ void CBasePlayer::WaterMove()
 // TRUE if the player is attached to a ladder
 BOOL CBasePlayer::IsOnLadder( void )
 { 
-	return ( pev->movetype == MOVETYPE_FLY );
+	return FALSE;// (pev->movetype == MOVETYPE_FLY);
 }
 
 void CBasePlayer::PlayerDeathThink(void)
@@ -1659,7 +1666,7 @@ void CBasePlayer::PreThink(void)
 		return;         // intermission or finale
 
 	UTIL_MakeVectors(pev->v_angle);             // is this still used?
-	
+
 	ItemPreFrame( );
 	WaterMove();
 
@@ -1667,7 +1674,6 @@ void CBasePlayer::PreThink(void)
 		m_iHideHUD &= ~HIDEHUD_FLASHLIGHT;
 	else
 		m_iHideHUD |= HIDEHUD_FLASHLIGHT;
-
 
 	// JOHN: checks if new client data (for HUD and view control) needs to be sent to the client
 	UpdateClientData();
@@ -1681,6 +1687,11 @@ void CBasePlayer::PreThink(void)
 		PlayerDeathThink();
 		return;
 	}
+
+	// Update teleporter, flashlight and calculate interaction with world
+	UpdateVRTele();
+	UpdateVRFlashlight();
+	VRCheckAndPressButtons();
 
 	// So the correct flags get sent to client asap.
 	//
@@ -1759,6 +1770,7 @@ void CBasePlayer::PreThink(void)
 		pev->velocity = g_vecZero;
 	}
 }
+
 /* Time based Damage works as follows: 
 	1) There are several types of timebased damage:
 
@@ -2333,9 +2345,45 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 	//ALERT ( at_console, "%d/%d\n", iVolume, m_iTargetVolume );
 }
 
+Vector gVecTooLazyToCreateExtraMethodOrImproveLambdaSoIJustAddedThisHilariouslyNamedGlobalVectorToTemporarilyStoreThePlayersOriginForTheLambdaInVRHandleMovingWithSolidGroundEntities;
+void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
+{
+	CBaseEntity *pGroundEntity = nullptr;
+	if (!FNullEnt(pev->groundentity) && pev->groundentity != ENT(0))
+	{
+		pGroundEntity = CBaseEntity::Instance(pev->groundentity);
+	}
+	if (pGroundEntity == nullptr)
+	{
+		gVecTooLazyToCreateExtraMethodOrImproveLambdaSoIJustAddedThisHilariouslyNamedGlobalVectorToTemporarilyStoreThePlayersOriginForTheLambdaInVRHandleMovingWithSolidGroundEntities = pev->origin;
+		UTIL_FindEntityByFilter(&pGroundEntity, [](CBaseEntity *pEntity)->bool {
+			if (pEntity->pev->solid == SOLID_BSP)
+			{
+				return UTIL_PointInsideRotatedBBox(pEntity->pev->origin, pEntity->pev->mins, pEntity->pev->maxs, pEntity->pev->angles, gVecTooLazyToCreateExtraMethodOrImproveLambdaSoIJustAddedThisHilariouslyNamedGlobalVectorToTemporarilyStoreThePlayersOriginForTheLambdaInVRHandleMovingWithSolidGroundEntities);
+			}
+			return false;
+		});
+	}
+	if (pGroundEntity != nullptr)
+	{
+		ALERT(at_console, "YES GROUND ENTITY\n");
+		Vector groundVelocity = pGroundEntity->pev->velocity + gVRPhysicsHelper.AngularVelocityToLinearVelocity(pGroundEntity->pev->avelocity, pev->origin - pGroundEntity->pev->origin);
+		pev->origin = pev->origin + (groundVelocity * gpGlobals->frametime);
+	}
+	else
+	{
+		ALERT(at_console, "NO GROUND ENTITY\n");
+	}
+}
 
 void CBasePlayer::PostThink()
 {
+	// VR: We are MOVETYPE_NOCLIP, so the engine doesn't handle collisions with solid entities for various reasons (getting stuck, pushables not working nicely in VR etc.)
+	// This also means that trains and elevators just move through us. To avoid this, we do appropriate movement handling here.
+	// P.S. In pm_shared.c we do normal movement as if we were MOVETYPE_WALK
+	VRHandleMovingWithSolidGroundEntities();
+
+
 	if ( g_fGameOver )
 		goto pt_end;         // intermission or finale
 
@@ -2629,7 +2677,9 @@ void CBasePlayer::Spawn( void )
 	pev->armorvalue		= 0;
 	pev->takedamage		= DAMAGE_AIM;
 	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_WALK;
+	//pev->solid		= SOLID_NOT;
+	//pev->movetype		= MOVETYPE_WALK;
+	pev->movetype		= MOVETYPE_NOCLIP;
 	pev->max_health		= pev->health;
 	pev->flags		   &= FL_PROXY;	// keep proxy flag sey by engine
 	pev->flags		   |= FL_CLIENT;
@@ -2640,7 +2690,8 @@ void CBasePlayer::Spawn( void )
 	pev->dmg_take		= 0;
 	pev->dmg_save		= 0;
 	pev->friction		= 1.0;
-	pev->gravity		= 1.0;
+	pev->gravity		= 0.0;
+	pev->viewmodel		= MAKE_STRING("models/v_gordon_hand.mdl");
 	m_bitsHUDDamage		= -1;
 	m_bitsDamageType	= 0;
 	m_afPhysicsFlags	= 0;
@@ -2837,11 +2888,19 @@ int CBasePlayer::Restore( CRestore &restore )
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
 
+	// Make sure old predisaster savegames start up with hand model
+	if (m_pActiveItem == nullptr)
+	{
+		pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
+		pev->weaponmodel = iStringNull;
+	}
+
 	return status;
 }
 
 
 
+/*
 void CBasePlayer::SelectNextItem( int iItem )
 {
 	CBasePlayerItem *pItem;
@@ -2887,79 +2946,103 @@ void CBasePlayer::SelectNextItem( int iItem )
 		m_pActiveItem->UpdateItemInfo( );
 	}
 }
+*/
 
 void CBasePlayer::SelectItem(const char *pstr)
 {
-	if (!pstr)
-		return;
-
-	CBasePlayerItem *pItem = NULL;
-
-	for (int i = 0; i < MAX_ITEM_TYPES; i++)
+	if (pstr == nullptr)
 	{
-		if (m_rgpPlayerItems[i])
-		{
-			pItem = m_rgpPlayerItems[i];
-	
-			while (pItem)
-			{
-				if (FClassnameIs(pItem->pev, pstr))
-					break;
-				pItem = pItem->m_pNext;
-			}
-		}
-
-		if (pItem)
-			break;
+		return;
 	}
 
-	if (!pItem)
-		return;
+	CBasePlayerItem *pItem = nullptr;
 
-	
+	if (FStrEq("weapon_barehand", pstr))
+	{
+		pItem = nullptr;
+	}
+	else
+	{
+		for (int i = 0; i < MAX_ITEM_TYPES; i++)
+		{
+			if (m_rgpPlayerItems[i])
+			{
+				pItem = m_rgpPlayerItems[i];
+				while (pItem != nullptr)
+				{
+					if (FClassnameIs(pItem->pev, pstr))
+					{
+						break;
+					}
+					pItem = pItem->m_pNext;
+				}
+			}
+			if (pItem != nullptr)
+			{
+				break;
+			}
+		}
+	}
+
 	if (pItem == m_pActiveItem)
+	{
 		return;
+	}
 
-	ResetAutoaim( );
+	ResetAutoaim();
 
 	// FIX, this needs to queue them up and delay
-	if (m_pActiveItem)
-		m_pActiveItem->Holster( );
-	
+	if (m_pActiveItem != nullptr)
+	{
+		m_pActiveItem->Holster();
+	}
+
 	m_pLastItem = m_pActiveItem;
 	m_pActiveItem = pItem;
 
-	if (m_pActiveItem)
+	if (m_pActiveItem != nullptr)
 	{
 		m_pActiveItem->Deploy( );
 		m_pActiveItem->UpdateItemInfo( );
+	}
+	else
+	{
+		pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
+		pev->weaponmodel = iStringNull;
 	}
 }
 
 
 void CBasePlayer::SelectLastItem(void)
 {
-	if (!m_pLastItem)
+	if (m_pActiveItem != nullptr && !m_pActiveItem->CanHolster())
 	{
 		return;
 	}
 
-	if ( m_pActiveItem && !m_pActiveItem->CanHolster() )
-	{
-		return;
-	}
-
-	ResetAutoaim( );
+	ResetAutoaim();
 
 	// FIX, this needs to queue them up and delay
-	if (m_pActiveItem)
-		m_pActiveItem->Holster( );
-	
-	CBasePlayerItem *pTemp = m_pActiveItem;
-	m_pActiveItem = m_pLastItem;
-	m_pLastItem = pTemp;
-	m_pActiveItem->Deploy( );
-	m_pActiveItem->UpdateItemInfo( );
+	if (m_pActiveItem != nullptr)
+	{
+		m_pActiveItem->Holster();
+	}
+
+	if (m_pLastItem == nullptr)
+	{
+		m_pLastItem = m_pActiveItem;
+		m_pActiveItem = nullptr;
+		pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
+		pev->weaponmodel = iStringNull;
+	}
+	else
+	{
+		CBasePlayerItem *pTemp = m_pActiveItem;
+		m_pActiveItem = m_pLastItem;
+		m_pLastItem = pTemp;
+		m_pActiveItem->Deploy();
+		m_pActiveItem->UpdateItemInfo();
+	}
 }
 
 //==============================================
@@ -2980,9 +3063,11 @@ BOOL CBasePlayer::HasWeapons( void )
 	return FALSE;
 }
 
+/*
 void CBasePlayer::SelectPrevItem( int iItem )
 {
 }
+*/
 
 
 const char *CBasePlayer::TeamID( void )
@@ -3131,7 +3216,8 @@ CBaseEntity *FindEntityForward( CBaseEntity *pMe )
 
 BOOL CBasePlayer :: FlashlightIsOn( void )
 {
-	return FBitSet(pev->effects, EF_DIMLIGHT);
+	//return FBitSet(pev->effects, EF_DIMLIGHT);
+	return fFlashlightIsOn;
 }
 
 
@@ -3145,14 +3231,25 @@ void CBasePlayer :: FlashlightTurnOn( void )
 	if ( (pev->weapons & (1<<WEAPON_SUIT)) )
 	{
 		EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
-		SetBits(pev->effects, EF_DIMLIGHT);
+
+		//SetBits(pev->effects, EF_DIMLIGHT);
+		if (!hFlashLight)
+		{
+			hFlashLight = CBaseEntity::Create("info_target", pev->origin, Vector());
+			SET_MODEL(hFlashLight->edict(), "sprites/black.spr");
+			UTIL_SetOrigin(hFlashLight->pev, pev->origin);
+			UTIL_SetSize(hFlashLight->pev, Vector(-4, -4, -4), Vector(4, 4, 4));
+			hFlashLight->pev->effects = EF_NODRAW;
+			hFlashLight->pev->rendermode = kRenderTransAlpha;
+		}
+		fFlashlightIsOn = true;
+
 		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 		WRITE_BYTE(1);
 		WRITE_BYTE(m_iFlashBattery);
 		MESSAGE_END();
 
 		m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
-
 	}
 }
 
@@ -3160,14 +3257,27 @@ void CBasePlayer :: FlashlightTurnOn( void )
 void CBasePlayer :: FlashlightTurnOff( void )
 {
 	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
-    ClearBits(pev->effects, EF_DIMLIGHT);
+
+	//ClearBits(pev->effects, EF_DIMLIGHT);
+	if (hFlashLight)
+	{
+		hFlashLight->pev->effects = EF_NODRAW;
+		UTIL_Remove(hFlashLight);
+		hFlashLight = nullptr;
+	}
+	if (hFlashlightMonster)
+	{
+		ClearBits(hFlashlightMonster->pev->effects, EF_DIMLIGHT);
+		hFlashlightMonster = nullptr;
+	}
+	fFlashlightIsOn = false;
+
 	MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 	WRITE_BYTE(0);
 	WRITE_BYTE(m_iFlashBattery);
 	MESSAGE_END();
 
 	m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
-
 }
 
 /*
@@ -3246,7 +3356,6 @@ void CBasePlayer::ImpulseCommands( )
 			FlashlightTurnOn();
 		}
 		break;
-
 	case	201:// paint decal
 		
 		if ( gpGlobals->time < m_flNextDecalTime )
@@ -4461,20 +4570,28 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 #define VR_DUCK_STOP_HEIGHT 20
 #include "pm_defs.h"
 extern  "C"  playermove_t *pmove;
-void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Vector & leftControllerOffset, const Vector & leftControllerAngles, const Vector & weaponOffset, const Vector & weaponAngles, const Vector & weaponVelocity, bool isLeftControllerValid, bool isRightControllerValid)
+void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector & hmdOffset, const Vector & hmdAngles)
 {
+	// Filter out outdated updates
+	if (timestamp <= vr_hmdLastUpdateClienttime && vr_hmdLastUpdateServertime >= gpGlobals->time)
+	{
+		return;
+	}
+	vr_hmdLastUpdateClienttime = timestamp;
+	vr_hmdLastUpdateServertime = gpGlobals->time;
+
 	// Check height of headset and (un)set player in duck mode, depending on height
 	float flDuckHeightDelta = VEC_HULL_MIN.z - VEC_DUCK_HULL_MIN.z;
-	if (!(pev->flags & FL_DUCKING) && vr_hmdOffset.z < VR_DUCK_START_HEIGHT)
+	if (!(pev->flags & FL_DUCKING) && hmdOffset.z < VR_DUCK_START_HEIGHT)
 	{
-		ALERT(at_console, "START DUCKING!\n");
+		// ALERT(at_console, "START DUCKING!\n");
 		pev->flags |= FL_DUCKING;
 		UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 		pev->origin.z = pev->origin.z + flDuckHeightDelta;
 	}
-	else if ((pev->flags & FL_DUCKING) && vr_hmdOffset.z > VR_DUCK_STOP_HEIGHT)
+	else if ((pev->flags & FL_DUCKING) && hmdOffset.z > VR_DUCK_STOP_HEIGHT)
 	{
-		ALERT(at_console, "STOP DUCKING!\n");
+		// ALERT(at_console, "STOP DUCKING!\n");
 		pev->flags &= ~FL_DUCKING;
 		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
 		pev->origin.z = pev->origin.z - flDuckHeightDelta;
@@ -4482,23 +4599,30 @@ void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Ve
 
 	// First get origin where the client thinks it is:
 	Vector clientOrigin = GetClientOrigin();
-	Vector hmdOffset = vr_hmdOffset;
 
 	// Then get headset position:
 	Vector hmdPosition = clientOrigin + hmdOffset;
 
 	// Check if headset position is in wall
+	//bool hithead = UTIL_BBoxIntersectsBSPModel(hmdPosition, Vector(-8, -8, -8), Vector(8, 8, 8));
+	//ALERT(at_console, "hithead: %i\n", hithead);
+
+	const Vector hmdOffsetDelta = vr_lastHMDOffset - hmdOffset;
+	const Vector hmdPredictPosition{ hmdPosition + (hmdOffsetDelta.Normalize() * -8.0f) };
 	int hmdPositionContent = UTIL_PointContents(hmdPosition, true);
-	if (hmdPositionContent == CONTENTS_SOLID || hmdPositionContent == CONTENTS_SKY)
+	int hmdPredictPositionContent = UTIL_PointContents(hmdPredictPosition, true);
+
+	if (hmdPositionContent == CONTENTS_SOLID || hmdPositionContent == CONTENTS_SKY
+		|| hmdPredictPositionContent == CONTENTS_SOLID || hmdPredictPositionContent == CONTENTS_SKY
+		|| gVRPhysicsHelper.CheckIfLineIsBlocked(hmdPosition + hmdOffsetDelta, hmdPredictPosition))
 	{
 		//ALERT(at_console, "CONTENTS_SOLID\n");
 
 		// player put their head into a wall... we need to counteract
 		// take previous position (from the player's perspective, this will feel like pushing the level away when they run into a wall)
-		Vector delta = vr_lastHMDOffset - hmdOffset;
-		clientOrigin = clientOrigin + delta;
-		pev->origin = pev->origin + delta;
-		hmdPosition = hmdPosition + delta;
+		clientOrigin = clientOrigin + hmdOffsetDelta;
+		pev->origin = pev->origin + hmdOffsetDelta;
+		hmdPosition = hmdPosition + hmdOffsetDelta;
 	}
 	else
 	{
@@ -4557,23 +4681,608 @@ void CBasePlayer::UpdateVRRelatedPositions(const Vector & vr_hmdOffset, const Ve
 		if (pmove != nullptr) Vector(pev->maxs).CopyToArray(pmove->player_maxs[0]);
 	}
 	UTIL_SetSize(pev, pev->mins, pev->maxs);
+}
+void CBasePlayer::UpdateVRLeftControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity)
+{
+	// Filter out outdated updates
+	if (timestamp <= vr_leftControllerLastUpdateClienttime && vr_leftControllerLastUpdateServertime >= gpGlobals->time)
+	{
+		return;
+	}
 
-	vr_weaponOffset = weaponOffset;
-	vr_weaponAngles = weaponAngles;
-	vr_weaponVelocity = weaponVelocity;
+	// Store data
+	vr_isLeftControllerValid = isValid && UTIL_CheckClearSight(pev->origin + pev->view_ofs, GetClientOrigin() + vr_leftControllerOffset, ignore_monsters, dont_ignore_glass, edict());
+	vr_leftControllerOffset = offset;
+	vr_leftControllerAngles = angles;
+	vr_leftControllerVelocity = velocity;
+	vr_leftControllerLastUpdateServertime = gpGlobals->time;
+	vr_leftControllerLastUpdateClienttime = timestamp;
 
-	vr_isLeftControllerValid = isLeftControllerValid;
-	vr_isRightControllerValid = isRightControllerValid;
+	if (vr_isLeftControllerValid)
+	{
+		vr_teleporterBlocked = gVRPhysicsHelper.CheckIfLineIsBlocked(pev->origin + pev->view_ofs, GetClientOrigin() + vr_leftControllerOffset);
+	}
+	else
+	{
+		vr_teleporterBlocked = true;
+	}
+}
+void CBasePlayer::UpdateVRRightControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity)
+{
+	// Filter out outdated updates
+	if (timestamp <= vr_rightControllerLastUpdateClienttime && vr_rightControllerLastUpdateServertime >= gpGlobals->time)
+	{
+		return;
+	}
 
-	UpdateVRTele(GetClientOrigin() + leftControllerOffset, leftControllerAngles);
+	// Store data
+	vr_isRightControllerValid = isValid;
+	vr_rightControllerOffset = offset;
+	vr_rightControllerAngles = angles;
+	vr_rightControllerVelocity = velocity;
+	vr_rightControllerLastUpdateServertime = gpGlobals->time;
+	vr_rightControllerLastUpdateClienttime = timestamp;
+
+	if (!vr_isRightControllerValid || !UTIL_CheckClearSight(pev->origin + pev->view_ofs, GetClientOrigin() + vr_rightControllerOffset, ignore_monsters, dont_ignore_glass, edict()))
+	{
+		m_iHideHUD |= HIDEHUD_WEAPONBLOCKED;
+		vr_isRightControllerValid = false;
+	}
+	else
+	{
+		m_iHideHUD &= ~HIDEHUD_WEAPONBLOCKED;
+	}
+}
+void CBasePlayer::UpdateVRFlashlight()
+{
+	if (FlashlightIsOn())
+	{
+		if (hFlashlightMonster)
+		{
+			ClearBits(hFlashlightMonster->pev->effects, EF_DIMLIGHT);
+			hFlashlightMonster = nullptr;
+		}
+		if (hFlashLight)
+		{
+			if (vr_isLeftControllerValid)
+			{
+				Vector flashLightDir;
+				UTIL_MakeAimVectorsPrivate(vr_leftControllerAngles, flashLightDir, NULL, NULL);
+				TraceResult tr;
+				UTIL_TraceLine(GetClientOrigin() + vr_leftControllerOffset, flashLightDir * 8192., dont_ignore_monsters, edict(), &tr);
+				CBaseMonster *pFlashlightMonster = CBaseEntity::GetMonsterPointer(tr.pHit);
+				if (pFlashlightMonster != nullptr)
+				{
+					SetBits(pFlashlightMonster->pev->effects, EF_DIMLIGHT);
+					hFlashlightMonster = pFlashlightMonster;
+					hFlashLight->pev->effects = EF_NODRAW;
+				}
+				else
+				{
+					UTIL_SetOrigin(hFlashLight->pev, tr.vecEndPos - flashLightDir);
+					hFlashLight->pev->effects = EF_DIMLIGHT;
+				}
+			}
+			else
+			{
+				hFlashLight->pev->effects = EF_NODRAW;
+			}
+		}
+	}
+}
+
+#define SF_BUTTON_TOUCH_ONLY	256	// button only fires as a result of USE key.
+#define SF_DOOR_USE_ONLY		256	// door must be opened by player's use button.
+
+#define	bits_COND_CLIENT_PUSH (bits_COND_SPECIAL1)
+
+#define VR_MAX_ANGRY_GUNPOINT_DIST 256
+#define VR_INITIAL_ANGRY_GUNPOINT_TIME 2
+#define VR_MIN_ANGRY_GUNPOINT_TIME 3
+#define VR_MAX_ANGRY_GUNPOINT_TIME 7
+
+#define VR_SHOULDER_TOUCH_TIME 1.5f
+#define VR_STOP_SIGNAL_TIME 1
+
+#define VR_SHOULDER_TOUCH_MIN_Z 56
+#define VR_SHOULDER_TOUCH_MAX_Z 62
+#define VR_SHOULDER_TOUCH_MIN_Y 4
+#define VR_SHOULDER_TOUCH_MAX_Y 12
+
+#define VR_STOP_SIGNAL_MIN_Z 56
+#define VR_STOP_SIGNAL_MAX_Z 72
+#define VR_STOP_SIGNAL_MIN_X 8
+#define VR_STOP_SIGNAL_MAX_X 36
+#define VR_STOP_SIGNAL_MIN_Y -12
+#define VR_STOP_SIGNAL_MAX_Y 12
+
+bool CheckShoulderTouch(CBaseMonster *pMonster, const Vector & pos)
+{
+	Vector posInMonsterLocalSpace = pos - pMonster->pev->origin;
+	if (posInMonsterLocalSpace.z >= (VR_SHOULDER_TOUCH_MIN_Z*pMonster->pev->scale) && posInMonsterLocalSpace.z <= (VR_SHOULDER_TOUCH_MAX_Z*pMonster->pev->scale))
+	{
+		float angle = -pMonster->pev->angles.y * M_PI / 180.f;
+		//float localX = cos(angle)*posInMonsterLocalSpace.x - sin(angle)*posInMonsterLocalSpace.y;
+		float localY = sin(angle)*posInMonsterLocalSpace.x + cos(angle)*posInMonsterLocalSpace.y;
+		if (fabs(localY) >= (VR_SHOULDER_TOUCH_MIN_Y*pMonster->pev->scale) && fabs(localY) <= (VR_SHOULDER_TOUCH_MAX_Y*pMonster->pev->scale))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CheckStopSignal(CBaseMonster *pMonster, const Vector & pos, const Vector & angles)
+{
+	Vector posInMonsterLocalSpace = pos - pMonster->pev->origin;
+	if (posInMonsterLocalSpace.z >= (VR_STOP_SIGNAL_MIN_Z*pMonster->pev->scale) && posInMonsterLocalSpace.z <= (VR_STOP_SIGNAL_MAX_Z*pMonster->pev->scale))
+	{
+		float angle = -pMonster->pev->angles.y * M_PI / 180.f;
+		float localX = cos(angle)*posInMonsterLocalSpace.x - sin(angle)*posInMonsterLocalSpace.y;
+		float localY = sin(angle)*posInMonsterLocalSpace.x + cos(angle)*posInMonsterLocalSpace.y;
+		if (localX >= (VR_STOP_SIGNAL_MIN_X*pMonster->pev->scale) && localX <= (VR_STOP_SIGNAL_MAX_X*pMonster->pev->scale)
+			&& localY >= (VR_STOP_SIGNAL_MIN_Y*pMonster->pev->scale) && localY <= (VR_STOP_SIGNAL_MAX_Y*pMonster->pev->scale))
+		{
+			// Stop signal is given when hand is pointing up and back of hand is facing away from ally
+			Vector forward;
+			Vector up;
+			Vector monsterForward;
+			UTIL_MakeAimVectorsPrivate(angles, forward, up, nullptr);
+			UTIL_MakeAimVectorsPrivate(pMonster->pev->angles, monsterForward, nullptr, nullptr);
+			bool isHandFacingUp = DotProduct(forward, Vector(0, 0, 1)) > 0.9f;
+			bool isBackOfHandFacingAway = true;// DotProduct(up, monsterForward) > 0.9f;	// TODO: Buggy
+			return isHandFacingUp && isBackOfHandFacingAway;
+		}
+	}
+	return false;
+}
+
+void CBasePlayer::VRCheckAndPressButtons()
+{
+	const Vector leftControllerPosition = GetClientOrigin() + vr_leftControllerOffset;
+	const Vector rightControllerPosition = GetClientOrigin() + vr_rightControllerOffset;
+
+	CBaseEntity *pWorld = CBaseEntity::Instance(INDEXENT(0));
+	CBaseEntity *pEntity = pWorld;
+	CBaseMonster *pMonster = nullptr;
+	while (UTIL_FindAllEntities(&pEntity))
+	{
+		if (pEntity == this)
+		{
+			continue;
+		}
+
+		const bool leftTouches = vr_isLeftControllerValid &&
+				((pEntity == pWorld) && UTIL_PointContents(leftControllerPosition) == CONTENTS_SOLID)
+			||	((pEntity != pWorld) && UTIL_PointInsideBBox(leftControllerPosition, pEntity->pev->absmin, pEntity->pev->absmax));
+
+		const bool rightTouches = vr_isRightControllerValid &&
+			((pEntity == pWorld) && UTIL_PointContents(rightControllerPosition) == CONTENTS_SOLID)
+			|| ((pEntity != pWorld) && UTIL_PointInsideBBox(rightControllerPosition, pEntity->pev->absmin, pEntity->pev->absmax));
+
+		const bool anyTouches = leftTouches || rightTouches;
+
+		EHANDLE hEntity = pEntity;
+
+		if (FClassnameIs(pEntity->pev, "func_button") || FClassnameIs(pEntity->pev, "func_rot_button"))
+		{
+			if (anyTouches)
+			{
+				if (m_vrInUseButtons.count(hEntity) == 0)
+				{
+					m_vrInUseButtons.insert(hEntity);
+					if (FBitSet(pEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
+					{
+						pEntity->Touch(this);
+					}
+					else
+					{
+						pEntity->Use(this, this, USE_SET, 1);
+					}
+				}
+			}
+			else
+			{
+				if (m_vrInUseButtons.count(hEntity) > 0)
+				{
+					if (!FBitSet(pEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY))
+					{
+						pEntity->Use(this, this, USE_SET, 0);
+					}
+					m_vrInUseButtons.erase(hEntity);
+				}
+			}
+		}
+		else if (FClassnameIs(pEntity->pev, "func_door") || FClassnameIs(pEntity->pev, "func_door_rotating"))
+		{
+			if (anyTouches)
+			{
+				if (m_vrInUseButtons.count(hEntity) == 0)
+				{
+					m_vrInUseButtons.insert(hEntity);
+					if (FBitSet(pEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
+					{
+						pEntity->Use(this, this, USE_SET, 1);
+						m_vrInUseButtons.insert(hEntity);
+					}
+					else
+					{
+						pEntity->Touch(this);
+					}
+				}
+			}
+			else
+			{
+				if (m_vrInUseButtons.count(hEntity) > 0)
+				{
+					if (FBitSet(pEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
+					{
+						pEntity->Use(this, this, USE_SET, 0);
+					}
+					m_vrInUseButtons.erase(hEntity);
+				}
+			}
+		}
+		else if (FClassnameIs(pEntity->pev, "momentary_rot_button"))
+		{
+			if (anyTouches)
+			{
+				if (m_vrInUseButtons.count(hEntity) == 0)
+				{
+					pEntity->Use(this, this, USE_SET, 1);
+					m_vrInUseButtons.insert(hEntity);
+				}
+			}
+			else
+			{
+				if (m_vrInUseButtons.count(hEntity) > 0)
+				{
+					pEntity->Use(this, this, USE_SET, 0);
+					m_vrInUseButtons.erase(hEntity);
+				}
+			}
+		}
+		else if (FClassnameIs(pEntity->pev, "func_healthcharger") || FClassnameIs(pEntity->pev, "func_recharge"))
+		{
+			if (leftTouches)
+			{
+				if (m_vrInUseButtons.count(hEntity) == 0)
+				{
+					pEntity->Use(this, this, USE_SET, 1);
+					m_vrInUseButtons.insert(hEntity);
+				}
+			}
+			else
+			{
+				if (m_vrInUseButtons.count(hEntity) > 0)
+				{
+					pEntity->Use(this, this, USE_SET, 0);
+					m_vrInUseButtons.erase(hEntity);
+				}
+			}
+		}
+		else if (pEntity == pWorld || (pEntity->pev->solid != SOLID_NOT && pEntity->pev->solid != SOLID_TRIGGER))
+		{
+			ItemInfo itemInfo = {};
+			if (m_pActiveItem == nullptr || !m_pActiveItem->GetItemInfo(&itemInfo))
+			{
+				itemInfo.iId = WEAPON_BAREHAND;
+			}
+
+			float flTotalDamage = 0;
+
+			// Hit solid entities
+			if (leftTouches)
+			{
+				// TODO: Add DotProduct to check that this is not a backwards swing
+				if (/*vr_leftControllerVelocity.z <= 0.f &&*/ vr_leftControllerVelocity.Length() > MELEE_MIN_SWING_SPEED && m_vrLeftMeleeEntities.count(hEntity) == 0)
+				{
+					m_vrLeftMeleeEntities.insert(hEntity);
+					float damage = UTIL_CalculateMeleeDamage(WEAPON_BAREHAND, vr_leftControllerVelocity.Length());
+					if (damage > 0)
+					{
+						pEntity->TakeDamage(this->pev, this->pev, damage, UTIL_DamageTypeFromWeapon(WEAPON_BAREHAND));
+						PlayMeleeSmackSound(pEntity, WEAPON_BAREHAND, leftControllerPosition, vr_leftControllerVelocity);
+						flTotalDamage += damage;
+					}
+				}
+			}
+			else
+			{
+				m_vrLeftMeleeEntities.erase(pEntity);
+			}
+
+			if (rightTouches)
+			{
+				// TODO: Add DotProduct to check that this is not a backwards swing
+				if (vr_rightControllerVelocity.Length() > MELEE_MIN_SWING_SPEED && m_vrRightMeleeEntities.count(hEntity) == 0)
+				{
+					m_vrRightMeleeEntities.insert(hEntity);
+					float speed = vr_rightControllerVelocity.Length();
+					float damage = UTIL_CalculateMeleeDamage(itemInfo.iId, speed);
+					if (damage > 0)
+					{
+						pEntity->TakeDamage(this->pev, this->pev, damage, UTIL_DamageTypeFromWeapon(itemInfo.iId));
+						PlayMeleeSmackSound(pEntity, itemInfo.iId, rightControllerPosition, vr_rightControllerVelocity);
+						flTotalDamage += damage;
+
+						// If you smack something with an explosive, it might just explode...
+						// 25% chance that charged satchels go off when you smack something with the remote
+						if (itemInfo.iId == WEAPON_SATCHEL && m_pActiveItem->m_chargeReady && RANDOM_LONG(0, 4) == 0)
+						{
+							dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->PrimaryAttack();
+						}
+						// 5% chance that an explosive explodes when hitting something
+						else if (IsExplosiveWeapon(itemInfo.iId) && RANDOM_LONG(0, 20) == 0 && this->m_rgAmmo[m_pActiveItem->PrimaryAmmoIndex()] > 0)
+						{
+							if (itemInfo.iId == WEAPON_SNARK)
+							{
+								// Already done by PlayMeleeSmackSound
+								// EMIT_SOUND_DYN(m_pActiveItem->edict(), CHAN_VOICE, (RANDOM_FLOAT(0, 1) <= 0.5) ? "squeek/sqk_hunt2.wav" : "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105);
+								dynamic_cast<CSqueak*>(m_pActiveItem)->m_fJustThrown = 1;
+								this->m_iWeaponVolume = QUIET_GUN_VOLUME;
+								CBaseEntity *pSqueak = CBaseEntity::Create("monster_snark", rightControllerPosition, GetWeaponAngles(), edict());
+								pSqueak->pev->health = -1;
+								pSqueak->Killed(pev, GIB_ALWAYS);
+								pSqueak = nullptr;
+							}
+							else
+							{
+								ExplosionCreate(rightControllerPosition, GetWeaponAngles(), edict(), m_pActiveItem->pev->dmg, TRUE);
+							}
+
+							this->m_rgAmmo[m_pActiveItem->PrimaryAmmoIndex()]--;
+							dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
+
+							if (this->m_rgAmmo[m_pActiveItem->PrimaryAmmoIndex()] > 0)
+							{
+								dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->Deploy();
+							}
+							else
+							{
+								dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->RetireWeapon();
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				m_vrRightMeleeEntities.erase(pEntity);
+			}
+
+			// Special handling of barneys and scientists that don't hate us (yet)
+			if (FBitSet(pEntity->pev->flags, FL_MONSTER) && (pMonster = pEntity->MyMonsterPointer()) != nullptr && (FClassnameIs(pMonster->pev, "monster_barney") || FClassnameIs(pMonster->pev, "monster_scientist")) && !pMonster->HasMemory(bits_MEMORY_PROVOKED))
+			{
+				if (anyTouches)
+				{
+					// Face player when touched
+					pMonster->MakeIdealYaw(pev->origin);
+				}
+
+				Vector weaponForward;
+				UTIL_MakeVectorsPrivate(GetWeaponViewAngles(), weaponForward, nullptr, nullptr);
+
+				// Make scientists panic and barneys angry if pointing guns at them
+				if (flTotalDamage == 0.f
+					&& !pMonster->m_hEnemy
+					&& vr_isRightControllerValid
+					&& IsWeaponWithRange(itemInfo.iId)
+					&& (GetWeaponPosition() - pMonster->pev->origin).Length() < VR_MAX_ANGRY_GUNPOINT_DIST
+					&& UTIL_IsFacing(GetWeaponPosition(), GetWeaponViewAngles(), pMonster->pev->origin)
+					&& UTIL_IsFacing(pMonster->pev->origin, pMonster->pev->angles.ToViewAngles(), GetWeaponPosition())
+					&& pMonster->HasClearSight(GetWeaponPosition())
+					&& UTIL_CheckTraceIntersectsEntity(GetWeaponPosition(), GetWeaponPosition() + (weaponForward * VR_MAX_ANGRY_GUNPOINT_DIST), pMonster))
+				{
+					pMonster->vr_flStopSignalTime = 0;
+					pMonster->vr_flShoulderTouchTime = 0;
+					if (pMonster->vr_flGunPointTime == 0)
+					{
+						pMonster->vr_flGunPointTime = gpGlobals->time + VR_INITIAL_ANGRY_GUNPOINT_TIME;
+					}
+					else if (gpGlobals->time > pMonster->vr_flGunPointTime)
+					{
+						if (pMonster->HasMemory(bits_MEMORY_GUNPOINT) && pMonster->HasMemory(bits_MEMORY_SUSPICIOUS))
+						{
+							if (FClassnameIs(pMonster->pev, "monster_barney"))
+							{
+								pMonster->PlaySentence("BA_GNPNT_PSSD", 4, VOL_NORM, ATTN_NORM);
+								pMonster->m_MonsterState = MONSTERSTATE_COMBAT;	// Make barneys draw their gun and point at player
+							}
+							else
+							{
+								pMonster->PlaySentence("SC_GNPNT_PSSD", 4, VOL_NORM, ATTN_NORM);
+							}
+							pMonster->StopFollowing(TRUE);
+
+							// TODO: Add a difficulty setting to make allies go provoked from having a gun pointed at them
+							// if (setting...)
+							// {
+							// pMonster->Remember(bits_MEMORY_PROVOKED);
+							// }
+						}
+						else
+						{
+							if (pMonster->HasMemory(bits_MEMORY_GUNPOINT))
+							{
+								if (FClassnameIs(pMonster->pev, "monster_barney"))
+								{
+									pMonster->PlaySentence("BA_GNPNT_SND", 4, VOL_NORM, ATTN_NORM);
+								}
+								else
+								{
+									pMonster->PlaySentence("SC_GNPNT_SND", 4, VOL_NORM, ATTN_NORM);
+								}
+								pMonster->Remember(bits_MEMORY_SUSPICIOUS);
+							}
+							else
+							{
+								if (FClassnameIs(pMonster->pev, "monster_barney"))
+								{
+									pMonster->PlaySentence("BA_GNPNT_FRST", 4, VOL_NORM, ATTN_NORM);
+								}
+								else
+								{
+									pMonster->PlaySentence("SC_GNPNT_FRST", 4, VOL_NORM, ATTN_NORM);
+								}
+								pMonster->Remember(bits_MEMORY_GUNPOINT);
+							}
+						}
+						pMonster->vr_flGunPointTime = gpGlobals->time + RANDOM_FLOAT(VR_MIN_ANGRY_GUNPOINT_TIME, VR_MAX_ANGRY_GUNPOINT_TIME);
+					}
+				}
+				else
+				{
+					if (!pMonster->m_hEnemy && pMonster->HasMemory(bits_MEMORY_GUNPOINT) && FClassnameIs(pMonster->pev, "monster_barney"))
+					{
+						// TODO: Make barney put away his gun
+						pMonster->m_MonsterState = MONSTERSTATE_ALERT;
+					}
+					pMonster->vr_flGunPointTime = 0;
+					pMonster->Forget(bits_MEMORY_GUNPOINT);
+
+					// Make scientists and barneys move away if holding weapons in their face
+					if (rightTouches && IsWeapon(itemInfo.iId))
+					{
+						pMonster->vr_flStopSignalTime = 0;
+						pMonster->vr_flShoulderTouchTime = 0;
+						/*
+						if (pMonster->IsFollowing())
+						{
+							pMonster->StopFollowing(TRUE);
+						}
+						*/
+						pMonster->SetConditions(bits_COND_CLIENT_PUSH);
+						pMonster->MakeIdealYaw(rightControllerPosition);
+					}
+					else
+					{
+						// Don't do any following/unfollowing if we just hurt the ally somehow
+						if (flTotalDamage > 0.f)
+						{
+							pMonster->vr_flShoulderTouchTime = 0;
+							pMonster->vr_flStopSignalTime = 0;
+							// If we hurt them and are touching them, they should move away
+							if (anyTouches)
+							{
+								pMonster->SetConditions(bits_COND_CLIENT_PUSH);
+								pMonster->MakeIdealYaw(pev->origin);
+								pMonster->Touch(this);
+							}
+						}
+						else
+						{
+							// Tell allies to stop following by holding hand in front of their face
+							if (pMonster->IsFollowing() && (CheckStopSignal(pMonster, leftControllerPosition, vr_leftControllerAngles) || (!IsWeapon(itemInfo.iId) && CheckStopSignal(pMonster, rightControllerPosition, vr_rightControllerAngles))))
+							{
+								pMonster->vr_flShoulderTouchTime = 0;
+								if (pMonster->vr_flStopSignalTime == 0)
+								{
+									pMonster->vr_flStopSignalTime = gpGlobals->time;
+								}
+								else if ((gpGlobals->time - pMonster->vr_flStopSignalTime) > VR_STOP_SIGNAL_TIME)
+								{
+									dynamic_cast<CTalkMonster*>(pMonster)->StopFollowing(TRUE);
+									pMonster->vr_flStopSignalTime = 0;
+								}
+							}
+							else if (anyTouches)
+							{
+								pMonster->vr_flStopSignalTime = 0;
+								// Check if we're touching the shoulder for 1 second (follow me!)
+								if ((leftTouches && CheckShoulderTouch(pMonster, leftControllerPosition)) || (rightTouches && !IsWeapon(itemInfo.iId) && CheckShoulderTouch(pMonster, rightControllerPosition)))
+								{
+									pMonster->ClearConditions(bits_COND_CLIENT_PUSH);
+									if (dynamic_cast<CTalkMonster*>(pMonster)->CanFollow()) // Ignore if can't follow
+									{
+										if (pMonster->vr_flShoulderTouchTime == 0)
+										{
+											pMonster->vr_flShoulderTouchTime = gpGlobals->time;
+										}
+										else if ((gpGlobals->time - pMonster->vr_flShoulderTouchTime) > VR_SHOULDER_TOUCH_TIME)
+										{
+											dynamic_cast<CTalkMonster*>(pMonster)->FollowerUse(this, this, USE_ON, 1.f);
+											pMonster->vr_flShoulderTouchTime = 0;
+										}
+									}
+									else
+									{
+										pMonster->vr_flShoulderTouchTime = 0;
+									}
+								}
+								// Otherwise just look at player
+								else
+								{
+									pMonster->vr_flStopSignalTime = 0;
+									pMonster->vr_flShoulderTouchTime = 0;
+									pMonster->MakeIdealYaw(pev->origin);
+								}
+							}
+							else
+							{
+								pMonster->vr_flStopSignalTime = 0;
+								pMonster->vr_flShoulderTouchTime = 0;
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				if (anyTouches)
+				{
+					if (FClassnameIs(pEntity->pev, "func_breakable"))
+					{
+						CBreakable *pBreakable = dynamic_cast<CBreakable*>(pEntity);
+						if (pBreakable != nullptr && !FBitSet(pBreakable->pev->spawnflags, SF_BREAK_TRIGGER_ONLY))
+						{
+							if (FBitSet(pBreakable->pev->spawnflags, SF_BREAK_CROWBAR))
+							{
+								pBreakable->TakeDamage(pev, pev, pBreakable->pev->health, DMG_CLUB);
+							}
+							// TODO: Handle SF_BREAK_TOUCH and SF_BREAK_PRESSURE
+						}
+					}
+					else if (FClassnameIs(pEntity->pev, "func_pushable"))
+					{
+						CPushable *pPushable = dynamic_cast<CPushable*>(pEntity);
+						if (pPushable != nullptr)
+						{
+							Vector vecPushVelocity;
+							if (leftTouches)
+							{
+								vecPushVelocity = Vector(vr_leftControllerVelocity.x, vr_leftControllerVelocity.y, 0);
+							}
+							if (rightTouches)
+							{
+								vecPushVelocity = vecPushVelocity + Vector(vr_rightControllerVelocity.x, vr_rightControllerVelocity.y, 0);
+							}
+							if (vecPushVelocity.Length() > pPushable->MaxSpeed())
+							{
+								pPushable->pev->velocity = vecPushVelocity.Normalize() * pPushable->MaxSpeed();
+							}
+							else
+							{
+								pPushable->pev->velocity = vecPushVelocity;
+							}
+						}
+					}
+					else if (pEntity->pev->solid != SOLID_TRIGGER)
+					{
+						pEntity->Touch(this);
+					}
+				}
+			}
+		}
+	}
 }
 const Vector CBasePlayer::GetWeaponPosition()
 {
-	return GetClientOrigin() + vr_weaponOffset;
+	return GetClientOrigin() + vr_rightControllerOffset;
 }
 const Vector CBasePlayer::GetWeaponAngles()
 {
-	return vr_weaponAngles;
+	return vr_rightControllerAngles;
 }
 const Vector CBasePlayer::GetWeaponViewAngles()
 {
@@ -4583,7 +5292,7 @@ const Vector CBasePlayer::GetWeaponViewAngles()
 }
 const Vector CBasePlayer::GetWeaponVelocity()
 {
-	return vr_weaponVelocity;
+	return vr_rightControllerVelocity;
 }
 const Vector CBasePlayer::GetClientOrigin()
 {
@@ -4613,32 +5322,42 @@ void CBasePlayer::StartVRTele()
 {
 	if (!vr_isLeftControllerValid)
 	{
-		m_fValidTelePosition = false;
+		vr_fValidTeleDestination = false;
 		StopVRTele();
 		return;
 	}
 	if (!vr_pTeleSprite)
 	{
 		vr_pTeleSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", GetClientOrigin(), FALSE);
-		vr_pTeleSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation);
+		vr_pTeleSprite->Spawn();
+		vr_pTeleSprite->SetTransparency(kRenderTransAdd, 255, 255, 255, 255, kRenderFxNone);
 		vr_pTeleSprite->pev->owner = edict();
 		vr_pTeleSprite->TurnOn();
+		vr_pTeleSprite->pev->effects &= ~EF_NODRAW;
 	}
 	if (!vr_pTeleBeam)
 	{
 		vr_pTeleBeam = CBeam::BeamCreate("sprites/xbeam1.spr", 20);
+		vr_pTeleBeam->Spawn();
 		vr_pTeleBeam->PointsInit(pev->origin, pev->origin);
 		vr_pTeleBeam->pev->owner = edict();
+		vr_pTeleBeam->pev->effects &= ~EF_NODRAW;
 	}
-	m_fValidTelePosition = false;
+	vr_fValidTeleDestination = false;
+	vr_fTelePointsAtXenMound = false;
 }
 void CBasePlayer::StopVRTele()
 {
-	if (vr_pTeleSprite && vr_isLeftControllerValid && m_fValidTelePosition)
+	if (!vr_teleporterBlocked && vr_fValidTeleDestination)
 	{
-		pev->origin = vr_pTeleSprite->pev->origin;
+		if (vr_fTelePointsAtXenMound && vr_parabolaBeams[0] != nullptr && gGlobalXenMounds.Has(vr_parabolaBeams[0]->pev->origin))
+		{
+			gGlobalXenMounds.Trigger(this, vr_parabolaBeams[0]->pev->origin);
+		}
+		pev->origin = vr_vecTeleDestination;
 		pev->origin.z -= pev->mins.z;
 		UTIL_SetOrigin(pev, pev->origin);
+		VRTouchTriggersInTeleportPath();
 	}
 	if (vr_pTeleSprite)
 	{
@@ -4650,41 +5369,471 @@ void CBasePlayer::StopVRTele()
 		UTIL_Remove(vr_pTeleBeam);
 		vr_pTeleBeam = nullptr;
 	}
-	m_fValidTelePosition = false;
+	DisableXenMoundParabola();
+	vr_fValidTeleDestination = false;
+	vr_fTelePointsAtXenMound = false;
 }
-void CBasePlayer::UpdateVRTele(const Vector & vecPos, const Vector & vecAngles)
+void CBasePlayer::VRTouchTriggersInTeleportPath()
+{
+	CBaseEntity *pEntity = nullptr;
+	while (UTIL_FindEntityByFilter(&pEntity, [](CBaseEntity *pEnt){return pEnt->pev->solid == SOLID_TRIGGER;}))
+	{
+		bool fTouched = vr_pTeleBeam && UTIL_TraceBBox(vr_pTeleBeam->pev->origin, vr_pTeleBeam->pev->angles, pEntity->pev->absmin, pEntity->pev->absmax);
+
+		if (!fTouched && vr_pTeleBeam && vr_pTeleSprite && (vr_pTeleSprite->pev->origin - vr_pTeleBeam->pev->angles).Length() > 0.1f)
+		{
+			fTouched = UTIL_TraceBBox(vr_pTeleBeam->pev->angles, vr_pTeleSprite->pev->origin, pEntity->pev->absmin, pEntity->pev->absmax);
+		}
+
+		for (int i = 0; !fTouched && i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
+		{
+			if (vr_parabolaBeams[i] != nullptr)
+			{
+				fTouched = UTIL_TraceBBox(vr_parabolaBeams[i]->pev->origin, vr_parabolaBeams[i]->pev->angles, pEntity->pev->absmin, pEntity->pev->absmax);
+			}
+		}
+
+		if (fTouched)
+		{
+			pEntity->Touch(this);
+		}
+	}
+}
+float CBasePlayer::GetCurrentTeleLength()
+{
+	if (pev->waterlevel > 1)
+	{
+		return 100;
+	}
+	else
+	{
+		return 250;
+	}
+}
+void CBasePlayer::UpdateVRTele()
 {
 	if (!vr_isLeftControllerValid || !vr_pTeleBeam || !vr_pTeleSprite)
 	{
-		m_fValidTelePosition = false;
+		vr_fValidTeleDestination = false;
+		vr_fTelePointsAtXenMound = false;
 		StopVRTele();
 		return;
 	}
 
+	Vector vecPos = GetClientOrigin() + vr_leftControllerOffset;
+
 	Vector forward;
-	UTIL_MakeAimVectorsPrivate(vecAngles, forward, NULL, NULL);
+	UTIL_MakeAimVectorsPrivate(vr_leftControllerAngles, forward, NULL, NULL);
 
 	TraceResult tr;
-	UTIL_TraceLine(vecPos, vecPos + forward * 250, ignore_monsters, edict(), &tr);
+	UTIL_TraceLine(vecPos, vecPos + forward * GetCurrentTeleLength(), ignore_monsters, edict(), &tr);
 
-	UTIL_SetOrigin(vr_pTeleSprite->pev, tr.vecEndPos);
+	Vector beamEndPos = tr.vecEndPos;
+	Vector teleportDestination = tr.vecEndPos;
 
-	if (tr.flFraction < 1.f && !tr.fAllSolid && DotProduct(Vector(0,0,1), tr.vecPlaneNormal) > 0.5f && CanTeleportHere(tr.vecEndPos))
+	vr_fValidTeleDestination = CanTeleportHere(tr, vecPos, beamEndPos, teleportDestination);
+
+	vr_pTeleBeam->SetStartPos(vecPos);
+	vr_pTeleBeam->SetEndPos(beamEndPos);
+
+	if (vr_fValidTeleDestination && vr_fTelePointsAtXenMound)
 	{
-		vr_pTeleSprite->pev->rendercolor = Vector(0, 1, 0);
-		m_fValidTelePosition = true;
+		EnableXenMoundParabolaAndUpdateTeleDestination(vecPos, beamEndPos, teleportDestination);
 	}
 	else
 	{
-		vr_pTeleSprite->pev->rendercolor = Vector(1, 0, 0);
-		m_fValidTelePosition = false;
+		DisableXenMoundParabola();
 	}
 
-	vr_pTeleBeam->SetStartPos(vecPos);
-	vr_pTeleBeam->SetEndPos(tr.vecEndPos);
+	vr_vecTeleDestination = teleportDestination;
+	UTIL_SetOrigin(vr_pTeleSprite->pev, teleportDestination);
+
+	if (vr_teleporterBlocked)
+	{
+		vr_fValidTeleDestination = false;
+	}
+
+	if (vr_fValidTeleDestination)
+	{
+		vr_pTeleSprite->pev->rendercolor = Vector(0, 255, 0);
+		vr_pTeleBeam->pev->rendercolor = Vector(0, 255, 0);
+
+		// Move destination down when head would be in ceiling (e.g. teleporting inside a duct)
+		TraceResult tr;
+		UTIL_TraceLine(vr_vecTeleDestination, vr_vecTeleDestination + Vector(0, 0, pev->size.z), ignore_monsters, edict(), &tr);
+		vr_vecTeleDestination.z -= pev->size.z * (1.0f - tr.flFraction);
+	}
+	else
+	{
+		vr_pTeleSprite->pev->rendercolor = Vector(255, 0, 0);
+		vr_pTeleBeam->pev->rendercolor = Vector(255, 0, 0);
+	}
 }
-bool CBasePlayer::CanTeleportHere(const Vector & vecTele)
+
+bool CBasePlayer::CanTeleportHere(const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination)
 {
-	// TODO!
-	return true;
+	vr_fTelePointsAtXenMound = false; // reset every frame
+	if (!tr.fAllSolid)
+	{
+		Vector ballResult;
+		bool lineIsBlocked = gVRPhysicsHelper.CheckIfLineIsBlocked(beamStartPos, beamEndPos, ballResult);
+
+		/*
+		if (!temp)
+		{
+			CSprite *pSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", GetClientOrigin(), FALSE);
+			pSprite->Spawn();
+			pSprite->SetTransparency(kRenderTransAdd, 0, 0, 255, 255, kRenderFxNone);
+			pSprite->pev->owner = edict();
+			pSprite->TurnOn();
+			pSprite->pev->effects &= ~EF_NODRAW;
+			temp = pSprite;
+		}
+		temp->pev->origin = ballResult;
+		temp->pev->rendercolor.x = lineIsBlocked ? 255 : 0;
+		UTIL_SetOrigin(temp->pev, ballResult);
+		*/
+
+		if (!lineIsBlocked)
+		{
+			// Detect water
+			if (UTIL_PointContents(tr.vecEndPos) == CONTENTS_WATER)
+			{
+				// Reduce distance a bit to avoid walls
+				Vector delta = beamEndPos - beamStartPos;
+				if (delta.Length() < 32.0f)
+				{
+					teleportDestination = beamEndPos = beamStartPos;
+				}
+				else
+				{
+					teleportDestination = beamEndPos = beamEndPos - (delta.Normalize() * 32.0f);
+				}
+				return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			}
+			else if (pev->waterlevel > 0 && UTIL_PointContents(beamStartPos) == CONTENTS_WATER)
+			{
+				teleportDestination = beamEndPos = UTIL_WaterLevelPos(beamStartPos, beamEndPos);
+				return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			}
+			// Detect ladders
+			else if (tr.pHit != nullptr && FClassnameIs(tr.pHit, "func_ladder"))
+			{
+				if (beamStartPos.z < tr.vecEndPos.z)
+				{
+					// climb up
+					teleportDestination.z = tr.pHit->v.absmax.z;
+				}
+				else
+				{
+					// climb down
+					teleportDestination.z = tr.pHit->v.absmin.z;
+
+					Vector delta = beamEndPos - beamStartPos;
+
+					if (tr.pHit->v.size.x > tr.pHit->v.size.y)
+					{
+						if (delta.y < 0)
+						{
+							teleportDestination.y += 32.0f;
+						}
+						else
+						{
+							teleportDestination.y -= 32.0f;
+						}
+					}
+					else
+					{
+						if (delta.x < 0)
+						{
+							teleportDestination.x += 32.0f;
+						}
+						else
+						{
+							teleportDestination.x -= 32.0f;
+						}
+					}
+				}
+				return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			}
+			else if (tr.flFraction < 1.0f)
+			{
+				Vector dir = (beamEndPos - beamStartPos).Normalize();
+				const char* texturename = TRACE_TEXTURE(tr.pHit != nullptr ? tr.pHit : INDEXENT(0), beamStartPos, beamEndPos + dir * 32.f);
+
+				// Detect Xen jump pads
+				if (FStrEq(texturename, "c2a5mound") && gGlobalXenMounds.Has(beamEndPos))
+				{
+					vr_fTelePointsAtXenMound = true;
+					return true;
+				}
+				// Normal floor
+				else if (DotProduct(Vector(0, 0, 1), tr.vecPlaneNormal) > 0.2f)
+				{
+					teleportDestination = beamEndPos;
+					return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+				}
+			}
+		}
+	}
+	return false;
 }
+#define XEN_MOUND_PARABOLA_LENGTH 800
+void CBasePlayer::EnableXenMoundParabolaAndUpdateTeleDestination(const Vector& beamStartPos, const Vector& beamEndPos, Vector & teleportDestination)
+{
+	// Set this to false, in case we won't hit anything in the parabola loop (parabola goes into empty space), thus the teleport destination couldn't be determined and is invalid
+	vr_fValidTeleDestination = false;
+
+	// Get direction of beam and clamp at -0.1f z direction
+	Vector beamDir = (beamEndPos - beamStartPos).Normalize();
+	beamDir.z = min(beamDir.z, -0.1f);
+	beamDir = beamDir.Normalize();
+
+	// Get direction of parabola at beam end pos
+	Vector parabolaDir = beamDir;
+	parabolaDir.z = -parabolaDir.z * 4; // Invert and make steeper
+	parabolaDir = parabolaDir.Normalize();
+
+	// Get vertex of parabola (approximation, but good enough for our purpose)
+	Vector parabolaVertex = beamEndPos + (parabolaDir * XEN_MOUND_PARABOLA_LENGTH * 0.5f);
+
+	// Get third parabola point
+	Vector thirdParabolaPoint = parabolaVertex + (beamDir * XEN_MOUND_PARABOLA_LENGTH * 0.5f);
+
+	// Vector for holding A B and C of parabola function: y = A*x*x + B*x + C
+	Vector parabolaConstants;
+
+	// Decide wether to use x,z or y,z for parabola calculations
+	bool fUseYForParabolaX = fabs(parabolaDir.y) > fabs(parabolaDir.x);
+	if (fUseYForParabolaX)
+	{
+		UTIL_ParabolaFromPoints(Vector2D(beamEndPos.y, beamEndPos.z), Vector2D(parabolaVertex.y, parabolaVertex.z), Vector2D(thirdParabolaPoint.y, thirdParabolaPoint.z), parabolaConstants);
+	}
+	else
+	{
+		UTIL_ParabolaFromPoints(Vector2D(beamEndPos.x, beamEndPos.z), Vector2D(parabolaVertex.x, parabolaVertex.z), Vector2D(thirdParabolaPoint.x, thirdParabolaPoint.z), parabolaConstants);
+	}
+
+	// Get length of parabola flattened into horizontal plane (linear projection)
+	float parabolaFlattenedLength = (thirdParabolaPoint - beamEndPos).Length();
+	float parabolaFlattenedSegmentLength = parabolaFlattenedLength / VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT;
+
+	// Get parabola linear projection direction vector
+	Vector parabolaFlattenedLinearDirection = (thirdParabolaPoint - beamEndPos).Normalize();
+
+	// Get positions of parabola beam segments along linear parabola projection with parabola function
+	for (int i = 0; i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
+	{
+		// If necessary create the beam, and enable it
+		CBeam *pCurrentSegmentBeam = nullptr;
+		if (vr_parabolaBeams[i] == nullptr)
+		{
+			pCurrentSegmentBeam = CBeam::BeamCreate("sprites/xbeam1.spr", 20);
+			pCurrentSegmentBeam->Spawn();
+			pCurrentSegmentBeam->PointsInit(pev->origin, pev->origin);
+			pCurrentSegmentBeam->pev->owner = edict();
+			vr_parabolaBeams[i] = pCurrentSegmentBeam;
+		}
+		else
+		{
+			pCurrentSegmentBeam = vr_parabolaBeams[i];
+		}
+		pCurrentSegmentBeam->pev->effects &= ~EF_NODRAW;
+
+		// Get positions on linear projection
+		Vector linearPos1 = beamEndPos + (parabolaFlattenedLinearDirection * i * parabolaFlattenedSegmentLength);
+		Vector linearPos2 = beamEndPos + (parabolaFlattenedLinearDirection * (i+1) * parabolaFlattenedSegmentLength);
+
+		// Determine z position of parabola in 3d space (y in 2d space determined by parabola function)
+		float z1, z2;
+		if (fUseYForParabolaX)
+		{
+			z1 = parabolaConstants.x*linearPos1.y*linearPos1.y + parabolaConstants.y*linearPos1.y + parabolaConstants.z;
+			z2 = parabolaConstants.x*linearPos2.y*linearPos2.y + parabolaConstants.y*linearPos2.y + parabolaConstants.z;
+		}
+		else
+		{
+			z1 = parabolaConstants.x*linearPos1.x*linearPos1.x + parabolaConstants.y*linearPos1.x + parabolaConstants.z;
+			z2 = parabolaConstants.x*linearPos2.x*linearPos2.x + parabolaConstants.y*linearPos2.x + parabolaConstants.z;
+		}
+
+		// Merge values into valid 3d space positions for the beam segment
+		Vector beamSegmentPos1(linearPos1.x, linearPos1.y, z1);
+		Vector beamSegmentPos2(linearPos2.x, linearPos2.y, z2);
+
+		if (i == VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT - 1)
+		{
+			// If this is the last beam segment, extend it to "infinity"
+			Vector dir = (beamSegmentPos2 - beamSegmentPos1).Normalize();
+			beamSegmentPos2 = beamSegmentPos1 + (dir * 8192.f);
+		}
+
+		// Now do a trace to see if we hit something!
+		TraceResult tr;
+		UTIL_TraceLine(beamSegmentPos1, beamSegmentPos2, ignore_monsters, edict(), &tr);
+
+		if (tr.flFraction < 1.0f)
+		{
+			// We hit something, update beam segment end position
+			teleportDestination = beamSegmentPos2 = tr.vecEndPos;
+
+			// Determine if this is a valid position
+			vr_fValidTeleDestination = CanTeleportHere(tr, beamSegmentPos1, beamSegmentPos2, teleportDestination);
+
+			// Hide all further beams (and increment i, so this loop exits)
+			for (i++; i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
+			{
+				if (vr_parabolaBeams[i] != nullptr)
+				{
+					vr_parabolaBeams[i]->pev->effects |= EF_NODRAW;
+				}
+			}
+		}
+		else
+		{
+			// Move teleport destination to end of segment, so sprite will be drawn correctly even if we exit the loop without finding a correct spot
+			teleportDestination = beamSegmentPos2;
+		}
+
+		// Set beam segment positions
+		pCurrentSegmentBeam->SetStartPos(beamSegmentPos1);
+		pCurrentSegmentBeam->SetEndPos(beamSegmentPos2);
+	}
+
+	// Set color of parabola beam
+	for (int i = 0; i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
+	{
+		if (vr_parabolaBeams[i] != nullptr)
+		{
+			if (vr_fValidTeleDestination)
+			{
+				vr_parabolaBeams[i]->pev->rendercolor = Vector(0, 255, 0);
+			}
+			else
+			{
+				vr_parabolaBeams[i]->pev->rendercolor = Vector(255, 0, 0);
+			}
+		}
+	}
+}
+void CBasePlayer::DisableXenMoundParabola()
+{
+	for (int i = 0; i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
+	{
+		if (vr_parabolaBeams[i] != nullptr)
+		{
+			UTIL_Remove(vr_parabolaBeams[i]);
+			vr_parabolaBeams[i] = nullptr;
+		}
+	}
+}
+#define	CROWBAR_BODYHIT_VOLUME 128
+#define	CROWBAR_WALLHIT_VOLUME 512
+void CBasePlayer::PlayMeleeSmackSound(CBaseEntity *pSmackedEntity, const int weaponId, const Vector & pos, const Vector & velocity)
+{
+	TraceResult fakeTrace = { 0 };
+	fakeTrace.pHit = pSmackedEntity->edict();
+	fakeTrace.vecEndPos = pos;
+	fakeTrace.flFraction = 0.5f;
+
+	// TODO: Meat sounds
+	if (weaponId == WEAPON_HORNETGUN)
+	{
+		switch (RANDOM_LONG(0, 1))
+		{
+		case 0:
+			EMIT_SOUND_DYN(m_pActiveItem->edict(), CHAN_ITEM, "weapons/bullet_hit1.wav", 1, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3)); break;
+		case 1:
+			EMIT_SOUND_DYN(m_pActiveItem->edict(), CHAN_ITEM, "weapons/bullet_hit2.wav", 1, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3)); break;
+		}
+	}
+	// TODO: Squeek and soft meat sounds
+	else if (weaponId == WEAPON_SNARK)
+	{
+		switch (RANDOM_LONG(0, 1))
+		{
+		case 0:
+			EMIT_SOUND_DYN(m_pActiveItem->edict(), CHAN_ITEM, "weapons/bullet_hit1.wav", 1, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3)); break;
+		case 1:
+			EMIT_SOUND_DYN(m_pActiveItem->edict(), CHAN_ITEM, "weapons/bullet_hit2.wav", 1, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3)); break;
+		}
+		EMIT_SOUND_DYN(m_pActiveItem->edict(), CHAN_VOICE, (RANDOM_FLOAT(0, 1) <= 0.5) ? "squeek/sqk_hunt2.wav" : "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105);
+	}
+	// TODO: Hand slap sounds
+	else if (weaponId == WEAPON_BAREHAND || weaponId == WEAPON_SNARK)
+	{
+		switch (RANDOM_LONG(0, 1))
+		{
+		case 0:
+			EMIT_SOUND_DYN(this->edict(), CHAN_ITEM, "weapons/bullet_hit1.wav", 1, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3)); break;
+		case 1:
+			EMIT_SOUND_DYN(this->edict(), CHAN_ITEM, "weapons/bullet_hit2.wav", 1, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3)); break;
+		}
+	}
+	// Any other weapon makes crowbar sounds
+	else if (pSmackedEntity->Classify() == CLASS_NONE || pSmackedEntity->Classify() == CLASS_MACHINE)
+	{
+		this->m_iWeaponVolume = CROWBAR_WALLHIT_VOLUME;
+
+		TEXTURETYPE_PlaySound(&fakeTrace, pos - velocity.Normalize() * 32.f, pos + velocity.Normalize() * 32.f, BULLET_PLAYER_CROWBAR);
+
+		// also play crowbar strike
+		switch (RANDOM_LONG(0, 1))
+		{
+		case 0:
+			EMIT_SOUND_DYN(pSmackedEntity->edict(), CHAN_ITEM, "weapons/cbar_hit1.wav", 1, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3)); break;
+		case 1:
+			EMIT_SOUND_DYN(pSmackedEntity->edict(), CHAN_ITEM, "weapons/cbar_hit2.wav", 1, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3)); break;
+		}
+
+		DecalGunshot(&fakeTrace, BULLET_PLAYER_CROWBAR);
+	}
+	else
+	{
+		this->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
+
+		// play thwack or smack sound
+		switch (RANDOM_LONG(0, 2))
+		{
+		case 0:
+			EMIT_SOUND_DYN(pSmackedEntity->edict(), CHAN_ITEM, "weapons/cbar_hitbod1.wav", 1, ATTN_NORM, 0, PITCH_NORM); break;
+		case 1:
+			EMIT_SOUND_DYN(pSmackedEntity->edict(), CHAN_ITEM, "weapons/cbar_hitbod2.wav", 1, ATTN_NORM, 0, PITCH_NORM); break;
+		case 2:
+			EMIT_SOUND_DYN(pSmackedEntity->edict(), CHAN_ITEM, "weapons/cbar_hitbod3.wav", 1, ATTN_NORM, 0, PITCH_NORM); break;
+		}
+	}
+}
+
+
+void GlobalXenMounds::Add(const Vector& position, const string_t multi_manager)
+{
+	m_xen_mounds.insert(std::make_pair(position, multi_manager));
+}
+
+bool GlobalXenMounds::Has(const Vector& position)
+{
+	for (auto m_xen_mound : m_xen_mounds)
+	{
+		if ((m_xen_mound.first - position).Length2D() <= XEN_MOUND_MAX_TRIGGER_DISTANCE)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool GlobalXenMounds::Trigger(CBasePlayer *pPlayer, const Vector& position)
+{
+	for (auto m_xen_mound : m_xen_mounds)
+	{
+		if ((m_xen_mound.first - position).Length2D() <= XEN_MOUND_MAX_TRIGGER_DISTANCE)
+		{
+			FireTargets(STRING(m_xen_mound.second), pPlayer, pPlayer, USE_TOGGLE, 0.0f);
+			return true;
+		}
+	}
+	return false;
+}
+
+GlobalXenMounds gGlobalXenMounds;

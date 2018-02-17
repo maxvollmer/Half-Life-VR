@@ -420,6 +420,8 @@ void W_Precache(void)
 	
 	PRECACHE_SOUND ("items/weapondrop1.wav");// weapon falls to the ground
 
+	// VR hand model
+	PRECACHE_MODEL("models/v_gordon_hand.mdl");
 }
 
 
@@ -624,19 +626,24 @@ void CBasePlayerItem::DefaultTouch( CBaseEntity *pOther )
 	SUB_UseTargets( pOther, USE_TOGGLE, 0 ); // UNDONE: when should this happen?
 }
 
-BOOL CanAttack( float attack_time, float curtime, BOOL isPredicted )
+bool CanAttack( CBasePlayer *pPlayer, float attack_time, float curtime, BOOL isPredicted )
 {
+	if (FBitSet(pPlayer->m_iHideHUD, HIDEHUD_WEAPONBLOCKED))
+	{
+		return false;
+	}
+
 #if defined( CLIENT_WEAPONS )
 	if ( !isPredicted )
 #else
-	if ( 1 )
+	if ( true )
 #endif
 	{
-		return ( attack_time <= curtime ) ? TRUE : FALSE;
+		return attack_time <= curtime;
 	}
 	else
 	{
-		return ( attack_time <= 0.0 ) ? TRUE : FALSE;
+		return attack_time <= 0.0;
 	}
 }
 
@@ -656,7 +663,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_fInReload = FALSE;
 	}
 
-	if ((m_pPlayer->pev->button & IN_ATTACK2) && CanAttack( m_flNextSecondaryAttack, gpGlobals->time, UseDecrement() ) )
+	if ((m_pPlayer->pev->button & IN_ATTACK2) && CanAttack( m_pPlayer, m_flNextSecondaryAttack, gpGlobals->time, UseDecrement() ) )
 	{
 		if ( pszAmmo2() && !m_pPlayer->m_rgAmmo[SecondaryAmmoIndex()] )
 		{
@@ -667,7 +674,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
-	else if ((m_pPlayer->pev->button & IN_ATTACK) && CanAttack( m_flNextPrimaryAttack, gpGlobals->time, UseDecrement() ) )
+	else if ((m_pPlayer->pev->button & IN_ATTACK) && CanAttack( m_pPlayer, m_flNextPrimaryAttack, gpGlobals->time, UseDecrement() ) )
 	{
 		if ( (m_iClip == 0 && pszAmmo1()) || (iMaxClip() == -1 && !m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] ) )
 		{
@@ -752,7 +759,7 @@ void CBasePlayerItem::Kill( void )
 
 void CBasePlayerItem::Holster( int skiplocal /* = 0 */ )
 { 
-	m_pPlayer->pev->viewmodel = 0; 
+	m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
 	m_pPlayer->pev->weaponmodel = 0;
 }
 
@@ -1051,7 +1058,7 @@ int CBasePlayerWeapon::SecondaryAmmoIndex( void )
 void CBasePlayerWeapon::Holster( int skiplocal /* = 0 */ )
 { 
 	m_fInReload = FALSE; // cancel any reload in progress.
-	m_pPlayer->pev->viewmodel = 0; 
+	m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
 	m_pPlayer->pev->weaponmodel = 0;
 }
 
@@ -1173,7 +1180,7 @@ int CBasePlayerWeapon::ExtractClipAmmo( CBasePlayerWeapon *pWeapon )
 void CBasePlayerWeapon::RetireWeapon( void )
 {
 	// first, no viewmodel at all.
-	m_pPlayer->pev->viewmodel = iStringNull;
+	m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
 	m_pPlayer->pev->weaponmodel = iStringNull;
 	//m_pPlayer->pev->viewmodelindex = NULL;
 

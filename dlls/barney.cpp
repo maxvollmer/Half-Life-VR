@@ -410,7 +410,11 @@ void CBarney :: Spawn()
 	SET_MODEL(ENT(pev), "models/barney.mdl");
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
-	pev->scale			= VR_SCALE_HUMANS;
+	pev->scale			= CVAR_GET_FLOAT("vr_humanscale");
+	if (pev->scale <= 0.f)
+	{
+		pev->scale = 1.f;
+	}
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
@@ -490,23 +494,6 @@ void CBarney :: TalkInit()
 }
 
 
-static BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
-{
-	Vector vecDir = (reference - pevTest->origin);
-	vecDir.z = 0;
-	vecDir = vecDir.Normalize();
-	Vector forward, angle;
-	angle = pevTest->v_angle;
-	angle.x = 0;
-	UTIL_MakeVectorsPrivate( angle, forward, NULL, NULL );
-	// He's facing me, he meant it
-	if ( DotProduct( forward, vecDir ) > 0.96 )	// +/- 15 degrees or so
-	{
-		return TRUE;
-	}
-	return FALSE;
-}
-
 
 int CBarney :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
@@ -524,7 +511,7 @@ int CBarney :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 		if ( m_hEnemy == NULL )
 		{
 			// If the player was facing directly at me, or I'm already suspicious, get mad
-			if ( (m_afMemory & bits_MEMORY_SUSPICIOUS) || IsFacing( pevAttacker, pev->origin ) )
+			if ( (m_afMemory & bits_MEMORY_SUSPICIOUS) || UTIL_IsFacing( pevAttacker->origin, pevAttacker->v_angle, pev->origin ) )
 			{
 				// Alright, now I'm pissed!
 				PlaySentence( "BA_MAD", 4, VOL_NORM, ATTN_NORM );
@@ -640,7 +627,7 @@ Schedule_t* CBarney :: GetScheduleOfType ( int Type )
 	switch( Type )
 	{
 	case SCHED_ARM_WEAPON:
-		if ( m_hEnemy != NULL )
+		if ( m_hEnemy != NULL || (HasMemory(bits_MEMORY_GUNPOINT) && HasMemory(bits_MEMORY_SUSPICIOUS)) )
 		{
 			// face enemy, then draw.
 			return slBarneyEnemyDraw;

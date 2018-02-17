@@ -235,8 +235,8 @@ void CFuncIllusionary :: KeyValue( KeyValueData *pkvd )
 void CFuncIllusionary :: Spawn( void )
 {
 	pev->angles = g_vecZero;
-	pev->movetype = MOVETYPE_NONE;  
-	pev->solid = SOLID_NOT;// always solid_not 
+	pev->movetype = MOVETYPE_PUSH;// MOVETYPE_NONE;
+	pev->solid = SOLID_BSP;// SOLID_NOT;// always solid_not 
 	SET_MODEL( ENT(pev), STRING(pev->model) );
 	
 	// I'd rather eat the network bandwidth of this than figure out how to save/restore

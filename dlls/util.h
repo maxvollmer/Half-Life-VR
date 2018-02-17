@@ -24,6 +24,8 @@
 #endif
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
+#define EPSILON 0.001f
+
 extern globalvars_t				*gpGlobals;
 
 // Use this instead of ALLOC_STRING on constant strings
@@ -190,7 +192,7 @@ typedef enum
 
 // Misc useful
 inline BOOL FStrEq(const char*sz1, const char*sz2)
-	{ return (strcmp(sz1, sz2) == 0); }
+	{ return (sz1==sz2 || (sz1!=nullptr && sz2!=nullptr && strcmp(sz1, sz2) == 0)); }
 inline BOOL FClassnameIs(edict_t* pent, const char* szClassname)
 	{ return FStrEq(STRING(VARS(pent)->classname), szClassname); }
 inline BOOL FClassnameIs(entvars_t* pev, const char* szClassname)
@@ -210,6 +212,13 @@ extern CBaseEntity	*UTIL_FindEntityByString(CBaseEntity *pStartEntity, const cha
 extern CBaseEntity	*UTIL_FindEntityByClassname(CBaseEntity *pStartEntity, const char *szName );
 extern CBaseEntity	*UTIL_FindEntityByTargetname(CBaseEntity *pStartEntity, const char *szName );
 extern CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, float flRadius );
+
+// Find entity using a lambda expression - Max Vollmer, 2017-12-28
+typedef bool(EntityFilterCallback)(CBaseEntity*);
+typedef void(EntityCallback)(CBaseEntity*);
+extern bool UTIL_FindEntityByFilter(CBaseEntity **pEntity, EntityFilterCallback filter);
+void UTIL_BatchEntities(EntityCallback batch, EntityFilterCallback filter = nullptr);	// Calls batch for all entities that match filter (or all entities, if filter is nullptr)
+extern bool UTIL_FindAllEntities(CBaseEntity **pEntity);
 
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns NULL
@@ -258,6 +267,16 @@ extern TraceResult	UTIL_GetGlobalTrace		(void);
 extern void			UTIL_TraceModel			(const Vector &vecStart, const Vector &vecEnd, int hullNumber, edict_t *pentModel, TraceResult *ptr);
 extern Vector		UTIL_GetAimVector		(edict_t* pent, float flSpeed);
 extern int			UTIL_PointContents		(const Vector &vec, bool detectSolidEntities = false);
+extern bool			UTIL_PointInsideBBox	(const Vector &vec, const Vector &absmin, const Vector &absmax);
+extern bool			UTIL_PointInsideBSPModel(const Vector &vec, const Vector &absmin, const Vector &absmax);
+extern bool			UTIL_BBoxIntersectsBSPModel(const Vector &origin, const Vector &mins, const Vector &maxs);
+extern bool			UTIL_BBoxIntersectsBBox	(const Vector &absmins1, const Vector &absmaxs1, const Vector &absmins2, const Vector &absmaxs2);
+extern bool			UTIL_PointInsideRotatedBBox(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs, const Vector & checkVec);
+
+extern bool UTIL_TraceBBox(const Vector & vecStart, const Vector & vecEnd, const Vector & absmin, const Vector & absmax);
+extern CBaseEntity * UTIL_TraceTriggers(CBaseEntity *pStartEntity, const Vector & vecStart, const Vector & vecEnd);
+
+extern bool			UTIL_CheckClearSight(const Vector & pos1, const Vector & pos2, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t * pentIgnore = nullptr);
 
 extern int			UTIL_IsMasterTriggered	(string_t sMaster, CBaseEntity *pActivator);
 extern void			UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount );
@@ -287,6 +306,7 @@ extern float		UTIL_SplineFraction( float value, float scale );
 
 // Search for water transition along a vertical line
 extern float		UTIL_WaterLevel( const Vector &position, float minz, float maxz );
+extern const Vector UTIL_WaterLevelPos(const Vector &start, const Vector &end);
 extern void			UTIL_Bubbles( Vector mins, Vector maxs, int count );
 extern void			UTIL_BubbleTrail( Vector from, Vector to, int count );
 
@@ -311,6 +331,14 @@ extern void ClientPrint( entvars_t *client, int msg_dest, const char *msg_name, 
 extern void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
 extern void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity );
 
+
+// Moved from barney.cpp - Max Vollmer, 2018-01-02
+extern bool UTIL_IsFacing(const Vector &origin, const Vector &view_angles, const Vector &reference);
+
+extern bool UTIL_CheckTraceIntersectsEntity(const Vector &pos1, const Vector &pos2, CBaseEntity *pCheck);
+
+extern float UTIL_CalculateMeleeDamage(int iId, float speed);
+extern int UTIL_DamageTypeFromWeapon(int iId);
 
 typedef struct hudtextparms_s
 {
@@ -343,6 +371,10 @@ extern void			UTIL_LogPrintf( char *fmt, ... );
 extern float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir );
 
 extern void UTIL_StripToken( const char *pKey, char *pDest );// for redundant keynames
+
+extern void UTIL_ParabolaFromPoints(const Vector2D & p1, const Vector2D & p2, const Vector2D & p3, Vector & parabola);
+
+extern bool UTIL_ShouldCollide(CBaseEntity *pTouched, CBaseEntity *pOther);
 
 // Misc functions
 extern void SetMovedir(entvars_t* pev);
@@ -396,10 +428,6 @@ extern DLL_GLOBAL int			g_Language;
 #define LFO_RANDOM			3
 
 
-// Scale up human models for VR - Max Vollmer, 2017-08-22
-#define VR_SCALE_HUMANS		1.5
-
-
 // func_rotating
 #define SF_BRUSH_ROTATE_Y_AXIS		0
 #define SF_BRUSH_ROTATE_INSTANT		1
@@ -421,12 +449,15 @@ extern DLL_GLOBAL int			g_Language;
 #define VEC_HULL_MAX		Vector( 16,  16,  36)
 #define VEC_HUMAN_HULL_MIN	Vector( -16, -16, 0 )
 #define VEC_HUMAN_HULL_MAX	Vector( 16, 16, 72 )
-#define VEC_HUMAN_HULL_DUCK	Vector( 16, 16, 36 )
 
 #define VEC_VIEW			Vector( 0, 0, 28 )
 
 #define VEC_DUCK_HULL_MIN	Vector(-16, -16, -18 )
 #define VEC_DUCK_HULL_MAX	Vector( 16,  16,  18)
+#define VEC_DUCK_HULL_SIZE	Vector( 32, 32, 36 )
+#define DUCK_SIZE			36
+#define DUCK_RADIUS			20
+#define VEC_DUCK_RADIUS		Vector(DUCK_RADIUS+MACHINE_EPSILON, DUCK_RADIUS+MACHINE_EPSILON, DUCK_RADIUS+MACHINE_EPSILON)
 #define VEC_DUCK_VIEW		Vector( 0, 0, 12 )
 
 #define SVC_TEMPENTITY		23

@@ -434,7 +434,7 @@ int	CGraph :: FindNearestLink ( const Vector &vecTestPoint, int *piNearestLink, 
 
 int	CGraph::HullIndex( const CBaseEntity *pEntity )
 {
-	if ( pEntity->pev->movetype == MOVETYPE_FLY)
+	if (pEntity->pev->movetype == MOVETYPE_FLY)
 		return NODE_FLY_HULL;
 
 	if ( pEntity->pev->mins == Vector( -12, -12, 0 ) )
@@ -451,7 +451,7 @@ int	CGraph::HullIndex( const CBaseEntity *pEntity )
 
 int	CGraph::NodeType( const CBaseEntity *pEntity )
 {
-	if ( pEntity->pev->movetype == MOVETYPE_FLY)
+	if (pEntity->pev->movetype == MOVETYPE_FLY)
 	{
 		if (pEntity->pev->waterlevel != 0)
 		{

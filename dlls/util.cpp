@@ -30,6 +30,8 @@
 #include "player.h"
 #include "weapons.h"
 #include "gamerules.h"
+#include "VRPhysicsHelper.h"
+
 
 float UTIL_WeaponTimeBase( void )
 {
@@ -521,6 +523,56 @@ CBaseEntity *UTIL_FindEntityInSphere( CBaseEntity *pStartEntity, const Vector &v
 	return NULL;
 }
 
+// Find entity using a lambda expression - Max Vollmer, 2017-12-28
+bool UTIL_FindEntityByFilter(CBaseEntity **pEntity, EntityFilterCallback filter)
+{
+	while (UTIL_FindAllEntities(pEntity))
+	{
+		if (filter(*pEntity))
+		{
+			return true;
+		}
+	}
+	*pEntity = nullptr;
+	return false;
+}
+
+// Calls batch for all entities that match filter (or all entities, if filter is nullptr)
+void UTIL_BatchEntities(EntityCallback batch, EntityFilterCallback filter)
+{
+	CBaseEntity *pEntity = nullptr;
+	while (UTIL_FindAllEntities(&pEntity))
+	{
+		if (filter == nullptr || filter(pEntity))
+		{
+			batch(pEntity);
+		}
+	}
+}
+
+// Loops over all entities - Max Vollmer, 2017-12-28
+bool UTIL_FindAllEntities(CBaseEntity **pEntity)
+{
+	if (pEntity == nullptr)
+	{
+		return false;
+	}
+
+	const int startIndex = ((*pEntity) != nullptr) ? ENTINDEX((*pEntity)->edict()) + 1 : 1;
+
+	for (int index = startIndex; index < gpGlobals->maxEntities; index++)
+	{
+		edict_t *pentEntity = INDEXENT(index);
+		if (pentEntity != nullptr && !pentEntity->free)
+		{
+			(*pEntity) = CBaseEntity::Instance(pentEntity);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 CBaseEntity *UTIL_FindEntityByString( CBaseEntity *pStartEntity, const char *szKeyword, const char *szValue )
 {
@@ -969,6 +1021,64 @@ void UTIL_TraceModel( const Vector &vecStart, const Vector &vecEnd, int hullNumb
 	g_engfuncs.pfnTraceModel( vecStart, vecEnd, hullNumber, pentModel, ptr );
 }
 
+bool UTIL_CheckClearSight(const Vector & pos1, const Vector & pos2, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t * pentIgnore)
+{
+	TraceResult tr;
+	UTIL_TraceLine(pos1, pos2, igmon, ignoreGlass, pentIgnore, &tr);
+	return tr.flFraction == 1.f;
+}
+
+
+// Taken from jyk's separating axis theorem code in https://www.gamedev.net/forums/topic/338987-aabb---line-segment-intersection-test/?tab=comments#comment-3209917 - Max Vollmer, 2018-01-10
+bool UTIL_TraceBBox(const Vector & vecStart, const Vector & vecEnd, const Vector & absmin, const Vector & absmax)
+{
+	const Vector vecHalfDir = (vecEnd - vecStart) * 0.5f;
+	const Vector vecabsHalfDir(fabs(vecHalfDir.x), fabs(vecHalfDir.y), fabs(vecHalfDir.z));
+
+	const Vector vecBBoxDir = (absmax - absmin) * 0.5f;
+
+	const Vector vecBBoxCenter = (absmin + absmax) * 0.5f;
+	const Vector vecStartInLocalSpace = vecStart - vecBBoxCenter;
+	const Vector vecHalfEndInLocalSpace = vecStartInLocalSpace + vecHalfDir;
+
+	if (fabs(vecHalfEndInLocalSpace[0]) > vecBBoxDir[0] + vecabsHalfDir[0])
+		return false;
+	if (fabs(vecHalfEndInLocalSpace[1]) > vecBBoxDir[1] + vecabsHalfDir[1])
+		return false;
+	if (fabs(vecHalfEndInLocalSpace[2]) > vecBBoxDir[2] + vecabsHalfDir[2])
+		return false;
+
+	if (fabs(vecHalfDir[1] * vecHalfEndInLocalSpace[2] - vecHalfDir[2] * vecHalfEndInLocalSpace[1]) > vecBBoxDir[1] * vecabsHalfDir[2] + vecBBoxDir[2] * vecabsHalfDir[1] + EPSILON)
+		return false;
+	if (fabs(vecHalfDir[2] * vecHalfEndInLocalSpace[0] - vecHalfDir[0] * vecHalfEndInLocalSpace[2]) > vecBBoxDir[2] * vecabsHalfDir[0] + vecBBoxDir[0] * vecabsHalfDir[2] + EPSILON)
+		return false;
+	if (fabs(vecHalfDir[0] * vecHalfEndInLocalSpace[1] - vecHalfDir[1] * vecHalfEndInLocalSpace[0]) > vecBBoxDir[0] * vecabsHalfDir[1] + vecBBoxDir[1] * vecabsHalfDir[0] + EPSILON)
+		return false;
+
+	return true;
+}
+
+// For finding triggers that are intercepted by a line between two points (used to trigger stuff when teleporting in VR) - Max Vollmer, 2018-01-10
+// WARNING: DOES NOT RETURN ENTITIES IN ORDER OF TRACE LINE!
+CBaseEntity * UTIL_TraceTriggers(CBaseEntity *pStartEntity, const Vector & vecStart, const Vector & vecEnd)
+{
+	CBaseEntity *pEntity = pStartEntity;
+	while (UTIL_FindAllEntities(&pEntity))
+	{
+		if (pEntity->pev->solid == SOLID_TRIGGER && UTIL_TraceBBox(vecStart, vecEnd, pEntity->pev->absmin, pEntity->pev->absmax))
+		{
+			return pEntity;
+		}
+	}
+	return nullptr;
+}
+
+
+void TODO_TraceClipNodes()
+{
+	ENT(0)->v.model;
+}
+
 
 TraceResult UTIL_GetGlobalTrace( )
 {
@@ -1133,32 +1243,43 @@ BOOL UTIL_ShouldShowBlood( int color )
 	return FALSE;
 }
 
+
+
+// Convenience method to check if a point is inside a bbox - Max Vollmer, 2017-12-27
+bool UTIL_PointInsideBBox(const Vector &vec, const Vector &absmin, const Vector &absmax)
+{
+	return absmin.x < vec.x && absmin.y < vec.y && absmin.z < vec.z && absmax.x > vec.x && absmax.y > vec.y && absmax.z > vec.z;
+}
+
 // Convenience method to check if a point is inside a brush model (Algorithm could be more performant, but this is HL after all) - Max Vollmer, 2017-08-26
 bool UTIL_PointInsideBSPModel(const Vector &vec, const Vector &absmin, const Vector &absmax)
 {
 	bool inside = false;
-	TraceResult tr;
-	Vector startPos = absmin;
-	Vector vecDirEpsilon = (vec - startPos).Normalize() * 0.01f;
-	startPos = startPos - vecDirEpsilon;
-	while (startPos.x < vec.x && startPos.y < vec.y && startPos.z < vec.z)
+	if (UTIL_PointInsideBBox(vec, absmin, absmax))
 	{
-		if (inside)
+		TraceResult tr;
+		Vector startPos = absmin;
+		Vector vecDirEpsilon = (vec - startPos).Normalize() * 0.01f;
+		startPos = startPos - vecDirEpsilon;
+		while (startPos.x < vec.x && startPos.y < vec.y && startPos.z < vec.z)
 		{
-			UTIL_TraceLine(vec, startPos, ignore_monsters, NULL, &tr);
-		}
-		else
-		{
-			UTIL_TraceLine(startPos, vec, ignore_monsters, NULL, &tr);
-		}
-		if (tr.flFraction < 1.f)
-		{
-			inside = !inside;
-			startPos = tr.vecEndPos + vecDirEpsilon;
-		}
-		else
-		{
-			break;
+			if (inside)
+			{
+				UTIL_TraceLine(vec, startPos, ignore_monsters, NULL, &tr);
+			}
+			else
+			{
+				UTIL_TraceLine(startPos, vec, ignore_monsters, NULL, &tr);
+			}
+			if (tr.flFraction < 1.f)
+			{
+				inside = !inside;
+				startPos = tr.vecEndPos + vecDirEpsilon;
+			}
+			else
+			{
+				break;
+			}
 		}
 	}
 	return inside;
@@ -1201,6 +1322,75 @@ int UTIL_PointContents(const Vector &vec, bool detectSolidEntities)
 	}
 	return pointContents;
 }
+
+#include "com_model.h"
+
+EHANDLE hFakeMonster;
+
+// Returns true if the given bbox intersects with (or is completely enclosed by) something solid - Max Vollmer, 2017-12-27
+bool UTIL_BBoxIntersectsBSPModel(const Vector &origin, const Vector &mins, const Vector &maxs)
+{
+	if (!hFakeMonster)
+	{
+		hFakeMonster = CBaseEntity::Create("info_target", origin, Vector());
+	}
+	CBaseEntity *pFakeMonster = hFakeMonster;
+	if (pFakeMonster != nullptr)
+	{
+		UTIL_SetOrigin(pFakeMonster->pev, origin);
+
+		const Vector absminsmaxs[2] = { origin + mins, origin + maxs };
+
+		for (int i = 0; i < 6; i++)
+		{
+			Vector curminsmaxs[2] = { mins, maxs };
+			curminsmaxs[0][i / 2] /= 2;
+			curminsmaxs[1][i / 2] /= 2;
+			UTIL_SetSize(pFakeMonster->pev, curminsmaxs[0], curminsmaxs[1]);
+
+			Vector start = origin;
+			Vector end = origin;
+			start[i / 2] += curminsmaxs[i % 2][i / 2];
+			end[i / 2] += curminsmaxs[1 - i % 2][i / 2];
+			Vector dirEpsilon = (end - start).Normalize() * 0.01f;
+
+			TraceResult tr;
+			tr.flFraction = 0.0f;
+
+			Vector nextStart = start + dirEpsilon;
+
+			while (tr.flFraction < 1.0f && ((start[i / 2] < end[i / 2]) == (nextStart[i / 2] < end[i / 2])))
+			{
+				TRACE_MONSTER_HULL(pFakeMonster->edict(), nextStart, end, ignore_monsters, pFakeMonster->edict(), &tr);
+				if (tr.flFraction > 0.0f && tr.flFraction < 1.0f && UTIL_PointInsideBBox(tr.vecEndPos, absminsmaxs[0], absminsmaxs[1]))
+				{
+					return true;
+				}
+				nextStart = tr.vecEndPos + dirEpsilon;
+			}
+		}
+	}
+	int contents = UTIL_PointContents(origin, true);
+	return contents == CONTENTS_SOLID || contents == CONTENTS_SKY;
+}
+
+// Returns true if the given bboxes intersect - Max Vollmer, 2018-02-11
+bool UTIL_BBoxIntersectsBBox(const Vector &absmins1, const Vector &absmaxs1, const Vector &absmins2, const Vector &absmaxs2)
+{
+	if (absmaxs1.x < absmins2.x || absmins1.x > absmaxs2.x) return false;
+	if (absmaxs1.y < absmins2.y || absmins1.y > absmaxs2.y) return false;
+	if (absmaxs1.z < absmins2.z || absmins1.z > absmaxs2.z) return false;
+}
+
+// Returns true if the point is inside the rotated bbox - Max Vollmer, 2018-02-11
+bool UTIL_PointInsideRotatedBBox(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs, const Vector & checkVec)
+{
+	Vector rotatedLocalCheckVec = checkVec - bboxCenter;
+	gVRPhysicsHelper.RotateVector(rotatedLocalCheckVec, -bboxAngles, Vector(), true);
+	return UTIL_PointInsideBBox(rotatedLocalCheckVec, bboxMins, bboxMaxs);
+}
+
+
 
 void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount )
 {
@@ -1557,6 +1747,38 @@ float UTIL_WaterLevel( const Vector &position, float minz, float maxz )
 }
 
 
+const Vector UTIL_WaterLevelPos(const Vector& start, const Vector& end)
+{
+	if (UTIL_PointContents(start) != CONTENTS_WATER)
+	{
+		return start;
+	}
+
+	if (UTIL_PointContents(end) == CONTENTS_WATER)
+	{
+		return end;
+	}
+
+	const Vector middle = (start + end) * 0.5f;
+	const float dist = (end - start).Length();
+	if (dist > 1.0f)
+	{
+		if (UTIL_PointContents(middle) == CONTENTS_WATER)
+		{
+			return UTIL_WaterLevelPos(middle, end);
+		}
+		else
+		{
+			return UTIL_WaterLevelPos(start, middle);
+		}
+	}
+	else
+	{
+		return middle;
+	}
+}
+
+
 extern DLL_GLOBAL	short	g_sModelIndexBubbles;// holds the index for the bubbles model
 
 void UTIL_Bubbles( Vector mins, Vector maxs, int count )
@@ -1697,6 +1919,165 @@ void UTIL_StripToken( const char *pKey, char *pDest )
 		i++;
 	}
 	pDest[i] = 0;
+}
+
+
+// Convenience function to get the constants of a parabola function (in 2d space) from 3 points - 2017-12-25, Max Vollmer
+void UTIL_ParabolaFromPoints(const Vector2D & p1, const Vector2D & p2, const Vector2D & p3, Vector & parabola)
+{
+	// General function is: y = A*x*x + B*x + C
+
+	// Resolve for C with first point
+	// A*p1.x*p1.x + B*p1.x + C = p1.y
+	// ==> C = p1.y - A*p1.x*p1.x - B*p1.x
+
+	// Resolve for B with C and second point
+	// A*p2.x*p2.x + B*p2.x + p1.y - A*p1.x*p1.x - B*p1.x = p2.y
+	// ===> B = (p2.y - p1.y - A*(p2.x*p2.x - p1.x*p1.x)) / (p2.x - p1.x)
+
+	// Resolve for A with B and C and third point
+	// A*p3.x*p3.x + ((p2.y - p1.y - A*(p2.x*p2.x - p1.x*p1.x)) / (p2.x - p1.x))*p3.x + p1.y - A*p1.x*p1.x - ((p2.y - p1.y - A*(p2.x*p2.x - p1.x*p1.x)) / (p2.x - p1.x))*p1.x
+	// ===> A = ((p2.y - p1.y)*(p1.x - p3.x) + (p3.y - p1.y)*(p2.x - p1.x)) / ((p1.x - p3.x)*(p2.x*p2.x - p1.x*p1.x) + (p2.x - p1.x)*(p3.x*p3.x - p1.x*p1.x))
+
+	// Do the actual calculations:
+	float A = ((p2.y - p1.y)*(p1.x - p3.x) + (p3.y - p1.y)*(p2.x - p1.x)) / ((p1.x - p3.x)*(p2.x*p2.x - p1.x*p1.x) + (p2.x - p1.x)*(p3.x*p3.x - p1.x*p1.x));
+	float B = ((p2.y - p1.y) - A*(p2.x*p2.x - p1.x*p1.x)) / (p2.x - p1.x);
+	float C = p1.y - A*p1.x*p1.x - B*p1.x;
+
+	parabola.x = A;
+	parabola.y = B;
+	parabola.z = C;
+}
+
+
+// Moved from barney.cpp and made 3d (why tf was this 2d?) - Max Vollmer, 2018-01-02
+bool UTIL_IsFacing(const Vector &viewPos, const Vector &viewAngles, const Vector &reference)
+{
+	Vector referenceDir = (reference - viewPos);
+	Vector viewDir;
+	UTIL_MakeVectorsPrivate(viewAngles, viewDir, nullptr, nullptr);
+	if (DotProduct(viewDir, referenceDir) > 0.96f)	// +/- 15 degrees or so
+	{
+		return true;
+	}
+	return false;
+}
+
+// Checks if a trace would hit this entity (does not check if stuff is in the way, use UTIL_CheckClearSight for that), entity must be solid - Max Vollmer, 2018-01-06
+bool UTIL_CheckTraceIntersectsEntity(const Vector &pos1, const Vector &pos2, CBaseEntity *pCheck)
+{
+	// Check if line starts inside box
+	if (UTIL_PointInsideBBox(pos1, pCheck->pev->absmin, pCheck->pev->absmax))
+	{
+		return true;
+	}
+
+	TraceResult tr;
+	UTIL_TraceLine(pos1, pos2, dont_ignore_monsters, dont_ignore_glass, nullptr, &tr);
+	if (tr.pHit == pCheck->edict() || UTIL_PointInsideBBox(tr.vecEndPos, pCheck->pev->absmin, pCheck->pev->absmax))
+	{
+		return true;
+	}
+	else if (tr.flFraction > 0.f && tr.flFraction < 1.f && (pos2 - tr.vecEndPos).Length() > 2.f)
+	{
+		return UTIL_CheckTraceIntersectsEntity(tr.vecEndPos + (pos2-pos1).Normalize(), pos2, pCheck);
+	}
+	else
+	{
+		return false;
+	}
+}
+
+#include "skill.h"
+
+float UTIL_CalculateMeleeDamage(int iId, float speed)
+{
+	if (speed >= MELEE_MIN_SWING_SPEED)
+	{
+		float baseDamage = gSkillData.plrDmgCrowbar * speed / MELEE_MIN_SWING_SPEED;
+		switch (iId)
+		{
+		case WEAPON_CROWBAR:
+			return baseDamage;
+		case WEAPON_HORNETGUN:
+			return baseDamage * 0.05f;
+		case WEAPON_NONE:
+		case WEAPON_BAREHAND:
+		case WEAPON_SNARK:
+			return baseDamage * 0.1f;
+		case WEAPON_HANDGRENADE:
+		case WEAPON_TRIPMINE:
+		case WEAPON_SATCHEL:
+			return baseDamage * 0.2f;
+		case WEAPON_GLOCK:
+		case WEAPON_PYTHON:
+			return baseDamage * 0.3f;
+		case WEAPON_MP5:
+		case WEAPON_SHOTGUN:
+		case WEAPON_CROSSBOW:
+			return baseDamage * 0.4f;
+		case WEAPON_RPG:
+		case WEAPON_GAUSS:
+		case WEAPON_EGON:
+			return baseDamage * 0.5f;
+		default:
+			return baseDamage * 0.1f;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int UTIL_DamageTypeFromWeapon(int iId)
+{
+	switch (iId)
+	{
+	case WEAPON_CROWBAR:
+		return DMG_CLUB;
+	default:
+		return DMG_CLUB | DMG_NEVERGIB;
+	}
+}
+
+
+/*
+bool UTIL_ShouldCollideWithPlayer(CBaseEntity *pOther)
+{
+	/*
+	if (FClassnameIs(pOther->pev, "func_pushable") || FClassnameIs(pOther->pev, "monster_scientist") || FClassnameIs(pOther->pev, "monster_barney"))
+	{
+		return false;
+	}
+	* /
+	/*
+	if (pOther->pev->solid == SOLID_BSP || pOther->pev->movetype == MOVETYPE_PUSHSTEP)
+	{
+		return false;
+	}
+	* /
+	return true;
+}
+*/
+
+bool UTIL_ShouldCollide(CBaseEntity *pTouched, CBaseEntity *pOther)
+{
+	/*
+	if (FBitSet(pTouched->pev->flags, FL_CLIENT))
+	{
+		return UTIL_ShouldCollideWithPlayer(pOther);
+	}
+	else if (FBitSet(pOther->pev->flags, FL_CLIENT))
+	{
+		return UTIL_ShouldCollideWithPlayer(pTouched);
+	}
+	*/
+	if (FClassnameIs(pTouched->pev, "func_illusionary") || FClassnameIs(pOther->pev, "func_illusionary"))
+	{
+		return false;
+	}
+	return true;
 }
 
 
@@ -2603,4 +2984,3 @@ int	CRestore::BufferCheckZString( const char *string )
 	}
 	return 0;
 }
-

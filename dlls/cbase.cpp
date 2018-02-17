@@ -772,3 +772,21 @@ CBaseEntity * CBaseEntity::Create( char *szName, const Vector &vecOrigin, const 
 }
 
 
+
+// new 1.1.0.8 callbacks
+void DispatchOnFreeEntPrivateData(edict_t *pEnt)
+{
+
+}
+
+int DispatchShouldCollide(edict_t *pentTouched, edict_t *pentOther)
+{
+	if (!FNullEnt(pentTouched) && !FNullEnt(pentOther))
+	{
+		return UTIL_ShouldCollide(CBaseEntity::Instance(pentTouched), CBaseEntity::Instance(pentOther));
+	}
+	else
+	{
+		return true;
+	}
+}

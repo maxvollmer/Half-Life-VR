@@ -495,6 +495,21 @@ void CSqueak::Holster( int skiplocal /* = 0 */ )
 
 void CSqueak::PrimaryAttack()
 {
+	if (!m_flStartThrow && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0)
+	{
+		/*
+		if (RANDOM_FLOAT(0, 1) <= 0.5)
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_NORM, 0, 105);
+		else
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105);
+		*/
+
+		m_flStartThrow = 1;
+	}
+}
+
+void CSqueak::Throw()
+{
 	if ( m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ] )
 	{
 		UTIL_MakeVectors( m_pPlayer->GetWeaponViewAngles());
@@ -545,12 +560,23 @@ void CSqueak::PrimaryAttack()
 
 void CSqueak::SecondaryAttack( void )
 {
-
+	// Just squeek a bit :3
+	if (RANDOM_FLOAT(0, 1) <= 0.5)
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_NORM, 0, 105);
+	else
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105);
 }
 
 
 void CSqueak::WeaponIdle( void )
 {
+	if (m_flStartThrow)
+	{
+		Throw();
+		m_flStartThrow = 0;
+		return;
+	}
+
 	if ( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 

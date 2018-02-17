@@ -274,7 +274,11 @@ void CZombie :: Spawn()
 	SET_MODEL(ENT(pev), "models/zombie.mdl");
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
-	pev->scale = VR_SCALE_HUMANS;
+	pev->scale = CVAR_GET_FLOAT("vr_humanscale");
+	if (pev->scale <= 0.f)
+	{
+		pev->scale = 1.f;
+	}
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;

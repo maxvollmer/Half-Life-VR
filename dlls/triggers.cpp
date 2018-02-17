@@ -1762,8 +1762,8 @@ void CLadder :: KeyValue( KeyValueData *pkvd )
 void CLadder :: Precache( void )
 {
 	// Do all of this in here because we need to 'convert' old saved games
-	pev->solid = SOLID_NOT;
-	pev->skin = CONTENTS_LADDER;
+	pev->solid = SOLID_BSP;
+	//pev->skin = CONTENTS_LADDER;
 	if ( CVAR_GET_FLOAT("showtriggers") == 0 )
 	{
 		pev->rendermode = kRenderTransTexture;
@@ -1779,6 +1779,9 @@ void CLadder :: Spawn( void )
 
 	SET_MODEL(ENT(pev), STRING(pev->model));    // set size and link into world
 	pev->movetype = MOVETYPE_PUSH;
+
+	pev->solid = SOLID_BSP;
+	pev->skin = 0;
 }
 
 
@@ -1790,6 +1793,8 @@ public:
 	void Spawn( void );
 	void KeyValue( KeyValueData *pkvd );
 	void Touch( CBaseEntity *pOther );
+private:
+	bool IsXenJumpPad(const Vector &spawnAngles);
 };
 LINK_ENTITY_TO_CLASS( trigger_push, CTriggerPush );
 
@@ -1804,21 +1809,70 @@ void CTriggerPush :: KeyValue( KeyValueData *pkvd )
 Pushes the player
 */
 
+// Detect xen jump pads and enable special VR controls - Max Vollmer, 2017-09-10
+bool CTriggerPush::IsXenJumpPad(const Vector &spawnAngles)
+{
+	if (pev->spawnflags == 0 &&
+		(spawnAngles.x == -90 || spawnAngles.x == 270) &&
+		spawnAngles.y == 0 &&
+		spawnAngles.z == 0 &&
+		pev->speed > 1000)
+	{
+		Vector center = (pev->absmin + pev->absmax) * 0.5f;
+		Vector down = center;
+		down.z = pev->absmin.z - 256.0f;
+		TraceResult tr;
+		UTIL_TraceLine(center, down, ignore_monsters, edict(), &tr);
+
+		if (tr.pHit != nullptr && tr.flFraction < 1.0f)
+		{
+			const char *texture = TRACE_TEXTURE(tr.pHit, center, down);
+			if (texture != nullptr && FStrEq(texture, "c2a5mound"))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
 void CTriggerPush :: Spawn( )
 {
-	if ( pev->angles == g_vecZero )
+	if (pev->angles == g_vecZero)
 		pev->angles.y = 360;
+
+	const Vector spawnAngles = pev->angles;
+
 	InitTrigger();
 
 	if (pev->speed == 0)
 		pev->speed = 100;
 
-	if ( FBitSet (pev->spawnflags, SF_TRIGGER_PUSH_START_OFF) )// if flagged to Start Turned Off, make trigger nonsolid.
+	if (FBitSet(pev->spawnflags, SF_TRIGGER_PUSH_START_OFF))// if flagged to Start Turned Off, make trigger nonsolid.
 		pev->solid = SOLID_NOT;
 
-	SetUse(&CTriggerPush:: ToggleUse );
+	SetUse(&CTriggerPush::ToggleUse);
 
-	UTIL_SetOrigin( pev, pev->origin );		// Link into the list
+	UTIL_SetOrigin(pev, pev->origin);		// Link into the list
+
+	if (IsXenJumpPad(spawnAngles))
+	{
+		// Find trigger_multiple
+		CBaseEntity *pTriggerMultiple = nullptr;
+		while ((pTriggerMultiple = UTIL_FindEntityByClassname(pTriggerMultiple, "trigger_multiple")) != nullptr)
+		{
+			if (pTriggerMultiple->pev->size == pev->size && pTriggerMultiple->pev->absmin == pev->absmin && pTriggerMultiple->pev->absmax == pev->absmax)
+			{
+				// Register the multi_manager for this xen mound at this position
+				gGlobalXenMounds.Add((pev->absmin + pev->absmax) * 0.5f, pTriggerMultiple->pev->target);
+				// Then delete trigger_multiple and this trigger_push (only controller beam will activate the mound)
+				UTIL_Remove(this);
+				UTIL_Remove(pTriggerMultiple);
+				return;
+			}
+		}
+	}
 }
 
 

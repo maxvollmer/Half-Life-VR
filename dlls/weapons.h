@@ -67,7 +67,7 @@ public:
 #define	WEAPON_GLOCK			2
 #define WEAPON_PYTHON			3
 #define WEAPON_MP5				4
-#define WEAPON_CHAINGUN			5
+//#define WEAPON_CHAINGUN			5
 #define WEAPON_CROSSBOW			6
 #define WEAPON_SHOTGUN			7
 #define WEAPON_RPG				8
@@ -78,6 +78,7 @@ public:
 #define WEAPON_TRIPMINE			13
 #define	WEAPON_SATCHEL			14
 #define	WEAPON_SNARK			15
+#define	WEAPON_BAREHAND			16
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -212,6 +213,44 @@ typedef struct
 	const char *pszName;
 	int iId;
 } AmmoInfo;
+
+inline bool IsWeaponWithRange(int iId)
+{
+	return iId == WEAPON_GLOCK
+		|| iId == WEAPON_PYTHON
+		|| iId == WEAPON_MP5
+		|| iId == WEAPON_CROSSBOW
+		|| iId == WEAPON_SHOTGUN
+		|| iId == WEAPON_RPG
+		|| iId == WEAPON_GAUSS
+		|| iId == WEAPON_EGON
+		|| iId == WEAPON_HORNETGUN;
+}
+
+inline bool IsWeapon(int iId)
+{
+	return iId == WEAPON_CROWBAR
+		|| iId == WEAPON_GLOCK
+		|| iId == WEAPON_PYTHON
+		|| iId == WEAPON_MP5
+		|| iId == WEAPON_CROSSBOW
+		|| iId == WEAPON_SHOTGUN
+		|| iId == WEAPON_RPG
+		|| iId == WEAPON_GAUSS
+		|| iId == WEAPON_EGON
+		|| iId == WEAPON_HANDGRENADE
+		|| iId == WEAPON_TRIPMINE
+		|| iId == WEAPON_SATCHEL
+		|| iId == WEAPON_SNARK;
+}
+
+inline bool IsExplosiveWeapon(int iId)
+{
+	return iId == WEAPON_SNARK
+		|| iId == WEAPON_HANDGRENADE
+		|| iId == WEAPON_TRIPMINE
+		|| iId == WEAPON_SATCHEL;
+}
 
 // Items that the player has in their inventory that they can use
 class CBasePlayerItem : public CBaseAnimating
@@ -493,6 +532,8 @@ private:
 };
 
 
+#define MELEE_MIN_SWING_SPEED 200
+
 class CCrowbar : public CBasePlayerWeapon
 {
 public:
@@ -505,7 +546,7 @@ public:
 
 	virtual void ItemPostFrame(void);
 
-	void CheckSmack(float speed);
+	//void CheckSmack(float speed);
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
 	int m_iSwing;
@@ -526,11 +567,6 @@ private:
 	// Stuff for VR swinging
 	bool playedWooshSound = false;
 	float lastWooshSoundTime = 0;
-	float hitCount = 0;
-	bool HasNotHitThisEntityThisSwing(CBaseEntity *pEntity);
-	void RememberHasHitThisEntityThisSwing(CBaseEntity *pEntity);
-	void ClearEntitiesHitThisSwing();
-	EHANDLE hitEntities[128];	// TODO: Use std::unordered_set
 #endif
 };
 
@@ -1008,6 +1044,8 @@ public:
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );
 	int m_fJustThrown;
+
+	void Throw();
 
 	virtual BOOL UseDecrement( void )
 	{ 

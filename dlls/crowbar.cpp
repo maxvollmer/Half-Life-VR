@@ -23,9 +23,6 @@
 #include "gamerules.h"
 
 
-#define	CROWBAR_BODYHIT_VOLUME 128
-#define	CROWBAR_WALLHIT_VOLUME 512
-
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar );
 
 
@@ -51,10 +48,6 @@ void CCrowbar::Spawn( )
 	m_iClip = -1;
 
 	FallInit();// get ready to fall down.
-
-#ifndef CLIENT_DLL
-	ClearEntitiesHitThisSwing();
-#endif
 }
 
 
@@ -146,16 +139,12 @@ void FindHullIntersection( const Vector &vecSrc, TraceResult &tr, float *mins, f
 	}
 }
 
-
-
-#define CROWBAR_MIN_SWING_SPEED 200
-
 void CCrowbar::ItemPostFrame()
 {
 #ifndef CLIENT_DLL
 	Vector weaponVelocity = m_pPlayer->GetWeaponVelocity();
 	float speed = weaponVelocity.Length();
-	if (speed >= CROWBAR_MIN_SWING_SPEED)
+	if (speed >= MELEE_MIN_SWING_SPEED)
 	{
 		if (!playedWooshSound)
 		{
@@ -167,133 +156,10 @@ void CCrowbar::ItemPostFrame()
 			}
 			playedWooshSound = true;
 		}
-		CheckSmack(speed);
 	}
 	else
 	{
 		playedWooshSound = false;
-		hitCount = 0;
-		ClearEntitiesHitThisSwing();
 	}
 #endif
 }
-
-#ifndef CLIENT_DLL
-
-void CCrowbar::CheckSmack(float speed)
-{
-	UTIL_MakeVectors (m_pPlayer->GetWeaponViewAngles());
-	Vector vecSrc	= m_pPlayer->GetGunPosition();
-	Vector vecEnd	= vecSrc + gpGlobals->v_forward * 32;
-
-	TraceResult tr;
-	UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr);
-
-	if (!tr.fStartSolid && !tr.fAllSolid && tr.flFraction < 1.0)	// we hit something!
-	{
-		CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
-
-		if (pEntity && HasNotHitThisEntityThisSwing(pEntity))
-		{
-			RememberHasHitThisEntityThisSwing(pEntity);
-
-			// play thwack, smack, or dong sound
-			float flVol = 1.0;
-
-			hitCount++;
-
-			ClearMultiDamage();
-			// hit damage is greater when swing is faster + weaker for every additional hit
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgCrowbar * (speed / CROWBAR_MIN_SWING_SPEED) * (1.f / hitCount), gpGlobals->v_forward, &tr, DMG_CLUB);
-			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
-
-			if ( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
-			{
-				// play thwack or smack sound
-				switch( RANDOM_LONG(0,2) )
-				{
-				case 0:
-					EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/cbar_hitbod1.wav", 1, ATTN_NORM); break;
-				case 1:
-					EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/cbar_hitbod2.wav", 1, ATTN_NORM); break;
-				case 2:
-					EMIT_SOUND(ENT(pev), CHAN_ITEM, "weapons/cbar_hitbod3.wav", 1, ATTN_NORM); break;
-				}
-				m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
-				if (pEntity->IsAlive())
-				{
-					flVol = 0.1;
-				}
-				else
-				{
-					return; // why?
-				}
-			}
-			else
-			{
-				float fvolbar = 1;
-
-				if (!g_pGameRules->IsMultiplayer())
-				{
-					fvolbar = TEXTURETYPE_PlaySound(&tr, vecSrc, vecSrc + (vecEnd - vecSrc) * 2, BULLET_PLAYER_CROWBAR);
-				}
-
-				// also play crowbar strike
-				switch (RANDOM_LONG(0, 1))
-				{
-				case 0:
-					EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
-					break;
-				case 1:
-					EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
-					break;
-				}
-			}
-
-			m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
-			DecalGunshot(&tr, BULLET_PLAYER_CROWBAR);
-		}
-	}
-}
-
-bool CCrowbar::HasNotHitThisEntityThisSwing(CBaseEntity *pEntity)
-{
-	int hitEntitiesCount = sizeof(hitEntities) / sizeof(EHANDLE);
-	for (int i = 0; i < hitEntitiesCount; i++)
-	{
-		if (((CBaseEntity*)hitEntities[i]) == pEntity)
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-void CCrowbar::RememberHasHitThisEntityThisSwing(CBaseEntity *pEntity)
-{
-	int hitEntitiesCount = sizeof(hitEntities) / sizeof(EHANDLE);
-	for (int i = 0; i < hitEntitiesCount; i++)
-	{
-		if (hitEntities[i])
-		{
-			continue;
-		}
-		else
-		{
-			hitEntities[i] = pEntity;
-			return;
-		}
-	}
-}
-
-void CCrowbar::ClearEntitiesHitThisSwing()
-{
-	int hitEntitiesCount = sizeof(hitEntities) / sizeof(EHANDLE);
-	for (int i = 0; i < hitEntitiesCount; i++)
-	{
-		hitEntities[i] = NULL;
-	}
-}
-
-#endif
-

@@ -942,6 +942,10 @@ int CTalkMonster :: FOkToSpeak( void )
 	if (m_hEnemy != NULL && FVisible( m_hEnemy ))
 		return FALSE;
 
+	// don't talk while at gunpoint
+	if (vr_flGunPointTime != 0.f)
+		return FALSE;
+
 	return TRUE;
 }
 

@@ -448,6 +448,11 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
 // END Cvars for Skill Level settings
 
+
+// VR stuff
+cvar_t	vr_humanscale = { "vr_humanscale", "1" };
+
+
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit( void )
@@ -882,6 +887,15 @@ void GameDLLInit( void )
 	CVAR_REGISTER ( &sk_player_leg3 );
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
+	// VR stuff
+	CVAR_REGISTER(&vr_humanscale);
+
+
 	SERVER_COMMAND( "exec skill.cfg\n" );
 }
 
+
+void GameDLLUninit(void)
+{
+
+}

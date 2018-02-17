@@ -366,6 +366,8 @@ void CTripmine::Spawn( )
 	// ResetSequenceInfo( );
 	pev->framerate = 0;
 
+	pev->dmg = gSkillData.plrDmgTripmine;
+
 	FallInit();// get ready to fall down
 
 	m_iDefaultAmmo = TRIPMINE_DEFAULT_GIVE;
@@ -481,7 +483,7 @@ void CTripmine::PrimaryAttack( void )
 	{
 
 	}
-	
+
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }

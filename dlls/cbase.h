@@ -49,6 +49,8 @@ CBaseEntity
 #include "monsterevent.h"
 #endif
 
+#include <functional>
+
 // C functions for external declarations that call the appropriate C++ methods
 
 #ifdef _WIN32
@@ -117,6 +119,17 @@ private:
 	edict_t *m_pent;
 	int		m_serialnumber;
 public:
+
+	EHANDLE()
+	{
+		m_pent = nullptr;
+		m_serialnumber = 0;
+	}
+	EHANDLE(CBaseEntity *pEntity)
+	{
+		(operator=)(pEntity);
+	}
+
 	edict_t *Get( void );
 	edict_t *Set( edict_t *pent );
 
@@ -126,6 +139,23 @@ public:
 
 	CBaseEntity * operator = (CBaseEntity *pEntity);
 	CBaseEntity * operator ->();
+
+	struct Hash : public std::unary_function<EHANDLE, std::size_t>
+	{
+		std::size_t operator()(const EHANDLE& e) const
+		{
+			std::hash<int> intHasher;
+			std::hash<edict_t*> entHasher;
+			return intHasher(e.m_serialnumber) ^ entHasher(e.m_pent);
+		}
+	};
+	struct Equal : public std::binary_function<EHANDLE, EHANDLE, bool>
+	{
+		bool operator()(const EHANDLE & e1, const EHANDLE & e2) const
+		{
+			return e1.m_serialnumber == e2.m_serialnumber && e1.m_pent == e2.m_pent;
+		}
+	};
 };
 
 

@@ -81,6 +81,7 @@ int CHandGrenade::GetItemInfo(ItemInfo *p)
 
 BOOL CHandGrenade::Deploy( )
 {
+	m_flStartThrow = 0;
 	m_flReleaseThrow = -1;
 	return DefaultDeploy( "models/v_grenade.mdl", "models/p_grenade.mdl", HANDGRENADE_DRAW, "crowbar" );
 }
@@ -179,7 +180,10 @@ void CHandGrenade::WeaponIdle( void )
 		if (time < 0)
 			time = 0;
 
-		CGrenade::ShootTimed(m_pPlayer->pev, m_pPlayer->GetWeaponPosition(), m_pPlayer->GetWeaponVelocity() * 2, time);
+#ifndef CLIENT_DLL
+		CGrenade *pGrenade = CGrenade::ShootTimed(m_pPlayer->pev, m_pPlayer->GetWeaponPosition(), m_pPlayer->GetWeaponVelocity() * 2, time);
+		pGrenade->pev->dmg = this->pev->dmg; // Original HL ignored skill setting for grenades...
+#endif
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );

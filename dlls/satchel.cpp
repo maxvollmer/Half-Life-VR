@@ -219,7 +219,9 @@ void CSatchel::Spawn( )
 	SET_MODEL(ENT(pev), "models/w_satchel.mdl");
 
 	m_iDefaultAmmo = SATCHEL_DEFAULT_GIVE;
-		
+
+	pev->dmg = gSkillData.plrDmgSatchel;
+
 	FallInit();// get ready to fall down.
 }
 
@@ -334,8 +336,9 @@ void CSatchel::PrimaryAttack()
 	switch (m_chargeReady)
 	{
 	case 0:
+		if (!m_flStartThrow && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0)
 		{
-		Throw( );
+			m_flStartThrow = 1;
 		}
 		break;
 	case 1:
@@ -378,7 +381,10 @@ void CSatchel::SecondaryAttack( void )
 {
 	if ( m_chargeReady != 2 )
 	{
-		Throw( );
+		if (!m_flStartThrow && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0)
+		{
+			m_flStartThrow = 1;
+		}
 	}
 }
 
@@ -386,11 +392,10 @@ void CSatchel::Throw( void )
 {
 	if ( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
+#ifndef CLIENT_DLL
 		Vector vecSrc = m_pPlayer->GetWeaponPosition();
 		Vector vecThrow = m_pPlayer->GetWeaponVelocity() * 1.5f;
 
-
-#ifndef CLIENT_DLL
 		CBaseEntity *pSatchel = Create( "monster_satchel", vecSrc, Vector( 0, 0, 0), m_pPlayer->edict() );
 		pSatchel->pev->velocity = vecThrow;
 		pSatchel->pev->avelocity.y = 400;
@@ -418,6 +423,13 @@ void CSatchel::Throw( void )
 
 void CSatchel::WeaponIdle( void )
 {
+	if (m_flStartThrow)
+	{
+		Throw();
+		m_flStartThrow = 0;
+		return;
+	}
+
 	if ( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
 

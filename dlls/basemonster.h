@@ -320,7 +320,8 @@ public:
 	virtual void AlertSound ( void ) { return; };
 	virtual void IdleSound ( void ) { return; };
 	virtual void PainSound ( void ) { return; };
-	
+
+	virtual BOOL IsFollowing() { return FALSE; }
 	virtual void StopFollowing( BOOL clearSchedule ) {}
 
 	inline void	Remember( int iMemory ) { m_afMemory |= iMemory; }
@@ -332,6 +333,17 @@ public:
 	BOOL CineCleanup( );
 
 	CBaseEntity* DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
+
+	// Remember time when player points gun at us (scare/anger them for more immersive VR experience) - Max Vollmer, 2018-01-02
+	float vr_flGunPointTime = 0;
+
+	// Remember time when player touches our shoulder (follow-command for more immersive VR experience) - Max Vollmer, 2018-01-02
+	float vr_flShoulderTouchTime = 0;
+
+	// Remember time when player holds flat hand in front of our face (stop-command for more immersive VR experience) - Max Vollmer, 2018-01-02
+	float vr_flStopSignalTime = 0;
+
+	bool HasClearSight(const Vector & pos);
 };
 
 

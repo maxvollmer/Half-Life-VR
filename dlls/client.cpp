@@ -38,6 +38,7 @@
 #include "weaponinfo.h"
 #include "usercmd.h"
 #include "netadr.h"
+#include "VRPhysicsHelper.h"
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -77,7 +78,7 @@ called when a player connects to a server
 ============
 */
 BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ]  )
-{	
+{
 	return g_pGameRules->ClientConnected( pEntity, pszName, pszAddress, szRejectReason );
 
 // a client connecting during an intermission can cause problems
@@ -438,26 +439,47 @@ void ClientCommand( edict_t *pEntity )
 		edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
 		pPlayer->StartObserver( pev->origin, VARS(pentSpawnSpot)->angles);
 	}
-	else if (FStrEq(pcmd, "updatevr"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
+	else if (FStrEq(pcmd, "vrupd_hmd") || FStrEq(pcmd, "vrupd_lft") || FStrEq(pcmd, "vrupd_rt"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
-		if (size == 21)
+		if (size > 3)
 		{
 			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
-			pPlayer->UpdateVRRelatedPositions(
-				Vector(atof(CMD_ARGV(1)), atof(CMD_ARGV(2)), atof(CMD_ARGV(3))),
-				Vector(atof(CMD_ARGV(4)), atof(CMD_ARGV(5)), atof(CMD_ARGV(6))),
-				Vector(atof(CMD_ARGV(7)), atof(CMD_ARGV(8)), atof(CMD_ARGV(9))),
-				Vector(atof(CMD_ARGV(10)), atof(CMD_ARGV(11)), atof(CMD_ARGV(12))),
-				Vector(atof(CMD_ARGV(13)), atof(CMD_ARGV(14)), atof(CMD_ARGV(15))),
-				Vector(atof(CMD_ARGV(16)), atof(CMD_ARGV(17)), atof(CMD_ARGV(18))),
-				atoi(CMD_ARGV(19)) != 0, atoi(CMD_ARGV(20)) != 0
-			);
+			int timestamp = atoi(CMD_ARGV(1));
+			if (FStrEq(pcmd, "vrupd_hmd")  && size == 8)
+			{
+				pPlayer->UpdateVRHeadsetPosition(timestamp,
+					Vector(atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4))),
+					Vector(atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7)))
+				);
+				return;
+			}
+			else if (FStrEq(pcmd, "vrupd_lft") && size == 12)
+			{
+				bool isValid = atoi(CMD_ARGV(2)) != 0;
+				pPlayer->UpdateVRLeftControllerPosition(timestamp,
+					isValid,
+					Vector(atof(CMD_ARGV(3)), atof(CMD_ARGV(4)), atof(CMD_ARGV(5))),
+					Vector(atof(CMD_ARGV(6)), atof(CMD_ARGV(7)), atof(CMD_ARGV(8))),
+					Vector(atof(CMD_ARGV(9)), atof(CMD_ARGV(10)), atof(CMD_ARGV(11)))
+				);
+				return;
+			}
+			else if (FStrEq(pcmd, "vrupd_rt") && size == 12)
+			{
+				bool isValid = atoi(CMD_ARGV(2)) != 0;
+				pPlayer->UpdateVRRightControllerPosition(timestamp,
+					isValid,
+					Vector(atof(CMD_ARGV(3)), atof(CMD_ARGV(4)), atof(CMD_ARGV(5))),
+					Vector(atof(CMD_ARGV(6)), atof(CMD_ARGV(7)), atof(CMD_ARGV(8))),
+					Vector(atof(CMD_ARGV(9)), atof(CMD_ARGV(10)), atof(CMD_ARGV(11)))
+				);
+				return;
+			}
 		}
-		else
-		{
-			ClientPrint(&pEntity->v, HUD_PRINTCONSOLE, "Invalid vr update!\n");
-		}
+		char errormsg[1024] = { 0 };
+		sprintf_s(errormsg, "Invalid vr update (%i): %s %s!\n", size, pcmd, CMD_ARGS());
+		ClientPrint(&pEntity->v, HUD_PRINTCONSOLE, errormsg);
 	}
 	else if (FStrEq(pcmd, "vrtele"))
 	{
@@ -662,6 +684,8 @@ void ParmsChangeLevel( void )
 //
 void StartFrame( void )
 {
+	gVRPhysicsHelper.StartFrame();
+
 	if ( g_pGameRules )
 		g_pGameRules->Think();
 
@@ -786,6 +810,9 @@ void ClientPrecache( void )
 
 	if (giPrecacheGrunt)
 		UTIL_PrecacheOther("monster_human_grunt");
+
+
+	PRECACHE_MODEL("sprites/black.spr");
 }
 
 /*
@@ -1176,12 +1203,12 @@ void CreateBaseline( int player, int eindex, struct entity_state_s *baseline, st
 		baseline->colormap		= eindex;
 		baseline->modelindex	= playermodelindex;
 		baseline->friction		= 1.0;
-		baseline->movetype		= MOVETYPE_WALK;
+		baseline->movetype		= MOVETYPE_NOCLIP;	// MOVETYPE_WALK;
 
 		baseline->scale			= entity->v.scale;
 		baseline->solid			= SOLID_SLIDEBOX;
 		baseline->framerate		= 1.0;
-		baseline->gravity		= 1.0;
+		baseline->gravity		= 0.0;
 
 	}
 	else
