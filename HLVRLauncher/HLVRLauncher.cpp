@@ -49,7 +49,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	std::wstring icaclsDisableDeletionOnFileCommandLine = TEXT("icacls ") + hlDirectory + TEXT("\\opengl32.dll /deny Everyone:(DE,DC)");
 	std::wstring icaclsReenableDeletionOnFolderCommandLine = TEXT("icacls ") + hlDirectory + TEXT(" /remove:d Everyone");
 	std::wstring icaclsReenableDeletionOnFileCommandLine = TEXT("icacls ") + hlDirectory + TEXT("\\opengl32.dll /remove:d Everyone");
-	std::wstring hlExeCommandLine = hlDirectory + TEXT("\\hl.exe -game vr -dev -env -console -insecure -nomouse -nojoy +sv_lan 1");
+
+	  std::wstring hlExeCommandLine = hlDirectory + TEXT("\\hl.exe -game vr -dev 2 -console -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 +sv_lan 1 +cl_mousegrab 0");
+	//std::wstring hlExeCommandLine = hlDirectory + TEXT("\\hl.exe -game vr -dev 2 -console -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 -condebug +sv_lan 1 +cl_mousegrab 0");
 
 	RunCommandAndWait(icaclsSetInheritanceCommandLine);
 
