@@ -17,6 +17,11 @@
 //  structures, define 'HARDWARE_MODE' as a preprocessor symbol, otherwise
 //  it will default to software mode as supplied.
 
+// Hardcoded HARDWARE_MODE - Max Vollmer, 2018-01-21
+#ifndef HARDWARE_MODE
+#define HARDWARE_MODE
+#endif
+
 
 // com_model.h
 #ifndef COM_MODEL_H
@@ -27,6 +32,8 @@
 
 #define MAX_CLIENTS         32
 #define MAX_EDICTS          900
+
+#define SURF_PLANEBACK		2	// plane should be negated // Added from bspfile.h - Max Vollmer, 2018-02-04
 
 #define MAX_MODEL_NAME      64
 #define MAX_MAP_HULLS       4
