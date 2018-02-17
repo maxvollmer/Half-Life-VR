@@ -103,7 +103,7 @@ typedef struct hud_player_info_s
 typedef struct cl_enginefuncs_s
 {
 	// sprite handlers
-	HSPRITE_VALVE						( *pfnSPR_Load )			( const char *szPicName );
+	HSPRITE_VALVE				( *pfnSPR_Load )			( const char *szPicName );
 	int							( *pfnSPR_Frames )			( HSPRITE_VALVE hPic );
 	int							( *pfnSPR_Height )			( HSPRITE_VALVE hPic, int frame );
 	int							( *pfnSPR_Width )			( HSPRITE_VALVE hPic, int frame );
