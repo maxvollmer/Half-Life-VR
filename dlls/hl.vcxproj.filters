@@ -318,6 +318,9 @@
     <ClCompile Include="zombie.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VRPhysicsHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activity.h">
@@ -453,6 +456,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="weapons.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VRPhysicsHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -155,7 +155,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <Optimization>Disabled</Optimization>
@@ -197,8 +197,9 @@
       <ModuleDefinitionFile>.\hl.def</ModuleDefinitionFile>
       <OutputFile>.\Debug\hl.dll</OutputFile>
       <ImportLibrary>.\Debug\hl.lib</ImportLibrary>
-      <AdditionalDependencies>user32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;advapi32.lib;reactphysics3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalLibraryDirectories>..\reactphysics3d\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -298,6 +299,7 @@
     <ClCompile Include="tripmine.cpp" />
     <ClCompile Include="turret.cpp" />
     <ClCompile Include="util.cpp" />
+    <ClCompile Include="VRPhysicsHelper.cpp" />
     <ClCompile Include="weapons.cpp" />
     <ClCompile Include="world.cpp" />
     <ClCompile Include="wpn_shared\hl_wpn_glock.cpp" />
@@ -349,6 +351,7 @@
     <ClInclude Include="trains.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="vector.h" />
+    <ClInclude Include="VRPhysicsHelper.h" />
     <ClInclude Include="weapons.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
