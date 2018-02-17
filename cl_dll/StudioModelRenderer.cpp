@@ -29,6 +29,8 @@
 #include "StudioModelRenderer.h"
 #include "GameStudioModelRenderer.h"
 
+#include "vr_renderer.h"
+
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;
 
@@ -916,6 +918,47 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 		}
 	}
 
+	// Ugly but works: Mirror hand model - Max Vollmer, 2017-01-05
+	if (m_fMirrorCurrentModel)
+	{
+		// create mirror matrix
+		float mirrormatrix[3][4] = { 0 };
+
+		mirrormatrix[0][0] = 1; mirrormatrix[0][1] = 0; mirrormatrix[0][2] = 0;
+		mirrormatrix[1][0] = 0; mirrormatrix[1][1] = -1; mirrormatrix[1][2] = 0;
+		mirrormatrix[2][0] = 0; mirrormatrix[2][1] = 0; mirrormatrix[2][2] = 1;
+
+		mirrormatrix[0][3] = 1;
+		mirrormatrix[1][3] = 1;
+		mirrormatrix[2][3] = 1;
+
+		// copy rotation matrix
+		float rotationmatrix_copy[3][4] = { 0 };
+		MatrixCopy(*m_protationmatrix, rotationmatrix_copy);
+
+		// concat mirror and rotation matrix
+		ConcatTransforms(rotationmatrix_copy, mirrormatrix, (*m_protationmatrix));
+
+		// TODO!
+		/*
+		(*m_protationmatrix)[0][0] = -(*m_protationmatrix)[0][0];
+		(*m_protationmatrix)[0][1] = -(*m_protationmatrix)[0][1];
+		(*m_protationmatrix)[0][2] = -(*m_protationmatrix)[0][2];
+		*/
+		/*
+		for (int j = 0; j < 3; j++)
+		{
+			for (int k = 0; k < 3; k++)
+			{
+				(*m_protationmatrix)[j][k] = -(*m_protationmatrix)[j][k];
+			}
+		}
+		*/
+		//(*m_protationmatrix)[0][0] = -(*m_protationmatrix)[0][0];
+		//(*m_protationmatrix)[1][0] = -(*m_protationmatrix)[1][0];
+		//(*m_protationmatrix)[2][0] = -(*m_protationmatrix)[2][0];
+	}
+
 	for (i = 0; i < m_pStudioHeader->numbones; i++) 
 	{
 		QuaternionMatrix( q[i], bonematrix );
@@ -1069,8 +1112,11 @@ StudioDrawModel
 
 ====================
 */
+#define STUDIO_VIEWMODEL_LEFTHAND 32
 int CStudioModelRenderer::StudioDrawModel( int flags )
 {
+	m_fMirrorCurrentModel = false;	// Always reset at beginning
+
 	alight_t lighting;
 	vec3_t dir;
 
@@ -1111,6 +1157,67 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		return result;
 	}
 
+	bool fRenderHUD = false;
+	if (flags & STUDIO_VIEWMODEL_LEFTHAND)
+	{
+		if (CVAR_GET_FLOAT("vr_lefthand_mode") == 0.0f)
+		{
+			m_fMirrorCurrentModel = true;
+		}
+	}
+	else
+	{
+		cl_entity_t *viewmodel = gEngfuncs.GetViewModel();
+		if (viewmodel != nullptr && m_pCurrentEntity == viewmodel)
+		{
+			gVRRenderer.EnableDepthTest();
+			if (gVRRenderer.IsLeftControllerValid())
+			{
+				// backup right hand
+				model_s* backupModel = m_pCurrentEntity->model;
+				int backupModelIndex = m_pCurrentEntity->curstate.modelindex;
+				Vector backupOrigin = m_pCurrentEntity->origin;
+				Vector backupAngles = m_pCurrentEntity->angles;
+				Vector backupCurstateOrigin = m_pCurrentEntity->curstate.origin;
+				Vector backupCurstateAngles = m_pCurrentEntity->curstate.angles;
+				Vector backupLatchedOrigin = m_pCurrentEntity->latched.prevorigin;
+				Vector backupLatchedAngles = m_pCurrentEntity->latched.prevangles;
+
+				// override with left hand data
+				m_pCurrentEntity->curstate.modelindex = gVRRenderer.GetLeftHandModelIndex();
+				m_pCurrentEntity->model = IEngineStudio.GetModelByIndex(m_pCurrentEntity->curstate.modelindex);
+				m_pCurrentEntity->latched.prevorigin = m_pCurrentEntity->curstate.origin = m_pCurrentEntity->origin = gVRRenderer.GetLeftHandPosition();
+				m_pCurrentEntity->latched.prevangles = m_pCurrentEntity->curstate.angles = m_pCurrentEntity->angles = gVRRenderer.GetLeftHandAngles();
+
+				// render left hand
+				StudioDrawModel(flags | STUDIO_VIEWMODEL_LEFTHAND);
+
+				// restore right hand
+				m_pCurrentEntity->curstate.modelindex = backupModelIndex;
+				m_pCurrentEntity->model = backupModel;
+				m_pCurrentEntity->origin = backupOrigin;
+				m_pCurrentEntity->angles = backupAngles;
+				m_pCurrentEntity->curstate.origin = backupCurstateOrigin;
+				m_pCurrentEntity->curstate.angles = backupCurstateAngles;
+				m_pCurrentEntity->latched.prevorigin = backupLatchedOrigin;
+				m_pCurrentEntity->latched.prevangles = backupLatchedAngles;
+			}
+			if (!gVRRenderer.IsRightControllerValid())
+			{
+				gVRRenderer.RenderHUDSprites();
+				return 1;
+			}
+			else
+			{
+				fRenderHUD = true;
+			}
+			if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.0f)
+			{
+				m_fMirrorCurrentModel = true;
+			}
+		}
+	}
+
 	m_pRenderModel = m_pCurrentEntity->model;
 	m_pStudioHeader = (studiohdr_t *)IEngineStudio.Mod_Extradata (m_pRenderModel);
 	IEngineStudio.StudioSetHeader( m_pStudioHeader );
@@ -1121,14 +1228,33 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 	if (flags & STUDIO_RENDER)
 	{
 		// see if the bounding box lets us trivially reject, also sets
-		if (!IEngineStudio.StudioCheckBBox ())
+		if (!IEngineStudio.StudioCheckBBox())
+		{
+			if (fRenderHUD)
+			{
+				gVRRenderer.RenderHUDSprites();
+			}
+			m_fMirrorCurrentModel = false;	// Always reset at end
 			return 0;
+		}
 
 		(*m_pModelsDrawn)++;
 		(*m_pStudioModelCount)++; // render data cache cookie
 
 		if (m_pStudioHeader->numbodyparts == 0)
+		{
+			if (fRenderHUD)
+			{
+				gVRRenderer.RenderHUDSprites();
+			}
+			m_fMirrorCurrentModel = false;	// Always reset at end
 			return 1;
+		}
+	}
+
+	if (m_fMirrorCurrentModel)
+	{
+		gVRRenderer.ReverseCullface();
 	}
 
 	if (m_pCurrentEntity->curstate.movetype == MOVETYPE_FOLLOW)
@@ -1172,6 +1298,17 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 
 		StudioRenderModel( );
 	}
+
+	if (m_fMirrorCurrentModel)
+	{
+		gVRRenderer.RestoreCullface();
+	}
+
+	if (fRenderHUD)
+	{
+		gVRRenderer.RenderHUDSprites();
+	}
+	m_fMirrorCurrentModel = false;	// Always reset at end
 
 	return 1;
 }

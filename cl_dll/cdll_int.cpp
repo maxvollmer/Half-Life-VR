@@ -294,3 +294,8 @@ void DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf )
 }
 
 
+// For weapons.cpp - Max Vollmer, 2018-02-04
+bool GetHUDWeaponBlocked()
+{
+	return gHUD.m_iHideHUDDisplay & HIDEHUD_WEAPONBLOCKED;
+}

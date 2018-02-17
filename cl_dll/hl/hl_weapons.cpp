@@ -262,7 +262,7 @@ void CBasePlayerWeapon::Holster( int skiplocal /* = 0 */ )
 { 
 	m_fInReload = FALSE; // cancel any reload in progress.
 	g_irunninggausspred = false;
-	m_pPlayer->pev->viewmodel = 0; 
+	gEngfuncs.CL_LoadModel("models/v_gordon_hand.mdl", &m_pPlayer->pev->viewmodel);
 }
 
 /*
@@ -315,6 +315,19 @@ Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecD
     return Vector ( x * vecSpread.x, y * vecSpread.y, 0.0 );
 }
 
+bool CanAttack(float flNextSecondaryAttack)
+{
+	extern bool GetHUDWeaponBlocked();
+	if (GetHUDWeaponBlocked())
+	{
+		return FALSE;
+	}
+	else
+	{
+		return flNextSecondaryAttack <= 0.0;
+	}
+}
+
 /*
 =====================
 CBasePlayerWeapon::ItemPostFrame
@@ -339,7 +352,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_fInReload = FALSE;
 	}
 
-	if ((m_pPlayer->pev->button & IN_ATTACK2) && (m_flNextSecondaryAttack <= 0.0))
+	if ((m_pPlayer->pev->button & IN_ATTACK2) && CanAttack(m_flNextSecondaryAttack))
 	{
 		if ( pszAmmo2() && !m_pPlayer->m_rgAmmo[SecondaryAmmoIndex()] )
 		{
@@ -349,7 +362,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
-	else if ((m_pPlayer->pev->button & IN_ATTACK) && (m_flNextPrimaryAttack <= 0.0))
+	else if ((m_pPlayer->pev->button & IN_ATTACK) && CanAttack(m_flNextPrimaryAttack))
 	{
 		if ( (m_iClip == 0 && pszAmmo1()) || (iMaxClip() == -1 && !m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] ) )
 		{
@@ -635,42 +648,6 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Satchel	, &player );
 	HUD_PrepEntity( &g_Tripmine	, &player );
 	HUD_PrepEntity( &g_Snark	, &player );
-}
-
-/*
-=====================
-HUD_GetLastOrg
-
-Retruns the last position that we stored for egon beam endpoint.
-=====================
-*/
-void HUD_GetLastOrg( float *org )
-{
-	int i;
-	
-	// Return last origin
-	for ( i = 0; i < 3; i++ )
-	{
-		org[i] = previousorigin[i];
-	}
-}
-
-/*
-=====================
-HUD_SetLastOrg
-
-Remember our exact predicted origin so we can draw the egon to the right position.
-=====================
-*/
-void HUD_SetLastOrg( void )
-{
-	int i;
-	
-	// Offset final origin by view_offset
-	for ( i = 0; i < 3; i++ )
-	{
-		previousorigin[i] = g_finalstate->playerstate.origin[i] + g_finalstate->client.view_ofs[ i ];
-	}
 }
 
 /*
@@ -1048,9 +1025,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		to->client.fuser3 = -0.001;
 	}
-
-	// Store off the last position from the predicted state.
-	HUD_SetLastOrg();
 
 	// Wipe it so we can't use it after this frame
 	g_finalstate = NULL;

@@ -138,6 +138,7 @@ int CHud :: Redraw( float flTime, int intermission )
 		}
 	}
 
+	/*
 	// are we in demo mode? do we need to draw the logo in the top corner?
 	if (m_iLogo)
 	{
@@ -158,6 +159,7 @@ int CHud :: Redraw( float flTime, int intermission )
 
 		SPR_DrawAdditive(i, x, y, NULL);
 	}
+	*/
 
 	return 1;
 }

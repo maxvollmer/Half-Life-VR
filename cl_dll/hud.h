@@ -129,10 +129,19 @@ public:
 	void _cdecl UserCmd_NextWeapon( void );
 	void _cdecl UserCmd_PrevWeapon( void );
 
+	int FirstSlotWithWeapon();
+	int FirstSlotPosWithWeapon(int slot);
+	int LastSlotWithWeapon();
+	int LastSlotPosWithWeapon(int slot);
+
+	bool IsCurrentWeaponFirstWeapon();
+	bool IsCurrentWeaponLastWeapon();
+
+	WEAPON *m_pWeapon = nullptr;
+
 private:
 	float m_fFade;
 	RGBA  m_rgba;
-	WEAPON *m_pWeapon;
 	int	m_HUD_bucket0;
 	int m_HUD_selection;
 
@@ -415,6 +424,7 @@ public:
 	void Reset( void );
 	int MsgFunc_Flashlight(const char *pszName,  int iSize, void *pbuf );
 	int MsgFunc_FlashBat(const char *pszName,  int iSize, void *pbuf );
+	bool IsOn() const { return m_fOn != 0; }
 	
 private:
 	HSPRITE_VALVE m_hSprite1;

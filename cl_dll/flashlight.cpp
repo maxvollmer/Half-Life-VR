@@ -22,6 +22,8 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 
+#include "vr_renderer.h"
+
 #include <string.h>
 #include <stdio.h>
 
@@ -120,6 +122,8 @@ int CHudFlashlight::Draw(float flTime)
 	y = (m_prc1->bottom - m_prc2->top)/2;
 	x = ScreenWidth - m_iWidth - m_iWidth/2 ;
 
+	gVRRenderer.VRHUDDrawBegin(VRHUDRenderType::FLASHLIGHT);
+
 	// Draw the flashlight casing
 	SPR_Set(m_hSprite1, r, g, b );
 	SPR_DrawAdditive( 0,  x, y, m_prc1);
@@ -144,6 +148,7 @@ int CHudFlashlight::Draw(float flTime)
 		SPR_DrawAdditive( 0, x + iOffset, y, &rc);
 	}
 
+	gVRRenderer.VRHUDDrawFinished();
 
 	return 1;
 }

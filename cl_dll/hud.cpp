@@ -311,7 +311,7 @@ void CHud :: Init( void )
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", 0 );
 	default_fov = CVAR_CREATE( "default_fov", "180", 0 );
-	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
+	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "0", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 

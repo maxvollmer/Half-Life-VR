@@ -22,6 +22,8 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 
+#include "vr_renderer.h"
+
 #include <string.h>
 #include <stdio.h>
 
@@ -116,6 +118,8 @@ int CHudBattery::Draw(float flTime)
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 	x = ScreenWidth/5;
 
+	gVRRenderer.VRHUDDrawBegin(VRHUDRenderType::BATTERY);
+
 	// make sure we have the right sprite handles
 	if ( !m_hSprite1 )
 		m_hSprite1 = gHUD.GetSprite( gHUD.GetSpriteIndex( "suit_empty" ) );
@@ -133,6 +137,8 @@ int CHudBattery::Draw(float flTime)
 
 	x += (m_prc1->right - m_prc1->left);
 	x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b);
+
+	gVRRenderer.VRHUDDrawFinished();
 
 	return 1;
 }

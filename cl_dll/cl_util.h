@@ -42,8 +42,21 @@ inline float CVAR_GET_FLOAT( const char *x ) {	return gEngfuncs.pfnGetCvarFloat(
 inline char* CVAR_GET_STRING( const char *x ) {	return gEngfuncs.pfnGetCvarString( (char*)x ); }
 inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int flags ) {	return gEngfuncs.pfnRegisterVariable( (char*)cv, (char*)val, flags ); }
 
+// Intercepter functions for VR HUD rendering - Max Vollmer, 2018-01-07
+inline void SPR_Set(HSPRITE_VALVE hPic, int r, int g, int b)
+{
+	extern void InterceptSPR_Set(HSPRITE_VALVE hPic, int r, int g, int b);
+	InterceptSPR_Set(hPic, r, g, b);
+}
+
+inline void SPR_DrawAdditive(int frame, int x, int y, const wrect_t *prc)
+{
+	extern void InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t *prc);
+	InterceptSPR_DrawAdditive(frame, x, y, prc);
+}
+
 #define SPR_Load (*gEngfuncs.pfnSPR_Load)
-#define SPR_Set (*gEngfuncs.pfnSPR_Set)
+// - intercepted, see above - #define SPR_Set (*gEngfuncs.pfnSPR_Set)
 #define SPR_Frames (*gEngfuncs.pfnSPR_Frames)
 #define SPR_GetList (*gEngfuncs.pfnSPR_GetList)
 
@@ -51,8 +64,8 @@ inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int fl
 #define SPR_Draw (*gEngfuncs.pfnSPR_Draw)
 // SPR_DrawHoles  draws the current sprites,  with color index255 not drawn (transparent)
 #define SPR_DrawHoles (*gEngfuncs.pfnSPR_DrawHoles)
-// SPR_DrawAdditive  adds the sprites RGB values to the background  (additive transulency)
-#define SPR_DrawAdditive (*gEngfuncs.pfnSPR_DrawAdditive)
+// - intercepted, see above - SPR_DrawAdditive  adds the sprites RGB values to the background  (additive transulency)
+// #define SPR_DrawAdditive (*gEngfuncs.pfnSPR_DrawAdditive)
 
 // SPR_EnableScissor  sets a clipping rect for HUD sprites.  (0,0) is the top-left hand corner of the screen.
 #define SPR_EnableScissor (*gEngfuncs.pfnSPR_EnableScissor)

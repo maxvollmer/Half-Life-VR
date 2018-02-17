@@ -29,6 +29,8 @@
 #include "ammohistory.h"
 #include "vgui_TeamFortressViewport.h"
 
+#include "vr_renderer.h"
+
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
 WEAPON *gpLastSel;		// Last weapon menu selection 
@@ -826,6 +828,65 @@ void CHudAmmo::UserCmd_PrevWeapon(void)
 	gpActiveSel = NULL;
 }
 
+int CHudAmmo::FirstSlotWithWeapon()
+{
+	for (int slot = 0; slot < MAX_WEAPON_SLOTS; slot++)
+	{
+		if (FirstSlotPosWithWeapon(slot) >= 0)
+		{
+			return slot;
+		}
+	}
+	return -1;
+}
+
+int CHudAmmo::FirstSlotPosWithWeapon(const int slot)
+{
+	for (int pos = 0; pos < MAX_WEAPON_POSITIONS; pos++)
+	{
+		WEAPON *wsp = gWR.GetWeaponSlot(slot, pos);
+		if (wsp && gWR.HasAmmo(wsp))
+		{
+			return pos;
+		}
+	}
+	return -1;
+}
+
+int CHudAmmo::LastSlotWithWeapon()
+{
+	for (int slot = MAX_WEAPON_SLOTS-1; slot >= 0; slot--)
+	{
+		if (FirstSlotPosWithWeapon(slot) >= 0)
+		{
+			return slot;
+		}
+	}
+	return -1;
+}
+
+int CHudAmmo::LastSlotPosWithWeapon(const int slot)
+{
+	for (int pos = MAX_WEAPON_POSITIONS-1; pos >= 0; pos--)
+	{
+		WEAPON *wsp = gWR.GetWeaponSlot(slot, pos);
+		if (wsp && gWR.HasAmmo(wsp))
+		{
+			return pos;
+		}
+	}
+	return -1;
+}
+
+bool CHudAmmo::IsCurrentWeaponFirstWeapon()
+{
+	return m_pWeapon != nullptr && m_pWeapon->iSlot <= FirstSlotWithWeapon() && m_pWeapon->iSlotPos <= FirstSlotPosWithWeapon(m_pWeapon->iSlot);
+}
+
+bool CHudAmmo::IsCurrentWeaponLastWeapon()
+{
+	return m_pWeapon != nullptr && m_pWeapon->iSlot >= LastSlotWithWeapon() && m_pWeapon->iSlotPos >= LastSlotPosWithWeapon(m_pWeapon->iSlot);
+}
 
 
 //-------------------------------------------------------------------------
@@ -844,10 +905,10 @@ int CHudAmmo::Draw(float flTime)
 		return 1;
 
 	// Draw Weapon Menu
-	DrawWList(flTime);
+	// DrawWList(flTime); Don't draw HUD weapons in VR - Max Vollmer, 2018-01-07
 
 	// Draw ammo pickup history
-	gHR.DrawAmmoHistory( flTime );
+	// gHR.DrawAmmoHistory( flTime ); Don't draw ammo pick up history in VR - Max Vollmer, 2018-01-07
 
 	if (!(m_iFlags & HUD_ACTIVE))
 		return 0;
@@ -877,6 +938,8 @@ int CHudAmmo::Draw(float flTime)
 
 	// Does this weapon have a clip?
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight/2;
+
+	gVRRenderer.VRHUDDrawBegin(VRHUDRenderType::AMMO);
 
 	// Does weapon have any ammo at all?
 	if (m_pWeapon->iAmmoType > 0)
@@ -944,6 +1007,9 @@ int CHudAmmo::Draw(float flTime)
 			SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo2);
 		}
 	}
+
+	gVRRenderer.VRHUDDrawFinished();
+
 	return 1;
 }
 

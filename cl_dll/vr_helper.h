@@ -2,6 +2,8 @@
 
 #include "openvr/openvr.h"
 
+extern void VectorAngles(const float *forward, float *angles);
+
 class Positions
 {
 public:
@@ -28,8 +30,10 @@ public:
 	void PrepareVRScene(vr::EVREye eEye, struct ref_params_s* pparams);
 	void FinishVRScene(struct ref_params_s* pparams);
 
-	void GetViewAngles(float * angles);
-	void GetViewOrg(float * angles);
+	unsigned int GetVRTexture(vr::EVREye eEye);
+
+	void GetViewAngles(vr::EVREye eEye, float * angles);
+	void GetViewOrg(float * origin);
 
 	void TestRenderControllerPosition(bool leftOrRight);
 
@@ -47,6 +51,10 @@ private:
 	Matrix4 GetHMDMatrixPoseEye(vr::EVREye eEye);
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose);
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix44_t &matPose);
+
+	Matrix4 GetModelViewMatrixFromAbsoluteTrackingMatrix(Matrix4 &absoluteTrackingMatrix, Vector translate);
+	Vector GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & absoluteTrackingMatrix);
+	Vector GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & absoluteTrackingMatrix);
 
 	Vector GetHLViewAnglesFromVRMatrix(const Matrix4 &mat);
 	Vector GetHLAnglesFromVRMatrix(const Matrix4 &mat);
@@ -69,4 +77,29 @@ private:
 
 	unsigned int vrRenderWidth = 0;
 	unsigned int vrRenderHeight = 0;
+
+	int m_vrUpdateTimestamp = 0;
+
+	float lastUpdatedVectorsFrametime = 0;
+	Vector3 vrToHL;
+	Vector3 hlToVR;
+	void UpdateVRHLConversionVectors();
+
+	bool m_fRightControllerValid = false;
+	bool m_fLeftControllerValid = false;
+	Vector m_leftControllerPosition;
+	Vector m_leftControllerAngles;
+	Vector m_rightControllerPosition;
+	Vector m_rightControllerAngles;
+
+public:
+	const Vector3 & GetVRToHL();
+	const Vector3 & GetHLToVR();
+
+	bool IsRightControllerValid();
+	bool IsLeftControllerValid();
+	const Vector & GetLeftHandPosition();
+	const Vector & GetLeftHandAngles();
+	const Vector & GetRightHandPosition();
+	const Vector & GetRightHandAngles();
 };

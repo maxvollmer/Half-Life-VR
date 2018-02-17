@@ -25,6 +25,9 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
+
+#include "vr_renderer.h"
+
 #include <string.h>
 
 
@@ -200,7 +203,7 @@ int CHudHealth::Draw(float flTime)
 	// If health is getting low, make it bright red
 	if (m_iHealth <= 15)
 		a = 255;
-		
+
 	GetPainColor( r, g, b );
 	ScaleColors(r, g, b, a );
 
@@ -212,6 +215,8 @@ int CHudHealth::Draw(float flTime)
 
 		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
 		x = CrossWidth /2;
+
+		gVRRenderer.VRHUDDrawBegin(VRHUDRenderType::HEALTH);
 
 		SPR_Set(gHUD.GetSprite(m_HUD_cross), r, g, b);
 		SPR_DrawAdditive(0, x, y, &gHUD.GetSpriteRect(m_HUD_cross));
@@ -225,10 +230,20 @@ int CHudHealth::Draw(float flTime)
 		int iHeight = gHUD.m_iFontHeight;
 		int iWidth = HealthWidth/10;
 		FillRGBA(x, y, iWidth, iHeight, 255, 160, 0, a);
+
+		gVRRenderer.VRHUDDrawFinished();
 	}
 
+	gVRRenderer.VRHUDDrawBegin(VRHUDRenderType::DAMAGEDECALS);
 	DrawDamage(flTime);
-	return DrawPain(flTime);
+	gVRRenderer.VRHUDDrawFinished();
+
+
+	gVRRenderer.VRHUDDrawBegin(VRHUDRenderType::PAIN);
+	DrawPain(flTime);
+	gVRRenderer.VRHUDDrawFinished();
+
+	return 1;
 }
 
 void CHudHealth::CalcDamageDirection(vec3_t vecFrom)

@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
+#include "vr_renderer.h"
+
 DECLARE_MESSAGE(m_Train, Train )
 
 
@@ -54,15 +56,18 @@ int CHudTrain::Draw(float fTime)
 	{
 		int r, g, b, x, y;
 
-		UnpackRGB(r,g,b, RGB_YELLOWISH);
-		SPR_Set(m_hSprite, r, g, b );
-
 		// This should show up to the right and part way up the armor number
 		y = ScreenHeight - SPR_Height(m_hSprite,0) - gHUD.m_iFontHeight;
 		x = ScreenWidth/3 + SPR_Width(m_hSprite,0)/4;
 
+		gVRRenderer.VRHUDDrawBegin(VRHUDRenderType::TRAINCONTROLS);
+
+		UnpackRGB(r, g, b, RGB_YELLOWISH);
+		SPR_Set(m_hSprite, r, g, b);
+
 		SPR_DrawAdditive( m_iPos - 1,  x, y, NULL);
 
+		gVRRenderer.VRHUDDrawFinished();
 	}
 
 	return 1;

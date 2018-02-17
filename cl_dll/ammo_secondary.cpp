@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
+#include "vr_renderer.h"
+
 DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoVal );
 DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoIcon );
 
@@ -71,6 +73,8 @@ int CHudAmmoSecondary :: Draw(float flTime)
 	y = ScreenHeight - (gHUD.m_iFontHeight*4);  // this is one font height higher than the weapon ammo values
 	x = ScreenWidth - AmmoWidth;
 
+	gVRRenderer.VRHUDDrawBegin(VRHUDRenderType::AMMO_SECONDARY);
+
 	if ( m_HUD_ammoicon )
 	{
 		// Draw the ammo icon
@@ -106,6 +110,8 @@ int CHudAmmoSecondary :: Draw(float flTime)
 			FillRGBA(x, y, (AmmoWidth/10), gHUD.m_iFontHeight, r, g, b, a);
 		}
 	}
+
+	gVRRenderer.VRHUDDrawFinished();
 
 	return 1;
 }
