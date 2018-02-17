@@ -503,7 +503,7 @@ void PM_UpdateStepSound( void )
 	speed = Length( pmove->velocity );
 
 	// determine if we are on a ladder
-	fLadder = ( pmove->movetype == MOVETYPE_FLY );// IsOnLadder();
+	fLadder = false;// (pmove->movetype == MOVETYPE_FLY);// IsOnLadder();
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!	
 	if ( ( pmove->flags & FL_DUCKING) || fLadder )
@@ -734,6 +734,10 @@ void PM_AddCorrectGravity ()
 	if ( pmove->waterjumptime )
 		return;
 
+	// No gravity under water in VR - Max Vollmer, 2018-01-28
+	if (pmove->waterlevel > 0)
+		return;
+
 	if (pmove->gravity)
 		ent_gravity = pmove->gravity;
 	else
@@ -754,6 +758,10 @@ void PM_FixupGravityVelocity ()
 	float	ent_gravity;
 
 	if ( pmove->waterjumptime )
+		return;
+
+	// No gravity under water in VR - Max Vollmer, 2018-01-28
+	if (pmove->waterlevel > 0)
 		return;
 
 	if (pmove->gravity)
@@ -1168,7 +1176,6 @@ usedown:
 		VectorCopy (downvel, pmove->velocity);
 	} else // copy z value from slide move
 		pmove->velocity[2] = downvel[2];
-
 }
 
 /*
@@ -1317,9 +1324,14 @@ void PM_WaterMove (void)
 
 	// Sinking after no other movement occurs
 	if (!pmove->cmd.forwardmove && !pmove->cmd.sidemove && !pmove->cmd.upmove)
-		wishvel[2] -= 60;		// drift towards bottom
-	else  // Go straight up by upmove amount.
-		wishvel[2] += pmove->cmd.upmove;
+	{
+		// wishvel[2] -= 60;	// drift towards bottom
+		wishvel[2] = 0;	// No gravity under water in VR - Max Vollmer, 2018-02-11
+	}
+	else  
+	{
+		wishvel[2] += pmove->cmd.upmove;	// Go straight up by upmove amount.
+	}
 
 	// Copy it over and determine speed
 	VectorCopy (wishvel, wishdir);
@@ -1625,7 +1637,7 @@ int PM_CheckStuck (void)
 
 	// If position is okay, exit
 	hitent = pmove->PM_TestPlayerPosition (pmove->origin, &traceresult );
-	if (hitent == -1 )
+	if (hitent != 0 )	// Only get stuck on world, not on entities - Max Vollmer, 2018-02-11
 	{
 		PM_ResetStuckOffsets( pmove->player_index, pmove->server );
 		return 0;
@@ -2557,9 +2569,11 @@ void PM_PlayerMove ( qboolean server )
 	case MOVETYPE_NONE:
 		break;
 
+		/*
 	case MOVETYPE_NOCLIP:
 		PM_NoClip();
 		break;
+		*/
 
 	case MOVETYPE_TOSS:
 	case MOVETYPE_BOUNCE:
@@ -2577,6 +2591,13 @@ void PM_PlayerMove ( qboolean server )
 		break;
 
 	case MOVETYPE_WALK:
+	case MOVETYPE_NOCLIP:
+		// No gravity in water - Max Vollmer, 2018-02-11
+		if (pmove->waterlevel > 0)
+		{
+			pmove->velocity[2] = 0;
+		}
+
 		if ( !PM_InWater() )
 		{
 			PM_AddCorrectGravity();
@@ -2595,7 +2616,7 @@ void PM_PlayerMove ( qboolean server )
 
 		// If we are swimming in the water, see if we are nudging against a place we can jump up out
 		//  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
-		if ( pmove->waterlevel >= 2 ) 
+		if ( pmove->waterlevel >= 1 ) 
 		{
 			if ( pmove->waterlevel == 2 )
 			{
@@ -2622,7 +2643,7 @@ void PM_PlayerMove ( qboolean server )
 		{
 			// Fricion is handled before we add in any base velocity. That way, if we are on a conveyor, 
 			//  we don't slow when standing still, relative to the conveyor.
-			if ( pmove->onground != -1 )
+			if ( pmove->onground != -1)
 			{
 				pmove->velocity[2] = 0.0;
 				PM_Friction();
@@ -2659,7 +2680,7 @@ void PM_PlayerMove ( qboolean server )
 			}
 
 			// If we are on ground, no downward velocity.
-			if ( pmove->onground != -1 )
+			if ( pmove->onground != -1)
 			{
 				pmove->velocity[2] = 0;
 			}
@@ -2667,6 +2688,12 @@ void PM_PlayerMove ( qboolean server )
 			// See if we landed on the ground with enough force to play
 			//  a landing sound.
 			PM_CheckFalling();
+		}
+
+		// No gravity in water - Max Vollmer, 2018-02-11
+		if (pmove->waterlevel > 0)
+		{
+			pmove->velocity[2] = 0;
 		}
 
 		// Did we enter or leave the water?
@@ -2844,4 +2871,10 @@ void PM_Init( struct playermove_s *ppmove )
 	PM_InitTextureTypes();
 
 	pm_shared_initialized = 1;
+}
+
+// Added, so server.dll can access bsp models (see UTIL_GetBSPModel in util.cpp) - Max Vollmer, 2018-01-21
+struct playermove_s *PM_GetPlayerMove(void)
+{
+	return pmove;
 }
