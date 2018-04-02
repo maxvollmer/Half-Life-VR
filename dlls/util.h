@@ -277,6 +277,7 @@ extern bool			UTIL_PointInsideBSPModel(const Vector &vec, const Vector &absmin, 
 extern bool			UTIL_BBoxIntersectsBSPModel(const Vector &origin, const Vector &mins, const Vector &maxs);
 extern bool			UTIL_BBoxIntersectsBBox	(const Vector &absmins1, const Vector &absmaxs1, const Vector &absmins2, const Vector &absmaxs2);
 extern bool			UTIL_PointInsideRotatedBBox(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs, const Vector & checkVec);
+extern bool			UTIL_RotatedBBoxIntersectsBBox(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs, const Vector & absmin, const Vector & absmax);
 
 extern bool UTIL_TraceBBox(const Vector & vecStart, const Vector & vecEnd, const Vector & absmin, const Vector & absmax);
 extern CBaseEntity * UTIL_TraceTriggers(CBaseEntity *pStartEntity, const Vector & vecStart, const Vector & vecEnd);

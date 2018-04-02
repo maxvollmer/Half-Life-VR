@@ -396,6 +396,8 @@ public:
 	void UpdateVRTele();
 
 	void VRTouchTriggersInTeleportPath(); // Touches all entities with SOLID_TRIGGER when a player teleports through them
+
+	void StoreVROffsetsForLevelchange();
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
@@ -404,6 +406,16 @@ public:
 #define AUTOAIM_10DEGREES 0.1736481776669
 
 extern GlobalXenMounds gGlobalXenMounds;
+
+class VRLevelChangeData
+{
+public:
+	Vector lastHMDOffset{};
+	Vector2D clientOriginOffset{};
+	bool hasData{ false };
+};
+
+extern VRLevelChangeData g_vrLevelChangeData;
 
 extern int	gmsgHudText;
 extern BOOL gInitHUD;

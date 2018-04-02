@@ -43,6 +43,8 @@
 
 // #define DUCKFIX
 
+VRLevelChangeData g_vrLevelChangeData;
+
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL	BOOL	g_fDrawLines;
@@ -2345,7 +2347,9 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 	//ALERT ( at_console, "%d/%d\n", iVolume, m_iTargetVolume );
 }
 
-Vector gVecTooLazyToCreateExtraMethodOrImproveLambdaSoIJustAddedThisHilariouslyNamedGlobalVectorToTemporarilyStoreThePlayersOriginForTheLambdaInVRHandleMovingWithSolidGroundEntities;
+Vector gVRTempPlayerOrigin;
+Vector gVRTempPlayerAbsmin;
+Vector gVRTempPlayerAbsmax;
 void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 {
 	CBaseEntity *pGroundEntity = nullptr;
@@ -2353,13 +2357,16 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 	{
 		pGroundEntity = CBaseEntity::Instance(pev->groundentity);
 	}
-	if (pGroundEntity == nullptr)
+	if (pGroundEntity == nullptr || (pGroundEntity->pev->velocity.Length()<0.01f && pGroundEntity->pev->avelocity.Length()<0.01f))
 	{
-		gVecTooLazyToCreateExtraMethodOrImproveLambdaSoIJustAddedThisHilariouslyNamedGlobalVectorToTemporarilyStoreThePlayersOriginForTheLambdaInVRHandleMovingWithSolidGroundEntities = pev->origin;
+		gVRTempPlayerOrigin = pev->origin;
+		gVRTempPlayerAbsmin = pev->origin + pev->mins;
+		gVRTempPlayerAbsmax = pev->origin + pev->maxs;
 		UTIL_FindEntityByFilter(&pGroundEntity, [](CBaseEntity *pEntity)->bool {
-			if (pEntity->pev->solid == SOLID_BSP)
+			if (pEntity->pev->solid == SOLID_BSP && (pEntity->pev->velocity.Length()>0 || pEntity->pev->avelocity.Length()>0))
 			{
-				return UTIL_PointInsideRotatedBBox(pEntity->pev->origin, pEntity->pev->mins, pEntity->pev->maxs, pEntity->pev->angles, gVecTooLazyToCreateExtraMethodOrImproveLambdaSoIJustAddedThisHilariouslyNamedGlobalVectorToTemporarilyStoreThePlayersOriginForTheLambdaInVRHandleMovingWithSolidGroundEntities);
+				//return UTIL_PointInsideRotatedBBox(pEntity->pev->origin, pEntity->pev->angles, pEntity->pev->mins, pEntity->pev->maxs, gVRTempPlayerOrigin);
+				return UTIL_RotatedBBoxIntersectsBBox(pEntity->pev->origin, pEntity->pev->angles, pEntity->pev->mins, pEntity->pev->maxs, gVRTempPlayerAbsmin, gVRTempPlayerAbsmax);
 			}
 			return false;
 		});
@@ -2381,7 +2388,7 @@ void CBasePlayer::PostThink()
 {
 	// VR: We are MOVETYPE_NOCLIP, so the engine doesn't handle collisions with solid entities for various reasons (getting stuck, pushables not working nicely in VR etc.)
 	// This also means that trains and elevators just move through us. To avoid this, we do appropriate movement handling here.
-	// P.S. In pm_shared.c we do normal movement as if we were MOVETYPE_WALK
+	// P.S. In pm_shared.cpp we do some modified normal movement as if we were MOVETYPE_WALK
 	VRHandleMovingWithSolidGroundEntities();
 
 
@@ -2830,6 +2837,13 @@ void CBasePlayer::RenewItems(void)
 }
 
 
+void CBasePlayer::StoreVROffsetsForLevelchange()
+{
+	g_vrLevelChangeData.lastHMDOffset = this->vr_lastHMDOffset;
+	g_vrLevelChangeData.clientOriginOffset = this->vr_ClientOriginOffset;
+	g_vrLevelChangeData.hasData = true;
+}
+
 int CBasePlayer::Restore( CRestore &restore )
 {
 	if ( !CBaseMonster::Restore(restore) )
@@ -2847,6 +2861,15 @@ int CBasePlayer::Restore( CRestore &restore )
 		edict_t* pentSpawnSpot = EntSelectSpawnPoint( this );
 		pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
 	}
+
+	// Restore VR offsets if levelchange has stored them (fixes origin issues in roomscale) - Max Vollmer, 2018-04-02
+	if (g_vrLevelChangeData.hasData)
+	{
+		this->vr_lastHMDOffset = g_vrLevelChangeData.lastHMDOffset;
+		this->vr_ClientOriginOffset = g_vrLevelChangeData.clientOriginOffset;
+		g_vrLevelChangeData.hasData = false;
+	}
+
 	pev->v_angle.z = 0;	// Clear out roll
 	pev->angles = pev->v_angle;
 

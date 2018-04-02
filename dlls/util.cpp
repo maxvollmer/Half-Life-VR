@@ -1401,6 +1401,52 @@ bool UTIL_PointInsideRotatedBBox(const Vector & bboxCenter, const Vector & bboxA
 	return UTIL_PointInsideBBox(rotatedLocalCheckVec, bboxMins, bboxMaxs);
 }
 
+// Returns true if the given bboxes intersect - Max Vollmer, 2018-02-11
+bool UTIL_RotatedBBoxIntersectsBBox(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs, const Vector & absmin, const Vector & absmax)
+{
+	if (bboxAngles.Length() < 0.1f)
+	{
+		return UTIL_BBoxIntersectsBBox(absmin, absmax, bboxCenter + bboxMins, bboxCenter + bboxMaxs);
+	}
+	else
+	{
+		Vector absminmax[2] = { absmin, absmax };
+		for (int x = 0; x < 2; ++x)
+		{
+			for (int y = 0; y < 2; ++y)
+			{
+				for (int z = 0; z < 2; ++z)
+				{
+					Vector currentCorner{ absminmax[x].x, absminmax[y].y, absminmax[z].z };
+					if (UTIL_PointInsideRotatedBBox(bboxCenter, bboxAngles, bboxMins, bboxMaxs, currentCorner))
+					{
+						return true;
+					}
+				}
+			}
+		}
+		Vector rotatedBBoxMins = bboxMins;
+		Vector rotatedBBoxMaxs = bboxMaxs;
+		gVRPhysicsHelper.RotateVector(rotatedBBoxMins, bboxAngles, Vector{}, false);
+		gVRPhysicsHelper.RotateVector(rotatedBBoxMaxs, bboxAngles, Vector{}, false);
+		Vector rotatedBBoxAbsMinmax[2] = { bboxCenter + rotatedBBoxMins, bboxCenter + rotatedBBoxMaxs };
+		for (int x = 0; x < 2; ++x)
+		{
+			for (int y = 0; y < 2; ++y)
+			{
+				for (int z = 0; z < 2; ++z)
+				{
+					Vector currentCorner{ rotatedBBoxAbsMinmax[x].x, rotatedBBoxAbsMinmax[y].y, rotatedBBoxAbsMinmax[z].z };
+					if (UTIL_PointInsideBBox(currentCorner, absmin, absmax))
+					{
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
 
 
 void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount )

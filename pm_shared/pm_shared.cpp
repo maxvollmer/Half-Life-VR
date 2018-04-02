@@ -2136,6 +2136,9 @@ void PM_NoClip(bool unstuckMove=false)
 	}
 	wishvel[2] += pmove->cmd.upmove;
 
+	// Zero out the velocity so that we don't accumulate a huge downward velocity from gravity, etc.
+	VectorClear(pmove->velocity);
+
 	// Trying to determine if a player can move while being stuck (move away from wall) - Max Vollmer, 2018-04-01
 	if (unstuckMove)
 	{
@@ -2144,7 +2147,7 @@ void PM_NoClip(bool unstuckMove=false)
 
 		// check if position is good after moving one frame
 		vec3_t originAfterMovingOneFrame{ pmove->origin[0] + (wishvel[0] * pmove->frametime), pmove->origin[1] + (wishvel[1] * pmove->frametime), pmove->origin[2] };
-		if (pmove->PM_TestPlayerPosition(originAfterMovingOneFrame, nullptr) == 0)
+		if (pmove->PM_TestPlayerPosition(originAfterMovingOneFrame, nullptr) != -1)
 		{
 			// position is still bad after moving one frame
 
@@ -2156,13 +2159,13 @@ void PM_NoClip(bool unstuckMove=false)
 
 			// check if position is good after moving some units
 			vec3_t originAfterMovingSomeUnits{ pmove->origin[0] + (wishDir[0] * VR_UNSTUCK_CHECK_DISTANCE), pmove->origin[1] + (wishDir[1] * VR_UNSTUCK_CHECK_DISTANCE), pmove->origin[2] };
-			if (pmove->PM_TestPlayerPosition(originAfterMovingSomeUnits, nullptr) == 0)
+			if (pmove->PM_TestPlayerPosition(originAfterMovingSomeUnits, nullptr) != -1)
 			{
 				// position is still bad after moving some units
 
 				// check if position is good if we add a bit to the z position (stuck in floor)
 				vec3_t originAfterMovingSomeUnitsPlusZFix{ originAfterMovingSomeUnits[0], originAfterMovingSomeUnits[1], originAfterMovingSomeUnits[2] + VR_UNSTUCK_Z_FIX };
-				if (pmove->PM_TestPlayerPosition(originAfterMovingSomeUnitsPlusZFix, nullptr) == 0)
+				if (pmove->PM_TestPlayerPosition(originAfterMovingSomeUnitsPlusZFix, nullptr) != -1)
 				{
 					// still stuck, no chance, we cannot move in that direction
 					return;
@@ -2177,9 +2180,6 @@ void PM_NoClip(bool unstuckMove=false)
 	}
 
 	VectorMA (pmove->origin, pmove->frametime, wishvel, pmove->origin);
-
-	// Zero out the velocity so that we don't accumulate a huge downward velocity from gravity, etc.
-	VectorClear( pmove->velocity );
 }
 
 /*
@@ -2678,7 +2678,7 @@ void PM_PlayerMove ( qboolean server )
 	// Always try and unstick us unless we are in NOCLIP mode
 	if ( /*pmove->movetype != MOVETYPE_NOCLIP &&*/ pmove->movetype != MOVETYPE_NONE )
 	{
-		if ( PM_CheckStuck() )
+		if (PM_CheckStuck() || pmove->PM_TestPlayerPosition(pmove->origin, nullptr) != -1)
 		{
 			// When we're stuck, noclip away if our move direction is going away from whatever we're stuck on
 			PM_NoClip(true);
