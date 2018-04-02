@@ -61,6 +61,41 @@ void VRHelper::UpdateVRHLConversionVectors()
 	vrToHL.z = MAGIC_VR_TO_HL_FACTOR * 1.f / hlToVR.z;
 }
 
+void VRHelper::UpdateWorldRotation()
+{
+	// Is rotating disabled?
+	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
+	{
+		m_lastYawUpdateTime = -1;
+		m_currentYaw = 0;
+		return;
+	}
+	// Already up to date
+	if (gHUD.m_flTime == m_lastYawUpdateTime)
+	{
+		return;
+	}
+	// New game
+	if (m_lastYawUpdateTime == -1 || m_lastYawUpdateTime >= gHUD.m_flTime)
+	{
+		m_lastYawUpdateTime = gHUD.m_flTime;
+		return;
+	}
+	// Get time since last update
+	float deltaTime = gHUD.m_flTime - m_lastYawUpdateTime;
+	// Rotate
+	if (g_vrInput.RotateLeft())
+	{
+		m_currentYaw -= deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
+	}
+	else if (g_vrInput.RotateRight())
+	{
+		m_currentYaw += deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
+	}
+	// Remember time
+	m_lastYawUpdateTime = gHUD.m_flTime;
+}
+
 const Vector3 & VRHelper::GetVRToHL()
 {
 	return vrToHL;
@@ -128,6 +163,7 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_world_z_strech", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_lefthand_mode", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_debug_physics", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_playerturn_enabled", "0", FCVAR_ARCHIVE);
 
 	UpdateVRHLConversionVectors();
 }
@@ -198,13 +234,13 @@ Vector VRHelper::GetHLViewAnglesFromVRMatrix(const Matrix4 &mat)
 
 Vector VRHelper::GetHLAnglesFromVRMatrix(const Matrix4 &mat)
 {
-	Vector4 forwardInVRSpace = mat * Vector4(0, 0, -1, 0);
-	Vector4 rightInVRSpace = mat * Vector4(1, 0, 0, 0);
-	Vector4 upInVRSpace = mat * Vector4(0, 1, 0, 0);
+	Vector4 forwardInVRSpace = mat * Vector4{ 0, 0, -1, 0 };
+	Vector4 rightInVRSpace = mat * Vector4{ 1, 0, 0, 0 };
+	Vector4 upInVRSpace = mat * Vector4{ 0, 1, 0, 0 };
 
-	Vector forward(forwardInVRSpace.x, -forwardInVRSpace.z, forwardInVRSpace.y);
-	Vector right(rightInVRSpace.x, -rightInVRSpace.z, rightInVRSpace.y);
-	Vector up(upInVRSpace.x, -upInVRSpace.z, upInVRSpace.y);
+	Vector forward{ forwardInVRSpace.x, -forwardInVRSpace.z, forwardInVRSpace.y };
+	Vector right{ rightInVRSpace.x, -rightInVRSpace.z, rightInVRSpace.y };
+	Vector up{ upInVRSpace.x, -upInVRSpace.z, upInVRSpace.y };
 
 	forward.Normalize();
 	right.Normalize();
@@ -216,7 +252,7 @@ Vector VRHelper::GetHLAnglesFromVRMatrix(const Matrix4 &mat)
 	return angles;
 }
 
-Matrix4 VRHelper::GetModelViewMatrixFromAbsoluteTrackingMatrix(Matrix4 &absoluteTrackingMatrix, Vector translate)
+Matrix4 VRHelper::GetModelViewMatrixFromAbsoluteTrackingMatrix(const Matrix4 &absoluteTrackingMatrix, const Vector translate)
 {
 	Matrix4 hlToVRScaleMatrix;
 	hlToVRScaleMatrix[0] = GetHLToVR().x;
@@ -234,9 +270,28 @@ Matrix4 VRHelper::GetModelViewMatrixFromAbsoluteTrackingMatrix(Matrix4 &absolute
 	switchYAndZTransitionMatrix[9] = 1;
 	switchYAndZTransitionMatrix[10] = 0;
 
-	Matrix4 modelViewMatrix = absoluteTrackingMatrix * hlToVRScaleMatrix * switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
-	modelViewMatrix.scale(10);
-	return modelViewMatrix;
+	Matrix4 modelViewMatrix;
+	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
+	{
+		modelViewMatrix = absoluteTrackingMatrix * hlToVRScaleMatrix * switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
+		m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted = false;
+	}
+	else
+	{
+		// TODO: In a roomscale setup we actually need to rotate the entire space around the room origin,
+		// otherwise movement direction is wrong when turning. Needs telling server about new origin,
+		// so some refactoring/additional network messaging and handling on server side is required.
+		Vector4 upInVRSpace = Matrix4{ absoluteTrackingMatrix.get() } * Vector4 { 0, 1, 0, 0 };
+		Matrix4 yawMatrixInVRSpace = Matrix4{}.rotate(m_currentYaw, Vector3{ upInVRSpace.x, upInVRSpace.y, upInVRSpace.z });
+		modelViewMatrix = yawMatrixInVRSpace * absoluteTrackingMatrix * hlToVRScaleMatrix * switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
+		if (!m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted)
+		{
+			gEngfuncs.Con_Printf("Warning: Player turning is broken when using a roomscale setup. If you use roomscale VR, don't use this feature!\n");
+			m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted = true;
+		}
+	}
+
+	return modelViewMatrix.scale(10);
 }
 
 Vector VRHelper::GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & absoluteTrackingMatrix)
@@ -259,6 +314,7 @@ Vector VRHelper::GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & 
 void VRHelper::PollEvents()
 {
 	UpdateVRHLConversionVectors();
+	UpdateWorldRotation();
 	vr::VREvent_t vrEvent;
 	while (vrSystem != nullptr && vrSystem->PollNextEvent(&vrEvent, sizeof(vr::VREvent_t)))
 	{
@@ -294,6 +350,7 @@ void VRHelper::PollEvents()
 bool VRHelper::UpdatePositions(struct ref_params_s* pparams)
 {
 	UpdateVRHLConversionVectors();
+	UpdateWorldRotation();
 
 	if (vrSystem != nullptr && vrCompositor != nullptr)
 	{
@@ -332,8 +389,6 @@ bool VRHelper::UpdatePositions(struct ref_params_s* pparams)
 
 void VRHelper::PrepareVRScene(vr::EVREye eEye, struct ref_params_s* pparams)
 {
-	GetHLViewAnglesFromVRMatrix(positions.m_mat4LeftModelView).CopyToArray(pparams->viewangles);
-
 	glBindFramebuffer(GL_FRAMEBUFFER, eEye == vr::EVREye::Eye_Left ? vrGLLeftEyeFrameBuffer : vrGLRightEyeFrameBuffer);
 
 	glViewport(0, 0, vrRenderWidth, vrRenderHeight);
@@ -473,7 +528,7 @@ void VRHelper::SendPositionUpdateToServer()
 	Matrix4 hdmAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
 	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(hdmAbsoluteTrackingMatrix);
 	hmdOffset.z += localPlayer->curstate.mins.z;
-	Vector hmdAngles = GetHLAnglesFromVRMatrix(hdmAbsoluteTrackingMatrix);
+	/*Vector hmdAngles = GetHLAnglesFromVRMatrix(hdmAbsoluteTrackingMatrix);*/
 
 	vr::TrackedDeviceIndex_t leftControllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_LeftHand);
 	bool isLeftControllerValid = leftControllerIndex > 0 && leftControllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[leftControllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[leftControllerIndex].bPoseIsValid;
@@ -522,10 +577,10 @@ void VRHelper::SendPositionUpdateToServer()
 	char cmdHMD[MAX_COMMAND_SIZE] = { 0 };
 	char cmdLeftController[MAX_COMMAND_SIZE] = { 0 };
 	char cmdRightController[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f",
+	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f",/* %.2f %.2f %.2f",*/
 		m_vrUpdateTimestamp,
-		hmdOffset.x, hmdOffset.y, hmdOffset.z,
-		hmdAngles.x, hmdAngles.y, hmdAngles.z
+		hmdOffset.x, hmdOffset.y, hmdOffset.z/*,
+		hmdAngles.x, hmdAngles.y, hmdAngles.z*/
 	);
 	sprintf_s(cmdLeftController, "vrupd_lft %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
 		m_vrUpdateTimestamp,

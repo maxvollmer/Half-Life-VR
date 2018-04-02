@@ -46,6 +46,16 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 
 				// TODO: Move in direction controller is pointing, not direction player is looking!
 
+				if (touchPadAxis.x < -0.5f)
+				{
+					m_rotateLeft = downOrUp;
+				}
+				if (touchPadAxis.x > 0.5f)
+				{
+					m_rotateRight = downOrUp;
+				}
+
+				/*
 				if (touchPadAxis.x < -0.5f && downOrUp)
 				{
 					ClientCmd("+moveleft");
@@ -63,6 +73,7 @@ void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t con
 				{
 					ClientCmd("-moveright");
 				}
+				*/
 
 				if (touchPadAxis.y > 0.5f && downOrUp)
 				{

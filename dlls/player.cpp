@@ -2366,13 +2366,14 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 	}
 	if (pGroundEntity != nullptr)
 	{
-		ALERT(at_console, "YES GROUND ENTITY\n");
+		//ALERT(at_console, "YES GROUND ENTITY\n");
 		Vector groundVelocity = pGroundEntity->pev->velocity + gVRPhysicsHelper.AngularVelocityToLinearVelocity(pGroundEntity->pev->avelocity, pev->origin - pGroundEntity->pev->origin);
 		pev->origin = pev->origin + (groundVelocity * gpGlobals->frametime);
+		pev->groundentity = pGroundEntity->edict();
 	}
 	else
 	{
-		ALERT(at_console, "NO GROUND ENTITY\n");
+		//ALERT(at_console, "NO GROUND ENTITY\n");
 	}
 }
 
@@ -4564,13 +4565,12 @@ void CInfoIntermission::Think ( void )
 LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 
 
-
 // Methods and members for VR stuff - Max Vollmer, 2017-08-18
 #define VR_DUCK_START_HEIGHT 0
 #define VR_DUCK_STOP_HEIGHT 20
 #include "pm_defs.h"
-extern  "C"  playermove_t *pmove;
-void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector & hmdOffset, const Vector & hmdAngles)
+extern playermove_t *pmove;
+void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector & hmdOffset/*, const Vector & hmdAngles*/)
 {
 	// Filter out outdated updates
 	if (timestamp <= vr_hmdLastUpdateClienttime && vr_hmdLastUpdateServertime >= gpGlobals->time)
@@ -4603,12 +4603,12 @@ void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector & hm
 	// Then get headset position:
 	Vector hmdPosition = clientOrigin + hmdOffset;
 
-	// Check if headset position is in wall
-	//bool hithead = UTIL_BBoxIntersectsBSPModel(hmdPosition, Vector(-8, -8, -8), Vector(8, 8, 8));
-	//ALERT(at_console, "hithead: %i\n", hithead);
+	// Get new server origin from headset x/y coordinates
+	Vector newOrigin{ hmdPosition.x, hmdPosition.y, clientOrigin.z };
 
+	// Get delta from last offset
 	const Vector hmdOffsetDelta = vr_lastHMDOffset - hmdOffset;
-	const Vector hmdPredictPosition{ hmdPosition + (hmdOffsetDelta.Normalize() * -8.0f) };
+	const Vector hmdPredictPosition{ hmdPosition + (hmdOffsetDelta.Normalize() * -18.0f) };
 	int hmdPositionContent = UTIL_PointContents(hmdPosition, true);
 	int hmdPredictPositionContent = UTIL_PointContents(hmdPredictPosition, true);
 
@@ -4617,20 +4617,17 @@ void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector & hm
 		|| gVRPhysicsHelper.CheckIfLineIsBlocked(hmdPosition + hmdOffsetDelta, hmdPredictPosition))
 	{
 		//ALERT(at_console, "CONTENTS_SOLID\n");
-
 		// player put their head into a wall... we need to counteract
 		// take previous position (from the player's perspective, this will feel like pushing the level away when they run into a wall)
 		clientOrigin = clientOrigin + hmdOffsetDelta;
 		pev->origin = pev->origin + hmdOffsetDelta;
 		hmdPosition = hmdPosition + hmdOffsetDelta;
+		newOrigin = Vector{ hmdPosition.x, hmdPosition.y, clientOrigin.z };
 	}
 	else
 	{
 		//ALERT(at_console, "CONTENTS_EMPTY\n");
 	}
-
-	// Get new server origin from headset x/y coordinates
-	Vector newOrigin = Vector(hmdPosition.x, hmdPosition.y, clientOrigin.z);
 
 	// Check if groundPosition is in wall, if so: check if this is something we can step on
 	Vector groundPosition = newOrigin;
@@ -4853,12 +4850,12 @@ void CBasePlayer::VRCheckAndPressButtons()
 		}
 
 		const bool leftTouches = vr_isLeftControllerValid &&
-				((pEntity == pWorld) && UTIL_PointContents(leftControllerPosition) == CONTENTS_SOLID)
-			||	((pEntity != pWorld) && UTIL_PointInsideBBox(leftControllerPosition, pEntity->pev->absmin, pEntity->pev->absmax));
+				(((pEntity == pWorld) && UTIL_PointContents(leftControllerPosition) == CONTENTS_SOLID)
+			||	((pEntity != pWorld) && UTIL_PointInsideBBox(leftControllerPosition, pEntity->pev->absmin, pEntity->pev->absmax)));
 
 		const bool rightTouches = vr_isRightControllerValid &&
-			((pEntity == pWorld) && UTIL_PointContents(rightControllerPosition) == CONTENTS_SOLID)
-			|| ((pEntity != pWorld) && UTIL_PointInsideBBox(rightControllerPosition, pEntity->pev->absmin, pEntity->pev->absmax));
+			(((pEntity == pWorld) && UTIL_PointContents(rightControllerPosition) == CONTENTS_SOLID)
+			|| ((pEntity != pWorld) && UTIL_PointInsideBBox(rightControllerPosition, pEntity->pev->absmin, pEntity->pev->absmax)));
 
 		const bool anyTouches = leftTouches || rightTouches;
 
@@ -4971,84 +4968,89 @@ void CBasePlayer::VRCheckAndPressButtons()
 
 			float flTotalDamage = 0;
 
-			// Hit solid entities
-			if (leftTouches)
+			// Hit solid entities and deal damage if player has any weapon.
+			// (We don't do damage from hands if no weapons are equipped,
+			// to prevent destroying windows or killing scientists in pre-disaster maps.)
+			if (HasWeapons())
 			{
-				// TODO: Add DotProduct to check that this is not a backwards swing
-				if (/*vr_leftControllerVelocity.z <= 0.f &&*/ vr_leftControllerVelocity.Length() > MELEE_MIN_SWING_SPEED && m_vrLeftMeleeEntities.count(hEntity) == 0)
+				if (leftTouches)
 				{
-					m_vrLeftMeleeEntities.insert(hEntity);
-					float damage = UTIL_CalculateMeleeDamage(WEAPON_BAREHAND, vr_leftControllerVelocity.Length());
-					if (damage > 0)
+					// TODO: Add check that this is not a backwards swing
+					if (vr_leftControllerVelocity.Length() > MELEE_MIN_SWING_SPEED && m_vrLeftMeleeEntities.count(hEntity) == 0)
 					{
-						pEntity->TakeDamage(this->pev, this->pev, damage, UTIL_DamageTypeFromWeapon(WEAPON_BAREHAND));
-						PlayMeleeSmackSound(pEntity, WEAPON_BAREHAND, leftControllerPosition, vr_leftControllerVelocity);
-						flTotalDamage += damage;
-					}
-				}
-			}
-			else
-			{
-				m_vrLeftMeleeEntities.erase(pEntity);
-			}
-
-			if (rightTouches)
-			{
-				// TODO: Add DotProduct to check that this is not a backwards swing
-				if (vr_rightControllerVelocity.Length() > MELEE_MIN_SWING_SPEED && m_vrRightMeleeEntities.count(hEntity) == 0)
-				{
-					m_vrRightMeleeEntities.insert(hEntity);
-					float speed = vr_rightControllerVelocity.Length();
-					float damage = UTIL_CalculateMeleeDamage(itemInfo.iId, speed);
-					if (damage > 0)
-					{
-						pEntity->TakeDamage(this->pev, this->pev, damage, UTIL_DamageTypeFromWeapon(itemInfo.iId));
-						PlayMeleeSmackSound(pEntity, itemInfo.iId, rightControllerPosition, vr_rightControllerVelocity);
-						flTotalDamage += damage;
-
-						// If you smack something with an explosive, it might just explode...
-						// 25% chance that charged satchels go off when you smack something with the remote
-						if (itemInfo.iId == WEAPON_SATCHEL && m_pActiveItem->m_chargeReady && RANDOM_LONG(0, 4) == 0)
+						m_vrLeftMeleeEntities.insert(hEntity);
+						float damage = UTIL_CalculateMeleeDamage(WEAPON_BAREHAND, vr_leftControllerVelocity.Length());
+						if (damage > 0)
 						{
-							dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->PrimaryAttack();
-						}
-						// 5% chance that an explosive explodes when hitting something
-						else if (IsExplosiveWeapon(itemInfo.iId) && RANDOM_LONG(0, 20) == 0 && this->m_rgAmmo[m_pActiveItem->PrimaryAmmoIndex()] > 0)
-						{
-							if (itemInfo.iId == WEAPON_SNARK)
-							{
-								// Already done by PlayMeleeSmackSound
-								// EMIT_SOUND_DYN(m_pActiveItem->edict(), CHAN_VOICE, (RANDOM_FLOAT(0, 1) <= 0.5) ? "squeek/sqk_hunt2.wav" : "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105);
-								dynamic_cast<CSqueak*>(m_pActiveItem)->m_fJustThrown = 1;
-								this->m_iWeaponVolume = QUIET_GUN_VOLUME;
-								CBaseEntity *pSqueak = CBaseEntity::Create("monster_snark", rightControllerPosition, GetWeaponAngles(), edict());
-								pSqueak->pev->health = -1;
-								pSqueak->Killed(pev, GIB_ALWAYS);
-								pSqueak = nullptr;
-							}
-							else
-							{
-								ExplosionCreate(rightControllerPosition, GetWeaponAngles(), edict(), m_pActiveItem->pev->dmg, TRUE);
-							}
-
-							this->m_rgAmmo[m_pActiveItem->PrimaryAmmoIndex()]--;
-							dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
-
-							if (this->m_rgAmmo[m_pActiveItem->PrimaryAmmoIndex()] > 0)
-							{
-								dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->Deploy();
-							}
-							else
-							{
-								dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->RetireWeapon();
-							}
+							pEntity->TakeDamage(this->pev, this->pev, damage, UTIL_DamageTypeFromWeapon(WEAPON_BAREHAND));
+							PlayMeleeSmackSound(pEntity, WEAPON_BAREHAND, leftControllerPosition, vr_leftControllerVelocity);
+							flTotalDamage += damage;
 						}
 					}
 				}
-			}
-			else
-			{
-				m_vrRightMeleeEntities.erase(pEntity);
+				else
+				{
+					m_vrLeftMeleeEntities.erase(hEntity);
+				}
+
+				if (rightTouches)
+				{
+					// TODO: Add DotProduct to check that this is not a backwards swing
+					if (vr_rightControllerVelocity.Length() > MELEE_MIN_SWING_SPEED && m_vrRightMeleeEntities.count(hEntity) == 0)
+					{
+						m_vrRightMeleeEntities.insert(hEntity);
+						float speed = vr_rightControllerVelocity.Length();
+						float damage = UTIL_CalculateMeleeDamage(itemInfo.iId, speed);
+						if (damage > 0)
+						{
+							pEntity->TakeDamage(this->pev, this->pev, damage, UTIL_DamageTypeFromWeapon(itemInfo.iId));
+							PlayMeleeSmackSound(pEntity, itemInfo.iId, rightControllerPosition, vr_rightControllerVelocity);
+							flTotalDamage += damage;
+
+							// If you smack something with an explosive, it might just explode...
+							// 25% chance that charged satchels go off when you smack something with the remote
+							if (itemInfo.iId == WEAPON_SATCHEL && m_pActiveItem->m_chargeReady && RANDOM_LONG(0, 4) == 0)
+							{
+								dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->PrimaryAttack();
+							}
+							// 5% chance that an explosive explodes when hitting something
+							else if (IsExplosiveWeapon(itemInfo.iId) && RANDOM_LONG(0, 20) == 0 && this->m_rgAmmo[m_pActiveItem->PrimaryAmmoIndex()] > 0)
+							{
+								if (itemInfo.iId == WEAPON_SNARK)
+								{
+									// Already done by PlayMeleeSmackSound
+									// EMIT_SOUND_DYN(m_pActiveItem->edict(), CHAN_VOICE, (RANDOM_FLOAT(0, 1) <= 0.5) ? "squeek/sqk_hunt2.wav" : "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105);
+									dynamic_cast<CSqueak*>(m_pActiveItem)->m_fJustThrown = 1;
+									this->m_iWeaponVolume = QUIET_GUN_VOLUME;
+									CBaseEntity *pSqueak = CBaseEntity::Create("monster_snark", rightControllerPosition, GetWeaponAngles(), edict());
+									pSqueak->pev->health = -1;
+									pSqueak->Killed(pev, GIB_ALWAYS);
+									pSqueak = nullptr;
+								}
+								else
+								{
+									ExplosionCreate(rightControllerPosition, GetWeaponAngles(), edict(), m_pActiveItem->pev->dmg, TRUE);
+								}
+
+								this->m_rgAmmo[m_pActiveItem->PrimaryAmmoIndex()]--;
+								dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
+
+								if (this->m_rgAmmo[m_pActiveItem->PrimaryAmmoIndex()] > 0)
+								{
+									dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->Deploy();
+								}
+								else
+								{
+									dynamic_cast<CBasePlayerWeapon*>(m_pActiveItem)->RetireWeapon();
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					m_vrRightMeleeEntities.erase(pEntity);
+				}
 			}
 
 			// Special handling of barneys and scientists that don't hate us (yet)

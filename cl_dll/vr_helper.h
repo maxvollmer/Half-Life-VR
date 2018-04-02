@@ -52,7 +52,7 @@ private:
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose);
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix44_t &matPose);
 
-	Matrix4 GetModelViewMatrixFromAbsoluteTrackingMatrix(Matrix4 &absoluteTrackingMatrix, Vector translate);
+	Matrix4 GetModelViewMatrixFromAbsoluteTrackingMatrix(const Matrix4 &absoluteTrackingMatrix, const Vector translate);
 	Vector GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & absoluteTrackingMatrix);
 	Vector GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & absoluteTrackingMatrix);
 
@@ -80,10 +80,15 @@ private:
 
 	int m_vrUpdateTimestamp = 0;
 
+	float m_lastYawUpdateTime = -1;
+	float m_currentYaw = 0;
+	bool m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted = false; // Print warning when enabling player turning.
+
 	float lastUpdatedVectorsFrametime = 0;
 	Vector3 vrToHL;
 	Vector3 hlToVR;
 	void UpdateVRHLConversionVectors();
+	void UpdateWorldRotation();
 
 	bool m_fRightControllerValid = false;
 	bool m_fLeftControllerValid = false;
