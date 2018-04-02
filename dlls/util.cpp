@@ -33,6 +33,16 @@
 #include "VRPhysicsHelper.h"
 
 
+// Returns the current game directory as std::string (encapsulates g_engfuncs.pfnGetGameDir)
+std::string UTIL_GetGameDir()
+{
+	char gameDir[1024] = {};
+	g_engfuncs.pfnGetGameDir(gameDir);
+	return std::string{ gameDir };
+}
+
+
+
 float UTIL_WeaponTimeBase( void )
 {
 #if defined( CLIENT_WEAPONS )
@@ -1380,6 +1390,7 @@ bool UTIL_BBoxIntersectsBBox(const Vector &absmins1, const Vector &absmaxs1, con
 	if (absmaxs1.x < absmins2.x || absmins1.x > absmaxs2.x) return false;
 	if (absmaxs1.y < absmins2.y || absmins1.y > absmaxs2.y) return false;
 	if (absmaxs1.z < absmins2.z || absmins1.z > absmaxs2.z) return false;
+	return true;
 }
 
 // Returns true if the point is inside the rotated bbox - Max Vollmer, 2018-02-11

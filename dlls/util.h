@@ -22,6 +22,9 @@
 #ifndef ENGINECALLBACK_H
 #include "enginecallback.h"
 #endif
+
+#include <string>
+
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
 #define EPSILON 0.001f
@@ -199,6 +202,8 @@ inline BOOL FClassnameIs(entvars_t* pev, const char* szClassname)
 	{ return FStrEq(STRING(pev->classname), szClassname); }
 
 class CBaseEntity;
+
+std::string UTIL_GetGameDir();
 
 // Misc. Prototypes
 extern void			UTIL_SetSize			(entvars_t* pev, const Vector &vecMin, const Vector &vecMax);
