@@ -16,6 +16,7 @@
 
 #include "mathlib.h"
 #include "const.h"
+#include "pm_shared.h"
 #include <math.h>
 
 // up / down
@@ -323,7 +324,7 @@ float Length(const vec3_t v)
 float Distance(const vec3_t v1, const vec3_t v2)
 {
 	vec3_t d;
-	VectorSubtract(v2,v1,d);
+	VectorSubtract(v2, v1, d);
 	return Length(d);
 }
 

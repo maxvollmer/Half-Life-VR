@@ -27,6 +27,16 @@
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
 
+
+// Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
+void PM_CheckWaterJump(void);
+void PM_CheckFalling(void);
+void PM_PlayWaterSounds(void);
+void PM_CheckWaterJump(void);
+void PM_CheckFalling(void);
+void PM_PlayWaterSounds(void);
+
+
 #ifdef CLIENT_DLL
 	// Spectator Mode
 	int		iJumpSpectator;
@@ -2090,13 +2100,23 @@ void PM_Physics_Toss()
 	PM_CheckWater();
 }
 
+// The maximum distance we check when trying to determine
+// if a player can move in a particular direction while being stuck
+// - Max Vollmer, 2018-04-01
+constexpr const int VR_UNSTUCK_CHECK_DISTANCE = 4;
+
+// The z distance to add to the position when trying to determine
+// if a player can move in a particular direction while being stuck
+// - Max Vollmer, 2018-04-01
+constexpr const int VR_UNSTUCK_Z_FIX = 4;
+
 /*
 ====================
 PM_NoClip
 
 ====================
 */
-void PM_NoClip()
+void PM_NoClip(bool unstuckMove=false)
 {
 	int			i;
 	vec3_t		wishvel;
@@ -2106,22 +2126,176 @@ void PM_NoClip()
 	// Copy movement amounts
 	fmove = pmove->cmd.forwardmove;
 	smove = pmove->cmd.sidemove;
-	
+
 	VectorNormalize ( pmove->forward ); 
 	VectorNormalize ( pmove->right );
 
-	for (i=0 ; i<3 ; i++)       // Determine x and y parts of velocity
+	for (i=0 ; i<3 ; i++) // Determine x and y parts of velocity
 	{
 		wishvel[i] = pmove->forward[i]*fmove + pmove->right[i]*smove;
 	}
 	wishvel[2] += pmove->cmd.upmove;
 
-	VectorMA (pmove->origin, pmove->frametime, wishvel, pmove->origin);
-	
-	// Zero out the velocity so that we don't accumulate a huge downward velocity from
-	//  gravity, etc.
-	VectorClear( pmove->velocity );
+	// Trying to determine if a player can move while being stuck (move away from wall) - Max Vollmer, 2018-04-01
+	if (unstuckMove)
+	{
+		// set z velocity to 0
+		wishvel[2] = 0.f;
 
+		// check if position is good after moving one frame
+		vec3_t originAfterMovingOneFrame{ pmove->origin[0] + (wishvel[0] * pmove->frametime), pmove->origin[1] + (wishvel[1] * pmove->frametime), pmove->origin[2] };
+		if (pmove->PM_TestPlayerPosition(originAfterMovingOneFrame, nullptr) == 0)
+		{
+			// position is still bad after moving one frame
+
+			// get normalized direction vector from wishvel
+			float wishvelSpeed = sqrtf(wishvel[0] * wishvel[0] + wishvel[1] * wishvel[1]);
+			vec3_t wishDir{ wishvel[0], wishvel[1], 0.f };
+			wishDir[0] /= wishvelSpeed;
+			wishDir[1] /= wishvelSpeed;
+
+			// check if position is good after moving some units
+			vec3_t originAfterMovingSomeUnits{ pmove->origin[0] + (wishDir[0] * VR_UNSTUCK_CHECK_DISTANCE), pmove->origin[1] + (wishDir[1] * VR_UNSTUCK_CHECK_DISTANCE), pmove->origin[2] };
+			if (pmove->PM_TestPlayerPosition(originAfterMovingSomeUnits, nullptr) == 0)
+			{
+				// position is still bad after moving some units
+
+				// check if position is good if we add a bit to the z position (stuck in floor)
+				vec3_t originAfterMovingSomeUnitsPlusZFix{ originAfterMovingSomeUnits[0], originAfterMovingSomeUnits[1], originAfterMovingSomeUnits[2] + VR_UNSTUCK_Z_FIX };
+				if (pmove->PM_TestPlayerPosition(originAfterMovingSomeUnitsPlusZFix, nullptr) == 0)
+				{
+					// still stuck, no chance, we cannot move in that direction
+					return;
+				}
+				else
+				{
+					// stuck in floor, update z
+					pmove->origin[2] += VR_UNSTUCK_Z_FIX;
+				}
+			}
+		}
+	}
+
+	VectorMA (pmove->origin, pmove->frametime, wishvel, pmove->origin);
+
+	// Zero out the velocity so that we don't accumulate a huge downward velocity from gravity, etc.
+	VectorClear( pmove->velocity );
+}
+
+/*
+====================
+PM_YesClip
+Moved from PM_Move() switch statement for MOVETYPE_WALK - Max Vollmer, 2018-04-01
+====================
+*/
+void PM_YesClip()
+{
+	// No gravity in water - Max Vollmer, 2018-02-11
+	if (pmove->waterlevel > 0)
+	{
+		pmove->velocity[2] = 0;
+	}
+
+	if (!PM_InWater())
+	{
+		PM_AddCorrectGravity();
+	}
+
+	// If we are leaping out of the water, just update the counters.
+	if (pmove->waterjumptime)
+	{
+		PM_WaterJump();
+		PM_FlyMove();
+
+		// Make sure waterlevel is set correctly
+		PM_CheckWater();
+		return;
+	}
+
+	// If we are swimming in the water, see if we are nudging against a place we can jump up out
+	//  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
+	if (pmove->waterlevel >= 1)
+	{
+		if (pmove->waterlevel == 2)
+		{
+			PM_CheckWaterJump();
+		}
+
+		// If we are falling again, then we must not trying to jump out of water any more.
+		if (pmove->velocity[2] < 0 && pmove->waterjumptime)
+		{
+			pmove->waterjumptime = 0;
+		}
+
+		// Perform regular water movement
+		PM_WaterMove();
+
+		VectorSubtract(pmove->velocity, pmove->basevelocity, pmove->velocity);
+
+		// Get a final position
+		PM_CategorizePosition();
+	}
+	else
+
+		// Not underwater
+	{
+		// Fricion is handled before we add in any base velocity. That way, if we are on a conveyor, 
+		//  we don't slow when standing still, relative to the conveyor.
+		if (pmove->onground != -1)
+		{
+			pmove->velocity[2] = 0.0;
+			PM_Friction();
+		}
+
+		// Make sure velocity is valid.
+		PM_CheckVelocity();
+
+		// Are we on ground now
+		if (pmove->onground != -1)
+		{
+			PM_WalkMove();
+		}
+		else
+		{
+			PM_AirMove();  // Take into account movement when in air.
+		}
+
+		// Set final flags.
+		PM_CategorizePosition();
+
+		// Now pull the base velocity back out.
+		// Base velocity is set if you are on a moving object, like
+		//  a conveyor (or maybe another monster?)
+		VectorSubtract(pmove->velocity, pmove->basevelocity, pmove->velocity);
+
+		// Make sure velocity is valid.
+		PM_CheckVelocity();
+
+		// Add any remaining gravitational component.
+		if (!PM_InWater())
+		{
+			PM_FixupGravityVelocity();
+		}
+
+		// If we are on ground, no downward velocity.
+		if (pmove->onground != -1)
+		{
+			pmove->velocity[2] = 0;
+		}
+
+		// See if we landed on the ground with enough force to play
+		//  a landing sound.
+		PM_CheckFalling();
+	}
+
+	// No gravity in water - Max Vollmer, 2018-02-11
+	if (pmove->waterlevel > 0)
+	{
+		pmove->velocity[2] = 0;
+	}
+
+	// Did we enter or leave the water?
+	PM_PlayWaterSounds();
 }
 
 // Only allow bunny jumping up to 1.7x server / player maxspeed setting
@@ -2502,11 +2676,13 @@ void PM_PlayerMove ( qboolean server )
 	}
 
 	// Always try and unstick us unless we are in NOCLIP mode
-	if ( pmove->movetype != MOVETYPE_NOCLIP && pmove->movetype != MOVETYPE_NONE )
+	if ( /*pmove->movetype != MOVETYPE_NOCLIP &&*/ pmove->movetype != MOVETYPE_NONE )
 	{
 		if ( PM_CheckStuck() )
 		{
-			return;  // Can't move, we're stuck
+			// When we're stuck, noclip away if our move direction is going away from whatever we're stuck on
+			PM_NoClip(true);
+			return;
 		}
 	}
 
@@ -2569,12 +2745,6 @@ void PM_PlayerMove ( qboolean server )
 	case MOVETYPE_NONE:
 		break;
 
-		/*
-	case MOVETYPE_NOCLIP:
-		PM_NoClip();
-		break;
-		*/
-
 	case MOVETYPE_TOSS:
 	case MOVETYPE_BOUNCE:
 		PM_Physics_Toss();
@@ -2590,114 +2760,12 @@ void PM_PlayerMove ( qboolean server )
 		VectorSubtract (pmove->velocity, pmove->basevelocity, pmove->velocity);
 		break;
 
-	case MOVETYPE_WALK:
 	case MOVETYPE_NOCLIP:
-		// No gravity in water - Max Vollmer, 2018-02-11
-		if (pmove->waterlevel > 0)
-		{
-			pmove->velocity[2] = 0;
-		}
+		//PM_NoClip();
+		//break;
 
-		if ( !PM_InWater() )
-		{
-			PM_AddCorrectGravity();
-		}
-
-		// If we are leaping out of the water, just update the counters.
-		if ( pmove->waterjumptime )
-		{
-			PM_WaterJump();
-			PM_FlyMove();
-
-			// Make sure waterlevel is set correctly
-			PM_CheckWater();
-			return;
-		}
-
-		// If we are swimming in the water, see if we are nudging against a place we can jump up out
-		//  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
-		if ( pmove->waterlevel >= 1 ) 
-		{
-			if ( pmove->waterlevel == 2 )
-			{
-				PM_CheckWaterJump();
-			}
-
-			// If we are falling again, then we must not trying to jump out of water any more.
-			if ( pmove->velocity[2] < 0 && pmove->waterjumptime )
-			{
-				pmove->waterjumptime = 0;
-			}
-
-			// Perform regular water movement
-			PM_WaterMove();
-			
-			VectorSubtract (pmove->velocity, pmove->basevelocity, pmove->velocity);
-
-			// Get a final position
-			PM_CategorizePosition();
-		}
-		else
-
-		// Not underwater
-		{
-			// Fricion is handled before we add in any base velocity. That way, if we are on a conveyor, 
-			//  we don't slow when standing still, relative to the conveyor.
-			if ( pmove->onground != -1)
-			{
-				pmove->velocity[2] = 0.0;
-				PM_Friction();
-			}
-
-			// Make sure velocity is valid.
-			PM_CheckVelocity();
-
-			// Are we on ground now
-			if ( pmove->onground != -1 )
-			{
-				PM_WalkMove();
-			}
-			else
-			{
-				PM_AirMove();  // Take into account movement when in air.
-			}
-
-			// Set final flags.
-			PM_CategorizePosition();
-
-			// Now pull the base velocity back out.
-			// Base velocity is set if you are on a moving object, like
-			//  a conveyor (or maybe another monster?)
-			VectorSubtract (pmove->velocity, pmove->basevelocity, pmove->velocity );
-				
-			// Make sure velocity is valid.
-			PM_CheckVelocity();
-
-			// Add any remaining gravitational component.
-			if ( !PM_InWater() )
-			{
-				PM_FixupGravityVelocity();
-			}
-
-			// If we are on ground, no downward velocity.
-			if ( pmove->onground != -1)
-			{
-				pmove->velocity[2] = 0;
-			}
-
-			// See if we landed on the ground with enough force to play
-			//  a landing sound.
-			PM_CheckFalling();
-		}
-
-		// No gravity in water - Max Vollmer, 2018-02-11
-		if (pmove->waterlevel > 0)
-		{
-			pmove->velocity[2] = 0;
-		}
-
-		// Did we enter or leave the water?
-		PM_PlayWaterSounds();
+	case MOVETYPE_WALK:
+		PM_YesClip();	// Moved all the walking code in this switch-statement to its own method
 		break;
 	}
 }

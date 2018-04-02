@@ -175,15 +175,6 @@
     <ClCompile Include="parsemsg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\pm_shared\pm_debug.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\pm_shared\pm_math.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\pm_shared\pm_shared.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="saytext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -278,6 +269,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vr_input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pm_shared\pm_shared.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pm_shared\pm_debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pm_shared\pm_math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

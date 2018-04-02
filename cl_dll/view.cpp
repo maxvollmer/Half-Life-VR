@@ -49,20 +49,47 @@ extern "C"
 
 	void DLLEXPORT V_CalcRefdef( struct ref_params_s *pparams );
 
-	void PM_ParticleLine( float *start, float *end, int pcolor, float life, float vert);
+	void	PM_ParticleLine( float *start, float *end, int pcolor, float life, float vert);
 	int		PM_GetVisEntInfo( int ent );
-	int		PM_GetPhysEntInfo( int ent );
 	void	InterpolateAngles(  float * start, float * end, float * output, float frac );
-	void	NormalizeAngles( float * angles );
-	float	Distance(const float * v1, const float * v2);
 	float	AngleBetweenVectors(  const float * v1,  const float * v2 );
 
 	float	vJumpOrigin[3];
 	float	vJumpAngles[3];
 }
 
+extern int		PM_GetPhysEntInfo(int ent);
+
 void V_DropPunchAngle ( float frametime, float *ev_punchangle );
 void VectorAngles( const float *forward, float *angles );
+
+
+// copied from pm_math
+void NormalizeAngles(float *angles)
+{
+	int i;
+	// Normalize angles
+	for (i = 0; i < 3; i++)
+	{
+		if (angles[i] > 180.0)
+		{
+			angles[i] -= 360.0;
+		}
+		else if (angles[i] < -180.0)
+		{
+			angles[i] += 360.0;
+		}
+	}
+}
+
+// copied from pm_math
+float Distance(const vec3_t v1, const vec3_t v2)
+{
+	vec3_t d;
+	VectorSubtract(v2, v1, d);
+	return Length(d);
+}
+
 
 #include "r_studioint.h"
 #include "com_model.h"
