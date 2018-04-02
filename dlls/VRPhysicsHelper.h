@@ -59,6 +59,10 @@ private:
 	void InitPhysicsWorld();
 	void DeletePhysicsMapData();
 	void CreateMapShapeFromCurrentVerticesAndTriangles();
+
+	bool GetPhysicsMapDataFromFile(const std::string& physicsMapDataFilePath);
+	void StorePhysicsMapDataToFile(const std::string& physicsMapDataFilePath);
+	void GetPhysicsMapDataFromModel();
 };
 
 extern VRPhysicsHelper gVRPhysicsHelper;

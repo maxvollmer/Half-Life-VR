@@ -12,8 +12,9 @@
 #include "pm_defs.h"
 #include "plane.h"
 #include "com_model.h"
-extern "C" struct playermove_s *PM_GetPlayerMove(void);
+extern struct playermove_s *PM_GetPlayerMove(void);
 
+#include <fstream>
 #include <memory>
 
 #include "VRPhysicsHelper.h"
@@ -21,6 +22,8 @@ extern "C" struct playermove_s *PM_GetPlayerMove(void);
 #include "cbase.h"
 
 #include <chrono>
+
+constexpr const unsigned int HLVR_MAP_PHYSDATA_FILE_MAGIC = 'HLVR';
 
 
 // Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
@@ -721,47 +724,190 @@ bool CompareWorlds(const model_t *world1, const model_t *worl2)
 	return world1 == worl2 && world1 != nullptr && FStrEq(world1->name, worl2->name);
 }
 
+template <typename T>
+void WriteBinaryData(std::ofstream& out, const T& value)
+{
+	out.write(reinterpret_cast<const char*>(&value), sizeof(value));
+}
+
+template <typename T>
+void ReadBinaryData(std::ifstream& in, T& value)
+{
+	in.read(reinterpret_cast<char*>(&value), sizeof(value));
+	if (in.eof())
+	{
+		throw std::runtime_error{ "unexpected eof" };
+	}
+	if (!in.good())
+	{
+		throw std::runtime_error{ "unexpected error" };
+	}
+}
+
+bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDataFilePath)
+{
+	try
+	{
+		std::ifstream physicsMapDataFileStream{ physicsMapDataFilePath, std::ios_base::in | std::ios_base::binary };
+		if (!physicsMapDataFileStream.fail() && physicsMapDataFileStream.good())
+		{
+			unsigned int magic = 0;
+			unsigned long long int hash = 0;
+			unsigned int verticesCount = 0;
+			unsigned int indicesCount = 0;
+
+			ReadBinaryData(physicsMapDataFileStream, magic);
+			ReadBinaryData(physicsMapDataFileStream, hash);
+			ReadBinaryData(physicsMapDataFileStream, verticesCount);
+			ReadBinaryData(physicsMapDataFileStream, indicesCount);
+
+			// TODO: hash is ignored for now
+			if (magic == HLVR_MAP_PHYSDATA_FILE_MAGIC /*&& hash == TODO*/ && verticesCount > 0 && indicesCount > 0)
+			{
+				DeletePhysicsMapData();
+				m_vertices.clear();
+				m_indices.clear();
+
+				for (unsigned int i = 0; i < verticesCount; ++i)
+				{
+					reactphysics3d::Vector3 vertex;
+					ReadBinaryData(physicsMapDataFileStream, vertex.x);
+					ReadBinaryData(physicsMapDataFileStream, vertex.y);
+					ReadBinaryData(physicsMapDataFileStream, vertex.z);
+					m_vertices.push_back(vertex);
+				}
+
+				for (unsigned int i = 0; i < indicesCount; ++i)
+				{
+					int index = 0;
+					ReadBinaryData(physicsMapDataFileStream, index);
+					if (index < 0 || static_cast<unsigned>(index) > m_vertices.size())
+					{
+						throw std::runtime_error{ "invalid data: index out of bounds!" };
+					}
+					m_indices.push_back(index);
+				}
+
+				char checkeof;
+				if (physicsMapDataFileStream >> checkeof) // this should fail
+				{
+					throw std::runtime_error{ "expected eof, but didn't reach eof" };
+				}
+
+				CreateMapShapeFromCurrentVerticesAndTriangles();
+
+				ALERT(at_console, "Successfully loaded physics data from %s\n", physicsMapDataFilePath.c_str());
+				return true;
+			}
+			else
+			{
+				throw std::runtime_error{ "invalid header" };
+			}
+		}
+		else
+		{
+			ALERT(at_console, "Game must recalculate physics data because %s doesn't exist or couldn't be opened.\n", physicsMapDataFilePath.c_str());
+			return false;
+		}
+	}
+	catch (const std::runtime_error& e)
+	{
+		ALERT(at_console, "Game must recalculate physics data due to error while trying to parse %s: %s\n", physicsMapDataFilePath.c_str(), e.what());
+		m_vertices.clear();
+		m_indices.clear();
+		return false;
+	}
+}
+
+void VRPhysicsHelper::StorePhysicsMapDataToFile(const std::string& physicsMapDataFilePath)
+{
+	std::ofstream physicsMapDataFileStream{ physicsMapDataFilePath, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary };
+	if (!physicsMapDataFileStream.fail())
+	{
+		const unsigned long long int hash = 1337; // TODO!
+
+		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_MAGIC);
+		WriteBinaryData(physicsMapDataFileStream, hash);
+		WriteBinaryData(physicsMapDataFileStream, static_cast<unsigned int>(m_vertices.size()));
+		WriteBinaryData(physicsMapDataFileStream, static_cast<unsigned int>(m_indices.size()));
+
+		for (unsigned int i = 0; i < m_vertices.size(); ++i)
+		{
+			const reactphysics3d::Vector3& vertex = m_vertices[i];
+			WriteBinaryData(physicsMapDataFileStream, vertex.x);
+			WriteBinaryData(physicsMapDataFileStream, vertex.y);
+			WriteBinaryData(physicsMapDataFileStream, vertex.z);
+		}
+
+		for (unsigned int i = 0; i < m_indices.size(); ++i)
+		{
+			int index = m_indices.at(i);
+			WriteBinaryData(physicsMapDataFileStream, index);
+		}
+
+		ALERT(at_console, "Successfully stored physics data in file %s!\n", physicsMapDataFilePath.c_str());
+	}
+	else
+	{
+		ALERT(at_console, "Couldn't store physics data in file %s! Check reading/writing privileges on your map folder.\n", physicsMapDataFilePath.c_str());
+	}
+}
+
+void VRPhysicsHelper::GetPhysicsMapDataFromModel()
+{
+	DeletePhysicsMapData();
+
+	m_vertices.clear();
+	m_indices.clear();
+
+	PlaneFacesMap planeFaces;
+	PlaneVertexMetaDataMap planeVertexMetaData;
+
+	TriangulateBSP(planeFaces, planeVertexMetaData, m_vertices, m_indices);
+
+	CreateMapShapeFromCurrentVerticesAndTriangles();
+
+	std::vector<Vector3> additionalVertices;
+	std::vector<int> additionalIndices;
+	FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(m_dynamicMap, planeFaces, planeVertexMetaData, additionalVertices, additionalIndices, m_vertices.size());
+
+	DeletePhysicsMapData();
+
+	m_vertices.insert(m_vertices.end(), additionalVertices.begin(), additionalVertices.end());
+	m_indices.insert(m_indices.end(), additionalIndices.begin(), additionalIndices.end());
+
+	CreateMapShapeFromCurrentVerticesAndTriangles();
+}
+
 bool VRPhysicsHelper::CheckWorld()
 {
 	const model_t *world = GetWorldBSPModel();
 
 	if (!CompareWorlds(world, m_hlWorldModel) && IsWorldValid(world))
 	{
-		auto start = std::chrono::system_clock::now();
-		std::chrono::duration<double> timePassed;
-
 		if (m_dynamicsWorld == nullptr)
 		{
 			InitPhysicsWorld();
 		}
 
-		DeletePhysicsMapData();
+		const std::string mapFileName{ world->name };
+		const std::string mapName{ mapFileName.substr(0, mapFileName.find_last_of(".")) };
+		const std::string physicsMapDataFilePath{ UTIL_GetGameDir() + "/" + mapName + ".hlvrphysdata" };
 
-		m_vertices.clear();
-		m_indices.clear();
+		ALERT(at_console, "Initializing physics data for current map...\n");
+		auto start = std::chrono::system_clock::now();
+		std::chrono::duration<double> timePassed;
 
-		PlaneFacesMap planeFaces;
-		PlaneVertexMetaDataMap planeVertexMetaData;
-
-		TriangulateBSP(planeFaces, planeVertexMetaData, m_vertices, m_indices);
-
-		CreateMapShapeFromCurrentVerticesAndTriangles();
-
-		std::vector<Vector3> additionalVertices;
-		std::vector<int> additionalIndices;
-		FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(m_dynamicMap, planeFaces, planeVertexMetaData, additionalVertices, additionalIndices, m_vertices.size());
-
-		DeletePhysicsMapData();
-
-		m_vertices.insert(m_vertices.end(), additionalVertices.begin(), additionalVertices.end());
-		m_indices.insert(m_indices.end(), additionalIndices.begin(), additionalIndices.end());
-
-		CreateMapShapeFromCurrentVerticesAndTriangles();
-
-		m_hlWorldModel = world;
+		if (!GetPhysicsMapDataFromFile(physicsMapDataFilePath))
+		{
+			GetPhysicsMapDataFromModel();
+			StorePhysicsMapDataToFile(physicsMapDataFilePath);
+		}
 
 		timePassed = std::chrono::system_clock::now() - start;
-		ALERT(at_console, "Triangulated map and filled gaps in %f seconds.\n", timePassed.count());
+		ALERT(at_console, "...initialized physics data in %f seconds.\n", timePassed.count());
+
+		m_hlWorldModel = world;
 	}
 
 	return m_hlWorldModel != nullptr && m_dynamicsWorld != nullptr;
