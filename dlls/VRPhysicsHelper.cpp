@@ -27,6 +27,7 @@ constexpr const unsigned int HLVR_MAP_PHYSDATA_FILE_MAGIC = 'HLVR';
 
 
 // Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
+#define MAX_MAP_MODELS 8192
 const model_t * GetBSPModel(CBaseEntity *pEntity)
 {
 	playermove_s *pmove = PM_GetPlayerMove();
@@ -38,10 +39,12 @@ const model_t * GetBSPModel(CBaseEntity *pEntity)
 			model_t *models = pmove->physents[0].model;
 			if (models != nullptr)
 			{
-				int modelindex = atoi(&modelname[1]);
-				if (modelindex > 0 && strcmp(models[modelindex].name, modelname) == 0)
+				for (int i = 0; i < MAX_MAP_MODELS; ++i)
 				{
-					return &models[modelindex];
+					if (strcmp(models[i].name, modelname) == 0)
+					{
+						return &models[i];
+					}
 				}
 			}
 		}
