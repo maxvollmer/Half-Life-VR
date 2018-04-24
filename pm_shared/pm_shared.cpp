@@ -2173,7 +2173,7 @@ void PM_NoClip(bool unstuckMove=false)
 				else
 				{
 					// stuck in floor, update z
-					pmove->origin[2] += VR_UNSTUCK_Z_FIX;
+					pmove->origin[2] += VR_UNSTUCK_Z_FIX * pmove->frametime;
 				}
 			}
 		}
