@@ -492,6 +492,17 @@ CBaseEntity * EHANDLE :: operator -> ()
 	return (CBaseEntity *)GET_PRIVATE( Get( ) ); 
 }
 
+bool EHANDLE :: operator == (EHANDLE& other)
+{
+	if (Get() == NULL && other.Get() == NULL)
+	{
+		return true;
+	}
+	else
+	{
+		return m_pent == other.m_pent && m_serialnumber == other.m_serialnumber;
+	}
+}
 
 // give health
 int CBaseEntity :: TakeHealth( float flHealth, int bitsDamageType )

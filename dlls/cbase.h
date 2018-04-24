@@ -139,6 +139,7 @@ public:
 
 	CBaseEntity * operator = (CBaseEntity *pEntity);
 	CBaseEntity * operator ->();
+	bool operator == (EHANDLE& other);
 
 	struct Hash : public std::unary_function<EHANDLE, std::size_t>
 	{
