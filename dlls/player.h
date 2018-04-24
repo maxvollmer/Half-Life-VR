@@ -98,6 +98,7 @@ public:
 	void Add(const Vector& position, const string_t multi_manager);
 	bool Trigger(CBasePlayer *pPlayer, const Vector& position);
 	bool Has(const Vector& position);
+	void Clear() { m_xen_mounds.clear(); }
 private:
 	std::map<const Vector, const string_t> m_xen_mounds;
 };
@@ -364,6 +365,10 @@ private:
 	EHANDLE hFlashLight;
 	EHANDLE hFlashlightMonster;
 	bool fFlashlightIsOn = false;
+
+	EHANDLE m_vrHRetinaScanner;
+	float m_vrRetinaScannerLookTime = 0;
+	bool m_vrHRetinaScannerUsed = false;
 
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrInUseButtons;
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrLeftMeleeEntities;

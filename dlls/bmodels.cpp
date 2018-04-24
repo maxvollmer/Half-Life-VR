@@ -25,6 +25,22 @@
 #include "cbase.h"
 #include "doors.h"
 
+
+// For retina scanners in VR - Max Vollmer, 2018-04-02
+#define HARDWARE_MODE
+#include "pm_defs.h"
+#include "plane.h"
+#include "com_model.h"
+#include <vector>
+#include <unordered_set>
+#include <unordered_map>
+#include <algorithm>
+#include <string>
+extern const model_t* GetBSPModel(CBaseEntity *pEntity);
+extern std::unordered_map<EHANDLE, EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScanners;
+extern std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScannerButtons;
+
+
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 
 #define		SF_BRUSH_ACCDCC	16// brush should accelerate and decelerate when toggled
@@ -58,6 +74,8 @@ public:
 
 	// Bmodels don't go across transitions
 	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+
+	void EXPORT CheckIsRetinaScanner(void);
 };
 
 LINK_ENTITY_TO_CLASS( func_wall, CFuncWall );
@@ -73,11 +91,62 @@ void CFuncWall :: Spawn( void )
 	pev->movetype	= MOVETYPE_PUSH;  // so it doesn't get pushed by anything
 	pev->solid		= SOLID_BSP;
 	SET_MODEL( ENT(pev), STRING(pev->model) );
-	
+
 	// If it can't move/go away, it's really part of the world
 	pev->flags |= FL_WORLDBRUSH;
+
+	// Detect if I am a retina scanner!
+	SetThink(&CFuncWall::CheckIsRetinaScanner);
+	pev->nextthink = gpGlobals->time + 1.f;
 }
 
+void CFuncWall::CheckIsRetinaScanner()
+{
+	const model_t* model = GetBSPModel(this);
+	if (model == nullptr)
+	{
+		// Repeat Think until GetBSPModel returns a value
+		SetThink(&CFuncWall::CheckIsRetinaScanner);
+		pev->nextthink = gpGlobals->time + 1.f;
+		return;
+	}
+	else
+	{
+		SetThink(NULL);
+		for (int i = 0; i < model->nummodelsurfaces; ++i)
+		{
+			const msurface_t& surface = model->surfaces[model->firstmodelsurface + i];
+			if (surface.texinfo != nullptr && surface.texinfo->texture != nullptr && surface.texinfo->texture->name != nullptr)
+			{
+				std::string textureName = surface.texinfo->texture->name;
+				std::transform(textureName.begin(), textureName.end(), textureName.begin(), ::tolower);
+				if (textureName.find("generic_113") != std::string::npos)
+				{
+					// We are a retina scanner!
+
+					// Find our button! (func_button with rendermode kRenderTransTexture, renderamt 0 and model center not further away than 16 units away from our center)
+					Vector retinaScannerCenter = (pev->absmin + pev->absmax) / 2.f;
+					CBaseEntity* pButton = nullptr;
+					while (UTIL_FindAllEntities(&pButton))
+					{
+						// Add retina scanner and button to global list
+						if (FClassnameIs(pButton->pev, "func_button") && pButton->pev->renderamt == 0 && pButton->pev->rendermode == kRenderTransTexture)
+						{
+							Vector buttonScannerCenter = (pButton->pev->absmin + pButton->pev->absmax) / 2.f;
+							if ((buttonScannerCenter - retinaScannerCenter).Length() <= 16.f)
+							{
+								g_vrRetinaScanners[EHANDLE{ this }] = EHANDLE{ pButton };
+								g_vrRetinaScannerButtons.insert(EHANDLE{ pButton });
+								break;
+							}
+						}
+					}
+					return;
+				}
+			}
+		}
+	}
+}
 
 void CFuncWall :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
@@ -435,7 +504,7 @@ void CFuncRotating :: Spawn( )
 
 	// instant-use brush?
 	if ( FBitSet( pev->spawnflags, SF_BRUSH_ROTATE_INSTANT) )
-	{		
+	{
 		SetThink(&CFuncRotating:: SUB_CallUseToggle );
 		pev->nextthink = pev->ltime + 1.5;	// leave a magic delay for client to start up
 	}	

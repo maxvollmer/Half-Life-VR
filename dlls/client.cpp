@@ -40,6 +40,9 @@
 #include "netadr.h"
 #include "VRPhysicsHelper.h"
 
+#include <vector>
+#include <unordered_map>
+
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL int		g_iSkillLevel;
@@ -813,6 +816,14 @@ void ClientPrecache( void )
 
 
 	PRECACHE_MODEL("sprites/black.spr");
+
+	// Clear global VR stuff here - Max Vollmer, 2018-04-02
+	extern GlobalXenMounds gGlobalXenMounds;
+	extern std::unordered_map<EHANDLE, EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScanners;
+	extern std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScannerButtons;
+	gGlobalXenMounds.Clear();
+	g_vrRetinaScanners.clear();
+	g_vrRetinaScannerButtons.clear();
 }
 
 /*

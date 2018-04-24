@@ -41,9 +41,18 @@
 
 #include "VRPhysicsHelper.h"
 
+
 // #define DUCKFIX
 
+// Globale VR related stuffs - Max Vollmer, 2018-04-02
+#include <vector>
+#include <algorithm>
+#include <unordered_set>
+#include <unordered_map>
 VRLevelChangeData g_vrLevelChangeData;
+std::unordered_map<EHANDLE, EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScanners;
+std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScannerButtons;
+
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -1374,6 +1383,7 @@ void CBasePlayer::PlayerUse ( void )
 	if ( ! ((pev->button | m_afButtonPressed | m_afButtonReleased) & IN_USE) )
 		return;
 
+	/*
 	// Hit Use on a train?
 	if ( m_afButtonPressed & IN_USE )
 	{
@@ -1408,6 +1418,7 @@ void CBasePlayer::PlayerUse ( void )
 			}
 		}
 	}
+	*/
 
 	CBaseEntity *pObject = NULL;
 	CBaseEntity *pClosest = NULL;
@@ -1715,9 +1726,10 @@ void CBasePlayer::PreThink(void)
 			UTIL_TraceLine( pev->origin, pev->origin + Vector(0,0,-38), ignore_monsters, ENT(pev), &trainTrace );
 
 			// HACKHACK - Just look for the func_tracktrain classname
-			if ( trainTrace.flFraction != 1.0 && trainTrace.pHit )
-			pTrain = CBaseEntity::Instance( trainTrace.pHit );
-
+			if (trainTrace.flFraction != 1.0 && trainTrace.pHit)
+			{
+				pTrain = CBaseEntity::Instance(trainTrace.pHit);
+			}
 
 			if ( !pTrain || !(pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) || !pTrain->OnControls(pev) )
 			{
@@ -1727,9 +1739,10 @@ void CBasePlayer::PreThink(void)
 				return;
 			}
 		}
-		else if ( !FBitSet( pev->flags, FL_ONGROUND ) || FBitSet( pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL ) || (pev->button & (IN_MOVELEFT|IN_MOVERIGHT) ) )
+		//else if ( !FBitSet( pev->flags, FL_ONGROUND ) || FBitSet( pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL ) || (pev->button & (IN_MOVELEFT|IN_MOVERIGHT) ) )
+		else if (FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) || !pTrain->OnControls(pev))
 		{
-			// Turn off the train if you jump, strafe, or the train controls go dead
+			// Turn off the train if the train controls go dead or you leave the control area
 			m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 			m_iTrain = TRAIN_NEW|TRAIN_OFF;
 			return;
@@ -1753,9 +1766,11 @@ void CBasePlayer::PreThink(void)
 			m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
 			m_iTrain |= TRAIN_ACTIVE|TRAIN_NEW;
 		}
-
-	} else if (m_iTrain & TRAIN_ACTIVE)
+	}
+	else if (m_iTrain & TRAIN_ACTIVE)
+	{
 		m_iTrain = TRAIN_NEW; // turn off train
+	}
 
 	if ( !FBitSet ( pev->flags, FL_ONGROUND ) )
 	{
@@ -2347,9 +2362,11 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 	//ALERT ( at_console, "%d/%d\n", iVolume, m_iTargetVolume );
 }
 
+constexpr const int VR_MIN_VALID_LIFT_OR_TRAIN_WIDTH = 64;	// Special handling of entities that are less than 64x64 in horizontal size
 Vector gVRTempPlayerOrigin;
-Vector gVRTempPlayerAbsmin;
-Vector gVRTempPlayerAbsmax;
+Vector gVRTempPlayerEyePosition;
+Vector gVRTempPlayerHalfAbsmin;
+Vector gVRTempPlayerHalfAbsmax;
 void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 {
 	CBaseEntity *pGroundEntity = nullptr;
@@ -2360,27 +2377,80 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 	if (pGroundEntity == nullptr || (pGroundEntity->pev->velocity.Length()<0.01f && pGroundEntity->pev->avelocity.Length()<0.01f))
 	{
 		gVRTempPlayerOrigin = pev->origin;
-		gVRTempPlayerAbsmin = pev->origin + pev->mins;
-		gVRTempPlayerAbsmax = pev->origin + pev->maxs;
+		gVRTempPlayerEyePosition = EyePosition();
+		gVRTempPlayerHalfAbsmin = pev->origin + Vector{ pev->mins.x / 2, pev->mins.y / 2, pev->mins.z };
+		gVRTempPlayerHalfAbsmax = pev->origin + Vector{ pev->maxs.x / 2, pev->maxs.y / 2, pev->maxs.z };
 		UTIL_FindEntityByFilter(&pGroundEntity, [](CBaseEntity *pEntity)->bool {
 			if (pEntity->pev->solid == SOLID_BSP && (pEntity->pev->velocity.Length()>0 || pEntity->pev->avelocity.Length()>0))
 			{
-				//return UTIL_PointInsideRotatedBBox(pEntity->pev->origin, pEntity->pev->angles, pEntity->pev->mins, pEntity->pev->maxs, gVRTempPlayerOrigin);
-				return UTIL_RotatedBBoxIntersectsBBox(pEntity->pev->origin, pEntity->pev->angles, pEntity->pev->mins, pEntity->pev->maxs, gVRTempPlayerAbsmin, gVRTempPlayerAbsmax);
+				if ((pEntity->pev->maxs.x - pEntity->pev->mins.x) < VR_MIN_VALID_LIFT_OR_TRAIN_WIDTH && (pEntity->pev->maxs.y - pEntity->pev->mins.y) < VR_MIN_VALID_LIFT_OR_TRAIN_WIDTH)
+				{
+					// If entity is narrow (e.g. a door) we check if origin or eye position are inside (this prevents being dragged by sliding doors)
+					return UTIL_PointInsideRotatedBBox(pEntity->pev->origin, pEntity->pev->angles, pEntity->pev->mins, pEntity->pev->maxs, gVRTempPlayerOrigin)
+						|| UTIL_PointInsideRotatedBBox(pEntity->pev->origin, pEntity->pev->angles, pEntity->pev->mins, pEntity->pev->maxs, gVRTempPlayerEyePosition);
+				}
+				else
+				{
+					// If entity is wide (e.g. a train or elevator) we check if half bbox is inside (this prevents falling off when standing on edge)
+					return UTIL_RotatedBBoxIntersectsBBox(pEntity->pev->origin, pEntity->pev->angles, pEntity->pev->mins, pEntity->pev->maxs, gVRTempPlayerHalfAbsmin, gVRTempPlayerHalfAbsmax);
+				}
 			}
 			return false;
 		});
 	}
 	if (pGroundEntity != nullptr)
 	{
-		//ALERT(at_console, "YES GROUND ENTITY\n");
-		Vector groundVelocity = pGroundEntity->pev->velocity + gVRPhysicsHelper.AngularVelocityToLinearVelocity(pGroundEntity->pev->avelocity, pev->origin - pGroundEntity->pev->origin);
-		pev->origin = pev->origin + (groundVelocity * gpGlobals->frametime);
+		// Calculate ground velocity
+		Vector groundVelocity = pGroundEntity->pev->velocity;
+
+		// Add avelocity
+		if (pGroundEntity->pev->avelocity.Length() > 0.01f)
+		{
+			groundVelocity = groundVelocity + gVRPhysicsHelper.AngularVelocityToLinearVelocity(pGroundEntity->pev->avelocity, pev->origin - pGroundEntity->pev->origin);
+		}
+
+		// Don't apply downwards velocity
+		groundVelocity.z = (std::max)(groundVelocity.z, 0.f);
+
+		// Apply ground velocity and get new origin
+		Vector newOrigin = pev->origin + (groundVelocity * gpGlobals->frametime);
+
+		// Make sure new origin is valid (don't get moved through walls/into void etc)
+		Vector dir = (newOrigin - pev->origin).Normalize();
+		Vector newEyePosition = newOrigin + pev->view_ofs;
+		Vector predictedEyePosition = pev->origin + pev->view_ofs + (dir * 16.f);
+		int newEyeContents = UTIL_PointContents(newEyePosition);
+		int predictedEyeContents = UTIL_PointContents(predictedEyePosition);
+		if (newEyeContents != CONTENTS_SKY && newEyeContents != CONTENTS_SOLID
+			&& predictedEyeContents != CONTENTS_SKY && predictedEyeContents != CONTENTS_SOLID)
+		{
+			// Apply new origin
+			pev->origin = newOrigin;
+		}
+		else
+		{
+			// When we're moving upwards, and the groundentity's center is valid,
+			// "slide" on x/y towards the center of the groundentity origin to avoid ceilings/corners/walls
+			Vector groundEntityCenter = (pGroundEntity->pev->absmin + pGroundEntity->pev->absmax) / 2;
+			int groundEntityCenterContents = UTIL_PointContents(groundEntityCenter);
+			if (groundEntityCenterContents != CONTENTS_SKY && groundEntityCenterContents != CONTENTS_SOLID)
+			{
+				Vector dirToCenter2D = groundEntityCenter - pev->origin;
+				dirToCenter2D.z = 0.f;
+				float distanceToCenter2D = dirToCenter2D.Length();
+				if (distanceToCenter2D > 8.f)
+				{
+					dirToCenter2D = dirToCenter2D.Normalize();
+					float moveDistance = (std::min)((std::max)(groundVelocity.Length() * gpGlobals->frametime, 1.f), distanceToCenter2D);
+					pev->origin.x += dirToCenter2D.x * moveDistance;
+					pev->origin.y += dirToCenter2D.y * moveDistance;
+					pev->origin.z = newOrigin.z;
+				}
+			}
+		}
+
+		// Remember ground entity
 		pev->groundentity = pGroundEntity->edict();
-	}
-	else
-	{
-		//ALERT(at_console, "NO GROUND ENTITY\n");
 	}
 }
 
@@ -4816,6 +4886,8 @@ void CBasePlayer::UpdateVRFlashlight()
 #define VR_STOP_SIGNAL_MIN_Y -12
 #define VR_STOP_SIGNAL_MAX_Y 12
 
+#define VR_RETINASCANNER_ACTIVATE_LOOK_TIME 1.5f
+
 bool CheckShoulderTouch(CBaseMonster *pMonster, const Vector & pos)
 {
 	Vector posInMonsterLocalSpace = pos - pMonster->pev->origin;
@@ -4884,32 +4956,74 @@ void CBasePlayer::VRCheckAndPressButtons()
 
 		EHANDLE hEntity = pEntity;
 
-		if (FClassnameIs(pEntity->pev, "func_button") || FClassnameIs(pEntity->pev, "func_rot_button"))
+		if (g_vrRetinaScanners.count(hEntity) > 0)
 		{
-			if (anyTouches)
+			Vector retinaScannerPosition = (hEntity->pev->absmax + hEntity->pev->absmin) / 2.f;
+			bool isLookingAtRetinaScanner = UTIL_IsFacing(pev->origin, pev->angles.ToViewAngles(), retinaScannerPosition)
+											&& ((EyePosition() - retinaScannerPosition).Length() < 32.f)
+											&& (EyePosition().z >= hEntity->pev->absmin.z)
+											&& (EyePosition().z <= hEntity->pev->absmax.z);
+
+			if (isLookingAtRetinaScanner)
 			{
-				if (m_vrInUseButtons.count(hEntity) == 0)
+				if (m_vrHRetinaScanner == hEntity)
 				{
-					m_vrInUseButtons.insert(hEntity);
-					if (FBitSet(pEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
+					if ((gpGlobals->time - m_vrRetinaScannerLookTime) >= VR_RETINASCANNER_ACTIVATE_LOOK_TIME)
 					{
-						pEntity->Touch(this);
+						if (!m_vrHRetinaScannerUsed)
+						{
+							g_vrRetinaScanners[hEntity]->Use(this, this, USE_SET, 1);
+							m_vrHRetinaScannerUsed = true;
+						}
 					}
-					else
-					{
-						pEntity->Use(this, this, USE_SET, 1);
-					}
+				}
+				else
+				{
+					m_vrHRetinaScanner = hEntity;
+					m_vrRetinaScannerLookTime = gpGlobals->time;
+					m_vrHRetinaScannerUsed = false;
 				}
 			}
 			else
 			{
-				if (m_vrInUseButtons.count(hEntity) > 0)
+				if (m_vrHRetinaScanner == hEntity)
 				{
-					if (!FBitSet(pEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY))
+					m_vrHRetinaScanner = nullptr;
+					m_vrRetinaScannerLookTime = 0;
+					m_vrHRetinaScannerUsed = false;
+				}
+			}
+		}
+		else if (FClassnameIs(pEntity->pev, "func_button") || FClassnameIs(pEntity->pev, "func_rot_button"))
+		{
+			// Don't touch activate retina scanners
+			if (g_vrRetinaScannerButtons.count(hEntity) == 0)
+			{
+				if (anyTouches)
+				{
+					if (m_vrInUseButtons.count(hEntity) == 0)
 					{
-						pEntity->Use(this, this, USE_SET, 0);
+						m_vrInUseButtons.insert(hEntity);
+						if (FBitSet(pEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
+						{
+							pEntity->Touch(this);
+						}
+						else
+						{
+							pEntity->Use(this, this, USE_SET, 1);
+						}
 					}
-					m_vrInUseButtons.erase(hEntity);
+				}
+				else
+				{
+					if (m_vrInUseButtons.count(hEntity) > 0)
+					{
+						if (!FBitSet(pEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY))
+						{
+							pEntity->Use(this, this, USE_SET, 0);
+						}
+						m_vrInUseButtons.erase(hEntity);
+					}
 				}
 			}
 		}
@@ -5858,7 +5972,9 @@ bool GlobalXenMounds::Trigger(CBasePlayer *pPlayer, const Vector& position)
 			return true;
 		}
 	}
+
 	return false;
 }
 
 GlobalXenMounds gGlobalXenMounds;
+
