@@ -2409,8 +2409,10 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 			groundVelocity = groundVelocity + gVRPhysicsHelper.AngularVelocityToLinearVelocity(pGroundEntity->pev->avelocity, pev->origin - pGroundEntity->pev->origin);
 		}
 
-		// Don't apply downwards velocity
-		groundVelocity.z = (std::max)(groundVelocity.z, 0.f);
+		// Don't slow down falling when moving downwards and player mins still inside ground entity
+		if (groundVelocity.z < 0 && pGroundEntity->pev->absmin.z < pev->absmin.z) {
+			groundVelocity.z = (std::min)(groundVelocity.z, pev->velocity.z);
+		}
 
 		// Apply ground velocity and get new origin
 		Vector newOrigin = pev->origin + (groundVelocity * gpGlobals->frametime);
