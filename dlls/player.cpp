@@ -2431,7 +2431,7 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 		}
 		else
 		{
-			// When we're moving upwards, and the groundentity's center is valid,
+			// When we're moving up- or downwards, and the groundentity's center is valid,
 			// "slide" on x/y towards the center of the groundentity origin to avoid ceilings/corners/walls
 			Vector groundEntityCenter = (pGroundEntity->pev->absmin + pGroundEntity->pev->absmax) / 2;
 			int groundEntityCenterContents = UTIL_PointContents(groundEntityCenter);
