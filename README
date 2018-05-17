@@ -8,6 +8,8 @@ VERSION 0.2
 
 Stuff still to do:
 [ ] Tracktrain and func_tank controls
+[ ] Fix ground entity movement
+[ ] Fix HUD text rendering (currently rendered at level origin)
 [ ] Fix and re-add ladder climbing, jumping and ducking
 [ ] Fix yaw rotation in roomscale VR setup
 [ ] Add Menu/Intermission/Death room
