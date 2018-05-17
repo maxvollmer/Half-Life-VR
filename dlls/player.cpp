@@ -5372,16 +5372,37 @@ void CBasePlayer::VRCheckAndPressButtons()
 			{
 				if (anyTouches)
 				{
+					Vector vecTouchVelocity;
+					if (leftTouches) vecTouchVelocity = Vector(vr_leftControllerVelocity.x, vr_leftControllerVelocity.y, 0);
+					if (rightTouches) vecTouchVelocity = vecTouchVelocity + Vector(vr_rightControllerVelocity.x, vr_rightControllerVelocity.y, 0);
 					if (FClassnameIs(pEntity->pev, "func_breakable"))
 					{
 						CBreakable *pBreakable = dynamic_cast<CBreakable*>(pEntity);
-						if (pBreakable != nullptr && !FBitSet(pBreakable->pev->spawnflags, SF_BREAK_TRIGGER_ONLY))
+						// Only cause damage when we have weapons and is actually breakable
+						if (HasWeapons() && pBreakable->IsBreakable())
 						{
-							if (FBitSet(pBreakable->pev->spawnflags, SF_BREAK_CROWBAR))
+							if (pBreakable != nullptr && !FBitSet(pBreakable->pev->spawnflags, SF_BREAK_TRIGGER_ONLY))
 							{
-								pBreakable->TakeDamage(pev, pev, pBreakable->pev->health, DMG_CLUB);
+								if (FBitSet(pBreakable->pev->spawnflags, SF_BREAK_CROWBAR))
+								{
+									pBreakable->TakeDamage(pev, pev, pBreakable->pev->health, DMG_CLUB);
+								}
+								else if (FBitSet(pBreakable->pev->spawnflags, SF_BREAK_PRESSURE) || FBitSet(pBreakable->pev->spawnflags, SF_BREAK_TOUCH))
+								{
+									// Hack
+									// Backup breakable spawnflags and our velocity
+									int backupSpawnflags = pBreakable->pev->spawnflags;
+									Vector backupVelocity = pev->velocity;
+									// Override breakable spawnflags with break_touch and set our velocity to touch velocity
+									pBreakable->pev->spawnflags = SF_BREAK_TOUCH;
+									pev->velocity = vecTouchVelocity;
+									// Make breakable handle the touch with our velocity
+									pBreakable->BreakTouch(this);
+									// Reset spawnflags and velocity
+									pBreakable->pev->spawnflags = backupSpawnflags;
+									pev->velocity = backupVelocity;
+								}
 							}
-							// TODO: Handle SF_BREAK_TOUCH and SF_BREAK_PRESSURE
 						}
 					}
 					else if (FClassnameIs(pEntity->pev, "func_pushable"))
@@ -5389,22 +5410,13 @@ void CBasePlayer::VRCheckAndPressButtons()
 						CPushable *pPushable = dynamic_cast<CPushable*>(pEntity);
 						if (pPushable != nullptr)
 						{
-							Vector vecPushVelocity;
-							if (leftTouches)
+							if (vecTouchVelocity.Length() > pPushable->MaxSpeed())
 							{
-								vecPushVelocity = Vector(vr_leftControllerVelocity.x, vr_leftControllerVelocity.y, 0);
-							}
-							if (rightTouches)
-							{
-								vecPushVelocity = vecPushVelocity + Vector(vr_rightControllerVelocity.x, vr_rightControllerVelocity.y, 0);
-							}
-							if (vecPushVelocity.Length() > pPushable->MaxSpeed())
-							{
-								pPushable->pev->velocity = vecPushVelocity.Normalize() * pPushable->MaxSpeed();
+								pPushable->pev->velocity = vecTouchVelocity.Normalize() * pPushable->MaxSpeed();
 							}
 							else
 							{
-								pPushable->pev->velocity = vecPushVelocity;
+								pPushable->pev->velocity = vecTouchVelocity;
 							}
 						}
 					}
