@@ -1,3 +1,47 @@
 This is source code for a VR mod for Half-Life. You may use or reuse this code with giving credit.
 
 No warranties whatsoever.
+
+Third party licenses apply where applicable.
+
+VERSION 0.2
+
+Stuff still to do:
+[ ] Tracktrain and func_tank controls
+[ ] Fix and re-add ladder climbing, jumping and ducking
+[ ] Fix yaw rotation in roomscale VR setup
+[ ] Add Menu/Intermission/Death room
+[ ] Detect levelchange/loading and fix display
+[ ] Weapons
+[ ]  Make gauss thingy spinnable
+[ ]  Make snark reach for left hand
+[ ]  Make some nice tripmine placement feature
+[ ]  Weapon selection wheel
+[ ] Synchronize beam effects for left and right eye
+
+If you want to help, please don't just code ahead and then send a pull request, contact me first and ask what needs outsourcing and how it should be implemented! Had to deny pull requests in the past, because they weren't compatible with other changes I made in the meantime.
+
+====
+Hand model based on high poly hand model by Willdabeast and HEV arms textures by JohnChronic: https://gamebanana.com/skins/157391
+
+====
+ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/
+Copyright (c) 2010-2016 Daniel Chappuis
+
+This software is provided 'as-is', without any express or implied warranty.
+In no event will the authors be held liable for any damages arising from the
+use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not claim
+   that you wrote the original software. If you use this software in a
+   product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
+
+2. Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
+
+3. This notice may not be removed or altered from any source distribution.
