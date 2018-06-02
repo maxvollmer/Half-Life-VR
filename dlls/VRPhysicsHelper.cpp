@@ -27,85 +27,14 @@ extern struct playermove_s *PM_GetPlayerMove(void);
 constexpr const unsigned int HLVR_MAP_PHYSDATA_FILE_MAGIC = 'HLVR';
 
 // Stuff needed to extract brush models
-constexpr const int MAX_MODEL_ITERATION = 1024;
+constexpr const unsigned int ENGINE_MODEL_ARRAY_SIZE = 1024;
+const model_t* g_EngineModelArrayPointer = nullptr;
 
 enum NeedLoadFlag {
 	IS_LOADED = 0,		// If set, this brush model is valid and loaded
 	NEEDS_LOADING = 1,	// If set, this brush model still needs to be loaded
 	UNREFERENCED = 2	// If set, this brush model isn't used by the current map
 };
-
-enum BrushModelEvaluationResult {
-	CONTINUE,
-	BREAK,
-	RETURN_NULL,
-	RETURN_MODEL
-};
-
-// Checks a given model and returns a value telling the loop in GetBSPModel what to do
-BrushModelEvaluationResult EvaluateBrushModelForName(const model_t *model, const char * modelname)
-{
-	if (model->type != mod_brush)	// Not a brush, skip
-		return CONTINUE;
-
-	if (model->needload == UNREFERENCED)	// Not in use, skip
-		return CONTINUE;
-
-	if (model->name[0] == 0)	// First model with type mod_brush and empty name marks end of array or unfinished loading
-		return BREAK;
-
-	if (strcmp(model->name, modelname) == 0)	// Identify model by name
-	{
-		if (model->needload == NEEDS_LOADING)	// Still needs loading, return nullptr
-			return RETURN_NULL;
-
-		return RETURN_MODEL;	// We found the brush model, return it!
-	}
-
-	return CONTINUE;	// Nothing found, just continue checking models
-}
-
-// Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
-const model_t * GetBSPModel(CBaseEntity *pEntity)
-{
-	playermove_s *pmove = PM_GetPlayerMove();
-	if (pmove != nullptr)
-	{
-		const char * modelname = STRING(pEntity->pev->model);
-		// Check that the entity has a brush model
-		if (modelname != nullptr && modelname[0] == '*')
-		{
-			// Get the world model (that is always stored in the first physent) and check that it's valid (loaded)
-			model_t *worldmodel = pmove->physents[0].model;
-			if (worldmodel != nullptr && worldmodel->needload == 0)
-			{
-				// HACKHACK - We don't know where in the model array the world model is stored exactly,
-				// so we iterate both in forward and backward direction:
-
-				// Go forwards in model array
-				for (int i = 1; i < MAX_MODEL_ITERATION; ++i)
-				{
-					const model_t* model = worldmodel + i;
-					auto result = EvaluateBrushModelForName(model, modelname);
-					if (result == RETURN_NULL) return nullptr;
-					if (result == RETURN_MODEL) return model;
-					if (result == BREAK) break;
-				}
-
-				// Go backwards in model array
-				for (int i = 1; i < MAX_MODEL_ITERATION; ++i)
-				{
-					const model_t* model = worldmodel - i;
-					auto result = EvaluateBrushModelForName(model, modelname);
-					if (result == RETURN_NULL) return nullptr;
-					if (result == RETURN_MODEL) return model;
-					if (result == BREAK) break;
-				}
-			}
-		}
-	}
-	return nullptr;
-}
 
 // Returns a pointer to a model_t instance holding BSP data for the current map - Max Vollmer, 2018-01-21
 const model_t * GetWorldBSPModel()
@@ -121,6 +50,65 @@ const model_t * GetWorldBSPModel()
 			}
 		}
 	}
+	return nullptr;
+}
+
+bool IsValidSpriteName(const char* name)
+{
+	return name[0] != 0 && name[63] == 0 && std::string(name).find(".spr") == strlen(name) - 4;
+}
+
+const model_t* GetEngineModelArray()
+{
+	if (g_EngineModelArrayPointer == nullptr)
+	{
+		// Get the world model and check that it's valid (loaded)
+		const model_t *worldmodel = GetWorldBSPModel();
+		if (worldmodel != nullptr && worldmodel->needload == 0)
+		{
+			g_EngineModelArrayPointer = worldmodel;
+
+			// Walk backwards to find start of array (there might be cached sprites in the array before the first map got loaded)
+			while ((g_EngineModelArrayPointer - 1)->type == mod_sprite && IsValidSpriteName((g_EngineModelArrayPointer - 1)->name))
+			{
+				g_EngineModelArrayPointer--;
+			}
+		}
+	}
+	return g_EngineModelArrayPointer;
+}
+
+const model_t* FindEngineModelByName(const char* name)
+{
+	const model_t* modelarray = GetEngineModelArray();
+	if (modelarray != nullptr)
+	{
+		for (size_t i = 0; i < ENGINE_MODEL_ARRAY_SIZE; ++i)
+		{
+			if (modelarray[i].needload == IS_LOADED && strcmp(modelarray[i].name, name) == 0)
+			{
+				return modelarray + i;
+			}
+		}
+	}
+	return nullptr;
+}
+
+// Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
+const model_t * GetBSPModel(CBaseEntity *pEntity)
+{
+	// Check if entity is world
+	if (pEntity->edict() == INDEXENT(0))
+		return GetWorldBSPModel();
+
+	const char* modelname = STRING(pEntity->pev->model);
+
+	// Check that the entity has a brush model
+	if (modelname != nullptr && modelname[0] == '*')
+	{
+		return FindEngineModelByName(modelname);
+	}
+
 	return nullptr;
 }
 
@@ -523,17 +511,11 @@ void TriangulateBSP(PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVe
 	CollectFaces(GetWorldBSPModel(), Vector{}, planeFaces, planeVertexMetaData);
 
 	// Collect faces of bsp entities
-	size_t entityCount = 0;
-	size_t entityFacesCount = 0;
 	CBaseEntity *pEnt = nullptr;
 	while (UTIL_FindEntityByFilter(&pEnt, IsSolidInPhysicsWorld))
 	{
-		size_t facesCount = CollectFaces(GetBSPModel(pEnt), pEnt->pev->origin, planeFaces, planeVertexMetaData);
-		ALERT(at_console, "ENTITY %s, FACES: %i\n", STRING(pEnt->pev->classname), facesCount);
-		++entityCount;
-		entityFacesCount += facesCount;
+		CollectFaces(GetBSPModel(pEnt), pEnt->pev->origin, planeFaces, planeVertexMetaData);
 	}
-	ALERT(at_console, "ENTITY COUNT: %i, ENTITY FACES COUNT: %i\n", (int)entityCount, (int)entityFacesCount);
 
 	// Triangulate all faces (also triangulates gaps between faces!)
 	TriangulateBSPFaces(planeFaces, planeVertexMetaData, vertices, indices);
@@ -657,53 +639,6 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	}
 
 	return result;
-
-
-	/*
-	// Get trace dir and length
-	Vector3 dir = pos2 - pos1;
-
-	float lengthSquare = dir.lengthSquare();
-	float length = sqrt(lengthSquare);
-
-	// Position sphere at start of trace
-	m_dynamicSphere->setTransform(rp3d::Transform(pos1, Quaternion::identity()));
-
-	// Set velocity of sphere
-	m_dynamicSphere->setLinearVelocity(dir);
-
-	// Make sure sphere isn't put to sleep too early
-	m_dynamicsWorld->setSleepLinearVelocity(length * 0.01f);
-
-	// Let sphere fall down until it rests or has passed end of trace,
-	// or until MAX_ITERATIONS or MAX_PHYSICS_TIME_PER_FRAME has reached (if it takes too long to calculate the path of the sphere, we can assume that it is blocked)
-	int numSteps = 0;
-	auto start = std::chrono::system_clock::now();
-	std::chrono::duration<double> timePassed;
-	do
-	{
-		m_dynamicSphere->setLinearVelocity(dir);
-		m_dynamicsWorld->update(PHYSICS_STEP_TIME);
-		timePassed = std::chrono::system_clock::now() - start;
-		++numSteps;
-	}
-	while (
-		numSteps < MAX_PHYSICS_STEPS						// Cancel loop if we need too many steps to calculate sphere's path (heuristic: probably blocked)
-		&& timePassed.count() < MAX_PHYSICS_TIME_PER_FRAME	// Cancel loop if we need too much time to calculate sphere's path (heuristic: probably blocked)
-		&& !m_dynamicSphere->isSleeping()					// Cancel loop if sphere stopped moving (blocked)
-		&& lengthSquare > (m_dynamicSphere->getTransform().getPosition() - pos1).lengthSquare()		// Cancel loop if sphere is too far away (reached or passed end point)
-		&& !m_dynamicSphere->testPointInside(pos2)													// Cancel loop if sphere reached end point
-		&& (m_dynamicSphere->testPointInside(pos1) || m_dynamicSphere->raycast(ray, raycastInfo)));	// Cancel loop if sphere is not within path anymore (blocked, "rolled" away)
-
-	ALERT(at_console, "physics steps: %i, time passed: %f\n", numSteps, timePassed.count());
-
-	hlResult.x = m_dynamicSphere->getTransform().getPosition().x * RP3D_TO_HL;
-	hlResult.y = m_dynamicSphere->getTransform().getPosition().y * RP3D_TO_HL;
-	hlResult.z = m_dynamicSphere->getTransform().getPosition().z * RP3D_TO_HL;
-
-	// Check if sphere reached endpoint
-	return UTIL_PointInsideBBox(hlPos2, hlResult - VEC_DUCK_RADIUS, hlResult + VEC_DUCK_RADIUS);
-	*/
 }
 
 void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, TraceResult *ptr)
@@ -820,11 +755,9 @@ bool DoesAnyBrushModelNeedLoading(const model_t *const models)
 		const model_t *const model = GetBSPModel(pEnt);
 		if (model == nullptr || model->needload != 0)
 		{
-			ALERT(at_console, "MODEL STILL NEEDS LOADING\n");
 			return true;
 		}
 	}
-	ALERT(at_console, "ALL MODELS LOADED\n");
 	return false;
 }
 

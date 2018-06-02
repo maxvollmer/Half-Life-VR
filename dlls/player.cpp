@@ -5579,7 +5579,7 @@ void CBasePlayer::UpdateVRTele()
 	UTIL_MakeAimVectorsPrivate(vr_leftControllerAngles, forward, NULL, NULL);
 
 	TraceResult tr;
-	gVRPhysicsHelper.TraceLine(vecPos, vecPos + forward * GetCurrentTeleLength(), true, false, true, nullptr, &tr);
+	gVRPhysicsHelper.TraceLine(vecPos, vecPos + forward * GetCurrentTeleLength(), &tr);
 
 	Vector beamEndPos = tr.vecEndPos;
 	Vector teleportDestination = tr.vecEndPos;
@@ -5623,12 +5623,13 @@ void CBasePlayer::UpdateVRTele()
 	}
 }
 
-EHANDLE temp;
+//EHANDLE temp;
 bool CBasePlayer::CanTeleportHere(const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination)
 {
 	vr_fTelePointsAtXenMound = false; // reset every frame
 	if (!tr.fAllSolid)
 	{
+		/* // Line can't be blocked anymore, we now use a special TraceLine method in gVRPhysicsHelper that already gives us the correct line end
 		Vector ballResult;
 		bool lineIsBlocked = gVRPhysicsHelper.CheckIfLineIsBlocked(beamStartPos, beamEndPos, ballResult);
 
@@ -5647,6 +5648,7 @@ bool CBasePlayer::CanTeleportHere(const TraceResult& tr, const Vector& beamStart
 		UTIL_SetOrigin(temp->pev, ballResult);
 
 		if (!lineIsBlocked)
+		*/
 		{
 			// Detect water
 			if (UTIL_PointContents(tr.vecEndPos) == CONTENTS_WATER)
