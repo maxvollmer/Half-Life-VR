@@ -1,6 +1,7 @@
 
 #pragma warning(disable : 4244)
 /*
+Disable warnings for:
 1>..\reactphysics3d\include\collision\shapes\heightfieldshape.h(227): warning C4244: 'return': conversion from 'double' to 'reactphysics3d::decimal', possible loss of data
 1>..\reactphysics3d\include\collision\shapes\heightfieldshape.h(235): warning C4244: 'return': conversion from 'reactphysics3d::decimal' to 'int', possible loss of data
 */
@@ -25,26 +26,80 @@ extern struct playermove_s *PM_GetPlayerMove(void);
 
 constexpr const unsigned int HLVR_MAP_PHYSDATA_FILE_MAGIC = 'HLVR';
 
+// Stuff needed to extract brush models
+constexpr const int MAX_MODEL_ITERATION = 1024;
+
+enum NeedLoadFlag {
+	IS_LOADED = 0,		// If set, this brush model is valid and loaded
+	NEEDS_LOADING = 1,	// If set, this brush model still needs to be loaded
+	UNREFERENCED = 2	// If set, this brush model isn't used by the current map
+};
+
+enum BrushModelEvaluationResult {
+	CONTINUE,
+	BREAK,
+	RETURN_NULL,
+	RETURN_MODEL
+};
+
+// Checks a given model and returns a value telling the loop in GetBSPModel what to do
+BrushModelEvaluationResult EvaluateBrushModelForName(const model_t *model, const char * modelname)
+{
+	if (model->type != mod_brush)	// Not a brush, skip
+		return CONTINUE;
+
+	if (model->needload == UNREFERENCED)	// Not in use, skip
+		return CONTINUE;
+
+	if (model->name[0] == 0)	// First model with type mod_brush and empty name marks end of array or unfinished loading
+		return BREAK;
+
+	if (strcmp(model->name, modelname) == 0)	// Identify model by name
+	{
+		if (model->needload == NEEDS_LOADING)	// Still needs loading, return nullptr
+			return RETURN_NULL;
+
+		return RETURN_MODEL;	// We found the brush model, return it!
+	}
+
+	return CONTINUE;	// Nothing found, just continue checking models
+}
 
 // Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
-#define MAX_MAP_MODELS 8192
 const model_t * GetBSPModel(CBaseEntity *pEntity)
 {
 	playermove_s *pmove = PM_GetPlayerMove();
 	if (pmove != nullptr)
 	{
 		const char * modelname = STRING(pEntity->pev->model);
+		// Check that the entity has a brush model
 		if (modelname != nullptr && modelname[0] == '*')
 		{
-			model_t *models = pmove->physents[0].model;
-			if (models != nullptr)
+			// Get the world model (that is always stored in the first physent) and check that it's valid (loaded)
+			model_t *worldmodel = pmove->physents[0].model;
+			if (worldmodel != nullptr && worldmodel->needload == 0)
 			{
-				for (int i = 0; i < MAX_MAP_MODELS; ++i)
+				// HACKHACK - We don't know where in the model array the world model is stored exactly,
+				// so we iterate both in forward and backward direction:
+
+				// Go forwards in model array
+				for (int i = 1; i < MAX_MODEL_ITERATION; ++i)
 				{
-					if (strcmp(models[i].name, modelname) == 0)
-					{
-						return &models[i];
-					}
+					const model_t* model = worldmodel + i;
+					auto result = EvaluateBrushModelForName(model, modelname);
+					if (result == RETURN_NULL) return nullptr;
+					if (result == RETURN_MODEL) return model;
+					if (result == BREAK) break;
+				}
+
+				// Go backwards in model array
+				for (int i = 1; i < MAX_MODEL_ITERATION; ++i)
+				{
+					const model_t* model = worldmodel - i;
+					auto result = EvaluateBrushModelForName(model, modelname);
+					if (result == RETURN_NULL) return nullptr;
+					if (result == RETURN_MODEL) return model;
+					if (result == BREAK) break;
 				}
 			}
 		}
@@ -95,6 +150,11 @@ constexpr double MAX_PHYSICS_TIME_PER_FRAME = 1. / 30.;	// Never drop below 30fp
 inline Vector3 HLVecToRP3DVec(const Vector & hlVec)
 {
 	return Vector3{ hlVec.x * HL_TO_RP3D, hlVec.y * HL_TO_RP3D, hlVec.z * HL_TO_RP3D };
+}
+
+inline Vector RP3DVecToHLVec(const Vector3 & rp3dVec)
+{
+	return Vector{ rp3dVec.x * RP3D_TO_HL, rp3dVec.y * RP3D_TO_HL, rp3dVec.z * RP3D_TO_HL };
 }
 
 const std::hash<int> intHasher;
@@ -381,16 +441,19 @@ public:
 
 typedef std::unordered_map<TranslatedPlane, std::vector<TranslatedFace>, TranslatedPlane::Hash, TranslatedPlane::Equal> PlaneFacesMap;
 
-void CollectFaces(const model_t * model, const Vector & origin, PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData)
+size_t CollectFaces(const model_t * model, const Vector & origin, PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData)
 {
+	size_t faceCount = 0;
 	if (model != nullptr)
 	{
 		for (int i = 0; i < model->nummodelsurfaces; ++i)
 		{
 			TranslatedFace face{ model->surfaces[model->firstmodelsurface + i], origin, planeVertexMetaData };
 			planeFaces[face.GetPlane()].push_back(face);
+			++faceCount;
 		}
 	}
+	return faceCount;
 }
 
 void TriangulateGapsBetweenCoplanarFaces(const TranslatedFace & faceA, const TranslatedFace & faceB, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<int> & indices)
@@ -460,11 +523,17 @@ void TriangulateBSP(PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVe
 	CollectFaces(GetWorldBSPModel(), Vector{}, planeFaces, planeVertexMetaData);
 
 	// Collect faces of bsp entities
+	size_t entityCount = 0;
+	size_t entityFacesCount = 0;
 	CBaseEntity *pEnt = nullptr;
 	while (UTIL_FindEntityByFilter(&pEnt, IsSolidInPhysicsWorld))
 	{
-		CollectFaces(GetBSPModel(pEnt), pEnt->pev->origin, planeFaces, planeVertexMetaData);
+		size_t facesCount = CollectFaces(GetBSPModel(pEnt), pEnt->pev->origin, planeFaces, planeVertexMetaData);
+		ALERT(at_console, "ENTITY %s, FACES: %i\n", STRING(pEnt->pev->classname), facesCount);
+		++entityCount;
+		entityFacesCount += facesCount;
 	}
+	ALERT(at_console, "ENTITY COUNT: %i, ENTITY FACES COUNT: %i\n", (int)entityCount, (int)entityFacesCount);
 
 	// Triangulate all faces (also triangulates gaps between faces!)
 	TriangulateBSPFaces(planeFaces, planeVertexMetaData, vertices, indices);
@@ -580,9 +649,7 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 
 	if (result)
 	{
-		hlResult.x = raycastInfo.worldPoint.x * RP3D_TO_HL;
-		hlResult.y = raycastInfo.worldPoint.y * RP3D_TO_HL;
-		hlResult.z = raycastInfo.worldPoint.z * RP3D_TO_HL;
+		hlResult = RP3DVecToHLVec(raycastInfo.worldPoint);
 	}
 	else
 	{
@@ -637,6 +704,34 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	// Check if sphere reached endpoint
 	return UTIL_PointInsideBBox(hlPos2, hlResult - VEC_DUCK_RADIUS, hlResult + VEC_DUCK_RADIUS);
 	*/
+}
+
+void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, TraceResult *ptr)
+{
+	UTIL_TraceLine(vecStart, vecEnd, ignore_monsters, dont_ignore_glass, nullptr, ptr);
+
+	if (CheckWorld())
+	{
+		Vector3 pos1 = HLVecToRP3DVec(vecStart);
+		Vector3 pos2 = HLVecToRP3DVec(vecEnd);
+
+		Ray ray{ pos1 , pos2, 1.f };
+		RaycastInfo raycastInfo{};
+
+		if (m_dynamicMap->raycast(ray, raycastInfo) && raycastInfo.hitFraction < ptr->flFraction)
+		{
+			ptr->vecEndPos = RP3DVecToHLVec(raycastInfo.worldPoint);
+			ptr->vecPlaneNormal = RP3DVecToHLVec(raycastInfo.worldNormal).Normalize();
+			ptr->flPlaneDist = DotProduct(ptr->vecPlaneNormal, -ptr->vecEndPos);
+
+			ptr->fAllSolid = false;
+			ptr->fInOpen = false;
+			ptr->fInWater = UTIL_PointContents(ptr->vecEndPos) == CONTENTS_WATER;
+			ptr->flFraction = raycastInfo.hitFraction;
+			ptr->iHitgroup = 0;
+			ptr->pHit = INDEXENT(0);
+		}
+	}
 }
 
 void VRPhysicsHelper::InitPhysicsWorld()
@@ -717,9 +812,30 @@ void VRPhysicsHelper::CreateMapShapeFromCurrentVerticesAndTriangles()
 	m_dynamicMapProxyShape = m_dynamicMap->addCollisionShape(m_concaveMeshShape, rp3d::Transform::identity(), 1);
 }
 
+bool DoesAnyBrushModelNeedLoading(const model_t *const models)
+{
+	CBaseEntity *pEnt = nullptr;
+	while (UTIL_FindEntityByFilter(&pEnt, IsSolidInPhysicsWorld))
+	{
+		const model_t *const model = GetBSPModel(pEnt);
+		if (model == nullptr || model->needload != 0)
+		{
+			ALERT(at_console, "MODEL STILL NEEDS LOADING\n");
+			return true;
+		}
+	}
+	ALERT(at_console, "ALL MODELS LOADED\n");
+	return false;
+}
+
 bool IsWorldValid(const model_t *world)
 {
-	return world != nullptr && world->needload == 0 && world->marksurfaces[0] != nullptr && world->marksurfaces[0]->polys != nullptr;
+	return
+		world != nullptr
+		&& world->needload == 0
+		&& world->marksurfaces[0] != nullptr
+		&& world->marksurfaces[0]->polys != nullptr
+		&& !DoesAnyBrushModelNeedLoading(world);
 }
 
 bool CompareWorlds(const model_t *world1, const model_t *worl2)

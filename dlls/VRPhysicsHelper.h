@@ -35,6 +35,8 @@ public:
 	void RotateVector(Vector &vecToRotate, const Vector &vecAngles, const Vector &vecOffset = Vector(), const bool reverse = false);
 	Vector AngularVelocityToLinearVelocity(const Vector & avelocity, const Vector & pos);
 
+	void TraceLine(const Vector &vecStart, const Vector &vecEnd, TraceResult *ptr);
+
 private:
 	//reactphysics3d::CollisionWorld * m_collisionWorld = nullptr;
 	reactphysics3d::DynamicsWorld * m_dynamicsWorld = nullptr;

@@ -5579,7 +5579,7 @@ void CBasePlayer::UpdateVRTele()
 	UTIL_MakeAimVectorsPrivate(vr_leftControllerAngles, forward, NULL, NULL);
 
 	TraceResult tr;
-	UTIL_TraceLine(vecPos, vecPos + forward * GetCurrentTeleLength(), ignore_monsters, edict(), &tr);
+	gVRPhysicsHelper.TraceLine(vecPos, vecPos + forward * GetCurrentTeleLength(), true, false, true, nullptr, &tr);
 
 	Vector beamEndPos = tr.vecEndPos;
 	Vector teleportDestination = tr.vecEndPos;
@@ -5623,6 +5623,7 @@ void CBasePlayer::UpdateVRTele()
 	}
 }
 
+EHANDLE temp;
 bool CBasePlayer::CanTeleportHere(const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination)
 {
 	vr_fTelePointsAtXenMound = false; // reset every frame
@@ -5631,7 +5632,6 @@ bool CBasePlayer::CanTeleportHere(const TraceResult& tr, const Vector& beamStart
 		Vector ballResult;
 		bool lineIsBlocked = gVRPhysicsHelper.CheckIfLineIsBlocked(beamStartPos, beamEndPos, ballResult);
 
-		/*
 		if (!temp)
 		{
 			CSprite *pSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", GetClientOrigin(), FALSE);
@@ -5645,7 +5645,6 @@ bool CBasePlayer::CanTeleportHere(const TraceResult& tr, const Vector& beamStart
 		temp->pev->origin = ballResult;
 		temp->pev->rendercolor.x = lineIsBlocked ? 255 : 0;
 		UTIL_SetOrigin(temp->pev, ballResult);
-		*/
 
 		if (!lineIsBlocked)
 		{
