@@ -2129,11 +2129,11 @@ bool UTIL_ShouldCollide(CBaseEntity *pTouched, CBaseEntity *pOther)
 	{
 		return UTIL_ShouldCollideWithPlayer(pTouched);
 	}
-	*/
 	if (FClassnameIs(pTouched->pev, "func_illusionary") || FClassnameIs(pOther->pev, "func_illusionary"))
 	{
 		return false;
 	}
+	*/
 	return true;
 }
 
