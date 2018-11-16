@@ -53,6 +53,14 @@ VRLevelChangeData g_vrLevelChangeData;
 std::unordered_map<EHANDLE, EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScanners;
 std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScannerButtons;
 
+// Savedata descriptor for vr level change data
+TYPEDESCRIPTION g_vrLevelChangeDataSaveData[] =
+{
+	DEFINE_FIELD(VRLevelChangeData, lastHMDOffset, FIELD_VECTOR),
+	DEFINE_FIELD(VRLevelChangeData, clientOriginOffset, FIELD_VECTOR),
+	DEFINE_FIELD(VRLevelChangeData, hasData, FIELD_BOOLEAN),
+};
+
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -2403,6 +2411,12 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 		// Calculate ground velocity
 		Vector groundVelocity = pGroundEntity->pev->velocity;
 
+		if (pGroundEntity->pev->velocity.z < 0)
+		{
+			ALERT(at_console, "pev->origin.z: %f\n", pev->origin.z);
+			int i = 0;
+		}
+
 		// Add avelocity
 		if (pGroundEntity->pev->avelocity.Length() > 0.01f)
 		{
@@ -2896,7 +2910,10 @@ int CBasePlayer::Save( CSave &save )
 	if ( !CBaseMonster::Save(save) )
 		return 0;
 
-	return save.WriteFields( "PLAYER", this, m_playerSaveData, ARRAYSIZE(m_playerSaveData) );
+	StoreVROffsetsForLevelchange();
+
+	return save.WriteFields( "PLAYER", this, m_playerSaveData, ARRAYSIZE(m_playerSaveData) )
+		&& save.WriteFields("PLAYERVROffsetsForLevelchange", &g_vrLevelChangeData, g_vrLevelChangeDataSaveData, ARRAYSIZE(g_vrLevelChangeDataSaveData));
 }
 
 
@@ -2921,7 +2938,8 @@ int CBasePlayer::Restore( CRestore &restore )
 	if ( !CBaseMonster::Restore(restore) )
 		return 0;
 
-	int status = restore.ReadFields( "PLAYER", this, m_playerSaveData, ARRAYSIZE(m_playerSaveData) );
+	int status = restore.ReadFields("PLAYER", this, m_playerSaveData, ARRAYSIZE(m_playerSaveData))
+		&& restore.ReadFields("PLAYERVROffsetsForLevelchange", &g_vrLevelChangeData, g_vrLevelChangeDataSaveData, ARRAYSIZE(g_vrLevelChangeDataSaveData));
 
 	SAVERESTOREDATA *pSaveData = (SAVERESTOREDATA *)gpGlobals->pSaveData;
 	// landmark isn't present.

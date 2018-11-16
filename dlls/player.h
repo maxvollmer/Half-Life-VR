@@ -353,7 +353,7 @@ private:
 	int vr_hmdLastUpdateClienttime = 0;
 	float vr_hmdLastUpdateServertime = 0;
 
-	Vector2D vr_ClientOriginOffset;
+	Vector vr_ClientOriginOffset;	// Must be Vector instead of Vector2D for save/restore. z is not used.
 
 	CSprite* vr_pTeleSprite = nullptr;
 	CBeam* vr_pTeleBeam = nullptr;
@@ -416,8 +416,8 @@ class VRLevelChangeData
 {
 public:
 	Vector lastHMDOffset{};
-	Vector2D clientOriginOffset{};
-	bool hasData{ false };
+	Vector clientOriginOffset{};	// Must be Vector instead of Vector2D, so save/load works (only has FIELD_VECTOR, which expects 3 floats)
+	BOOL hasData{ false };			// Must be BOOL (int), so save/load works (only has FIELD_BOOLEAN, which expects int)
 };
 
 extern VRLevelChangeData g_vrLevelChangeData;
