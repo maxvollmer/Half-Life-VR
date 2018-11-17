@@ -176,7 +176,7 @@ void VRHelper::Init()
 
 bool VRHelper::AcceptsDisclaimer()
 {
-	return MessageBox(WindowFromDC(wglGetCurrentDC()), TEXT("This software is provided as is with no warranties whatsoever. This mod uses a custom opengl32.dll that might get you VAC banned. The VR experience might be unpleasant and nauseating. Only continue if you're aware of the risks and know what you are doing.\n\nDo you want to continue?"), TEXT("Disclaimer"), MB_YESNO) == IDYES;
+	return true;
 }
 
 void VRHelper::Exit(const char* lpErrorMessage)
@@ -185,7 +185,7 @@ void VRHelper::Exit(const char* lpErrorMessage)
 	vrCompositor = nullptr;
 	if (lpErrorMessage != nullptr)
 	{
-		MessageBox(NULL, lpErrorMessage, TEXT("Error starting Half-Life: VR"), MB_OK);
+		std::cerr << "Error starting Half-Life: VR: " << lpErrorMessage << std::endl;
 	}
 	vr::VR_Shutdown();
 	gEngfuncs.pfnClientCmd("quit");

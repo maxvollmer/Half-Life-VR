@@ -47,6 +47,7 @@ void logCall(const char* funcName);
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 
 // We are not including 'WinGDI.h' and 'gl.h', so the
 // required types must be redefined in this source file.
@@ -211,7 +212,7 @@ static HMODULE getSelfModuleHandle()
 
 DECLSPEC_NORETURN static void fatalError(const std::string & message)
 {
-    MessageBoxA(nullptr, message.c_str(), "GLProxy Fatal Error", MB_OK | MB_ICONERROR);
+	std::cerr << "GLProxy Fatal Error: " << message << std::endl;
 
     GLPROXY_LOG("Fatal error: " << message);
     getLogStream().flush();
