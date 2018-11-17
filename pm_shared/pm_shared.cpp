@@ -1999,6 +1999,17 @@ void PM_LadderMove(physent_t *pLadder)
 	}
 }
 
+physent_t *g_pLastLadder = nullptr;
+
+// Ah, who doesn't love redundant copypaste code all over the place - Max Vollmer, 2018-11-17
+inline bool BBoxIntersectsBBox(vec3_t absmins1, vec3_t absmaxs1, vec3_t absmins2, vec3_t absmaxs2)
+{
+	if (absmaxs1[0] < absmins2[0] || absmins1[0] > absmaxs2[0]) return false;
+	if (absmaxs1[1] < absmins2[1] || absmins1[1] > absmaxs2[1]) return false;
+	if (absmaxs1[2] < absmins2[2] || absmins1[2] > absmaxs2[2]) return false;
+	return true;
+}
+
 physent_t *PM_Ladder(void)
 {
 	int			i;
@@ -2024,14 +2035,47 @@ physent_t *PM_Ladder(void)
 			// Test the player's hull for intersection with this model
 			if (pmove->PM_HullPointContents(hull, num, test) == CONTENTS_EMPTY)
 			{
-				// TODO: Even the slightest head movements make the player fall off a ladder
+				if (g_pLastLadder == pe)
+				{
+					// Even the slightest head movements make the player fall off a ladder,
+					// so here we will do an additional check if the player is "close enough" to stay on the ladder.
+
+					// Get ladder bbox in world space
+					vec3_t ladderAbsmin;
+					vec3_t ladderAbsmax;
+					VectorAdd(pe->model->mins, pe->origin, ladderAbsmin);
+					VectorAdd(pe->model->maxs, pe->origin, ladderAbsmax);
+
+					// Get player bbox in world space
+					vec3_t playerAbsmin;
+					vec3_t playerAbsmax;
+					VectorAdd(pmove->origin, pmove->player_mins[pmove->usehull], playerAbsmin);
+					VectorAdd(pmove->origin, pmove->player_maxs[pmove->usehull], playerAbsmax);
+					playerAbsmax[2] = pmove->origin[2] + max(pmove->player_maxs[pmove->usehull][2], pmove->view_ofs[2]) + 20.f;
+
+					// Expand player bbox by 8 units in each direction
+					for (int i = 0; i < 3; i++)
+					{
+						playerAbsmin[i] -= 8.f;
+						playerAbsmax[i] += 8.f;
+					}
+
+					// Check if bbox's intersect, and if yes, return this ladder entity.
+					// (Player stays on ladder if VR headset movements remain within 8 units range.)
+					if (BBoxIntersectsBBox(ladderAbsmin, ladderAbsmax, playerAbsmin, playerAbsmax))
+					{
+						return pe;
+					}
+				}
 				continue;
 			}
 
+			g_pLastLadder = pe;
 			return pe;
 		}
 	}
 
+	g_pLastLadder = nullptr;
 	return NULL;
 }
 
