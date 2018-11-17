@@ -92,11 +92,11 @@ void VRHelper::UpdateWorldRotation()
 	m_prevYaw = m_currentYaw;
 	if (g_vrInput.RotateLeft())
 	{
-		m_currentYaw -= deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
+		m_currentYaw += deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
 	}
 	else if (g_vrInput.RotateRight())
 	{
-		m_currentYaw += deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
+		m_currentYaw -= deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
 	}
 	// Remember time
 	m_lastYawUpdateTime = gHUD.m_flTime;
