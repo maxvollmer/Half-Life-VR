@@ -113,7 +113,7 @@ kbutton_t	in_moveright;
 kbutton_t	in_strafe;
 kbutton_t	in_speed;
 kbutton_t	in_use;
-//kbutton_t	in_jump;
+kbutton_t	in_jump;
 kbutton_t	in_attack;
 kbutton_t	in_attack2;
 kbutton_t	in_up;
@@ -472,7 +472,6 @@ void IN_UseDown (void)
 	gHUD.m_Spectator.HandleButtonsDown( IN_USE );
 }
 void IN_UseUp (void) {KeyUp(&in_use);}
-/*
 void IN_JumpDown (void)
 {
 	KeyDown(&in_jump);
@@ -480,6 +479,7 @@ void IN_JumpDown (void)
 
 }
 void IN_JumpUp (void) {KeyUp(&in_jump);}
+/*
 void IN_DuckDown(void)
 {
 	KeyDown(&in_duck);
@@ -713,12 +713,12 @@ int CL_ButtonBits( int bResetState )
 	{
 		bits |= IN_DUCK;
 	}
+	*/
  
 	if (in_jump.state & 3)
 	{
 		bits |= IN_JUMP;
 	}
-	*/
 
 	if ( in_forward.state & 3 )
 	{
@@ -790,7 +790,7 @@ int CL_ButtonBits( int bResetState )
 	{
 		in_attack.state &= ~2;
 		//in_duck.state &= ~2;
-		//in_jump.state &= ~2;
+		in_jump.state &= ~2;
 		in_forward.state &= ~2;
 		in_back.state &= ~2;
 		in_use.state &= ~2;
@@ -873,8 +873,8 @@ void InitInput (void)
 	gEngfuncs.pfnAddCommand ("-attack2", IN_Attack2Up);
 	gEngfuncs.pfnAddCommand ("+use", IN_UseDown);
 	gEngfuncs.pfnAddCommand ("-use", IN_UseUp);
-	//gEngfuncs.pfnAddCommand ("+jump", IN_JumpDown);
-	//gEngfuncs.pfnAddCommand ("-jump", IN_JumpUp);
+	gEngfuncs.pfnAddCommand ("+jump", IN_JumpDown);
+	gEngfuncs.pfnAddCommand ("-jump", IN_JumpUp);
 	gEngfuncs.pfnAddCommand ("+klook", IN_KLookDown);
 	gEngfuncs.pfnAddCommand ("-klook", IN_KLookUp);
 	gEngfuncs.pfnAddCommand ("+mlook", IN_MLookDown);
