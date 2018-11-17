@@ -8,6 +8,12 @@
 #include "vr_helper.h"
 #include "vr_gl.h"
 #include "vr_input.h"
+#include <string>
+#include <algorithm>
+
+#ifndef DUCK_SIZE
+#define DUCK_SIZE 36
+#endif
 
 #ifndef MAX_COMMAND_SIZE
 #define MAX_COMMAND_SIZE 256
@@ -98,6 +104,7 @@ void VRHelper::UpdateWorldRotation()
 	{
 		m_currentYaw -= deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
 	}
+	m_currentYaw = std::fmodf(m_currentYaw, 360.f);
 	// Remember time
 	m_lastYawUpdateTime = gHUD.m_flTime;
 }
@@ -276,29 +283,7 @@ Matrix4 VRHelper::GetModelViewMatrixFromAbsoluteTrackingMatrix(const Matrix4 &ab
 	switchYAndZTransitionMatrix[9] = 1;
 	switchYAndZTransitionMatrix[10] = 0;
 
-	Matrix4 modelViewMatrix;
-	//if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
-	{
-		modelViewMatrix = absoluteTrackingMatrix * hlToVRScaleMatrix * switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
-		m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted = false;
-	}
-	/*
-	else
-	{
-		// TODO: In a roomscale setup we actually need to rotate the entire space around the room origin,
-		// otherwise movement direction is wrong when turning. Needs telling server about new origin,
-		// so some refactoring/additional network messaging and handling on server side is required.
-		Vector4 upInVRSpace = Matrix4{ absoluteTrackingMatrix.get() } * Vector4 { 0, 1, 0, 0 };
-		Matrix4 yawMatrixInVRSpace = Matrix4{}.rotate(m_currentYaw, Vector3{ upInVRSpace.x, upInVRSpace.y, upInVRSpace.z });
-		modelViewMatrix = yawMatrixInVRSpace * absoluteTrackingMatrix * hlToVRScaleMatrix * switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
-		if (!m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted)
-		{
-			gEngfuncs.Con_Printf("Warning: Player turning is broken when using a roomscale setup. If you use roomscale VR, don't use this feature!\n");
-			m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted = true;
-		}
-	}
-	*/
-
+	Matrix4 modelViewMatrix = absoluteTrackingMatrix * hlToVRScaleMatrix * switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
 	return modelViewMatrix.scale(10);
 }
 
@@ -474,7 +459,15 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	auto vrTransform = positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
 
-	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
+	if (g_vrInput.IsDucking())
+	{
+		float duckHeightInVR = (DUCK_SIZE - 1.f) * GetHLToVR().y * hlTransform.get()[15];
+		float hmdHeight = hlTransform.get()[13];
+		const_cast<float*>(hlTransform.get())[13] = (std::min)(hmdHeight, duckHeightInVR);
+		m_hmdDuckHeightDelta = hmdHeight - hlTransform.get()[13];
+	}
+
+	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
 		return hlTransform;
 
 	if (m_prevYaw != m_currentYaw)
@@ -506,33 +499,49 @@ Matrix4 VRHelper::GetAbsoluteControllerTransform(vr::TrackedDeviceIndex_t contro
 	auto vrTransform = positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking;
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
 
-	//if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
+	if (g_vrInput.IsDucking())
+	{
+		float controllerHeight = hlTransform.get()[13];
+		const_cast<float*>(hlTransform.get())[13] = controllerHeight - m_hmdDuckHeightDelta;
+	}
+
+	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
 		return hlTransform;
 
-	Vector4 translation = hlTransform * Vector4 { 0, 0, 0, 1 };
-	Vector4 hmdTranslation = GetAbsoluteHMDTransform() * Vector4 { 0, 0, 0, 1 };
+	auto vrRawHMDTransform = positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
+	auto hlRawHMDTransform = ConvertSteamVRMatrixToMatrix4(vrRawHMDTransform);
+	auto hlCurrentYawHMDTransform = GetAbsoluteHMDTransform();
 
-	Vector4 rotatedTranslation = (Matrix4{}.rotateY(m_currentYaw) * (translation - hmdTranslation)) * hmdTranslation;
+	Vector3 rawHMDPos{ hlRawHMDTransform.get()[12], hlRawHMDTransform.get()[13], hlRawHMDTransform.get()[14] };
+	Vector3 currentYawHMDPos{ hlCurrentYawHMDTransform.get()[12], hlCurrentYawHMDTransform.get()[13], hlCurrentYawHMDTransform.get()[14] };
 
-	hlTransform = hlTransform * Matrix4{}.rotateY(m_currentYaw);
+	Vector4 controllerPos{ hlTransform.get()[12], hlTransform.get()[13], hlTransform.get()[14], 1.f };
+	controllerPos.x -= rawHMDPos.x;
+	controllerPos.z -= rawHMDPos.z;
+	Vector4 rotatedControllerPos = Matrix4{}.rotateY(m_currentYaw) * controllerPos;
+	rotatedControllerPos.x += currentYawHMDPos.x;
+	rotatedControllerPos.y = controllerPos.y;
+	rotatedControllerPos.z += currentYawHMDPos.z;
+
+	Matrix4 hlRotatedTransform = Matrix4{}.rotateY(m_currentYaw) * hlTransform;
 
 	return Matrix4{
-		hlTransform.get()[0],
-		hlTransform.get()[1],
-		hlTransform.get()[2],
-		hlTransform.get()[3],
-		hlTransform.get()[4],
-		hlTransform.get()[5],
-		hlTransform.get()[6],
-		hlTransform.get()[7],
-		hlTransform.get()[8],
-		hlTransform.get()[9],
-		hlTransform.get()[10],
-		hlTransform.get()[11],
-		rotatedTranslation.x,
-		rotatedTranslation.y,
-		rotatedTranslation.z,
-		hlTransform.get()[15]
+		hlRotatedTransform.get()[0],
+		hlRotatedTransform.get()[1],
+		hlRotatedTransform.get()[2],
+		hlRotatedTransform.get()[3],
+		hlRotatedTransform.get()[4],
+		hlRotatedTransform.get()[5],
+		hlRotatedTransform.get()[6],
+		hlRotatedTransform.get()[7],
+		hlRotatedTransform.get()[8],
+		hlRotatedTransform.get()[9],
+		hlRotatedTransform.get()[10],
+		hlRotatedTransform.get()[11],
+		rotatedControllerPos.x,
+		rotatedControllerPos.y,
+		rotatedControllerPos.z,
+		hlRotatedTransform.get()[15]
 	};
 }
 
@@ -607,7 +616,16 @@ void VRHelper::SendPositionUpdateToServer()
 
 	Matrix4 hdmAbsoluteTrackingMatrix = GetAbsoluteHMDTransform();
 	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(hdmAbsoluteTrackingMatrix);
+	/*
+	auto lol =
+		"ducking: " + std::to_string(g_vrInput.IsDucking()) + ", " +
+		"hmdOffset.z (raw): " + std::to_string(hmdOffset.z) + ", " +
+		"localPlayer->curstate.mins.z: " + std::to_string(localPlayer->curstate.mins.z) + ", " +
+		"hmdOffset.z (gedingst): " + std::to_string(hmdOffset.z + localPlayer->curstate.mins.z) + "\n";
+	gEngfuncs.pfnConsolePrint(lol.data());
+	*/
 	hmdOffset.z += localPlayer->curstate.mins.z;
+
 	/*Vector hmdAngles = GetHLAnglesFromVRMatrix(hdmAbsoluteTrackingMatrix);*/
 
 	vr::TrackedDeviceIndex_t leftControllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_LeftHand);

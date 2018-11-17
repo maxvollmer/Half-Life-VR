@@ -20,10 +20,16 @@ public:
 		extern kbutton_t in_right;
 		return m_rotateRight || (in_right.state & 3);
 	}
+	inline bool IsDucking() const
+	{
+		extern kbutton_t in_duck;
+		return m_isDucking || (in_duck.state & 3);
+	}
 
 private:
 	bool m_rotateLeft{ false };
 	bool m_rotateRight{ false };
+	bool m_isDucking{ false };	// TODO: Controller support for ducking
 };
 
 extern VRInput g_vrInput;

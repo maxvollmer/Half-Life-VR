@@ -1528,7 +1528,7 @@ void CBasePlayer::Jump()
 	SetAnimation(PLAYER_JUMP);
 
 	if (m_fLongJump &&
-//		(pev->button & IN_DUCK) &&
+		FBitSet(pev->flags, FL_DUCKING) && //		(pev->button & IN_DUCK) &&
 		(pev->flDuckTime > 0) &&
 		pev->velocity.Length() > 50)
 	{

@@ -1719,7 +1719,7 @@ int PM_CheckStuck (void)
 
 	// If player is flailing while stuck in another player ( should never happen ), then see
 	//  if we can't "unstick" them forceably.
-	if ( pmove->cmd.buttons & ( IN_ATTACK ) && ( pmove->physents[ hitent ].player != 0 ) )
+	if ( pmove->cmd.buttons & (IN_JUMP | IN_DUCK | IN_ATTACK) && ( pmove->physents[ hitent ].player != 0 ) )
 	{
 		float x, y, z;
 		float xystep = 8.0;
@@ -1891,24 +1891,31 @@ int IsPlayerDucking()
 
 void PM_Duck( void )
 {
-	// In VR we don't need to check for origin, getting stuck somewhere etc. The RL player's floor and hmd position tell us if we're ducking or not.
-	/*
-	// Actually don't predict this, because it just messes with the view. This whole mod isn't playable in multiplayer anyways.
-	if (!pmove->bInDuck && IsPlayerDucking())
+	if (pmove->cmd.buttons & IN_DUCK)
 	{
-		pmove->usehull = 1;
-		pmove->flags |= FL_DUCKING;
-		pmove->bInDuck = true;
-		pmove->origin[2] = pmove->origin[2] + VEC_DUCK_HULL_MIN_Z - VEC_HULL_MIN_Z;
+		pmove->oldbuttons |= IN_DUCK;
 	}
-	else if (pmove->bInDuck && !IsPlayerDucking())
+	else
 	{
-		pmove->usehull = 0;
-		pmove->flags &= ~FL_DUCKING;
-		pmove->bInDuck = false;
-		pmove->origin[2] = pmove->origin[2] + VEC_DUCK_HULL_MIN_Z - VEC_HULL_MIN_Z;
+		pmove->oldbuttons &= ~IN_DUCK;
 	}
-	*/
+
+	if (pmove->flags & FL_DUCKING)
+	{
+		pmove->cmd.forwardmove *= 0.333;
+		pmove->cmd.sidemove *= 0.333;
+		pmove->cmd.upmove *= 0.333;
+	}
+
+	if ((pmove->cmd.buttons & IN_DUCK) || (pmove->bInDuck) || (pmove->flags & FL_DUCKING))
+	{
+		if (!(pmove->flags & FL_DUCKING))
+		{
+			// Use 1 second so super long jump will work
+			pmove->flDuckTime = 1000;
+			pmove->bInDuck = true;
+		}
+	}
 }
 
 void PM_LadderMove( physent_t *pLadder )
@@ -2458,7 +2465,7 @@ void PM_Jump(void)
 		// Adjust for super long jump module
 		// UNDONE -- note this should be based on forward angles, not current velocity.
 		if (cansuperjump &&
-			//(pmove->cmd.buttons & IN_DUCK) &&
+			(pmove->flags & FL_DUCKING) && //(pmove->cmd.buttons & IN_DUCK) &&
 			(pmove->flDuckTime > 0) &&
 			Length(pmove->velocity) > 50)
 		{

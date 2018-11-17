@@ -118,7 +118,7 @@ kbutton_t	in_attack;
 kbutton_t	in_attack2;
 kbutton_t	in_up;
 kbutton_t	in_down;
-//kbutton_t	in_duck;
+kbutton_t	in_duck;
 kbutton_t	in_reload;
 kbutton_t	in_alt1;
 kbutton_t	in_score;
@@ -479,15 +479,14 @@ void IN_JumpDown (void)
 
 }
 void IN_JumpUp (void) {KeyUp(&in_jump);}
-/*
+
 void IN_DuckDown(void)
 {
 	KeyDown(&in_duck);
-	gHUD.m_Spectator.HandleButtonsDown( IN_DUCK );
-
+	//gHUD.m_Spectator.HandleButtonsDown( IN_DUCK );
 }
 void IN_DuckUp(void) {KeyUp(&in_duck);}
-*/
+
 void IN_ReloadDown(void) {KeyDown(&in_reload);}
 void IN_ReloadUp(void) {KeyUp(&in_reload);}
 void IN_Alt1Down(void) {KeyDown(&in_alt1);}
@@ -708,12 +707,10 @@ int CL_ButtonBits( int bResetState )
 		bits |= IN_ATTACK;
 	}
 
-	/*
 	if (in_duck.state & 3)
 	{
 		bits |= IN_DUCK;
 	}
-	*/
  
 	if (in_jump.state & 3)
 	{
@@ -789,7 +786,7 @@ int CL_ButtonBits( int bResetState )
 	if ( bResetState )
 	{
 		in_attack.state &= ~2;
-		//in_duck.state &= ~2;
+		in_duck.state &= ~2;
 		in_jump.state &= ~2;
 		in_forward.state &= ~2;
 		in_back.state &= ~2;
@@ -881,8 +878,8 @@ void InitInput (void)
 	gEngfuncs.pfnAddCommand ("-mlook", IN_MLookUp);
 	gEngfuncs.pfnAddCommand ("+jlook", IN_JLookDown);
 	gEngfuncs.pfnAddCommand ("-jlook", IN_JLookUp);
-	//gEngfuncs.pfnAddCommand ("+duck", IN_DuckDown);
-	//gEngfuncs.pfnAddCommand ("-duck", IN_DuckUp);
+	gEngfuncs.pfnAddCommand ("+duck", IN_DuckDown);
+	gEngfuncs.pfnAddCommand ("-duck", IN_DuckUp);
 	gEngfuncs.pfnAddCommand ("+reload", IN_ReloadDown);
 	gEngfuncs.pfnAddCommand ("-reload", IN_ReloadUp);
 	gEngfuncs.pfnAddCommand ("+alt1", IN_Alt1Down);

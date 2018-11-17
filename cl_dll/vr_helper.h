@@ -87,7 +87,7 @@ private:
 	float m_prevYaw = 0.f;
 	float m_currentYaw = 0.f;
 	Vector m_currentYawOffsetDelta;
-	bool m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted = false; // Print warning when enabling player turning.
+	float m_hmdDuckHeightDelta = 0.f;
 
 	float lastUpdatedVectorsFrametime = 0.f;
 	Vector3 vrToHL;
