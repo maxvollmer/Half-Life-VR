@@ -575,7 +575,7 @@ void VRHelper::UpdateGunPosition(struct ref_params_s* pparams)
 			Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[controllerIndex].vVelocity.v);
 			if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
 			{
-				Vector3 rotatedVelocity = Matrix4{}.rotateY(-m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
+				Vector3 rotatedVelocity = Matrix4{}.rotateY(m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
 				velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
 			}
 			Vector velocityInHLSpace(velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y);
@@ -647,7 +647,7 @@ void VRHelper::SendPositionUpdateToServer()
 		Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[leftControllerIndex].vVelocity.v);
 		if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
 		{
-			Vector3 rotatedVelocity = Matrix4{}.rotateY(-m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
+			Vector3 rotatedVelocity = Matrix4{}.rotateY(m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
 			velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
 		}
 		leftControllerVelocity = Vector(velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y);
@@ -740,7 +740,7 @@ void VRHelper::TestRenderControllerPosition(bool leftOrRight)
 		Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[controllerIndex].vVelocity.v);
 		if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
 		{
-			Vector3 rotatedVelocity = Matrix4{}.rotateY(-m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
+			Vector3 rotatedVelocity = Matrix4{}.rotateY(m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
 			velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
 		}
 		Vector velocity = Vector(velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y);
