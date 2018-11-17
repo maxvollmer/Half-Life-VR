@@ -47,6 +47,9 @@ private:
 
 	void SubmitImage(vr::EVREye eEye, unsigned int texture);
 
+	Matrix4 GetAbsoluteHMDTransform();
+	Matrix4 GetAbsoluteControllerTransform(vr::TrackedDeviceIndex_t controllerIndex);
+
 	Matrix4 GetHMDMatrixProjectionEye(vr::EVREye eEye);
 	Matrix4 GetHMDMatrixPoseEye(vr::EVREye eEye);
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose);
@@ -80,11 +83,13 @@ private:
 
 	int m_vrUpdateTimestamp = 0;
 
-	float m_lastYawUpdateTime = -1;
-	float m_currentYaw = 0;
+	float m_lastYawUpdateTime = -1.f;
+	float m_prevYaw = 0.f;
+	float m_currentYaw = 0.f;
+	Vector m_currentYawOffsetDelta;
 	bool m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted = false; // Print warning when enabling player turning.
 
-	float lastUpdatedVectorsFrametime = 0;
+	float lastUpdatedVectorsFrametime = 0.f;
 	Vector3 vrToHL;
 	Vector3 hlToVR;
 	void UpdateVRHLConversionVectors();

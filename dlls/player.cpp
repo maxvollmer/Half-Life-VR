@@ -2411,12 +2411,6 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 		// Calculate ground velocity
 		Vector groundVelocity = pGroundEntity->pev->velocity;
 
-		if (pGroundEntity->pev->velocity.z < 0)
-		{
-			ALERT(at_console, "pev->origin.z: %f\n", pev->origin.z);
-			int i = 0;
-		}
-
 		// Add avelocity
 		if (pGroundEntity->pev->avelocity.Length() > 0.01f)
 		{
@@ -2462,6 +2456,14 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 					pev->origin.y += dirToCenter2D.y * moveDistance;
 					pev->origin.z = newOrigin.z;
 				}
+				else
+				{
+					ALERT(at_console, "distanceToCenter2D <= 8! pev->origin.z: %f\n", pev->origin.z);
+				}
+			}
+			else
+			{
+				ALERT(at_console, "groundEntityCenterContents are solid! pev->origin.z: %f\n", pev->origin.z);
 			}
 		}
 
@@ -4683,7 +4685,7 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 #define VR_DUCK_STOP_HEIGHT 20
 #include "pm_defs.h"
 extern playermove_t *pmove;
-void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector & hmdOffset/*, const Vector & hmdAngles*/)
+void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector& hmdOffset, const Vector& hmdYawOffsetDelta/*, const Vector & hmdAngles*/)
 {
 	// Filter out outdated updates
 	if (timestamp <= vr_hmdLastUpdateClienttime && vr_hmdLastUpdateServertime >= gpGlobals->time)
@@ -4712,6 +4714,9 @@ void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector & hm
 
 	// First get origin where the client thinks it is:
 	Vector clientOrigin = GetClientOrigin();
+
+	// Add rotation offset delta into client origin (yaw rotates around play area center, so we need to adjust this here):
+	clientOrigin = clientOrigin - hmdYawOffsetDelta;
 
 	// Then get headset position:
 	Vector hmdPosition = clientOrigin + hmdOffset;

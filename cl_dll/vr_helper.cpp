@@ -67,7 +67,9 @@ void VRHelper::UpdateWorldRotation()
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
 	{
 		m_lastYawUpdateTime = -1;
-		m_currentYaw = 0;
+		m_prevYaw = 0.f;
+		m_currentYaw = 0.f;
+		m_currentYawOffsetDelta = Vector{};
 		return;
 	}
 	// Already up to date
@@ -76,14 +78,18 @@ void VRHelper::UpdateWorldRotation()
 		return;
 	}
 	// New game
-	if (m_lastYawUpdateTime == -1 || m_lastYawUpdateTime >= gHUD.m_flTime)
+	if (m_lastYawUpdateTime == -1.f || m_lastYawUpdateTime >= gHUD.m_flTime)
 	{
 		m_lastYawUpdateTime = gHUD.m_flTime;
+		m_prevYaw = 0.f;
+		m_currentYaw = 0.f;
+		m_currentYawOffsetDelta = Vector{};
 		return;
 	}
 	// Get time since last update
 	float deltaTime = gHUD.m_flTime - m_lastYawUpdateTime;
 	// Rotate
+	m_prevYaw = m_currentYaw;
 	if (g_vrInput.RotateLeft())
 	{
 		m_currentYaw -= deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
@@ -271,11 +277,12 @@ Matrix4 VRHelper::GetModelViewMatrixFromAbsoluteTrackingMatrix(const Matrix4 &ab
 	switchYAndZTransitionMatrix[10] = 0;
 
 	Matrix4 modelViewMatrix;
-	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
+	//if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
 	{
 		modelViewMatrix = absoluteTrackingMatrix * hlToVRScaleMatrix * switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
 		m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted = false;
 	}
+	/*
 	else
 	{
 		// TODO: In a roomscale setup we actually need to rotate the entire space around the room origin,
@@ -290,6 +297,7 @@ Matrix4 VRHelper::GetModelViewMatrixFromAbsoluteTrackingMatrix(const Matrix4 &ab
 			m_tempVRPlayerturnBrokenInRoomscaleWarningPrinted = true;
 		}
 	}
+	*/
 
 	return modelViewMatrix.scale(10);
 }
@@ -365,7 +373,7 @@ bool VRHelper::UpdatePositions(struct ref_params_s* pparams)
 			//Matrix4 m_mat4SeatedPose = ConvertSteamVRMatrixToMatrix4(vrSystem->GetSeatedZeroPoseToStandingAbsoluteTrackingPose()).invert();
 			//Matrix4 m_mat4StandingPose = ConvertSteamVRMatrixToMatrix4(vrSystem->GetRawZeroPoseToStandingAbsoluteTrackingPose()).invert();
 
-			Matrix4 m_mat4HMDPose = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking).invert();
+			Matrix4 m_mat4HMDPose = GetAbsoluteHMDTransform().invert();
 
 			positions.m_mat4LeftProjection = GetHMDMatrixProjectionEye(vr::Eye_Left);
 			positions.m_mat4RightProjection = GetHMDMatrixProjectionEye(vr::Eye_Right);
@@ -461,9 +469,76 @@ void VRHelper::GetViewAngles(vr::EVREye eEye, float * angles)
 	}
 }
 
+Matrix4 VRHelper::GetAbsoluteHMDTransform()
+{
+	auto vrTransform = positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
+	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
+
+	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
+		return hlTransform;
+
+	if (m_prevYaw != m_currentYaw)
+	{
+		Matrix4 hlPrevYawTransform = Matrix4{}.rotateY(m_prevYaw) * hlTransform;
+		Matrix4 hlCurrentYawTransform = Matrix4{}.rotateY(m_currentYaw) * hlTransform;
+
+		Vector3 previousOffset{ hlPrevYawTransform.get()[12], hlPrevYawTransform.get()[13], hlPrevYawTransform.get()[14] };
+		Vector3 newOffset{ hlCurrentYawTransform.get()[12], hlCurrentYawTransform.get()[13], hlCurrentYawTransform.get()[14] };
+
+		Vector3 yawOffsetDelta = newOffset - previousOffset;
+
+		m_currentYawOffsetDelta = Vector{
+			yawOffsetDelta.x * GetVRToHL().x,
+			-yawOffsetDelta.z * GetVRToHL().z,
+			yawOffsetDelta.y * GetVRToHL().y
+		};
+	}
+	else
+	{
+		m_currentYawOffsetDelta = Vector{};
+	}
+
+	return Matrix4{}.rotateY(m_currentYaw) * hlTransform;
+}
+
+Matrix4 VRHelper::GetAbsoluteControllerTransform(vr::TrackedDeviceIndex_t controllerIndex)
+{
+	auto vrTransform = positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking;
+	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
+
+	//if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
+		return hlTransform;
+
+	Vector4 translation = hlTransform * Vector4 { 0, 0, 0, 1 };
+	Vector4 hmdTranslation = GetAbsoluteHMDTransform() * Vector4 { 0, 0, 0, 1 };
+
+	Vector4 rotatedTranslation = (Matrix4{}.rotateY(m_currentYaw) * (translation - hmdTranslation)) * hmdTranslation;
+
+	hlTransform = hlTransform * Matrix4{}.rotateY(m_currentYaw);
+
+	return Matrix4{
+		hlTransform.get()[0],
+		hlTransform.get()[1],
+		hlTransform.get()[2],
+		hlTransform.get()[3],
+		hlTransform.get()[4],
+		hlTransform.get()[5],
+		hlTransform.get()[6],
+		hlTransform.get()[7],
+		hlTransform.get()[8],
+		hlTransform.get()[9],
+		hlTransform.get()[10],
+		hlTransform.get()[11],
+		rotatedTranslation.x,
+		rotatedTranslation.y,
+		rotatedTranslation.z,
+		hlTransform.get()[15]
+	};
+}
+
 void VRHelper::GetViewOrg(float * origin)
 {
-	GetPositionInHLSpaceFromAbsoluteTrackingMatrix(ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking)).CopyToArray(origin);
+	GetPositionInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform()).CopyToArray(origin);
 }
 
 void VRHelper::UpdateGunPosition(struct ref_params_s* pparams)
@@ -475,7 +550,7 @@ void VRHelper::UpdateGunPosition(struct ref_params_s* pparams)
 
 		if (controllerIndex > 0 && controllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
 		{
-			Matrix4 controllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking);
+			Matrix4 controllerAbsoluteTrackingMatrix = GetAbsoluteControllerTransform(controllerIndex);
 
 			m_rightControllerPosition = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(controllerAbsoluteTrackingMatrix);
 
@@ -489,6 +564,11 @@ void VRHelper::UpdateGunPosition(struct ref_params_s* pparams)
 			VectorCopy(m_rightControllerAngles, viewent->latched.prevangles);
 
 			Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[controllerIndex].vVelocity.v);
+			if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
+			{
+				Vector3 rotatedVelocity = Matrix4{}.rotateY(-m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
+				velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
+			}
 			Vector velocityInHLSpace(velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y);
 			viewent->curstate.velocity = velocityInHLSpace;
 
@@ -525,7 +605,7 @@ void VRHelper::SendPositionUpdateToServer()
 	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
 	cl_entity_t *viewent = gEngfuncs.GetViewModel();
 
-	Matrix4 hdmAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
+	Matrix4 hdmAbsoluteTrackingMatrix = GetAbsoluteHMDTransform();
 	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(hdmAbsoluteTrackingMatrix);
 	hmdOffset.z += localPlayer->curstate.mins.z;
 	/*Vector hmdAngles = GetHLAnglesFromVRMatrix(hdmAbsoluteTrackingMatrix);*/
@@ -541,12 +621,17 @@ void VRHelper::SendPositionUpdateToServer()
 	Vector leftControllerVelocity(0, 0, 0);
 	if (isLeftControllerValid)
 	{
-		Matrix4 leftControllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[leftControllerIndex].mDeviceToAbsoluteTracking);
+		Matrix4 leftControllerAbsoluteTrackingMatrix = GetAbsoluteControllerTransform(leftControllerIndex);
 		leftControllerOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(leftControllerAbsoluteTrackingMatrix);
 		leftControllerOffset.z += localPlayer->curstate.mins.z;
 		leftControllerAngles = GetHLAnglesFromVRMatrix(leftControllerAbsoluteTrackingMatrix);
 
 		Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[leftControllerIndex].vVelocity.v);
+		if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
+		{
+			Vector3 rotatedVelocity = Matrix4{}.rotateY(-m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
+			velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
+		}
 		leftControllerVelocity = Vector(velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y);
 
 		m_fLeftControllerValid = true;
@@ -577,11 +662,14 @@ void VRHelper::SendPositionUpdateToServer()
 	char cmdHMD[MAX_COMMAND_SIZE] = { 0 };
 	char cmdLeftController[MAX_COMMAND_SIZE] = { 0 };
 	char cmdRightController[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f",/* %.2f %.2f %.2f",*/
+	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f",/* %.2f %.2f %.2f",*/
 		m_vrUpdateTimestamp,
-		hmdOffset.x, hmdOffset.y, hmdOffset.z/*,
+		hmdOffset.x, hmdOffset.y, hmdOffset.z,
+		m_currentYawOffsetDelta.x, m_currentYawOffsetDelta.y, m_currentYawOffsetDelta.z
+		/*,
 		hmdAngles.x, hmdAngles.y, hmdAngles.z*/
 	);
+	m_currentYawOffsetDelta = Vector{}; // reset after sending
 	sprintf_s(cmdLeftController, "vrupd_lft %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
 		m_vrUpdateTimestamp,
 		isLeftControllerValid ? 1 : 0,
@@ -619,7 +707,7 @@ void VRHelper::TestRenderControllerPosition(bool leftOrRight)
 
 	if (controllerIndex > 0 && controllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
 	{
-		Matrix4 controllerAbsoluteTrackingMatrix = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking);
+		Matrix4 controllerAbsoluteTrackingMatrix = GetAbsoluteControllerTransform(controllerIndex);
 
 		Vector originInHLSpace = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(controllerAbsoluteTrackingMatrix);
 
@@ -632,6 +720,11 @@ void VRHelper::TestRenderControllerPosition(bool leftOrRight)
 		Vector up(upInVRSpace.x * GetVRToHL().x, -upInVRSpace.z * GetVRToHL().z, upInVRSpace.y * GetVRToHL().y);
 
 		Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[controllerIndex].vVelocity.v);
+		if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
+		{
+			Vector3 rotatedVelocity = Matrix4{}.rotateY(-m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
+			velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
+		}
 		Vector velocity = Vector(velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y);
 
 		if (leftOrRight)

@@ -392,7 +392,7 @@ public:
 	bool IsWeaponUnderWater();
 	bool IsWeaponPositionValid();
 
-	void UpdateVRHeadsetPosition(const int timestamp, const Vector & offset/*, const Vector & angles*/);
+	void UpdateVRHeadsetPosition(const int timestamp, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta/*, const Vector & angles*/);
 	void UpdateVRLeftControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity);
 	void UpdateVRRightControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity);
 
