@@ -1769,8 +1769,8 @@ void CLadder :: KeyValue( KeyValueData *pkvd )
 void CLadder :: Precache( void )
 {
 	// Do all of this in here because we need to 'convert' old saved games
-	pev->solid = SOLID_BSP;
-	//pev->skin = CONTENTS_LADDER;
+	pev->solid = SOLID_NOT;
+	pev->skin = CONTENTS_LADDER;
 	if ( CVAR_GET_FLOAT("showtriggers") == 0 )
 	{
 		pev->rendermode = kRenderTransTexture;
@@ -1787,8 +1787,8 @@ void CLadder :: Spawn( void )
 	SET_MODEL(ENT(pev), STRING(pev->model));    // set size and link into world
 	pev->movetype = MOVETYPE_PUSH;
 
-	pev->solid = SOLID_BSP;
-	pev->skin = 0;
+	pev->solid = SOLID_NOT;
+	pev->skin = CONTENTS_LADDER;
 }
 
 

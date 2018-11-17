@@ -641,16 +641,18 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	return result;
 }
 
-void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, TraceResult *ptr)
+constexpr const float LADDER_EPSILON = 4.f;
+
+void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, edict_t* pentIgnore, TraceResult *ptr)
 {
-	UTIL_TraceLine(vecStart, vecEnd, ignore_monsters, dont_ignore_glass, nullptr, ptr);
+	UTIL_TraceLine(vecStart, vecEnd, ignore_monsters, dont_ignore_glass, pentIgnore, ptr);
 
 	if (CheckWorld())
 	{
 		Vector3 pos1 = HLVecToRP3DVec(vecStart);
 		Vector3 pos2 = HLVecToRP3DVec(vecEnd);
 
-		Ray ray{ pos1 , pos2, 1.f };
+		Ray ray{ pos1, pos2, 1.f };
 		RaycastInfo raycastInfo{};
 
 		if (m_dynamicMap->raycast(ray, raycastInfo) && raycastInfo.hitFraction < ptr->flFraction)
@@ -665,6 +667,45 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, Tr
 			ptr->flFraction = raycastInfo.hitFraction;
 			ptr->iHitgroup = 0;
 			ptr->pHit = INDEXENT(0);
+		}
+
+		// Check ladders as well...
+		CBaseEntity *pEntity = nullptr;
+		while (UTIL_FindAllEntities(&pEntity))
+		{
+			if (FClassnameIs(pEntity->pev, "func_ladder"))
+			{
+				Vector3 ladderSize = HLVecToRP3DVec(pEntity->pev->size);
+				Vector3 ladderPosition = HLVecToRP3DVec(pEntity->pev->absmin);
+
+				BoxShape boxShape{ ladderSize };
+
+				RigidBody* body = m_dynamicsWorld->createRigidBody(rp3d::Transform::identity());
+				body->setType(STATIC);
+				body->addCollisionShape(&boxShape, rp3d::Transform{ ladderPosition, Matrix3x3::identity() }, 10.f);
+
+				if (body->raycast(ray, raycastInfo))
+				{
+					Vector hitPoint = RP3DVecToHLVec(raycastInfo.worldPoint);
+					float distanceToPreviousPoint = (hitPoint - ptr->vecEndPos).Length();
+					if (raycastInfo.hitFraction <= ptr->flFraction
+						|| distanceToPreviousPoint < LADDER_EPSILON)
+					{
+						ptr->vecEndPos = RP3DVecToHLVec(raycastInfo.worldPoint);
+						ptr->vecPlaneNormal = RP3DVecToHLVec(raycastInfo.worldNormal).Normalize();
+						ptr->flPlaneDist = DotProduct(ptr->vecPlaneNormal, -ptr->vecEndPos);
+
+						ptr->fAllSolid = false;
+						ptr->fInOpen = false;
+						ptr->fInWater = UTIL_PointContents(ptr->vecEndPos) == CONTENTS_WATER;
+						ptr->flFraction = raycastInfo.hitFraction;
+						ptr->iHitgroup = 0;
+						ptr->pHit = pEntity->edict();
+					}
+				}
+
+				m_dynamicsWorld->destroyRigidBody(body);
+			}
 		}
 	}
 }

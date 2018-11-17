@@ -1230,7 +1230,7 @@ void CBasePlayer::WaterMove()
 // TRUE if the player is attached to a ladder
 BOOL CBasePlayer::IsOnLadder( void )
 { 
-	return FALSE;// (pev->movetype == MOVETYPE_FLY);
+	return pev->movetype == MOVETYPE_FLY;
 }
 
 void CBasePlayer::PlayerDeathThink(void)
@@ -5653,7 +5653,7 @@ void CBasePlayer::UpdateVRTele()
 	UTIL_MakeAimVectorsPrivate(vr_leftControllerAngles, forward, NULL, NULL);
 
 	TraceResult tr;
-	gVRPhysicsHelper.TraceLine(vecPos, vecPos + forward * GetCurrentTeleLength(), &tr);
+	gVRPhysicsHelper.TraceLine(vecPos, vecPos + forward * GetCurrentTeleLength(), edict(), &tr);
 
 	Vector beamEndPos = tr.vecEndPos;
 	Vector teleportDestination = tr.vecEndPos;
@@ -5898,7 +5898,7 @@ void CBasePlayer::EnableXenMoundParabolaAndUpdateTeleDestination(const Vector& b
 
 		// Now do a trace to see if we hit something!
 		TraceResult tr;
-		UTIL_TraceLine(beamSegmentPos1, beamSegmentPos2, ignore_monsters, edict(), &tr);
+		gVRPhysicsHelper.TraceLine(beamSegmentPos1, beamSegmentPos2, edict(), &tr);
 
 		if (tr.flFraction < 1.0f)
 		{

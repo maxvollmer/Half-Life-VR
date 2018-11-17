@@ -21,6 +21,7 @@
 #include "pm_shared.h"
 #include "pm_movevars.h"
 #include "pm_debug.h"
+#include "com_model.h"
 #include <stdio.h>  // NULL
 #include <math.h>   // sqrt
 #include <string.h> // strcpy
@@ -49,34 +50,9 @@ static int pm_shared_initialized = 0;
 
 #pragma warning( disable : 4305 )
 
-typedef enum {mod_brush, mod_sprite, mod_alias, mod_studio} modtype_t;
+//typedef enum {mod_brush, mod_sprite, mod_alias, mod_studio} modtype_t;
 
 playermove_t *pmove = NULL;
-
-typedef struct
-{
-	int			planenum;
-	short		children[2];	// negative numbers are contents
-} dclipnode_t;
-
-typedef struct mplane_s
-{
-	vec3_t	normal;			// surface normal
-	float	dist;			// closest appoach to origin
-	byte	type;			// for texture axis selection and fast side tests
-	byte	signbits;		// signx + signy<<1 + signz<<1
-	byte	pad[2];
-} mplane_t;
-
-typedef struct hull_s
-{
-	dclipnode_t	*clipnodes;
-	mplane_t	*planes;
-	int			firstclipnode;
-	int			lastclipnode;
-	vec3_t		clip_mins;
-	vec3_t		clip_maxs;
-} hull_t;
 
 #define MAX_CLIMB_SPEED	200
 
@@ -514,7 +490,7 @@ void PM_UpdateStepSound( void )
 	speed = Length( pmove->velocity );
 
 	// determine if we are on a ladder
-	fLadder = false;// (pmove->movetype == MOVETYPE_FLY);// IsOnLadder();
+	fLadder = (pmove->movetype == MOVETYPE_FLY);// IsOnLadder();
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!	
 	if ( ( pmove->flags & FL_DUCKING) || fLadder )
@@ -1918,14 +1894,144 @@ void PM_Duck( void )
 	}
 }
 
-void PM_LadderMove( physent_t *pLadder )
+void PM_LadderMove(physent_t *pLadder)
 {
-	// We deal with ladders differently in VR
+	vec3_t		ladderCenter;
+	trace_t		trace;
+	qboolean	onFloor;
+	vec3_t		floor;
+	vec3_t		modelmins, modelmaxs;
+
+	// In VR we are always in NOCLIP mode, so we must not return here
+	//if (pmove->movetype == MOVETYPE_NOCLIP)
+	//	return;
+
+	pmove->PM_GetModelBounds(pLadder->model, modelmins, modelmaxs);
+
+	VectorAdd(modelmins, modelmaxs, ladderCenter);
+	VectorScale(ladderCenter, 0.5, ladderCenter);
+
+	pmove->movetype = MOVETYPE_FLY;
+
+	// On ladder, convert movement to be relative to the ladder
+
+	VectorCopy(pmove->origin, floor);
+	floor[2] += pmove->player_mins[pmove->usehull][2] - 1;
+
+	if (pmove->PM_PointContents(floor, NULL) == CONTENTS_SOLID)
+		onFloor = true;
+	else
+		onFloor = false;
+
+	pmove->gravity = 0;
+	pmove->PM_TraceModel(pLadder, pmove->origin, ladderCenter, &trace);
+	if (trace.fraction != 1.0)
+	{
+		float forward = 0, right = 0;
+		vec3_t vpn, v_right;
+
+		AngleVectors(pmove->angles, vpn, v_right, NULL);
+		if (pmove->cmd.buttons & IN_BACK)
+			forward -= MAX_CLIMB_SPEED;
+		if (pmove->cmd.buttons & IN_FORWARD)
+			forward += MAX_CLIMB_SPEED;
+		if (pmove->cmd.buttons & IN_MOVELEFT)
+			right -= MAX_CLIMB_SPEED;
+		if (pmove->cmd.buttons & IN_MOVERIGHT)
+			right += MAX_CLIMB_SPEED;
+
+		if (pmove->cmd.buttons & IN_JUMP)
+		{
+			pmove->movetype = MOVETYPE_WALK;
+			VectorScale(trace.plane.normal, 270, pmove->velocity);
+		}
+		else
+		{
+			if (forward != 0 || right != 0)
+			{
+				vec3_t velocity, perp, cross, lateral, tmp;
+				float normal;
+
+				//ALERT(at_console, "pev %.2f %.2f %.2f - ",
+				//	pev->velocity.x, pev->velocity.y, pev->velocity.z);
+				// Calculate player's intended velocity
+				//Vector velocity = (forward * gpGlobals->v_forward) + (right * gpGlobals->v_right);
+				VectorScale(vpn, forward, velocity);
+				VectorMA(velocity, right, v_right, velocity);
+
+
+				// Perpendicular in the ladder plane
+				//					Vector perp = CrossProduct( Vector(0,0,1), trace.vecPlaneNormal );
+				//					perp = perp.Normalize();
+				VectorClear(tmp);
+				tmp[2] = 1;
+				CrossProduct(tmp, trace.plane.normal, perp);
+				VectorNormalize(perp);
+
+
+				// decompose velocity into ladder plane
+				normal = DotProduct(velocity, trace.plane.normal);
+				// This is the velocity into the face of the ladder
+				VectorScale(trace.plane.normal, normal, cross);
+
+
+				// This is the player's additional velocity
+				VectorSubtract(velocity, cross, lateral);
+
+				// This turns the velocity into the face of the ladder into velocity that
+				// is roughly vertically perpendicular to the face of the ladder.
+				// NOTE: It IS possible to face up and move down or face down and move up
+				// because the velocity is a sum of the directional velocity and the converted
+				// velocity through the face of the ladder -- by design.
+				CrossProduct(trace.plane.normal, perp, tmp);
+				VectorMA(lateral, -normal, tmp, pmove->velocity);
+				if (onFloor && normal > 0)	// On ground moving away from the ladder
+				{
+					VectorMA(pmove->velocity, MAX_CLIMB_SPEED, trace.plane.normal, pmove->velocity);
+				}
+				//pev->velocity = lateral - (CrossProduct( trace.vecPlaneNormal, perp ) * normal);
+			}
+			else
+			{
+				VectorClear(pmove->velocity);
+			}
+		}
+	}
 }
 
-physent_t *PM_Ladder( void )
+physent_t *PM_Ladder(void)
 {
-	// We deal with ladders differently in VR
+	int			i;
+	physent_t	*pe;
+	hull_t		*hull;
+	int			num;
+	vec3_t		test;
+
+	for (i = 0; i < pmove->nummoveent; i++)
+	{
+		pe = &pmove->moveents[i];
+
+		if (pe->model && (modtype_t)pmove->PM_GetModelType(pe->model) == mod_brush && pe->skin == CONTENTS_LADDER)
+		{
+
+			hull = (hull_t *)pmove->PM_HullForBsp(pe, test);
+			num = hull->firstclipnode;
+
+			// Offset the test point appropriately for this hull.
+			// test = origin - test
+			VectorSubtract(pmove->origin, test, test);
+
+			// Test the player's hull for intersection with this model
+			if (pmove->PM_HullPointContents(hull, num, test) == CONTENTS_EMPTY)
+			{
+				// TODO: Even the slightest head movements make the player fall off a ladder
+				continue;
+			}
+
+			return pe;
+		}
+	}
+
 	return NULL;
 }
 
@@ -2196,7 +2302,7 @@ PM_YesClip
 Moved from PM_Move() switch statement for MOVETYPE_WALK - Max Vollmer, 2018-04-01
 ====================
 */
-void PM_YesClip()
+void PM_YesClip(physent_t *pLadder)
 {
 	// No gravity in water - Max Vollmer, 2018-02-11
 	if (pmove->waterlevel > 0)
@@ -2250,7 +2356,7 @@ void PM_YesClip()
 		// Was jump button pressed?
 		if (pmove->cmd.buttons & IN_JUMP)
 		{
-			//if (!pLadder) // TODO: Ladders
+			if (!pLadder)
 			{
 				PM_Jump();
 			}
@@ -2873,12 +2979,12 @@ void PM_PlayerMove ( qboolean server )
 		{
 			PM_LadderMove( pLadder );
 		}
-		else if ( pmove->movetype != MOVETYPE_WALK &&
-			      pmove->movetype != MOVETYPE_NOCLIP )
+		else /*if ( pmove->movetype != MOVETYPE_WALK &&
+			      pmove->movetype != MOVETYPE_NOCLIP )*/ // Restore to MOVETYPE_NOCLIP for VR movement
 		{
 			// Clear ladder stuff unless player is noclipping
 			//  it will be set immediately again next frame if necessary
-			pmove->movetype = MOVETYPE_WALK;
+			pmove->movetype = MOVETYPE_NOCLIP;
 		}
 	}
 
@@ -2933,7 +3039,7 @@ void PM_PlayerMove ( qboolean server )
 		//break;
 
 	case MOVETYPE_WALK:
-		PM_YesClip();	// Moved all the walking code in this switch-statement to its own method
+		PM_YesClip(pLadder);	// Moved all the walking code in this switch-statement to its own method
 		break;
 	}
 }
