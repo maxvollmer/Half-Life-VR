@@ -1182,12 +1182,14 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 				Vector backupCurstateAngles = m_pCurrentEntity->curstate.angles;
 				Vector backupLatchedOrigin = m_pCurrentEntity->latched.prevorigin;
 				Vector backupLatchedAngles = m_pCurrentEntity->latched.prevangles;
+				int backupWeaponAnim = m_pCurrentEntity->curstate.weaponanim;
 
 				// override with left hand data
 				m_pCurrentEntity->curstate.modelindex = gVRRenderer.GetLeftHandModelIndex();
 				m_pCurrentEntity->model = IEngineStudio.GetModelByIndex(m_pCurrentEntity->curstate.modelindex);
 				m_pCurrentEntity->latched.prevorigin = m_pCurrentEntity->curstate.origin = m_pCurrentEntity->origin = gVRRenderer.GetLeftHandPosition();
 				m_pCurrentEntity->latched.prevangles = m_pCurrentEntity->curstate.angles = m_pCurrentEntity->angles = gVRRenderer.GetLeftHandAngles();
+				m_pCurrentEntity->curstate.weaponanim = 0;
 
 				// render left hand
 				StudioDrawModel(flags | STUDIO_VIEWMODEL_LEFTHAND);
@@ -1201,6 +1203,7 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 				m_pCurrentEntity->curstate.angles = backupCurstateAngles;
 				m_pCurrentEntity->latched.prevorigin = backupLatchedOrigin;
 				m_pCurrentEntity->latched.prevangles = backupLatchedAngles;
+				m_pCurrentEntity->curstate.weaponanim = backupWeaponAnim;
 			}
 			if (!gVRRenderer.IsRightControllerValid())
 			{
