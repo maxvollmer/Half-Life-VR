@@ -5572,6 +5572,7 @@ void CBasePlayer::StartVRTele()
 	}
 	vr_fValidTeleDestination = false;
 	vr_fTelePointsAtXenMound = false;
+	vr_fTelePointsInWater = false;
 }
 void CBasePlayer::StopVRTele()
 {
@@ -5585,6 +5586,9 @@ void CBasePlayer::StopVRTele()
 		pev->origin.z -= pev->mins.z;
 		UTIL_SetOrigin(pev, pev->origin);
 		VRTouchTriggersInTeleportPath();
+		// used to disable gravity in water when using VR teleporter
+		extern bool g_vrTeleportInWater;
+		g_vrTeleportInWater = vr_fTelePointsInWater;
 	}
 	if (vr_pTeleSprite)
 	{
@@ -5599,6 +5603,7 @@ void CBasePlayer::StopVRTele()
 	DisableXenMoundParabola();
 	vr_fValidTeleDestination = false;
 	vr_fTelePointsAtXenMound = false;
+	vr_fTelePointsInWater = false;
 }
 void CBasePlayer::VRTouchTriggersInTeleportPath()
 {
@@ -5643,6 +5648,7 @@ void CBasePlayer::UpdateVRTele()
 	{
 		vr_fValidTeleDestination = false;
 		vr_fTelePointsAtXenMound = false;
+		vr_fTelePointsInWater = false;
 		StopVRTele();
 		return;
 	}
@@ -5697,115 +5703,94 @@ void CBasePlayer::UpdateVRTele()
 	}
 }
 
-//EHANDLE temp;
 bool CBasePlayer::CanTeleportHere(const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination)
 {
-	extern bool g_vrTeleportInWater;	// used to disable gravity in water when using VR teleporter
-	g_vrTeleportInWater = false;		// reset every frame
 	vr_fTelePointsAtXenMound = false;	// reset every frame
+	vr_fTelePointsInWater = false;		// reset every frame
 	if (!tr.fAllSolid)
 	{
-		/* // Line can't be blocked anymore, we now use a special TraceLine method in gVRPhysicsHelper that already gives us the correct line end
-		Vector ballResult;
-		bool lineIsBlocked = gVRPhysicsHelper.CheckIfLineIsBlocked(beamStartPos, beamEndPos, ballResult);
-
-		if (!temp)
+		// Detect water
+		if (UTIL_PointContents(tr.vecEndPos) == CONTENTS_WATER)
 		{
-			CSprite *pSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", GetClientOrigin(), FALSE);
-			pSprite->Spawn();
-			pSprite->SetTransparency(kRenderTransAdd, 0, 0, 255, 255, kRenderFxNone);
-			pSprite->pev->owner = edict();
-			pSprite->TurnOn();
-			pSprite->pev->effects &= ~EF_NODRAW;
-			temp = pSprite;
+			// Reduce distance a bit to avoid walls
+			Vector delta = beamEndPos - beamStartPos;
+			if (delta.Length() < 32.0f)
+			{
+				teleportDestination = beamEndPos = beamStartPos;
+			}
+			else
+			{
+				teleportDestination = beamEndPos = beamEndPos - (delta.Normalize() * 32.0f);
+			}
+			vr_fTelePointsInWater = true;
+			return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 		}
-		temp->pev->origin = ballResult;
-		temp->pev->rendercolor.x = lineIsBlocked ? 255 : 0;
-		UTIL_SetOrigin(temp->pev, ballResult);
-
-		if (!lineIsBlocked)
-		*/
+		else if (pev->waterlevel > 0 && UTIL_PointContents(beamStartPos) == CONTENTS_WATER)
 		{
-			// Detect water
-			if (UTIL_PointContents(tr.vecEndPos) == CONTENTS_WATER)
+			teleportDestination = beamEndPos = UTIL_WaterLevelPos(beamStartPos, beamEndPos);
+			vr_fTelePointsInWater = true;
+			return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+		}
+		// Detect ladders
+		else if (tr.pHit != nullptr && FClassnameIs(tr.pHit, "func_ladder"))
+		{
+			if (beamStartPos.z < tr.vecEndPos.z)
 			{
-				// Reduce distance a bit to avoid walls
+				// climb up
+				teleportDestination.z = tr.pHit->v.absmax.z;
+			}
+			else
+			{
+				// climb down
+				teleportDestination.z = tr.pHit->v.absmin.z;
+
 				Vector delta = beamEndPos - beamStartPos;
-				if (delta.Length() < 32.0f)
-				{
-					teleportDestination = beamEndPos = beamStartPos;
-				}
-				else
-				{
-					teleportDestination = beamEndPos = beamEndPos - (delta.Normalize() * 32.0f);
-				}
-				g_vrTeleportInWater = true;
-				return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-			}
-			else if (pev->waterlevel > 0 && UTIL_PointContents(beamStartPos) == CONTENTS_WATER)
-			{
-				teleportDestination = beamEndPos = UTIL_WaterLevelPos(beamStartPos, beamEndPos);
-				return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-			}
-			// Detect ladders
-			else if (tr.pHit != nullptr && FClassnameIs(tr.pHit, "func_ladder"))
-			{
-				if (beamStartPos.z < tr.vecEndPos.z)
-				{
-					// climb up
-					teleportDestination.z = tr.pHit->v.absmax.z;
-				}
-				else
-				{
-					// climb down
-					teleportDestination.z = tr.pHit->v.absmin.z;
 
-					Vector delta = beamEndPos - beamStartPos;
-
-					if (tr.pHit->v.size.x > tr.pHit->v.size.y)
+				if (tr.pHit->v.size.x > tr.pHit->v.size.y)
+				{
+					if (delta.y < 0)
 					{
-						if (delta.y < 0)
-						{
-							teleportDestination.y += 32.0f;
-						}
-						else
-						{
-							teleportDestination.y -= 32.0f;
-						}
+						teleportDestination.y += 32.0f;
 					}
 					else
 					{
-						if (delta.x < 0)
-						{
-							teleportDestination.x += 32.0f;
-						}
-						else
-						{
-							teleportDestination.x -= 32.0f;
-						}
+						teleportDestination.y -= 32.0f;
 					}
 				}
+				else
+				{
+					if (delta.x < 0)
+					{
+						teleportDestination.x += 32.0f;
+					}
+					else
+					{
+						teleportDestination.x -= 32.0f;
+					}
+				}
+			}
+			return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+		}
+		else if (tr.flFraction < 1.0f)
+		{
+			Vector dir = (beamEndPos - beamStartPos).Normalize();
+			const char* texturename = TRACE_TEXTURE(tr.pHit != nullptr ? tr.pHit : INDEXENT(0), beamStartPos, beamEndPos + dir * 32.f);
+
+			// Detect Xen jump pads
+			if (FStrEq(texturename, "c2a5mound") && gGlobalXenMounds.Has(beamEndPos))
+			{
+				vr_fTelePointsAtXenMound = true;
+				return true;
+			}
+			// Normal floor
+			else if (DotProduct(Vector(0, 0, 1), tr.vecPlaneNormal) > 0.2f)
+			{
+				teleportDestination = beamEndPos;
 				return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 			}
-			else if (tr.flFraction < 1.0f)
-			{
-				Vector dir = (beamEndPos - beamStartPos).Normalize();
-				const char* texturename = TRACE_TEXTURE(tr.pHit != nullptr ? tr.pHit : INDEXENT(0), beamStartPos, beamEndPos + dir * 32.f);
-
-				// Detect Xen jump pads
-				if (FStrEq(texturename, "c2a5mound") && gGlobalXenMounds.Has(beamEndPos))
-				{
-					vr_fTelePointsAtXenMound = true;
-					return true;
-				}
-				// Normal floor
-				else if (DotProduct(Vector(0, 0, 1), tr.vecPlaneNormal) > 0.2f)
-				{
-					teleportDestination = beamEndPos;
-					return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-				}
-			}
+			// else wall, ceiling or other surface we can't teleport on
 		}
+		// else beam ended in air
 	}
 	return false;
 }

@@ -360,6 +360,7 @@ private:
 	CBeam* vr_parabolaBeams[VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT] = { nullptr };
 	bool vr_fValidTeleDestination = false;
 	bool vr_fTelePointsAtXenMound = false;
+	bool vr_fTelePointsInWater = false;
 	Vector vr_vecTeleDestination;
 
 	EHANDLE hFlashLight;
