@@ -1296,7 +1296,7 @@ bool UTIL_PointInsideBSPModel(const Vector &vec, const Vector &absmin, const Vec
 }
 
 // Extended UTIL_PointContents to also detect solid entities - Max Vollmer, 2017-08-26
-int UTIL_PointContents(const Vector &vec, bool detectSolidEntities)
+int UTIL_PointContents(const Vector &vec, bool detectSolidEntities, edict_t** pPent)
 {
 	int pointContents = POINT_CONTENTS(vec);
 	if (pointContents != CONTENTS_SOLID && detectSolidEntities)
@@ -1321,11 +1321,13 @@ int UTIL_PointContents(const Vector &vec, bool detectSolidEntities)
 				}
 				if (pEnt->v.solid == SOLID_BSP && UTIL_PointInsideBSPModel(vec, pEnt->v.absmin, pEnt->v.absmax)) // Trace actual brush model to see if point really is inside the entity!
 				{
-					pointContents = CONTENTS_SOLID;
+					if (pPent) *pPent = pEnt;
+					return CONTENTS_SOLID;
 				}
 				else if (pEnt->v.movetype == MOVETYPE_PUSHSTEP && pEnt->v.solid != SOLID_NOT && pEnt->v.solid != SOLID_TRIGGER)
 				{
-					pointContents = CONTENTS_SOLID;
+					if (pPent) *pPent = pEnt;
+					return CONTENTS_SOLID;
 				}
 			}
 		}

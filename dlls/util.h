@@ -271,7 +271,7 @@ extern void			UTIL_TraceHull			(const Vector &vecStart, const Vector &vecEnd, IG
 extern TraceResult	UTIL_GetGlobalTrace		(void);
 extern void			UTIL_TraceModel			(const Vector &vecStart, const Vector &vecEnd, int hullNumber, edict_t *pentModel, TraceResult *ptr);
 extern Vector		UTIL_GetAimVector		(edict_t* pent, float flSpeed);
-extern int			UTIL_PointContents		(const Vector &vec, bool detectSolidEntities = false);
+extern int			UTIL_PointContents		(const Vector &vec, bool detectSolidEntities = false, edict_t** pPent = nullptr);
 extern bool			UTIL_PointInsideBBox	(const Vector &vec, const Vector &absmin, const Vector &absmax);
 extern bool			UTIL_PointInsideBSPModel(const Vector &vec, const Vector &absmin, const Vector &absmax);
 extern bool			UTIL_BBoxIntersectsBSPModel(const Vector &origin, const Vector &mins, const Vector &maxs);

@@ -199,7 +199,20 @@ int __MsgFunc_Detpack(const char *pszName, int iSize, void *pbuf)
 int __MsgFunc_VGUIMenu(const char *pszName, int iSize, void *pbuf)
 {
 	if (gViewPort)
-		return gViewPort->MsgFunc_VGUIMenu( pszName, iSize, pbuf );
+		return gViewPort->MsgFunc_VGUIMenu(pszName, iSize, pbuf);
+	return 0;
+}
+
+int __MsgFunc_VRRstrYaw(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	// a bit hacky, but oh well
+	extern float g_vrRestoreYaw_PrevYaw;
+	extern float g_vrRestoreYaw_CurrentYaw;
+	extern bool g_vrRestoreYaw_HasData;
+	g_vrRestoreYaw_PrevYaw = READ_ANGLE();
+	g_vrRestoreYaw_CurrentYaw = READ_ANGLE();
+	g_vrRestoreYaw_HasData = true;
 	return 0;
 }
 
@@ -301,6 +314,8 @@ void CHud :: Init( void )
 
 	// VGUI Menus
 	HOOK_MESSAGE( VGUIMenu );
+
+	HOOK_MESSAGE(VRRstrYaw);
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round

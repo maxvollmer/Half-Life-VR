@@ -59,6 +59,8 @@ TYPEDESCRIPTION g_vrLevelChangeDataSaveData[] =
 	DEFINE_FIELD(VRLevelChangeData, lastHMDOffset, FIELD_VECTOR),
 	DEFINE_FIELD(VRLevelChangeData, clientOriginOffset, FIELD_VECTOR),
 	DEFINE_FIELD(VRLevelChangeData, hasData, FIELD_BOOLEAN),
+	DEFINE_FIELD(VRLevelChangeData, prevYaw, FIELD_FLOAT),
+	DEFINE_FIELD(VRLevelChangeData, currentYaw, FIELD_FLOAT),
 };
 
 
@@ -211,6 +213,7 @@ int gmsgTeamNames = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0; 
 
+int gmsgVRRestoreYaw = 0;
 
 
 void LinkUserMessages( void )
@@ -258,6 +261,7 @@ void LinkUserMessages( void )
 	gmsgStatusText = REG_USER_MSG("StatusText", -1);
 	gmsgStatusValue = REG_USER_MSG("StatusValue", 3); 
 
+	gmsgVRRestoreYaw = REG_USER_MSG("VRRstrYaw", 2);
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer );
@@ -2983,6 +2987,8 @@ void CBasePlayer::StoreVROffsetsForLevelchange()
 {
 	g_vrLevelChangeData.lastHMDOffset = this->vr_lastHMDOffset;
 	g_vrLevelChangeData.clientOriginOffset = this->vr_ClientOriginOffset;
+	g_vrLevelChangeData.prevYaw = this->vr_prevYaw;
+	g_vrLevelChangeData.currentYaw = this->vr_currentYaw;
 	g_vrLevelChangeData.hasData = true;
 }
 
@@ -3010,6 +3016,8 @@ int CBasePlayer::Restore( CRestore &restore )
 	{
 		this->vr_lastHMDOffset = g_vrLevelChangeData.lastHMDOffset;
 		this->vr_ClientOriginOffset = g_vrLevelChangeData.clientOriginOffset;
+		this->vr_prevYaw = g_vrLevelChangeData.prevYaw;
+		this->vr_currentYaw = g_vrLevelChangeData.currentYaw;
 		g_vrLevelChangeData.hasData = false;
 	}
 
@@ -4023,6 +4031,12 @@ void CBasePlayer :: UpdateClientData( void )
 		FireTargets( "game_playerspawn", this, this, USE_TOGGLE, 0 );
 
 		InitStatusBar();
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgVRRestoreYaw, NULL, pev);
+		WRITE_ANGLE(this->vr_prevYaw);
+		WRITE_ANGLE(this->vr_currentYaw);
+		MESSAGE_END();
+
 	}
 
 	if ( m_iHideHUD != m_iClientHideHUD )
@@ -4736,13 +4750,16 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 #define VR_DUCK_STOP_HEIGHT 20
 #include "pm_defs.h"
 extern playermove_t *pmove;
-void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector& hmdOffset, const Vector& hmdYawOffsetDelta/*, const Vector & hmdAngles*/)
+void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector& hmdOffset, const Vector& hmdYawOffsetDelta, float prevYaw, float currentYaw)
 {
 	// Filter out outdated updates
 	if (timestamp <= vr_hmdLastUpdateClienttime && vr_hmdLastUpdateServertime >= gpGlobals->time)
 	{
 		return;
 	}
+	vr_prevYaw = prevYaw;
+	vr_currentYaw = currentYaw;
+
 	vr_hmdLastUpdateClienttime = timestamp;
 	vr_hmdLastUpdateServertime = gpGlobals->time;
 
@@ -4801,21 +4818,34 @@ void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector& hmd
 	// Check if groundPosition is in wall, if so: check if this is something we can step on
 	Vector groundPosition = newOrigin;
 	groundPosition.z += pev->mins.z;
-	int groundPositionContent = UTIL_PointContents(groundPosition, true);
+	edict_t *pGroundEnt = nullptr;
+	int groundPositionContent = UTIL_PointContents(groundPosition, true, &pGroundEnt);
 	if (groundPositionContent == CONTENTS_SOLID || groundPositionContent == CONTENTS_SKY)
 	{
-		TraceResult tr;
-		UTIL_TraceLine(groundPosition + Vector(0, 0, 18), groundPosition, ignore_monsters, edict(), &tr);
-		if (!tr.fAllSolid && !tr.fStartSolid)
+		if (pGroundEnt)
 		{
-			//get delta between groundPosition.z and floor level
-			float delta = tr.vecEndPos.z - groundPosition.z;
-			// check that head won't get pushed into ceiling (better having feet in floor, than head in ceiling)
-			int newHMDPositionContent = UTIL_PointContents(hmdPosition + Vector(0, 0, delta), true);
-			if (newHMDPositionContent != CONTENTS_SOLID && groundPositionContent != CONTENTS_SKY)
+			ALERT(at_console, "pGroundEnt->v.targetname: %s\n", STRING(pGroundEnt->v.targetname));
+		}
+		// Don't move upwards in intro train
+		if (pGroundEnt != nullptr && FStrEq(STRING(pGroundEnt->v.targetname), "train"))
+		{
+			// TODO: Will we fall out now?
+		}
+		else
+		{
+			TraceResult tr;
+			UTIL_TraceLine(groundPosition + Vector(0, 0, 18), groundPosition, ignore_monsters, edict(), &tr);
+			if (!tr.fAllSolid && !tr.fStartSolid)
 			{
-				newOrigin.z += delta;
-				hmdPosition.z += delta;
+				//get delta between groundPosition.z and floor level
+				float delta = tr.vecEndPos.z - groundPosition.z;
+				// check that head won't get pushed into ceiling (better having feet in floor, than head in ceiling)
+				int newHMDPositionContent = UTIL_PointContents(hmdPosition + Vector(0, 0, delta), true);
+				if (newHMDPositionContent != CONTENTS_SOLID && groundPositionContent != CONTENTS_SKY)
+				{
+					newOrigin.z += delta;
+					hmdPosition.z += delta;
+				}
 			}
 		}
 	}

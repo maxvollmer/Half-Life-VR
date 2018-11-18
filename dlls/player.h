@@ -371,6 +371,12 @@ private:
 	float m_vrRetinaScannerLookTime = 0;
 	bool m_vrHRetinaScannerUsed = false;
 
+	// for save/restore
+	// client sends these every frame
+	// server sends these when loading/restoring
+	float vr_prevYaw = 0.f;
+	float vr_currentYaw = 0.f;
+
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrInUseButtons;
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrLeftMeleeEntities;
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrRightMeleeEntities;
@@ -393,7 +399,7 @@ public:
 	bool IsWeaponUnderWater();
 	bool IsWeaponPositionValid();
 
-	void UpdateVRHeadsetPosition(const int timestamp, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta/*, const Vector & angles*/);
+	void UpdateVRHeadsetPosition(const int timestamp, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta, float prevYaw, float currentYaw);
 	void UpdateVRLeftControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity);
 	void UpdateVRRightControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity);
 
@@ -419,6 +425,8 @@ public:
 	Vector lastHMDOffset{};
 	Vector clientOriginOffset{};	// Must be Vector instead of Vector2D, so save/load works (only has FIELD_VECTOR, which expects 3 floats)
 	BOOL hasData{ false };			// Must be BOOL (int), so save/load works (only has FIELD_BOOLEAN, which expects int)
+	float prevYaw{ 0.f };
+	float currentYaw{ 0.f };
 };
 
 extern VRLevelChangeData g_vrLevelChangeData;

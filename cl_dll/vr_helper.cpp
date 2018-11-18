@@ -22,6 +22,11 @@
 const Vector3 HL_TO_VR(1.44f / 10.f, 2.0f / 10.f, 1.44f / 10.f);
 const Vector3 VR_TO_HL(1.f / HL_TO_VR.x, 1.f / HL_TO_VR.y, 1.f / HL_TO_VR.z);
 
+// Set by message from server on load/restore
+float g_vrRestoreYaw_PrevYaw = 0.f;
+float g_vrRestoreYaw_CurrentYaw = 0.f;
+bool g_vrRestoreYaw_HasData = false;
+
 extern engine_studio_api_t IEngineStudio;
 
 VRHelper::VRHelper()
@@ -78,11 +83,7 @@ void VRHelper::UpdateWorldRotation()
 		m_currentYawOffsetDelta = Vector{};
 		return;
 	}
-	// Already up to date
-	if (gHUD.m_flTime == m_lastYawUpdateTime)
-	{
-		return;
-	}
+
 	// New game
 	if (m_lastYawUpdateTime == -1.f || m_lastYawUpdateTime >= gHUD.m_flTime)
 	{
@@ -92,21 +93,48 @@ void VRHelper::UpdateWorldRotation()
 		m_currentYawOffsetDelta = Vector{};
 		return;
 	}
-	// Get time since last update
-	float deltaTime = gHUD.m_flTime - m_lastYawUpdateTime;
-	// Rotate
-	m_prevYaw = m_currentYaw;
-	if (g_vrInput.RotateLeft())
+
+	// Get angle from save/restore or from user input
+	if (g_vrRestoreYaw_HasData)
 	{
-		m_currentYaw += deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
+		m_prevYaw = g_vrRestoreYaw_PrevYaw;
+		m_currentYaw = g_vrRestoreYaw_CurrentYaw;
+		g_vrRestoreYaw_PrevYaw = 0.f;
+		g_vrRestoreYaw_CurrentYaw = 0.f;
+		g_vrRestoreYaw_HasData = false;
+
+		// Normalize angle
+		m_currentYaw = std::fmodf(m_currentYaw, 360.f);
+		if (m_currentYaw < 0.f) m_currentYaw += 360.f;
 	}
-	else if (g_vrInput.RotateRight())
+	else
 	{
-		m_currentYaw -= deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
+		// Already up to date
+		if (gHUD.m_flTime == m_lastYawUpdateTime)
+		{
+			return;
+		}
+
+		// Get time since last update
+		float deltaTime = gHUD.m_flTime - m_lastYawUpdateTime;
+		// Rotate
+		m_prevYaw = m_currentYaw;
+		if (g_vrInput.RotateLeft())
+		{
+			m_currentYaw += deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
+		}
+		else if (g_vrInput.RotateRight())
+		{
+			m_currentYaw -= deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
+		}
+
+		// Normalize angle
+		m_currentYaw = std::fmodf(m_currentYaw, 360.f);
+		if (m_currentYaw < 0.f) m_currentYaw += 360.f;
+
+		// Remember time
+		m_lastYawUpdateTime = gHUD.m_flTime;
 	}
-	m_currentYaw = std::fmodf(m_currentYaw, 360.f);
-	// Remember time
-	m_lastYawUpdateTime = gHUD.m_flTime;
 }
 
 const Vector3 & VRHelper::GetVRToHL()
@@ -680,10 +708,11 @@ void VRHelper::SendPositionUpdateToServer()
 	char cmdHMD[MAX_COMMAND_SIZE] = { 0 };
 	char cmdLeftController[MAX_COMMAND_SIZE] = { 0 };
 	char cmdRightController[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f",/* %.2f %.2f %.2f",*/
+	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",/* %.2f %.2f %.2f",*/
 		m_vrUpdateTimestamp,
 		hmdOffset.x, hmdOffset.y, hmdOffset.z,
-		m_currentYawOffsetDelta.x, m_currentYawOffsetDelta.y, m_currentYawOffsetDelta.z
+		m_currentYawOffsetDelta.x, m_currentYawOffsetDelta.y, m_currentYawOffsetDelta.z,
+		m_prevYaw, m_currentYaw	// for save/restore
 		/*,
 		hmdAngles.x, hmdAngles.y, hmdAngles.z*/
 	);

@@ -449,12 +449,12 @@ void ClientCommand( edict_t *pEntity )
 		{
 			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
 			int timestamp = atoi(CMD_ARGV(1));
-			if (FStrEq(pcmd, "vrupd_hmd") && size == 8/*11*/)
+			if (FStrEq(pcmd, "vrupd_hmd") && size == 10/*13*/)
 			{
 				pPlayer->UpdateVRHeadsetPosition(timestamp,
 					Vector(atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4))),
-					Vector(atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7)))/*,
-					Vector(atof(CMD_ARGV(8)), atof(CMD_ARGV(9)), atof(CMD_ARGV(10)))*/
+					Vector(atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7))),
+					atof(CMD_ARGV(8)), atof(CMD_ARGV(9))
 				);
 				return;
 			}
