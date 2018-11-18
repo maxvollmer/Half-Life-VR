@@ -7,6 +7,7 @@
 #include <Aclapi.h>
 #include <string>
 #include <iostream>
+#include "ConsoleColor.h"
 
 #pragma warning( disable : 4996 ) 
 
@@ -36,7 +37,7 @@ void RunCommandAndWait(std::string description, std::wstring command, const wcha
 	}
 	catch (...)
 	{
-		std::cerr << "Error: Command failed with error: " << GetLastError() << ". Shutting down." << std::endl;
+		std::cerr << red << "Error: Command failed with error: " << GetLastError() << ". Shutting down." << white << std::endl;
 		std::exit(-1);
 	}
 }
@@ -66,7 +67,7 @@ void DeleteOpenGL(const std::wstring& hlDirectory)
 	}
 	catch (...)
 	{
-		std::cerr << "Warning: Failed to delete OpenGL32.dll. Error: " << GetLastError() << "." << std::endl;
+		std::cerr << yellow << "Warning: Failed to delete OpenGL32.dll. Error: " << GetLastError() << "." << white << std::endl;
 	}
 }
 
@@ -85,7 +86,7 @@ void PatchOpenGL(const std::wstring& hlDirectory, const std::wstring& vrDirector
 	}
 	catch (...)
 	{
-		std::cerr << "Warning: Couldn't patch OpenGL32.dll. Error: " << GetLastError() << ". If the game doesn't run, you need to patch manually." << std::endl;
+		std::cerr << yellow << "Warning: Couldn't patch OpenGL32.dll. Error: " << GetLastError() << ". If the game doesn't run, you need to patch manually." << white << std::endl;
 	}
 }
 
@@ -95,12 +96,12 @@ void ForceSingleProcess()
 	HANDLE mutex = CreateMutexW(0, FALSE, L"HalfLifeVirtualRealityLauncherMutexLaliludgnskdagjfgbs");
 	if (mutex == NULL)
 	{
-		std::cerr << "Error: Not enough rights to run HLVRLauncher. Try running as administrator. Shutting down." << std::endl;
+		std::cerr << red << "Error: Not enough rights to run HLVRLauncher. Try running as administrator. Shutting down." << white << std::endl;
 		std::exit(-1);
 	}
 	else if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
-		std::cerr << "Error: Another instance of HLVRLauncher is already running. Shutting down." << std::endl;
+		std::cerr << red << "Error: Another instance of HLVRLauncher is already running. Shutting down." << white << std::endl;
 		std::exit(-1);
 	}
 }
@@ -137,7 +138,11 @@ int main(int argc, char *argv[])
 		<< std::endl
 		<< "Once the game ends, HLVRLauncher will clean up afterwards, restoring the original OpenGL32.dll."
 		<< std::endl
-		<< "SOME OF THESE COMMANDS MAY TAKE A WHILE TO COMPLETE. PLEASE BE PATIENT!"
+		<< std::endl
+		<< yellow << "SOME OF THESE COMMANDS MAY TAKE A WHILE TO COMPLETE. PLEASE BE PATIENT!" << white
+		<< std::endl
+		<< std::endl
+		<< red << "NO WARRANTIES WHATSOEVER. USE AT YOUR OWN RISK. THIS MIGHT GET YOU VAC BANNED." << white
 		<< std::endl;
 
 	std::cout << std::endl;
@@ -150,6 +155,10 @@ int main(int argc, char *argv[])
 
 	DeleteOpenGL(hlDirectory);
 	PatchOpenGL(hlDirectory, vrDirectory);
+
+	std::cout << std::endl;
+
+	std::cout << red << "Attention: Your OpenGL32.dll is now patched. From this point on you are at risk of getting VAC banned if you play Half-Life and any of its mods in multiplayer." << white << std::endl;
 
 	std::cout << std::endl;
 
@@ -172,6 +181,11 @@ int main(int argc, char *argv[])
 	std::cout << std::endl;
 
 	DeleteOpenGL(hlDirectory);
+
+	std::cout << std::endl;
+
+	std::cout << yellow << "The patched OpenGL32.dll should have been removed now. You should be able to safely play Half-Life and any of its mods in multiplayer.";
+	std::cout << red << " NO WARRANTIES WHATSOEVER! PLEASE CHECK YOUR HALF-LIFE FOLDER TO MAKE SURE THE PATCH HAS BEEN REMOVED." << white << std::endl;
 
 	std::cout << std::endl;
 

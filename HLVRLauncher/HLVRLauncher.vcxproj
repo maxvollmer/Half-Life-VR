@@ -138,6 +138,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConsoleColor.h" />
     <ClInclude Include="HLVRLauncher.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
