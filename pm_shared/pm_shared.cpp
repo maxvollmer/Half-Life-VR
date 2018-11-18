@@ -714,6 +714,25 @@ int PM_ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 	return blocked;
 }
 
+// No gravity under water in VR - Max Vollmer, 2018-01-28
+// Moved into separate function with improved logic - Max Vollmer, 2018-11-18
+// Disable gravity after using VR teleporter in water
+// and reenable gravity after moving/jumping/crouching using default game inputs.
+// (g_vrTeleportInWater is set to true in player.cpp on server dll when teleporting in water.)
+bool g_vrTeleportInWater = false;
+bool IsInWaterAndIsGravityDisabled()
+{
+	// If player uses vanilla game movements, reset g_vrTeleportInWater to false.
+	if (pmove->cmd.forwardmove
+		|| pmove->cmd.sidemove
+		|| pmove->cmd.upmove
+		|| (pmove->cmd.buttons & (IN_JUMP | IN_DUCK)))
+	{
+		g_vrTeleportInWater = false;
+	}
+	return (pmove->waterlevel > 0) && g_vrTeleportInWater;
+}
+
 void PM_AddCorrectGravity ()
 {
 	float	ent_gravity;
@@ -721,9 +740,10 @@ void PM_AddCorrectGravity ()
 	if ( pmove->waterjumptime )
 		return;
 
-	// No gravity under water in VR - Max Vollmer, 2018-01-28
-	if (pmove->waterlevel > 0)
+	if (IsInWaterAndIsGravityDisabled())
+	{
 		return;
+	}
 
 	if (pmove->gravity)
 		ent_gravity = pmove->gravity;
@@ -747,9 +767,10 @@ void PM_FixupGravityVelocity ()
 	if ( pmove->waterjumptime )
 		return;
 
-	// No gravity under water in VR - Max Vollmer, 2018-01-28
-	if (pmove->waterlevel > 0)
+	if (IsInWaterAndIsGravityDisabled())
+	{
 		return;
+	}
 
 	if (pmove->gravity)
 		ent_gravity = pmove->gravity;
@@ -1312,8 +1333,14 @@ void PM_WaterMove (void)
 	// Sinking after no other movement occurs
 	if (!pmove->cmd.forwardmove && !pmove->cmd.sidemove && !pmove->cmd.upmove)
 	{
-		// wishvel[2] -= 60;	// drift towards bottom
-		wishvel[2] = 0;	// No gravity under water in VR - Max Vollmer, 2018-02-11
+		if (IsInWaterAndIsGravityDisabled())
+		{
+			wishvel[2] = 0;
+		}
+		else
+		{
+			wishvel[2] -= 60;	// drift towards bottom
+		}
 	}
 	else  
 	{
@@ -2349,9 +2376,9 @@ Moved from PM_Move() switch statement for MOVETYPE_WALK - Max Vollmer, 2018-04-0
 void PM_YesClip(physent_t *pLadder)
 {
 	// No gravity in water - Max Vollmer, 2018-02-11
-	if (pmove->waterlevel > 0)
+	if (IsInWaterAndIsGravityDisabled())
 	{
-		pmove->velocity[2] = 0;
+		pmove->velocity[2] = max(0, pmove->velocity[2]);
 	}
 
 	if (!PM_InWater())
@@ -2459,10 +2486,9 @@ void PM_YesClip(physent_t *pLadder)
 		PM_CheckFalling();
 	}
 
-	// No gravity in water - Max Vollmer, 2018-02-11
-	if (pmove->waterlevel > 0)
+	if (IsInWaterAndIsGravityDisabled())
 	{
-		pmove->velocity[2] = 0;
+		pmove->velocity[2] = max(0, pmove->velocity[2]);
 	}
 
 	// Did we enter or leave the water?

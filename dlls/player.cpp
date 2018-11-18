@@ -5700,7 +5700,9 @@ void CBasePlayer::UpdateVRTele()
 //EHANDLE temp;
 bool CBasePlayer::CanTeleportHere(const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination)
 {
-	vr_fTelePointsAtXenMound = false; // reset every frame
+	extern bool g_vrTeleportInWater;	// used to disable gravity in water when using VR teleporter
+	g_vrTeleportInWater = false;		// reset every frame
+	vr_fTelePointsAtXenMound = false;	// reset every frame
 	if (!tr.fAllSolid)
 	{
 		/* // Line can't be blocked anymore, we now use a special TraceLine method in gVRPhysicsHelper that already gives us the correct line end
@@ -5737,6 +5739,7 @@ bool CBasePlayer::CanTeleportHere(const TraceResult& tr, const Vector& beamStart
 				{
 					teleportDestination = beamEndPos = beamEndPos - (delta.Normalize() * 32.0f);
 				}
+				g_vrTeleportInWater = true;
 				return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 			}
 			else if (pev->waterlevel > 0 && UTIL_PointContents(beamStartPos) == CONTENTS_WATER)
