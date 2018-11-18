@@ -103,7 +103,9 @@ void VRHelper::UpdateWorldRotation()
 		g_vrRestoreYaw_CurrentYaw = 0.f;
 		g_vrRestoreYaw_HasData = false;
 
-		// Normalize angle
+		// Normalize angles
+		m_prevYaw = std::fmodf(m_prevYaw, 360.f);
+		if (m_prevYaw < 0.f) m_prevYaw += 360.f;
 		m_currentYaw = std::fmodf(m_currentYaw, 360.f);
 		if (m_currentYaw < 0.f) m_currentYaw += 360.f;
 	}
