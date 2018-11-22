@@ -678,6 +678,14 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 				Vector3 ladderSize = HLVecToRP3DVec(pEntity->pev->size);
 				Vector3 ladderPosition = HLVecToRP3DVec(pEntity->pev->absmin);
 
+				if (ladderSize.x <= 0.f
+					|| ladderSize.y <= 0.f
+					|| ladderSize.z <= 0.f)
+				{
+					ALERT(at_console, "Warning, found ladder with invalid size: %s (%f %f %f)\n", STRING(pEntity->pev->targetname), pEntity->pev->size.x, pEntity->pev->size.y, pEntity->pev->size.z);
+					continue;
+				}
+
 				BoxShape boxShape{ ladderSize };
 
 				RigidBody* body = m_dynamicsWorld->createRigidBody(rp3d::Transform::identity());
