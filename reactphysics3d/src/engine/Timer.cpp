@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -30,13 +30,8 @@
 using namespace reactphysics3d;
 
 // Constructor
-Timer::Timer(double timeStep) : mTimeStep(timeStep), mIsRunning(false) {
+Timer::Timer(double timeStep) : mTimeStep(timeStep), mLastUpdateTime(0), mDeltaTime(0), mIsRunning(false) {
     assert(timeStep > 0.0);
-}
-
-// Destructor
-Timer::~Timer() {
-
 }
 
 // Return the current time of the system in seconds
@@ -47,11 +42,11 @@ long double Timer::getCurrentSystemTime() {
         LARGE_INTEGER ticks;
         QueryPerformanceFrequency(&ticksPerSecond);
         QueryPerformanceCounter(&ticks);
-        return (long double(ticks.QuadPart) / long double(ticksPerSecond.QuadPart));
+        return ((long double)(ticks.QuadPart) / (long double)(ticksPerSecond.QuadPart));
     #else
         // Initialize the lastUpdateTime with the current time in seconds
         timeval timeValue;
-        gettimeofday(&timeValue, NULL);
+        gettimeofday(&timeValue, nullptr);
         return (timeValue.tv_sec + (timeValue.tv_usec / 1000000.0));
     #endif
 }

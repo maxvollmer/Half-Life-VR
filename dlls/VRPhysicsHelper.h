@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <vector>
+#include <unordered_map>
 
 namespace reactphysics3d {
 	class CollisionWorld;

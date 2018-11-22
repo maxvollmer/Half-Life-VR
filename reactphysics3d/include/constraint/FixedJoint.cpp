@@ -1,6 +1,6 @@
 /********************************************************************************
 * ReactPhysics3D physics library, http://www.reactphysics3d.com                 *
-* Copyright (c) 2010-2016 Daniel Chappuis                                       *
+* Copyright (c) 2010-2018 Daniel Chappuis                                       *
 *********************************************************************************
 *                                                                               *
 * This software is provided 'as-is', without any express or implied warranty.   *
@@ -33,8 +33,8 @@ using namespace reactphysics3d;
 const decimal FixedJoint::BETA = decimal(0.2);
 
 // Constructor
-FixedJoint::FixedJoint(const FixedJointInfo& jointInfo)
-           : Joint(jointInfo), mImpulseTranslation(0, 0, 0), mImpulseRotation(0, 0, 0) {
+FixedJoint::FixedJoint(uint id, const FixedJointInfo& jointInfo)
+           : Joint(id, jointInfo), mImpulseTranslation(0, 0, 0), mImpulseRotation(0, 0, 0) {
 
     // Compute the local-space anchor point for each body
     const Transform& transform1 = mBody1->getTransform();
@@ -42,24 +42,26 @@ FixedJoint::FixedJoint(const FixedJointInfo& jointInfo)
     mLocalAnchorPointBody1 = transform1.getInverse() * jointInfo.anchorPointWorldSpace;
     mLocalAnchorPointBody2 = transform2.getInverse() * jointInfo.anchorPointWorldSpace;
 
-    // Compute the inverse of the initial orientation difference between the two bodies
-    mInitOrientationDifferenceInv = transform2.getOrientation() *
-                                    transform1.getOrientation().getInverse();
-    mInitOrientationDifferenceInv.normalize();
-    mInitOrientationDifferenceInv.inverse();
-}
-
-// Destructor
-FixedJoint::~FixedJoint() {
-
+	// Store inverse of initial rotation from body 1 to body 2 in body 1 space:
+	//
+	// q20 = q10 r0 
+	// <=> r0 = q10^-1 q20 
+	// <=> r0^-1 = q20^-1 q10
+	//
+	// where:
+	//
+	// q20 = initial orientation of body 2
+	// q10 = initial orientation of body 1
+	// r0 = initial rotation rotation from body 1 to body 2
+	mInitOrientationDifferenceInv = transform2.getOrientation().getInverse() * transform1.getOrientation();
 }
 
 // Initialize before solving the constraint
 void FixedJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverData) {
 
     // Initialize the bodies index in the velocity array
-    mIndexBody1 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody1)->second;
-    mIndexBody2 = constraintSolverData.mapBodyToConstrainedVelocityIndex.find(mBody2)->second;
+    mIndexBody1 = mBody1->mArrayIndex;
+    mIndexBody2 = mBody2->mArrayIndex;
 
     // Get the bodies positions and orientations
     const Vector3& x1 = mBody1->mCenterOfMassWorld;
@@ -89,30 +91,29 @@ void FixedJoint::initBeforeSolve(const ConstraintSolverData& constraintSolverDat
 
     // Compute the inverse mass matrix K^-1 for the 3 translation constraints
     mInverseMassMatrixTranslation.setToZero();
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixTranslation = massMatrix.getInverse();
     }
 
     // Compute the bias "b" of the constraint for the 3 translation constraints
     decimal biasFactor = (BETA / constraintSolverData.timeStep);
     mBiasTranslation.setToZero();
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
+    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
         mBiasTranslation = biasFactor * (x2 + mR2World - x1 - mR1World);
     }
 
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
     mInverseMassMatrixRotation = mI1 + mI2;
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixRotation = mInverseMassMatrixRotation.getInverse();
     }
 
     // Compute the bias "b" for the 3 rotation constraints
     mBiasRotation.setToZero();
-    if (mPositionCorrectionTechnique == BAUMGARTE_JOINTS) {
-        Quaternion currentOrientationDifference = orientationBody2 * orientationBody1.getInverse();
-        currentOrientationDifference.normalize();
-        const Quaternion qError = currentOrientationDifference * mInitOrientationDifferenceInv;
+
+    if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique::BAUMGARTE_JOINTS) {
+        const Quaternion qError = orientationBody2 * mInitOrientationDifferenceInv * orientationBody1.getInverse();
         mBiasRotation = biasFactor * decimal(2.0) * qError.getVectorV();
     }
 
@@ -222,7 +223,7 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
 
     // If the error position correction technique is not the non-linear-gauss-seidel, we do
     // do not execute this method
-    if (mPositionCorrectionTechnique != NON_LINEAR_GAUSS_SEIDEL) return;
+    if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique::NON_LINEAR_GAUSS_SEIDEL) return;
 
     // Get the bodies positions and orientations
     Vector3& x1 = constraintSolverData.positions[mIndexBody1];
@@ -256,7 +257,7 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
                            skewSymmetricMatrixU1 * mI1 * skewSymmetricMatrixU1.getTranspose() +
                            skewSymmetricMatrixU2 * mI2 * skewSymmetricMatrixU2.getTranspose();
     mInverseMassMatrixTranslation.setToZero();
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixTranslation = massMatrix.getInverse();
     }
 
@@ -296,14 +297,36 @@ void FixedJoint::solvePositionConstraint(const ConstraintSolverData& constraintS
     // Compute the inverse of the mass matrix K=JM^-1J^t for the 3 rotation
     // contraints (3x3 matrix)
     mInverseMassMatrixRotation = mI1 + mI2;
-    if (mBody1->getType() == DYNAMIC || mBody2->getType() == DYNAMIC) {
+    if (mBody1->getType() == BodyType::DYNAMIC || mBody2->getType() == BodyType::DYNAMIC) {
         mInverseMassMatrixRotation = mInverseMassMatrixRotation.getInverse();
     }
 
-    // Compute the position error for the 3 rotation constraints
-    Quaternion currentOrientationDifference = q2 * q1.getInverse();
-    currentOrientationDifference.normalize();
-    const Quaternion qError = currentOrientationDifference * mInitOrientationDifferenceInv;
+	// Calculate difference in rotation
+	//
+	// The rotation should be:
+	//
+	// q2 = q1 r0
+	//
+	// But because of drift the actual rotation is:
+	//
+	// q2 = qError q1 r0
+	// <=> qError = q2 r0^-1 q1^-1
+	//
+	// Where:
+	// q1 = current rotation of body 1
+	// q2 = current rotation of body 2
+	// qError = error that needs to be reduced to zero
+	Quaternion qError = q2 * mInitOrientationDifferenceInv * q1.getInverse();
+
+	// A quaternion can be seen as:
+	//
+	// q = [sin(theta / 2) * v, cos(theta/2)]
+	//
+	// Where:
+	// v = rotation vector
+	// theta = rotation angle
+	// 
+	// If we assume theta is small (error is small) then sin(x) = x so an approximation of the error angles is:
     const Vector3 errorRotation = decimal(2.0) * qError.getVectorV();
 
     // Compute the Lagrange multiplier lambda for the 3 rotation constraints

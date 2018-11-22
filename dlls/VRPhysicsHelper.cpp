@@ -689,7 +689,7 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 				BoxShape boxShape{ ladderSize };
 
 				RigidBody* body = m_dynamicsWorld->createRigidBody(rp3d::Transform::identity());
-				body->setType(STATIC);
+				body->setType(BodyType::STATIC);
 				body->addCollisionShape(&boxShape, rp3d::Transform{ ladderPosition, Matrix3x3::identity() }, 10.f);
 
 				if (body->raycast(ray, raycastInfo))
@@ -732,7 +732,7 @@ void VRPhysicsHelper::InitPhysicsWorld()
 		m_dynamicsWorld->setTimeBeforeSleep({ PHYSICS_STEP_TIME * 1.5f });
 
 		m_dynamicMap = m_dynamicsWorld->createRigidBody(rp3d::Transform::identity());
-		m_dynamicMap->setType(STATIC);
+		m_dynamicMap->setType(BodyType::STATIC);
 		m_dynamicMap->setLinearDamping(0);
 		m_dynamicMap->setAngularDamping(0);
 		m_dynamicMap->getMaterial().setBounciness(0);
@@ -740,7 +740,7 @@ void VRPhysicsHelper::InitPhysicsWorld()
 		m_dynamicMap->getMaterial().setRollingResistance(0);
 
 		m_dynamicSphere = m_dynamicsWorld->createRigidBody(rp3d::Transform::identity());
-		m_dynamicSphere->setType(DYNAMIC);
+		m_dynamicSphere->setType(BodyType::DYNAMIC);
 		m_dynamicSphere->setLinearDamping(0);
 		m_dynamicSphere->setAngularDamping(0);
 		m_dynamicSphere->getMaterial().setBounciness(0);
@@ -786,7 +786,7 @@ void VRPhysicsHelper::CreateMapShapeFromCurrentVerticesAndTriangles()
 	m_triangleArray = new TriangleVertexArray(
 		m_vertices.size(), m_vertices.data(), sizeof(Vector),
 		m_indices.size() / 3, m_indices.data(), sizeof(int),
-		TriangleVertexArray::VERTEX_FLOAT_TYPE, TriangleVertexArray::INDEX_INTEGER_TYPE);
+		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 	m_triangleMesh = new TriangleMesh;
 	m_triangleMesh->addSubpart(m_triangleArray);
