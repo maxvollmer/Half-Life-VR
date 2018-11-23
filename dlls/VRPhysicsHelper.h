@@ -47,7 +47,7 @@ private:
 	reactphysics3d::DynamicsWorld * m_dynamicsWorld = nullptr;
 
 	std::vector<struct reactphysics3d::Vector3> m_vertices;
-	std::vector<int> m_indices;
+	std::vector<int32_t> m_indices;
 
 	reactphysics3d::TriangleVertexArray* m_triangleArray = nullptr;
 	reactphysics3d::TriangleMesh* m_triangleMesh = nullptr;

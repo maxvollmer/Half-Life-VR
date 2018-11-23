@@ -815,13 +815,33 @@ void VRPhysicsHelper::DeletePhysicsMapData()
 	}
 }
 
+void TEMPTODO_RemoveInvalidTriangles(std::vector<Vector3> & vertices, std::vector<int32_t>& indices)
+{
+	// remove invalid triangles (TODO: Find out where these come from, this shouldn't be happening anymore!)
+	for (uint32_t i = 0; i < indices.size(); i += 3)
+	{
+		if (vertices[indices[i]] == vertices[indices[i + 1]]
+			|| vertices[indices[i]] == vertices[indices[i + 2]]
+			|| vertices[indices[i + 1]] == vertices[indices[i + 2]])
+		{
+			ALERT(at_console, "(VRPhysicsHelper)Warning: Found invalid triangle at index %i, removed!\n", i);
+			indices[i] = -1;
+			indices[i + 1] = -1;
+			indices[i + 2] = -1;
+		}
+	}
+	indices.erase(std::remove_if(indices.begin(), indices.end(), [](const int32_t& i) { return i < 0; }), indices.end());
+}
+
 void VRPhysicsHelper::CreateMapShapeFromCurrentVerticesAndTriangles()
 {
 	DeletePhysicsMapData();
 
+	TEMPTODO_RemoveInvalidTriangles(m_vertices, m_indices);
+
 	m_triangleArray = new TriangleVertexArray(
 		m_vertices.size(), m_vertices.data(), sizeof(Vector),
-		m_indices.size() / 3, m_indices.data(), sizeof(int) * 3,
+		m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3,
 		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 	m_triangleMesh = new TriangleMesh;
