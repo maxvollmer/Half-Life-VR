@@ -1378,7 +1378,6 @@ void SENTENCEG_Init()
 		USENTENCEG_InitLRU(&(rgsentenceg[i].rgblru[0]), rgsentenceg[i].count);
 		i++;
 	}
-
 }
 
 // convert sentence (sample) name to !sentencenum, return !sentencenum
@@ -1405,32 +1404,34 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum)
 	return -1;
 }
 
-void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
-						   int flags, int pitch)
+#include <string>
+#include <regex>
+
+void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch)
 {
 	if (sample && *sample == '!')
 	{
-		char name[32];
-		if (SENTENCEG_Lookup(sample, name) >= 0)
+		// Intercept and use female audio files for female NPCs
+		std::string ssample{ sample };
+		if (CBaseEntity::Instance(entity)->IsFemaleNPC())
 		{
-			// Intercept and use female audio files for female NPCs
-			std::string sname{ name };
-			if (CBaseEntity::Instance(entity)->IsFemaleNPC())
-			{
-				// Currently only scientists are supported
-				if (sname.find("scientist/") == 0)
-				{
-					sname = "female_" + sname;
-				}
-			}
+ 			ssample = std::regex_replace(ssample, std::regex{"SC_"}, "FSC_");
+		}
 
-			EMIT_SOUND_DYN2(entity, channel, sname.data(), volume, attenuation, flags, pitch);
+		char name[32];
+		if (SENTENCEG_Lookup(ssample.data(), name) >= 0)
+		{
+			EMIT_SOUND_DYN2(entity, channel, name, volume, attenuation, flags, pitch);
 		}
 		else
-			ALERT( at_aiconsole, "Unable to find %s in sentences.txt\n", sample );
+		{
+			ALERT(at_aiconsole, "Unable to find %s in sentences.txt\n", sample);
+		}
 	}
 	else
+	{
 		EMIT_SOUND_DYN2(entity, channel, sample, volume, attenuation, flags, pitch);
+	}
 }
 
 // play a specific sentence over the HEV suit speaker - just pass player entity, and !sentencename
