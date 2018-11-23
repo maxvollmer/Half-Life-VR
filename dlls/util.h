@@ -535,8 +535,18 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 // EMIT_SOUND_DYN with pitch != 100 should be used sparingly, as it's not quite as
 // fast as EMIT_SOUND (the pitchshift mixer is not native coded).
 
-void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
-						   int flags, int pitch);
+void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch);
+
+void EMIT_AMBIENT_SOUND(edict_t *entity, float *pos, const char *sample, float volume, float attenuation, int flags, int pitch);
+
+#ifdef CLIENT_DLL
+inline int PRECACHE_SOUND(char* s)
+{
+	return PRECACHE_SOUND2(s);
+}
+#else
+int PRECACHE_SOUND(char* s);
+#endif
 
 
 inline void EMIT_SOUND(edict_t *entity, int channel, const char *sample, float volume, float attenuation)

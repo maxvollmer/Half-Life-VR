@@ -1407,6 +1407,109 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum)
 #include <string>
 #include <regex>
 
+
+// Intercept PRECACHE_SOUND to precache female NPC sounds when precaching NPC sounds - Max Vollmer, 2018-11-23
+// Engine keeps pointer to char*, so we need to make sure that it doesn't go invalid
+class SoundFilePathHolder
+{
+public:
+	char* GetSoundFilePathPointer(const std::string& soundFilePath)
+	{
+		if (root == nullptr)
+		{
+			root = new Holder{ soundFilePath };
+			return root->Get();
+		}
+
+		Holder* holder = root;
+		while (holder)
+		{
+			if (holder->path == soundFilePath)
+			{
+				return holder->Get();
+			}
+			else if (holder->next == nullptr)
+			{
+				holder->next = new Holder{ soundFilePath };
+				return holder->next->Get();
+			}
+			else
+			{
+				holder = holder->next;
+			}
+		}
+	}
+
+private:
+	class Holder {
+	public:
+		Holder(const std::string& path) :
+			path{ path },
+			next{ nullptr }
+		{
+		}
+		inline char* Get() const
+		{
+			return const_cast<char*>(path.data());
+		}
+		const std::string path;
+		Holder* next{ nullptr };
+	};
+	Holder* root{ nullptr };
+};
+SoundFilePathHolder soundFilePathHolder;
+int PRECACHE_SOUND(char* s)
+{
+	std::string ssoundFilePath{ s };
+	if (ssoundFilePath.find("scientist/") == 0)
+	{
+		ssoundFilePath = std::regex_replace(ssoundFilePath, std::regex{ "scientist/" }, "fsci/");
+		ALERT(at_console, "Precaching sound %s\n", ssoundFilePath.data());
+		PRECACHE_SOUND2(soundFilePathHolder.GetSoundFilePathPointer(ssoundFilePath));
+	}
+	return PRECACHE_SOUND2(s);
+}
+
+// Intercept EMIT_AMBIENT_SOUND to inject female NPC sounds when played as ambient sound (e.g. in the test lab) - Max Vollmer, 2018-11-23
+void EMIT_AMBIENT_SOUND(edict_t *entity, float *pos, const char *sample, float volume, float attenuation, int flags, int pitch)
+{
+	if (sample && *sample == '!')
+	{
+		// Intercept and use female audio files with 50% chance
+		std::string ssample{ sample };
+		if (rand() % 2 == 1)
+		{
+			if (ssample.find("!SC_") == 0)
+			{
+				ssample = std::regex_replace(ssample, std::regex{ "SC_" }, "FS_");
+			}
+		}
+
+		char name[32];
+		if (SENTENCEG_Lookup(ssample.data(), name) >= 0)
+		{
+			EMIT_AMBIENT_SOUND2(entity, pos, name, volume, attenuation, flags, pitch);
+		}
+		else
+		{
+			ALERT(at_aiconsole, "Unable to find %s in sentences.txt\n", ssample.data());
+		}
+	}
+	else
+	{
+		std::string ssample{ sample };
+		if (rand() % 2 == 1)
+		{
+			if (ssample.find("scientist/") == 0)
+			{
+				ssample = std::regex_replace(ssample, std::regex{ "scientist/" }, "fsci/");
+			}
+		}
+
+		EMIT_AMBIENT_SOUND2(entity, pos, ssample.data(), volume, attenuation, flags, pitch);
+	}
+}
+
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch)
 {
 	if (sample && *sample == '!')
@@ -1415,7 +1518,7 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		std::string ssample{ sample };
 		if (CBaseEntity::Instance(entity)->IsFemaleNPC())
 		{
- 			ssample = std::regex_replace(ssample, std::regex{"SC_"}, "FSC_");
+ 			ssample = std::regex_replace(ssample, std::regex{"SC_"}, "FS_");
 		}
 
 		char name[32];
@@ -1425,7 +1528,7 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		}
 		else
 		{
-			ALERT(at_aiconsole, "Unable to find %s in sentences.txt\n", sample);
+			ALERT(at_aiconsole, "Unable to find %s in sentences.txt\n", ssample.data());
 		}
 	}
 	else

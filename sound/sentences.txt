@@ -1353,385 +1353,385 @@ GM_WONTWORK gman/gman_nowork
 
 
 
-FSC_OK0 female_scientist/excellentteam
-FSC_OK1 female_scientist/fellowscientist
-FSC_OK2 female_scientist/fine
-FSC_OK3 female_scientist/hopeyouknow
-FSC_OK4 female_scientist/leadtheway
-FSC_OK5 female_scientist/letsgo
-FSC_OK6 female_scientist/yesletsgo
-FSC_OK7 female_scientist/yes3
-FSC_OK8 female_scientist/alright
+FS_OK0 fsci/excellentteam
+FS_OK1 fsci/fellowscientist
+FS_OK2 fsci/fine
+FS_OK3 fsci/hopeyouknow
+FS_OK4 fsci/leadtheway
+FS_OK5 fsci/letsgo
+FS_OK6 fsci/yesletsgo
+FS_OK7 fsci/yes3
+FS_OK8 fsci/alright
 
-FSC_WAIT0 female_scientist/beenaburden
-FSC_WAIT1 female_scientist/slowingyou
-FSC_WAIT2 female_scientist/reconsider
-FSC_WAIT3 female_scientist/whyleavehere
-FSC_WAIT4 female_scientist/illwaithere
-FSC_WAIT5 female_scientist/istay
-FSC_WAIT6 female_scientist/illwait
+FS_WAIT0 fsci/beenaburden
+FS_WAIT1 fsci/slowingyou
+FS_WAIT2 fsci/reconsider
+FS_WAIT3 fsci/whyleavehere
+FS_WAIT4 fsci/illwaithere
+FS_WAIT5 fsci/istay
+FS_WAIT6 fsci/illwait
 
 // fail to follow player any more
-FSC_STOP0 female_scientist/stop1
-FSC_STOP1 female_scientist/stop2
-FSC_STOP2 female_scientist/stop3
-FSC_STOP3 female_scientist/stop4
+FS_STOP0 fsci/stop1
+FS_STOP1 fsci/stop2
+FS_STOP2 fsci/stop3
+FS_STOP3 fsci/stop4
 
 
 // player is staring at scientist
-FSC_STARE0 female_scientist/yees
-FSC_STARE1 female_scientist/areyouthink
-FSC_STARE2 female_scientist/noidea
+FS_STARE0 fsci/yees
+FS_STARE1 fsci/areyouthink
+FS_STARE2 fsci/noidea
 
-FSC_HELLO0 female_scientist/hellothere
-FSC_HELLO1 female_scientist/freemanalive
-FSC_HELLO2 female_scientist/afellowsci
-FSC_HELLO3 female_scientist/greetings2
-FSC_HELLO4 female_scientist/hello
-FSC_HELLO5 female_scientist/goodtoseeyou
-FSC_HELLO6 female_scientist/newhevsuit
-FSC_HELLO7 female_scientist/hellofromlab
-FSC_HELLO8 female_scientist/inmesstoo
+FS_HELLO0 fsci/hellothere
+FS_HELLO1 fsci/freemanalive
+FS_HELLO2 fsci/afellowsci
+FS_HELLO3 fsci/greetings2
+FS_HELLO4 fsci/hello
+FS_HELLO5 fsci/goodtoseeyou
+FS_HELLO6 fsci/newhevsuit
+FS_HELLO7 fsci/hellofromlab
+FS_HELLO8 fsci/inmesstoo
 
-FSC_ANSWER0 female_scientist/notsure
-FSC_ANSWER1 female_scientist/notcertain
-FSC_ANSWER2 female_scientist/perhaps
-FSC_ANSWER3 female_scientist/whocansay
-FSC_ANSWER4 female_scientist/inconclusive
-FSC_ANSWER5 female_scientist/theoretically
-FSC_ANSWER6 female_scientist/whyaskme
-FSC_ANSWER7 female_scientist/lowervoice
-FSC_ANSWER8 female_scientist/ofcourse
-FSC_ANSWER9 female_scientist/absolutely
-FSC_ANSWER10 female_scientist/yes
-FSC_ANSWER11 female_scientist/ibelieveso
-FSC_ANSWER12 female_scientist/right
-FSC_ANSWER13 female_scientist/imsure
-FSC_ANSWER14 female_scientist/positively
-FSC_ANSWER15 female_scientist/nodoubt
-FSC_ANSWER16 female_scientist/yees
-FSC_ANSWER17 female_scientist/ofcoursenot
-FSC_ANSWER18 female_scientist/absolutelynot
-FSC_ANSWER19 female_scientist/noo
-FSC_ANSWER20 female_scientist/idontthinkso
-FSC_ANSWER21 female_scientist/completelywrong
-FSC_ANSWER22 female_scientist/cantbeserious
-FSC_ANSWER23 female_scientist/dontknow
-FSC_ANSWER24 female_scientist/ridiculous
-FSC_ANSWER25 female_scientist/shutup
-FSC_ANSWER26 female_scientist/noguess
-FSC_ANSWER27 female_scientist/stopasking
-FSC_ANSWER28 female_scientist/justasked
-FSC_ANSWER29 female_scientist/repeat
+FS_ANSWER0 fsci/notsure
+FS_ANSWER1 fsci/notcertain
+FS_ANSWER2 fsci/perhaps
+FS_ANSWER3 fsci/whocansay
+FS_ANSWER4 fsci/inconclusive
+FS_ANSWER5 fsci/theoretically
+FS_ANSWER6 fsci/whyaskme
+FS_ANSWER7 fsci/lowervoice
+FS_ANSWER8 fsci/ofcourse
+FS_ANSWER9 fsci/absolutely
+FS_ANSWER10 fsci/yes
+FS_ANSWER11 fsci/ibelieveso
+FS_ANSWER12 fsci/right
+FS_ANSWER13 fsci/imsure
+FS_ANSWER14 fsci/positively
+FS_ANSWER15 fsci/nodoubt
+FS_ANSWER16 fsci/yees
+FS_ANSWER17 fsci/ofcoursenot
+FS_ANSWER18 fsci/absolutelynot
+FS_ANSWER19 fsci/noo
+FS_ANSWER20 fsci/idontthinkso
+FS_ANSWER21 fsci/completelywrong
+FS_ANSWER22 fsci/cantbeserious
+FS_ANSWER23 fsci/dontknow
+FS_ANSWER24 fsci/ridiculous
+FS_ANSWER25 fsci/shutup
+FS_ANSWER26 fsci/noguess
+FS_ANSWER27 fsci/stopasking
+FS_ANSWER28 fsci/justasked
+FS_ANSWER29 fsci/repeat
 
-FSC_QUESTION0 female_scientist/everseen
-FSC_QUESTION1 female_scientist/needsleep
-FSC_QUESTION2 female_scientist/areyouthink
-FSC_QUESTION3 female_scientist/evergetout
-FSC_QUESTION4 female_scientist/rightwayout
-FSC_QUESTION5 female_scientist/cantbeworse
-FSC_QUESTION6 female_scientist/rescueus
-FSC_QUESTION7 female_scientist/fascinating
-FSC_QUESTION8 female_scientist/stimulating
-FSC_QUESTION9 female_scientist/luckwillchange
-FSC_QUESTION10 female_scientist/hearsomething
-FSC_QUESTION11 female_scientist/doyousmell
-FSC_QUESTION12 female_scientist/uselessphd
-FSC_QUESTION13 female_scientist/waithere
-FSC_QUESTION14 female_scientist/survival
-FSC_QUESTION15 female_scientist/headcrab
-FSC_QUESTION16 female_scientist/goodpaper
-FSC_QUESTION17 female_scientist/catchone
-FSC_QUESTION18 female_scientist/dinner
-FSC_QUESTION19 female_scientist/alientrick
-FSC_QUESTION20 female_scientist/alienappeal
-FSC_QUESTION21 female_scientist/rumorclean
-FSC_QUESTION22 female_scientist/nothostile
-FSC_QUESTION23 female_scientist/announcer
-FSC_QUESTION24 female_scientist/smellburn
-FSC_QUESTION25 female_scientist/noidea
-FSC_QUESTION26 female_scientist/whatnext
+FS_QUESTION0 fsci/everseen
+FS_QUESTION1 fsci/needsleep
+FS_QUESTION2 fsci/areyouthink
+FS_QUESTION3 fsci/evergetout
+FS_QUESTION4 fsci/rightwayout
+FS_QUESTION5 fsci/cantbeworse
+FS_QUESTION6 fsci/rescueus
+FS_QUESTION7 fsci/fascinating
+FS_QUESTION8 fsci/stimulating
+FS_QUESTION9 fsci/luckwillchange
+FS_QUESTION10 fsci/hearsomething
+FS_QUESTION11 fsci/doyousmell
+FS_QUESTION12 fsci/uselessphd
+FS_QUESTION13 fsci/waithere
+FS_QUESTION14 fsci/survival
+FS_QUESTION15 fsci/headcrab
+FS_QUESTION16 fsci/goodpaper
+FS_QUESTION17 fsci/catchone
+FS_QUESTION18 fsci/dinner
+FS_QUESTION19 fsci/alientrick
+FS_QUESTION20 fsci/alienappeal
+FS_QUESTION21 fsci/rumorclean
+FS_QUESTION22 fsci/nothostile
+FS_QUESTION23 fsci/announcer
+FS_QUESTION24 fsci/smellburn
+FS_QUESTION25 fsci/noidea
+FS_QUESTION26 fsci/whatnext
 
-FSC_IDLE0 female_scientist/ipredictedthis
-FSC_IDLE1 female_scientist/containfail
-FSC_IDLE2 female_scientist/chaostheory
-FSC_IDLE3 female_scientist/howinteresting
-FSC_IDLE4 female_scientist/neverseen
-FSC_IDLE5 female_scientist/peculiarmarks
-FSC_IDLE6 female_scientist/whoresponsible
-FSC_IDLE7 female_scientist/nogrant
-FSC_IDLE8 female_scientist/bloodsample
-FSC_IDLE9 female_scientist/administrator
-FSC_IDLE10 female_scientist/improbable
-FSC_IDLE11 female_scientist/organicmatter
-FSC_IDLE12 female_scientist/lambdalab
-FSC_IDLE13 female_scientist/ihearsomething
+FS_IDLE0 fsci/ipredictedthis
+FS_IDLE1 fsci/containfail
+FS_IDLE2 fsci/chaostheory
+FS_IDLE3 fsci/howinteresting
+FS_IDLE4 fsci/neverseen
+FS_IDLE5 fsci/peculiarmarks
+FS_IDLE6 fsci/whoresponsible
+FS_IDLE7 fsci/nogrant
+FS_IDLE8 fsci/bloodsample
+FS_IDLE9 fsci/administrator
+FS_IDLE10 fsci/improbable
+FS_IDLE11 fsci/organicmatter
+FS_IDLE12 fsci/lambdalab
+FS_IDLE13 fsci/ihearsomething
 
-FSC_NOGO female_scientist/dontgothere
+FS_NOGO fsci/dontgothere
 
-FSC_MONST0 female_scientist/seeheadcrab
-FSC_MONST1 female_scientist/importantspecies
+FS_MONST0 fsci/seeheadcrab
+FS_MONST1 fsci/importantspecies
 
-FSC_HEAR0 female_scientist/ihearsomething
-FSC_HEAR1 female_scientist/didyouhear
-FSC_HEAR2 female_scientist/whatissound
+FS_HEAR0 fsci/ihearsomething
+FS_HEAR1 fsci/didyouhear
+FS_HEAR2 fsci/whatissound
 
-FSC_SMELL0 female_scientist/somethingfoul
-FSC_SMELL1 female_scientist/odorfromyou
-FSC_SMELL2 female_scientist/peculiarodor
-FSC_SMELL3 female_scientist/stench
+FS_SMELL0 fsci/somethingfoul
+FS_SMELL1 fsci/odorfromyou
+FS_SMELL2 fsci/peculiarodor
+FS_SMELL3 fsci/stench
 
-FSC_WOUND0 female_scientist/iwounded
-FSC_WOUND1 female_scientist/iwounded2
+FS_WOUND0 fsci/iwounded
+FS_WOUND1 fsci/iwounded2
 
-FSC_MORTAL0 female_scientist/iwoundedbad
-FSC_MORTAL1 female_scientist/iwounded2
+FS_MORTAL0 fsci/iwoundedbad
+FS_MORTAL1 fsci/iwounded2
 
-FSC_CUREA female_scientist/youlookbad
-FSC_CUREB female_scientist/youwounded
-FSC_CUREC female_scientist/youneedmedic
+FS_CUREA fsci/youlookbad
+FS_CUREB fsci/youwounded
+FS_CUREC fsci/youneedmedic
 
-FSC_HEAL0 female_scientist/heal1
-FSC_HEAL1 female_scientist/heal2
-FSC_HEAL2 female_scientist/youneedmedic, letstrythis
-FSC_HEAL3 female_scientist/youlookbad, holdstill
-FSC_HEAL4 female_scientist/youwounded, letstrythis
-FSC_HEAL5 female_scientist/heal3
-FSC_HEAL6 female_scientist/heal4
-FSC_HEAL7 female_scientist/heal5
+FS_HEAL0 fsci/heal1
+FS_HEAL1 fsci/heal2
+FS_HEAL2 fsci/youneedmedic, letstrythis
+FS_HEAL3 fsci/youlookbad, holdstill
+FS_HEAL4 fsci/youwounded, letstrythis
+FS_HEAL5 fsci/heal3
+FS_HEAL6 fsci/heal4
+FS_HEAL7 fsci/heal5
 
-FSC_PLFEAR0 female_scientist/whatyoudoing
-FSC_PLFEAR1 female_scientist/canttakemore
-FSC_PLFEAR2 female_scientist/madness
-FSC_PLFEAR3 female_scientist/noplease
-FSC_PLFEAR4 female_scientist/getoutofhere
-FSC_PLFEAR5 female_scientist/sorryimleaving
+FS_PLFEAR0 fsci/whatyoudoing
+FS_PLFEAR1 fsci/canttakemore
+FS_PLFEAR2 fsci/madness
+FS_PLFEAR3 fsci/noplease
+FS_PLFEAR4 fsci/getoutofhere
+FS_PLFEAR5 fsci/sorryimleaving
 
-FSC_FEAR0 female_scientist/nooo
-FSC_FEAR1 female_scientist/startle2
-FSC_FEAR2 female_scientist/startle1 nooo
-FSC_FEAR3 female_scientist/dontwantdie
-FSC_FEAR4 female_scientist/getoutalive
-FSC_FEAR5 female_scientist/startle3
-FSC_FEAR6 female_scientist/startle4
-FSC_FEAR7 female_scientist/startle5
-FSC_FEAR8 female_scientist/startle6
-FSC_FEAR9 female_scientist/startle7
-FSC_FEAR10 female_scientist/startle8
-FSC_FEAR11 female_scientist/startle9
-FSC_FEAR12 female_scientist/startle1
+FS_FEAR0 fsci/nooo
+FS_FEAR1 fsci/startle2
+FS_FEAR2 fsci/startle1 nooo
+FS_FEAR3 fsci/dontwantdie
+FS_FEAR4 fsci/getoutalive
+FS_FEAR5 fsci/startle3
+FS_FEAR6 fsci/startle4
+FS_FEAR7 fsci/startle5
+FS_FEAR8 fsci/startle6
+FS_FEAR9 fsci/startle7
+FS_FEAR10 fsci/startle8
+FS_FEAR11 fsci/startle9
+FS_FEAR12 fsci/startle1
 
-FSC_SCREAM0 female_scientist/sci_fear1
-FSC_SCREAM1 female_scientist/sci_fear2
-FSC_SCREAM2 female_scientist/sci_fear3
-FSC_SCREAM3 female_scientist/sci_fear4
-FSC_SCREAM4 female_scientist/sci_fear5
-FSC_SCREAM5 female_scientist/sci_fear6
-FSC_SCREAM6 female_scientist/sci_fear7
-FSC_SCREAM7 female_scientist/sci_fear8
-FSC_SCREAM8 female_scientist/sci_fear9
-FSC_SCREAM9 female_scientist/sci_fear10
-FSC_SCREAM10 female_scientist/sci_fear11
-FSC_SCREAM11 female_scientist/sci_fear12
-FSC_SCREAM12 female_scientist/sci_fear13
-FSC_SCREAM13 female_scientist/sci_fear14
-FSC_SCREAM14 female_scientist/sci_fear15
+FS_SCREAM0 fsci/sci_fear1
+FS_SCREAM1 fsci/sci_fear2
+FS_SCREAM2 fsci/sci_fear3
+FS_SCREAM3 fsci/sci_fear4
+FS_SCREAM4 fsci/sci_fear5
+FS_SCREAM5 fsci/sci_fear6
+FS_SCREAM6 fsci/sci_fear7
+FS_SCREAM7 fsci/sci_fear8
+FS_SCREAM8 fsci/sci_fear9
+FS_SCREAM9 fsci/sci_fear10
+FS_SCREAM10 fsci/sci_fear11
+FS_SCREAM11 fsci/sci_fear12
+FS_SCREAM12 fsci/sci_fear13
+FS_SCREAM13 fsci/sci_fear14
+FS_SCREAM14 fsci/sci_fear15
 
-FSC_SCARED0 female_scientist/whatyoudoing
-FSC_SCARED1 female_scientist/stopattacking
-FSC_SCARED2 female_scientist/youinsane
+FS_SCARED0 fsci/whatyoudoing
+FS_SCARED1 fsci/stopattacking
+FS_SCARED2 fsci/youinsane
 
 // predisaster scientist
 
-FSC_PHELLO0 female_scientist/hellofreeman
-FSC_PHELLO1 female_scientist/greetings2
-FSC_PHELLO2 female_scientist/goodtoseeyou
-FSC_PHELLO3 female_scientist/greetings
-FSC_PHELLO4 female_scientist/hello
-FSC_PHELLO5 female_scientist/hellothere
-FSC_PHELLO6 female_scientist/freeman
+FS_PHELLO0 fsci/hellofreeman
+FS_PHELLO1 fsci/greetings2
+FS_PHELLO2 fsci/goodtoseeyou
+FS_PHELLO3 fsci/greetings
+FS_PHELLO4 fsci/hello
+FS_PHELLO5 fsci/hellothere
+FS_PHELLO6 fsci/freeman
 
-FSC_PQUEST0 female_scientist/beverage
-FSC_PQUEST1 female_scientist/statusreport
-FSC_PQUEST2 female_scientist/tunnelcalc
-FSC_PQUEST3 female_scientist/shakeunification
-FSC_PQUEST4 female_scientist/correcttheory
-FSC_PQUEST5 female_scientist/analysis
-FSC_PQUEST6 female_scientist/purereadings
-FSC_PQUEST7 female_scientist/newsample
-FSC_PQUEST8 female_scientist/perfectday
-FSC_PQUEST9 female_scientist/cascade
-FSC_PQUEST10 female_scientist/delayagain
-FSC_PQUEST11 female_scientist/softethics
-FSC_PQUEST12 female_scientist/tunedtoday
-FSC_PQUEST13 female_scientist/donuteater
-FSC_PQUEST14 female_scientist/seencup
-FSC_PQUEST15 female_scientist/hungryyet
-FSC_PQUEST16 female_scientist/recalculate
-FSC_PQUEST17 female_scientist/checkatten
+FS_PQUEST0 fsci/beverage
+FS_PQUEST1 fsci/statusreport
+FS_PQUEST2 fsci/tunnelcalc
+FS_PQUEST3 fsci/shakeunification
+FS_PQUEST4 fsci/correcttheory
+FS_PQUEST5 fsci/analysis
+FS_PQUEST6 fsci/purereadings
+FS_PQUEST7 fsci/newsample
+FS_PQUEST8 fsci/perfectday
+FS_PQUEST9 fsci/cascade
+FS_PQUEST10 fsci/delayagain
+FS_PQUEST11 fsci/softethics
+FS_PQUEST12 fsci/tunedtoday
+FS_PQUEST13 fsci/donuteater
+FS_PQUEST14 fsci/seencup
+FS_PQUEST15 fsci/hungryyet
+FS_PQUEST16 fsci/recalculate
+FS_PQUEST17 fsci/checkatten
 
-FSC_PIDLE0 female_scientist/hideglasses
-FSC_PIDLE1 female_scientist/weartie
-FSC_PIDLE2 female_scientist/runtest
-FSC_PIDLE3 female_scientist/limitsok
-FSC_PIDLE4 female_scientist/asexpected
-FSC_PIDLE5 female_scientist/thatsodd
-FSC_PIDLE6 female_scientist/allnominal
-FSC_PIDLE7 female_scientist/shutdownchart
-FSC_PIDLE8 female_scientist/reportflux
-FSC_PIDLE9 female_scientist/simulation
-FSC_PIDLE10 female_scientist/hopenominal
+FS_PIDLE0 fsci/hideglasses
+FS_PIDLE1 fsci/weartie
+FS_PIDLE2 fsci/runtest
+FS_PIDLE3 fsci/limitsok
+FS_PIDLE4 fsci/asexpected
+FS_PIDLE5 fsci/thatsodd
+FS_PIDLE6 fsci/allnominal
+FS_PIDLE7 fsci/shutdownchart
+FS_PIDLE8 fsci/reportflux
+FS_PIDLE9 fsci/simulation
+FS_PIDLE10 fsci/hopenominal
 
 //If you use Scientists in Hazard Course
-FSC_HAZ_OK0 holo/tr_sci_use
+FS_HAZ_OK0 holo/tr_sci_use
 
 //If you unuse Scientists in Hazard Course
-FSC_HAZ_WAIT0 holo/tr_sci_unuse
+FS_HAZ_WAIT0 holo/tr_sci_unuse
 
 //Scientists in Hazard Course
-FSC_GOODWORK holo/tr_sci_goodwork
-FSC_HARDLYNOTICE holo/tr_sci_hardlynoticed
-FSC_NEXTSTATION holo/tr_sci_nextstation
+FS_GOODWORK holo/tr_sci_goodwork
+FS_HARDLYNOTICE holo/tr_sci_hardlynoticed
+FS_NEXTSTATION holo/tr_sci_nextstation
 
 //If you use Scientists before the disaster
 
-FSC_POK0 female_scientist/sci_alone
-FSC_POK1 female_scientist/sci_bother
-FSC_POK2 female_scientist/sci_busy
-FSC_POK3 female_scientist/sci_aftertest
-FSC_POK4 female_scientist/sci_somewhere
+FS_POK0 fsci/sci_alone
+FS_POK1 fsci/sci_bother
+FS_POK2 fsci/sci_busy
+FS_POK3 fsci/sci_aftertest
+FS_POK4 fsci/sci_somewhere
 
 //narrative audio
 
-FSC_1MUMBLE female_scientist/c1a0_sci_mumble
+FS_1MUMBLE fsci/c1a0_sci_mumble
 
-FSC_DISA female_scientist/c1a0_sci_disa
-FSC_DIS1A female_scientist/c1a0_sci_dis1a
-FSC_DIS1B female_scientist/c1a0_sci_dis1b
-FSC_DIS1C female_scientist/c1a0_sci_dis1c
-FSC_DIS1D female_scientist/c1a0_sci_dis1d
+FS_DISA fsci/c1a0_sci_disa
+FS_DIS1A fsci/c1a0_sci_dis1a
+FS_DIS1B fsci/c1a0_sci_dis1b
+FS_DIS1C fsci/c1a0_sci_dis1c
+FS_DIS1D fsci/c1a0_sci_dis1d
 
-FSC_DIS2A female_scientist/c1a0_sci_dis2a
-FSC_DIS3A female_scientist/c1a0_sci_dis3a
-FSC_DIS4A female_scientist/c1a0_sci_dis4a
-FSC_DIS5A female_scientist/c1a0_sci_dis5a
-FSC_DIS6A female_scientist/c1a0_sci_dis6a
-FSC_DIS7A female_scientist/c1a0_sci_dis7a
-FSC_DIS8A female_scientist/c1a0_sci_dis8a
-FSC_DIS9A female_scientist/c1a0_sci_dis9a
-FSC_DIS10A female_scientist/c1a0_sci_dis10a
-FSC_DIS11A female_scientist/c1a0_sci_dis11a
-FSC_DIS12A female_scientist/c1a0_sci_dis12a
-FSC_DIS13A female_scientist/c1a0_sci_dis13a
-FSC_DIS14A female_scientist/c1a0_sci_dis14a
-FSC_DIS15A female_scientist/c1a0_sci_dis15a
-FSC_DIS16A female_scientist/c1a0_sci_dis16a
-FSC_DIS17A female_scientist/c1a0_sci_dis17a
+FS_DIS2A fsci/c1a0_sci_dis2a
+FS_DIS3A fsci/c1a0_sci_dis3a
+FS_DIS4A fsci/c1a0_sci_dis4a
+FS_DIS5A fsci/c1a0_sci_dis5a
+FS_DIS6A fsci/c1a0_sci_dis6a
+FS_DIS7A fsci/c1a0_sci_dis7a
+FS_DIS8A fsci/c1a0_sci_dis8a
+FS_DIS9A fsci/c1a0_sci_dis9a
+FS_DIS10A fsci/c1a0_sci_dis10a
+FS_DIS11A fsci/c1a0_sci_dis11a
+FS_DIS12A fsci/c1a0_sci_dis12a
+FS_DIS13A fsci/c1a0_sci_dis13a
+FS_DIS14A fsci/c1a0_sci_dis14a
+FS_DIS15A fsci/c1a0_sci_dis15a
+FS_DIS16A fsci/c1a0_sci_dis16a
+FS_DIS17A fsci/c1a0_sci_dis17a
 
-FSC_GETAWAY female_scientist/c1a0_sci_getaway
-FSC_GMORN female_scientist/c1a0_sci_gm
-FSC_BIGDAY female_scientist/c1a0_sci_bigday
-FSC_SAMPLE female_scientist/c1a0_sci_samp
-FSC_NOTTHAT female_scientist/c1a0_sci_desk
+FS_GETAWAY fsci/c1a0_sci_getaway
+FS_GMORN fsci/c1a0_sci_gm
+FS_BIGDAY fsci/c1a0_sci_bigday
+FS_SAMPLE fsci/c1a0_sci_samp
+FS_NOTTHAT fsci/c1a0_sci_desk
 
-FSC_LOCK1A female_scientist/c1a0_sci_lock1a
-FSC_LOCK2A female_scientist/c1a0_sci_lock2a
-FSC_LOCK3A female_scientist/c1a0_sci_lock3a
-FSC_LOCK4A female_scientist/c1a0_sci_lock4a
-FSC_LOCK5A female_scientist/c1a0_sci_lock5a
-FSC_LOCK6A female_scientist/c1a0_sci_lock6a
-FSC_LOCK7A female_scientist/c1a0_sci_lock7a
-FSC_LOCK8A female_scientist/c1a0_sci_lock8a
-FSC_LOCK9A female_scientist/c1a0_sci_lock9a
+FS_LOCK1A fsci/c1a0_sci_lock1a
+FS_LOCK2A fsci/c1a0_sci_lock2a
+FS_LOCK3A fsci/c1a0_sci_lock3a
+FS_LOCK4A fsci/c1a0_sci_lock4a
+FS_LOCK5A fsci/c1a0_sci_lock5a
+FS_LOCK6A fsci/c1a0_sci_lock6a
+FS_LOCK7A fsci/c1a0_sci_lock7a
+FS_LOCK8A fsci/c1a0_sci_lock8a
+FS_LOCK9A fsci/c1a0_sci_lock9a
 
-FSC_CRIT1A female_scientist/c1a0_sci_crit1a
-FSC_CRIT2A female_scientist/c1a0_sci_crit2a
-FSC_CRIT3A female_scientist/c1a0_sci_crit3a
+FS_CRIT1A fsci/c1a0_sci_crit1a
+FS_CRIT2A fsci/c1a0_sci_crit2a
+FS_CRIT3A fsci/c1a0_sci_crit3a
 
-FSC_CTRL1A female_scientist/c1a0_sci_ctrl1a
-FSC_CTRL2A female_scientist/c1a0_sci_ctrl2a
-FSC_CTRL3A female_scientist/c1a0_sci_ctrl3a
-FSC_CTRL4A female_scientist/c1a0_sci_ctrl4a
+FS_CTRL1A fsci/c1a0_sci_ctrl1a
+FS_CTRL2A fsci/c1a0_sci_ctrl2a
+FS_CTRL3A fsci/c1a0_sci_ctrl3a
+FS_CTRL4A fsci/c1a0_sci_ctrl4a
 
-FSC_CONSOLE1A female_scientist/c1a1_sci_1scan
-FSC_CONSOLE2A female_scientist/c1a1_sci_2scan
-FSC_CONSOLE3A female_scientist/c1a1_sci_3scan
-FSC_CONSOLE4A female_scientist/c1a1_sci_4scan
-FSC_CONSOLE5A female_scientist/c1a1_sci_5scan
-FSC_CONSOLERPT female_scientist/c1a1_sci_scanrpt
+FS_CONSOLE1A fsci/c1a1_sci_1scan
+FS_CONSOLE2A fsci/c1a1_sci_2scan
+FS_CONSOLE3A fsci/c1a1_sci_3scan
+FS_CONSOLE4A fsci/c1a1_sci_4scan
+FS_CONSOLE5A fsci/c1a1_sci_5scan
+FS_CONSOLERPT fsci/c1a1_sci_scanrpt
 
 //c1a2scripts
 
-FSC_ZOMBIE1A female_scientist/c1a2_sci_1zomb
-FSC_ZOMBIE3A female_scientist/c1a2_sci_3zomb
-FSC_ZOMBIE5A female_scientist/c1a2_sci_5zomb
-FSC_ZOMBIE6A female_scientist/c1a2_sci_6zomb
+FS_ZOMBIE1A fsci/c1a2_sci_1zomb
+FS_ZOMBIE3A fsci/c1a2_sci_3zomb
+FS_ZOMBIE5A fsci/c1a2_sci_5zomb
+FS_ZOMBIE6A fsci/c1a2_sci_6zomb
 
-FSC_DANGLING female_scientist/c1a2_sci_dangling
-FSC_DARKROOM female_scientist/c1a2_sci_darkroom
-FSC_ELEVATOR female_scientist/c1a2_sci_elevator
-FSC_LOUNGE female_scientist/c1a2_sci_lounge
-FSC_TRANSMISSION female_scientist/c1a2_sci_transm
+FS_DANGLING fsci/c1a2_sci_dangling
+FS_DARKROOM fsci/c1a2_sci_darkroom
+FS_ELEVATOR fsci/c1a2_sci_elevator
+FS_LOUNGE fsci/c1a2_sci_lounge
+FS_TRANSMISSION fsci/c1a2_sci_transm
 
 //c1a3 scripts
-FSC_1MAN female_scientist/c1a3_sci_1man
-FSC_ATLAST female_scientist/c1a3_sci_atlast
-FSC_RESCUED female_scientist/c1a3_sci_rescued
-FSC_SILO1A female_scientist/c1a3_sci_silo1a
-FSC_SILO2A female_scientist/c1a3_sci_silo2a
-FSC_TEAM female_scientist/c1a3_sci_team
-FSC_THANKGOD female_scientist/c1a3_sci_thankgod
+FS_1MAN fsci/c1a3_sci_1man
+FS_ATLAST fsci/c1a3_sci_atlast
+FS_RESCUED fsci/c1a3_sci_rescued
+FS_SILO1A fsci/c1a3_sci_silo1a
+FS_SILO2A fsci/c1a3_sci_silo2a
+FS_TEAM fsci/c1a3_sci_team
+FS_THANKGOD fsci/c1a3_sci_thankgod
 
 //c1a4 scripts
-FSC_TRAINEND female_scientist/c1a4_sci_trainend
-FSC_ROCKET female_scientist/c1a4_sci_rocket
-FSC_BLIND female_scientist/c1a4_sci_blind
-FSC_POWEROFF female_scientist/c1a4_sci_pwroff
-FSC_POWERON female_scientist/c1a4_sci_pwr
-FSC_GENER female_scientist/c1a4_sci_gener
-FSC_TRUST female_scientist/c1a4_sci_trust
-FSC_TENT female_scientist/c1a4_sci_tent
+FS_TRAINEND fsci/c1a4_sci_trainend
+FS_ROCKET fsci/c1a4_sci_rocket
+FS_BLIND fsci/c1a4_sci_blind
+FS_POWEROFF fsci/c1a4_sci_pwroff
+FS_POWERON fsci/c1a4_sci_pwr
+FS_GENER fsci/c1a4_sci_gener
+FS_TRUST fsci/c1a4_sci_trust
+FS_TENT fsci/c1a4_sci_tent
 
 //c2a3 scripts
-FSC_ICKY female_scientist/c2a3_sci_icky
-FSC_TRACK female_scientist/c2a3_sci_track
+FS_ICKY fsci/c2a3_sci_icky
+FS_TRACK fsci/c2a3_sci_track
 
 //c2a4 scripts
-FSC_ARG1A female_scientist/c2a4_sci_arg2a
-FSC_ARG2A female_scientist/c2a4_sci_arg4a
+FS_ARG1A fsci/c2a4_sci_arg2a
+FS_ARG2A fsci/c2a4_sci_arg4a
 
-FSC_TAU2A female_scientist/c2a4_sci_2tau
-FSC_TAU4A female_scientist/c2a4_sci_4tau
+FS_TAU2A fsci/c2a4_sci_2tau
+FS_TAU4A fsci/c2a4_sci_4tau
 
-FSC_1PSURG female_scientist/c2a4_sci_scanner
-FSC_2PSURG female_scientist/c2a4_sci_sugicaloff
-FSC_3PSURG female_scientist/c2a4_sci_surgury
-FSC_ALLDIE female_scientist/c2a4_sci_alldie
-FSC_LETOUT female_scientist/c2a4_sci_letout
+FS_1PSURG fsci/c2a4_sci_scanner
+FS_2PSURG fsci/c2a4_sci_sugicaloff
+FS_3PSURG fsci/c2a4_sci_surgury
+FS_ALLDIE fsci/c2a4_sci_alldie
+FS_LETOUT fsci/c2a4_sci_letout
 
 //c2a5 scripts
-FSC_BOOBIE female_scientist/c2a5_sci_boobie
-FSC_LEBUZ female_scientist/c2a5_sci_lebuz
+FS_BOOBIE fsci/c2a5_sci_boobie
+FS_LEBUZ fsci/c2a5_sci_lebuz
 
 //c3a2 scripts
 
-FSC_STRAWS female_scientist/c3a2_sci_straws
-FSC_GLUON2A female_scientist/c3a2_sci_2glu
-FSC_FLOOD female_scientist/c3a2_sci_flood
-FSC_LINGER female_scientist/c3a2_sci_linger
-FSC_SURVEY1A female_scientist/c3a2_sci_1surv
-FSC_SURVEY3A female_scientist/c3a2_sci_3surv
-FSC_SURVEY5A female_scientist/c3a2_sci_5surv
-FSC_SURVEY7A female_scientist/c3a2_sci_7surv
-FSC_LJUMP female_scientist/c3a2_sci_ljump
-FSC_UPHERE female_scientist/c3a2_sci_uphere
-FSC_PORTAL female_scientist/c3a2_sci_portal
-FSC_PORTOPEN female_scientist/c3a2_sci_portopen
-FSC_POSITION female_scientist/c3a2_sci_position
-FSC_FOREVER female_scientist/c3a2_sci_forever
-FSC_NOTYET female_scientist/c3a2_sci_notyet
-FSC_FOOL female_scientist/c3a2_sci_fool
+FS_STRAWS fsci/c3a2_sci_straws
+FS_GLUON2A fsci/c3a2_sci_2glu
+FS_FLOOD fsci/c3a2_sci_flood
+FS_LINGER fsci/c3a2_sci_linger
+FS_SURVEY1A fsci/c3a2_sci_1surv
+FS_SURVEY3A fsci/c3a2_sci_3surv
+FS_SURVEY5A fsci/c3a2_sci_5surv
+FS_SURVEY7A fsci/c3a2_sci_7surv
+FS_LJUMP fsci/c3a2_sci_ljump
+FS_UPHERE fsci/c3a2_sci_uphere
+FS_PORTAL fsci/c3a2_sci_portal
+FS_PORTOPEN fsci/c3a2_sci_portopen
+FS_POSITION fsci/c3a2_sci_position
+FS_FOREVER fsci/c3a2_sci_forever
+FS_NOTYET fsci/c3a2_sci_notyet
+FS_FOOL fsci/c3a2_sci_fool
 
 //miscellaneous useful scripts
-FSC_LETYOUIN female_scientist/letyouin
-FSC_OVERHERE female_scientist/overhere
+FS_LETYOUIN fsci/letyouin
+FS_OVERHERE fsci/overhere
