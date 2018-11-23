@@ -1412,7 +1412,20 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 	{
 		char name[32];
 		if (SENTENCEG_Lookup(sample, name) >= 0)
-				EMIT_SOUND_DYN2(entity, channel, name, volume, attenuation, flags, pitch);
+		{
+			// Intercept and use female audio files for female NPCs
+			std::string sname{ name };
+			if (CBaseEntity::Instance(entity)->IsFemaleNPC())
+			{
+				// Currently only scientists are supported
+				if (sname.find("scientist/") == 0)
+				{
+					sname = "female_" + sname;
+				}
+			}
+
+			EMIT_SOUND_DYN2(entity, channel, sname.data(), volume, attenuation, flags, pitch);
+		}
 		else
 			ALERT( at_aiconsole, "Unable to find %s in sentences.txt\n", sample );
 	}

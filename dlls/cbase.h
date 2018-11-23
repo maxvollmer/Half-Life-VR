@@ -309,7 +309,7 @@ public:
 		if ( !pent )
 			pent = ENT(0);
 		CBaseEntity *pEnt = (CBaseEntity *)GET_PRIVATE(pent); 
-		return pEnt; 
+		return pEnt;
 	}
 
 	static CBaseEntity *Instance( entvars_t *pev ) { return Instance( ENT( pev ) ); }
@@ -408,6 +408,10 @@ public:
 
 	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
 	int m_fireState;
+
+
+	// For easy detection of female NPCs to change audio files in sound.cpp - Max Vollmer, 2018-11-23
+	virtual bool		IsFemaleNPC() { return false; }
 };
 
 

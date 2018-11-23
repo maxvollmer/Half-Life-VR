@@ -1,0 +1,3 @@
+Female scientist audio files have been generated using MorphVox Pro with the Batch Converter Plugin, postprocessed using Auphonic, and then converted to a Half-Life friendly wav format with GoldWave. They are based on the original scientist audio files for Half-Life by Valve. The original files do not ship with the Half-Life SDK and are therefore not part of the Half-Life SDK EULA.
+
+UNDER NO CIRCUMSTANCES ARE YOU ALLOWED TO USE THESE FILES IN ANY WAY EXCEPT FOR THE PURPOSE OF PLAYING THIS MOD. DO NOT REDISTRIBUTE OR SHARE THESE FILES WITH ANYONE.
