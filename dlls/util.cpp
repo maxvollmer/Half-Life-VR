@@ -1399,7 +1399,7 @@ bool UTIL_BBoxIntersectsBBox(const Vector &absmins1, const Vector &absmaxs1, con
 bool UTIL_PointInsideRotatedBBox(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs, const Vector & checkVec)
 {
 	Vector rotatedLocalCheckVec = checkVec - bboxCenter;
-	gVRPhysicsHelper.RotateVector(rotatedLocalCheckVec, -bboxAngles, Vector(), true);
+	VRPhysicsHelper::Instance().RotateVector(rotatedLocalCheckVec, -bboxAngles, Vector(), true);
 	return UTIL_PointInsideBBox(rotatedLocalCheckVec, bboxMins, bboxMaxs);
 }
 
@@ -1429,8 +1429,8 @@ bool UTIL_RotatedBBoxIntersectsBBox(const Vector & bboxCenter, const Vector & bb
 		}
 		Vector rotatedBBoxMins = bboxMins;
 		Vector rotatedBBoxMaxs = bboxMaxs;
-		gVRPhysicsHelper.RotateVector(rotatedBBoxMins, bboxAngles, Vector{}, false);
-		gVRPhysicsHelper.RotateVector(rotatedBBoxMaxs, bboxAngles, Vector{}, false);
+		VRPhysicsHelper::Instance().RotateVector(rotatedBBoxMins, bboxAngles, Vector{}, false);
+		VRPhysicsHelper::Instance().RotateVector(rotatedBBoxMaxs, bboxAngles, Vector{}, false);
 		Vector rotatedBBoxAbsMinmax[2] = { bboxCenter + rotatedBBoxMins, bboxCenter + rotatedBBoxMaxs };
 		for (int x = 0; x < 2; ++x)
 		{

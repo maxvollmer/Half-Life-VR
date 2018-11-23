@@ -204,6 +204,12 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "D:\\Work\\HL\\Half-Life VR\\Debug\\opengl32.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\opengl32.dll"
+copy "D:\\Work\\HL\\Half-Life VR\\Debug\\HLVRLauncher.exe" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\HLVRLauncher.exe"
+copy "D:\\Work\\HL\\Half-Life VR\\cl_dll\\Debug\\client.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\cl_dlls\\client.dll"
+copy "D:\\Work\\HL\\Half-Life VR\\dlls\\Debug\\hl.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\dlls\\vr.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\game_shared\voice_gamemgr.cpp" />
@@ -255,7 +261,6 @@
     <ClCompile Include="houndeye.cpp" />
     <ClCompile Include="h_ai.cpp" />
     <ClCompile Include="h_battery.cpp" />
-    <ClCompile Include="h_cine.cpp" />
     <ClCompile Include="h_cycler.cpp" />
     <ClCompile Include="h_export.cpp" />
     <ClCompile Include="ichthyosaur.cpp" />

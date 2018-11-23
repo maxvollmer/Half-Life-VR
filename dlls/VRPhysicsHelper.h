@@ -24,6 +24,10 @@ public:
 	VRPhysicsHelper();
 	~VRPhysicsHelper();
 
+	static void CreateInstance();
+	static void DestroyInstance();
+	static VRPhysicsHelper& Instance();
+
 	// Called by engine every frame
 	inline void StartFrame()
 	{
@@ -40,7 +44,6 @@ public:
 	void TraceLine(const Vector &vecStart, const Vector &vecEnd, edict_t* pentIgnore, TraceResult *ptr);
 
 private:
-	//reactphysics3d::CollisionWorld * m_collisionWorld = nullptr;
 	reactphysics3d::DynamicsWorld * m_dynamicsWorld = nullptr;
 
 	std::vector<struct reactphysics3d::Vector3> m_vertices;
@@ -67,6 +70,7 @@ private:
 	bool GetPhysicsMapDataFromFile(const std::string& physicsMapDataFilePath);
 	void StorePhysicsMapDataToFile(const std::string& physicsMapDataFilePath);
 	void GetPhysicsMapDataFromModel();
-};
 
-extern VRPhysicsHelper gVRPhysicsHelper;
+
+	static VRPhysicsHelper* m_instance;
+};

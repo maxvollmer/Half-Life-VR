@@ -24,7 +24,8 @@ extern struct playermove_s *PM_GetPlayerMove(void);
 
 #include <chrono>
 
-constexpr const unsigned int HLVR_MAP_PHYSDATA_FILE_MAGIC = 'HLVR';
+constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_MAGIC = 'HLVR';
+constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_VERSION = 100;
 
 // Stuff needed to extract brush models
 constexpr const unsigned int ENGINE_MODEL_ARRAY_SIZE = 1024;
@@ -449,24 +450,33 @@ void TriangulateGapsBetweenCoplanarFaces(const TranslatedFace & faceA, const Tra
 	std::vector<Vector> mergedVertices;
 	if (faceA.GetGapVertices(faceB, mergedVertices, planeVertexMetaData))
 	{
-		// Now we simply triangulate mergedVertices, which is either 3 or 4 vertices in size
-		int indexoffset = vertices.size();
-		for (size_t i = 0; i < mergedVertices.size(); ++i)
-		{
-			vertices.push_back(HLVecToRP3DVec(mergedVertices[i]));
-		}
+		// Get rid of duplicate vertices
+		mergedVertices.erase(std::unique(mergedVertices.begin(), mergedVertices.end()), mergedVertices.end());
 
-		// a-b-c
-		indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 1); indices.push_back(indexoffset + 2);
-		// a-c-b
-		indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 1);
-
-		if (mergedVertices.size() == 4)
+		// Only add vertices if we have at least 3 (for one triangle)
+		if (mergedVertices.size() >= 3)
 		{
-			// a-c-d
-			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 3);
-			// a-d-c
-			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 3); indices.push_back(indexoffset + 2);
+			// Add vertices
+			int indexoffset = vertices.size();
+			for (size_t i = 0; i < mergedVertices.size(); ++i)
+			{
+				vertices.push_back(HLVecToRP3DVec(mergedVertices[i]));
+			}
+
+			// Triangulate vertices
+
+			// a-b-c
+			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 1); indices.push_back(indexoffset + 2);
+			// a-c-b
+			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 1);
+
+			if (mergedVertices.size() == 4)
+			{
+				// a-c-d
+				indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 3);
+				// a-d-c
+				indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 3); indices.push_back(indexoffset + 2);
+			}
 		}
 	}
 }
@@ -481,18 +491,31 @@ void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMa
 		{
 			const TranslatedFace & faceA = faces[faceIndexA];
 
-			// First do normal triangulation of all surfaces
-			int indexoffset = vertices.size();
+			// Get face vertices
+			std::vector<Vector3> faceVertices;
 			for (size_t i = 0; i < faceA.GetVertices().size(); ++i)
 			{
-				vertices.push_back(HLVecToRP3DVec(faceA.GetVertices()[i]));
-				if (i < faceA.GetVertices().size() - 2)
-				{
-					indices.push_back(indexoffset + i + 2);
-					indices.push_back(indexoffset + i + 1);
-					indices.push_back(indexoffset);
-				}
+				faceVertices.push_back(HLVecToRP3DVec(faceA.GetVertices()[i]));
 			}
+
+			// Get rid of duplicate vertices
+			faceVertices.erase(std::unique(faceVertices.begin(), faceVertices.end()), faceVertices.end());
+
+			// Skip invalid face
+			if (faceVertices.size() < 3)
+				continue;
+
+			// Triangulate
+			int indexoffset = vertices.size();
+			for (size_t i = 0; i < faceVertices.size() - 2; ++i)
+			{
+				indices.push_back(indexoffset + i + 2);
+				indices.push_back(indexoffset + i + 1);
+				indices.push_back(indexoffset);
+			}
+
+			// Add vertices
+			vertices.insert(vertices.end(), faceVertices.begin(), faceVertices.end());
 
 			// Then do triangulation of gaps between faces that are too small for a player to fit through
 			for (size_t faceIndexB = faceIndexA + 1; faceIndexB < faces.size(); ++faceIndexB)
@@ -530,15 +553,29 @@ void RaycastPotentialVerticeGaps(RigidBody * dynamicMap, const Vector3 & checkVe
 		&& dynamicMap->raycast({ checkVertexAfterInPhysSpace, checkVertexAfterInPhysSpace + checkDirInPhysSpace }, raycastInfo2)
 		&& raycastInfo2.hitFraction > 0.f)
 	{
-		size_t indexoffset = vertexIndexOffset + vertices.size();
-		vertices.push_back(checkVertexInPhysSpace + correctionalOffsetInPhysSpace);
-		vertices.push_back(checkVertexAfterInPhysSpace - correctionalOffsetInPhysSpace);
-		vertices.push_back(raycastInfo2.worldPoint - correctionalOffsetInPhysSpace);
-		vertices.push_back(raycastInfo1.worldPoint + correctionalOffsetInPhysSpace);
-		indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 1); indices.push_back(indexoffset + 2);
-		indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 1);
-		indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 3);
-		indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 3); indices.push_back(indexoffset + 2);
+		// Get gap vertices
+		std::vector<Vector3> gapVertices;
+		gapVertices.push_back(checkVertexInPhysSpace + correctionalOffsetInPhysSpace);
+		gapVertices.push_back(checkVertexAfterInPhysSpace - correctionalOffsetInPhysSpace);
+		gapVertices.push_back(raycastInfo2.worldPoint - correctionalOffsetInPhysSpace);
+		gapVertices.push_back(raycastInfo1.worldPoint + correctionalOffsetInPhysSpace);
+
+		// Remove duplicates
+		gapVertices.erase(std::unique(gapVertices.begin(), gapVertices.end()), gapVertices.end());
+
+		// Add vertices if at least 3
+		if (gapVertices.size() >= 3)
+		{
+			size_t indexoffset = vertexIndexOffset + vertices.size();
+			vertices.insert(vertices.end(), gapVertices.begin(), gapVertices.end());
+			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 1); indices.push_back(indexoffset + 2);
+			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 1);
+			if (gapVertices.size() == 4)
+			{
+				indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 3);
+				indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 3); indices.push_back(indexoffset + 2);
+			}
+		}
 	}
 }
 
@@ -597,7 +634,8 @@ VRPhysicsHelper::VRPhysicsHelper()
 
 VRPhysicsHelper::~VRPhysicsHelper()
 {
-	//if (m_collisionWorld) delete m_collisionWorld;
+	DeletePhysicsMapData();
+
 	if (m_dynamicsWorld) delete m_dynamicsWorld;
 	if (m_sphereShape) delete m_sphereShape;
 
@@ -722,13 +760,11 @@ void VRPhysicsHelper::InitPhysicsWorld()
 {
 	if (m_dynamicsWorld == nullptr)
 	{
-		//m_collisionWorld = new CollisionWorld{};
 		m_dynamicsWorld = new DynamicsWorld{ Vector3{ 0, 0, 0 } };
 
 		m_dynamicsWorld->setNbIterationsVelocitySolver(16);
 		m_dynamicsWorld->setNbIterationsPositionSolver(16);
 
-		//m_dynamicsWorld->setSleepAngularVelocity(9999);
 		m_dynamicsWorld->setTimeBeforeSleep({ PHYSICS_STEP_TIME * 1.5f });
 
 		m_dynamicMap = m_dynamicsWorld->createRigidBody(rp3d::Transform::identity());
@@ -785,7 +821,7 @@ void VRPhysicsHelper::CreateMapShapeFromCurrentVerticesAndTriangles()
 
 	m_triangleArray = new TriangleVertexArray(
 		m_vertices.size(), m_vertices.data(), sizeof(Vector),
-		m_indices.size() / 3, m_indices.data(), sizeof(int),
+		m_indices.size() / 3, m_indices.data(), sizeof(int) * 3,
 		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 	m_triangleMesh = new TriangleMesh;
@@ -852,18 +888,23 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 		std::ifstream physicsMapDataFileStream{ physicsMapDataFilePath, std::ios_base::in | std::ios_base::binary };
 		if (!physicsMapDataFileStream.fail() && physicsMapDataFileStream.good())
 		{
-			unsigned int magic = 0;
-			unsigned long long int hash = 0;
-			unsigned int verticesCount = 0;
-			unsigned int indicesCount = 0;
+			uint32_t magic = 0;
+			uint32_t version = 0;
+			uint64_t hash = 0;
+			uint32_t verticesCount = 0;
+			uint32_t indicesCount = 0;
 
 			ReadBinaryData(physicsMapDataFileStream, magic);
+			ReadBinaryData(physicsMapDataFileStream, version);
 			ReadBinaryData(physicsMapDataFileStream, hash);
 			ReadBinaryData(physicsMapDataFileStream, verticesCount);
 			ReadBinaryData(physicsMapDataFileStream, indicesCount);
 
 			// TODO: hash is ignored for now
-			if (magic == HLVR_MAP_PHYSDATA_FILE_MAGIC /*&& hash == TODO*/ && verticesCount > 0 && indicesCount > 0)
+			if (magic == HLVR_MAP_PHYSDATA_FILE_MAGIC
+				&& version == HLVR_MAP_PHYSDATA_FILE_VERSION
+				/*&& hash == TODO*/
+				&& verticesCount > 0 && indicesCount > 0)
 			{
 				DeletePhysicsMapData();
 				m_vertices.clear();
@@ -925,12 +966,13 @@ void VRPhysicsHelper::StorePhysicsMapDataToFile(const std::string& physicsMapDat
 	std::ofstream physicsMapDataFileStream{ physicsMapDataFilePath, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary };
 	if (!physicsMapDataFileStream.fail())
 	{
-		const unsigned long long int hash = 1337; // TODO!
+		uint64_t hash = 1337; // TODO!
 
 		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_MAGIC);
+		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_VERSION);
 		WriteBinaryData(physicsMapDataFileStream, hash);
-		WriteBinaryData(physicsMapDataFileStream, static_cast<unsigned int>(m_vertices.size()));
-		WriteBinaryData(physicsMapDataFileStream, static_cast<unsigned int>(m_indices.size()));
+		WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(m_vertices.size()));
+		WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(m_indices.size()));
 
 		for (unsigned int i = 0; i < m_vertices.size(); ++i)
 		{
@@ -1089,4 +1131,23 @@ Vector VRPhysicsHelper::AngularVelocityToLinearVelocity(const Vector & avelocity
 	return rotatedPos - pos;
 }
 
-VRPhysicsHelper gVRPhysicsHelper;
+void VRPhysicsHelper::CreateInstance()
+{
+	assert(!m_instance);
+	m_instance = new VRPhysicsHelper();
+}
+
+void VRPhysicsHelper::DestroyInstance()
+{
+	assert(m_instance);
+	delete m_instance;
+	m_instance = nullptr;
+}
+
+VRPhysicsHelper& VRPhysicsHelper::Instance()
+{
+	assert(m_instance);
+	return *m_instance;
+}
+
+VRPhysicsHelper* VRPhysicsHelper::m_instance{ nullptr };

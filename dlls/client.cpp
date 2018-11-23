@@ -597,10 +597,14 @@ void ServerDeactivate( void )
 
 	// Peform any shutdown operations here...
 	//
+
+	VRPhysicsHelper::DestroyInstance();
 }
 
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
+	VRPhysicsHelper::CreateInstance();
+
 	int				i;
 	CBaseEntity		*pClass;
 
@@ -688,7 +692,7 @@ void ParmsChangeLevel( void )
 //
 void StartFrame( void )
 {
-	gVRPhysicsHelper.StartFrame();
+	VRPhysicsHelper::Instance().StartFrame();
 
 	if ( g_pGameRules )
 		g_pGameRules->Think();

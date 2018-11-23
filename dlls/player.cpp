@@ -2469,7 +2469,7 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 		// Add avelocity
 		if (pGroundEntity->pev->avelocity.Length() > 0.01f)
 		{
-			groundVelocity = groundVelocity + gVRPhysicsHelper.AngularVelocityToLinearVelocity(pGroundEntity->pev->avelocity, pev->origin - pGroundEntity->pev->origin);
+			groundVelocity = groundVelocity + VRPhysicsHelper::Instance().AngularVelocityToLinearVelocity(pGroundEntity->pev->avelocity, pev->origin - pGroundEntity->pev->origin);
 		}
 
 		// Don't slow down falling when moving downwards and player mins still inside ground entity
@@ -4800,7 +4800,7 @@ void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector& hmd
 
 	if (hmdPositionContent == CONTENTS_SOLID || hmdPositionContent == CONTENTS_SKY
 		|| hmdPredictPositionContent == CONTENTS_SOLID || hmdPredictPositionContent == CONTENTS_SKY
-		|| gVRPhysicsHelper.CheckIfLineIsBlocked(hmdPosition + hmdOffsetDelta, hmdPredictPosition))
+		|| VRPhysicsHelper::Instance().CheckIfLineIsBlocked(hmdPosition + hmdOffsetDelta, hmdPredictPosition))
 	{
 		//ALERT(at_console, "CONTENTS_SOLID\n");
 		// player put their head into a wall... we need to counteract
@@ -4896,7 +4896,7 @@ void CBasePlayer::UpdateVRLeftControllerPosition(const int timestamp, const bool
 
 	if (vr_isLeftControllerValid)
 	{
-		vr_teleporterBlocked = gVRPhysicsHelper.CheckIfLineIsBlocked(pev->origin + pev->view_ofs, GetClientOrigin() + vr_leftControllerOffset);
+		vr_teleporterBlocked = VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pev->origin + pev->view_ofs, GetClientOrigin() + vr_leftControllerOffset);
 	}
 	else
 	{
@@ -5689,7 +5689,7 @@ void CBasePlayer::UpdateVRTele()
 	UTIL_MakeAimVectorsPrivate(vr_leftControllerAngles, forward, NULL, NULL);
 
 	TraceResult tr;
-	gVRPhysicsHelper.TraceLine(vecPos, vecPos + forward * GetCurrentTeleLength(), edict(), &tr);
+	VRPhysicsHelper::Instance().TraceLine(vecPos, vecPos + forward * GetCurrentTeleLength(), edict(), &tr);
 
 	Vector beamEndPos = tr.vecEndPos;
 	Vector teleportDestination = tr.vecEndPos;
@@ -5916,7 +5916,7 @@ void CBasePlayer::EnableXenMoundParabolaAndUpdateTeleDestination(const Vector& b
 
 		// Now do a trace to see if we hit something!
 		TraceResult tr;
-		gVRPhysicsHelper.TraceLine(beamSegmentPos1, beamSegmentPos2, edict(), &tr);
+		VRPhysicsHelper::Instance().TraceLine(beamSegmentPos1, beamSegmentPos2, edict(), &tr);
 
 		if (tr.flFraction < 1.0f)
 		{

@@ -126,9 +126,6 @@
     <ClCompile Include="h_battery.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="h_cine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="h_cycler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -217,15 +214,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="player.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\pm_shared\pm_debug.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\pm_shared\pm_math.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\pm_shared\pm_shared.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="python.cpp">
@@ -319,6 +307,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VRPhysicsHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pm_shared\pm_debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pm_shared\pm_math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pm_shared\pm_shared.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
