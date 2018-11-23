@@ -92,6 +92,9 @@
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "D:\\Work\\HL\\Half-Life VR\\Debug\\HLVRLauncher.exe" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\HLVRLauncher.exe"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -118,6 +121,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "D:\\Work\\HL\\Half-Life VR\\Release\\HLVRLauncher.exe" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\HLVRLauncher.exe"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

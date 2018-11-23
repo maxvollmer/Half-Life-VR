@@ -95,6 +95,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>opengl_proxy.def</ModuleDefinitionFile>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "D:\\Work\\HL\\Half-Life VR\\Debug\\opengl32.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\opengl32.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -127,6 +130,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>opengl_proxy.def</ModuleDefinitionFile>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "D:\\Work\\HL\\Half-Life VR\\Release\\opengl32.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\opengl32.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

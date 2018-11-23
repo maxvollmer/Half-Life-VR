@@ -108,6 +108,10 @@
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "D:\\Work\\HL\\Half-Life VR\\cl_dll\\Debug\\client.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\cl_dlls\\client.dll"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -149,6 +153,10 @@
       <ImportLibrary>.\Release\client.lib</ImportLibrary>
       <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "D:\\Work\\HL\\Half-Life VR\\cl_dll\\Release\\client.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\cl_dlls\\client.dll"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\common\interface.cpp" />

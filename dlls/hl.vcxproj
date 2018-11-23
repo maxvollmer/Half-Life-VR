@@ -111,6 +111,10 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;reactphysics3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "D:\\Work\\HL\\Half-Life VR\\dlls\\Release\\hl.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\dlls\\vr.dll"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
     <ClCompile>
@@ -205,10 +209,7 @@
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "D:\\Work\\HL\\Half-Life VR\\Debug\\opengl32.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\opengl32.dll"
-copy "D:\\Work\\HL\\Half-Life VR\\Debug\\HLVRLauncher.exe" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\HLVRLauncher.exe"
-copy "D:\\Work\\HL\\Half-Life VR\\cl_dll\\Debug\\client.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\cl_dlls\\client.dll"
-copy "D:\\Work\\HL\\Half-Life VR\\dlls\\Debug\\hl.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\dlls\\vr.dll"</Command>
+      <Command>copy "D:\\Work\\HL\\Half-Life VR\\dlls\\Debug\\hl.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\dlls\\vr.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
