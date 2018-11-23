@@ -84,8 +84,14 @@ void VRHelper::UpdateWorldRotation()
 		return;
 	}
 
+	if (m_lastYawUpdateTime == gHUD.m_flTime)
+	{
+		// already up-to-date
+		return;
+	}
+
 	// New game
-	if (m_lastYawUpdateTime == -1.f || m_lastYawUpdateTime >= gHUD.m_flTime)
+	if (m_lastYawUpdateTime == -1.f || m_lastYawUpdateTime > gHUD.m_flTime)
 	{
 		m_lastYawUpdateTime = gHUD.m_flTime;
 		m_prevYaw = 0.f;
