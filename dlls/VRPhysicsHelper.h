@@ -8,7 +8,7 @@ namespace reactphysics3d {
 	class CollisionWorld;
 	class DynamicsWorld;
 	class SphereShape;
-	class RigidBody;
+	class CollisionBody;
 	class TriangleVertexArray;
 	class TriangleMesh;
 	class ConcaveMeshShape;
@@ -43,8 +43,12 @@ public:
 
 	void TraceLine(const Vector &vecStart, const Vector &vecEnd, edict_t* pentIgnore, TraceResult *ptr);
 
+	void* GetModelPtrForName(const char* name) const;
+
+	bool RotatedBBoxIntersectsWorld(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs);
+
 private:
-	reactphysics3d::DynamicsWorld * m_dynamicsWorld = nullptr;
+	reactphysics3d::CollisionWorld * m_collisionWorld = nullptr;
 
 	std::vector<struct reactphysics3d::Vector3> m_vertices;
 	std::vector<int32_t> m_indices;
@@ -54,10 +58,7 @@ private:
 	reactphysics3d::ConcaveMeshShape* m_concaveMeshShape = nullptr; 
 	reactphysics3d::ProxyShape* m_dynamicMapProxyShape = nullptr;
 
-	reactphysics3d::SphereShape * m_sphereShape = nullptr;
-
-	reactphysics3d::RigidBody* m_dynamicMap = nullptr;
-	reactphysics3d::RigidBody* m_dynamicSphere = nullptr;
+	reactphysics3d::CollisionBody* m_dynamicMap = nullptr;
 
 	const struct model_s *m_hlWorldModel = nullptr;
 

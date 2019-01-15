@@ -1,36 +1,73 @@
-PRIVATE CODE REPO - This code base is private and may not be shared without my explicit permission, despite what other READMEs, licenses or other files in this repo say.
-
 ====
-
-This is source code for a VR mod for Half-Life. You may use or reuse this code with giving credit.
-
-No warranties whatsoever.
-
-Third party licenses apply where applicable.
+Half-Life: VR
 
 VERSION 0.2
 
-Stuff still to do:
-[ ] Tracktrain and func_tank controls
-[ ] Fix ground entity movement
-[ ] Fix HUD text rendering (currently rendered at level origin)
-[ ] Fix and re-add ladder climbing, jumping and ducking
-[ ] Fix yaw rotation in roomscale VR setup
-[ ] Add Menu/Intermission/Death room
-[ ] Detect levelchange/loading and fix display
-[ ] Weapons
-[ ]  Make gauss thingy spinnable
-[ ]  Make snark reach for left hand
-[ ]  Make some nice tripmine placement feature
-[ ]  Weapon selection wheel
-[ ] Synchronize beam effects for left and right eye
+This is a mod for Half-Life adding support for playing the game in VR.
 
-If you want to help, please don't just code ahead and then send a pull request, contact me first and ask what needs outsourcing and how it should be implemented! Had to deny pull requests in the past, because they weren't compatible with other changes I made in the meantime.
+Author: Max Vollmer
+
+Third party licenses apply where applicable.
+
+For a list of third parties see bottom of file.
+
+===
+This mod is released as is without any guarantee that it works and without any warranties whatsoever. Use on your own risk. If you don't know what you are doing, don't do it.
+
+WARNING: The custom OpenGL32.dll can get you VAC banned.
+
+===
+NO SUPPORT IS OFFERED WHATSOEVER. BUG REPORTS ARE WELCOME. "it's not working" IS NOT A BUG REPORT! QUESTIONS ASKING FOR HELP GETTING THIS TO RUN ARE IGNORED.
+
+There is a VRLauncher.exe that should make running this mod easy, however it has only been tested on Windows 10 so far.
+
+Please read this file carefully, especially the third party section, if you plan on using any of the files for anything.
+
+====
+If you are a coder and want to help, get in touch!
+
+====
+List of known bugs and issues:
+
+- HUD text is rendered in the map center instead of somewhere in the player's view
+- Some weapon animations don't play correctly
+- Female scientists are missing some animations
+- "Hold" use actions sometimes don't work (e.g. rotating a valve or using a health charger)
+- For some people "Steam VR environment" needs to be disabled for the mod to run
+- func_pushables don't work (on purpose to avoid nausea), making some areas inaccessible and make progress in one level impossible (giant fan that pushes player up)
+- Some fans, elevators and other moving things push the player around even when not really touching them
+- Fast moving platforms catapult the player off
+
+====
+List of missing features:
+
+- Controls for func_tank and func_tracktrain
+- Proper teleportation arc that matches path of jumping player
+- Menu in VR
+- Intercept loading (currently the Steam VR environment shows up for a short moment on level changes)
+- VR related options are a mess and only configurable via console
+
+===================
+*******************
+THIRD PARTIES BELOW
+
+====
+Substantial help provided by DoomMarine23, Formic.Sapien and Rorin.
+
+====
+Female scientist audio files have been generated using MorphVox Pro with the Batch Converter Plugin, postprocessed using Auphonic, and then converted to a Half-Life friendly wav format with GoldWave. They are based on the original scientist audio files for Half-Life by Valve.
+
+UNDER NO CIRCUMSTANCES ARE YOU ALLOWED TO USE THESE FILES IN ANY WAY EXCEPT FOR THE PURPOSE OF PLAYING THIS MOD. DO NOT REDISTRIBUTE OR SHARE THESE FILES WITH ANYONE.
 
 ====
 Hand model based on high poly hand model by Willdabeast and HEV arms textures by JohnChronic: https://gamebanana.com/skins/157391
 
 ====
+Female scientist model by 23-down. Full info and further credits in models/scientist_fem_readme.txt
+
+====
+This mod uses the ReactPhysics3D physics library, full license below:
+----
 ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/
 Copyright (c) 2010-2016 Daniel Chappuis
 
@@ -51,3 +88,4 @@ freely, subject to the following restrictions:
    misrepresented as being the original software.
 
 3. This notice may not be removed or altered from any source distribution.
+---

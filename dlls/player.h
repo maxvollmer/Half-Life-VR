@@ -339,6 +339,7 @@ private:
 	int vr_rightControllerLastUpdateClienttime = 0;
 	float vr_rightControllerLastUpdateServertime = 0;
 	bool vr_isRightControllerValid = false;
+	bool vr_rightControllerDragOn = false;
 
 	Vector vr_leftControllerOffset;
 	Vector vr_leftControllerAngles;
@@ -346,6 +347,7 @@ private:
 	int vr_leftControllerLastUpdateClienttime = 0;
 	float vr_leftControllerLastUpdateServertime = 0;
 	bool vr_isLeftControllerValid = false;
+	bool vr_leftControllerDragOn = false;
 
 	bool vr_teleporterBlocked = true;
 
@@ -400,8 +402,8 @@ public:
 	bool IsWeaponPositionValid();
 
 	void UpdateVRHeadsetPosition(const int timestamp, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta, float prevYaw, float currentYaw);
-	void UpdateVRLeftControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity);
-	void UpdateVRRightControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity);
+	void UpdateVRLeftControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn);
+	void UpdateVRRightControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn);
 
 	void StartVRTele();
 	void StopVRTele();

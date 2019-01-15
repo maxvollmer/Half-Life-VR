@@ -458,25 +458,27 @@ void ClientCommand( edict_t *pEntity )
 				);
 				return;
 			}
-			else if (FStrEq(pcmd, "vrupd_lft") && size == 12)
+			else if (FStrEq(pcmd, "vrupd_lft") && size == 13)
 			{
 				bool isValid = atoi(CMD_ARGV(2)) != 0;
 				pPlayer->UpdateVRLeftControllerPosition(timestamp,
 					isValid,
 					Vector(atof(CMD_ARGV(3)), atof(CMD_ARGV(4)), atof(CMD_ARGV(5))),
 					Vector(atof(CMD_ARGV(6)), atof(CMD_ARGV(7)), atof(CMD_ARGV(8))),
-					Vector(atof(CMD_ARGV(9)), atof(CMD_ARGV(10)), atof(CMD_ARGV(11)))
+					Vector(atof(CMD_ARGV(9)), atof(CMD_ARGV(10)), atof(CMD_ARGV(11))),
+					CMD_ARGV(12) != 0
 				);
 				return;
 			}
-			else if (FStrEq(pcmd, "vrupd_rt") && size == 12)
+			else if (FStrEq(pcmd, "vrupd_rt") && size == 13)
 			{
 				bool isValid = atoi(CMD_ARGV(2)) != 0;
 				pPlayer->UpdateVRRightControllerPosition(timestamp,
 					isValid,
 					Vector(atof(CMD_ARGV(3)), atof(CMD_ARGV(4)), atof(CMD_ARGV(5))),
 					Vector(atof(CMD_ARGV(6)), atof(CMD_ARGV(7)), atof(CMD_ARGV(8))),
-					Vector(atof(CMD_ARGV(9)), atof(CMD_ARGV(10)), atof(CMD_ARGV(11)))
+					Vector(atof(CMD_ARGV(9)), atof(CMD_ARGV(10)), atof(CMD_ARGV(11))),
+					CMD_ARGV(12) != 0
 				);
 				return;
 			}

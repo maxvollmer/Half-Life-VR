@@ -1406,6 +1406,7 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum)
 
 #include <string>
 #include <regex>
+#include <memory>
 
 
 // Intercept PRECACHE_SOUND to precache female NPC sounds when precaching NPC sounds - Max Vollmer, 2018-11-23
@@ -1415,13 +1416,13 @@ class SoundFilePathHolder
 public:
 	char* GetSoundFilePathPointer(const std::string& soundFilePath)
 	{
-		if (root == nullptr)
+		if (!root)
 		{
-			root = new Holder{ soundFilePath };
+			root = std::make_shared<Holder>(soundFilePath);
 			return root->Get();
 		}
 
-		Holder* holder = root;
+		auto holder = root;
 		while (holder)
 		{
 			if (holder->path == soundFilePath)
@@ -1430,7 +1431,7 @@ public:
 			}
 			else if (holder->next == nullptr)
 			{
-				holder->next = new Holder{ soundFilePath };
+				holder->next = std::make_shared<Holder>(soundFilePath);
 				return holder->next->Get();
 			}
 			else
@@ -1438,14 +1439,16 @@ public:
 				holder = holder->next;
 			}
 		}
+
+		// impossible to get here
+		throw std::exception{};
 	}
 
 private:
 	class Holder {
 	public:
 		Holder(const std::string& path) :
-			path{ path },
-			next{ nullptr }
+			path{ path }
 		{
 		}
 		inline char* Get() const
@@ -1453,9 +1456,9 @@ private:
 			return const_cast<char*>(path.data());
 		}
 		const std::string path;
-		Holder* next{ nullptr };
+		std::shared_ptr<Holder> next;
 	};
-	Holder* root{ nullptr };
+	std::shared_ptr<Holder> root;
 };
 SoundFilePathHolder soundFilePathHolder;
 int PRECACHE_SOUND(char* s)

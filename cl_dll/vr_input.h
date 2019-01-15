@@ -25,6 +25,11 @@ public:
 		extern kbutton_t in_duck;
 		return m_isDucking || (in_duck.state & 3);
 	}
+	inline bool IsDragOn(vr::TrackedDeviceIndex_t controllerIndex) const
+	{
+		// TODO
+		return false;
+	}
 
 private:
 	bool m_rotateLeft{ false };

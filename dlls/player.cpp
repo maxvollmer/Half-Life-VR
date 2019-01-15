@@ -4878,7 +4878,7 @@ void CBasePlayer::UpdateVRHeadsetPosition(const int timestamp, const Vector& hmd
 	}
 	UTIL_SetSize(pev, pev->mins, pev->maxs);
 }
-void CBasePlayer::UpdateVRLeftControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity)
+void CBasePlayer::UpdateVRLeftControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn)
 {
 	// Filter out outdated updates
 	if (timestamp <= vr_leftControllerLastUpdateClienttime && vr_leftControllerLastUpdateServertime >= gpGlobals->time)
@@ -4893,6 +4893,7 @@ void CBasePlayer::UpdateVRLeftControllerPosition(const int timestamp, const bool
 	vr_leftControllerVelocity = velocity;
 	vr_leftControllerLastUpdateServertime = gpGlobals->time;
 	vr_leftControllerLastUpdateClienttime = timestamp;
+	vr_leftControllerDragOn = dragOn;
 
 	if (vr_isLeftControllerValid)
 	{
@@ -4901,9 +4902,10 @@ void CBasePlayer::UpdateVRLeftControllerPosition(const int timestamp, const bool
 	else
 	{
 		vr_teleporterBlocked = true;
+		vr_leftControllerDragOn = false;
 	}
 }
-void CBasePlayer::UpdateVRRightControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity)
+void CBasePlayer::UpdateVRRightControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn)
 {
 	// Filter out outdated updates
 	if (timestamp <= vr_rightControllerLastUpdateClienttime && vr_rightControllerLastUpdateServertime >= gpGlobals->time)
@@ -4918,11 +4920,13 @@ void CBasePlayer::UpdateVRRightControllerPosition(const int timestamp, const boo
 	vr_rightControllerVelocity = velocity;
 	vr_rightControllerLastUpdateServertime = gpGlobals->time;
 	vr_rightControllerLastUpdateClienttime = timestamp;
+	vr_rightControllerDragOn = dragOn;
 
 	if (!vr_isRightControllerValid || !UTIL_CheckClearSight(pev->origin + pev->view_ofs, GetClientOrigin() + vr_rightControllerOffset, ignore_monsters, dont_ignore_glass, edict()))
 	{
 		m_iHideHUD |= HIDEHUD_WEAPONBLOCKED;
 		vr_isRightControllerValid = false;
+		vr_rightControllerDragOn = false;
 	}
 	else
 	{
@@ -5040,6 +5044,26 @@ void CBasePlayer::VRCheckAndPressButtons()
 	const Vector leftControllerPosition = GetClientOrigin() + vr_leftControllerOffset;
 	const Vector rightControllerPosition = GetClientOrigin() + vr_rightControllerOffset;
 
+	Vector leftControllerMins;
+	Vector leftControllerMaxs;
+	Vector rightControllerMins;
+	Vector rightControllerMaxs;
+
+	extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
+	ExtractBbox(VRPhysicsHelper::Instance().GetModelPtrForName("models/v_gordon_hand.mdl"), 0, leftControllerMins, leftControllerMaxs);
+
+	ItemInfo itemInfo = {};
+	if (m_pActiveItem == nullptr || !m_pActiveItem->GetItemInfo(&itemInfo))
+	{
+		itemInfo.iId = WEAPON_BAREHAND;
+		rightControllerMins = leftControllerMins;
+		rightControllerMaxs = leftControllerMaxs;
+	}
+	else
+	{
+		m_pActiveItem->ExtractBbox(m_pActiveItem->pev->sequence, rightControllerMins, rightControllerMaxs);
+	}
+
 	CBaseEntity *pWorld = CBaseEntity::Instance(INDEXENT(0));
 	CBaseEntity *pEntity = pWorld;
 	CBaseMonster *pMonster = nullptr;
@@ -5051,12 +5075,12 @@ void CBasePlayer::VRCheckAndPressButtons()
 		}
 
 		const bool leftTouches = vr_isLeftControllerValid &&
-				(((pEntity == pWorld) && UTIL_PointContents(leftControllerPosition) == CONTENTS_SOLID)
-			||	((pEntity != pWorld) && UTIL_PointInsideBBox(leftControllerPosition, pEntity->pev->absmin, pEntity->pev->absmax)));
+				(((pEntity == pWorld) && VRPhysicsHelper::Instance().RotatedBBoxIntersectsWorld(leftControllerPosition, vr_leftControllerAngles, leftControllerMins, leftControllerMaxs))
+			||	((pEntity != pWorld) && UTIL_RotatedBBoxIntersectsBBox(leftControllerPosition, vr_leftControllerAngles, rightControllerMins, rightControllerMaxs, pEntity->pev->absmin, pEntity->pev->absmax)));
 
 		const bool rightTouches = vr_isRightControllerValid &&
-			(((pEntity == pWorld) && UTIL_PointContents(rightControllerPosition) == CONTENTS_SOLID)
-			|| ((pEntity != pWorld) && UTIL_PointInsideBBox(rightControllerPosition, pEntity->pev->absmin, pEntity->pev->absmax)));
+			(((pEntity == pWorld) && VRPhysicsHelper::Instance().RotatedBBoxIntersectsWorld(leftControllerPosition, vr_leftControllerAngles, leftControllerMins, leftControllerMaxs))
+			|| ((pEntity != pWorld) && UTIL_RotatedBBoxIntersectsBBox(rightControllerPosition, vr_rightControllerAngles, rightControllerMins, rightControllerMaxs, pEntity->pev->absmin, pEntity->pev->absmax)));
 
 		const bool anyTouches = leftTouches || rightTouches;
 
@@ -5203,12 +5227,6 @@ void CBasePlayer::VRCheckAndPressButtons()
 		}
 		else if (pEntity == pWorld || (pEntity->pev->solid != SOLID_NOT && pEntity->pev->solid != SOLID_TRIGGER))
 		{
-			ItemInfo itemInfo = {};
-			if (m_pActiveItem == nullptr || !m_pActiveItem->GetItemInfo(&itemInfo))
-			{
-				itemInfo.iId = WEAPON_BAREHAND;
-			}
-
 			float flTotalDamage = 0;
 
 			// Hit solid entities and deal damage if player has any weapon.
@@ -5435,7 +5453,9 @@ void CBasePlayer::VRCheckAndPressButtons()
 							{
 								pMonster->vr_flStopSignalTime = 0;
 								// Check if we're touching the shoulder for 1 second (follow me!)
-								if ((leftTouches && CheckShoulderTouch(pMonster, leftControllerPosition)) || (rightTouches && !IsWeapon(itemInfo.iId) && CheckShoulderTouch(pMonster, rightControllerPosition)))
+								if (
+									(leftTouches && (vr_leftControllerDragOn || CheckShoulderTouch(pMonster, leftControllerPosition)))
+									|| (rightTouches && !IsWeapon(itemInfo.iId) && (vr_rightControllerDragOn || CheckShoulderTouch(pMonster, rightControllerPosition))))
 								{
 									pMonster->ClearConditions(bits_COND_CLIENT_PUSH);
 									if (dynamic_cast<CTalkMonster*>(pMonster)->CanFollow()) // Ignore if can't follow
@@ -5476,11 +5496,12 @@ void CBasePlayer::VRCheckAndPressButtons()
 			{
 				if (anyTouches)
 				{
-					Vector vecTouchVelocity;
-					if (leftTouches) vecTouchVelocity = Vector(vr_leftControllerVelocity.x, vr_leftControllerVelocity.y, 0);
-					if (rightTouches) vecTouchVelocity = vecTouchVelocity + Vector(vr_rightControllerVelocity.x, vr_rightControllerVelocity.y, 0);
 					if (FClassnameIs(pEntity->pev, "func_breakable"))
 					{
+						Vector vecTouchVelocity;
+						if (leftTouches) vecTouchVelocity = Vector(vr_leftControllerVelocity.x, vr_leftControllerVelocity.y, 0);
+						if (rightTouches) vecTouchVelocity = vecTouchVelocity + Vector(vr_rightControllerVelocity.x, vr_rightControllerVelocity.y, 0);
+
 						CBreakable *pBreakable = dynamic_cast<CBreakable*>(pEntity);
 						// Only cause damage when we have weapons and is actually breakable
 						if (HasWeapons() && pBreakable->IsBreakable())
@@ -5514,17 +5535,77 @@ void CBasePlayer::VRCheckAndPressButtons()
 						CPushable *pPushable = dynamic_cast<CPushable*>(pEntity);
 						if (pPushable != nullptr)
 						{
-							if (vecTouchVelocity.Length() > pPushable->MaxSpeed())
+							bool bothTouch = leftTouches && rightTouches;
+							bool bothDrag = vr_leftControllerDragOn && vr_rightControllerDragOn;
+							bool eitherDrags = vr_leftControllerDragOn || vr_rightControllerDragOn;
+							bool neitherDrags = !eitherDrags;
+
+							Vector vecTouchVelocity;
+							if (bothTouch)
 							{
-								pPushable->pev->velocity = vecTouchVelocity.Normalize() * pPushable->MaxSpeed();
+								if (bothDrag || neitherDrags)
+								{
+									vecTouchVelocity = (vr_leftControllerVelocity + vr_rightControllerVelocity) / 2;
+								}
+								else if (vr_leftControllerDragOn)
+								{
+									vecTouchVelocity = vr_leftControllerVelocity;
+								}
+								else // if (vr_rightControllerDragOn)
+								{
+									vecTouchVelocity = vr_rightControllerVelocity;
+								}
 							}
-							else
+							else if (leftTouches)
+							{
+								vecTouchVelocity = vr_leftControllerVelocity;
+							}
+							else // if (rightTouches)
+							{
+								vecTouchVelocity = vr_rightControllerVelocity;
+							}
+
+							if (eitherDrags)
 							{
 								pPushable->pev->velocity = vecTouchVelocity;
 							}
+							else
+							{
+								auto lambda = [](float a, float b) -> float
+								{
+									if (a*b >= 0.0f)
+									{
+										// same sign, use bigger absolute value
+										// (this will push it faster if player hits faster than it already moves,
+										//  or leaves speed as is, if player pushes slower in the direction it already moves)
+										return (std::abs(a) > std::abs(b)) ? a : b;
+									}
+									else
+									{
+										// different sign, add values
+										// (this will slow down a moving pushable if player pulls it in opposite direction)
+										return a + b;
+									}
+								};
+
+								pPushable->pev->velocity.x = lambda(vecTouchVelocity.x, pPushable->pev->velocity.x);
+								pPushable->pev->velocity.y = lambda(vecTouchVelocity.y, pPushable->pev->velocity.y);
+								pPushable->pev->velocity.z = lambda(vecTouchVelocity.z, pPushable->pev->velocity.z);
+							}
+
+							if (pPushable->pev->velocity.Length() > pPushable->MaxSpeed())
+							{
+								float zSpeed = pPushable->pev->velocity.z;
+								pPushable->pev->velocity = pPushable->pev->velocity.Normalize() * pPushable->MaxSpeed();
+								if (zSpeed < 0.f && neitherDrags)
+								{
+									// restore falling speed
+									pPushable->pev->velocity.z = max(zSpeed, -g_psv_gravity->value);
+								}
+							}
 						}
 					}
-					else if (pEntity->pev->solid != SOLID_TRIGGER)
+					else if (pEntity->pev->solid != SOLID_TRIGGER)	// TODO: why not triggers?
 					{
 						pEntity->Touch(this);
 					}
@@ -5768,6 +5849,15 @@ bool CBasePlayer::CanTeleportHere(const TraceResult& tr, const Vector& beamStart
 			{
 				// climb up
 				teleportDestination.z = tr.pHit->v.absmax.z;
+
+				// Make sure we don't teleport the player into a ceiling
+				float flPlayerHeight = FBitSet(pev->flags, FL_DUCKING) ? (VEC_DUCK_HULL_MAX.z - VEC_DUCK_HULL_MIN.z) : (VEC_HULL_MAX.z - VEC_HULL_MIN.z);
+				TraceResult tr2;
+				VRPhysicsHelper::Instance().TraceLine(teleportDestination, teleportDestination + Vector{ 0, 0, flPlayerHeight }, tr.pHit, &tr2);
+				if (tr2.flFraction < 1.f)
+				{
+					teleportDestination.z -= flPlayerHeight * (1.f - tr2.flFraction);
+				}
 			}
 			else
 			{

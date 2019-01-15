@@ -544,7 +544,7 @@ void TriangulateBSP(PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVe
 	TriangulateBSPFaces(planeFaces, planeVertexMetaData, vertices, indices);
 }
 
-void RaycastPotentialVerticeGaps(RigidBody * dynamicMap, const Vector3 & checkVertexInPhysSpace, const Vector3 & checkVertexAfterInPhysSpace, const Vector3 & checkDirInPhysSpace, const Vector3 & correctionalOffsetInPhysSpace, std::vector<Vector3> & vertices, std::vector<int> & indices, const size_t vertexIndexOffset)
+void RaycastPotentialVerticeGaps(CollisionBody * dynamicMap, const Vector3 & checkVertexInPhysSpace, const Vector3 & checkVertexAfterInPhysSpace, const Vector3 & checkDirInPhysSpace, const Vector3 & correctionalOffsetInPhysSpace, std::vector<Vector3> & vertices, std::vector<int> & indices, const size_t vertexIndexOffset)
 {
 	RaycastInfo raycastInfo1{};
 	RaycastInfo raycastInfo2{};
@@ -579,7 +579,7 @@ void RaycastPotentialVerticeGaps(RigidBody * dynamicMap, const Vector3 & checkVe
 	}
 }
 
-void FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(RigidBody * dynamicMap, const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<int> & indices, const size_t vertexIndexOffset)
+void FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(CollisionBody * dynamicMap, const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<int> & indices, const size_t vertexIndexOffset)
 {
 	// There are potential gaps left, that our first algorithm couldn't find.
 	// We marked all potential vertices and can now just loop over them and then use the physics engine to check for remaining gaps.
@@ -636,8 +636,7 @@ VRPhysicsHelper::~VRPhysicsHelper()
 {
 	DeletePhysicsMapData();
 
-	if (m_dynamicsWorld) delete m_dynamicsWorld;
-	if (m_sphereShape) delete m_sphereShape;
+	if (m_collisionWorld) delete m_collisionWorld;
 
 	if (m_concaveMeshShape) delete m_concaveMeshShape;
 	if (m_triangleMesh) delete m_triangleMesh;
@@ -674,6 +673,32 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	else
 	{
 		hlResult = hlPos2;
+	}
+
+	return result;
+}
+
+void* VRPhysicsHelper::GetModelPtrForName(const char* name) const
+{
+	return (void*)FindEngineModelByName(name);
+}
+
+bool VRPhysicsHelper::RotatedBBoxIntersectsWorld(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs)
+{
+	bool result = false;
+
+	if (CheckWorld())
+	{
+		Vector3 bboxSize = HLVecToRP3DVec(bboxMaxs - bboxMins);
+		Vector3 bboxPosition = HLVecToRP3DVec(bboxCenter);
+		BoxShape boxShape{ bboxSize };
+
+		CollisionBody* body = m_collisionWorld->createCollisionBody(rp3d::Transform{ bboxPosition, Quaternion::fromEulerAngles(bboxAngles.x / 180.f * M_PI, bboxAngles.y / 180.f * M_PI, bboxAngles.z / 180.f * M_PI).getMatrix() });
+		body->addCollisionShape(&boxShape, rp3d::Transform::identity());
+
+		result = m_collisionWorld->testOverlap(body, m_dynamicMap);
+
+		m_collisionWorld->destroyCollisionBody(body);
 	}
 
 	return result;
@@ -726,9 +751,8 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 
 				BoxShape boxShape{ ladderSize };
 
-				RigidBody* body = m_dynamicsWorld->createRigidBody(rp3d::Transform::identity());
-				body->setType(BodyType::STATIC);
-				body->addCollisionShape(&boxShape, rp3d::Transform{ ladderPosition, Matrix3x3::identity() }, 10.f);
+				CollisionBody* body = m_collisionWorld->createCollisionBody(rp3d::Transform{ ladderPosition, Matrix3x3::identity() });
+				body->addCollisionShape(&boxShape, rp3d::Transform::identity());
 
 				if (body->raycast(ray, raycastInfo))
 				{
@@ -750,7 +774,7 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 					}
 				}
 
-				m_dynamicsWorld->destroyRigidBody(body);
+				m_collisionWorld->destroyCollisionBody(body);
 			}
 		}
 	}
@@ -758,33 +782,10 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 
 void VRPhysicsHelper::InitPhysicsWorld()
 {
-	if (m_dynamicsWorld == nullptr)
+	if (m_collisionWorld == nullptr)
 	{
-		m_dynamicsWorld = new DynamicsWorld{ Vector3{ 0, 0, 0 } };
-
-		m_dynamicsWorld->setNbIterationsVelocitySolver(16);
-		m_dynamicsWorld->setNbIterationsPositionSolver(16);
-
-		m_dynamicsWorld->setTimeBeforeSleep({ PHYSICS_STEP_TIME * 1.5f });
-
-		m_dynamicMap = m_dynamicsWorld->createRigidBody(rp3d::Transform::identity());
-		m_dynamicMap->setType(BodyType::STATIC);
-		m_dynamicMap->setLinearDamping(0);
-		m_dynamicMap->setAngularDamping(0);
-		m_dynamicMap->getMaterial().setBounciness(0);
-		m_dynamicMap->getMaterial().setFrictionCoefficient(0);
-		m_dynamicMap->getMaterial().setRollingResistance(0);
-
-		m_dynamicSphere = m_dynamicsWorld->createRigidBody(rp3d::Transform::identity());
-		m_dynamicSphere->setType(BodyType::DYNAMIC);
-		m_dynamicSphere->setLinearDamping(0);
-		m_dynamicSphere->setAngularDamping(0);
-		m_dynamicSphere->getMaterial().setBounciness(0);
-		m_dynamicSphere->getMaterial().setFrictionCoefficient(0);
-		m_dynamicSphere->getMaterial().setRollingResistance(0);
-
-		m_sphereShape = new SphereShape{ DUCK_RADIUS * HL_TO_RP3D };
-		m_dynamicSphere->addCollisionShape(m_sphereShape, rp3d::Transform::identity(), 10.f);
+		m_collisionWorld = new DynamicsWorld{ Vector3{ 0, 0, 0 } };
+		m_dynamicMap = m_collisionWorld->createCollisionBody(rp3d::Transform::identity());
 	}
 }
 
@@ -849,7 +850,7 @@ void VRPhysicsHelper::CreateMapShapeFromCurrentVerticesAndTriangles()
 
 	m_concaveMeshShape = new ConcaveMeshShape(m_triangleMesh);
 
-	m_dynamicMapProxyShape = m_dynamicMap->addCollisionShape(m_concaveMeshShape, rp3d::Transform::identity(), 1);
+	m_dynamicMapProxyShape = m_dynamicMap->addCollisionShape(m_concaveMeshShape, rp3d::Transform::identity());
 }
 
 bool DoesAnyBrushModelNeedLoading(const model_t *const models)
@@ -1048,7 +1049,7 @@ bool VRPhysicsHelper::CheckWorld()
 
 	if (!CompareWorlds(world, m_hlWorldModel) && IsWorldValid(world))
 	{
-		if (m_dynamicsWorld == nullptr)
+		if (m_collisionWorld == nullptr)
 		{
 			InitPhysicsWorld();
 		}
@@ -1073,7 +1074,7 @@ bool VRPhysicsHelper::CheckWorld()
 		m_hlWorldModel = world;
 	}
 
-	return m_hlWorldModel != nullptr && m_dynamicsWorld != nullptr;
+	return m_hlWorldModel != nullptr && m_collisionWorld != nullptr;
 }
 
 void RotateVectorX(Vector &vecToRotate, const float angle)

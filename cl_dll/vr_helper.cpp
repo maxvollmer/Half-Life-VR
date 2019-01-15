@@ -668,11 +668,12 @@ void VRHelper::SendPositionUpdateToServer()
 	bool isLeftControllerValid = leftControllerIndex > 0 && leftControllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[leftControllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[leftControllerIndex].bPoseIsValid;
 
 	vr::TrackedDeviceIndex_t rightControllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
-	bool isRightControllerValid = leftControllerIndex > 0 && leftControllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[leftControllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[leftControllerIndex].bPoseIsValid;
+	bool isRightControllerValid = rightControllerIndex > 0 && rightControllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[rightControllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[rightControllerIndex].bPoseIsValid;
 
 	Vector leftControllerOffset(0, 0, 0);
 	Vector leftControllerAngles(0, 0, 0);
 	Vector leftControllerVelocity(0, 0, 0);
+	bool leftDragOn = false;
 	if (isLeftControllerValid)
 	{
 		Matrix4 leftControllerAbsoluteTrackingMatrix = GetAbsoluteControllerTransform(leftControllerIndex);
@@ -691,6 +692,8 @@ void VRHelper::SendPositionUpdateToServer()
 		m_fLeftControllerValid = true;
 		m_leftControllerPosition = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(leftControllerAbsoluteTrackingMatrix);
 		m_leftControllerAngles = leftControllerAngles;
+
+		leftDragOn = g_vrInput.IsDragOn(leftControllerIndex);
 	}
 	else
 	{
@@ -701,12 +704,14 @@ void VRHelper::SendPositionUpdateToServer()
 	Vector weaponOffset(0, 0, 0);
 	Vector weaponAngles(0, 0, 0);
 	Vector weaponVelocity(0, 0, 0);
+	bool rightDragOn = false;
 	if (isRightControllerValid && viewent)
 	{
 		weaponOrigin = viewent ? viewent->curstate.origin : Vector(0, 0, 0);
 		weaponOffset = weaponOrigin - localPlayer->curstate.origin;
 		weaponAngles = viewent ? viewent->curstate.angles : Vector(0, 0, 0);
 		weaponVelocity = viewent ? viewent->curstate.velocity : Vector(0, 0, 0);
+		rightDragOn = g_vrInput.IsDragOn(rightControllerIndex);
 	}
 
 	// void UpdateVRHeadsetPosition(const int timestamp, const Vector & offset, const Vector & angles);
@@ -725,19 +730,21 @@ void VRHelper::SendPositionUpdateToServer()
 		hmdAngles.x, hmdAngles.y, hmdAngles.z*/
 	);
 	m_currentYawOffsetDelta = Vector{}; // reset after sending
-	sprintf_s(cmdLeftController, "vrupd_lft %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
+	sprintf_s(cmdLeftController, "vrupd_lft %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i",
 		m_vrUpdateTimestamp,
 		isLeftControllerValid ? 1 : 0,
 		leftControllerOffset.x, leftControllerOffset.y, leftControllerOffset.z,
 		leftControllerAngles.x, leftControllerAngles.y, leftControllerAngles.z,
-		leftControllerVelocity.x, leftControllerVelocity.y, leftControllerVelocity.z
+		leftControllerVelocity.x, leftControllerVelocity.y, leftControllerVelocity.z,
+		leftDragOn ? 1 : 0
 	);
-	sprintf_s(cmdRightController, "vrupd_rt %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
+	sprintf_s(cmdRightController, "vrupd_rt %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i",
 		m_vrUpdateTimestamp,
 		isRightControllerValid ? 1 : 0,
 		weaponOffset.x, weaponOffset.y, weaponOffset.z,
 		weaponAngles.x, weaponAngles.y, weaponAngles.z,
-		weaponVelocity.x, weaponVelocity.y, weaponVelocity.z
+		weaponVelocity.x, weaponVelocity.y, weaponVelocity.z,
+		rightDragOn ? 1 : 0
 	);
 	gEngfuncs.pfnClientCmd(cmdHMD);
 	gEngfuncs.pfnClientCmd(cmdLeftController);
