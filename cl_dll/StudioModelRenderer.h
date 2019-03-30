@@ -184,9 +184,6 @@ public:
 	// Concatenated bone and light transforms
 	float			(*m_pbonetransform) [ MAXSTUDIOBONES ][ 3 ][ 4 ];
 	float			(*m_plighttransform)[ MAXSTUDIOBONES ][ 3 ][ 4 ];
-
-	// For mirroring hand models in VR
-	bool			m_fMirrorCurrentModel = false;
 };
 
 #endif // STUDIOMODELRENDERER_H

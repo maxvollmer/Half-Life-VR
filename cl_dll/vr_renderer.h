@@ -45,14 +45,16 @@ public:
 	void ReverseCullface();
 	void RestoreCullface();
 
+	bool ShouldMirrorCurrentModel(cl_entity_t *ent);
+
+	// Called in DrawTransparent()
+	void RenderHUDSprites();
+
 	// Called by HUD draw code
 	void VRHUDDrawBegin(const VRHUDRenderType renderType);
 	void InterceptSPR_Set(HSPRITE_VALVE hPic, int r, int g, int b);
 	void InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t *prc);
 	void VRHUDDrawFinished();
-
-	// Called by StudioModelRenderer after viewmodels have been drawn
-	void RenderHUDSprites();
 
 private:
 

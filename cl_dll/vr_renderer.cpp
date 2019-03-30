@@ -179,6 +179,8 @@ void VRRenderer::DrawTransparent()
 		vrHelper->TestRenderControllerPosition(true);
 		vrHelper->TestRenderControllerPosition(false);
 
+		RenderHUDSprites();
+
 		glPopAttrib();
 	}
 }
@@ -198,6 +200,12 @@ void VRRenderer::InterceptHUDRedraw(float time, int intermission)
 void VRRenderer::GetViewAngles(float * angles)
 {
 	vrHelper->GetViewAngles(vr::EVREye::Eye_Right, angles);
+}
+
+bool VRRenderer::ShouldMirrorCurrentModel(cl_entity_t *ent)
+{
+	// TODO: Identify mirrored entities
+	return false;
 }
 
 void VRRenderer::ReverseCullface()

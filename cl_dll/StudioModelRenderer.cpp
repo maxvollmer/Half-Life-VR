@@ -919,7 +919,7 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 	}
 
 	// Ugly but works: Mirror hand model - Max Vollmer, 2017-01-05
-	if (m_fMirrorCurrentModel)
+	if (gVRRenderer.ShouldMirrorCurrentModel(m_pCurrentEntity))
 	{
 		// create mirror matrix
 		float mirrormatrix[3][4] = { 0 };
@@ -938,25 +938,6 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 
 		// concat mirror and rotation matrix
 		ConcatTransforms(rotationmatrix_copy, mirrormatrix, (*m_protationmatrix));
-
-		// TODO!
-		/*
-		(*m_protationmatrix)[0][0] = -(*m_protationmatrix)[0][0];
-		(*m_protationmatrix)[0][1] = -(*m_protationmatrix)[0][1];
-		(*m_protationmatrix)[0][2] = -(*m_protationmatrix)[0][2];
-		*/
-		/*
-		for (int j = 0; j < 3; j++)
-		{
-			for (int k = 0; k < 3; k++)
-			{
-				(*m_protationmatrix)[j][k] = -(*m_protationmatrix)[j][k];
-			}
-		}
-		*/
-		//(*m_protationmatrix)[0][0] = -(*m_protationmatrix)[0][0];
-		//(*m_protationmatrix)[1][0] = -(*m_protationmatrix)[1][0];
-		//(*m_protationmatrix)[2][0] = -(*m_protationmatrix)[2][0];
 	}
 
 	for (i = 0; i < m_pStudioHeader->numbones; i++) 
@@ -1112,11 +1093,8 @@ StudioDrawModel
 
 ====================
 */
-#define STUDIO_VIEWMODEL_LEFTHAND 32
 int CStudioModelRenderer::StudioDrawModel( int flags )
 {
-	m_fMirrorCurrentModel = false;	// Always reset at beginning
-
 	alight_t lighting;
 	vec3_t dir;
 
@@ -1157,70 +1135,6 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		return result;
 	}
 
-	bool fRenderHUD = false;
-	if (flags & STUDIO_VIEWMODEL_LEFTHAND)
-	{
-		if (CVAR_GET_FLOAT("vr_lefthand_mode") == 0.0f)
-		{
-			m_fMirrorCurrentModel = true;
-		}
-	}
-	else
-	{
-		cl_entity_t *viewmodel = gEngfuncs.GetViewModel();
-		if (viewmodel != nullptr && m_pCurrentEntity == viewmodel)
-		{
-			gVRRenderer.EnableDepthTest();
-			if (gVRRenderer.IsLeftControllerValid())
-			{
-				// backup right hand
-				model_s* backupModel = m_pCurrentEntity->model;
-				int backupModelIndex = m_pCurrentEntity->curstate.modelindex;
-				Vector backupOrigin = m_pCurrentEntity->origin;
-				Vector backupAngles = m_pCurrentEntity->angles;
-				Vector backupCurstateOrigin = m_pCurrentEntity->curstate.origin;
-				Vector backupCurstateAngles = m_pCurrentEntity->curstate.angles;
-				Vector backupLatchedOrigin = m_pCurrentEntity->latched.prevorigin;
-				Vector backupLatchedAngles = m_pCurrentEntity->latched.prevangles;
-				int backupWeaponAnim = m_pCurrentEntity->curstate.weaponanim;
-
-				// override with left hand data
-				m_pCurrentEntity->curstate.modelindex = gVRRenderer.GetLeftHandModelIndex();
-				m_pCurrentEntity->model = IEngineStudio.GetModelByIndex(m_pCurrentEntity->curstate.modelindex);
-				m_pCurrentEntity->latched.prevorigin = m_pCurrentEntity->curstate.origin = m_pCurrentEntity->origin = gVRRenderer.GetLeftHandPosition();
-				m_pCurrentEntity->latched.prevangles = m_pCurrentEntity->curstate.angles = m_pCurrentEntity->angles = gVRRenderer.GetLeftHandAngles();
-				m_pCurrentEntity->curstate.weaponanim = 0;
-
-				// render left hand
-				StudioDrawModel(flags | STUDIO_VIEWMODEL_LEFTHAND);
-
-				// restore right hand
-				m_pCurrentEntity->curstate.modelindex = backupModelIndex;
-				m_pCurrentEntity->model = backupModel;
-				m_pCurrentEntity->origin = backupOrigin;
-				m_pCurrentEntity->angles = backupAngles;
-				m_pCurrentEntity->curstate.origin = backupCurstateOrigin;
-				m_pCurrentEntity->curstate.angles = backupCurstateAngles;
-				m_pCurrentEntity->latched.prevorigin = backupLatchedOrigin;
-				m_pCurrentEntity->latched.prevangles = backupLatchedAngles;
-				m_pCurrentEntity->curstate.weaponanim = backupWeaponAnim;
-			}
-			if (!gVRRenderer.IsRightControllerValid())
-			{
-				gVRRenderer.RenderHUDSprites();
-				return 1;
-			}
-			else
-			{
-				fRenderHUD = true;
-			}
-			if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.0f)
-			{
-				m_fMirrorCurrentModel = true;
-			}
-		}
-	}
-
 	m_pRenderModel = m_pCurrentEntity->model;
 	m_pStudioHeader = (studiohdr_t *)IEngineStudio.Mod_Extradata (m_pRenderModel);
 	IEngineStudio.StudioSetHeader( m_pStudioHeader );
@@ -1233,11 +1147,6 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		// see if the bounding box lets us trivially reject, also sets
 		if (!IEngineStudio.StudioCheckBBox())
 		{
-			if (fRenderHUD)
-			{
-				gVRRenderer.RenderHUDSprites();
-			}
-			m_fMirrorCurrentModel = false;	// Always reset at end
 			return 0;
 		}
 
@@ -1246,18 +1155,8 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 
 		if (m_pStudioHeader->numbodyparts == 0)
 		{
-			if (fRenderHUD)
-			{
-				gVRRenderer.RenderHUDSprites();
-			}
-			m_fMirrorCurrentModel = false;	// Always reset at end
 			return 1;
 		}
-	}
-
-	if (m_fMirrorCurrentModel)
-	{
-		gVRRenderer.ReverseCullface();
 	}
 
 	if (m_pCurrentEntity->curstate.movetype == MOVETYPE_FOLLOW)
@@ -1283,8 +1182,20 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		}
 	}
 
+	// Don't draw viewmodel, server has proper controller entities for rendering instead - Max Vollmer, 2019-03-30
+	cl_entity_t *viewmodel = gEngfuncs.GetViewModel();
+	if (viewmodel != nullptr && m_pCurrentEntity == viewmodel)
+	{
+		return 1;
+	}
+
 	if (flags & STUDIO_RENDER)
 	{
+		if (gVRRenderer.ShouldMirrorCurrentModel(m_pCurrentEntity))
+			gVRRenderer.ReverseCullface();
+		else
+			gVRRenderer.RestoreCullface();
+
 		lighting.plightvec = dir;
 		IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &lighting );
 
@@ -1300,18 +1211,9 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		IEngineStudio.StudioSetRemapColors( m_nTopColor, m_nBottomColor );
 
 		StudioRenderModel( );
-	}
 
-	if (m_fMirrorCurrentModel)
-	{
 		gVRRenderer.RestoreCullface();
 	}
-
-	if (fRenderHUD)
-	{
-		gVRRenderer.RenderHUDSprites();
-	}
-	m_fMirrorCurrentModel = false;	// Always reset at end
 
 	return 1;
 }
