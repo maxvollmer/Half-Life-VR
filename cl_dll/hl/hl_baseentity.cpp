@@ -300,7 +300,6 @@ int CBasePlayer :: GetCustomDecalFrames( void ) { return -1; }
 void CBasePlayer::DropPlayerItem ( char *pszItemName ) { }
 BOOL CBasePlayer::HasPlayerItem( CBasePlayerItem *pCheckItem ) { return FALSE; }
 BOOL CBasePlayer :: SwitchWeapon( CBasePlayerItem *pWeapon )  { return FALSE; }
-Vector CBasePlayer :: GetGunPosition( void ) { return GetWeaponPosition(); }
 const char *CBasePlayer::TeamID( void ) { return ""; }
 int CBasePlayer :: GiveAmmo( int iCount, char *szName, int iMax ) { return 0; }
 void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore ) { } 
@@ -308,6 +307,23 @@ void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore ) { }
 
 // VR related functions
 extern struct cl_entity_s *GetViewEntity(void);
+#define VR_MUZZLE_ATTACHMENT 0
+Vector CBasePlayer::GetGunPosition(void)
+{
+	if (GetViewEntity())
+	{
+		return GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT];
+	}
+	else
+	{
+		return g_vecZero;
+	}
+}
+Vector CBasePlayer::GetAimAngles()
+{
+	// TODO: Get actual angles from attachment in client as well
+	return GetWeaponAngles();
+}
 const Vector CBasePlayer::GetWeaponPosition()
 {
 	if (GetViewEntity())

@@ -357,16 +357,6 @@ int CBasePlayer :: TakeHealth( float flHealth, int bitsDamageType )
 
 }
 
-#define VR_MUZZLE_ATTACHMENT 0
-Vector CBasePlayer :: GetGunPosition( )
-{
-	// Gun position determined by attachment on weapon model - Max Vollmer, 2019-03-30
-	Vector pos;
-	Vector angles;
-	m_vrControllers[GetWeaponControllerID()].GetModel()->GetAttachment(VR_MUZZLE_ATTACHMENT, pos, angles);
-	return pos;
-}
-
 //=========================================================
 // TraceAttack
 //=========================================================
@@ -4213,25 +4203,43 @@ void CBasePlayer :: EnableControl(BOOL fControl)
 // Autoaim
 // set crosshair position to point to enemey
 //=========================================================
-Vector CBasePlayer :: GetAutoaimVector( float flDelta )
-{
-	// no auto aim in VR
-	UTIL_MakeVectors(GetWeaponViewAngles());
-	return gpGlobals->v_forward;
-}
-
-
-Vector CBasePlayer :: AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  )
+Vector CBasePlayer::AutoaimDeflection(Vector &vecSrc, float flDist, float flDelta)
 {
 	// no auto aim in VR
 	return Vector{};
 }
 
-
-void CBasePlayer :: ResetAutoaim( )
+void CBasePlayer::ResetAutoaim()
 {
 	// no auto aim in VR
 }
+
+
+Vector CBasePlayer::GetAutoaimVector( float flDelta )
+{
+	UTIL_MakeAimVectors(GetAimAngles());
+	return gpGlobals->v_forward;
+}
+
+#define VR_MUZZLE_ATTACHMENT 0
+Vector CBasePlayer::GetGunPosition()
+{
+	// Gun position and angles determined by attachment on weapon model - Max Vollmer, 2019-03-30
+	Vector pos;
+	Vector angles;
+	m_vrControllers[GetWeaponControllerID()].GetModel()->GetAttachment(VR_MUZZLE_ATTACHMENT, pos, angles);
+	return pos;
+}
+
+Vector CBasePlayer::GetAimAngles()
+{
+	// Gun position and angles determined by attachment on weapon model - Max Vollmer, 2019-03-30
+	Vector pos;
+	Vector angles;
+	m_vrControllers[GetWeaponControllerID()].GetModel()->GetAttachment(VR_MUZZLE_ATTACHMENT, pos, angles);
+	return angles;
+}
+
 
 /*
 =============

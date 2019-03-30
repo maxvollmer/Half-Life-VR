@@ -438,7 +438,7 @@ void CTripmine::PrimaryAttack( void )
 
 	UTIL_MakeVectors( m_pPlayer->GetWeaponViewAngles() );
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
-	Vector vecAiming = gpGlobals->v_forward;
+	Vector vecAiming = m_pPlayer->GetAutoaimVector(); //gpGlobals->v_forward;
 
 	TraceResult tr;
 

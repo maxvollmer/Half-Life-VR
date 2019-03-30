@@ -204,7 +204,8 @@ public:
 	virtual void Duck( void );
 	virtual void PreThink( void );
 	virtual void PostThink( void );
-	virtual Vector GetGunPosition( void );
+	virtual Vector GetGunPosition(void);
+	virtual Vector GetAimAngles(void);	// Extra method for VR controller weapons - Max Vollmer, 2019-03-30
 	virtual int TakeHealth( float flHealth, int bitsDamageType );
 	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
@@ -293,7 +294,7 @@ public:
 	int Illumination( void );
 
 	void ResetAutoaim( void );
-	Vector GetAutoaimVector( float flDelta  );
+	Vector GetAutoaimVector( float flDelta = 0.f  );
 	Vector AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  );
 
 	void ForceClientDllUpdate( void );  // Forces all client .dll specific data to be resent to client.

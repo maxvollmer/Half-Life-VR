@@ -310,7 +310,7 @@ void CGauss::StartFire( void )
 	float flDamage;
 	
 	UTIL_MakeVectors( m_pPlayer->GetWeaponViewAngles() );
-	Vector vecAiming = gpGlobals->v_forward;
+	Vector vecAiming = m_pPlayer->GetAutoaimVector(); //gpGlobals->v_forward;
 	Vector vecSrc = m_pPlayer->GetGunPosition( ); // + gpGlobals->v_up * -8 + gpGlobals->v_right * 8;
 	
 	if ( gpGlobals->time - m_pPlayer->m_flStartCharge > GetFullChargeTime() )

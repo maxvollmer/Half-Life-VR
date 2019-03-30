@@ -388,8 +388,8 @@ void CCrossbow::FireSniperBolt()
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 	UTIL_MakeVectors( m_pPlayer->GetWeaponViewAngles() );
-	Vector vecSrc = m_pPlayer->GetGunPosition( ) - gpGlobals->v_up * 2;
-	Vector vecDir = gpGlobals->v_forward;
+	Vector vecSrc = m_pPlayer->GetGunPosition();// -gpGlobals->v_up * 2;
+	Vector vecDir = m_pPlayer->GetAutoaimVector();//gpGlobals->v_forward;
 
 	UTIL_TraceLine(vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr);
 
@@ -431,8 +431,8 @@ void CCrossbow::FireBolt()
 
 	UTIL_MakeVectors(m_pPlayer->GetWeaponViewAngles());
 
-	Vector vecSrc	 = m_pPlayer->GetGunPosition( ) - gpGlobals->v_up * 2;
-	Vector vecDir	 = gpGlobals->v_forward;
+	Vector vecSrc = m_pPlayer->GetGunPosition();// -gpGlobals->v_up * 2;
+	Vector vecDir	 = m_pPlayer->GetAutoaimVector();// gpGlobals->v_forward;
 
 #ifndef CLIENT_DLL
 	CCrossbowBolt *pBolt = CCrossbowBolt::BoltCreate();
