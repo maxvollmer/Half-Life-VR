@@ -393,7 +393,7 @@ void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, floa
 	}
 
 	m_pBeam->SetStartPos(endPoint);
-	m_pBeam->SetEndPos(m_pPlayer->GetWeaponPosition());
+	m_pBeam->SetEndPos(m_pPlayer->GetGunPosition());
 	m_pBeam->SetBrightness( 255 - (timeBlend*180) );
 	m_pBeam->SetWidth( 40 - (timeBlend*20) );
 
@@ -409,7 +409,7 @@ void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, floa
 		m_pSprite->pev->frame = 0;
 
 	m_pNoise->SetStartPos( endPoint );
-	m_pNoise->SetEndPos(m_pPlayer->GetWeaponPosition());
+	m_pNoise->SetEndPos(m_pPlayer->GetGunPosition());
 
 #endif
 
@@ -422,7 +422,7 @@ void CEgon::CreateEffect( void )
 	DestroyEffect();
 
 	m_pBeam = CBeam::BeamCreate( EGON_BEAM_SPRITE, 40 );
-	m_pBeam->PointsInit( pev->origin, m_pPlayer->GetWeaponPosition() );
+	m_pBeam->PointsInit( pev->origin, m_pPlayer->GetGunPosition() );
 	m_pBeam->SetFlags( BEAM_FSINE );
 	m_pBeam->SetEndAttachment( 1 );
 	m_pBeam->pev->spawnflags |= SF_BEAM_TEMPORARY;	// Flag these to be destroyed on save/restore or level transition
@@ -430,7 +430,7 @@ void CEgon::CreateEffect( void )
 	m_pBeam->pev->owner = m_pPlayer->edict();
 
 	m_pNoise = CBeam::BeamCreate( EGON_BEAM_SPRITE, 55 );
-	m_pNoise->PointsInit( pev->origin, m_pPlayer->GetWeaponPosition());
+	m_pNoise->PointsInit( pev->origin, m_pPlayer->GetGunPosition());
 	m_pNoise->SetScrollRate( 25 );
 	m_pNoise->SetBrightness( 100 );
 	m_pNoise->SetEndAttachment( 1 );

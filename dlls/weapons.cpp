@@ -870,16 +870,20 @@ void CBasePlayerWeapon::SendWeaponAnim( int iAnim, int skiplocal, int body )
 		skiplocal = 0;
 
 	m_pPlayer->pev->weaponanim = iAnim;
+	m_pPlayer->PlayVRWeaponAnimation(iAnim, pev->body);
 
 #if defined( CLIENT_WEAPONS )
 	if ( skiplocal && ENGINE_CANSKIP( m_pPlayer->edict() ) )
 		return;
 #endif
 
+	/*
 	MESSAGE_BEGIN( MSG_ONE, SVC_WEAPONANIM, NULL, m_pPlayer->pev );
 		WRITE_BYTE( iAnim );						// sequence number
 		WRITE_BYTE( pev->body );					// weaponmodel bodygroup.
 	MESSAGE_END();
+	*/
+
 }
 
 BOOL CBasePlayerWeapon :: AddPrimaryAmmo( int iCount, char *szName, int iMaxClip, int iMaxCarry )

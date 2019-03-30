@@ -13,6 +13,7 @@ Disable warnings for:
 #include "pm_defs.h"
 #include "plane.h"
 #include "com_model.h"
+#include "studio.h"
 extern struct playermove_s *PM_GetPlayerMove(void);
 
 #include <fstream>
@@ -21,6 +22,7 @@ extern struct playermove_s *PM_GetPlayerMove(void);
 #include "VRPhysicsHelper.h"
 #include "util.h"
 #include "cbase.h"
+#include "effects.h"
 
 #include <chrono>
 
@@ -93,6 +95,44 @@ const model_t* FindEngineModelByName(const char* name)
 		}
 	}
 	return nullptr;
+}
+
+void* FindStudioModelByName(const char* name)
+{
+	void* result = nullptr;
+	CBaseEntity *pEntity = UTIL_FindEntityByString(nullptr, "model", name);
+	if (pEntity != nullptr)
+	{
+		result = GET_MODEL_PTR(pEntity->edict());
+	}
+	else
+	{
+		const model_t* model = FindEngineModelByName(name);
+		if (model != nullptr && model->type == modtype_t::mod_studio)
+		{
+			CSprite *pSprite = CSprite::SpriteCreate(name, Vector{}, TRUE);
+			result = GET_MODEL_PTR(pSprite->edict());
+			UTIL_Remove(pSprite);
+		}
+	}
+	return result;
+}
+
+#define VR_MUZZLE_ATTACHMENT 0
+Vector GetModelAttachment(const char* name, int index, int sequence, int frame)
+{
+	Vector pos;
+	Vector angles;
+	const model_t* model = FindEngineModelByName(name);
+	if (model != nullptr && model->type == modtype_t::mod_studio)
+	{
+		CSprite *pSprite = CSprite::SpriteCreate(name, Vector{}, TRUE);
+		pSprite->pev->sequence = sequence;
+		pSprite->pev->frame = frame;
+		GET_ATTACHMENT(pSprite->edict(), VR_MUZZLE_ATTACHMENT, pos, angles);
+		UTIL_Remove(pSprite);
+	}
+	return pos;
 }
 
 // Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
@@ -678,11 +718,6 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	return result;
 }
 
-void* VRPhysicsHelper::GetModelPtrForName(const char* name) const
-{
-	return (void*)FindEngineModelByName(name);
-}
-
 bool VRPhysicsHelper::RotatedBBoxIntersectsWorld(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs)
 {
 	bool result = false;
@@ -693,12 +728,52 @@ bool VRPhysicsHelper::RotatedBBoxIntersectsWorld(const Vector & bboxCenter, cons
 		Vector3 bboxPosition = HLVecToRP3DVec(bboxCenter);
 		BoxShape boxShape{ bboxSize };
 
-		CollisionBody* body = m_collisionWorld->createCollisionBody(rp3d::Transform{ bboxPosition, Quaternion::fromEulerAngles(bboxAngles.x / 180.f * M_PI, bboxAngles.y / 180.f * M_PI, bboxAngles.z / 180.f * M_PI).getMatrix() });
+		vec4_t bboxQuaternion;
+		UTIL_AngleQuaternion(bboxAngles * M_PI / 180.f, bboxQuaternion);
+
+		CollisionBody* body = m_collisionWorld->createCollisionBody(rp3d::Transform{ bboxPosition, Quaternion{ bboxQuaternion[0], bboxQuaternion[1], bboxQuaternion[2], bboxQuaternion[3] }.getMatrix() });
 		body->addCollisionShape(&boxShape, rp3d::Transform::identity());
 
 		result = m_collisionWorld->testOverlap(body, m_dynamicMap);
 
 		m_collisionWorld->destroyCollisionBody(body);
+	}
+
+	return result;
+}
+
+bool VRPhysicsHelper::RotatedBBoxesIntersect(
+	const Vector & bbox1Center, const Vector & bbox1Angles, const Vector & bbox1Mins, const Vector & bbox1Maxs,
+	const Vector & bbox2Center, const Vector & bbox2Angles, const Vector & bbox2Mins, const Vector & bbox2Maxs)
+{
+	bool result = false;
+
+	if (CheckWorld())
+	{
+		Vector3 bbox1Size = HLVecToRP3DVec(bbox1Maxs - bbox1Mins);
+		Vector3 bbox1Position = HLVecToRP3DVec(bbox1Center);
+		BoxShape box1Shape{ bbox1Size };
+
+		vec4_t bbox1Quaternion;
+		UTIL_AngleQuaternion(bbox1Angles * M_PI / 180.f, bbox1Quaternion);
+
+		CollisionBody* body1 = m_collisionWorld->createCollisionBody(rp3d::Transform{ bbox1Position, Quaternion{ bbox1Quaternion[0], bbox1Quaternion[1], bbox1Quaternion[2], bbox1Quaternion[3] }.getMatrix() });
+		body1->addCollisionShape(&box1Shape, rp3d::Transform::identity());
+
+		Vector3 bbox2Size = HLVecToRP3DVec(bbox2Maxs - bbox2Mins);
+		Vector3 bbox2Position = HLVecToRP3DVec(bbox2Center);
+		BoxShape box2Shape{ bbox2Size };
+
+		vec4_t bbox2Quaternion;
+		UTIL_AngleQuaternion(bbox2Angles * M_PI / 180.f, bbox2Quaternion);
+
+		CollisionBody* body2 = m_collisionWorld->createCollisionBody(rp3d::Transform{ bbox2Position, Quaternion{ bbox2Quaternion[0], bbox2Quaternion[1], bbox2Quaternion[2], bbox2Quaternion[3] }.getMatrix() });
+		body2->addCollisionShape(&box2Shape, rp3d::Transform::identity());
+
+		result = m_collisionWorld->testOverlap(body1, body2);
+
+		m_collisionWorld->destroyCollisionBody(body1);
+		m_collisionWorld->destroyCollisionBody(body2);
 	}
 
 	return result;
@@ -1120,6 +1195,13 @@ void RotateVectorZ(Vector &vecToRotate, const float angle)
 		vecToRotate.y = fCos*y - fSin*z;
 		vecToRotate.z = fSin*y + fCos*z;
 	}
+}
+
+Vector VRPhysicsHelper::RotateVectorInline(const Vector &vecToRotate, const Vector &vecAngles, const Vector &vecOffset, const bool reverse)
+{
+	Vector rotatedVector = vecToRotate;
+	RotateVector(rotatedVector, vecAngles, vecOffset, reverse);
+	return rotatedVector;
 }
 
 void VRPhysicsHelper::RotateVector(Vector &vecToRotate, const Vector &vecAngles, const Vector &vecOffset, const bool reverse)

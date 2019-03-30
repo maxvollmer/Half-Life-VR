@@ -38,14 +38,16 @@ public:
 	bool CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &hlPos2);
 	bool CheckIfLineIsBlocked(const Vector & pos1, const Vector & pos2, Vector & result);
 
+	Vector RotateVectorInline(const Vector &vecToRotate, const Vector &vecAngles, const Vector &vecOffset = Vector(), const bool reverse = false);
 	void RotateVector(Vector &vecToRotate, const Vector &vecAngles, const Vector &vecOffset = Vector(), const bool reverse = false);
 	Vector AngularVelocityToLinearVelocity(const Vector & avelocity, const Vector & pos);
 
 	void TraceLine(const Vector &vecStart, const Vector &vecEnd, edict_t* pentIgnore, TraceResult *ptr);
 
-	void* GetModelPtrForName(const char* name) const;
-
 	bool RotatedBBoxIntersectsWorld(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs);
+	bool RotatedBBoxesIntersect(
+		const Vector & bbox1Center, const Vector & bbox1Angles, const Vector & bbox1Mins, const Vector & bbox1Maxs,
+		const Vector & bbox2Center, const Vector & bbox2Angles, const Vector & bbox2Mins, const Vector & bbox2Maxs);
 
 private:
 	reactphysics3d::CollisionWorld * m_collisionWorld = nullptr;

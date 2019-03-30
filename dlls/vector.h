@@ -15,6 +15,8 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+typedef float vec_t;
+
 //=========================================================
 // 2DVector - used for many pathfinding and many other 
 // operations that are treated as planar rather than 3d.

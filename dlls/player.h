@@ -18,6 +18,13 @@
 
 #include "pm_materials.h"
 #include <unordered_set>
+#include <unordered_map>
+
+#include "VRCommons.h"
+//#include "VRPhysicsHelper.h"
+#include "VRController.h"
+#include "VRControllerInteractionManager.h"
+#include "VRControllerTeleporter.h"
 
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
@@ -88,20 +95,6 @@ class CSprite;
 class CBeam;
 
 #include <map>
-
-#define XEN_MOUND_MAX_TRIGGER_DISTANCE 128
-#define VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT 15  // Uneven amount makes the vertex look more smooth
-
-class GlobalXenMounds
-{
-public:
-	void Add(const Vector& position, const string_t multi_manager);
-	bool Trigger(CBasePlayer *pPlayer, const Vector& position);
-	bool Has(const Vector& position);
-	void Clear() { m_xen_mounds.clear(); }
-private:
-	std::map<const Vector, const string_t> m_xen_mounds;
-};
 
 #define CHAT_INTERVAL 1.0f
 
@@ -333,37 +326,11 @@ public:
 private:
 	void VRHandleMovingWithSolidGroundEntities();
 
-	Vector vr_rightControllerOffset;
-	Vector vr_rightControllerAngles;
-	Vector vr_rightControllerVelocity;
-	int vr_rightControllerLastUpdateClienttime = 0;
-	float vr_rightControllerLastUpdateServertime = 0;
-	bool vr_isRightControllerValid = false;
-	bool vr_rightControllerDragOn = false;
-
-	Vector vr_leftControllerOffset;
-	Vector vr_leftControllerAngles;
-	Vector vr_leftControllerVelocity;
-	int vr_leftControllerLastUpdateClienttime = 0;
-	float vr_leftControllerLastUpdateServertime = 0;
-	bool vr_isLeftControllerValid = false;
-	bool vr_leftControllerDragOn = false;
-
-	bool vr_teleporterBlocked = true;
-
 	Vector vr_lastHMDOffset;
 	int vr_hmdLastUpdateClienttime = 0;
 	float vr_hmdLastUpdateServertime = 0;
 
 	Vector vr_ClientOriginOffset;	// Must be Vector instead of Vector2D for save/restore. z is not used.
-
-	CSprite* vr_pTeleSprite = nullptr;
-	CBeam* vr_pTeleBeam = nullptr;
-	CBeam* vr_parabolaBeams[VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT] = { nullptr };
-	bool vr_fValidTeleDestination = false;
-	bool vr_fTelePointsAtXenMound = false;
-	bool vr_fTelePointsInWater = false;
-	Vector vr_vecTeleDestination;
 
 	EHANDLE hFlashLight;
 	EHANDLE hFlashlightMonster;
@@ -383,15 +350,32 @@ private:
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrLeftMeleeEntities;
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrRightMeleeEntities;
 
-	bool CanTeleportHere(const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportSpritePos);
-	void EnableXenMoundParabolaAndUpdateTeleDestination(const Vector& beamStartPos, const Vector& beamEndPos, Vector & teleportDestination);
-	void DisableXenMoundParabola();
-	void UpdateVRFlashlight();
-	void VRCheckAndPressButtons();
-	float GetCurrentTeleLength();
+	std::unordered_map<VRControllerID, VRController> m_vrControllers;
 
-	void PlayMeleeSmackSound(CBaseEntity *pSmackedEntity, const int weaponId, const Vector & pos, const Vector & velocity);
+	VRControllerTeleporter				m_vrControllerTeleporter;
+	VRControllerInteractionManager		m_vrControllerInteractionManager;
+
+	// TODO: Make configurable
+	VRControllerID GetTeleporterControllerID()
+	{
+		return VRControllerID::HAND;
+	}
+	VRControllerID GetFlashlightControllerID()
+	{
+		return VRControllerID::HAND;
+	}
+	VRControllerID GetWeaponControllerID()
+	{
+		return VRControllerID::WEAPON;
+	}
+
+	void UpdateFlashlight();
+	void UpdateVRTele();
+
 public:
+	void StartVRTele();
+	void StopVRTele();
+
 	const Vector GetWeaponPosition();
 	const Vector GetWeaponAngles();
 	const Vector GetWeaponViewAngles();
@@ -401,37 +385,20 @@ public:
 	bool IsWeaponUnderWater();
 	bool IsWeaponPositionValid();
 
-	void UpdateVRHeadsetPosition(const int timestamp, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta, float prevYaw, float currentYaw);
-	void UpdateVRLeftControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn);
-	void UpdateVRRightControllerPosition(const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn);
-
-	void StartVRTele();
-	void StopVRTele();
-	void UpdateVRTele();
-
-	void VRTouchTriggersInTeleportPath(); // Touches all entities with SOLID_TRIGGER when a player teleports through them
+	void UpdateVRHeadset(const int timestamp, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta, float prevYaw, float currentYaw);
+	void UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn);
 
 	void StoreVROffsetsForLevelchange();
+
+	void PlayMeleeSmackSound(CBaseEntity *pSmackedEntity, const int weaponId, const Vector & pos, const Vector & velocity);
+
+	void PlayVRWeaponAnimation(int iAnim, int body);
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025
 #define AUTOAIM_5DEGREES  0.08715574274766
 #define AUTOAIM_8DEGREES  0.1391731009601
 #define AUTOAIM_10DEGREES 0.1736481776669
-
-extern GlobalXenMounds gGlobalXenMounds;
-
-class VRLevelChangeData
-{
-public:
-	Vector lastHMDOffset{};
-	Vector clientOriginOffset{};	// Must be Vector instead of Vector2D, so save/load works (only has FIELD_VECTOR, which expects 3 floats)
-	BOOL hasData{ false };			// Must be BOOL (int), so save/load works (only has FIELD_BOOLEAN, which expects int)
-	float prevYaw{ 0.f };
-	float currentYaw{ 0.f };
-};
-
-extern VRLevelChangeData g_vrLevelChangeData;
 
 extern int	gmsgHudText;
 extern BOOL gInitHUD;

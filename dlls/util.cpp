@@ -568,12 +568,12 @@ bool UTIL_FindAllEntities(CBaseEntity **pEntity)
 		return false;
 	}
 
-	const int startIndex = ((*pEntity) != nullptr) ? ENTINDEX((*pEntity)->edict()) + 1 : 1;
+	const int startIndex = ((*pEntity) != nullptr) ? ENTINDEX((*pEntity)->edict()) + 1 : 0;
 
 	for (int index = startIndex; index < gpGlobals->maxEntities; index++)
 	{
 		edict_t *pentEntity = INDEXENT(index);
-		if (pentEntity != nullptr && !pentEntity->free)
+		if (pentEntity != nullptr && !pentEntity->free && !FStringNull(pentEntity->v.classname))
 		{
 			(*pEntity) = CBaseEntity::Instance(pentEntity);
 			return true;
@@ -1330,6 +1330,7 @@ int UTIL_PointContents(const Vector &vec, bool detectSolidEntities, edict_t** pP
 
 #include "com_model.h"
 
+/*
 EHANDLE hFakeMonster;
 
 // Returns true if the given bbox intersects with (or is completely enclosed by) something solid - Max Vollmer, 2017-12-27
@@ -1378,6 +1379,7 @@ bool UTIL_BBoxIntersectsBSPModel(const Vector &origin, const Vector &mins, const
 	int contents = UTIL_PointContents(origin, true);
 	return contents == CONTENTS_SOLID || contents == CONTENTS_SKY;
 }
+*/
 
 // Returns true if the given bboxes intersect - Max Vollmer, 2018-02-11
 bool UTIL_BBoxIntersectsBBox(const Vector &absmins1, const Vector &absmaxs1, const Vector &absmins2, const Vector &absmaxs2)
@@ -1396,10 +1398,11 @@ bool UTIL_PointInsideRotatedBBox(const Vector & bboxCenter, const Vector & bboxA
 	return UTIL_PointInsideBBox(rotatedLocalCheckVec, bboxMins, bboxMaxs);
 }
 
+/*
 // Returns true if the given bboxes intersect - Max Vollmer, 2018-02-11
 bool UTIL_RotatedBBoxIntersectsBBox(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs, const Vector & absmin, const Vector & absmax)
 {
-	if (bboxAngles.Length() < 0.1f)
+	if (bboxAngles.Length() < 0.01f)
 	{
 		return UTIL_BBoxIntersectsBBox(absmin, absmax, bboxCenter + bboxMins, bboxCenter + bboxMaxs);
 	}
@@ -1422,8 +1425,7 @@ bool UTIL_RotatedBBoxIntersectsBBox(const Vector & bboxCenter, const Vector & bb
 		}
 		Vector rotatedBBoxMins = bboxMins;
 		Vector rotatedBBoxMaxs = bboxMaxs;
-		VRPhysicsHelper::Instance().RotateVector(rotatedBBoxMins, bboxAngles, Vector{}, false);
-		VRPhysicsHelper::Instance().RotateVector(rotatedBBoxMaxs, bboxAngles, Vector{}, false);
+		VRPhysicsHelper::Instance().RotateBBox(rotatedBBoxMins, rotatedBBoxMaxs, bboxAngles);
 		Vector rotatedBBoxAbsMinmax[2] = { bboxCenter + rotatedBBoxMins, bboxCenter + rotatedBBoxMaxs };
 		for (int x = 0; x < 2; ++x)
 		{
@@ -1442,7 +1444,30 @@ bool UTIL_RotatedBBoxIntersectsBBox(const Vector & bboxCenter, const Vector & bb
 	}
 	return false;
 }
+*/
 
+// Copied from studio_util.cpp (note: expects radians!)
+void UTIL_AngleQuaternion(const Vector& angles, float quaternion[4])
+{
+	float		angle;
+	float		sr, sp, sy, cr, cp, cy;
+
+	// FIXME: rescale the inputs to 1/2 angle
+	angle = angles[2] * 0.5;
+	sy = sin(angle);
+	cy = cos(angle);
+	angle = angles[1] * 0.5;
+	sp = sin(angle);
+	cp = cos(angle);
+	angle = angles[0] * 0.5;
+	sr = sin(angle);
+	cr = cos(angle);
+
+	quaternion[0] = sr * cp*cy - cr * sp*sy; // X
+	quaternion[1] = cr * sp*cy + sr * cp*sy; // Y
+	quaternion[2] = cr * cp*sy - sr * sp*cy; // Z
+	quaternion[3] = cr * cp*cy + sr * sp*sy; // W
+}
 
 void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount )
 {

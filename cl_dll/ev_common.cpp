@@ -25,6 +25,8 @@
 #include "event_api.h"
 #include "pm_shared.h"
 
+#include "com_model.h"	// For gun position in VR - Max Vollmer, 2019-03-30
+
 #define IS_FIRSTPERSON_SPEC ( g_iUser1 == OBS_IN_EYE || (g_iUser1 && (gHUD.m_Spectator.m_pip->value == INSET_IN_EYE)) )
 /*
 =================
@@ -100,12 +102,15 @@ EV_GetGunPosition
 Figure out the height of the gun
 =================
 */
+#define VR_MUZZLE_ATTACHMENT 0
 void EV_GetGunPosition( event_args_t *args, float *pos, float *origin )
 {
 	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
 	if (viewModel != nullptr)
 	{
-		viewModel->curstate.origin.CopyToArray(pos);
+		// Gun position in VR is given by special model attachment - Max Vollmer, 2019-03-30
+		//viewModel->curstate.origin.CopyToArray(pos);
+		viewModel->attachment[VR_MUZZLE_ATTACHMENT].CopyToArray(pos);
 	}
 }
 

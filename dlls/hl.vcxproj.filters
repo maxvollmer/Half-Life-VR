@@ -13,6 +13,9 @@
       <UniqueIdentifier>{4a099178-ddf8-4fd2-90fd-11b9794ccc3e}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
+    <Filter Include="VR">
+      <UniqueIdentifier>{860f3d8f-5250-4648-903c-9c3d577b2ddb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="aflock.cpp">
@@ -306,9 +309,6 @@
     <ClCompile Include="zombie.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VRPhysicsHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\pm_shared\pm_debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -317,6 +317,21 @@
     </ClCompile>
     <ClCompile Include="..\pm_shared\pm_shared.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VRPhysicsHelper.cpp">
+      <Filter>VR</Filter>
+    </ClCompile>
+    <ClCompile Include="VRController.cpp">
+      <Filter>VR</Filter>
+    </ClCompile>
+    <ClCompile Include="VRControllerTeleporter.cpp">
+      <Filter>VR</Filter>
+    </ClCompile>
+    <ClCompile Include="VRCommons.cpp">
+      <Filter>VR</Filter>
+    </ClCompile>
+    <ClCompile Include="VRControllerInteractionManager.cpp">
+      <Filter>VR</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -456,7 +471,19 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VRPhysicsHelper.h">
-      <Filter>Header Files</Filter>
+      <Filter>VR</Filter>
+    </ClInclude>
+    <ClInclude Include="VRController.h">
+      <Filter>VR</Filter>
+    </ClInclude>
+    <ClInclude Include="VRControllerTeleporter.h">
+      <Filter>VR</Filter>
+    </ClInclude>
+    <ClInclude Include="VRCommons.h">
+      <Filter>VR</Filter>
+    </ClInclude>
+    <ClInclude Include="VRControllerInteractionManager.h">
+      <Filter>VR</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

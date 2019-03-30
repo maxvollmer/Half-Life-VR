@@ -451,17 +451,20 @@ void ClientCommand( edict_t *pEntity )
 			int timestamp = atoi(CMD_ARGV(1));
 			if (FStrEq(pcmd, "vrupd_hmd") && size == 10/*13*/)
 			{
-				pPlayer->UpdateVRHeadsetPosition(timestamp,
+				pPlayer->UpdateVRHeadset(timestamp,
 					Vector(atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4))),
 					Vector(atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7))),
 					atof(CMD_ARGV(8)), atof(CMD_ARGV(9))
 				);
 				return;
 			}
+			// TODO: Merge into one message with id for controller
 			else if (FStrEq(pcmd, "vrupd_lft") && size == 13)
 			{
 				bool isValid = atoi(CMD_ARGV(2)) != 0;
-				pPlayer->UpdateVRLeftControllerPosition(timestamp,
+				pPlayer->UpdateVRController(
+					VRControllerID::HAND,
+					timestamp,
 					isValid,
 					Vector(atof(CMD_ARGV(3)), atof(CMD_ARGV(4)), atof(CMD_ARGV(5))),
 					Vector(atof(CMD_ARGV(6)), atof(CMD_ARGV(7)), atof(CMD_ARGV(8))),
@@ -473,7 +476,9 @@ void ClientCommand( edict_t *pEntity )
 			else if (FStrEq(pcmd, "vrupd_rt") && size == 13)
 			{
 				bool isValid = atoi(CMD_ARGV(2)) != 0;
-				pPlayer->UpdateVRRightControllerPosition(timestamp,
+				pPlayer->UpdateVRController(
+					VRControllerID::WEAPON,
+					timestamp,
 					isValid,
 					Vector(atof(CMD_ARGV(3)), atof(CMD_ARGV(4)), atof(CMD_ARGV(5))),
 					Vector(atof(CMD_ARGV(6)), atof(CMD_ARGV(7)), atof(CMD_ARGV(8))),
