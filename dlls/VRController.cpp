@@ -47,29 +47,31 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 		m_modelName = pPlayer->pev->viewmodel;
 	}
 
-	extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
-	if (m_isValid && ExtractBbox(GET_MODEL_PTR(GetModel()->edict()), GetModel()->pev->sequence, m_mins, m_maxs))
-	{
-		m_isBBoxValid = ((m_maxs - m_mins).LengthSquared() > EPSILON);
-	}
-	else
-	{
-		m_isBBoxValid = false;
-	}
-
 	CBaseEntity *pModel = GetModel();
 	pModel->pev->origin = GetPosition();
 	pModel->pev->angles = GetAngles();
 	pModel->pev->velocity = GetVelocity();
+	pModel->pev->model = m_modelName;
+	UTIL_SetOrigin(pModel->pev, pModel->pev->origin);
+	SET_MODEL(pModel->edict(), STRING(m_modelName));
 	if (isValid)
 	{
-		pModel->pev->model = m_modelName;
 		pModel->pev->effects &= ~EF_NODRAW;
+
+		extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
+		if (ExtractBbox(GET_MODEL_PTR(GetModel()->edict()), GetModel()->pev->sequence, m_mins, m_maxs))
+		{
+			m_isBBoxValid = ((m_maxs - m_mins).LengthSquared() > EPSILON);
+		}
+		else
+		{
+			m_isBBoxValid = false;
+		}
 	}
 	else
 	{
-		pModel->pev->model = iStringNull;
 		pModel->pev->effects |= EF_NODRAW;
+		m_isBBoxValid = false;
 	}
 }
 
@@ -77,7 +79,11 @@ CBaseEntity* VRController::GetModel()
 {
 	if (!m_hModel)
 	{
-		m_hModel = CSprite::SpriteCreate(STRING(m_modelName), GetPosition(), TRUE);
+		CSprite *pModel = CSprite::SpriteCreate(STRING(m_modelName), GetPosition(), FALSE);
+		pModel->m_maxFrame = 255;
+		pModel->pev->framerate = 1.f;
+		pModel->TurnOn();
+		m_hModel = pModel;
 	}
 	return m_hModel;
 }
@@ -88,8 +94,13 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 	pModel->pev->sequence = iAnim;
 	pModel->pev->body = body;
 	pModel->pev->frame = 0;
+	pModel->pev->framerate = 1.f;
 	pModel->pev->animtime = gpGlobals->time;
 	pModel->pev->framerate = 1.0;
+
+	extern void GetSequenceInfo(void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed);
+	float dummy;
+	GetSequenceInfo(GET_MODEL_PTR(GetModel()->edict()), pModel->pev, &pModel->pev->framerate, &dummy);
 }
 
 bool VRController::AddTouchedEntity(EHANDLE hEntity) const
