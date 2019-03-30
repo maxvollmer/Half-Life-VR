@@ -51,9 +51,12 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	pModel->pev->origin = GetPosition();
 	pModel->pev->angles = GetAngles();
 	pModel->pev->velocity = GetVelocity();
-	pModel->pev->model = m_modelName;
 	UTIL_SetOrigin(pModel->pev, pModel->pev->origin);
-	SET_MODEL(pModel->edict(), STRING(m_modelName));
+	if (pModel->pev->model != m_modelName)
+	{
+		pModel->pev->model = m_modelName;
+		SET_MODEL(pModel->edict(), STRING(m_modelName));
+	}
 	if (isValid)
 	{
 		pModel->pev->effects &= ~EF_NODRAW;

@@ -4797,11 +4797,14 @@ void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const 
 			weaponId = itemInfo.iId;
 		}
 	}
+
 	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, offset, angles, velocity, isDragging, weaponId);
+
 	if (vrControllerID == GetFlashlightControllerID())
 	{
 		UpdateFlashlight();
 	}
+
 	if (vrControllerID == GetTeleporterControllerID())
 	{
 		UpdateVRTele();
