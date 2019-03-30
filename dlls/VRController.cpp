@@ -47,7 +47,8 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 		m_modelName = pPlayer->pev->viewmodel;
 	}
 
-	if (m_isValid && GetModel()->ExtractBbox(GetModel()->pev->sequence, m_mins, m_maxs))
+	extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
+	if (m_isValid && ExtractBbox(GET_MODEL_PTR(GetModel()->edict()), GetModel()->pev->sequence, m_mins, m_maxs))
 	{
 		m_isBBoxValid = ((m_maxs - m_mins).LengthSquared() > EPSILON);
 	}
@@ -56,7 +57,7 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 		m_isBBoxValid = false;
 	}
 
-	CBaseAnimating *pModel = GetModel();
+	CBaseEntity *pModel = GetModel();
 	pModel->pev->origin = GetPosition();
 	pModel->pev->angles = GetAngles();
 	pModel->pev->velocity = GetVelocity();
@@ -72,22 +73,23 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	}
 }
 
-CBaseAnimating* VRController::GetModel()
+CBaseEntity* VRController::GetModel()
 {
 	if (!m_hModel)
 	{
 		m_hModel = CSprite::SpriteCreate(STRING(m_modelName), GetPosition(), TRUE);
 	}
-	return dynamic_cast<CBaseAnimating*>((CBaseEntity*)m_hModel);
+	return m_hModel;
 }
 
 void VRController::PlayWeaponAnimation(int iAnim, int body)
 {
-	CBaseAnimating *pModel = GetModel();
+	CBaseEntity *pModel = GetModel();
 	pModel->pev->sequence = iAnim;
 	pModel->pev->body = body;
 	pModel->pev->frame = 0;
-	pModel->ResetSequenceInfo();
+	pModel->pev->animtime = gpGlobals->time;
+	pModel->pev->framerate = 1.0;
 }
 
 bool VRController::AddTouchedEntity(EHANDLE hEntity) const

@@ -4227,7 +4227,7 @@ Vector CBasePlayer::GetGunPosition()
 	// Gun position and angles determined by attachment on weapon model - Max Vollmer, 2019-03-30
 	Vector pos;
 	Vector angles;
-	m_vrControllers[GetWeaponControllerID()].GetModel()->GetAttachment(VR_MUZZLE_ATTACHMENT, pos, angles);
+	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos, angles);
 	return pos;
 }
 
@@ -4236,7 +4236,7 @@ Vector CBasePlayer::GetAimAngles()
 	// Gun position and angles determined by attachment on weapon model - Max Vollmer, 2019-03-30
 	Vector pos;
 	Vector angles;
-	m_vrControllers[GetWeaponControllerID()].GetModel()->GetAttachment(VR_MUZZLE_ATTACHMENT, pos, angles);
+	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos, angles);
 	return angles;
 }
 

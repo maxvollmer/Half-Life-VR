@@ -12,7 +12,7 @@ class VRController
 public:
 	void Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, int weaponId);
 
-	CBaseAnimating* GetModel();
+	CBaseEntity* GetModel();
 	void PlayWeaponAnimation(int iAnim, int body);
 
 	inline const Vector& GetOffset() const { return m_offset; }
