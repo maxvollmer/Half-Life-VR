@@ -190,8 +190,9 @@ bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& contro
 	}
 	else
 	{
-		float distanceSquared = (controller.GetPosition() - hEntity->pev->origin).LengthSquared();
-		if (distanceSquared > (controller.GetRadiusSquared() + (hEntity->pev->size.LengthSquared() * 0.25f)))
+		Vector entityCenter = (hEntity->pev->absmax + hEntity->pev->absmin) * 0.5f;
+		float distance = (controller.GetPosition() - entityCenter).Length();
+		if (distance > (controller.GetRadius() + (hEntity->pev->size.Length() * 0.5f)))
 		{
 			return false;
 		}
@@ -217,7 +218,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 
 		EHANDLE hEntity = pEntity;
 
-		const bool isTouching = false;// CheckIfEntityAndControllerTouch(hEntity, controller);
+		const bool isTouching = CheckIfEntityAndControllerTouch(hEntity, controller);
 		const bool didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
 
 		const bool isHitting = isTouching && controller.GetVelocity().Length() > MELEE_MIN_SWING_SPEED;
