@@ -4228,7 +4228,7 @@ Vector CBasePlayer::GetGunPosition()
 	Vector pos;
 	Vector angles;
 	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos, angles);
-	ALERT(at_console, "CBasePlayer::GetGunPosition for %s: %f %f %f", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), pos.x, pos.y, pos.z);
+	ALERT(at_console, "CBasePlayer::GetAimPosition for %s: %f %f %f", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), pos.x, pos.y, pos.z);
 	return pos;
 }
 
