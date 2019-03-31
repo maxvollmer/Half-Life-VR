@@ -437,7 +437,7 @@ void CCrossbow::FireBolt()
 #ifndef CLIENT_DLL
 	CCrossbowBolt *pBolt = CCrossbowBolt::BoltCreate();
 	pBolt->pev->origin = vecSrc;
-	pBolt->pev->angles = m_pPlayer->GetWeaponAngles();
+	pBolt->pev->angles = m_pPlayer->GetAimAngles();
 	pBolt->pev->owner = m_pPlayer->edict();
 
 	if (m_pPlayer->pev->waterlevel == 3)

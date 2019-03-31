@@ -222,31 +222,42 @@ void SequencePrecache( void *pmodel, const char *pSequenceName )
 	}
 }
 
+int GetNumSequences(void *pmodel)
+{
+	studiohdr_t *pstudiohdr = (studiohdr_t *)pmodel;
+	if (!pstudiohdr)
+		return 0;
+	return pstudiohdr->numseq;
+}
 
+int GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed )
+{
+	return GetSequenceInfo(pmodel, pev->sequence, pflFrameRate, pflGroundSpeed);
+}
 
-void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed )
+int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflGroundSpeed)
 {
 	studiohdr_t *pstudiohdr;
-	
+
 	pstudiohdr = (studiohdr_t *)pmodel;
-	if (! pstudiohdr)
-		return;
+	if (!pstudiohdr)
+		return 0;
 
 	mstudioseqdesc_t	*pseqdesc;
 
-	if (pev->sequence >= pstudiohdr->numseq)
+	if (sequence >= pstudiohdr->numseq)
 	{
 		*pflFrameRate = 0.0;
 		*pflGroundSpeed = 0.0;
-		return;
+		return 0;
 	}
 
-	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + (int)pev->sequence;
+	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + sequence;
 
 	if (pseqdesc->numframes > 1)
 	{
 		*pflFrameRate = 256 * pseqdesc->fps / (pseqdesc->numframes - 1);
-		*pflGroundSpeed = sqrt( pseqdesc->linearmovement[0]*pseqdesc->linearmovement[0]+ pseqdesc->linearmovement[1]*pseqdesc->linearmovement[1]+ pseqdesc->linearmovement[2]*pseqdesc->linearmovement[2] );
+		*pflGroundSpeed = sqrt(pseqdesc->linearmovement[0] * pseqdesc->linearmovement[0] + pseqdesc->linearmovement[1] * pseqdesc->linearmovement[1] + pseqdesc->linearmovement[2] * pseqdesc->linearmovement[2]);
 		*pflGroundSpeed = *pflGroundSpeed * pseqdesc->fps / (pseqdesc->numframes - 1);
 	}
 	else
@@ -254,6 +265,8 @@ void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *
 		*pflFrameRate = 256.0;
 		*pflGroundSpeed = 0.0;
 	}
+
+	return 1;
 }
 
 

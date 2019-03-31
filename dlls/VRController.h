@@ -34,6 +34,8 @@ public:
 	bool RemoveHitEntity(EHANDLE hEntity) const;
 
 private:
+	void ExtractBBoxIfPossibleAndNecessary();
+
 	Vector m_offset;
 	Vector m_position;
 	Vector m_angles;
@@ -48,6 +50,8 @@ private:
 	bool m_isBBoxValid{ false };
 	bool m_isTeleporterBlocked{ true };
 	string_t m_modelName{ 0 };
+	string_t m_bboxModelName{ 0 };
+	int m_bboxModelSequence{ 0 };
 	EHANDLE m_hModel;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_touchedEntities;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_hitEntities;
