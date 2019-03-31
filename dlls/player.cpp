@@ -1751,7 +1751,8 @@ void CBasePlayer::PreThink(void)
 	// VR stuff: Calculate controller interactions with world
 	for (auto& controller : m_vrControllers)
 	{
-		m_vrControllerInteractionManager.CheckAndPressButtons(this, controller.second);
+		// TODO: Find framerate drop
+		//m_vrControllerInteractionManager.CheckAndPressButtons(this, controller.second);
 	}
 
 	// So the correct flags get sent to client asap.
@@ -4788,6 +4789,9 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 
 void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging)
 {
+	// TODO: Find fps drop
+	return;
+
 	int weaponId = WEAPON_BAREHAND;
 	if (vrControllerID == GetWeaponControllerID())
 	{
@@ -4937,6 +4941,8 @@ void CBasePlayer::PlayMeleeSmackSound(CBaseEntity *pSmackedEntity, const int wea
 
 void CBasePlayer::PlayVRWeaponAnimation(int iAnim, int body)
 {
+	// TODO: Find fps drop
+	return;
 	pev->weaponanim = iAnim;
 	m_vrControllers[GetWeaponControllerID()].PlayWeaponAnimation(iAnim, body);
 }
