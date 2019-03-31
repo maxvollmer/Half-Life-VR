@@ -312,6 +312,7 @@
     <ClCompile Include="VRController.cpp" />
     <ClCompile Include="VRControllerInteractionManager.cpp" />
     <ClCompile Include="VRControllerTeleporter.cpp" />
+    <ClCompile Include="VRModelHelper.cpp" />
     <ClCompile Include="VRPhysicsHelper.cpp" />
     <ClCompile Include="weapons.cpp" />
     <ClCompile Include="world.cpp" />
@@ -368,6 +369,7 @@
     <ClInclude Include="VRController.h" />
     <ClInclude Include="VRControllerInteractionManager.h" />
     <ClInclude Include="VRControllerTeleporter.h" />
+    <ClInclude Include="VRModelHelper.h" />
     <ClInclude Include="VRPhysicsHelper.h" />
     <ClInclude Include="weapons.h" />
   </ItemGroup>

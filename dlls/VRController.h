@@ -21,6 +21,8 @@ public:
 	inline const Vector& GetVelocity() const { return m_velocity; }
 	inline const Vector& GetMins() const { return m_mins; }
 	inline const Vector& GetMaxs() const { return m_maxs; }
+	inline const float GetRadius() const { return m_radius; }
+	inline const float GetRadiusSquared() const { return m_radiusSquared; }
 	inline bool IsDragging() const { return m_isDragging; }
 	inline bool IsValid() const { return m_isValid; }
 	inline bool IsBBoxValid() const { return m_isBBoxValid; }
@@ -42,6 +44,8 @@ private:
 	Vector m_velocity;
 	Vector m_mins;
 	Vector m_maxs;
+	float m_radius{ 0.f };
+	float m_radiusSquared{ 0.f };
 	int m_weaponId{ WEAPON_BAREHAND };
 	int m_lastUpdateClienttime{ 0 };
 	float m_lastUpdateServertime{ 0.f };

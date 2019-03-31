@@ -454,8 +454,14 @@ edict_t * EHANDLE::Get( void )
 edict_t * EHANDLE::Set( edict_t *pent ) 
 { 
 	m_pent = pent;  
-	if (pent) 
-		m_serialnumber = m_pent->serialnumber; 
+	if (pent)
+	{
+		m_serialnumber = m_pent->serialnumber;
+	}
+	else
+	{
+		m_serialnumber = 0;
+	}
 	return pent; 
 };
 
@@ -494,14 +500,7 @@ CBaseEntity * EHANDLE :: operator -> ()
 
 bool EHANDLE :: operator == (EHANDLE& other)
 {
-	if (Get() == NULL && other.Get() == NULL)
-	{
-		return true;
-	}
-	else
-	{
-		return m_pent == other.m_pent && m_serialnumber == other.m_serialnumber;
-	}
+	return m_pent == other.m_pent && m_serialnumber == other.m_serialnumber;
 }
 
 // give health

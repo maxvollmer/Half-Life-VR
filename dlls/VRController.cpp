@@ -9,12 +9,8 @@
 
 #include "VRController.h"
 #include "VRPhysicsHelper.h"
+#include "VRModelHelper.h"
 
-
-extern void* FindStudioModelByName(const char* name);
-extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
-extern int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflGroundSpeed);
-extern int GetNumSequences(void *pmodel);
 
 
 void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, int weaponId)
@@ -84,11 +80,16 @@ void VRController::ExtractBBoxIfPossibleAndNecessary()
 	if (m_isBBoxValid && m_bboxModelName == m_modelName && m_bboxModelSequence == pModel->pev->sequence)
 		return;
 
-	if (ExtractBbox(GET_MODEL_PTR(pModel->edict()), pModel->pev->sequence, m_mins, m_maxs))
+	auto& modelInfo = VRModelHelper::GetModelInfo(pModel);
+	if (modelInfo.m_isValid && pModel->pev->sequence < modelInfo.m_numSequences)
 	{
 		m_bboxModelName = m_modelName;
 		m_bboxModelSequence = pModel->pev->sequence;
-		m_isBBoxValid = ((m_maxs - m_mins).LengthSquared() > EPSILON);
+		m_mins = modelInfo.m_sequences[m_bboxModelSequence].bboxMins;
+		m_maxs = modelInfo.m_sequences[m_bboxModelSequence].bboxMaxs;
+		m_radius = modelInfo.m_sequences[m_bboxModelSequence].bboxRadius;
+		m_radiusSquared = m_radius * m_radius;
+		m_isBBoxValid = m_radius > EPSILON;
 	}
 	else
 	{
@@ -115,21 +116,18 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 		return;
 
 	CBaseEntity *pModel = GetModel();
-	void *pmodel = GET_MODEL_PTR(pModel->edict());
-	int numseq = GetNumSequences(pmodel);
+	auto& modelInfo = VRModelHelper::GetModelInfo(pModel);
 
-	float framerate;
-	float dummy;
-	if (iAnim < numseq && GetSequenceInfo(pmodel, iAnim, &framerate, &dummy))
+	if (modelInfo.m_isValid && iAnim < modelInfo.m_numSequences)
 	{
-		ALERT(at_console, "VRController::PlayWeaponAnimation: Playing sequence %i of %i for %s (%s)\n", iAnim, numseq, STRING(m_modelName), STRING(pModel->pev->model));
+		ALERT(at_console, "VRController::PlayWeaponAnimation: Playing sequence %i of %i for %s (%s)\n", iAnim, modelInfo.m_numSequences, STRING(m_modelName), STRING(pModel->pev->model));
 		pModel->pev->sequence = iAnim;
 		pModel->pev->body = body;
-		pModel->pev->framerate = framerate;
+		pModel->pev->framerate = modelInfo.m_sequences[iAnim].framerate;
 	}
 	else
 	{
-		ALERT(at_console, "VRController::PlayWeaponAnimation: Invalid sequence %i of %i for %s (%s)\n", iAnim, numseq, STRING(m_modelName), STRING(pModel->pev->model));
+		ALERT(at_console, "VRController::PlayWeaponAnimation: Invalid sequence %i of %i for %s (%s)\n", iAnim, modelInfo.m_numSequences, STRING(m_modelName), STRING(pModel->pev->model));
 		pModel->pev->sequence = 0;
 		pModel->pev->body = 0;
 		pModel->pev->framerate = 1.f;
