@@ -87,7 +87,7 @@ CBaseEntity* VRController::GetModel()
 {
 	if (!m_hModel)
 	{
-		CSprite *pModel = CSprite::SpriteCreate(STRING(m_modelName), GetPosition(), FALSE);
+		CSprite *pModel = CSprite::SpriteCreate(m_modelName ? STRING(m_modelName) : "models/v_gordon_hand.mdl", GetPosition(), FALSE);
 		pModel->m_maxFrame = 255;
 		pModel->pev->framerate = 1.f;
 		pModel->TurnOn();
