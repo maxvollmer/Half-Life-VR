@@ -44,9 +44,6 @@
 
 #define VR_RETINASCANNER_ACTIVATE_LOOK_TIME 1.5f
 
-extern void* FindStudioModelByName(const char* name);
-extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
-
 // Global VR related stuffs - Max Vollmer, 2018-04-02
 #include <vector>
 #include <algorithm>
@@ -186,7 +183,7 @@ bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& contro
 	CBaseEntity *pWorld = CBaseEntity::Instance(INDEXENT(0));
 	if (hEntity == pWorld)
 	{
-		return VRPhysicsHelper::Instance().RotatedBBoxIntersectsWorld(controller.GetPosition(), controller.GetAngles(), controller.GetMins(), controller.GetMaxs());
+		return VRPhysicsHelper::Instance().ModelIntersectsWorld(controller.GetModel());
 	}
 	else
 	{
@@ -196,7 +193,7 @@ bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& contro
 		{
 			return false;
 		}
-		return VRPhysicsHelper::Instance().RotatedBBoxesIntersect(controller.GetPosition(), controller.GetAngles(), controller.GetMins(), controller.GetMaxs(), hEntity->pev->origin, Vector{}, hEntity->pev->mins, hEntity->pev->maxs);
+		return VRPhysicsHelper::Instance().ModelsIntersect(controller.GetModel(), hEntity);
 	}
 }
 

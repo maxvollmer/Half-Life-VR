@@ -60,9 +60,17 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 
 	ExtractBBoxIfPossibleAndNecessary();
 
-	if (isValid)
+	if (m_isValid)
 	{
 		pModel->pev->effects &= ~EF_NODRAW;
+		if (m_isBBoxValid)
+		{
+			pModel->pev->mins = m_mins;
+			pModel->pev->maxs = m_maxs;
+			pModel->pev->size = m_maxs - m_mins;
+			pModel->pev->absmin = pModel->pev->origin + m_mins;
+			pModel->pev->absmax = pModel->pev->origin + m_maxs;
+		}
 	}
 	else
 	{
@@ -97,7 +105,7 @@ void VRController::ExtractBBoxIfPossibleAndNecessary()
 	}
 }
 
-CBaseEntity* VRController::GetModel()
+CBaseEntity* VRController::GetModel() const
 {
 	if (!m_hModel)
 	{

@@ -7,7 +7,7 @@
 namespace reactphysics3d {
 	class CollisionWorld;
 	class DynamicsWorld;
-	class SphereShape;
+	class BoxShape;
 	class CollisionBody;
 	class TriangleVertexArray;
 	class TriangleMesh;
@@ -17,6 +17,7 @@ namespace reactphysics3d {
 };
 
 class CWorld;
+class CBaseEntity;
 
 class VRPhysicsHelper
 {
@@ -44,36 +45,59 @@ public:
 
 	void TraceLine(const Vector &vecStart, const Vector &vecEnd, edict_t* pentIgnore, TraceResult *ptr);
 
+	bool ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs);
+	bool ModelIntersectsWorld(CBaseEntity *pModel);
+	bool ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2);
+
+	/*
 	bool RotatedBBoxIntersectsWorld(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs);
 	bool RotatedBBoxesIntersect(
 		const Vector & bbox1Center, const Vector & bbox1Angles, const Vector & bbox1Mins, const Vector & bbox1Maxs,
 		const Vector & bbox2Center, const Vector & bbox2Angles, const Vector & bbox2Mins, const Vector & bbox2Maxs);
+	*/
+
+	class BSPModelData
+	{
+	public:
+		~BSPModelData();
+
+		void CreateData(reactphysics3d::CollisionWorld* collisionWorld);
+		void DeleteData();
+		bool HasData() { return m_hasData; }
+
+		std::vector<struct reactphysics3d::Vector3>		m_vertices;
+		std::vector<int32_t>							m_indices;
+
+		reactphysics3d::TriangleVertexArray*			m_triangleVertexArray{ nullptr };
+		reactphysics3d::TriangleMesh*					m_triangleMesh{ nullptr };
+		reactphysics3d::ConcaveMeshShape*				m_concaveMeshShape{ nullptr };
+		reactphysics3d::ProxyShape*						m_proxyShape{ nullptr };
+		reactphysics3d::CollisionBody*					m_collisionBody{ nullptr };
+
+		reactphysics3d::CollisionWorld*					m_collisionWorld{ nullptr };
+
+		bool											m_hasData{ false };
+	};
 
 private:
-	reactphysics3d::CollisionWorld * m_collisionWorld = nullptr;
-
-	std::vector<struct reactphysics3d::Vector3> m_vertices;
-	std::vector<int32_t> m_indices;
-
-	reactphysics3d::TriangleVertexArray* m_triangleArray = nullptr;
-	reactphysics3d::TriangleMesh* m_triangleMesh = nullptr;
-	reactphysics3d::ConcaveMeshShape* m_concaveMeshShape = nullptr; 
-	reactphysics3d::ProxyShape* m_dynamicMapProxyShape = nullptr;
-
-	reactphysics3d::CollisionBody* m_dynamicMap = nullptr;
-
-	const struct model_s *m_hlWorldModel = nullptr;
-
 	bool CheckWorld();
 
 	void InitPhysicsWorld();
-	void DeletePhysicsMapData();
-	void CreateMapShapeFromCurrentVerticesAndTriangles();
 
 	bool GetPhysicsMapDataFromFile(const std::string& physicsMapDataFilePath);
 	void StorePhysicsMapDataToFile(const std::string& physicsMapDataFilePath);
 	void GetPhysicsMapDataFromModel();
 
+	std::string										m_currentMapName;
+	std::unordered_map<std::string, BSPModelData>	m_bspModelData;
 
-	static VRPhysicsHelper* m_instance;
+	const struct model_s*							m_hlWorldModel{ nullptr };
+	reactphysics3d::CollisionWorld*					m_collisionWorld{ nullptr };
+
+	reactphysics3d::CollisionBody*					m_bboxBody{ nullptr };
+	reactphysics3d::BoxShape*						m_bboxShape{ nullptr };
+	reactphysics3d::ProxyShape*						m_bboxProxyShape{ nullptr };
+
+
+	static VRPhysicsHelper*		m_instance;
 };

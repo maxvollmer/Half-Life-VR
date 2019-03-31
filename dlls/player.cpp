@@ -5027,9 +5027,9 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 				else
 				{
 					// If entity is wide (e.g. a train or elevator) we check if half bbox is inside (this prevents falling off when standing on edge)
-					VRPhysicsHelper::Instance().RotatedBBoxesIntersect(
-						pEntity->pev->origin, pEntity->pev->angles, pEntity->pev->mins, pEntity->pev->maxs,
-						Vector{}, Vector{}, gVRTempPlayerHalfAbsmin, gVRTempPlayerHalfAbsmax);
+					VRPhysicsHelper::Instance().ModelIntersectsBBox(
+						pEntity,
+						Vector{}, gVRTempPlayerHalfAbsmin, gVRTempPlayerHalfAbsmax);
 				}
 			}
 			return false;

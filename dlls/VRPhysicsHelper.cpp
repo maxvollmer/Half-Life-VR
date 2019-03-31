@@ -27,7 +27,7 @@ extern struct playermove_s *PM_GetPlayerMove(void);
 #include <chrono>
 
 constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_MAGIC = 'HLVR';
-constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_VERSION = 100;
+constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_VERSION = 102;
 
 // Stuff needed to extract brush models
 constexpr const unsigned int ENGINE_MODEL_ARRAY_SIZE = 1024;
@@ -97,6 +97,7 @@ const model_t* FindEngineModelByName(const char* name)
 	return nullptr;
 }
 
+/*
 void* FindStudioModelByName(const char* name)
 {
 	void* result = nullptr;
@@ -117,23 +118,7 @@ void* FindStudioModelByName(const char* name)
 	}
 	return result;
 }
-
-#define VR_MUZZLE_ATTACHMENT 0
-Vector GetModelAttachment(const char* name, int index, int sequence, int frame)
-{
-	Vector pos;
-	Vector angles;
-	const model_t* model = FindEngineModelByName(name);
-	if (model != nullptr && model->type == modtype_t::mod_studio)
-	{
-		CSprite *pSprite = CSprite::SpriteCreate(name, Vector{}, TRUE);
-		pSprite->pev->sequence = sequence;
-		pSprite->pev->frame = frame;
-		GET_ATTACHMENT(pSprite->edict(), VR_MUZZLE_ATTACHMENT, pos, angles);
-		UTIL_Remove(pSprite);
-	}
-	return pos;
-}
+*/
 
 // Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
 const model_t * GetBSPModel(CBaseEntity *pEntity)
@@ -568,16 +553,19 @@ void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMa
 }
 
 // Get vertices and indices of world (triangulation of bsp data (map and non-moving solid entities))
-void TriangulateBSP(PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<int> & indices)
+void TriangulateBSPModel(const model_t* model, PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<int> & indices)
 {
-	// Collect faces of world
-	CollectFaces(GetWorldBSPModel(), Vector{}, planeFaces, planeVertexMetaData);
+	// Collect faces of bsp model
+	CollectFaces(model, Vector{}, planeFaces, planeVertexMetaData);
 
-	// Collect faces of bsp entities
-	CBaseEntity *pEnt = nullptr;
-	while (UTIL_FindEntityByFilter(&pEnt, IsSolidInPhysicsWorld))
+	// If world, also collect faces of non-moving solid entities
+	if (model == GetWorldBSPModel())
 	{
-		CollectFaces(GetBSPModel(pEnt), pEnt->pev->origin, planeFaces, planeVertexMetaData);
+		CBaseEntity *pEnt = nullptr;
+		while (UTIL_FindEntityByFilter(&pEnt, IsSolidInPhysicsWorld))
+		{
+			CollectFaces(GetBSPModel(pEnt), pEnt->pev->origin, planeFaces, planeVertexMetaData);
+		}
 	}
 
 	// Triangulate all faces (also triangulates gaps between faces!)
@@ -674,13 +662,27 @@ VRPhysicsHelper::VRPhysicsHelper()
 
 VRPhysicsHelper::~VRPhysicsHelper()
 {
-	DeletePhysicsMapData();
-
-	if (m_collisionWorld) delete m_collisionWorld;
-
-	if (m_concaveMeshShape) delete m_concaveMeshShape;
-	if (m_triangleMesh) delete m_triangleMesh;
-	if (m_triangleArray) delete m_triangleArray;
+	m_bspModelData.clear();
+	if (m_collisionWorld)
+	{
+		if (m_bboxBody)
+		{
+			if (m_bboxProxyShape)
+			{
+				m_bboxBody->removeCollisionShape(m_bboxProxyShape);
+				m_bboxProxyShape = nullptr;
+			}
+			m_collisionWorld->destroyCollisionBody(m_bboxBody);
+			m_bboxBody = nullptr;
+		}
+		delete m_collisionWorld;
+		m_collisionWorld = nullptr;
+	}
+	if (m_bboxShape)
+	{
+		delete m_bboxShape;
+		m_bboxBody = nullptr;
+	}
 }
 
 bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &hlPos2)
@@ -704,7 +706,7 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	Ray ray{ pos1 , pos2, 1.f };
 	RaycastInfo raycastInfo{};
 
-	bool result = m_dynamicMap->raycast(ray, raycastInfo) && raycastInfo.hitFraction < (1.f - EPSILON);
+	bool result = m_bspModelData[m_currentMapName].m_collisionBody->raycast(ray, raycastInfo) && raycastInfo.hitFraction < (1.f - EPSILON);
 
 	if (result)
 	{
@@ -718,65 +720,96 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	return result;
 }
 
-bool VRPhysicsHelper::RotatedBBoxIntersectsWorld(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs)
+bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs)
 {
-	bool result = false;
+	if (!CheckWorld())
+		return false;
 
-	if (CheckWorld())
+	if (!pModel->pev->model)
+		return false;
+
+	Vector3 bboxSize = HLVecToRP3DVec(bboxMaxs - bboxMins);
+	Vector3 bboxPosition = HLVecToRP3DVec(bboxCenter);
+
+	if (!m_bboxBody)
 	{
-		Vector3 bboxSize = HLVecToRP3DVec(bboxMaxs - bboxMins);
-		Vector3 bboxPosition = HLVecToRP3DVec(bboxCenter);
-		BoxShape boxShape{ bboxSize };
-
-		vec4_t bboxQuaternion;
-		UTIL_AngleQuaternion(bboxAngles * M_PI / 180.f, bboxQuaternion);
-
-		CollisionBody* body = m_collisionWorld->createCollisionBody(rp3d::Transform{ bboxPosition, Quaternion{ bboxQuaternion[0], bboxQuaternion[1], bboxQuaternion[2], bboxQuaternion[3] }.getMatrix() });
-		body->addCollisionShape(&boxShape, rp3d::Transform::identity());
-
-		result = m_collisionWorld->testOverlap(body, m_dynamicMap);
-
-		m_collisionWorld->destroyCollisionBody(body);
+		m_bboxBody = m_collisionWorld->createCollisionBody(rp3d::Transform{ bboxPosition, rp3d::Matrix3x3::identity() });
 	}
 
-	return result;
+	if (m_bboxProxyShape)
+	{
+		m_bboxBody->removeCollisionShape(m_bboxProxyShape);
+		m_bboxProxyShape = nullptr;
+	}
+	if (m_bboxShape)
+	{
+		delete m_bboxShape;
+		m_bboxShape = nullptr;
+	}
+
+	m_bboxShape = new BoxShape{ bboxSize };
+	m_bboxProxyShape = m_bboxBody->addCollisionShape(m_bboxShape, rp3d::Transform::identity());
+
+	return m_collisionWorld->testOverlap(m_bspModelData[m_currentMapName].m_collisionBody, m_bboxBody);
 }
 
-bool VRPhysicsHelper::RotatedBBoxesIntersect(
-	const Vector & bbox1Center, const Vector & bbox1Angles, const Vector & bbox1Mins, const Vector & bbox1Maxs,
-	const Vector & bbox2Center, const Vector & bbox2Angles, const Vector & bbox2Mins, const Vector & bbox2Maxs)
+bool VRPhysicsHelper::ModelIntersectsWorld(CBaseEntity *pModel)
 {
-	bool result = false;
+	if (!CheckWorld())
+		return false;
 
-	if (CheckWorld())
+	if (!pModel || !pModel->pev->model)
+		return false;
+
+	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
+	if (bspModelData != m_bspModelData.end())
 	{
-		Vector3 bbox1Size = HLVecToRP3DVec(bbox1Maxs - bbox1Mins);
-		Vector3 bbox1Position = HLVecToRP3DVec(bbox1Center);
-		BoxShape box1Shape{ bbox1Size };
-
-		vec4_t bbox1Quaternion;
-		UTIL_AngleQuaternion(bbox1Angles * M_PI / 180.f, bbox1Quaternion);
-
-		CollisionBody* body1 = m_collisionWorld->createCollisionBody(rp3d::Transform{ bbox1Position, Quaternion{ bbox1Quaternion[0], bbox1Quaternion[1], bbox1Quaternion[2], bbox1Quaternion[3] }.getMatrix() });
-		body1->addCollisionShape(&box1Shape, rp3d::Transform::identity());
-
-		Vector3 bbox2Size = HLVecToRP3DVec(bbox2Maxs - bbox2Mins);
-		Vector3 bbox2Position = HLVecToRP3DVec(bbox2Center);
-		BoxShape box2Shape{ bbox2Size };
-
-		vec4_t bbox2Quaternion;
-		UTIL_AngleQuaternion(bbox2Angles * M_PI / 180.f, bbox2Quaternion);
-
-		CollisionBody* body2 = m_collisionWorld->createCollisionBody(rp3d::Transform{ bbox2Position, Quaternion{ bbox2Quaternion[0], bbox2Quaternion[1], bbox2Quaternion[2], bbox2Quaternion[3] }.getMatrix() });
-		body2->addCollisionShape(&box2Shape, rp3d::Transform::identity());
-
-		result = m_collisionWorld->testOverlap(body1, body2);
-
-		m_collisionWorld->destroyCollisionBody(body1);
-		m_collisionWorld->destroyCollisionBody(body2);
+		vec4_t modelQuaternion;
+		UTIL_AngleQuaternion(pModel->pev->angles * M_PI / 180.f, modelQuaternion);
+		bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), Quaternion{ modelQuaternion[0], modelQuaternion[1], modelQuaternion[2], modelQuaternion[3] }.getMatrix() });
+		return m_collisionWorld->testOverlap(m_bspModelData[m_currentMapName].m_collisionBody, bspModelData->second.m_collisionBody);
 	}
+	else
+	{
+		return ModelIntersectsBBox(CBaseEntity::Instance(INDEXENT(0)), pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs);
+	}
+}
 
-	return result;
+bool VRPhysicsHelper::ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2)
+{
+	if (!CheckWorld())
+		return false;
+
+	if (!pModel1 || !pModel1->pev->model || !pModel2 || !pModel2->pev->model)
+		return false;
+
+	auto& bspModelData1 = m_bspModelData.find(std::string{ STRING(pModel1->pev->model) });
+	auto& bspModelData2 = m_bspModelData.find(std::string{ STRING(pModel2->pev->model) });
+	if (bspModelData1 != m_bspModelData.end() && bspModelData2 != m_bspModelData.end())
+	{
+		vec4_t model1Quaternion;
+		vec4_t model2Quaternion;
+		UTIL_AngleQuaternion(pModel1->pev->angles * M_PI / 180.f, model1Quaternion);
+		UTIL_AngleQuaternion(pModel2->pev->angles * M_PI / 180.f, model2Quaternion);
+		bspModelData1->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel1->pev->origin), Quaternion{ model1Quaternion[0], model1Quaternion[1], model1Quaternion[2], model1Quaternion[3] }.getMatrix() });
+		bspModelData2->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel2->pev->origin), Quaternion{ model2Quaternion[0], model2Quaternion[1], model2Quaternion[2], model2Quaternion[3] }.getMatrix() });
+		return m_collisionWorld->testOverlap(bspModelData1->second.m_collisionBody, bspModelData2->second.m_collisionBody);
+	}
+	else
+	{
+		if (bspModelData1 != m_bspModelData.end())
+		{
+			return ModelIntersectsBBox(pModel1, pModel1->pev->origin, pModel1->pev->mins, pModel1->pev->maxs);
+		}
+		else if (bspModelData1 != m_bspModelData.end())
+		{
+			return ModelIntersectsBBox(pModel1, pModel1->pev->origin, pModel1->pev->mins, pModel1->pev->maxs);
+		}
+		else
+		{
+			return UTIL_BBoxIntersectsBBox(pModel1->pev->absmin, pModel1->pev->absmax, pModel2->pev->absmin, pModel2->pev->absmax);
+		}
+	}
 }
 
 constexpr const float LADDER_EPSILON = 4.f;
@@ -793,7 +826,7 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 		Ray ray{ pos1, pos2, 1.f };
 		RaycastInfo raycastInfo{};
 
-		if (m_dynamicMap->raycast(ray, raycastInfo) && raycastInfo.hitFraction < ptr->flFraction)
+		if (m_bspModelData[m_currentMapName].m_collisionBody->raycast(ray, raycastInfo) && raycastInfo.hitFraction < ptr->flFraction)
 		{
 			ptr->vecEndPos = RP3DVecToHLVec(raycastInfo.worldPoint);
 			ptr->vecPlaneNormal = RP3DVecToHLVec(raycastInfo.worldNormal).Normalize();
@@ -860,17 +893,31 @@ void VRPhysicsHelper::InitPhysicsWorld()
 	if (m_collisionWorld == nullptr)
 	{
 		m_collisionWorld = new DynamicsWorld{ Vector3{ 0, 0, 0 } };
-		m_dynamicMap = m_collisionWorld->createCollisionBody(rp3d::Transform::identity());
 	}
 }
 
-void VRPhysicsHelper::DeletePhysicsMapData()
+VRPhysicsHelper::BSPModelData::~BSPModelData()
 {
-	if (m_dynamicMapProxyShape)
+	m_vertices.clear();
+	m_indices.clear();
+	DeleteData();
+}
+
+void VRPhysicsHelper::BSPModelData::DeleteData()
+{
+	m_hasData = false;
+
+	if (m_collisionBody)
 	{
-		m_dynamicMap->removeCollisionShape(m_dynamicMapProxyShape);
-		m_dynamicMapProxyShape = nullptr;
+		if (m_proxyShape)
+		{
+			m_collisionBody->removeCollisionShape(m_proxyShape);
+		}
+		m_collisionWorld->destroyCollisionBody(m_collisionBody);
 	}
+
+	m_collisionBody = nullptr;
+	m_proxyShape = nullptr;
 
 	if (m_concaveMeshShape)
 	{
@@ -884,10 +931,10 @@ void VRPhysicsHelper::DeletePhysicsMapData()
 		m_triangleMesh = nullptr;
 	}
 
-	if (m_triangleArray)
+	if (m_triangleVertexArray)
 	{
-		delete m_triangleArray;
-		m_triangleArray = nullptr;
+		delete m_triangleVertexArray;
+		m_triangleVertexArray = nullptr;
 	}
 }
 
@@ -909,23 +956,27 @@ void TEMPTODO_RemoveInvalidTriangles(std::vector<Vector3> & vertices, std::vecto
 	indices.erase(std::remove_if(indices.begin(), indices.end(), [](const int32_t& i) { return i < 0; }), indices.end());
 }
 
-void VRPhysicsHelper::CreateMapShapeFromCurrentVerticesAndTriangles()
+void VRPhysicsHelper::BSPModelData::CreateData(CollisionWorld* collisionWorld)
 {
-	DeletePhysicsMapData();
-
 	TEMPTODO_RemoveInvalidTriangles(m_vertices, m_indices);
 
-	m_triangleArray = new TriangleVertexArray(
+	m_triangleVertexArray = new TriangleVertexArray(
 		m_vertices.size(), m_vertices.data(), sizeof(Vector),
 		m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3,
 		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 	m_triangleMesh = new TriangleMesh;
-	m_triangleMesh->addSubpart(m_triangleArray);
+	m_triangleMesh->addSubpart(m_triangleVertexArray);
 
 	m_concaveMeshShape = new ConcaveMeshShape(m_triangleMesh);
 
-	m_dynamicMapProxyShape = m_dynamicMap->addCollisionShape(m_concaveMeshShape, rp3d::Transform::identity());
+	m_collisionBody = collisionWorld->createCollisionBody(rp3d::Transform::identity());
+
+	m_proxyShape = m_collisionBody->addCollisionShape(m_concaveMeshShape, rp3d::Transform::identity());
+
+	m_collisionWorld = collisionWorld;
+
+	m_hasData = true;
 }
 
 bool DoesAnyBrushModelNeedLoading(const model_t *const models)
@@ -977,8 +1028,60 @@ void ReadBinaryData(std::ifstream& in, T& value)
 	}
 }
 
+void WriteString(std::ofstream& out, const std::string& value)
+{
+	WriteBinaryData(out, value.size());
+	out.write(value.data(), value.size());
+}
+
+std::string ReadString(std::ifstream& in)
+{
+	size_t size;
+	ReadBinaryData(in, size);
+	std::string result;
+	result.resize(size);
+	in.read(const_cast<char*>(result.data()), size);
+	if (in.eof())
+	{
+		throw std::runtime_error{ "unexpected eof" };
+	}
+	if (!in.good())
+	{
+		throw std::runtime_error{ "unexpected error" };
+	}
+	return result;
+}
+
+void ReadVerticesAndIndices(
+	std::ifstream& physicsMapDataFileStream,
+	uint32_t verticesCount, uint32_t indicesCount,
+	VRPhysicsHelper::BSPModelData& bspModelData)
+{
+	for (unsigned int i = 0; i < verticesCount; ++i)
+	{
+		reactphysics3d::Vector3 vertex;
+		ReadBinaryData(physicsMapDataFileStream, vertex.x);
+		ReadBinaryData(physicsMapDataFileStream, vertex.y);
+		ReadBinaryData(physicsMapDataFileStream, vertex.z);
+		bspModelData.m_vertices.push_back(vertex);
+	}
+
+	for (unsigned int i = 0; i < indicesCount; ++i)
+	{
+		int index = 0;
+		ReadBinaryData(physicsMapDataFileStream, index);
+		if (index < 0 || static_cast<unsigned>(index) > bspModelData.m_vertices.size())
+		{
+			throw std::runtime_error{ "invalid bsp data: index out of bounds!" };
+		}
+		bspModelData.m_indices.push_back(index);
+	}
+}
+
 bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDataFilePath)
 {
+	m_bspModelData.clear();
+
 	try
 	{
 		std::ifstream physicsMapDataFileStream{ physicsMapDataFilePath, std::ios_base::in | std::ios_base::binary };
@@ -987,43 +1090,53 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 			uint32_t magic = 0;
 			uint32_t version = 0;
 			uint64_t hash = 0;
-			uint32_t verticesCount = 0;
-			uint32_t indicesCount = 0;
 
 			ReadBinaryData(physicsMapDataFileStream, magic);
 			ReadBinaryData(physicsMapDataFileStream, version);
 			ReadBinaryData(physicsMapDataFileStream, hash);
-			ReadBinaryData(physicsMapDataFileStream, verticesCount);
-			ReadBinaryData(physicsMapDataFileStream, indicesCount);
 
 			// TODO: hash is ignored for now
 			if (magic == HLVR_MAP_PHYSDATA_FILE_MAGIC
 				&& version == HLVR_MAP_PHYSDATA_FILE_VERSION
-				/*&& hash == TODO*/
-				&& verticesCount > 0 && indicesCount > 0)
+				/*&& hash == TODO*/)
 			{
-				DeletePhysicsMapData();
-				m_vertices.clear();
-				m_indices.clear();
-
-				for (unsigned int i = 0; i < verticesCount; ++i)
+				uint32_t bspDataCount = 0;
+				ReadBinaryData(physicsMapDataFileStream, bspDataCount);
+				if (bspDataCount > 0)
 				{
-					reactphysics3d::Vector3 vertex;
-					ReadBinaryData(physicsMapDataFileStream, vertex.x);
-					ReadBinaryData(physicsMapDataFileStream, vertex.y);
-					ReadBinaryData(physicsMapDataFileStream, vertex.z);
-					m_vertices.push_back(vertex);
-				}
-
-				for (unsigned int i = 0; i < indicesCount; ++i)
-				{
-					int index = 0;
-					ReadBinaryData(physicsMapDataFileStream, index);
-					if (index < 0 || static_cast<unsigned>(index) > m_vertices.size())
+					for (uint32_t bspDataIndex = 0; bspDataIndex < bspDataCount; bspDataIndex++)
 					{
-						throw std::runtime_error{ "invalid data: index out of bounds!" };
+						uint32_t verticesCount = 0;
+						uint32_t indicesCount = 0;
+						ReadBinaryData(physicsMapDataFileStream, verticesCount);
+						ReadBinaryData(physicsMapDataFileStream, indicesCount);
+
+						if (verticesCount > 0 && indicesCount > 0)
+						{
+							std::string modelname = ReadString(physicsMapDataFileStream);
+							if (!modelname.empty())
+							{
+								ReadVerticesAndIndices(
+									physicsMapDataFileStream,
+									verticesCount,
+									indicesCount,
+									m_bspModelData[modelname]
+								);
+							}
+							else
+							{
+								throw std::runtime_error{ "invalid bsp data name at index " + std::to_string(bspDataIndex) };
+							}
+						}
+						else
+						{
+							throw std::runtime_error{ "invalid bsp data at index " + std::to_string(bspDataIndex) };
+						}
 					}
-					m_indices.push_back(index);
+				}
+				else
+				{
+					throw std::runtime_error{ "invalid bsp data size" };
 				}
 
 				char checkeof;
@@ -1031,8 +1144,6 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 				{
 					throw std::runtime_error{ "expected eof, but didn't reach eof" };
 				}
-
-				CreateMapShapeFromCurrentVerticesAndTriangles();
 
 				ALERT(at_console, "Successfully loaded physics data from %s\n", physicsMapDataFilePath.c_str());
 				return true;
@@ -1051,8 +1162,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 	catch (const std::runtime_error& e)
 	{
 		ALERT(at_console, "Game must recalculate physics data due to error while trying to parse %s: %s\n", physicsMapDataFilePath.c_str(), e.what());
-		m_vertices.clear();
-		m_indices.clear();
+		m_bspModelData.clear();
 		return false;
 	}
 }
@@ -1067,23 +1177,28 @@ void VRPhysicsHelper::StorePhysicsMapDataToFile(const std::string& physicsMapDat
 		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_MAGIC);
 		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_VERSION);
 		WriteBinaryData(physicsMapDataFileStream, hash);
-		WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(m_vertices.size()));
-		WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(m_indices.size()));
+		WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(m_bspModelData.size()));	// bspDataCount
 
-		for (unsigned int i = 0; i < m_vertices.size(); ++i)
+		for (auto& bspModelData : m_bspModelData)
 		{
-			const reactphysics3d::Vector3& vertex = m_vertices[i];
-			WriteBinaryData(physicsMapDataFileStream, vertex.x);
-			WriteBinaryData(physicsMapDataFileStream, vertex.y);
-			WriteBinaryData(physicsMapDataFileStream, vertex.z);
-		}
+			WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(bspModelData.second.m_vertices.size()));
+			WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(bspModelData.second.m_indices.size()));
+			WriteString(physicsMapDataFileStream, bspModelData.first);
 
-		for (unsigned int i = 0; i < m_indices.size(); ++i)
-		{
-			int index = m_indices.at(i);
-			WriteBinaryData(physicsMapDataFileStream, index);
-		}
+			for (unsigned int i = 0; i < bspModelData.second.m_vertices.size(); ++i)
+			{
+				const reactphysics3d::Vector3& vertex = bspModelData.second.m_vertices[i];
+				WriteBinaryData(physicsMapDataFileStream, vertex.x);
+				WriteBinaryData(physicsMapDataFileStream, vertex.y);
+				WriteBinaryData(physicsMapDataFileStream, vertex.z);
+			}
 
+			for (unsigned int i = 0; i < bspModelData.second.m_indices.size(); ++i)
+			{
+				int index = bspModelData.second.m_indices.at(i);
+				WriteBinaryData(physicsMapDataFileStream, index);
+			}
+		}
 		ALERT(at_console, "Successfully stored physics data in file %s!\n", physicsMapDataFilePath.c_str());
 	}
 	else
@@ -1094,62 +1209,81 @@ void VRPhysicsHelper::StorePhysicsMapDataToFile(const std::string& physicsMapDat
 
 void VRPhysicsHelper::GetPhysicsMapDataFromModel()
 {
-	DeletePhysicsMapData();
+	m_bspModelData.clear();
 
-	m_vertices.clear();
-	m_indices.clear();
+	CBaseEntity *pEntity = nullptr;
+	while (UTIL_FindAllEntities(&pEntity))
+	{
+		const model_t* model = GetBSPModel(pEntity);
+		if (!model)
+			continue;
 
-	PlaneFacesMap planeFaces;
-	PlaneVertexMetaDataMap planeVertexMetaData;
+		auto& bspModelData = m_bspModelData[std::string{ model->name }];
 
-	TriangulateBSP(planeFaces, planeVertexMetaData, m_vertices, m_indices);
+		PlaneFacesMap planeFaces;
+		PlaneVertexMetaDataMap planeVertexMetaData;
 
-	CreateMapShapeFromCurrentVerticesAndTriangles();
+		TriangulateBSPModel(model, planeFaces, planeVertexMetaData, bspModelData.m_vertices, bspModelData.m_indices);
 
-	std::vector<Vector3> additionalVertices;
-	std::vector<int> additionalIndices;
-	FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(m_dynamicMap, planeFaces, planeVertexMetaData, additionalVertices, additionalIndices, m_vertices.size());
+		bspModelData.CreateData(m_collisionWorld);
 
-	DeletePhysicsMapData();
+		std::vector<Vector3> additionalVertices;
+		std::vector<int> additionalIndices;
+		FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(bspModelData.m_collisionBody, planeFaces, planeVertexMetaData, additionalVertices, additionalIndices, bspModelData.m_vertices.size());
 
-	m_vertices.insert(m_vertices.end(), additionalVertices.begin(), additionalVertices.end());
-	m_indices.insert(m_indices.end(), additionalIndices.begin(), additionalIndices.end());
+		bspModelData.DeleteData();
 
-	CreateMapShapeFromCurrentVerticesAndTriangles();
+		bspModelData.m_vertices.insert(bspModelData.m_vertices.end(), additionalVertices.begin(), additionalVertices.end());
+		bspModelData.m_indices.insert(bspModelData.m_indices.end(), additionalIndices.begin(), additionalIndices.end());
+
+		bspModelData.CreateData(m_collisionWorld);
+	}
 }
 
 bool VRPhysicsHelper::CheckWorld()
 {
 	const model_t *world = GetWorldBSPModel();
 
-	if (!CompareWorlds(world, m_hlWorldModel) && IsWorldValid(world))
+	if (!CompareWorlds(world, m_hlWorldModel))
 	{
-		if (m_collisionWorld == nullptr)
+		m_bspModelData.clear();
+		m_hlWorldModel = nullptr;
+		m_currentMapName = "";
+
+		if (IsWorldValid(world))
 		{
-			InitPhysicsWorld();
+			if (m_collisionWorld == nullptr)
+			{
+				InitPhysicsWorld();
+			}
+
+			m_currentMapName = std::string{ world->name };
+			const std::string mapName{ m_currentMapName.substr(0, m_currentMapName.find_last_of(".")) };
+			const std::string physicsMapDataFilePath{ UTIL_GetGameDir() + "/" + mapName + ".hlvrphysdata" };
+
+			ALERT(at_console, "Initializing physics data for current map (%s)...\n", m_currentMapName);
+			auto start = std::chrono::system_clock::now();
+			std::chrono::duration<double> timePassed;
+
+			if (!GetPhysicsMapDataFromFile(physicsMapDataFilePath))
+			{
+				GetPhysicsMapDataFromModel();
+				StorePhysicsMapDataToFile(physicsMapDataFilePath);
+			}
+
+			timePassed = std::chrono::system_clock::now() - start;
+			ALERT(at_console, "...initialized physics data in %f seconds.\n", timePassed.count());
+
+			m_hlWorldModel = world;
 		}
-
-		const std::string mapFileName{ world->name };
-		const std::string mapName{ mapFileName.substr(0, mapFileName.find_last_of(".")) };
-		const std::string physicsMapDataFilePath{ UTIL_GetGameDir() + "/" + mapName + ".hlvrphysdata" };
-
-		ALERT(at_console, "Initializing physics data for current map...\n");
-		auto start = std::chrono::system_clock::now();
-		std::chrono::duration<double> timePassed;
-
-		if (!GetPhysicsMapDataFromFile(physicsMapDataFilePath))
-		{
-			GetPhysicsMapDataFromModel();
-			StorePhysicsMapDataToFile(physicsMapDataFilePath);
-		}
-
-		timePassed = std::chrono::system_clock::now() - start;
-		ALERT(at_console, "...initialized physics data in %f seconds.\n", timePassed.count());
-
-		m_hlWorldModel = world;
 	}
 
-	return m_hlWorldModel != nullptr && m_collisionWorld != nullptr;
+	return
+		m_hlWorldModel != nullptr
+		&& m_hlWorldModel == world
+		&& m_collisionWorld != nullptr
+		&& !m_bspModelData.empty()
+		&& m_bspModelData.count(m_currentMapName) > 0;
 }
 
 void RotateVectorX(Vector &vecToRotate, const float angle)

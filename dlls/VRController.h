@@ -12,7 +12,7 @@ class VRController
 public:
 	void Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, int weaponId);
 
-	CBaseEntity* GetModel();
+	CBaseEntity* GetModel() const;
 	void PlayWeaponAnimation(int iAnim, int body);
 
 	inline const Vector& GetOffset() const { return m_offset; }
@@ -56,7 +56,7 @@ private:
 	string_t m_modelName{ 0 };
 	string_t m_bboxModelName{ 0 };
 	int m_bboxModelSequence{ 0 };
-	EHANDLE m_hModel;
+	mutable EHANDLE m_hModel;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_touchedEntities;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_hitEntities;
 };
