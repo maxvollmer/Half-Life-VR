@@ -10,8 +10,10 @@
 #include "VRController.h"
 #include "VRPhysicsHelper.h"
 
+
 extern void* FindStudioModelByName(const char* name);
 extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
+extern void GetSequenceInfo(void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed);
 
 
 void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, int weaponId)
@@ -56,20 +58,23 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	{
 		pModel->pev->model = m_modelName;
 		SET_MODEL(pModel->edict(), STRING(m_modelName));
+
+		if (isValid)
+		{
+			if (ExtractBbox(GET_MODEL_PTR(GetModel()->edict()), GetModel()->pev->sequence, m_mins, m_maxs))
+			{
+				m_isBBoxValid = ((m_maxs - m_mins).LengthSquared() > EPSILON);
+			}
+			else
+			{
+				m_isBBoxValid = false;
+			}
+		}
 	}
+
 	if (isValid)
 	{
 		pModel->pev->effects &= ~EF_NODRAW;
-
-		extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
-		if (ExtractBbox(GET_MODEL_PTR(GetModel()->edict()), GetModel()->pev->sequence, m_mins, m_maxs))
-		{
-			m_isBBoxValid = ((m_maxs - m_mins).LengthSquared() > EPSILON);
-		}
-		else
-		{
-			m_isBBoxValid = false;
-		}
 	}
 	else
 	{
@@ -101,7 +106,6 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 	pModel->pev->animtime = gpGlobals->time;
 	pModel->pev->framerate = 1.0;
 
-	extern void GetSequenceInfo(void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed);
 	float dummy;
 	GetSequenceInfo(GET_MODEL_PTR(GetModel()->edict()), pModel->pev, &pModel->pev->framerate, &dummy);
 }
