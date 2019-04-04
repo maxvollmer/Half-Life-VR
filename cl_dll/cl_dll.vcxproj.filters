@@ -20,6 +20,12 @@
     <Filter Include="VR">
       <UniqueIdentifier>{59d388bf-3eb8-4b37-8f48-4b8fe6af08c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\input">
+      <UniqueIdentifier>{82956bbd-fb3e-4306-9e5b-b5a2622b4d7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\input\handlers">
+      <UniqueIdentifier>{79ae2d23-5186-418d-b09c-de9e55b35f6d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dlls\crossbow.cpp">
@@ -280,11 +286,26 @@
     <ClCompile Include="vr_helper.cpp">
       <Filter>VR</Filter>
     </ClCompile>
-    <ClCompile Include="vr_input.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
     <ClCompile Include="vr_legacy_input.cpp">
       <Filter>VR</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputAction.cpp">
+      <Filter>VR\input</Filter>
+    </ClCompile>
+    <ClCompile Include="vr_input.cpp">
+      <Filter>VR\input</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputMovementHandlers.cpp">
+      <Filter>VR\input\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputWeaponsHandlers.cpp">
+      <Filter>VR\input\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputOtherHandlers.cpp">
+      <Filter>VR\input\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputPosesHandlers.cpp">
+      <Filter>VR\input\handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -432,8 +453,14 @@
     <ClInclude Include="vr_helper.h">
       <Filter>VR</Filter>
     </ClInclude>
+    <ClInclude Include="VRInputAction.h">
+      <Filter>VR\input</Filter>
+    </ClInclude>
     <ClInclude Include="vr_input.h">
-      <Filter>VR</Filter>
+      <Filter>VR\input</Filter>
+    </ClInclude>
+    <ClInclude Include="VRInputHandlers.h">
+      <Filter>VR\input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

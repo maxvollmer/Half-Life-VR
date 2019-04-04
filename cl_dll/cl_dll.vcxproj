@@ -248,9 +248,14 @@
     <ClCompile Include="vgui_TeamFortressViewport.cpp" />
     <ClCompile Include="vgui_teammenu.cpp" />
     <ClCompile Include="view.cpp" />
+    <ClCompile Include="VRInputMovementHandlers.cpp" />
+    <ClCompile Include="VRInputOtherHandlers.cpp" />
+    <ClCompile Include="VRInputPosesHandlers.cpp" />
+    <ClCompile Include="VRInputWeaponsHandlers.cpp" />
     <ClCompile Include="vr_gl.cpp" />
     <ClCompile Include="vr_helper.cpp" />
     <ClCompile Include="vr_input.cpp" />
+    <ClCompile Include="VRInputAction.cpp" />
     <ClCompile Include="vr_legacy_input.cpp" />
     <ClCompile Include="vr_renderer.cpp" />
   </ItemGroup>
@@ -299,6 +304,8 @@
     <ClInclude Include="vgui_SpectatorPanel.h" />
     <ClInclude Include="vgui_TeamFortressViewport.h" />
     <ClInclude Include="view.h" />
+    <ClInclude Include="VRInputAction.h" />
+    <ClInclude Include="VRInputHandlers.h" />
     <ClInclude Include="vr_gl.h" />
     <ClInclude Include="vr_helper.h" />
     <ClInclude Include="vr_input.h" />

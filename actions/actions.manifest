@@ -154,6 +154,11 @@
       "type": "vibration"
     },
     {
+      "name": "/actions/damagefeedback/out/All",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
       "name": "/actions/damagefeedback/out/Fall",
       "requirement": "optional",
       "type": "vibration"
@@ -255,8 +260,13 @@
       "type": "boolean"
     },
     {
-      "name": "/actions/other/in/Use",
+      "name": "/actions/other/in/Grab",
       "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/other/in/LegacyUse",
+      "requirement": "optional",
       "type": "boolean"
     },
     {
@@ -273,6 +283,27 @@
       "name": "/actions/other/out/WaterSplash",
       "requirement": "optional",
       "type": "vibration"
+    },
+    
+    {
+      "name": "/actions/poses/in/Flashlight",
+      "requirement": "suggested",
+      "type": "pose"
+    },
+    {
+      "name": "/actions/poses/in/Movement",
+      "requirement": "suggested",
+      "type": "pose"
+    },
+    {
+      "name": "/actions/poses/in/Teleporter",
+      "requirement": "suggested",
+      "type": "pose"
+    },
+    {
+      "name": "/actions/poses/in/Weapon",
+      "requirement": "suggested",
+      "type": "pose"
     }
   ],
   "action_sets": [
@@ -295,6 +326,10 @@
     {
       "name": "/actions/other",
       "usage": "leftright"
+    },
+    {
+      "name": "/actions/poses",
+      "usage": "leftright"
     }
   ],
   "localization" : [
@@ -306,6 +341,7 @@
         "/actions/weapons" : "Weapons",
         "/actions/damagefeedback" : "Damage Feedback (e.g. for feedback vests), note that not all damage types are actually used by the game, I just added all that the game defines as well.",
         "/actions/other" : "Other",
+        "/actions/poses" : "Controller Positions",
 
         "/actions/movement/in/Forward" : "Move forward",
         "/actions/movement/in/Backward" : "Move backward",
@@ -321,7 +357,7 @@
         "/actions/movement/in/Jump" : "Jump",
         "/actions/movement/in/Crouch" : "Crouch",
         "/actions/movement/in/LongJump" : "Long Jump",
-        
+
         "/actions/analogmovement/in/ForwardBackward" : "Move forward/backward",
         "/actions/analogmovement/in/Sideways" : "Move left/right",
         "/actions/analogmovement/in/UpDown" : "Move up/down (ladders/water)",
@@ -339,6 +375,7 @@
         "/actions/weapons/in/Previous" : "Select previous weapon",
         "/actions/weapons/out/Recoil" : "Recoil vibration",
 
+        "/actions/damagefeedback/out/All" : "All damage types",
         "/actions/damagefeedback/out/Bullet" : "Got shot at",
         "/actions/damagefeedback/out/Fall" : "Fall damage",
         "/actions/damagefeedback/out/Blast" : "Explosion damage",
@@ -362,10 +399,16 @@
 
         "/actions/other/in/Teleport" : "Teleport",
         "/actions/other/in/Flashlight" : "Toggle flashlight",
-        "/actions/other/in/Use" : "Use/Interact/Grab",
+        "/actions/other/in/Grab" : "Grab/Interact (This is for rotating valves, pulling/lifting crates, interacting with NPCs etc. using a VR controller.)",
+        "/actions/other/in/LegacyUse" : "Legacy Use (This triggers the default ingame use action, which 'uses' objects that you look at.)",
         "/actions/other/out/Earthquake" : "Earthquake shake feedback",
         "/actions/other/out/TrainShake" : "On moving Train/Elevator/Platform shake feedback",
-        "/actions/other/out/WaterSplash" : "Feedback when falling into water"
+        "/actions/other/out/WaterSplash" : "Feedback when falling into water",
+
+        "/actions/poses/in/Flashlight" : "Flashlight",
+        "/actions/poses/in/Movement" : "Movement (If not set, movement follows HMD orientation.)",
+        "/actions/poses/in/Teleporter" : "Teleporter",
+        "/actions/poses/in/Weapon" : "Weapon"
     }
   ]
 }
