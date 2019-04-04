@@ -1,174 +1,45 @@
 
-#include <windows.h>
-#include "Matrices.h"
+#include <iostream>
+#include <filesystem>
+
 #include "hud.h"
 #include "cl_util.h"
 #include "openvr/openvr.h"
 #include "vr_input.h"
+#include "eiface.h"
 
 VRInput g_vrInput;
 
-VRInput::VRInput()
+void VRInput::Init()
 {
+	const std::string relativeGameDir{ gEngfuncs.pfnGetGameDirectory() };
+	const std::string relativeManifestDir = relativeGameDir + "/actions/actions.manifest";
+	std::filesystem::path relativeManifestPath = relativeManifestDir;
+	std::filesystem::path absoluteManifestPath = std::filesystem::absolute(relativeManifestPath);
 
-}
-
-VRInput::~VRInput()
-{
-
-}
-
-void VRInput::HandleButtonPress(unsigned int button, vr::VRControllerState_t controllerState, bool leftOrRight, bool downOrUp)
-{
-	if (leftOrRight)
+	vr::EVRInputError result = vr::VRInput()->SetActionManifestPath(absoluteManifestPath.string().data());
+	if (result != vr::VRInputError_None)
 	{
-		switch (button)
-		{
-		case vr::EVRButtonId::k_EButton_ApplicationMenu:
-		{
-			ClientCmd("escape");
-		}
-		break;
-		case vr::EVRButtonId::k_EButton_SteamVR_Trigger:
-		{
-			if (gHUD.m_Flash.IsOn() != downOrUp)
-			{
-				ClientCmd("impulse 100");
-			}
-			//downOrUp ? ClientCmd("impulse 1337") : ClientCmd("impulse 1338");
-		}
-		break;
-		case vr::EVRButtonId::k_EButton_SteamVR_Touchpad:
-		{
-			if (CVAR_GET_FLOAT("vr_movecontrols") != 0.0f)
-			{
-				vr::VRControllerAxis_t touchPadAxis = controllerState.rAxis[vr::EVRButtonId::k_EButton_SteamVR_Touchpad - vr::EVRButtonId::k_EButton_Axis0];
-
-				// TODO: Move in direction controller is pointing, not direction player is looking!
-
-				if (touchPadAxis.x < -0.5f)
-				{
-					m_rotateLeft = downOrUp;
-				}
-				if (touchPadAxis.x > 0.5f)
-				{
-					m_rotateRight = downOrUp;
-				}
-
-				/*
-				if (touchPadAxis.x < -0.5f && downOrUp)
-				{
-					ClientCmd("+moveleft");
-				}
-				else
-				{
-					ClientCmd("-moveleft");
-				}
-
-				if (touchPadAxis.x > 0.5f && downOrUp)
-				{
-					ClientCmd("+moveright");
-				}
-				else
-				{
-					ClientCmd("-moveright");
-				}
-				*/
-
-				if (touchPadAxis.y > 0.5f && downOrUp)
-				{
-					ClientCmd("+forward");
-				}
-				else
-				{
-					ClientCmd("-forward");
-				}
-
-				if (touchPadAxis.y < -0.5f && downOrUp)
-				{
-					ClientCmd("+back");
-				}
-				else
-				{
-					ClientCmd("-back");
-				}
-
-				if (fabs(touchPadAxis.x) < 0.5f && fabs(touchPadAxis.y) < 0.5f && downOrUp)
-				{
-					ServerCmd("vrtele 1");
-				}
-				else if (!downOrUp)
-				{
-					ServerCmd("vrtele 0");
-				}
-			}
-			else
-			{
-				ServerCmd(downOrUp ? "vrtele 1" : "vrtele 0");
-			}
-		}
-		break;
-		}
+		gEngfuncs.Con_DPrintf("Couldn't load actions.manifest, falling back to legay input. (Error code: %i)\n", result);
+		m_legacyInput = true;
 	}
 	else
 	{
-		switch (button)
-		{
-		case vr::EVRButtonId::k_EButton_Grip:
-		{
-			downOrUp ? ClientCmd("+reload") : ClientCmd("-reload");
-		}
-		break;
-		case vr::EVRButtonId::k_EButton_ApplicationMenu:
-		{
-			downOrUp ? ClientCmd("+attack2") : ClientCmd("-attack2");
-		}
-		break;
-		case vr::EVRButtonId::k_EButton_SteamVR_Trigger:
-		{
-			downOrUp ? ClientCmd("+attack") : ClientCmd("-attack");
-		}
-		break;
-		case vr::EVRButtonId::k_EButton_SteamVR_Touchpad:
-		{
-			vr::VRControllerAxis_t touchPadAxis = controllerState.rAxis[vr::EVRButtonId::k_EButton_SteamVR_Touchpad - vr::EVRButtonId::k_EButton_Axis0];
+		gEngfuncs.Con_DPrintf("Successfully loaded actions.manifest!\n");
+		vr::EVRInputError result1 = vr::VRInput()->GetActionSetHandle("/actions/movement", &m_actionSets["movement"].handle);
+		vr::EVRInputError result2 = vr::VRInput()->GetActionHandle("/actions/movement/in/Forward", &m_actionSets["movement"].actions["Forward"]);
 
-			if (touchPadAxis.y > 0.5f && downOrUp)
-			{
-				if (gHUD.m_Ammo.IsCurrentWeaponLastWeapon())
-				{
-					// Select hand when current weapon is last weapon
-					ServerCmd("weapon_barehand");
-					PlaySound("common/wpn_select.wav", 1);
-					//PlaySound("common/wpn_hudon.wav", 1);
-					gHUD.m_Ammo.m_pWeapon = nullptr;
-				}
-				else
-				{
-					gHUD.m_Ammo.UserCmd_NextWeapon();
-					gHUD.m_iKeyBits |= IN_ATTACK;
-					gHUD.m_Ammo.Think();
-				}
-			}
-			else if (touchPadAxis.y < -0.5f && downOrUp)
-			{
-				if (gHUD.m_Ammo.IsCurrentWeaponFirstWeapon())
-				{
-					// Select hand when current weapon is first weapon
-					ServerCmd("weapon_barehand");
-					PlaySound("common/wpn_select.wav", 1);
-					//PlaySound("common/wpn_moveselect.wav", 1);
-					gHUD.m_Ammo.m_pWeapon = nullptr;
-				}
-				else
-				{
-					gHUD.m_Ammo.UserCmd_PrevWeapon();
-					gHUD.m_iKeyBits |= IN_ATTACK;
-					gHUD.m_Ammo.Think();
-				}
-			}
-		}
-		break;
-		}
+		gEngfuncs.Con_DPrintf("result1: %i, result2: %i\n", result1, result2);
 	}
+}
+
+void VRInput::HandleInput()
+{
+	// TODO: Awesomize this
+	vr::VRActiveActionSet_t dings{ 0 };
+	dings.ulActionSet = m_actionSets["movement"].handle;
+	vr::EVRInputError result1 = vr::VRInput()->UpdateActionState(&dings, sizeof(vr::VRActiveActionSet_t), 1);
+
+	vr::InputDigitalActionData_t data{ 0 };
+	vr::EVRInputError result2 = vr::VRInput()->GetDigitalActionData(m_actionSets["movement"].actions["Forward"], &data, sizeof(vr::InputDigitalActionData_t), vr::k_ulInvalidInputValueHandle);
 }

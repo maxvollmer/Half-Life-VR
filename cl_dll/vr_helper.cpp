@@ -171,7 +171,7 @@ void VRHelper::Init()
 	}
 	else if (!InitGLMatrixOverrideFunctions())
 	{
-		Exit(TEXT("Failed to load custom opengl32.dll. Make sure you launch this game through HLVRLauncher.exe, not the Steam menu."));
+		Exit(TEXT("Failed to load custom opengl32.dll. Make sure you launch this game through HLVRLauncher.exe, not the Steam menu. (Tipp: You can add a custom game shortcut to HLVRLauncher.exe in your Steam library.))"));
 	}
 	else
 	{
@@ -213,6 +213,8 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_lefthand_mode", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_debug_physics", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_playerturn_enabled", "0", FCVAR_ARCHIVE);
+
+	g_vrInput.Init();
 
 	UpdateVRHLConversionVectors();
 }
@@ -358,22 +360,35 @@ void VRHelper::PollEvents()
 			return;
 		case vr::EVREventType::VREvent_ButtonPress:
 		case vr::EVREventType::VREvent_ButtonUnpress:
-		{
-			vr::ETrackedControllerRole controllerRole = vrSystem->GetControllerRoleForTrackedDeviceIndex(vrEvent.trackedDeviceIndex);
-			if (controllerRole != vr::ETrackedControllerRole::TrackedControllerRole_Invalid)
+			if (g_vrInput.IsLegacyInput())
 			{
-				vr::VRControllerState_t controllerState;
-				vrSystem->GetControllerState(vrEvent.trackedDeviceIndex, &controllerState, sizeof(controllerState));
-				g_vrInput.HandleButtonPress(vrEvent.data.controller.button, controllerState, controllerRole == vr::ETrackedControllerRole::TrackedControllerRole_LeftHand, vrEvent.eventType == vr::EVREventType::VREvent_ButtonPress);
+				vr::ETrackedControllerRole controllerRole = vrSystem->GetControllerRoleForTrackedDeviceIndex(vrEvent.trackedDeviceIndex);
+				if (controllerRole != vr::ETrackedControllerRole::TrackedControllerRole_Invalid)
+				{
+					vr::VRControllerState_t controllerState;
+					vrSystem->GetControllerState(vrEvent.trackedDeviceIndex, &controllerState, sizeof(controllerState));
+					g_vrInput.LegacyHandleButtonPress(vrEvent.data.controller.button, controllerState, controllerRole == vr::ETrackedControllerRole::TrackedControllerRole_LeftHand, vrEvent.eventType == vr::EVREventType::VREvent_ButtonPress);
+				}
 			}
-		}
-		break;
+			break;
 		case vr::EVREventType::VREvent_ButtonTouch:
 		case vr::EVREventType::VREvent_ButtonUntouch:
+			if (g_vrInput.IsLegacyInput())
+			{
+				vr::ETrackedControllerRole controllerRole = vrSystem->GetControllerRoleForTrackedDeviceIndex(vrEvent.trackedDeviceIndex);
+				if (controllerRole != vr::ETrackedControllerRole::TrackedControllerRole_Invalid)
+				{
+					vr::VRControllerState_t controllerState;
+					vrSystem->GetControllerState(vrEvent.trackedDeviceIndex, &controllerState, sizeof(controllerState));
+					g_vrInput.LegacyHandleButtonTouch(vrEvent.data.controller.button, controllerState, controllerRole == vr::ETrackedControllerRole::TrackedControllerRole_LeftHand, vrEvent.eventType == vr::EVREventType::VREvent_ButtonPress);
+				}
+			}
+			break;
 		default:
 			break;
 		}
 	}
+	g_vrInput.HandleInput();
 }
 
 bool VRHelper::UpdatePositions(struct ref_params_s* pparams)

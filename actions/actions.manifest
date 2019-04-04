@@ -1,0 +1,371 @@
+{
+  "actions": [
+    {
+      "name": "/actions/movement/in/Forward",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/Backward",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/Left",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/Right",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/Up",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/Down",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/TurnLeft",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/TurnRight",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/Turn90Left",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/Turn90Right",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/Turn180",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/Jump",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/Crouch",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/movement/in/LongJump",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    
+    {
+      "name": "/actions/analogmovement/in/ForwardBackward",
+      "requirement": "optional",
+      "type": "vector1"
+    },
+    {
+      "name": "/actions/analogmovement/in/Sideways",
+      "requirement": "optional",
+      "type": "vector1"
+    },
+    {
+      "name": "/actions/analogmovement/in/UpDown",
+      "requirement": "optional",
+      "type": "vector1"
+    },
+    {
+      "name": "/actions/analogmovement/in/Turn",
+      "requirement": "optional",
+      "type": "vector1"
+    },
+    {
+      "name": "/actions/analogmovement/in/ForwardBackwardSideways",
+      "requirement": "optional",
+      "type": "vector2"
+    },
+    {
+      "name": "/actions/analogmovement/in/ForwardBackwardTurn",
+      "requirement": "optional",
+      "type": "vector2"
+    },
+    {
+      "name": "/actions/analogmovement/in/ForwardBackwardSidewaysUpDown",
+      "requirement": "optional",
+      "type": "vector3"
+    },
+    {
+      "name": "/actions/analogmovement/in/ForwardBackwardTurnUpDown",
+      "requirement": "optional",
+      "type": "vector3"
+    },
+    
+    {
+      "name": "/actions/weapons/in/Fire",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/weapons/in/FireAlt",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/weapons/in/Reload",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/weapons/in/Holster",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/weapons/in/Next",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/weapons/in/Previous",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/weapons/out/Recoil",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    
+    {
+      "name": "/actions/damagefeedback/out/Bullet",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Fall",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Blast",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Generic",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Crush",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Burn",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Freeze",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Drown",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Club",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Shock",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Sonic",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/EnergyBeam",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Nervegas",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Poison",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Radiation",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Acid",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/SlowBurn",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/SlowFreeze",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/damagefeedback/out/Mortar",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    
+    {
+      "name": "/actions/other/in/Teleport",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/other/in/Flashlight",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/other/in/Use",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/other/out/Earthquake",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/other/out/TrainShake",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/other/out/WaterSplash",
+      "requirement": "optional",
+      "type": "vibration"
+    }
+  ],
+  "action_sets": [
+    {
+      "name": "/actions/movement",
+      "usage": "leftright"
+    },
+    {
+      "name": "/actions/analogmovement",
+      "usage": "leftright"
+    },
+    {
+      "name": "/actions/weapons",
+      "usage": "leftright"
+    },
+    {
+      "name": "/actions/damagefeedback",
+      "usage": "leftright"
+    },
+    {
+      "name": "/actions/other",
+      "usage": "leftright"
+    }
+  ],
+  "localization" : [
+   {
+       "language_tag": "en",
+
+        "/actions/movement" : "Movement",
+        "/actions/analogmovement" : "Analog Movement",
+        "/actions/weapons" : "Weapons",
+        "/actions/damagefeedback" : "Damage Feedback (e.g. for feedback vests), note that not all damage types are actually used by the game, I just added all that the game defines as well.",
+        "/actions/other" : "Other",
+
+        "/actions/movement/in/Forward" : "Move forward",
+        "/actions/movement/in/Backward" : "Move backward",
+        "/actions/movement/in/Left" : "Move left",
+        "/actions/movement/in/Right" : "Move right",
+        "/actions/movement/in/Up" : "Move up (ladder/water)",
+        "/actions/movement/in/Down" : "Move down (ladder/water)",
+        "/actions/movement/in/TurnLeft" : "Turn left",
+        "/actions/movement/in/TurnRight" : "Turn right",
+        "/actions/movement/in/Turn90Left" : "Turn 90° left",
+        "/actions/movement/in/Turn90Right" : "Turn 90° right",
+        "/actions/movement/in/Turn180" : "Turn 180°",
+        "/actions/movement/in/Jump" : "Jump",
+        "/actions/movement/in/Crouch" : "Crouch",
+        "/actions/movement/in/LongJump" : "Long Jump",
+        
+        "/actions/analogmovement/in/ForwardBackward" : "Move forward/backward",
+        "/actions/analogmovement/in/Sideways" : "Move left/right",
+        "/actions/analogmovement/in/UpDown" : "Move up/down (ladders/water)",
+        "/actions/analogmovement/in/Turn" : "Turn left/right",
+        "/actions/analogmovement/in/ForwardBackwardSideways" : "Move forward/backward + Move left/right",
+        "/actions/analogmovement/in/ForwardBackwardTurn" : "Move forward/backward + Turn left/right",
+        "/actions/analogmovement/in/ForwardBackwardSidewaysUpDown" : "Move forward/backward + Move left/right + Move up/down",
+        "/actions/analogmovement/in/ForwardBackwardTurnUpDown" : "Move forward/backward + Turn left/right + Move up/down",
+
+        "/actions/weapons/in/Fire" : "Fire",
+        "/actions/weapons/in/FireAlt" : "Alternative Fire",
+        "/actions/weapons/in/Reload" : "Reload",
+        "/actions/weapons/in/Holster" : "Holster weapon / Select last weapon",
+        "/actions/weapons/in/Next" : "Select next weapon",
+        "/actions/weapons/in/Previous" : "Select previous weapon",
+        "/actions/weapons/out/Recoil" : "Recoil vibration",
+
+        "/actions/damagefeedback/out/Bullet" : "Got shot at",
+        "/actions/damagefeedback/out/Fall" : "Fall damage",
+        "/actions/damagefeedback/out/Blast" : "Explosion damage",
+        "/actions/damagefeedback/out/Generic" : "Generic damage",
+        "/actions/damagefeedback/out/Crush" : "Got crushed",
+        "/actions/damagefeedback/out/Slash" : "Cut/Clawed/Stabbed",
+        "/actions/damagefeedback/out/Burn" : "Burning",
+        "/actions/damagefeedback/out/Freeze" : "Freezing",
+        "/actions/damagefeedback/out/Drown" : "Drowning",
+        "/actions/damagefeedback/out/Club" : "Melee damage",
+        "/actions/damagefeedback/out/Shock" : "Electric shock",
+        "/actions/damagefeedback/out/Sonic" : "Shockwave damage",
+        "/actions/damagefeedback/out/EnergyBeam" : "Laser / Energy beam",
+        "/actions/damagefeedback/out/Nervegas" : "Nervegas damage",
+        "/actions/damagefeedback/out/Poison" : "Poison damage",
+        "/actions/damagefeedback/out/Radiation" : "Radiation damage",
+        "/actions/damagefeedback/out/Acid" : "Acid damage",
+        "/actions/damagefeedback/out/SlowBurn" : "Slow burn damage",
+        "/actions/damagefeedback/out/SlowFreeze" : "Slow freeze damage",
+        "/actions/damagefeedback/out/Mortar" : "Hit by air raid",
+
+        "/actions/other/in/Teleport" : "Teleport",
+        "/actions/other/in/Flashlight" : "Toggle flashlight",
+        "/actions/other/in/Use" : "Use/Interact/Grab",
+        "/actions/other/out/Earthquake" : "Earthquake shake feedback",
+        "/actions/other/out/TrainShake" : "On moving Train/Elevator/Platform shake feedback",
+        "/actions/other/out/WaterSplash" : "Feedback when falling into water"
+    }
+  ]
+}

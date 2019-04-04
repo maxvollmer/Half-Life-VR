@@ -141,8 +141,9 @@ public:
 	CBaseEntity * operator ->();
 	bool operator == (EHANDLE& other);
 
-	struct Hash : public std::unary_function<EHANDLE, std::size_t>
+	class Hash
 	{
+	public:
 		std::size_t operator()(const EHANDLE& e) const
 		{
 			std::hash<int> intHasher;
@@ -150,8 +151,10 @@ public:
 			return intHasher(e.m_serialnumber) ^ entHasher(e.m_pent);
 		}
 	};
-	struct Equal : public std::binary_function<EHANDLE, EHANDLE, bool>
+
+	class Equal
 	{
+	public:
 		bool operator()(const EHANDLE & e1, const EHANDLE & e2) const
 		{
 			return e1.m_serialnumber == e2.m_serialnumber && e1.m_pent == e2.m_pent;

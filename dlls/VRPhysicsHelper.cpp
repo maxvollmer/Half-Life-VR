@@ -173,15 +173,17 @@ inline Vector RP3DVecToHLVec(const Vector3 & rp3dVec)
 
 const std::hash<int> intHasher;
 
-struct VectorHash : public std::unary_function<Vector, std::size_t>
+class VectorHash
 {
+public:
 	inline std::size_t operator()(const Vector& v) const
 	{
 		return intHasher(v.x * 10) ^ intHasher(v.y * 10) ^ intHasher(v.z * 10);
 	}
 };
-struct VectorEqual : public std::binary_function<Vector, Vector, bool>
+class VectorEqual
 {
+public:
 	inline bool operator()(const Vector& v1, const Vector& v2) const
 	{
 		return fabs(v1.x - v2.x) < EPSILON && fabs(v1.y - v2.y) < EPSILON && fabs(v1.z - v2.z) < EPSILON;
@@ -275,15 +277,17 @@ public:
 		}
 	}
 
-	struct Hash : public std::unary_function<TranslatedPlane, std::size_t>
+	class Hash
 	{
+	public:
 		inline std::size_t operator()(const TranslatedPlane& e) const
 		{
 			return e.hash;
 		}
 	};
-	struct Equal : public std::binary_function<TranslatedPlane, TranslatedPlane, bool>
+	class Equal
 	{
+	public:
 		inline bool operator()(const TranslatedPlane& e1, const TranslatedPlane& e2) const
 		{
 			return e1.IsCoPlanar(e2);

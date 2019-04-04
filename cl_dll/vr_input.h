@@ -2,13 +2,18 @@
 
 #include "kbutton.h"
 
+#include <unordered_map>
+#include <string>
+
 class VRInput
 {
 public:
-	VRInput();
-	~VRInput();
+	void Init();
 
-	void HandleButtonPress(unsigned int button, vr::VRControllerState_t controllerState, bool leftOrRight, bool downOrUp);
+	void LegacyHandleButtonPress(unsigned int button, vr::VRControllerState_t controllerState, bool leftOrRight, bool downOrUp);
+	void LegacyHandleButtonTouch(unsigned int button, vr::VRControllerState_t controllerState, bool leftOrRight, bool downOrUp);
+
+	void HandleInput();
 
 	inline bool RotateLeft() const
 	{
@@ -30,11 +35,25 @@ public:
 		// TODO
 		return false;
 	}
+	inline bool IsLegacyInput() const
+	{
+		return m_legacyInput;
+	}
 
 private:
 	bool m_rotateLeft{ false };
 	bool m_rotateRight{ false };
 	bool m_isDucking{ false };	// TODO: Controller support for ducking
+	bool m_legacyInput{ false };
+
+	struct ActionSet
+	{
+	public:
+		vr::VRActionSetHandle_t										handle;
+		std::unordered_map<std::string, vr::VRActionHandle_t>		actions;
+	};
+
+	std::unordered_map<std::string, ActionSet>		m_actionSets;
 };
 
 extern VRInput g_vrInput;

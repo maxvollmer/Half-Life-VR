@@ -4006,11 +4006,15 @@ void CBasePlayer :: UpdateClientData( void )
 			WRITE_COORD( damageOrigin.y );
 			WRITE_COORD( damageOrigin.z );
 		MESSAGE_END();
-	
+
+		// TODO: VR: gmsgDamage seems broken/don't want to mess with it.
+		// TODO: VR: Send proper damage message with all bits for VR damage feedback
+		// TODO: VR: - Max Vollmer, 2019-04-06
+
 		pev->dmg_take = 0;
 		pev->dmg_save = 0;
 		m_bitsHUDDamage = m_bitsDamageType;
-		
+
 		// Clear off non-time-based damage indicators
 		m_bitsDamageType &= DMG_TIMEBASED;
 	}
