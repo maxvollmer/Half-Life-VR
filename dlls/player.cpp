@@ -4219,31 +4219,59 @@ void CBasePlayer::ResetAutoaim()
 }
 
 
-Vector CBasePlayer::GetAutoaimVector( float flDelta )
-{
-	UTIL_MakeAimVectors(GetAimAngles());
-	return gpGlobals->v_forward;
-}
-
 #define VR_MUZZLE_ATTACHMENT 0
 Vector CBasePlayer::GetGunPosition()
 {
-	// Gun position and angles determined by attachment on weapon model - Max Vollmer, 2019-03-30
+	// Gun position and angles determined by attachments on weapon model - Max Vollmer, 2019-03-30
 	Vector pos;
-	Vector angles;
-	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos, angles);
+	Vector unused;
+	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos, unused);
 	ALERT(at_console, "CBasePlayer::GetAimPosition for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), pos.x, pos.y, pos.z);
 	return pos;
 }
 
 Vector CBasePlayer::GetAimAngles()
 {
-	// Gun position and angles determined by attachment on weapon model - Max Vollmer, 2019-03-30
-	Vector pos;
-	Vector angles;
-	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos, angles);
-	ALERT(at_console, "CBasePlayer::GetAimAngles for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), angles.x, angles.y, angles.z);
-	return angles;
+	// Gun position and angles determined by attachments on weapon model - Max Vollmer, 2019-03-30
+	Vector pos1;
+	Vector pos2;
+	Vector unused;
+	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos1, unused);
+	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT + 1, pos2, unused);
+	if (pos2.LengthSquared() == 0.f || pos2 == pos1)
+	{
+		ALERT(at_console, "CBasePlayer::GetAimAngles for %s got invalid 2nd attachment, falling back to weapon angles.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
+		return GetWeaponAngles();
+	}
+	else
+	{
+		Vector dir = (pos2 - pos1).Normalize();
+		Vector angles = UTIL_VecToAngles(dir);
+		ALERT(at_console, "CBasePlayer::GetAimAngles for %s: %f %f %f (from aim dir: %f %f %f)\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), angles.x, angles.y, angles.z, dir.x, dir.y, dir.z);
+		return angles;
+	}
+}
+
+Vector CBasePlayer::GetAutoaimVector(float flDelta)
+{
+	// Gun position and angles determined by attachments on weapon model - Max Vollmer, 2019-03-30
+	Vector pos1;
+	Vector pos2;
+	Vector unused;
+	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos1, unused);
+	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT + 1, pos2, unused);
+	if (pos2.LengthSquared() == 0.f || pos2 == pos1)
+	{
+		ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s got invalid 2nd attachment, falling back to weapon angles.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
+		UTIL_MakeAimVectors(GetWeaponAngles());
+		return gpGlobals->v_forward;
+	}
+	else
+	{
+		Vector dir = (pos2 - pos1).Normalize();
+		ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), dir.x, dir.y, dir.z);
+		return dir;
+	}
 }
 
 
