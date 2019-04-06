@@ -124,7 +124,7 @@
     },
     {
       "name": "/actions/input/in/AnalogFireWeapon",
-      "requirement": "suggested",
+      "requirement": "optional",
       "type": "vector1"
     },
     {
