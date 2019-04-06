@@ -122,13 +122,19 @@ void VRInput::RegisterActionSets()
 
 bool VRInput::RegisterActionSet(const std::string& actionSet)
 {
-	vr::EVRInputError result = vr::VRInput()->GetActionSetHandle("/actions/movement", &m_actionSets[actionSet].handle);
+	std::string actionSetName = "/actions/" + actionSet;
+	vr::VRActionSetHandle_t handle{ 0 };
+	vr::EVRInputError result = vr::VRInput()->GetActionSetHandle(actionSetName.data(), &handle);
 	if (result != vr::VRInputError_None)
 	{
 		gEngfuncs.Con_DPrintf("Error while trying to register input action set /actions/%s. (Error code: %i)\n", actionSet, result);
 		return false;
 	}
-	return true;
+	else
+	{
+		m_actionSets[actionSet].handle = handle;
+		return true;
+	}
 }
 
 bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler)
