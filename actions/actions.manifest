@@ -1,153 +1,195 @@
 {
   "actions": [
     {
-      "name": "/actions/movement/in/Forward",
+      "name": "/actions/input/in/MoveForward",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/Backward",
+      "name": "/actions/input/in/MoveBackward",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/Left",
+      "name": "/actions/input/in/MoveLeft",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/Right",
+      "name": "/actions/input/in/MoveRight",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/Up",
+      "name": "/actions/input/in/MoveUp",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/Down",
+      "name": "/actions/input/in/MoveDown",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/TurnLeft",
+      "name": "/actions/input/in/TurnLeft",
       "requirement": "optional",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/TurnRight",
+      "name": "/actions/input/in/TurnRight",
       "requirement": "optional",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/Turn90Left",
+      "name": "/actions/input/in/Turn90Left",
       "requirement": "optional",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/Turn90Right",
+      "name": "/actions/input/in/Turn90Right",
       "requirement": "optional",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/Turn180",
+      "name": "/actions/input/in/Turn180",
       "requirement": "optional",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/Jump",
+      "name": "/actions/input/in/Jump",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/Crouch",
+      "name": "/actions/input/in/Crouch",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/movement/in/LongJump",
+      "name": "/actions/input/in/LongJump",
       "requirement": "optional",
       "type": "boolean"
     },
-    
+
     {
-      "name": "/actions/analogmovement/in/ForwardBackward",
+      "name": "/actions/input/in/MoveForwardBackward",
       "requirement": "optional",
       "type": "vector1"
     },
     {
-      "name": "/actions/analogmovement/in/Sideways",
+      "name": "/actions/input/in/MoveSideways",
       "requirement": "optional",
       "type": "vector1"
     },
     {
-      "name": "/actions/analogmovement/in/UpDown",
+      "name": "/actions/input/in/MoveUpDown",
       "requirement": "optional",
       "type": "vector1"
     },
     {
-      "name": "/actions/analogmovement/in/Turn",
+      "name": "/actions/input/in/Turn",
       "requirement": "optional",
       "type": "vector1"
     },
     {
-      "name": "/actions/analogmovement/in/ForwardBackwardSideways",
+      "name": "/actions/input/in/MoveForwardBackwardSideways",
       "requirement": "optional",
       "type": "vector2"
     },
     {
-      "name": "/actions/analogmovement/in/ForwardBackwardTurn",
+      "name": "/actions/input/in/MoveForwardBackwardTurn",
       "requirement": "optional",
       "type": "vector2"
     },
     {
-      "name": "/actions/analogmovement/in/ForwardBackwardSidewaysUpDown",
+      "name": "/actions/input/in/MoveForwardBackwardSidewaysUpDown",
       "requirement": "optional",
       "type": "vector3"
     },
     {
-      "name": "/actions/analogmovement/in/ForwardBackwardTurnUpDown",
+      "name": "/actions/input/in/MoveForwardBackwardTurnUpDown",
       "requirement": "optional",
       "type": "vector3"
     },
-    
+
     {
-      "name": "/actions/weapons/in/Fire",
+      "name": "/actions/input/in/FireWeapon",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/weapons/in/FireAlt",
+      "name": "/actions/input/in/AltFireWeapon",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/weapons/in/Reload",
+      "name": "/actions/input/in/AnalogFireWeapon",
+      "requirement": "suggested",
+      "type": "vector1"
+    },
+    {
+      "name": "/actions/input/in/ReloadWeapon",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/weapons/in/Holster",
+      "name": "/actions/input/in/HolsterWeapon",
       "requirement": "optional",
       "type": "boolean"
     },
     {
-      "name": "/actions/weapons/in/Next",
+      "name": "/actions/input/in/NextWeapon",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/weapons/in/Previous",
+      "name": "/actions/input/in/PreviousWeapon",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+
+    {
+      "name": "/actions/input/in/Teleport",
       "requirement": "suggested",
       "type": "boolean"
     },
     {
-      "name": "/actions/weapons/out/Recoil",
+      "name": "/actions/input/in/ToggleFlashlight",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/input/in/Grab",
+      "requirement": "suggested",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/input/in/LegacyUse",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+
+    {
+      "name": "/actions/feedback/out/Recoil",
       "requirement": "optional",
       "type": "vibration"
     },
-    
+    {
+      "name": "/actions/feedback/out/Earthquake",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/feedback/out/TrainShake",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+    {
+      "name": "/actions/feedback/out/WaterSplash",
+      "requirement": "optional",
+      "type": "vibration"
+    },
+
     {
       "name": "/actions/damagefeedback/out/Bullet",
       "requirement": "optional",
@@ -248,43 +290,7 @@
       "requirement": "optional",
       "type": "vibration"
     },
-    
-    {
-      "name": "/actions/other/in/Teleport",
-      "requirement": "suggested",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/other/in/Flashlight",
-      "requirement": "suggested",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/other/in/Grab",
-      "requirement": "suggested",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/other/in/LegacyUse",
-      "requirement": "optional",
-      "type": "boolean"
-    },
-    {
-      "name": "/actions/other/out/Earthquake",
-      "requirement": "optional",
-      "type": "vibration"
-    },
-    {
-      "name": "/actions/other/out/TrainShake",
-      "requirement": "optional",
-      "type": "vibration"
-    },
-    {
-      "name": "/actions/other/out/WaterSplash",
-      "requirement": "optional",
-      "type": "vibration"
-    },
-    
+
     {
       "name": "/actions/poses/in/Flashlight",
       "requirement": "suggested",
@@ -308,23 +314,15 @@
   ],
   "action_sets": [
     {
-      "name": "/actions/movement",
+      "name": "/actions/input",
       "usage": "leftright"
     },
     {
-      "name": "/actions/analogmovement",
-      "usage": "leftright"
-    },
-    {
-      "name": "/actions/weapons",
+      "name": "/actions/feedback",
       "usage": "leftright"
     },
     {
       "name": "/actions/damagefeedback",
-      "usage": "leftright"
-    },
-    {
-      "name": "/actions/other",
       "usage": "leftright"
     },
     {
@@ -336,44 +334,52 @@
    {
        "language_tag": "en",
 
-        "/actions/movement" : "Movement",
-        "/actions/analogmovement" : "Analog Movement",
-        "/actions/weapons" : "Weapons",
-        "/actions/damagefeedback" : "Damage Feedback (e.g. for feedback vests), note that not all damage types are actually used by the game, I just added all that the game defines as well.",
-        "/actions/other" : "Other",
+        "/actions/input" : "Input",
+        "/actions/feedback" : "Force Feedback (e.g. recoil or earthquakes)",
+        "/actions/damagefeedback" : "Damage Feedback (e.g. for feedback vests) - Note that not all damage types are actually used by the game, I just added all that the game defines as well.",
         "/actions/poses" : "Controller Positions",
 
-        "/actions/movement/in/Forward" : "Move forward",
-        "/actions/movement/in/Backward" : "Move backward",
-        "/actions/movement/in/Left" : "Move left",
-        "/actions/movement/in/Right" : "Move right",
-        "/actions/movement/in/Up" : "Move up (ladder/water)",
-        "/actions/movement/in/Down" : "Move down (ladder/water)",
-        "/actions/movement/in/TurnLeft" : "Turn left",
-        "/actions/movement/in/TurnRight" : "Turn right",
-        "/actions/movement/in/Turn90Left" : "Turn 90° left",
-        "/actions/movement/in/Turn90Right" : "Turn 90° right",
-        "/actions/movement/in/Turn180" : "Turn 180°",
-        "/actions/movement/in/Jump" : "Jump",
-        "/actions/movement/in/Crouch" : "Crouch",
-        "/actions/movement/in/LongJump" : "Long Jump",
+        "/actions/input/in/MoveForward" : "Move forward",
+        "/actions/input/in/MoveBackward" : "Move backward",
+        "/actions/input/in/MoveLeft" : "Move left",
+        "/actions/input/in/MoveRight" : "Move right",
+        "/actions/input/in/MoveUp" : "Move up (ladder/water)",
+        "/actions/input/in/MoveDown" : "Move down (ladder/water)",
+        "/actions/input/in/TurnLeft" : "Turn left",
+        "/actions/input/in/TurnRight" : "Turn right",
+        "/actions/input/in/Turn90Left" : "Turn 90° left",
+        "/actions/input/in/Turn90Right" : "Turn 90° right",
+        "/actions/input/in/Turn180" : "Turn 180°",
+        "/actions/input/in/Jump" : "Jump",
+        "/actions/input/in/Crouch" : "Crouch",
+        "/actions/input/in/LongJump" : "Long Jump",
 
-        "/actions/analogmovement/in/ForwardBackward" : "Move forward/backward",
-        "/actions/analogmovement/in/Sideways" : "Move left/right",
-        "/actions/analogmovement/in/UpDown" : "Move up/down (ladders/water)",
-        "/actions/analogmovement/in/Turn" : "Turn left/right",
-        "/actions/analogmovement/in/ForwardBackwardSideways" : "Move forward/backward + Move left/right",
-        "/actions/analogmovement/in/ForwardBackwardTurn" : "Move forward/backward + Turn left/right",
-        "/actions/analogmovement/in/ForwardBackwardSidewaysUpDown" : "Move forward/backward + Move left/right + Move up/down",
-        "/actions/analogmovement/in/ForwardBackwardTurnUpDown" : "Move forward/backward + Turn left/right + Move up/down",
+        "/actions/input/in/MoveForwardBackward" : "Move forward/backward",
+        "/actions/input/in/MoveSideways" : "Move left/right",
+        "/actions/input/in/MoveUpDown" : "Move up/down (ladders/water)",
+        "/actions/input/in/Turn" : "Turn left/right",
+        "/actions/input/in/MoveForwardBackwardSideways" : "Move forward/backward + Move left/right",
+        "/actions/input/in/MoveForwardBackwardTurn" : "Move forward/backward + Turn left/right",
+        "/actions/input/in/MoveForwardBackwardSidewaysUpDown" : "Move forward/backward + Move left/right + Move up/down",
+        "/actions/input/in/MoveForwardBackwardTurnUpDown" : "Move forward/backward + Turn left/right + Move up/down",
 
-        "/actions/weapons/in/Fire" : "Fire",
-        "/actions/weapons/in/FireAlt" : "Alternative Fire",
-        "/actions/weapons/in/Reload" : "Reload",
-        "/actions/weapons/in/Holster" : "Holster weapon / Select last weapon",
-        "/actions/weapons/in/Next" : "Select next weapon",
-        "/actions/weapons/in/Previous" : "Select previous weapon",
-        "/actions/weapons/out/Recoil" : "Recoil vibration",
+        "/actions/input/in/FireWeapon" : "Fire weapon",
+        "/actions/input/in/AltFireWeapon" : "Alternative fire weapon",
+        "/actions/input/in/AnalogFireWeapon" : "Analog fire weapon (controls speed)",
+        "/actions/input/in/ReloadWeapon" : "Reload weapon",
+        "/actions/input/in/HolsterWeapon" : "Holster weapon / Select last weapon",
+        "/actions/input/in/NextWeapon" : "Select next weapon",
+        "/actions/input/in/PreviousWeapon" : "Select previous weapon",
+
+        "/actions/input/in/Teleport" : "Teleport",
+        "/actions/input/in/ToggleFlashlight" : "Toggle flashlight",
+        "/actions/input/in/Grab" : "Grab/Interact (This is for rotating valves, pulling/lifting crates, interacting with NPCs etc. using a VR controller.)",
+        "/actions/input/in/LegacyUse" : "Legacy Use (This triggers the default ingame use action, which 'uses' objects that you look at.)",
+
+        "/actions/feedback/out/Recoil" : "Recoil vibration",
+        "/actions/feedback/out/Earthquake" : "Earthquake shake feedback",
+        "/actions/feedback/out/TrainShake" : "On moving Train/Elevator/Platform shake feedback",
+        "/actions/feedback/out/WaterSplash" : "Feedback when falling into water",
 
         "/actions/damagefeedback/out/All" : "All damage types",
         "/actions/damagefeedback/out/Bullet" : "Got shot at",
@@ -397,18 +403,10 @@
         "/actions/damagefeedback/out/SlowFreeze" : "Slow freeze damage",
         "/actions/damagefeedback/out/Mortar" : "Hit by air raid",
 
-        "/actions/other/in/Teleport" : "Teleport",
-        "/actions/other/in/Flashlight" : "Toggle flashlight",
-        "/actions/other/in/Grab" : "Grab/Interact (This is for rotating valves, pulling/lifting crates, interacting with NPCs etc. using a VR controller.)",
-        "/actions/other/in/LegacyUse" : "Legacy Use (This triggers the default ingame use action, which 'uses' objects that you look at.)",
-        "/actions/other/out/Earthquake" : "Earthquake shake feedback",
-        "/actions/other/out/TrainShake" : "On moving Train/Elevator/Platform shake feedback",
-        "/actions/other/out/WaterSplash" : "Feedback when falling into water",
-
-        "/actions/poses/in/Flashlight" : "Flashlight",
+        "/actions/poses/in/Flashlight" : "Flashlight (If not set, flashlight is attached to left hand or right hand.)",
         "/actions/poses/in/Movement" : "Movement (If not set, movement follows HMD orientation.)",
-        "/actions/poses/in/Teleporter" : "Teleporter",
-        "/actions/poses/in/Weapon" : "Weapon"
+        "/actions/poses/in/Teleporter" : "Teleporter (If not set, flashlight is attached to left hand or right hand.)",
+        "/actions/poses/in/Weapon" : "Weapon (If not set, flashlight is attached to right hand or left hand.)"
     }
   ]
 }

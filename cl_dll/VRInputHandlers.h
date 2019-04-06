@@ -29,7 +29,7 @@ namespace VR
 			static void HandleMoveForwardBackward(vr::InputAnalogActionData_t data, const std::string& action);
 			static void HandleMoveSideways(vr::InputAnalogActionData_t data, const std::string& action);
 			static void HandleMoveUpDown(vr::InputAnalogActionData_t data, const std::string& action);
-			static void HandleMoveTurn(vr::InputAnalogActionData_t data, const std::string& action);
+			static void HandleTurn(vr::InputAnalogActionData_t data, const std::string& action);
 			static void HandleMoveForwardBackwardSideways(vr::InputAnalogActionData_t data, const std::string& action);
 			static void HandleMoveForwardBackwardTurn(vr::InputAnalogActionData_t data, const std::string& action);
 			static void HandleMoveForwardBackwardSidewaysUpDown(vr::InputAnalogActionData_t data, const std::string& action);
@@ -40,7 +40,8 @@ namespace VR
 		{
 		public:
 			static void HandleFire(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleFireAlt(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandleAltFire(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandleAnalogFire(vr::InputAnalogActionData_t data, const std::string& action);
 			static void HandleReload(vr::InputDigitalActionData_t data, const std::string& action);
 			static void HandleHolster(vr::InputDigitalActionData_t data, const std::string& action);
 			static void HandleNext(vr::InputDigitalActionData_t data, const std::string& action);
@@ -51,7 +52,7 @@ namespace VR
 		{
 		public:
 			static void HandleTeleport(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleFlashLight(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandleFlashlight(vr::InputDigitalActionData_t data, const std::string& action);
 			static void HandleGrab(vr::InputDigitalActionData_t data, const std::string& action);
 			static void HandleLegacyUse(vr::InputDigitalActionData_t data, const std::string& action);
 		};

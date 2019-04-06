@@ -42,43 +42,50 @@ void VRInput::Init()
 void VRInput::RegisterActionSets()
 {
 	// TODO: Implement all actions
-	if (RegisterActionSet("movement"))
+	if (RegisterActionSet("input"))
 	{
-		RegisterAction("movement", "Forward", &VR::Input::Movement::HandleMoveForward);
-		RegisterAction("movement", "Backward", &VR::Input::Movement::HandleMoveBackward);
-		RegisterAction("movement", "Left", &VR::Input::Movement::HandleMoveLeft);
-		RegisterAction("movement", "Right", &VR::Input::Movement::HandleMoveRight);
-		RegisterAction("movement", "Up", &VR::Input::Movement::HandleMoveUp);
-		RegisterAction("movement", "Down", &VR::Input::Movement::HandleMoveDown);
-		RegisterAction("movement", "TurnLeft", &VR::Input::Movement::HandleTurnLeft);
-		RegisterAction("movement", "TurnRight", &VR::Input::Movement::HandleTurnRight);
-		RegisterAction("movement", "Turn90Left", &VR::Input::Movement::HandleTurn90Left);
-		RegisterAction("movement", "Turn90Right", &VR::Input::Movement::HandleTurn90Right);
-		RegisterAction("movement", "Turn180", &VR::Input::Movement::HandleTurn180);
-		RegisterAction("movement", "Jump", &VR::Input::Movement::HandleJump);
-		RegisterAction("movement", "Crouch", &VR::Input::Movement::HandleCrouch);
-		RegisterAction("movement", "LongJump", &VR::Input::Movement::HandleLongJump);
+		RegisterAction("input", "MoveForward", &VR::Input::Movement::HandleMoveForward);
+		RegisterAction("input", "MoveBackward", &VR::Input::Movement::HandleMoveBackward);
+		RegisterAction("input", "MoveLeft", &VR::Input::Movement::HandleMoveLeft);
+		RegisterAction("input", "MoveRight", &VR::Input::Movement::HandleMoveRight);
+		RegisterAction("input", "MoveUp", &VR::Input::Movement::HandleMoveUp);
+		RegisterAction("input", "MoveDown", &VR::Input::Movement::HandleMoveDown);
+		RegisterAction("input", "TurnLeft", &VR::Input::Movement::HandleTurnLeft);
+		RegisterAction("input", "TurnRight", &VR::Input::Movement::HandleTurnRight);
+		RegisterAction("input", "Turn90Left", &VR::Input::Movement::HandleTurn90Left);
+		RegisterAction("input", "Turn90Right", &VR::Input::Movement::HandleTurn90Right);
+		RegisterAction("input", "Turn180", &VR::Input::Movement::HandleTurn180);
+		RegisterAction("input", "Jump", &VR::Input::Movement::HandleJump);
+		RegisterAction("input", "Crouch", &VR::Input::Movement::HandleCrouch);
+		RegisterAction("input", "LongJump", &VR::Input::Movement::HandleLongJump);
+		RegisterAction("input", "MoveForwardBackward", &VR::Input::Movement::HandleMoveForwardBackward);
+		RegisterAction("input", "MoveSideways", &VR::Input::Movement::HandleMoveSideways);
+		RegisterAction("input", "MoveUpDown", &VR::Input::Movement::HandleMoveUpDown);
+		RegisterAction("input", "Turn", &VR::Input::Movement::HandleTurn);
+		RegisterAction("input", "MoveForwardBackwardSideways", &VR::Input::Movement::HandleMoveForwardBackwardSideways);
+		RegisterAction("input", "MoveForwardBackwardTurn", &VR::Input::Movement::HandleMoveForwardBackwardTurn);
+		RegisterAction("input", "MoveForwardBackwardSidewaysUpDown", &VR::Input::Movement::HandleMoveForwardBackwardSidewaysUpDown);
+		RegisterAction("input", "MoveForwardBackwardTurnUpDown", &VR::Input::Movement::HandleMoveForwardBackwardTurnUpDown);
+
+		RegisterAction("input", "FireWeapon", &VR::Input::Weapons::HandleFire);
+		RegisterAction("input", "AltFireWeapon", &VR::Input::Weapons::HandleAltFire);
+		RegisterAction("input", "AnalogFireWeapon", &VR::Input::Weapons::HandleAnalogFire);
+		RegisterAction("input", "ReloadWeapon", &VR::Input::Weapons::HandleReload);
+		RegisterAction("input", "HolsterWeapon", &VR::Input::Weapons::HandleHolster);
+		RegisterAction("input", "NextWeapon", &VR::Input::Weapons::HandleNext);
+		RegisterAction("input", "PreviousWeapon", &VR::Input::Weapons::HandlePrevious);
+
+		RegisterAction("input", "Teleport", &VR::Input::Other::HandleTeleport);
+		RegisterAction("input", "ToggleFlashlight", &VR::Input::Other::HandleFlashlight);
+		RegisterAction("input", "Grab", &VR::Input::Other::HandleGrab);
+		RegisterAction("input", "LegacyUse", &VR::Input::Other::HandleLegacyUse);
 	}
-	if (RegisterActionSet("analogmovement"))
+	if (RegisterActionSet("feedback"))
 	{
-		RegisterAction("analogmovement", "ForwardBackward", &VR::Input::Movement::HandleMoveForwardBackward);
-		RegisterAction("analogmovement", "Sideways", &VR::Input::Movement::HandleMoveSideways);
-		RegisterAction("analogmovement", "UpDown", &VR::Input::Movement::HandleMoveUpDown);
-		RegisterAction("analogmovement", "Turn", &VR::Input::Movement::HandleMoveTurn);
-		RegisterAction("analogmovement", "ForwardBackwardSideways", &VR::Input::Movement::HandleMoveForwardBackwardSideways);
-		RegisterAction("analogmovement", "ForwardBackwardTurn", &VR::Input::Movement::HandleMoveForwardBackwardTurn);
-		RegisterAction("analogmovement", "ForwardBackwardSidewaysUpDown", &VR::Input::Movement::HandleMoveForwardBackwardSidewaysUpDown);
-		RegisterAction("analogmovement", "ForwardBackwardTurnUpDown", &VR::Input::Movement::HandleMoveForwardBackwardTurnUpDown);
-	}
-	if (RegisterActionSet("weapons"))
-	{
-		RegisterAction("weapons", "Fire", &VR::Input::Weapons::HandleFire);
-		RegisterAction("weapons", "FireAlt", &VR::Input::Weapons::HandleFireAlt);
-		RegisterAction("weapons", "Reload", &VR::Input::Weapons::HandleReload);
-		RegisterAction("weapons", "Holster", &VR::Input::Weapons::HandleHolster);
-		RegisterAction("weapons", "Next", &VR::Input::Weapons::HandleNext);
-		RegisterAction("weapons", "Previous", &VR::Input::Weapons::HandlePrevious);
-		RegisterFeedback("weapons", "Recoil");
+		RegisterFeedback("feedback", "Recoil");
+		RegisterFeedback("feedback", "Earthquake");
+		RegisterFeedback("feedback", "TrainShake");
+		RegisterFeedback("feedback", "WaterSplash");
 	}
 	if (RegisterActionSet("damagefeedback"))
 	{
@@ -103,16 +110,6 @@ void VRInput::RegisterActionSets()
 		RegisterFeedback("damagefeedback", "SlowBurn");
 		RegisterFeedback("damagefeedback", "SlowFreeze");
 		RegisterFeedback("damagefeedback", "Mortar");
-	}
-	if (RegisterActionSet("other"))
-	{
-		RegisterAction("other", "Teleport", &VR::Input::Other::HandleTeleport);
-		RegisterAction("other", "FlashLight", &VR::Input::Other::HandleFlashLight);
-		RegisterAction("other", "Grab", &VR::Input::Other::HandleGrab);
-		RegisterAction("other", "LegacyUse", &VR::Input::Other::HandleLegacyUse);
-		RegisterFeedback("other", "Earthquake");
-		RegisterFeedback("other", "TrainShake");
-		RegisterFeedback("other", "WaterSplash");
 	}
 	if (RegisterActionSet("poses"))
 	{
@@ -209,16 +206,16 @@ void VRInput::FireFeedback(FeedbackType feedback, int damageType, float duration
 	switch (feedback)
 	{
 	case FeedbackType::RECOIL:
-		handle = m_actionSets["weapons"].feedbackActions["Recoil"];
+		handle = m_actionSets["feedback"].feedbackActions["Recoil"];
 		break;
 	case FeedbackType::EARTHQUAKE:
-		handle = m_actionSets["other"].feedbackActions["Earthquake"];
+		handle = m_actionSets["feedback"].feedbackActions["Earthquake"];
 		break;
 	case FeedbackType::ONTRAIN:
-		handle = m_actionSets["other"].feedbackActions["TrainShake"];
+		handle = m_actionSets["feedback"].feedbackActions["TrainShake"];
 		break;
 	case FeedbackType::WATERSPLASH:
-		handle = m_actionSets["other"].feedbackActions["WaterSplash"];
+		handle = m_actionSets["feedback"].feedbackActions["WaterSplash"];
 		break;
 	case FeedbackType::DAMAGE:
 		handle = m_actionSets["damagefeedback"].feedbackActions["All"];

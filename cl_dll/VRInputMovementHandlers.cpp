@@ -96,7 +96,7 @@ namespace VR
 		{
 		}
 
-		void Movement::HandleMoveTurn(vr::InputAnalogActionData_t data, const std::string& action)
+		void Movement::HandleTurn(vr::InputAnalogActionData_t data, const std::string& action)
 		{
 		}
 

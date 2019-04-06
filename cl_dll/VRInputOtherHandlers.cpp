@@ -19,7 +19,7 @@ namespace VR
 
 		}
 
-		void Other::HandleFlashLight(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandleFlashlight(vr::InputDigitalActionData_t data, const std::string& action)
 		{
 
 		}
