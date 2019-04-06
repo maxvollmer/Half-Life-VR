@@ -962,6 +962,7 @@ void TEMPTODO_RemoveInvalidTriangles(std::vector<Vector3> & vertices, std::vecto
 
 void VRPhysicsHelper::BSPModelData::CreateData(CollisionWorld* collisionWorld)
 {
+	// TODO: Why do we still get invalid triangles?
 	TEMPTODO_RemoveInvalidTriangles(m_vertices, m_indices);
 
 	m_triangleVertexArray = new TriangleVertexArray(
@@ -1126,6 +1127,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 									indicesCount,
 									m_bspModelData[modelname]
 								);
+								m_bspModelData[modelname].CreateData(m_collisionWorld);
 							}
 							else
 							{
