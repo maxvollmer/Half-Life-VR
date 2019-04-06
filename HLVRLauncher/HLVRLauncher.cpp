@@ -13,7 +13,7 @@
 
 void RunCommandAndWait(std::string description, std::wstring command, const wchar_t* directory = nullptr)
 {
-	std::cout << "Running command: " << description << std::endl;
+	std::cout << description << std::flush;
 
 	SetLastError(0);
 
@@ -29,6 +29,7 @@ void RunCommandAndWait(std::string description, std::wstring command, const wcha
 			WaitForSingleObject(pi.hProcess, INFINITE);
 			CloseHandle(pi.hProcess);
 			CloseHandle(pi.hThread);
+			std::cout << " done." << std::endl;
 		}
 		else
 		{
@@ -37,7 +38,7 @@ void RunCommandAndWait(std::string description, std::wstring command, const wcha
 	}
 	catch (...)
 	{
-		std::cerr << red << "Error: Command failed with error: " << GetLastError() << ". Shutting down." << white << std::endl;
+		std::cerr << std::endl << red << "Error: Command failed with error: " << GetLastError() << ". Shutting down." << white << std::endl;
 		std::exit(-1);
 	}
 }
@@ -47,53 +48,88 @@ BOOL FileExistsW(LPCWSTR szPath)
 {
 	DWORD dwAttrib = GetFileAttributesW(szPath);
 
-	return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
-		!(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+	return (dwAttrib != INVALID_FILE_ATTRIBUTES) && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-void DeleteOpenGL(const std::wstring& hlDirectory)
+void DeleteDLL(const std::wstring& hlDirectory, const std::wstring& dll, bool createBackup)
 {
-	std::cout << "Deleting OpenGL32.dll." << std::endl;
+	std::cout << "Deleting " << std::string{ dll.begin(), dll.end() } << ".dll." << std::endl;
 
 	SetLastError(0);
 
 	try
 	{
-		auto path = (hlDirectory + L"\\opengl32.dll").data();
-		if (FileExistsW(path) && !DeleteFileW(path))
+		auto pathDLL = (hlDirectory + L"\\" + dll + L".dll").data();
+		if (createBackup)
+		{
+			auto pathBAK = (hlDirectory + L"\\" + dll + L".dll.bak").data();
+			if (FileExistsW(pathBAK) && !DeleteFileW(pathBAK))
+			{
+				throw 0;
+			}
+			if (FileExistsW(pathDLL) && !MoveFileW(pathDLL, pathBAK))
+			{
+				throw 0;
+			}
+		}
+		else
+		{
+			if (FileExistsW(pathDLL) && !DeleteFileW(pathDLL))
+			{
+				throw 0;
+			}
+		}
+	}
+	catch (...)
+	{
+		std::cerr << yellow << "Warning: Failed to delete " << std::string{ dll.begin(), dll.end() } << ".dll. Error: " << GetLastError() << "." << white << std::endl;
+	}
+}
+
+void CopyDLL(const std::wstring& hlDirectory, const std::wstring& vrDirectory, const std::wstring& dll)
+{
+	std::cout << "Copying " << std::string{ dll.begin(), dll.end() } << ".dll." << std::endl;
+
+	SetLastError(0);
+
+	try
+	{
+		if (!CopyFileW((vrDirectory + L"\\" + dll + L".dll").data(), (hlDirectory + L"\\" + dll + L".dll").data(), FALSE))
 		{
 			throw 0;
 		}
 	}
 	catch (...)
 	{
-		std::cerr << yellow << "Warning: Failed to delete OpenGL32.dll. Error: " << GetLastError() << "." << white << std::endl;
+		std::cerr << yellow << "Warning: Couldn't copy " << std::string{ dll.begin(), dll.end() } << ".dll. Error: " << GetLastError() << ". If the game doesn't run, you need to copy manually." << white << std::endl;
 	}
 }
 
-void PatchOpenGL(const std::wstring& hlDirectory, const std::wstring& vrDirectory)
+void RestoreDLL(const std::wstring& hlDirectory, const std::wstring& dll)
 {
-	std::cout << "Patching OpenGL32.dll." << std::endl;
+	std::cout << "Restoring " << std::string{ dll.begin(), dll.end() } << ".dll." << std::endl;
 
 	SetLastError(0);
 
 	try
 	{
-		if (!CopyFileW((vrDirectory + L"\\opengl32.dll").data(), (hlDirectory + L"\\opengl32.dll").data(), FALSE))
+		auto pathBAK = (hlDirectory + L"\\" + dll + L".dll.bak").data();
+		auto pathDLL = (hlDirectory + L"\\" + dll + L".dll").data();
+		if (FileExistsW(pathBAK) && !MoveFileW(pathBAK, pathDLL))
 		{
 			throw 0;
 		}
 	}
 	catch (...)
 	{
-		std::cerr << yellow << "Warning: Couldn't patch OpenGL32.dll. Error: " << GetLastError() << ". If the game doesn't run, you need to patch manually." << white << std::endl;
+		std::cerr << yellow << "Warning: Failed to restore " << std::string{ dll.begin(), dll.end() } << ".dll. Error: " << GetLastError() << "." << white << std::endl;
 	}
 }
 
 void ForceSingleProcess()
 {
 	SetLastError(0);
-	HANDLE mutex = CreateMutexW(0, FALSE, L"HalfLifeVirtualRealityLauncherMutexLaliludgnskdagjfgbs");
+	HANDLE mutex = CreateMutexW(NULL, FALSE, L"HalfLifeVirtualRealityLauncherMutexLaliludgnskdagjfgbs");
 	if (mutex == NULL)
 	{
 		std::cerr << red << "Error: Not enough rights to run HLVRLauncher. Try running as administrator. Shutting down." << white << std::endl;
@@ -147,14 +183,14 @@ int main(int argc, char *argv[])
 
 	std::cout << std::endl;
 
-	RunCommandAndWait("Disable Access Control List inheritance on the Half-Life folder.", icaclsSetInheritanceCommandLine);
-	RunCommandAndWait("Enable deletion of files in the Half-Life folder.", icaclsReenableDeletionOnFolderCommandLine);
-	RunCommandAndWait("Enable deletion of OpenGL32.dll in the Half-Life folder.", icaclsReenableDeletionOnFileCommandLine);
+	RunCommandAndWait("Disabling Access Control List inheritance on the Half-Life folder...", icaclsSetInheritanceCommandLine);
+	RunCommandAndWait("Enabling deletion of files in the Half-Life folder...", icaclsReenableDeletionOnFolderCommandLine);
+	RunCommandAndWait("Enabling deletion of OpenGL32.dll in the Half-Life folder...", icaclsReenableDeletionOnFileCommandLine);
 
 	std::cout << std::endl;
 
-	DeleteOpenGL(hlDirectory);
-	PatchOpenGL(hlDirectory, vrDirectory);
+	DeleteDLL(hlDirectory, L"OpenGL32", false);
+	CopyDLL(hlDirectory, vrDirectory, L"OpenGL32");
 
 	std::cout << std::endl;
 
@@ -162,25 +198,35 @@ int main(int argc, char *argv[])
 
 	std::cout << std::endl;
 
-	RunCommandAndWait("Disable deletion of files in the Half-Life folder.", icaclsDisableDeletionOnFolderCommandLine);
-	RunCommandAndWait("Disable deletion of OpenGL32.dll in the Half-Life folder.", icaclsDisableDeletionOnFileCommandLine);
+	RunCommandAndWait("Disabling deletion of OpenGL32.dll in the Half-Life folder...", icaclsDisableDeletionOnFileCommandLine);
 
 	std::cout << std::endl;
 
-	RunCommandAndWait("Launching the game.", hlExeCommandLine, hlDirectory.data());
+	DeleteDLL(hlDirectory, L"openvr_api", true);
+	CopyDLL(hlDirectory, vrDirectory, L"openvr_api");
 
 	std::cout << std::endl;
 
-	std::cout << "Game shut down, cleaning up..." << std::endl;
+	RunCommandAndWait("Disabling deletion of files in the Half-Life folder...", icaclsDisableDeletionOnFolderCommandLine);
 
 	std::cout << std::endl;
 
-	RunCommandAndWait("Enable deletion of files in the Half-Life folder.", icaclsReenableDeletionOnFolderCommandLine);
-	RunCommandAndWait("Enable deletion of OpenGL32.dll in the Half-Life folder.", icaclsReenableDeletionOnFileCommandLine);
+	RunCommandAndWait("Launching the game...", hlExeCommandLine, hlDirectory.data());
 
 	std::cout << std::endl;
 
-	DeleteOpenGL(hlDirectory);
+	std::cout << "Game shut down, cleaning up." << std::endl;
+
+	std::cout << std::endl;
+
+	RunCommandAndWait("Enabling deletion of files in the Half-Life folder...", icaclsReenableDeletionOnFolderCommandLine);
+	RunCommandAndWait("Enabling deletion of OpenGL32.dll in the Half-Life folder...", icaclsReenableDeletionOnFileCommandLine);
+
+	std::cout << std::endl;
+
+	DeleteDLL(hlDirectory, L"OpenGL32", false);
+	DeleteDLL(hlDirectory, L"openvr_api", false);
+	RestoreDLL(hlDirectory, L"openvr_api");
 
 	std::cout << std::endl;
 
