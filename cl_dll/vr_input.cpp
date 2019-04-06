@@ -18,16 +18,24 @@ void VRInput::Init()
 	std::filesystem::path relativeManifestPath = relativeManifestDir;
 	std::filesystem::path absoluteManifestPath = std::filesystem::absolute(relativeManifestPath);
 
-	vr::EVRInputError result = vr::VRInput()->SetActionManifestPath(absoluteManifestPath.string().data());
-	if (result == vr::VRInputError_None)
+	if (std::filesystem::exists(absoluteManifestPath))
 	{
-		RegisterActionSets();
-		m_legacyInput = false;
+		vr::EVRInputError result = vr::VRInput()->SetActionManifestPath(absoluteManifestPath.string().data());
+		if (result == vr::VRInputError_None)
+		{
+			RegisterActionSets();
+			m_isLegacyInput = false;
+		}
+		else
+		{
+			gEngfuncs.Con_DPrintf("Error: Couldn't load actions.manifest, falling back to legacy input. (Error code: %i)\n", result);
+			m_isLegacyInput = true;
+		}
 	}
 	else
 	{
-		gEngfuncs.Con_DPrintf("Couldn't load actions.manifest, falling back to legay input. (Error code: %i)\n", result);
-		m_legacyInput = true;
+		gEngfuncs.Con_DPrintf("Error: Couldn't load actions.manifest, because it doesn't exist. Falling back to legacy input.\n");
+		m_isLegacyInput = true;
 	}
 }
 
@@ -310,6 +318,9 @@ void VRInput::FireDamageFeedback(const std::string& action, float durationInSeco
 
 void VRInput::HandleInput()
 {
+	if (IsLegacyInput())
+		return;
+
 	UpdateActionStates();
 	for (auto &[actionSetName, actionSet] : m_actionSets)
 	{

@@ -42,7 +42,7 @@ public:
 	}
 	inline bool IsLegacyInput() const
 	{
-		return m_legacyInput;
+		return m_isLegacyInput;
 	}
 
 	enum class FeedbackType
@@ -71,7 +71,7 @@ private:
 	bool m_rotateLeft{ false };
 	bool m_rotateRight{ false };
 	bool m_isDucking{ false };	// TODO: Controller support for ducking
-	bool m_legacyInput{ false };
+	bool m_isLegacyInput{ false };
 
 	struct ActionSet
 	{

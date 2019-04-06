@@ -388,7 +388,10 @@ void VRHelper::PollEvents()
 			break;
 		}
 	}
-	g_vrInput.HandleInput();
+	if (!g_vrInput.IsLegacyInput())
+	{
+		g_vrInput.HandleInput();
+	}
 }
 
 bool VRHelper::UpdatePositions(struct ref_params_s* pparams)

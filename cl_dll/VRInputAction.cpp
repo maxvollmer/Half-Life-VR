@@ -49,7 +49,7 @@ void VRInputAction::HandleDigitalInput()
 	}
 	else
 	{
-		gEngfuncs.Con_DPrintf("Error while trying to get input action %s. (Error code: %i)\n", m_id, result);
+		gEngfuncs.Con_DPrintf("Error while trying to get digital input action %s. (Error code: %i)\n", m_id.data(), result);
 	}
 }
 
@@ -63,7 +63,7 @@ void VRInputAction::HandleAnalogInput()
 	}
 	else
 	{
-		gEngfuncs.Con_DPrintf("Error while trying to get input action %s. (Error code: %i)\n", m_id, result);
+		gEngfuncs.Con_DPrintf("Error while trying to get analog input action %s. (Error code: %i)\n", m_id.data(), result);
 	}
 }
 
@@ -77,7 +77,7 @@ void VRInputAction::HandlePoseInput()
 	}
 	else
 	{
-		gEngfuncs.Con_DPrintf("Error while trying to get input action %s. (Error code: %i)\n", m_id, result);
+		gEngfuncs.Con_DPrintf("Error while trying to get pose input action %s. (Error code: %i)\n", m_id.data(), result);
 	}
 }
 
