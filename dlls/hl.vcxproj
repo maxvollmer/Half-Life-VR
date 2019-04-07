@@ -258,6 +258,7 @@
     <ClCompile Include="headcrab.cpp" />
     <ClCompile Include="healthkit.cpp" />
     <ClCompile Include="hgrunt.cpp" />
+    <ClCompile Include="hlmv_mathlib.cpp" />
     <ClCompile Include="hornet.cpp" />
     <ClCompile Include="hornetgun.cpp" />
     <ClCompile Include="houndeye.cpp" />
@@ -300,6 +301,9 @@
     <ClCompile Include="spectator.cpp" />
     <ClCompile Include="squadmonster.cpp" />
     <ClCompile Include="squeakgrenade.cpp" />
+    <ClCompile Include="StudioModel.cpp" />
+    <ClCompile Include="studio_render.cpp" />
+    <ClCompile Include="studio_utils.cpp" />
     <ClCompile Include="subs.cpp" />
     <ClCompile Include="talkmonster.cpp" />
     <ClCompile Include="teamplay_gamerules.cpp" />
@@ -346,6 +350,7 @@
     <ClInclude Include="flyingmonster.h" />
     <ClInclude Include="func_break.h" />
     <ClInclude Include="gamerules.h" />
+    <ClInclude Include="hlmv_mathlib.h" />
     <ClInclude Include="hornet.h" />
     <ClInclude Include="items.h" />
     <ClInclude Include="monsterevent.h" />
@@ -361,6 +366,7 @@
     <ClInclude Include="soundent.h" />
     <ClInclude Include="spectator.h" />
     <ClInclude Include="squadmonster.h" />
+    <ClInclude Include="StudioModel.h" />
     <ClInclude Include="talkmonster.h" />
     <ClInclude Include="teamplay_gamerules.h" />
     <ClInclude Include="trains.h" />
@@ -372,6 +378,7 @@
     <ClInclude Include="VRControllerTeleporter.h" />
     <ClInclude Include="VRModelHelper.h" />
     <ClInclude Include="VRPhysicsHelper.h" />
+    <ClInclude Include="VRStuff.h" />
     <ClInclude Include="weapons.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

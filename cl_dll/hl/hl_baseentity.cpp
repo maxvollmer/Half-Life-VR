@@ -106,7 +106,12 @@ struct skilldata_t  gSkillData;
 void UTIL_SetSize( entvars_t *pev, const Vector &vecMin, const Vector &vecMax ){ }
 CBaseEntity *UTIL_FindEntityInSphere( CBaseEntity *pStartEntity, const Vector &vecCenter, float flRadius ){ return 0;}
 
-Vector UTIL_VecToAngles( const Vector &vec ){ return 0; }
+Vector UTIL_VecToAngles( const Vector &vec )
+{
+	float rgflVecOut[3];
+	VEC_TO_ANGLES(vec, rgflVecOut);
+	return Vector(rgflVecOut);
+}
 CSprite *CSprite::SpriteCreate( const char *pSpriteName, const Vector &origin, BOOL animate ) { return 0; }
 void CBeam::PointEntInit( const Vector &start, int endIndex ) { }
 CBeam *CBeam::BeamCreate( const char *pSpriteName, int width ) { return NULL; }
@@ -292,7 +297,6 @@ void CBasePlayer :: BarnacleVictimBitten ( entvars_t *pevBarnacle ) { }
 void CBasePlayer :: BarnacleVictimReleased ( void ) { }
 int CBasePlayer :: Illumination( void ) { return 0; }
 void CBasePlayer :: EnableControl(BOOL fControl) { }
-Vector CBasePlayer :: GetAutoaimVector( float flDelta ) { return g_vecZero; }
 Vector CBasePlayer :: AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  ) { return g_vecZero; }
 void CBasePlayer :: ResetAutoaim( ) { }
 void CBasePlayer :: SetCustomDecalFrames( int nFrames ) { }
@@ -316,13 +320,33 @@ Vector CBasePlayer::GetGunPosition(void)
 	}
 	else
 	{
-		return g_vecZero;
+		return GetWeaponPosition();
+	}
+}
+Vector CBasePlayer::GetAutoaimVector(float flDelta)
+{
+	Vector pos1{};
+	Vector pos2{};
+	if (GetViewEntity())
+	{
+		pos1 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT];
+		pos2 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 1];
+	}
+	if (pos2.LengthSquared() == 0.f || pos2 == pos1)
+	{
+		Vector forward;
+		gEngfuncs.pfnAngleVectors(GetWeaponAngles(), forward, NULL, NULL);
+		return forward;
+	}
+	else
+	{
+		Vector dir = (pos2 - pos1).Normalize();
+		return dir;
 	}
 }
 Vector CBasePlayer::GetAimAngles()
 {
-	// TODO: Get actual angles from attachment in client as well
-	return GetWeaponAngles();
+	return UTIL_VecToAngles(GetAutoaimVector());
 }
 const Vector CBasePlayer::GetWeaponPosition()
 {

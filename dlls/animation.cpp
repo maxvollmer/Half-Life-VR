@@ -108,7 +108,6 @@ int LookupActivity( void *pmodel, entvars_t *pev, int activity )
 	return seq;
 }
 
-
 int LookupActivityHeaviest( void *pmodel, entvars_t *pev, int activity )
 {
 	studiohdr_t *pstudiohdr;

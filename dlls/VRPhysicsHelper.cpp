@@ -161,6 +161,26 @@ constexpr float PHYSICS_STEP_TIME = 1.f / PHYSICS_STEPS;
 
 constexpr double MAX_PHYSICS_TIME_PER_FRAME = 1. / 30.;	// Never drop below 30fps due to physics calculations
 
+
+void TEMPTODO_RemoveInvalidTriangles(std::vector<Vector3> & vertices, std::vector<int32_t>& indices)
+{
+	// remove invalid triangles (TODO: Find out where these come from, this shouldn't be happening anymore!)
+	for (uint32_t i = 0; i < indices.size(); i += 3)
+	{
+		if (vertices[indices[i]] == vertices[indices[i + 1]]
+			|| vertices[indices[i]] == vertices[indices[i + 2]]
+			|| vertices[indices[i + 1]] == vertices[indices[i + 2]])
+		{
+			ALERT(at_console, "(VRPhysicsHelper)Warning: Found invalid triangle at index %i, removed!\n", i);
+			indices[i] = -1;
+			indices[i + 1] = -1;
+			indices[i + 2] = -1;
+		}
+	}
+	indices.erase(std::remove_if(indices.begin(), indices.end(), [](const int32_t& i) { return i < 0; }), indices.end());
+}
+
+
 inline Vector3 HLVecToRP3DVec(const Vector & hlVec)
 {
 	return Vector3{ hlVec.x * HL_TO_RP3D, hlVec.y * HL_TO_RP3D, hlVec.z * HL_TO_RP3D };
@@ -667,6 +687,7 @@ VRPhysicsHelper::VRPhysicsHelper()
 VRPhysicsHelper::~VRPhysicsHelper()
 {
 	m_bspModelData.clear();
+	m_studioModelBBoxCache.clear();
 	if (m_collisionWorld)
 	{
 		if (m_bboxBody)
@@ -685,7 +706,7 @@ VRPhysicsHelper::~VRPhysicsHelper()
 	if (m_bboxShape)
 	{
 		delete m_bboxShape;
-		m_bboxBody = nullptr;
+		m_bboxShape = nullptr;
 	}
 }
 
@@ -907,6 +928,30 @@ VRPhysicsHelper::BSPModelData::~BSPModelData()
 	DeleteData();
 }
 
+void VRPhysicsHelper::BSPModelData::CreateData(CollisionWorld* collisionWorld)
+{
+	// TODO: Why do we still get invalid triangles?
+	TEMPTODO_RemoveInvalidTriangles(m_vertices, m_indices);
+
+	m_triangleVertexArray = new TriangleVertexArray(
+		m_vertices.size(), m_vertices.data(), sizeof(Vector),
+		m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3,
+		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+
+	m_triangleMesh = new TriangleMesh;
+	m_triangleMesh->addSubpart(m_triangleVertexArray);
+
+	m_concaveMeshShape = new ConcaveMeshShape(m_triangleMesh);
+
+	m_collisionBody = collisionWorld->createCollisionBody(rp3d::Transform::identity());
+
+	m_proxyShape = m_collisionBody->addCollisionShape(m_concaveMeshShape, rp3d::Transform::identity());
+
+	m_collisionWorld = collisionWorld;
+
+	m_hasData = true;
+}
+
 void VRPhysicsHelper::BSPModelData::DeleteData()
 {
 	m_hasData = false;
@@ -942,46 +987,44 @@ void VRPhysicsHelper::BSPModelData::DeleteData()
 	}
 }
 
-void TEMPTODO_RemoveInvalidTriangles(std::vector<Vector3> & vertices, std::vector<int32_t>& indices)
+VRPhysicsHelper::BBoxData::~BBoxData()
 {
-	// remove invalid triangles (TODO: Find out where these come from, this shouldn't be happening anymore!)
-	for (uint32_t i = 0; i < indices.size(); i += 3)
-	{
-		if (vertices[indices[i]] == vertices[indices[i + 1]]
-			|| vertices[indices[i]] == vertices[indices[i + 2]]
-			|| vertices[indices[i + 1]] == vertices[indices[i + 2]])
-		{
-			ALERT(at_console, "(VRPhysicsHelper)Warning: Found invalid triangle at index %i, removed!\n", i);
-			indices[i] = -1;
-			indices[i + 1] = -1;
-			indices[i + 2] = -1;
-		}
-	}
-	indices.erase(std::remove_if(indices.begin(), indices.end(), [](const int32_t& i) { return i < 0; }), indices.end());
+	DeleteData();
 }
 
-void VRPhysicsHelper::BSPModelData::CreateData(CollisionWorld* collisionWorld)
+void VRPhysicsHelper::BBoxData::CreateData(CollisionWorld* collisionWorld, const Vector& boxMins, const Vector& boxMaxs)
 {
-	// TODO: Why do we still get invalid triangles?
-	TEMPTODO_RemoveInvalidTriangles(m_vertices, m_indices);
+	m_boxMins = boxMins;
+	m_boxMaxs = boxMaxs;
 
-	m_triangleVertexArray = new TriangleVertexArray(
-		m_vertices.size(), m_vertices.data(), sizeof(Vector),
-		m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3,
-		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
-
-	m_triangleMesh = new TriangleMesh;
-	m_triangleMesh->addSubpart(m_triangleVertexArray);
-
-	m_concaveMeshShape = new ConcaveMeshShape(m_triangleMesh);
-
+	m_boxShape = new BoxShape{ HLVecToRP3DVec(m_boxMaxs - m_boxMins) };
 	m_collisionBody = collisionWorld->createCollisionBody(rp3d::Transform::identity());
-
-	m_proxyShape = m_collisionBody->addCollisionShape(m_concaveMeshShape, rp3d::Transform::identity());
+	m_proxyShape = m_collisionBody->addCollisionShape(m_boxShape, rp3d::Transform::identity());
 
 	m_collisionWorld = collisionWorld;
 
 	m_hasData = true;
+}
+
+void VRPhysicsHelper::BBoxData::DeleteData()
+{
+	m_hasData = false;
+
+	if (m_collisionBody)
+	{
+		if (m_proxyShape)
+		{
+			m_collisionBody->removeCollisionShape(m_proxyShape);
+		}
+		m_collisionWorld->destroyCollisionBody(m_collisionBody);
+	}
+	if (m_boxShape)
+	{
+		delete m_boxShape;
+		m_boxShape = nullptr;
+	}
+	m_collisionBody = nullptr;
+	m_proxyShape = nullptr;
 }
 
 bool DoesAnyBrushModelNeedLoading(const model_t *const models)

@@ -1093,6 +1093,10 @@ StudioDrawModel
 
 ====================
 */
+#define VR_MUZZLE_ATTACHMENT 0
+#define VR_MUZZLE_FORWARD 1
+#define VR_MUZZLE_RIGHT 2
+#define VR_MUZZLE_UP 3
 int CStudioModelRenderer::StudioDrawModel( int flags )
 {
 	alight_t lighting;
@@ -1171,7 +1175,7 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 
 	if (flags & STUDIO_EVENTS)
 	{
-		StudioCalcAttachments( );
+		StudioCalcAttachments();
 		IEngineStudio.StudioClientEvents( );
 		// copy attachments into global entity array
 		if ( m_pCurrentEntity->index > 0 )
@@ -1182,10 +1186,21 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 		}
 	}
 
-	// Don't draw viewmodel, server has proper controller entities for rendering instead - Max Vollmer, 2019-03-30
+	// Special handling of view entity
 	cl_entity_t *viewmodel = gEngfuncs.GetViewModel();
 	if (viewmodel != nullptr && m_pCurrentEntity == viewmodel)
 	{
+		// Copy VR muzzle attachment transform from bone into attachments - Max Vollmer, 2019-04-07
+		mstudioattachment_t* pattachments = (mstudioattachment_t *)((byte *)m_pStudioHeader + m_pStudioHeader->attachmentindex);
+		if (m_pStudioHeader->numattachments > 0)
+		{
+			// TODO: Use weapon angles or use identity?
+			VectorTransform(Vector{ 1.f, 0.f, 0.f }, (*m_plighttransform)[pattachments[VR_MUZZLE_ATTACHMENT].bone], m_pCurrentEntity->attachment[VR_MUZZLE_FORWARD]);
+			VectorTransform(Vector{ 0.f, 1.f, 0.f }, (*m_plighttransform)[pattachments[VR_MUZZLE_ATTACHMENT].bone], m_pCurrentEntity->attachment[VR_MUZZLE_RIGHT]);
+			VectorTransform(Vector{ 0.f, 0.f, 1.f }, (*m_plighttransform)[pattachments[VR_MUZZLE_ATTACHMENT].bone], m_pCurrentEntity->attachment[VR_MUZZLE_UP]);
+		}
+
+		// Don't draw viewmodel, server has proper controller entities for rendering instead - Max Vollmer, 2019-03-30
 		return 1;
 	}
 

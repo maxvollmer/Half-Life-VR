@@ -450,7 +450,25 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
 
 // VR stuff
-cvar_t	vr_humanscale = { "vr_humanscale", "1" };
+cvar_t vr_humanscale = { "vr_humanscale", "1" };
+cvar_t vr_weaponscale = { "vr_weaponscale", "1" };
+cvar_t vr_shotgun_scale = { "vr_shotgun_scale", "1" };
+cvar_t vr_9mmar_scale = { "vr_9mmar_scale", "1" };
+cvar_t vr_9mmhandgun_scale = { "vr_9mmhandgun_scale", "1" };
+cvar_t vr_357_scale = { "vr_357_scale", "1" };
+cvar_t vr_egon_scale = { "vr_egon_scale", "1" };
+cvar_t vr_grenade_scale = { "vr_grenade_scale", "1" };
+cvar_t vr_satchel_scale = { "vr_satchel_scale", "1" };
+cvar_t vr_tripmine_scale = { "vr_tripmine_scale", "1" };
+cvar_t vr_gordon_hand_scale = { "vr_gordon_hand_scale", "1" };
+cvar_t vr_crossbow_scale = { "vr_crossbow_scale", "1" };
+cvar_t vr_gauss_scale = { "vr_gauss_scale", "1" };
+cvar_t vr_hgun_scale = { "vr_hgun_scale", "1" };
+cvar_t vr_satchel_radio_scale = { "vr_satchel_radio_scale", "1" };
+cvar_t vr_squeak_scale = { "vr_squeak_scale", "1" };
+cvar_t vr_crowbar_scale = { "vr_crowbar_scale", "1" };
+cvar_t vr_rpg_scale = { "vr_rpg_scale", "1" };
+cvar_t vr_melee_swing_speed = { "vr_melee_swing_speed", "150" };
 
 
 // Register your console variables here
@@ -889,6 +907,24 @@ void GameDLLInit( void )
 
 	// VR stuff
 	CVAR_REGISTER(&vr_humanscale);
+	CVAR_REGISTER(&vr_weaponscale);
+	CVAR_REGISTER(&vr_shotgun_scale);
+	CVAR_REGISTER(&vr_9mmar_scale);
+	CVAR_REGISTER(&vr_9mmhandgun_scale);
+	CVAR_REGISTER(&vr_357_scale);
+	CVAR_REGISTER(&vr_egon_scale);
+	CVAR_REGISTER(&vr_grenade_scale);
+	CVAR_REGISTER(&vr_satchel_scale);
+	CVAR_REGISTER(&vr_tripmine_scale);
+	CVAR_REGISTER(&vr_gordon_hand_scale);
+	CVAR_REGISTER(&vr_crossbow_scale);
+	CVAR_REGISTER(&vr_gauss_scale);
+	CVAR_REGISTER(&vr_hgun_scale);
+	CVAR_REGISTER(&vr_satchel_radio_scale);
+	CVAR_REGISTER(&vr_squeak_scale);
+	CVAR_REGISTER(&vr_crowbar_scale);
+	CVAR_REGISTER(&vr_rpg_scale);
+	CVAR_REGISTER(&vr_melee_swing_speed);
 
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

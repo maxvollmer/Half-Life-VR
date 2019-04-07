@@ -49,13 +49,6 @@ public:
 	bool ModelIntersectsWorld(CBaseEntity *pModel);
 	bool ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2);
 
-	/*
-	bool RotatedBBoxIntersectsWorld(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs);
-	bool RotatedBBoxesIntersect(
-		const Vector & bbox1Center, const Vector & bbox1Angles, const Vector & bbox1Mins, const Vector & bbox1Maxs,
-		const Vector & bbox2Center, const Vector & bbox2Angles, const Vector & bbox2Mins, const Vector & bbox2Maxs);
-	*/
-
 	class BSPModelData
 	{
 	public:
@@ -79,6 +72,27 @@ public:
 		bool											m_hasData{ false };
 	};
 
+	class BBoxData
+	{
+	public:
+		~BBoxData();
+
+		void CreateData(reactphysics3d::CollisionWorld* collisionWorld, const Vector& boxMins, const Vector& boxMaxs);
+		void DeleteData();
+		bool HasData() { return m_hasData; }
+
+		Vector											m_boxMins;
+		Vector											m_boxMaxs;
+
+		reactphysics3d::BoxShape*						m_boxShape{ nullptr };
+		reactphysics3d::ProxyShape*						m_proxyShape{ nullptr };
+		reactphysics3d::CollisionBody*					m_collisionBody{ nullptr };
+
+		reactphysics3d::CollisionWorld*					m_collisionWorld{ nullptr };
+
+		bool											m_hasData{ false };
+	};
+
 private:
 	bool CheckWorld();
 
@@ -88,15 +102,16 @@ private:
 	void StorePhysicsMapDataToFile(const std::string& physicsMapDataFilePath);
 	void GetPhysicsMapDataFromModel();
 
-	std::string										m_currentMapName;
-	std::unordered_map<std::string, BSPModelData>	m_bspModelData;
+	std::string												m_currentMapName;
+	std::unordered_map<std::string, BSPModelData>			m_bspModelData;
+	std::unordered_map<std::string, std::vector<BBoxData>>	m_studioModelBBoxCache;
 
-	const struct model_s*							m_hlWorldModel{ nullptr };
-	reactphysics3d::CollisionWorld*					m_collisionWorld{ nullptr };
+	const struct model_s*									m_hlWorldModel{ nullptr };
+	reactphysics3d::CollisionWorld*							m_collisionWorld{ nullptr };
 
-	reactphysics3d::CollisionBody*					m_bboxBody{ nullptr };
-	reactphysics3d::BoxShape*						m_bboxShape{ nullptr };
-	reactphysics3d::ProxyShape*						m_bboxProxyShape{ nullptr };
+	reactphysics3d::CollisionBody*							m_bboxBody{ nullptr };
+	reactphysics3d::BoxShape*								m_bboxShape{ nullptr };
+	reactphysics3d::ProxyShape*								m_bboxProxyShape{ nullptr };
 
 
 	static VRPhysicsHelper*		m_instance;

@@ -230,7 +230,8 @@ void VRHelper::Exit(const char* lpErrorMessage)
 	vrCompositor = nullptr;
 	if (lpErrorMessage != nullptr)
 	{
-		std::cerr << "Error starting Half-Life: VR: " << lpErrorMessage << std::endl;
+		gEngfuncs.Con_DPrintf("Error starting Half-Life: VR: %s\n", lpErrorMessage);
+		std::cerr << "Error starting Half-Life: VR: " << lpErrorMessage << std::endl << std::flush;
 	}
 	vr::VR_Shutdown();
 	gEngfuncs.pfnClientCmd("quit");

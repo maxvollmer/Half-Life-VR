@@ -144,8 +144,8 @@ void CGlock::GlockFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
 		m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
 	}
 
-	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
-	Vector vecAiming = m_pPlayer->GetAutoaimVector();;
+	Vector vecSrc	 = m_pPlayer->GetGunPosition();
+	Vector vecAiming = m_pPlayer->GetAutoaimVector();
 
 	Vector vecDir;
 	vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, Vector( flSpread, flSpread, flSpread ), 8192, BULLET_PLAYER_9MM, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );

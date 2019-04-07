@@ -218,7 +218,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		const bool isTouching = CheckIfEntityAndControllerTouch(hEntity, controller);
 		const bool didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
 
-		const bool isHitting = isTouching && controller.GetVelocity().Length() > MELEE_MIN_SWING_SPEED;
+		const bool isHitting = isTouching && controller.GetVelocity().Length() > GetMeleeSwingSpeed();
 		const bool didHitChange = isHitting ? controller.AddHitEntity(hEntity) : controller.RemoveHitEntity(hEntity);
 
 		float flHitDamage = 0.f;

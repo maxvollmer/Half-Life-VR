@@ -2069,9 +2069,9 @@ bool UTIL_CheckTraceIntersectsEntity(const Vector &pos1, const Vector &pos2, CBa
 
 float UTIL_CalculateMeleeDamage(int iId, float speed)
 {
-	if (speed >= MELEE_MIN_SWING_SPEED)
+	if (speed >= GetMeleeSwingSpeed())
 	{
-		float baseDamage = gSkillData.plrDmgCrowbar * speed / MELEE_MIN_SWING_SPEED;
+		float baseDamage = gSkillData.plrDmgCrowbar * speed / GetMeleeSwingSpeed();
 		switch (iId)
 		{
 		case WEAPON_CROWBAR:

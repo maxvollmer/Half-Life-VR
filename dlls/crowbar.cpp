@@ -144,7 +144,7 @@ void CCrowbar::ItemPostFrame()
 #ifndef CLIENT_DLL
 	Vector weaponVelocity = m_pPlayer->GetWeaponVelocity();
 	float speed = weaponVelocity.Length();
-	if (speed >= MELEE_MIN_SWING_SPEED)
+	if (speed >= GetMeleeSwingSpeed())
 	{
 		if (!playedWooshSound)
 		{

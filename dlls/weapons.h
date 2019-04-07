@@ -532,7 +532,8 @@ private:
 };
 
 
-#define MELEE_MIN_SWING_SPEED 200
+float GetMeleeSwingSpeed();
+float GetWeaponScale(const char* weaponModelName);
 
 class CCrowbar : public CBasePlayerWeapon
 {

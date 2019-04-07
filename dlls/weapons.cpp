@@ -20,6 +20,9 @@
 
 */
 
+#include <string>
+#include <regex>
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -55,6 +58,32 @@ extern int gmsgCurWeapon;
 MULTIDAMAGE gMultiDamage;
 
 #define TRACER_FREQ		4			// Tracers fire every fourth bullet
+
+// Returns the minimum speed required to do melee damage with a VR controller - Max Vollmer, 2019-04-07
+float GetMeleeSwingSpeed()
+{
+	// Don't allow negative or 0 values
+	return max(1.f, CVAR_GET_FLOAT("vr_melee_swing_speed"));
+}
+
+float GetWeaponScale(const char* weaponModelName)
+{
+	float baseWeaponScale = CVAR_GET_FLOAT("vr_weaponscale");
+	if (baseWeaponScale < 0.01f)
+		baseWeaponScale = 1.f;
+
+	// "models/v_<weapon>.mdl" -> "vr_<weapon>_scale"
+	std::string cvarWeaponModelScale =
+		std::regex_replace(
+			std::string{ weaponModelName },
+			std::regex{"models/v_([a-zA-Z_-]+)\\.mdl"},
+			"vr_$1_scale");
+	float weaponScale = CVAR_GET_FLOAT(cvarWeaponModelScale.data());
+	if (weaponScale < 0.01f)
+		weaponScale = 1.f;
+
+	return baseWeaponScale * weaponScale;
+}
 
 
 //=========================================================

@@ -4232,24 +4232,7 @@ Vector CBasePlayer::GetGunPosition()
 
 Vector CBasePlayer::GetAimAngles()
 {
-	// Gun position and angles determined by attachments on weapon model - Max Vollmer, 2019-03-30
-	Vector pos1;
-	Vector pos2;
-	Vector unused;
-	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos1, unused);
-	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT + 1, pos2, unused);
-	if (pos2.LengthSquared() == 0.f || pos2 == pos1)
-	{
-		ALERT(at_console, "CBasePlayer::GetAimAngles for %s got invalid 2nd attachment, falling back to weapon angles.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
-		return GetWeaponAngles();
-	}
-	else
-	{
-		Vector dir = (pos2 - pos1).Normalize();
-		Vector angles = UTIL_VecToAngles(dir);
-		ALERT(at_console, "CBasePlayer::GetAimAngles for %s: %f %f %f (from aim dir: %f %f %f)\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), angles.x, angles.y, angles.z, dir.x, dir.y, dir.z);
-		return angles;
-	}
+	return UTIL_VecToAngles(GetAutoaimVector());
 }
 
 Vector CBasePlayer::GetAutoaimVector(float flDelta)

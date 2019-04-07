@@ -102,15 +102,29 @@ EV_GetGunPosition
 Figure out the height of the gun
 =================
 */
+// Gun position and aim vector in VR is given by special model attachments - Max Vollmer, 2019-03-30 / 2019-04-07
 #define VR_MUZZLE_ATTACHMENT 0
-void EV_GetGunPosition( event_args_t *args, float *pos, float *origin )
+#define VR_MUZZLE_FORWARD 1
+#define VR_MUZZLE_RIGHT 2
+#define VR_MUZZLE_UP 3
+void EV_GetGunPosition(event_args_t *args, float *pos)
 {
 	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
 	if (viewModel != nullptr)
 	{
-		// Gun position in VR is given by special model attachment - Max Vollmer, 2019-03-30
-		//viewModel->curstate.origin.CopyToArray(pos);
 		viewModel->attachment[VR_MUZZLE_ATTACHMENT].CopyToArray(pos);
+	}
+}
+void EV_GetGunAim(struct event_args_s *args, float *forward, float *right, float *up, float *angles)
+{
+	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
+	if (viewModel != nullptr)
+	{
+		viewModel->attachment[VR_MUZZLE_FORWARD].CopyToArray(forward);
+		viewModel->attachment[VR_MUZZLE_RIGHT].CopyToArray(right);
+		viewModel->attachment[VR_MUZZLE_UP].CopyToArray(up);
+		extern void VectorAngles(const float *forward, float *angles);
+		VectorAngles(forward, angles);
 	}
 }
 

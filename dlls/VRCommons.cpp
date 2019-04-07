@@ -8,6 +8,9 @@
 #include "player.h"
 
 VRLevelChangeData g_vrLevelChangeData;
+GlobalXenMounds gGlobalXenMounds;
+
+// TODO: Probably wanna move those somewhere else:
 
 void GlobalXenMounds::Add(const Vector& position, const string_t multi_manager)
 {
@@ -40,4 +43,3 @@ bool GlobalXenMounds::Trigger(CBasePlayer *pPlayer, const Vector& position)
 	return false;
 }
 
-GlobalXenMounds gGlobalXenMounds;

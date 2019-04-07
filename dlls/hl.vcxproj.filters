@@ -16,6 +16,12 @@
     <Filter Include="VR">
       <UniqueIdentifier>{860f3d8f-5250-4648-903c-9c3d577b2ddb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\StudioModel">
+      <UniqueIdentifier>{4ad53561-b25f-4936-9ec9-f875abd23d2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\stuff">
+      <UniqueIdentifier>{4e28465b-28b9-4933-bd02-e02acd88d498}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="aflock.cpp">
@@ -327,14 +333,26 @@
     <ClCompile Include="VRControllerTeleporter.cpp">
       <Filter>VR</Filter>
     </ClCompile>
-    <ClCompile Include="VRCommons.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
     <ClCompile Include="VRControllerInteractionManager.cpp">
       <Filter>VR</Filter>
     </ClCompile>
     <ClCompile Include="VRModelHelper.cpp">
       <Filter>VR</Filter>
+    </ClCompile>
+    <ClCompile Include="hlmv_mathlib.cpp">
+      <Filter>VR\StudioModel</Filter>
+    </ClCompile>
+    <ClCompile Include="studio_render.cpp">
+      <Filter>VR\StudioModel</Filter>
+    </ClCompile>
+    <ClCompile Include="studio_utils.cpp">
+      <Filter>VR\StudioModel</Filter>
+    </ClCompile>
+    <ClCompile Include="VRCommons.cpp">
+      <Filter>VR\stuff</Filter>
+    </ClCompile>
+    <ClCompile Include="StudioModel.cpp">
+      <Filter>VR\StudioModel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -482,14 +500,23 @@
     <ClInclude Include="VRControllerTeleporter.h">
       <Filter>VR</Filter>
     </ClInclude>
-    <ClInclude Include="VRCommons.h">
-      <Filter>VR</Filter>
-    </ClInclude>
     <ClInclude Include="VRControllerInteractionManager.h">
       <Filter>VR</Filter>
     </ClInclude>
     <ClInclude Include="VRModelHelper.h">
       <Filter>VR</Filter>
+    </ClInclude>
+    <ClInclude Include="hlmv_mathlib.h">
+      <Filter>VR\StudioModel</Filter>
+    </ClInclude>
+    <ClInclude Include="StudioModel.h">
+      <Filter>VR\StudioModel</Filter>
+    </ClInclude>
+    <ClInclude Include="VRStuff.h">
+      <Filter>VR\stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="VRCommons.h">
+      <Filter>VR\stuff</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

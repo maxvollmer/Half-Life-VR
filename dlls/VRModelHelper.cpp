@@ -1,10 +1,16 @@
 
+// StudioModel helper functions for better collision detection in VR - Max Vollmer - 2019-04-07
+
+#include <vector>
+#include <string>
+
 #include "extdll.h"
 #include "util.h"
-#include "vector.h"
 #include "cbase.h"
+#include "vector.h"
 
 #include "VRModelHelper.h"
+#include "StudioModel.h"
 
 extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
 extern int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflGroundSpeed);
@@ -37,7 +43,7 @@ VRModelInfo::VRModelInfo() :
 VRModelInfo::VRModelInfo(CBaseEntity *pEntity) :
 	m_isValid{ false },
 	m_hlName{ pEntity->pev->model },
-	m_name{ STRING(m_hlName) },
+	m_name{ STRING(pEntity->pev->model) },
 	m_numSequences{ 0 }
 {
 	if (m_hlName && !m_name.empty())
@@ -86,6 +92,49 @@ const VRModelInfo& VRModelHelper::GetModelInfo(CBaseEntity *pEntity)
 	{
 		return (m_instance.m_modelInfoMap[pEntity->pev->model] = VRModelInfo{ pEntity });
 	}
+}
+
+std::vector<TransformedBBox> VRModelHelper::GetTransformedBBoxesForModel(CBaseEntity* pModel)
+{
+	std::vector<TransformedBBox> result;
+
+	const VRModelInfo& modelInfo = GetModelInfo(pModel);
+
+	if (!modelInfo.m_isValid)
+		return result;
+
+	// Get studio model
+	if (!m_studioModels[modelInfo.m_name])
+	{
+		m_studioModels[modelInfo.m_name] = std::make_unique<StudioModel>(modelInfo.m_name.data());
+	}
+	auto& studioModel = m_studioModels[modelInfo.m_name];
+
+	// Extract integer and fractional part of frame
+	float frame;
+	float advanceFrame = modf(pModel->pev->frame, &frame);
+
+	// Setup studio model
+	studioModel->SetSequence(pModel->pev->sequence);
+	studioModel->SetSkin(pModel->pev->skin);
+	studioModel->SetBodygroup(0, pModel->pev->body);
+	studioModel->SetFrame(int(frame));
+	studioModel->AdvanceFrame(advanceFrame);
+	studioModel->SetupModel();
+
+	// Get hitboxes with current transforms
+	for (int i = 0, n = studioModel->GetNumHitboxes(); i < n; i++)
+	{
+		float mins[3];
+		float maxs[3];
+		float transform[3][4];
+		if (studioModel->ExtractTransformedHitbox(i, mins, maxs, transform))
+		{
+			result.push_back(TransformedBBox{ Vector{mins}, Vector{maxs}, transform });
+		}
+	}
+
+	return result;
 }
 
 VRModelHelper VRModelHelper::m_instance{};

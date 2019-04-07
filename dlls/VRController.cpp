@@ -63,6 +63,7 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	if (m_isValid)
 	{
 		pModel->pev->effects &= ~EF_NODRAW;
+		pModel->pev->scale = GetWeaponScale(STRING(m_modelName));
 		if (m_isBBoxValid)
 		{
 			pModel->pev->mins = m_mins;
@@ -112,6 +113,7 @@ CBaseEntity* VRController::GetModel() const
 		CSprite *pModel = CSprite::SpriteCreate(m_modelName ? STRING(m_modelName) : "models/v_gordon_hand.mdl", GetPosition(), FALSE);
 		pModel->m_maxFrame = 255;
 		pModel->pev->framerate = 1.f;
+		pModel->pev->scale = GetWeaponScale(STRING(m_modelName));
 		pModel->TurnOn();
 		m_hModel = pModel;
 	}
@@ -141,6 +143,7 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 		pModel->pev->framerate = 1.f;
 	}
 
+	pModel->pev->scale = GetWeaponScale(STRING(m_modelName));
 	pModel->pev->frame = 0;
 	pModel->pev->animtime = gpGlobals->time;
 }

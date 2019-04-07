@@ -14,6 +14,10 @@
 ****/
 // mathlib.h
 
+#ifdef vec3_t
+#undef vec3_t
+#endif
+
 typedef float vec_t;
 typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
@@ -69,7 +73,6 @@ void VectorScale (const vec3_t in, vec_t scale, vec3_t out);
 int Q_log2(int val);
 
 void R_ConcatRotations (float in1[3][3], float in2[3][3], float out[3][3]);
-void R_ConcatTransforms (float in1[3][4], float in2[3][4], float out[3][4]);
 
 // Here are some "manual" INLINE routines for doing floating point to integer conversions
 extern short new_cw, old_cw;
