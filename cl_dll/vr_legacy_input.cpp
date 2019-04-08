@@ -34,14 +34,8 @@ void VRInput::LegacyHandleButtonPress(unsigned int button, vr::VRControllerState
 
 				// TODO: Move in direction controller is pointing, not direction player is looking!
 
-				if (touchPadAxis.x < -0.5f)
-				{
-					m_rotateLeft = downOrUp;
-				}
-				if (touchPadAxis.x > 0.5f)
-				{
-					m_rotateRight = downOrUp;
-				}
+				m_rotateLeft = (touchPadAxis.x < -0.5f && downOrUp);
+				m_rotateRight = (touchPadAxis.x > 0.5f && downOrUp);
 
 				/*
 				if (touchPadAxis.x < -0.5f && downOrUp)

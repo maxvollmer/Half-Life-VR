@@ -286,9 +286,6 @@
     <ClCompile Include="vr_helper.cpp">
       <Filter>VR</Filter>
     </ClCompile>
-    <ClCompile Include="vr_legacy_input.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
     <ClCompile Include="VRInputAction.cpp">
       <Filter>VR\input</Filter>
     </ClCompile>
@@ -306,6 +303,9 @@
     </ClCompile>
     <ClCompile Include="VRInputPosesHandlers.cpp">
       <Filter>VR\input\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="vr_legacy_input.cpp">
+      <Filter>VR\input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
