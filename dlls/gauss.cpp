@@ -337,18 +337,20 @@ void CGauss::StartFire( void )
 		//ALERT ( at_console, "Time:%f Damage:%f\n", gpGlobals->time - m_pPlayer->m_flStartCharge, flDamage );
 
 #ifndef CLIENT_DLL
-		float flZVel = m_pPlayer->pev->velocity.z;
-
-		if ( !m_fPrimaryFire )
+		if (CVAR_GET_FLOAT("vr_no_gauss_recoil") != 0.f)	// Allow disabling of gauss recoil in VR to avoid nausea - Max Vollmer, 2019-04-8
 		{
-			m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - gpGlobals->v_forward * flDamage * 5;
-		}
+			float flZVel = m_pPlayer->pev->velocity.z;
 
-		if ( !g_pGameRules->IsMultiplayer() )
+			if (!m_fPrimaryFire)
+			{
+				m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - gpGlobals->v_forward * flDamage * 5;
+			}
 
-		{
-			// in deathmatch, gauss can pop you up into the air. Not in single play.
-			m_pPlayer->pev->velocity.z = flZVel;
+			if (!g_pGameRules->IsMultiplayer())
+			{
+				// in deathmatch, gauss can pop you up into the air. Not in single play.
+				m_pPlayer->pev->velocity.z = flZVel;
+			}
 		}
 #endif
 		// player "shoot" animation

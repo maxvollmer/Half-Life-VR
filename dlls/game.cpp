@@ -469,6 +469,7 @@ cvar_t vr_squeak_scale = { "vr_squeak_scale", "1" };
 cvar_t vr_crowbar_scale = { "vr_crowbar_scale", "1" };
 cvar_t vr_rpg_scale = { "vr_rpg_scale", "1" };
 cvar_t vr_melee_swing_speed = { "vr_melee_swing_speed", "150" };
+cvar_t vr_no_gauss_recoil = { "vr_no_gauss_recoil", "1" };
 
 
 // Register your console variables here
@@ -925,6 +926,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&vr_crowbar_scale);
 	CVAR_REGISTER(&vr_rpg_scale);
 	CVAR_REGISTER(&vr_melee_swing_speed);
+	CVAR_REGISTER(&vr_no_gauss_recoil);
 
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
