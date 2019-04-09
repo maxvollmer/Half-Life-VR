@@ -564,7 +564,9 @@ private:
 	client_sprite_t				*m_pSpriteList;
 	int							m_iSpriteCount;
 	int							m_iSpriteCountAllRes;
-	int							m_iConcussionEffect; 
+	int							m_iConcussionEffect;
+
+	int m_iGroundEntIndex{ 0 };
 
 public:
 
@@ -645,6 +647,7 @@ public:
 	void _cdecl MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf);
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+	int _cdecl MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf);
 
 	// Screen information
 	SCREENINFO	m_scrinfo;
@@ -659,6 +662,8 @@ public:
 
 	void AddHudElem(CHudBase *p);
 
+	// Ground entity for rotating with them in VR (since player rotation is done client side completely) - Max Vollmer, 2019-04-09
+	struct cl_entity_s* GetGroundEntity();
 };
 
 class TeamFortressViewport;

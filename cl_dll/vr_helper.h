@@ -89,6 +89,10 @@ private:
 	Vector m_currentYawOffsetDelta;
 	float m_hmdDuckHeightDelta = 0.f;
 
+	bool m_hasGroundEntityYaw{ false };
+	float m_groundEntityYaw{ 0.f };
+	struct cl_entity_s* m_groundEntity{ nullptr };
+
 	float lastUpdatedVectorsFrametime = 0.f;
 	Vector3 vrToHL;
 	Vector3 hlToVR;

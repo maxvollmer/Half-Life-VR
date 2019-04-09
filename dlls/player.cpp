@@ -209,7 +209,9 @@ int gmsgTeamNames = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0; 
 
+// VR messages
 int gmsgVRRestoreYaw = 0;
+int gmsgVRGroundEntity = 0;
 
 
 void LinkUserMessages( void )
@@ -258,6 +260,7 @@ void LinkUserMessages( void )
 	gmsgStatusValue = REG_USER_MSG("StatusValue", 3); 
 
 	gmsgVRRestoreYaw = REG_USER_MSG("VRRstrYaw", 2);
+	gmsgVRGroundEntity = REG_USER_MSG("GroundEnt", 2);
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer );
@@ -5042,7 +5045,7 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 				else
 				{
 					// If entity is wide (e.g. a train or elevator) we check if half bbox is inside (this prevents falling off when standing on edge)
-					VRPhysicsHelper::Instance().ModelIntersectsBBox(
+					return VRPhysicsHelper::Instance().ModelIntersectsBBox(
 						pEntity,
 						Vector{}, gVRTempPlayerHalfAbsmin, gVRTempPlayerHalfAbsmax);
 				}
@@ -5114,4 +5117,16 @@ void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
 		// Remember ground entity
 		pev->groundentity = pGroundEntity->edict();
 	}
+
+	// Send ground entity down to client for yaw rotation in VR
+	MESSAGE_BEGIN(MSG_ONE, gmsgVRGroundEntity, NULL, pev);
+	if (pev->groundentity && !FNullEnt(pev->groundentity))
+	{
+		WRITE_ENTITY(ENTINDEX(pev->groundentity));
+	}
+	else
+	{
+		WRITE_SHORT(0);
+	}
+	MESSAGE_END();
 }

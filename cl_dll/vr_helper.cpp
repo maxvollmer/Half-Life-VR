@@ -136,6 +136,29 @@ void VRHelper::UpdateWorldRotation()
 			m_currentYaw -= deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
 		}
 
+		// Rotate with trains and platforms
+		cl_entity_t *groundEntity = gHUD.GetGroundEntity();
+		if (CVAR_GET_FLOAT("vr_rotate_with_trains") != 0.f && groundEntity)
+		{
+			if (groundEntity != m_groundEntity)
+			{
+				m_groundEntity = groundEntity;
+				m_hasGroundEntityYaw = false;
+			}
+			if (m_hasGroundEntityYaw)
+			{
+				m_currentYaw += groundEntity->angles.y - m_groundEntityYaw;
+			}
+			m_groundEntityYaw = groundEntity->angles.y;
+			m_hasGroundEntityYaw = true;
+		}
+		else
+		{
+			m_groundEntity = nullptr;
+			m_groundEntityYaw = 0.f;
+			m_hasGroundEntityYaw = false;
+		}
+
 		// Normalize angle
 		m_currentYaw = std::fmodf(m_currentYaw, 360.f);
 		if (m_currentYaw < 0.f) m_currentYaw += 360.f;
@@ -213,6 +236,7 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_lefthand_mode", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_debug_physics", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_playerturn_enabled", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_rotate_with_trains", "1", FCVAR_ARCHIVE);
 
 	g_vrInput.Init();
 
