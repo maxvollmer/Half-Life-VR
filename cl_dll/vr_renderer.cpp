@@ -176,8 +176,11 @@ void VRRenderer::DrawTransparent()
 
 		RenderWorldBackfaces();
 
-		vrHelper->TestRenderControllerPosition(true);
-		vrHelper->TestRenderControllerPosition(false);
+		if (CVAR_GET_FLOAT("vr_debug_controllers") != 0.f)
+		{
+			vrHelper->TestRenderControllerPosition(true);
+			vrHelper->TestRenderControllerPosition(false);
+		}
 
 		RenderHUDSprites();
 

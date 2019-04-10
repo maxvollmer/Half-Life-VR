@@ -252,9 +252,10 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_world_scale", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_world_z_strech", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_lefthand_mode", "0", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_debug_physics", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_playerturn_enabled", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_rotate_with_trains", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_debug_physics", "0", 0);
+	CVAR_CREATE("vr_debug_controllers", "0", 0);
 
 	g_vrInput.Init();
 
