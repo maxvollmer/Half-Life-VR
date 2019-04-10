@@ -668,7 +668,7 @@ void CScientist :: Spawn( void )
 	SET_MODEL(ENT(pev), m_fIsFemale ? "models/scientist_fem.mdl" : "models/scientist.mdl");
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
-	pev->scale = CVAR_GET_FLOAT("vr_humanscale");
+	pev->scale = CVAR_GET_FLOAT("vr_npcscale");
 	if (pev->scale <= 0.f)
 	{
 		pev->scale = 1.f;

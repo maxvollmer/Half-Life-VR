@@ -450,7 +450,7 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
 
 // VR stuff
-cvar_t vr_humanscale = { "vr_humanscale", "1" };
+cvar_t vr_npcscale = { "vr_npcscale", "1" };
 cvar_t vr_weaponscale = { "vr_weaponscale", "1" };
 cvar_t vr_shotgun_scale = { "vr_shotgun_scale", "1" };
 cvar_t vr_9mmar_scale = { "vr_9mmar_scale", "1" };
@@ -909,7 +909,7 @@ void GameDLLInit( void )
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	// VR stuff
-	CVAR_REGISTER(&vr_humanscale);
+	CVAR_REGISTER(&vr_npcscale);
 	CVAR_REGISTER(&vr_weaponscale);
 	CVAR_REGISTER(&vr_shotgun_scale);
 	CVAR_REGISTER(&vr_9mmar_scale);
