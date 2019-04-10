@@ -49,7 +49,7 @@ public:
 	void EXPORT TumbleThink( void );
 
 	virtual void BounceSound( void );
-	virtual void Killed( entvars_t *pevAttacker, int iGib );
+	virtual void Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };

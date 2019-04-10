@@ -135,7 +135,7 @@ CBaseEntity :: Killed
 If weapons code "kills" an entity, just set its effects to EF_NODRAW
 =====================
 */
-void CBaseEntity :: Killed( entvars_t *pevAttacker, int iGib )
+void CBaseEntity :: Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	pev->effects |= EF_NODRAW;
 }
@@ -466,7 +466,7 @@ CBasePlayer::Killed
 
 =====================
 */
-void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
+void CBasePlayer::Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	// Holster weapon immediately, to allow it to cleanup
 	if ( m_pActiveItem )
@@ -745,7 +745,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	{
 		if ( to->client.health <= 0 && lasthealth > 0 )
 		{
-			player.Killed( NULL, 0 );
+			player.Killed( NULL, DMG_GENERIC, 0 );
 			
 		}
 		else if ( to->client.health > 0 && lasthealth <= 0 )

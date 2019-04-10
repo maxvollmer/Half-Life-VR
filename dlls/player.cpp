@@ -824,6 +824,58 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 	MESSAGE_END();
 }
 
+const char* GibToString(int iGib)
+{
+	switch (iGib)
+	{
+	case GIB_ALWAYS:
+		return "GIB_ALWAYS";
+	case GIB_NEVER:
+		return "GIB_NEVER";
+	case GIB_NORMAL:
+		return "GIB_NORMAL";
+	case GIB_HEALTH_VALUE:
+		return "GIB_HEALTH_VALUE";
+	default:
+		return "GIB_UNKNOWN";
+	}
+}
+
+std::string DamageBitsToString(int bitsDamageType)
+{
+	if (bitsDamageType == 0)
+		return "DMG_GENERIC";
+	std::string damageString;
+	if (bitsDamageType & DMG_CRUSH)			damageString += "DMG_CRUSH";
+	if (bitsDamageType & DMG_BULLET)		damageString += "DMG_BULLET";
+	if (bitsDamageType & DMG_SLASH)			damageString += "DMG_SLASH";
+	if (bitsDamageType & DMG_BURN)			damageString += "DMG_BURN";
+	if (bitsDamageType & DMG_FREEZE)		damageString += "DMG_FREEZE";
+	if (bitsDamageType & DMG_FALL)			damageString += "DMG_FALL";
+	if (bitsDamageType & DMG_BLAST)			damageString += "DMG_BLAST";
+	if (bitsDamageType & DMG_CLUB)			damageString += "DMG_CLUB";
+	if (bitsDamageType & DMG_SHOCK)			damageString += "DMG_SHOCK";
+	if (bitsDamageType & DMG_SONIC)			damageString += "DMG_SONIC";
+	if (bitsDamageType & DMG_ENERGYBEAM)	damageString += "DMG_ENERGYBEAM";
+	if (bitsDamageType & DMG_NEVERGIB)		damageString += "DMG_NEVERGIB";
+	if (bitsDamageType & DMG_ALWAYSGIB)		damageString += "DMG_ALWAYSGIB";
+	if (bitsDamageType & DMG_DROWN)			damageString += "DMG_DROWN";
+	if (bitsDamageType & DMG_TIMEBASED)		damageString += "DMG_TIMEBASED";
+	if (bitsDamageType & DMG_PARALYZE)		damageString += "DMG_PARALYZE";
+	if (bitsDamageType & DMG_NERVEGAS)		damageString += "DMG_NERVEGAS";
+	if (bitsDamageType & DMG_POISON)		damageString += "DMG_POISON";
+	if (bitsDamageType & DMG_RADIATION)		damageString += "DMG_RADIATION";
+	if (bitsDamageType & DMG_DROWNRECOVER)	damageString += "DMG_DROWNRECOVER";
+	if (bitsDamageType & DMG_ACID)			damageString += "DMG_ACID";
+	if (bitsDamageType & DMG_SLOWBURN)		damageString += "DMG_SLOWBURN";
+	if (bitsDamageType & DMG_SLOWFREEZE)	damageString += "DMG_SLOWFREEZE";
+	if (bitsDamageType & DMG_MORTAR)		damageString += "DMG_MORTAR";
+	if (damageString.empty())
+		return "DMG_UNKNOWN";
+	else
+		return damageString;
+}
+
 /*
  * GLOBALS ASSUMED SET:  g_ulModelIndexPlayer
  *
@@ -832,8 +884,18 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 entvars_t *g_pevLastInflictor;  // Set in combat.cpp.  Used to pass the damage inflictor for death messages.
 								// Better solution:  Add as parameter to all Killed() functions.
 
-void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
+void CBasePlayer::Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
+	// Debug death console message - Max Vollmer, 2019-04-13
+	if (pevAttacker)
+	{
+		ALERT(at_console, "Killed by %s %s, damage type: %s, iGib: %s\n", STRING(pevAttacker->classname), STRING(pevAttacker->targetname), DamageBitsToString(bitsDamageType).data(), GibToString(iGib));
+	}
+	else
+	{
+		ALERT(at_console, "Killed by world, damage type: %s, iGib: %s\n", DamageBitsToString(bitsDamageType).data(), GibToString(iGib));
+	}
+
 	CSound *pSound;
 
 	// Holster weapon immediately, to allow it to cleanup
@@ -4237,12 +4299,12 @@ Vector CBasePlayer::GetGunPosition()
 	bool result = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[GetWeaponControllerID()].GetModel(), VR_MUZZLE_ATTACHMENT, pos);
 	if (result)
 	{
-		ALERT(at_console, "CBasePlayer::GetAimPosition for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), pos.x, pos.y, pos.z);
+		//ALERT(at_console, "CBasePlayer::GetAimPosition for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), pos.x, pos.y, pos.z);
 		return pos;
 	}
 	else
 	{
-		ALERT(at_console, "CBasePlayer::GetAimPosition for %s got invalid attachment, falling back to weapon origin.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
+		//ALERT(at_console, "CBasePlayer::GetAimPosition for %s got invalid attachment, falling back to weapon origin.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
 		return GetWeaponPosition();
 	}
 }
@@ -4262,12 +4324,12 @@ Vector CBasePlayer::GetAutoaimVector(float flDelta)
 	if (result1 && result2 && pos2 != pos1)
 	{
 		Vector dir = (pos2 - pos1).Normalize();
-		ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), dir.x, dir.y, dir.z);
+		//ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), dir.x, dir.y, dir.z);
 		return dir;
 	}
 	else
 	{
-		ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s got invalid attachment(s), falling back to weapon angles.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
+		//ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s got invalid attachment(s), falling back to weapon angles.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
 		UTIL_MakeAimVectors(GetWeaponAngles());
 		return gpGlobals->v_forward;
 	}

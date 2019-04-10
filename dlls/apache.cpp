@@ -37,7 +37,7 @@ class CApache : public CBaseMonster
 	void Precache( void );
 	int  Classify( void ) { return CLASS_HUMAN_MILITARY; };
 	int  BloodColor( void ) { return DONT_BLEED; }
-	void Killed( entvars_t *pevAttacker, int iGib );
+	void Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 	void GibMonster( void );
 
 	void SetObjectCollisionBox( void )
@@ -192,7 +192,7 @@ void CApache::StartupUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	SetUse( NULL );
 }
 
-void CApache :: Killed( entvars_t *pevAttacker, int iGib )
+void CApache :: Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	pev->movetype = MOVETYPE_TOSS;
 	pev->gravity = 0.3;

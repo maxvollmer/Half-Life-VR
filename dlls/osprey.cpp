@@ -49,7 +49,7 @@ public:
 	void Precache( void );
 	int  Classify( void ) { return CLASS_MACHINE; };
 	int  BloodColor( void ) { return DONT_BLEED; }
-	void Killed( entvars_t *pevAttacker, int iGib );
+	void Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 
 	void UpdateGoal( void );
 	BOOL HasDead( void );
@@ -509,7 +509,7 @@ int COsprey::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 
 
 
-void COsprey :: Killed( entvars_t *pevAttacker, int iGib )
+void COsprey :: Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	pev->movetype = MOVETYPE_TOSS;
 	pev->gravity = 0.3;

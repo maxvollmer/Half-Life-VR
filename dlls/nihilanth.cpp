@@ -36,7 +36,7 @@ public:
 	void Precache( void );
 	int  Classify( void ) { return CLASS_ALIEN_MILITARY; };
 	int  BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
-	void Killed( entvars_t *pevAttacker, int iGib );
+	void Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 	void GibMonster( void );
 
 	void SetObjectCollisionBox( void )
@@ -416,9 +416,9 @@ void CNihilanth::StartupThink( void )
 }
 
 
-void CNihilanth :: Killed( entvars_t *pevAttacker, int iGib )
+void CNihilanth :: Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
-	CBaseMonster::Killed( pevAttacker, iGib );
+	CBaseMonster::Killed( pevAttacker, bitsDamageType, iGib );
 }
 
 void CNihilanth :: DyingThink( void )

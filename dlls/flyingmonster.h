@@ -23,7 +23,7 @@ public:
 	int 		CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );// check validity of a straight move through space
 	BOOL		FTriangulate ( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex );
 	Activity	GetStoppedActivity( void );
-	void		Killed( entvars_t *pevAttacker, int iGib );
+	void		Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 	void		Stop( void );
 	float		ChangeYaw( int speed );
 	void		HandleAnimEvent( MonsterEvent_t *pEvent );

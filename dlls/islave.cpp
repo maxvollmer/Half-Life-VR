@@ -60,7 +60,7 @@ public:
 	void AlertSound( void );
 	void IdleSound( void );
 
-	void Killed( entvars_t *pevAttacker, int iGib );
+	void Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 
     void StartTask ( Task_t *pTask );
 	Schedule_t *GetSchedule( void );
@@ -268,10 +268,10 @@ int CISlave :: ISoundMask ( void)
 }
 
 
-void CISlave::Killed( entvars_t *pevAttacker, int iGib )
+void CISlave::Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	ClearBeams( );
-	CSquadMonster::Killed( pevAttacker, iGib );
+	CSquadMonster::Killed( pevAttacker, bitsDamageType, iGib );
 }
 
 //=========================================================

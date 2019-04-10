@@ -41,7 +41,7 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void EXPORT BarnacleThink ( void );
 	void EXPORT WaitTillDead ( void );
-	void Killed( entvars_t *pevAttacker, int iGib );
+	void Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
@@ -318,7 +318,7 @@ void CBarnacle :: BarnacleThink ( void )
 //=========================================================
 // Killed.
 //=========================================================
-void CBarnacle :: Killed( entvars_t *pevAttacker, int iGib )
+void CBarnacle :: Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	CBaseMonster *pVictim;
 

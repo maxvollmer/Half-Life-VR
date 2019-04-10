@@ -436,7 +436,7 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 #ifndef CLIENT_DLL
 	if (m_pSpot)
 	{
-		m_pSpot->Killed( NULL, GIB_NEVER );
+		m_pSpot->Killed( NULL, DMG_GENERIC, GIB_NEVER );
 		m_pSpot = NULL;
 	}
 #endif
@@ -494,7 +494,7 @@ void CRpg::SecondaryAttack()
 #ifndef CLIENT_DLL
 	if (!m_fSpotActive && m_pSpot)
 	{
-		m_pSpot->Killed( NULL, GIB_NORMAL );
+		m_pSpot->Killed( NULL, DMG_GENERIC, GIB_NORMAL );
 		m_pSpot = NULL;
 	}
 #endif

@@ -585,7 +585,7 @@ void CBaseMonster::CallGibMonster( void )
 Killed
 ============
 */
-void CBaseMonster :: Killed( entvars_t *pevAttacker, int iGib )
+void CBaseMonster :: Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	unsigned int	cCount = 0;
 	BOOL			fDone = FALSE;
@@ -911,15 +911,15 @@ int CBaseMonster :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker,
 
 		if ( bitsDamageType & DMG_ALWAYSGIB )
 		{
-			Killed( pevAttacker, GIB_ALWAYS );
+			Killed( pevAttacker, bitsDamageType, GIB_ALWAYS );
 		}
 		else if ( bitsDamageType & DMG_NEVERGIB )
 		{
-			Killed( pevAttacker, GIB_NEVER );
+			Killed( pevAttacker, bitsDamageType, GIB_NEVER );
 		}
 		else
 		{
-			Killed( pevAttacker, GIB_NORMAL );
+			Killed( pevAttacker, bitsDamageType, GIB_NORMAL );
 		}
 
 		g_pevLastInflictor = NULL;
@@ -1005,7 +1005,7 @@ int CBaseMonster :: DeadTakeDamage( entvars_t *pevInflictor, entvars_t *pevAttac
 		if ( pev->health <= flDamage )
 		{
 			pev->health = -50;
-			Killed( pevAttacker, GIB_ALWAYS );
+			Killed( pevAttacker, bitsDamageType, GIB_ALWAYS );
 			return 0;
 		}
 		// Accumulate corpse gibbing damage, so you can gib with multiple hits

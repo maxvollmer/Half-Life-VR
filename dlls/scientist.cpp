@@ -99,7 +99,7 @@ public:
 	
 	void TalkInit( void );
 
-	void			Killed( entvars_t *pevAttacker, int iGib );
+	void			Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 	
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
@@ -824,10 +824,10 @@ void CScientist :: DeathSound ( void )
 }
 
 
-void CScientist::Killed( entvars_t *pevAttacker, int iGib )
+void CScientist::Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	SetUse( NULL );	
-	CTalkMonster::Killed( pevAttacker, iGib );
+	CTalkMonster::Killed( pevAttacker, bitsDamageType, iGib );
 }
 
 

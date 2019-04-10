@@ -76,7 +76,7 @@ public:
 	void AlertFlock( void );
 	void SpreadFlock( void );
 	void SpreadFlock2( void );
-	void Killed( entvars_t *pevAttacker, int iGib );
+	void Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 	void Poop ( void );
 	BOOL FPathBlocked( void );
 	//void KeyValue( KeyValueData *pkvd );
@@ -267,7 +267,7 @@ void CFlockingFlyer :: MakeSound( void )
 
 //=========================================================
 //=========================================================
-void CFlockingFlyer :: Killed( entvars_t *pevAttacker, int iGib )
+void CFlockingFlyer :: Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	CFlockingFlyer *pSquad;
 	

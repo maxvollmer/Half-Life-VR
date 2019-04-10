@@ -50,7 +50,7 @@ class CSqueakGrenade : public CGrenade
 	void EXPORT SuperBounceTouch( CBaseEntity *pOther );
 	void EXPORT HuntThink( void );
 	int  BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
-	void Killed( entvars_t *pevAttacker, int iGib );
+	void Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 	void GibMonster( void );
 
 	virtual int		Save( CSave &save ); 
@@ -159,7 +159,7 @@ void CSqueakGrenade::Precache( void )
 }
 
 
-void CSqueakGrenade :: Killed( entvars_t *pevAttacker, int iGib )
+void CSqueakGrenade :: Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	pev->model = iStringNull;// make invisible
 	SetThink(&CSqueakGrenade:: SUB_Remove );
@@ -187,7 +187,7 @@ void CSqueakGrenade :: Killed( entvars_t *pevAttacker, int iGib )
 	if (m_hOwner != NULL)
 		pev->owner = m_hOwner->edict();
 
-	CBaseMonster :: Killed( pevAttacker, GIB_ALWAYS );
+	CBaseMonster :: Killed( pevAttacker, bitsDamageType, GIB_ALWAYS );
 }
 
 void CSqueakGrenade :: GibMonster( void )
@@ -216,7 +216,7 @@ void CSqueakGrenade::HuntThink( void )
 	{
 		g_vecAttackDir = pev->velocity.Normalize( );
 		pev->health = -1;
-		Killed( pev, 0 );
+		Killed( pev, DMG_GENERIC, 0 );
 		return;
 	}
 

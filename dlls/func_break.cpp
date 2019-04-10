@@ -565,7 +565,7 @@ int CBreakable :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, f
 	pev->health -= flDamage;
 	if (pev->health <= 0)
 	{
-		Killed( pevAttacker, GIB_NORMAL );
+		Killed( pevAttacker, bitsDamageType, GIB_NORMAL );
 		Die();
 		return 0;
 	}

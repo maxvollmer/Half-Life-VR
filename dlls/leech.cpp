@@ -107,7 +107,7 @@ public:
 	// Base entity functions
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int	BloodColor( void ) { return DONT_BLEED; }
-	void Killed( entvars_t *pevAttacker, int iGib );
+	void Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 	void Activate( void );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	int	Classify( void ) { return CLASS_INSECT; }
@@ -687,7 +687,7 @@ void CLeech::SwimThink( void )
 }
 
 
-void CLeech::Killed(entvars_t *pevAttacker, int iGib)
+void CLeech::Killed(entvars_t *pevAttacker, int bitsDamageType, int iGib)
 {
 	Vector			vecSplatDir;
 	TraceResult		tr;

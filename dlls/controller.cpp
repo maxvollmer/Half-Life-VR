@@ -87,7 +87,7 @@ public:
 	static const char *pDeathSounds[];
 
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	void Killed( entvars_t *pevAttacker, int iGib );
+	void Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib );
 	void GibMonster( void );
 
 	CSprite *m_pBall[2];	// hand balls
@@ -188,7 +188,7 @@ int CController :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 }
 
 
-void CController::Killed( entvars_t *pevAttacker, int iGib )
+void CController::Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	// shut off balls
 	/*
@@ -210,7 +210,7 @@ void CController::Killed( entvars_t *pevAttacker, int iGib )
 		m_pBall[1] = NULL;
 	}
 
-	CSquadMonster::Killed( pevAttacker, iGib );
+	CSquadMonster::Killed( pevAttacker, bitsDamageType, iGib );
 }
 
 
