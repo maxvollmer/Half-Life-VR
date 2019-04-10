@@ -33,6 +33,8 @@ public:
 	int		GetNumHitboxes();
 	bool	ExtractTransformedHitbox(int boneIndex, float *mins, float *maxs, float(*transform)[4]);
 
+	int		GetNumAttachments();
+
 	static const char* GetModelName(void *pmodel);
 
 	int		SetSequence(int iSequence);
@@ -52,25 +54,25 @@ private:
 	void					FreeModel();
 
 	// entity settings
-	vec3_t					m_origin;
-	vec3_t					m_angles;
-	int						m_sequence;			// sequence index
-	float					m_frame;			// frame
-	int						m_bodynum;			// bodypart selection	
-	int						m_skinnum;			// skin group selection
-	byte					m_controller[4];	// bone controllers
-	byte					m_blending[2];		// animation blending
-	byte					m_mouth;			// mouth position
+	vec3_t					m_origin{ 0.f };
+	vec3_t					m_angles{ 0.f };
+	int						m_sequence{ 0 };			// sequence index
+	float					m_frame{ 0.f };			// frame
+	int						m_bodynum{ 0 };			// bodypart selection	
+	int						m_skinnum{ 0 };			// skin group selection
+	byte					m_controller[4]{ 0 };	// bone controllers
+	byte					m_blending[2]{ 0 };		// animation blending
+	byte					m_mouth{ 0 };			// mouth position
 
 	// internal data
-	studiohdr_t				*m_pstudiohdr;
-	mstudiomodel_t			*m_pmodel;
+	studiohdr_t				*m_pstudiohdr{ nullptr };
+	mstudiomodel_t			*m_pmodel{ nullptr };
 
-	studiohdr_t				*m_panimhdr[32];
+	studiohdr_t				*m_panimhdr[32]{ nullptr };
 
-	vec4_t					m_adj;				// FIX: non persistant, make static
+	vec4_t					m_adj{ 0.f };				// FIX: non persistant, make static
 
-	float					m_bonetransform[MAXSTUDIOBONES][3][4];	// bone transformation matrix
+	float					m_bonetransform[MAXSTUDIOBONES][3][4]{ 0.f };	// bone transformation matrix
 
 	void					CalcBoneAdj();
 	void					CalcBoneQuaternion(int frame, float s, mstudiobone_t *pbone, mstudioanim_t *panim, float *q);

@@ -1,6 +1,7 @@
 
 // New methods for VR added to StudioModel - Max Vollmer - 2019-04-07
 
+#include <string>
 #include <cstring>
 #include "StudioModel.h"
 
@@ -12,7 +13,8 @@ StudioModel::StudioModel(void* pmodel)
 
 StudioModel::StudioModel(const char* modelname)
 {
-	LoadModel(modelname);
+	extern std::string UTIL_GetGameDir();
+	LoadModel((UTIL_GetGameDir() + "/" + modelname).data());
 }
 
 StudioModel::~StudioModel()
@@ -42,6 +44,14 @@ int StudioModel::GetNumHitboxes()
 		return 0;
 
 	return m_pstudiohdr->numhitboxes;
+}
+
+int StudioModel::GetNumAttachments()
+{
+	if (!m_pstudiohdr)
+		return 0;
+
+	return m_pstudiohdr->numattachments;
 }
 
 const char* StudioModel::GetModelName(void *pmodel)

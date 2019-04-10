@@ -41,6 +41,7 @@
 
 #include "VRPhysicsHelper.h"
 #include "VRGroundEntityHandler.h"
+#include "VRModelHelper.h"
 #include <algorithm>
 
 
@@ -1392,7 +1393,6 @@ void CBasePlayer::PlayerUse ( void )
 	if ( ! ((pev->button | m_afButtonPressed | m_afButtonReleased) & IN_USE) )
 		return;
 
-	/*
 	// Hit Use on a train?
 	if ( m_afButtonPressed & IN_USE )
 	{
@@ -1416,7 +1416,7 @@ void CBasePlayer::PlayerUse ( void )
 			{	// Start controlling the train!
 				CBaseEntity *pTrain = CBaseEntity::Instance( pev->groundentity );
 
-				if ( pTrain && FBitSet(pev->flags, FL_ONGROUND) && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pTrain->OnControls(pev) )
+				if ( pTrain /*&& FBitSet(pev->flags, FL_ONGROUND)*/ && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pTrain->OnControls(pev) )
 				{
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
@@ -1427,7 +1427,6 @@ void CBasePlayer::PlayerUse ( void )
 			}
 		}
 	}
-	*/
 
 	CBaseEntity *pObject = NULL;
 	CBaseEntity *pClosest = NULL;
@@ -2426,17 +2425,17 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 
 void CBasePlayer::PostThink()
 {
-	// VR: We are MOVETYPE_NOCLIP, so the engine doesn't handle collisions with solid entities for various reasons (getting stuck, pushables not working nicely in VR etc.)
-	// This also means that trains and elevators just move through us. To avoid this, we do appropriate movement handling here.
-	// P.S. In pm_shared.cpp we do some modified normal movement as if we were MOVETYPE_WALK
-	m_vrGroundEntityHandler.HandleMovingWithSolidGroundEntities();
-
-
 	if ( g_fGameOver )
 		goto pt_end;         // intermission or finale
 
 	if (!IsAlive())
 		goto pt_end;
+
+	// VR: We are MOVETYPE_NOCLIP, so the engine doesn't handle collisions with solid entities for various reasons (getting stuck, pushables not working nicely in VR etc.)
+	// This also means that trains and elevators just move through us. To avoid this, we do appropriate movement handling here.
+	// P.S. In pm_shared.cpp we do some modified normal movement as if we were MOVETYPE_WALK
+	m_vrGroundEntityHandler.HandleMovingWithSolidGroundEntities();
+
 
 	// Handle Tank controlling
 	if ( m_pTank != NULL )
@@ -4235,10 +4234,17 @@ Vector CBasePlayer::GetGunPosition()
 {
 	// Gun position and angles determined by attachments on weapon model - Max Vollmer, 2019-03-30
 	Vector pos;
-	Vector unused;
-	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos, unused);
-	ALERT(at_console, "CBasePlayer::GetAimPosition for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), pos.x, pos.y, pos.z);
-	return pos;
+	bool result = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[GetWeaponControllerID()].GetModel(), VR_MUZZLE_ATTACHMENT, pos);
+	if (result)
+	{
+		ALERT(at_console, "CBasePlayer::GetAimPosition for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), pos.x, pos.y, pos.z);
+		return pos;
+	}
+	else
+	{
+		ALERT(at_console, "CBasePlayer::GetAimPosition for %s got invalid attachment, falling back to weapon origin.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
+		return GetWeaponPosition();
+	}
 }
 
 Vector CBasePlayer::GetAimAngles()
@@ -4251,20 +4257,19 @@ Vector CBasePlayer::GetAutoaimVector(float flDelta)
 	// Gun position and angles determined by attachments on weapon model - Max Vollmer, 2019-03-30
 	Vector pos1;
 	Vector pos2;
-	Vector unused;
-	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT, pos1, unused);
-	GET_ATTACHMENT(m_vrControllers[GetWeaponControllerID()].GetModel()->edict(), VR_MUZZLE_ATTACHMENT + 1, pos2, unused);
-	if (pos2.LengthSquared() == 0.f || pos2 == pos1)
-	{
-		ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s got invalid 2nd attachment, falling back to weapon angles.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
-		UTIL_MakeAimVectors(GetWeaponAngles());
-		return gpGlobals->v_forward;
-	}
-	else
+	bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[GetWeaponControllerID()].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
+	bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[GetWeaponControllerID()].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+	if (result1 && result2 && pos2 != pos1)
 	{
 		Vector dir = (pos2 - pos1).Normalize();
 		ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), dir.x, dir.y, dir.z);
 		return dir;
+	}
+	else
+	{
+		ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s got invalid attachment(s), falling back to weapon angles.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
+		UTIL_MakeAimVectors(GetWeaponAngles());
+		return gpGlobals->v_forward;
 	}
 }
 

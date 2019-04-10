@@ -3,14 +3,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerCommand>E:\Spiele\Steam\steamapps\common\Half-Life\hl.exe</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments>-game vr -dev 2 -console -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 +sv_lan 1 +cl_mousegrab 0</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>E:\Spiele\Steam\steamapps\common\Half-Life\vr\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>E:\Spiele\Steam\steamapps\common\Half-Life\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommand>D:\Spiele\Steam\steamapps\common\Half-Life\hl.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-game vr -dev 1 -env 1 -console</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>D:\Spiele\Steam\steamapps\common\Half-Life\vr\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommand>E:\Spiele\Steam\steamapps\common\Half-Life\hl.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>-game vr -dev 2 -console -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 +sv_lan 1 +cl_mousegrab 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>E:\Spiele\Steam\steamapps\common\Half-Life\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>

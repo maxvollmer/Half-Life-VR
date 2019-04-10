@@ -89,7 +89,7 @@ void VRController::ExtractBBoxIfPossibleAndNecessary()
 	if (m_isBBoxValid && m_bboxModelName == m_modelName && m_bboxModelSequence == pModel->pev->sequence)
 		return;
 
-	auto& modelInfo = VRModelHelper::GetModelInfo(pModel);
+	auto& modelInfo = VRModelHelper::GetInstance().GetModelInfo(pModel);
 	if (modelInfo.m_isValid && pModel->pev->sequence < modelInfo.m_numSequences)
 	{
 		m_bboxModelName = m_modelName;
@@ -126,7 +126,7 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 		return;
 
 	CBaseEntity *pModel = GetModel();
-	auto& modelInfo = VRModelHelper::GetModelInfo(pModel);
+	auto& modelInfo = VRModelHelper::GetInstance().GetModelInfo(pModel);
 
 	if (modelInfo.m_isValid && iAnim < modelInfo.m_numSequences)
 	{

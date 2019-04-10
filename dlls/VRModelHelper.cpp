@@ -40,15 +40,15 @@ VRModelInfo::VRModelInfo() :
 {
 }
 
-VRModelInfo::VRModelInfo(CBaseEntity *pEntity) :
+VRModelInfo::VRModelInfo(CBaseEntity *pModel) :
 	m_isValid{ false },
-	m_hlName{ pEntity->pev->model },
-	m_name{ STRING(pEntity->pev->model) },
+	m_hlName{ pModel->pev->model },
+	m_name{ STRING(pModel->pev->model) },
 	m_numSequences{ 0 }
 {
 	if (m_hlName && !m_name.empty())
 	{
-		void *pmodel = GET_MODEL_PTR(pEntity->edict());
+		void *pmodel = GET_MODEL_PTR(pModel->edict());
 		if (pmodel)
 		{
 			m_numSequences = GetNumSequences(pmodel);
@@ -135,6 +135,31 @@ std::vector<TransformedBBox> VRModelHelper::GetTransformedBBoxesForModel(CBaseEn
 	}
 
 	return result;
+}
+
+bool VRModelHelper::GetAttachment(CBaseEntity *pModel, int attachmentIndex, Vector& attachment)
+{
+	const VRModelInfo& modelInfo = GetModelInfo(pModel);
+
+	if (!modelInfo.m_isValid)
+		return false;
+
+	// Get studio model
+	if (!m_studioModels[modelInfo.m_name])
+	{
+		m_studioModels[modelInfo.m_name] = std::make_unique<StudioModel>(modelInfo.m_name.data());
+	}
+	auto& studioModel = m_studioModels[modelInfo.m_name];
+
+	if (attachmentIndex >= 0 && attachmentIndex < studioModel->GetNumAttachments())
+	{
+		Vector dummy;
+		GET_ATTACHMENT(pModel->edict(), attachmentIndex, attachment, dummy);
+	}
+	else
+	{
+		return false;
+	}
 }
 
 VRModelHelper VRModelHelper::m_instance{};

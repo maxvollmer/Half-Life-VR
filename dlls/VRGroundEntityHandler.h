@@ -23,6 +23,8 @@ private:
 	CBaseEntity* ChoseBetterGroundEntityForPlayer(CBaseEntity *pEntity1, CBaseEntity *pEntity2);
 	void SendGroundEntityToClient();
 	void MoveWithGroundEntity();
+	Vector CalculateNewOrigin();
+	bool CheckIfNewOriginIsValid(const Vector& newOrigin);
 
 	CBasePlayer*		m_pPlayer{ nullptr };
 	EHANDLE				m_hGroundEntity;

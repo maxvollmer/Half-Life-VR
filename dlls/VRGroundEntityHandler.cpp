@@ -134,6 +134,10 @@ bool VRGroundEntityHandler::CheckIfPotentialGroundEntityForPlayer(CBaseEntity *p
 	if (pEntity->pev->velocity.LengthSquared() == 0.f && pEntity->pev->avelocity.LengthSquared() == 0.f)
 		return false;
 
+	// Detect if player is in control area of a usable train
+	if ((pEntity->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pEntity->OnControls(m_pPlayer->pev))
+		return true;
+
 	// We use the physics engine to do proper collision detection with the bsp model.
 	// We half the player's width to avoid being "pulled" or slung around by objects nearby.
 	// We extend the player's height and lower the origin a bit to make sure we detect movement even if slightly above ground (HMD jittering etc.)
@@ -159,96 +163,75 @@ void VRGroundEntityHandler::SendGroundEntityToClient()
 	MESSAGE_END();
 }
 
-void VRGroundEntityHandler::MoveWithGroundEntity()
+Vector VRGroundEntityHandler::CalculateNewOrigin()
 {
-	if (!m_hGroundEntity)
-		return;
-
 	Vector groundEntityMoved = m_hGroundEntity->pev->origin - m_lastGroundEntityOrigin;
 	Vector groundEntityRotated = m_hGroundEntity->pev->angles - m_lastGroundEntityAngles;
+	m_lastGroundEntityOrigin = m_hGroundEntity->pev->origin;
+	m_lastGroundEntityAngles = m_hGroundEntity->pev->angles;
 
 	Vector newOrigin = m_pPlayer->pev->origin + groundEntityMoved;
 	if (groundEntityRotated.LengthSquared() != 0.f)
 	{
 		Vector newOriginOffset = newOrigin - m_hGroundEntity->pev->origin;
 		Vector newOriginOffsetRotated = VRPhysicsHelper::Instance().RotateVectorInline(newOriginOffset, groundEntityRotated);
+		if (newOriginOffsetRotated.z != newOriginOffset.z)
+		{
+			// If rotating upwards or downwards give a little space to avoid getting stuck in the floor
+			float deltaZ = fabs(newOriginOffsetRotated.z - newOriginOffset.z);
+			newOriginOffsetRotated.z += (deltaZ * (m_pPlayer->pev->maxs.x * 1.5f)) / newOriginOffset.Length2D();
+		}
 		newOrigin = m_hGroundEntity->pev->origin + newOriginOffsetRotated;
 	}
-	m_pPlayer->pev->origin = newOrigin;
 
-	m_lastGroundEntityOrigin = m_hGroundEntity->pev->origin;
-	m_lastGroundEntityAngles = m_hGroundEntity->pev->angles;
-	//m_lastGroundEntityOffset = groundEntityOffset;
+	return newOrigin;
+}
 
+bool VRGroundEntityHandler::CheckIfNewOriginIsValid(const Vector& newOrigin)
+{
+	Vector dir = newOrigin - m_pPlayer->pev->origin;
+	Vector dirNorm = dir.Normalize();
 
-
-
-
-	// TODO
-	// TODO Movement with ground entity needs to be calculated in client in combination with client movement
-	// TODO
-
-
-	/*
-	// Calculate ground velocity
-	Vector groundVelocity = m_hGroundEntity->pev->velocity;
-
-	// Add avelocity
-	if (m_hGroundEntity->pev->avelocity.Length() > 0.01f)
-	{
-		groundVelocity = groundVelocity + VRPhysicsHelper::Instance().AngularVelocityToLinearVelocity(m_hGroundEntity->pev->avelocity, m_pPlayer->pev->origin - m_hGroundEntity->pev->origin);
-	}
-
-	// Don't slow down falling when moving downwards and player mins still inside ground entity
-	if (groundVelocity.z < 0 && m_hGroundEntity->pev->absmin.z < m_pPlayer->pev->absmin.z) {
-		groundVelocity.z = (std::min)(groundVelocity.z, m_pPlayer->pev->velocity.z);
-	}
-
-	// Apply ground velocity and get new origin
-	Vector newOrigin = m_pPlayer->pev->origin + (groundVelocity * gpGlobals->frametime);
-
-	// Make sure new origin is valid (don't get moved through walls/into void etc)
-	Vector dir = (newOrigin - m_pPlayer->pev->origin).Normalize();
 	Vector newEyePosition = newOrigin + m_pPlayer->pev->view_ofs;
-	Vector predictedEyePosition = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + (dir * 16.f);
+	Vector predictedEyePosition = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + (dirNorm * 16.f);
+
 	int newEyeContents = UTIL_PointContents(newEyePosition);
 	int predictedEyeContents = UTIL_PointContents(predictedEyePosition);
-	if (newEyeContents != CONTENTS_SKY && newEyeContents != CONTENTS_SOLID
-		&& predictedEyeContents != CONTENTS_SKY && predictedEyeContents != CONTENTS_SOLID)
+
+	bool eyePositionValid = newEyeContents != CONTENTS_SKY && newEyeContents != CONTENTS_SOLID;
+	bool predictedEyePositionValid = predictedEyeContents != CONTENTS_SKY && predictedEyeContents != CONTENTS_SOLID;
+
+	return eyePositionValid && predictedEyePositionValid;
+}
+
+void VRGroundEntityHandler::MoveWithGroundEntity()
+{
+	if (!m_hGroundEntity)
+		return;
+
+	Vector newOrigin = CalculateNewOrigin();
+	//m_pPlayer->pev->origin = newOrigin;
+
+	if (CheckIfNewOriginIsValid(newOrigin))
 	{
 		// Apply new origin
 		m_pPlayer->pev->origin = newOrigin;
 	}
 	else
 	{
-		// When we're moving up- or downwards, and the groundentity's center is valid,
-		// "slide" on x/y towards the center of the groundentity origin to avoid ceilings/corners/walls
+		// When the target position is invalid, "slide" towards the center of the groundentity origin to avoid ceilings/corners/walls
+		float distanceTravelled = (newOrigin - m_pPlayer->pev->origin).Length();
 		Vector groundEntityCenter = (m_hGroundEntity->pev->absmin + m_hGroundEntity->pev->absmax) / 2;
-		int groundEntityCenterContents = UTIL_PointContents(groundEntityCenter);
-		if (groundEntityCenterContents != CONTENTS_SKY && groundEntityCenterContents != CONTENTS_SOLID)
+		Vector dirToCenter = groundEntityCenter - newOrigin;
+		if (dirToCenter.Length() > distanceTravelled)
 		{
-			Vector dirToCenter2D = groundEntityCenter - newOrigin;
-			dirToCenter2D.z = 0.f;
-			float distanceToCenter2D = dirToCenter2D.Length();
-			if (distanceToCenter2D > 8.f)
-			{
-				dirToCenter2D = dirToCenter2D.Normalize();
-				float moveDistance = (std::min)((std::max)(groundVelocity.Length() * gpGlobals->frametime, 1.f), distanceToCenter2D);
-				m_pPlayer->pev->origin.x = newOrigin.x + dirToCenter2D.x * moveDistance;
-				m_pPlayer->pev->origin.y = newOrigin.y + dirToCenter2D.y * moveDistance;
-				m_pPlayer->pev->origin.z = newOrigin.z;
-			}
-			else
-			{
-				ALERT(at_console, "distanceToCenter2D <= 8! pev->origin.z: %f\n", m_pPlayer->pev->origin.z);
-			}
+			newOrigin = newOrigin + (dirToCenter.Normalize() * distanceTravelled);
 		}
 		else
 		{
-			ALERT(at_console, "groundEntityCenterContents are solid! pev->origin.z: %f\n", m_pPlayer->pev->origin.z);
+			ALERT(at_console, "Error: Can't set groundentity target origin: would get moved into wall and distance to center is smaller than distance travelled!\n");
 		}
 	}
-	*/
 }
 
 #if 0
