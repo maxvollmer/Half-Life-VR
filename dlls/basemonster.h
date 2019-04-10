@@ -90,7 +90,6 @@ public:
 
 	int					m_lastDamageAmount;// how much damage did monster (player) last take
 											// time based damage counters, decr. 1 per 2 seconds
-	int					m_bloodColor;		// color of blood particless
 
 	int					m_failSchedule;				// Schedule type to choose if current schedule fails
 
@@ -120,8 +119,6 @@ public:
 	void EXPORT			CorpseUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
 // overrideable Monster member functions
-	
-	virtual int	 BloodColor( void ) { return m_bloodColor; }
 
 	virtual CBaseMonster *MyMonsterPointer( void ) { return this; }
 	virtual void Look ( int iDistance );// basic sight function for monsters

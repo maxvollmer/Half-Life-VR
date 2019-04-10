@@ -245,6 +245,20 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 	}
 }
 
+bool IsSoftWeapon(int weaponId)
+{
+	switch (weaponId)
+	{
+	case WEAPON_HORNETGUN:
+	case WEAPON_NONE:
+	case WEAPON_BAREHAND:
+	case WEAPON_SNARK:
+		return true;
+	default:
+		return false;
+	}
+}
+
 float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller)
 {
 	if (hEntity->pev->solid == SOLID_NOT || hEntity->pev->solid == SOLID_TRIGGER)
@@ -254,8 +268,22 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEn
 	float damage = UTIL_CalculateMeleeDamage(controller.GetWeaponId(), speed);
 	if (damage > 0.f)
 	{
-		hEntity->TakeDamage(pPlayer->pev, pPlayer->pev, damage, UTIL_DamageTypeFromWeapon(controller.GetWeaponId()));
 		pPlayer->PlayMeleeSmackSound(hEntity, controller.GetWeaponId(), controller.GetPosition(), controller.GetVelocity());
+
+		int backupBlood = hEntity->m_bloodColor;
+		if (IsSoftWeapon(controller.GetWeaponId()))
+		{
+			// Slapping with soft things (hands, snarks or hornetgun) just causes damage, but no blood or decals
+			hEntity->m_bloodColor = DONT_BLEED;
+		}
+		TraceResult fakeTrace = { 0 };
+		fakeTrace.pHit = hEntity->edict();
+		fakeTrace.vecEndPos = controller.GetPosition();
+		fakeTrace.flFraction = 0.5f;
+		ClearMultiDamage();
+		hEntity->TraceAttack(pPlayer->pev, damage, controller.GetVelocity().Normalize(), &fakeTrace, UTIL_DamageTypeFromWeapon(controller.GetWeaponId()));
+		ApplyMultiDamage(pPlayer->pev, pPlayer->pev);
+		hEntity->m_bloodColor = backupBlood;
 
 		// If you smack something with an explosive, it might just explode...
 		// 25% chance that charged satchels go off when you smack something with the remote

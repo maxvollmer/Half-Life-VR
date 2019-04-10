@@ -4916,7 +4916,7 @@ void CBasePlayer::PlayMeleeSmackSound(CBaseEntity *pSmackedEntity, const int wea
 	fakeTrace.vecEndPos = pos;
 	fakeTrace.flFraction = 0.5f;
 
-	// TODO: Meat sounds
+	// Meat sounds
 	if (weaponId == WEAPON_HORNETGUN)
 	{
 		switch (RANDOM_LONG(0, 1))
@@ -4927,7 +4927,7 @@ void CBasePlayer::PlayMeleeSmackSound(CBaseEntity *pSmackedEntity, const int wea
 			EMIT_SOUND_DYN(m_pActiveItem->edict(), CHAN_ITEM, "weapons/bullet_hit2.wav", 1, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3)); break;
 		}
 	}
-	// TODO: Squeek and soft meat sounds
+	// Squeek and soft meat sounds
 	else if (weaponId == WEAPON_SNARK)
 	{
 		switch (RANDOM_LONG(0, 1))
@@ -4940,7 +4940,7 @@ void CBasePlayer::PlayMeleeSmackSound(CBaseEntity *pSmackedEntity, const int wea
 		EMIT_SOUND_DYN(m_pActiveItem->edict(), CHAN_VOICE, (RANDOM_FLOAT(0, 1) <= 0.5) ? "squeek/sqk_hunt2.wav" : "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105);
 	}
 	// TODO: Hand slap sounds
-	else if (weaponId == WEAPON_BAREHAND || weaponId == WEAPON_SNARK)
+	else if (weaponId == WEAPON_BAREHAND)
 	{
 		switch (RANDOM_LONG(0, 1))
 		{

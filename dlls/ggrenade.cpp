@@ -353,6 +353,8 @@ void CGrenade:: Spawn( void )
 
 	pev->dmg = 100;
 	m_fRegisteredSound = FALSE;
+
+	m_bloodColor = DONT_BLEED;
 }
 
 

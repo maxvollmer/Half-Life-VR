@@ -155,6 +155,7 @@ bool VRModelHelper::GetAttachment(CBaseEntity *pModel, int attachmentIndex, Vect
 	{
 		Vector dummy;
 		GET_ATTACHMENT(pModel->edict(), attachmentIndex, attachment, dummy);
+		return true;
 	}
 	else
 	{
