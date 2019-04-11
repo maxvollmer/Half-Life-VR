@@ -549,26 +549,36 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 			}
 			else
 			{
-				auto lambda = [](float a, float b) -> float
-				{
-					if (a*b >= 0.0f)
-					{
-						// same sign, use bigger absolute value
-						// (this will push it faster if player hits faster than it already moves,
-						//  or leaves speed as is, if player pushes slower in the direction it already moves)
-						return (std::abs(a) > std::abs(b)) ? a : b;
-					}
-					else
-					{
-						// different sign, add values
-						// (this will slow down a moving pushable if player pulls it in opposite direction)
-						return a + b;
-					}
-				};
+				// Get push velocity, but remove z (no up/down movement unless "grab" is on)
+				Vector velocity = controller.GetVelocity();
+				velocity.z = 0.f;
 
-				pPushable->pev->velocity.x = lambda(controller.GetVelocity().x, pPushable->pev->velocity.x);
-				pPushable->pev->velocity.y = lambda(controller.GetVelocity().y, pPushable->pev->velocity.y);
-				pPushable->pev->velocity.z = lambda(controller.GetVelocity().z, pPushable->pev->velocity.z);
+				// Don't pull a pushable unless "grab" is on
+				// (we simply check if the angle between push velocity and pushable offset is less than 90°)
+				Vector dir = (pPushable->pev->origin - controller.GetPosition()).Normalize();
+				float dot = DotProduct(dir, velocity.Normalize()) > 0.f;
+				if (dot > 0.f)
+				{
+					auto lambda = [](float pushVel, float pushableVel) -> float
+					{
+						if (pushVel*pushableVel >= 0.0f)
+						{
+							// same sign, use bigger absolute value
+							// (this will push it faster if player hits faster than it already moves,
+							//  or leaves speed as is, if player pushes slower in the direction it already moves)
+							return (std::abs(pushVel) > std::abs(pushableVel)) ? pushVel : pushableVel;
+						}
+						else
+						{
+							// different sign, use pushVel
+							// (this will stop a pushable from moving towards the player, and push it in opposite direction)
+							return pushVel;
+						}
+					};
+
+					pPushable->pev->velocity.x = lambda(velocity.x, pPushable->pev->velocity.x);
+					pPushable->pev->velocity.y = lambda(velocity.y, pPushable->pev->velocity.y);
+				}
 			}
 
 			if (pPushable->pev->velocity.Length() > pPushable->MaxSpeed())

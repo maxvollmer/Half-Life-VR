@@ -478,6 +478,7 @@ void ClientCommand( edict_t *pEntity )
 				bool isValid = atoi(CMD_ARGV(2)) != 0;
 				VRControllerID id = VRControllerID(atoi(CMD_ARGV(3)));
 				bool isMirrored = atoi(CMD_ARGV(4)) != 0;
+				bool isDragging = atoi(CMD_ARGV(14)) != 0;
 				pPlayer->UpdateVRController(
 					id,
 					timestamp,
@@ -486,7 +487,7 @@ void ClientCommand( edict_t *pEntity )
 					Vector(atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7))),
 					Vector(atof(CMD_ARGV(8)), atof(CMD_ARGV(9)), atof(CMD_ARGV(10))),
 					Vector(atof(CMD_ARGV(11)), atof(CMD_ARGV(12)), atof(CMD_ARGV(13))),
-					CMD_ARGV(12) != 0
+					isDragging
 				);
 				return;
 			}
