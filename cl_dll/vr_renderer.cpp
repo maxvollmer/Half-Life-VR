@@ -642,7 +642,13 @@ void VRRenderer::RenderWorldBackfaces()
 		for (int i = 1; i < gpGlobals->maxEntities; i++)
 		{
 			cl_entity_t *ent = gEngfuncs.GetEntityByIndex(i);
-			if (ent != nullptr && ent->model != nullptr && ent->model->name != nullptr && ent->model->name[0] == '*' && ent->curstate.messagenum == currentmessagenum)
+			if (ent != nullptr
+				&& ent->model != nullptr
+				&& ent->model->name != nullptr
+				&& ent->model->name[0] == '*'
+				&& ent->curstate.messagenum == currentmessagenum
+				&& ent->curstate.solid == SOLID_BSP
+				&& ent->curstate.skin == 0)
 			{
 				glPushMatrix();
 				glTranslatef(ent->curstate.origin.x, ent->curstate.origin.y, ent->curstate.origin.z);
@@ -751,16 +757,33 @@ void VRRenderer::RenderWorldBackfaces()
 
 void VRRenderer::RenderBSPBackfaces(struct model_s* model)
 {
+	return;
 	for (int i = 0; i < model->nummodelsurfaces; i++)
 	{
 		int surfaceIndex = model->firstmodelsurface + i;
 		msurface_t *surface = &model->surfaces[surfaceIndex];
-		if (surface->texinfo != nullptr && surface->texinfo->texture != nullptr && surface->texinfo->texture->name != nullptr && strcmp("sky", surface->texinfo->texture->name) != 0 && !(surface->texinfo->flags & SURF_DRAWSKY))
+		if (surface->texinfo != nullptr
+			&& surface->texinfo->texture != nullptr
+			&& surface->texinfo->texture->name != nullptr
+			&& strcmp("sky", surface->texinfo->texture->name) != 0
+			&& surface->texinfo->texture->name[0] != '!'
+			&& !(surface->texinfo->flags & (SURF_NOCULL | SURF_DRAWSKY | SURF_WATERCSG | SURF_TRANSPARENT))
+			)
 		{
 			glBegin(GL_POLYGON);
-			for (int k = surface->polys->numverts - 1; k >= 0; k--)
+			if (surface->texinfo->flags & SURF_PLANEBACK)
 			{
-				glVertex3fv(surface->polys->verts[k]);
+				for (int k = 0; k < surface->polys->numverts; k++)
+				{
+					glVertex3fv(surface->polys->verts[k]);
+				}
+			}
+			else
+			{
+				for (int k = surface->polys->numverts - 1; k >= 0; k--)
+				{
+					glVertex3fv(surface->polys->verts[k]);
+				}
 			}
 			glEnd();
 		}
