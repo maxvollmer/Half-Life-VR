@@ -394,7 +394,7 @@ public:
 	bool IsWeaponPositionValid();
 
 	void UpdateVRHeadset(const int timestamp, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta, float prevYaw, float currentYaw);
-	void UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn);
+	void UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn);
 
 	void StoreVROffsetsForLevelchange();
 

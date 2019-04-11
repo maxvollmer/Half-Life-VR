@@ -33,6 +33,11 @@ bool g_vrSpawnYaw_HasData = false;
 
 extern engine_studio_api_t IEngineStudio;
 
+enum class VRControllerID : int32_t {
+	WEAPON = 0,
+	HAND
+};
+
 VRHelper::VRHelper()
 {
 }
@@ -792,22 +797,31 @@ void VRHelper::SendPositionUpdateToServer()
 		hmdAngles.x, hmdAngles.y, hmdAngles.z*/
 	);
 	m_currentYawOffsetDelta = Vector{}; // reset after sending
-	sprintf_s(cmdLeftController, "vrupd_lft %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i",
+
+	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
+
+	sprintf_s(cmdLeftController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i",
 		m_vrUpdateTimestamp,
 		isLeftControllerValid ? 1 : 0,
+		int(leftHandMode ? VRControllerID::WEAPON : VRControllerID::HAND),
+		1/*isMirrored*/,
 		leftControllerOffset.x, leftControllerOffset.y, leftControllerOffset.z,
 		leftControllerAngles.x, leftControllerAngles.y, leftControllerAngles.z,
 		leftControllerVelocity.x, leftControllerVelocity.y, leftControllerVelocity.z,
 		leftDragOn ? 1 : 0
 	);
-	sprintf_s(cmdRightController, "vrupd_rt %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i",
+
+	sprintf_s(cmdRightController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i",
 		m_vrUpdateTimestamp,
 		isRightControllerValid ? 1 : 0,
+		int(leftHandMode ? VRControllerID::HAND : VRControllerID::WEAPON),
+		0/*isMirrored*/,
 		weaponOffset.x, weaponOffset.y, weaponOffset.z,
 		weaponAngles.x, weaponAngles.y, weaponAngles.z,
 		weaponVelocity.x, weaponVelocity.y, weaponVelocity.z,
 		rightDragOn ? 1 : 0
 	);
+
 	gEngfuncs.pfnClientCmd(cmdHMD);
 	gEngfuncs.pfnClientCmd(cmdLeftController);
 	gEngfuncs.pfnClientCmd(cmdRightController);

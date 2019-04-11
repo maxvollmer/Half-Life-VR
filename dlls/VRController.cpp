@@ -13,7 +13,7 @@
 
 
 
-void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, int weaponId)
+void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, int weaponId)
 {
 	// Filter out outdated updates
 	if (timestamp <= m_lastUpdateClienttime && m_lastUpdateServertime >= gpGlobals->time)
@@ -30,6 +30,7 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	m_lastUpdateServertime = gpGlobals->time;
 	m_lastUpdateClienttime = timestamp;
 	m_isDragging = m_isValid && isDragging;
+	m_isMirrored = isMirrored;
 	m_weaponId = weaponId;
 
 	m_isTeleporterBlocked =
@@ -78,6 +79,26 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 		pModel->pev->effects |= EF_NODRAW;
 		pModel->pev->effects &= ~EF_MUZZLEFLASH;
 		m_isBBoxValid = false;
+	}
+
+	SendMirroredEntityToClient(pPlayer);
+}
+
+void VRController::SendMirroredEntityToClient(CBasePlayer *pPlayer)
+{
+	if (IsMirrored())
+	{
+		extern int gmsgVRMirroredEntity;
+		MESSAGE_BEGIN(MSG_ALL, gmsgVRMirroredEntity, NULL);
+		if (IsValid())
+		{
+			WRITE_ENTITY(ENTINDEX(GetModel()->edict()));
+		}
+		else
+		{
+			WRITE_SHORT(0);
+		}
+		MESSAGE_END();
 	}
 }
 

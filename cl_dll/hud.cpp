@@ -233,6 +233,11 @@ int __MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf)
 	return gHUD.MsgFunc_GroundEnt(pszName, iSize, pbuf);
 }
 
+int __MsgFunc_MirrorEnt(const char *pszName, int iSize, void *pbuf)
+{
+	return gHUD.MsgFunc_MirrorEnt(pszName, iSize, pbuf);
+}
+
 int __MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
 {
 	if (gViewPort)
@@ -335,6 +340,7 @@ void CHud :: Init( void )
 	// Messages for VR
 	HOOK_MESSAGE(VRRstrYaw);
 	HOOK_MESSAGE(GroundEnt);
+	HOOK_MESSAGE(MirrorEnt);
 	HOOK_MESSAGE(VRSpawnYaw);
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
@@ -701,9 +707,21 @@ void CHud::AddHudElem(CHudBase *phudelem)
 // Ground entity for rotating with them in VR (since player rotation is done client side completely) - Max Vollmer, 2019-04-09
 cl_entity_t* CHud::GetGroundEntity()
 {
-	if (m_iGroundEntIndex)
+	if (m_iGroundEntIndex > 0)
 	{
 		return gEngfuncs.GetEntityByIndex(m_iGroundEntIndex);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+cl_entity_t* CHud::GetMirroredEnt()
+{
+	if (m_iMirroredEntIndex > 0)
+	{
+		return gEngfuncs.GetEntityByIndex(m_iMirroredEntIndex);
 	}
 	else
 	{

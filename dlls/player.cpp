@@ -215,6 +215,7 @@ int gmsgStatusValue = 0;
 int gmsgVRRestoreYaw = 0;
 int gmsgVRGroundEntity = 0;
 int gmsgVRSetSpawnYaw = 0;
+int gmsgVRMirroredEntity = 0;
 
 
 void LinkUserMessages( void )
@@ -265,6 +266,7 @@ void LinkUserMessages( void )
 	gmsgVRRestoreYaw = REG_USER_MSG("VRRstrYaw", 2);
 	gmsgVRGroundEntity = REG_USER_MSG("GroundEnt", 2);
 	gmsgVRSetSpawnYaw = REG_USER_MSG("VRSpawnYaw", 1);
+	gmsgVRMirroredEntity = REG_USER_MSG("MirrorEnt", 2);
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer );
@@ -4898,7 +4900,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 	UTIL_SetSize(pev, pev->mins, pev->maxs);
 }
 
-void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging)
+void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging)
 {
 	int weaponId = WEAPON_BAREHAND;
 	if (vrControllerID == GetWeaponControllerID())
@@ -4910,7 +4912,7 @@ void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const 
 		}
 	}
 
-	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, offset, angles, velocity, isDragging, weaponId);
+	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging, weaponId);
 
 	if (vrControllerID == GetFlashlightControllerID())
 	{

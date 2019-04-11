@@ -473,31 +473,19 @@ void ClientCommand( edict_t *pEntity )
 				);
 				return;
 			}
-			// TODO: Merge into one message with id for controller
-			else if (FStrEq(pcmd, "vrupd_lft") && size == 13)
+			else if (FStrEq(pcmd, "vrupdctrl") && size == 15)
 			{
 				bool isValid = atoi(CMD_ARGV(2)) != 0;
+				VRControllerID id = VRControllerID(atoi(CMD_ARGV(3)));
+				bool isMirrored = atoi(CMD_ARGV(4)) != 0;
 				pPlayer->UpdateVRController(
-					VRControllerID::HAND,
+					id,
 					timestamp,
 					isValid,
-					Vector(atof(CMD_ARGV(3)), atof(CMD_ARGV(4)), atof(CMD_ARGV(5))),
-					Vector(atof(CMD_ARGV(6)), atof(CMD_ARGV(7)), atof(CMD_ARGV(8))),
-					Vector(atof(CMD_ARGV(9)), atof(CMD_ARGV(10)), atof(CMD_ARGV(11))),
-					CMD_ARGV(12) != 0
-				);
-				return;
-			}
-			else if (FStrEq(pcmd, "vrupd_rt") && size == 13)
-			{
-				bool isValid = atoi(CMD_ARGV(2)) != 0;
-				pPlayer->UpdateVRController(
-					VRControllerID::WEAPON,
-					timestamp,
-					isValid,
-					Vector(atof(CMD_ARGV(3)), atof(CMD_ARGV(4)), atof(CMD_ARGV(5))),
-					Vector(atof(CMD_ARGV(6)), atof(CMD_ARGV(7)), atof(CMD_ARGV(8))),
-					Vector(atof(CMD_ARGV(9)), atof(CMD_ARGV(10)), atof(CMD_ARGV(11))),
+					isMirrored,
+					Vector(atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7))),
+					Vector(atof(CMD_ARGV(8)), atof(CMD_ARGV(9)), atof(CMD_ARGV(10))),
+					Vector(atof(CMD_ARGV(11)), atof(CMD_ARGV(12)), atof(CMD_ARGV(13))),
 					CMD_ARGV(12) != 0
 				);
 				return;

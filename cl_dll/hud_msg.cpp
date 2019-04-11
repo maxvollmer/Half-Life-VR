@@ -119,3 +119,10 @@ int CHud::MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf)
 	m_iGroundEntIndex = READ_SHORT();
 	return 1;
 }
+
+int CHud::MsgFunc_MirrorEnt(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	m_iMirroredEntIndex = READ_SHORT();
+	return 1;
+}

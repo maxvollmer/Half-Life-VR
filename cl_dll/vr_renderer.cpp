@@ -207,8 +207,7 @@ void VRRenderer::GetViewAngles(float * angles)
 
 bool VRRenderer::ShouldMirrorCurrentModel(cl_entity_t *ent)
 {
-	// TODO: Identify mirrored entities
-	return false;
+	return gHUD.GetMirroredEnt() == ent;
 }
 
 void VRRenderer::ReverseCullface()
@@ -757,7 +756,6 @@ void VRRenderer::RenderWorldBackfaces()
 
 void VRRenderer::RenderBSPBackfaces(struct model_s* model)
 {
-	return;
 	for (int i = 0; i < model->nummodelsurfaces; i++)
 	{
 		int surfaceIndex = model->firstmodelsurface + i;

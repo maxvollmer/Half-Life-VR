@@ -567,6 +567,7 @@ private:
 	int							m_iConcussionEffect;
 
 	int m_iGroundEntIndex{ 0 };
+	int m_iMirroredEntIndex{ 0 };
 
 public:
 
@@ -648,6 +649,7 @@ public:
 	int _cdecl MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf);
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf);
+	int _cdecl MsgFunc_MirrorEnt(const char *pszName, int iSize, void *pbuf);
 
 	// Screen information
 	SCREENINFO	m_scrinfo;
@@ -664,6 +666,7 @@ public:
 
 	// Ground entity for rotating with them in VR (since player rotation is done client side completely) - Max Vollmer, 2019-04-09
 	struct cl_entity_s* GetGroundEntity();
+	struct cl_entity_s* GetMirroredEnt();
 };
 
 class TeamFortressViewport;
