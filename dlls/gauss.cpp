@@ -143,8 +143,6 @@ void CGauss::Holster( int skiplocal /* = 0 */ )
 
 void CGauss::PrimaryAttack()
 {
-	SecondaryAttack(); return;
-
 	// don't fire underwater
 	if ( m_pPlayer->IsWeaponUnderWater() )
 	{
