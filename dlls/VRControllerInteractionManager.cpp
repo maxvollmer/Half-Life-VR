@@ -176,7 +176,7 @@ void DrawDebugBBox(int which, bool valid, Vector pos, Vector angles, Vector mins
 
 bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& controller)
 {
-	if (hEntity->pev->solid != SOLID_NOT)
+	if (hEntity->pev->solid == SOLID_NOT)
 		return false;
 
 	if (!controller.IsValid() || !controller.IsBBoxValid())
