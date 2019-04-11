@@ -457,7 +457,7 @@ void ClientCommand( edict_t *pEntity )
 		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
 		pPlayer->PlayVRWeaponMuzzleflash();
 	}
-	else if (FStrEq(pcmd, "vrupd_hmd") || FStrEq(pcmd, "vrupd_lft") || FStrEq(pcmd, "vrupd_rt"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
+	else if (FStrEq(pcmd, "vrupd_hmd") || FStrEq(pcmd, "vrupdctrl"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
 		if (size > 3)
