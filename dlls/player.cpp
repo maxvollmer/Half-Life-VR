@@ -5053,6 +5053,11 @@ void CBasePlayer::PlayVRWeaponAnimation(int iAnim, int body)
 	m_vrControllers[GetWeaponControllerID()].PlayWeaponAnimation(iAnim, body);
 }
 
+void CBasePlayer::PlayVRWeaponMuzzleflash()
+{
+	m_vrControllers[GetWeaponControllerID()].PlayWeaponMuzzleflash();
+}
+
 void CBasePlayer::UpdateFlashlight()
 {
 	if (FlashlightIsOn())

@@ -148,6 +148,15 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 	pModel->pev->animtime = gpGlobals->time;
 }
 
+void VRController::PlayWeaponMuzzleflash()
+{
+	if (!IsValid())
+		return;
+
+	CBaseEntity *pModel = GetModel();
+	pModel->pev->effects |= EF_MUZZLEFLASH;
+}
+
 bool VRController::AddTouchedEntity(EHANDLE hEntity) const
 {
 	if (m_touchedEntities.count(hEntity) != 0)

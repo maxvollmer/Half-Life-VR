@@ -14,6 +14,7 @@ public:
 
 	CBaseEntity* GetModel() const;
 	void PlayWeaponAnimation(int iAnim, int body);
+	void PlayWeaponMuzzleflash();
 
 	inline const Vector& GetOffset() const { return m_offset; }
 	inline const Vector& GetPosition() const { return m_position; }

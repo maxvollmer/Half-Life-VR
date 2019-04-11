@@ -401,6 +401,7 @@ public:
 	void PlayMeleeSmackSound(CBaseEntity *pSmackedEntity, const int weaponId, const Vector & pos, const Vector & velocity);
 
 	void PlayVRWeaponAnimation(int iAnim, int body);
+	void PlayVRWeaponMuzzleflash();
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

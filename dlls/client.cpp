@@ -452,6 +452,11 @@ void ClientCommand( edict_t *pEntity )
 		pPlayer->pev->weaponanim = sequence;
 		pPlayer->PlayVRWeaponAnimation(sequence, body);
 	}
+	else if (FStrEq(pcmd, "vr_muzzleflash"))	// Client side weapon animations are now sent to the server - Max Vollmer, 2019-04-13
+	{
+		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		pPlayer->PlayVRWeaponMuzzleflash();
+	}
 	else if (FStrEq(pcmd, "vrupd_hmd") || FStrEq(pcmd, "vrupd_lft") || FStrEq(pcmd, "vrupd_rt"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
