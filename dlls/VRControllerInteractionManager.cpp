@@ -474,9 +474,19 @@ bool VRControllerInteractionManager::HandleTriggers(CBasePlayer *pPlayer, EHANDL
 	if (hEntity->pev->solid != SOLID_TRIGGER)
 		return false;
 
-	if (isTouching && didTouchChange)
+	/*
+	// Don't touch trigger_push or trigger_hurt with controllers, they should only affect the actual player "body"
+	if (FClassnameIs(hEntity->pev, "trigger_push") || FClassnameIs(hEntity->pev, "trigger_hurt"))
+		return true;*/
+
+	// Only handle trigger_multiple and trigger_once for now,
+	// all other triggers should only be activated by the actual player "body"
+	if (FClassnameIs(hEntity->pev, "trigger_multiple") || FClassnameIs(hEntity->pev, "trigger_once"))
 	{
-		hEntity->Touch(pPlayer);
+		if (isTouching && didTouchChange)
+		{
+			hEntity->Touch(pPlayer);
+		}
 	}
 
 	return true;

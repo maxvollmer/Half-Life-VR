@@ -80,8 +80,17 @@ void CFrictionModifier :: Spawn( void )
 // Sets toucher's friction to m_frictionFraction (1.0 = normal friction)
 void CFrictionModifier :: ChangeFriction( CBaseEntity *pOther )
 {
-	if ( pOther->pev->movetype != MOVETYPE_BOUNCEMISSILE && pOther->pev->movetype != MOVETYPE_BOUNCE )
-		pOther->pev->friction = m_frictionFraction;
+	if (pOther->pev->movetype == MOVETYPE_BOUNCEMISSILE || pOther->pev->movetype == MOVETYPE_BOUNCE)
+		return;
+
+	// Allow disabling of func_friction in VR
+	if (pOther->IsPlayer() && CVAR_GET_FLOAT("vr_disable_func_friction") != 0.f)
+	{
+		pOther->pev->friction = 1.f;
+		return;
+	}
+
+	pOther->pev->friction = m_frictionFraction;
 }
 
 

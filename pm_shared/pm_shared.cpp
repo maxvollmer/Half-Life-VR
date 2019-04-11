@@ -897,7 +897,7 @@ int PM_FlyMove (void)
 
 // modify original_velocity so it parallels all of the clip planes
 //
-		if ( pmove->movetype == MOVETYPE_WALK &&
+		if ( (pmove->movetype == MOVETYPE_WALK || pmove->movetype == MOVETYPE_NOCLIP) &&
 			((pmove->onground == -1) || (pmove->friction != 1)) )	// relfect player velocity
 		{
 			for ( i = 0; i < numplanes; i++ )
@@ -1969,7 +1969,7 @@ void PM_LadderMove(physent_t *pLadder)
 
 		if (pmove->cmd.buttons & IN_JUMP)
 		{
-			pmove->movetype = MOVETYPE_WALK;
+			pmove->movetype = MOVETYPE_NOCLIP; // pmove->movetype = MOVETYPE_WALK; Restore to MOVETYPE_NOCLIP in VR
 			VectorScale(trace.plane.normal, 270, pmove->velocity);
 		}
 		else
@@ -3249,7 +3249,7 @@ void PM_Move ( struct playermove_s *ppmove, int server )
 	}
 
 	// In single player, reset friction after each movement to FrictionModifier Triggers work still.
-	if ( !pmove->multiplayer && ( pmove->movetype == MOVETYPE_WALK  ) )
+	if ( !pmove->multiplayer && ( pmove->movetype == MOVETYPE_WALK || pmove->movetype == MOVETYPE_NOCLIP ) )
 	{
 		pmove->friction = 1.0f;
 	}
