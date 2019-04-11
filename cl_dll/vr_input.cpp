@@ -3,6 +3,9 @@
 #include <filesystem>
 #include <string>
 #include <functional>
+#include <fstream>
+#include <cctype>
+#include <regex>
 
 #include "hud.h"
 #include "cl_util.h"
@@ -11,18 +14,27 @@
 
 VRInput g_vrInput;
 
+static inline void TrimString(std::string &s) {
+	s.erase(s.begin(), std::find_if_not(s.begin(), s.end(), std::isspace));
+	s.erase(std::find_if_not(s.rbegin(), s.rend(), std::isspace).base(), s.end());
+}
+
+std::filesystem::path GetPathFor(const std::string& file)
+{
+	std::filesystem::path relativePath = gEngfuncs.pfnGetGameDirectory() + file;
+	return std::filesystem::absolute(relativePath);
+}
+
 void VRInput::Init()
 {
-	const std::string relativeGameDir{ gEngfuncs.pfnGetGameDirectory() };
-	const std::string relativeManifestDir = relativeGameDir + "/actions/actions.manifest";
-	std::filesystem::path relativeManifestPath = relativeManifestDir;
-	std::filesystem::path absoluteManifestPath = std::filesystem::absolute(relativeManifestPath);
+	std::filesystem::path absoluteManifestPath = GetPathFor("/actions/actions.manifest");
 
 	if (std::filesystem::exists(absoluteManifestPath))
 	{
 		vr::EVRInputError result = vr::VRInput()->SetActionManifestPath(absoluteManifestPath.string().data());
 		if (result == vr::VRInputError_None)
 		{
+			LoadCustomActions();
 			RegisterActionSets();
 			m_isLegacyInput = false;
 		}
@@ -36,6 +48,64 @@ void VRInput::Init()
 	{
 		gEngfuncs.Con_DPrintf("Error: Couldn't load actions.manifest, because it doesn't exist. Falling back to legacy input.\n");
 		m_isLegacyInput = true;
+	}
+}
+
+void VRInput::LoadCustomActions()
+{
+	std::filesystem::path absoluteCustomActionsPath = GetPathFor("/actions/customactions.cfg");
+	if (std::filesystem::exists(absoluteCustomActionsPath))
+	{
+		std::ifstream infile(absoluteCustomActionsPath);
+		int lineNum = 0;
+		std::string line;
+		while (std::getline(infile, line))
+		{
+			lineNum++;
+			TrimString(line);
+
+			// Skip empty lines
+			if (line.empty())
+				continue;
+
+			// Skip comments
+			if (line[0] == '#')
+				continue;
+
+			auto it = std::find_if(line.begin(), line.end(), std::isspace);
+			try
+			{
+				if (it != line.end())
+				{
+					std::string customActionName = line.substr(0, std::distance(line.begin(), it));
+					TrimString(customActionName);
+
+					// action names must be whitespace only
+					if (!std::regex_match(customActionName, std::regex("^[A-Za-z]+$")))
+						throw 0;
+
+					std::string customActionCommand = line.substr(std::distance(line.begin(), it), std::string::npos);
+					TrimString(customActionCommand);
+
+					// command can't be empty
+					if (customActionCommand.empty())
+						throw 0;
+
+					m_customActions[customActionName].name = customActionName;
+					m_customActions[customActionName].commands.push_back(customActionCommand);
+
+					gEngfuncs.Con_DPrintf("Found custom command in /vr/actions/customactions.cfg (line %i): \"%s\"/\"%s\"\n", lineNum, customActionName.data(), customActionCommand.data());
+				}
+				else
+				{
+					throw 0;
+				}
+			}
+			catch(...)
+			{
+				gEngfuncs.Con_DPrintf("Invalid custom command in /vr/actions/customactions.cfg (line %i): %s\n", lineNum, line.data());
+			}
+		}
 	}
 }
 
@@ -79,6 +149,13 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "ToggleFlashlight", &VR::Input::Other::HandleFlashlight);
 		RegisterAction("input", "Grab", &VR::Input::Other::HandleGrab);
 		RegisterAction("input", "LegacyUse", &VR::Input::Other::HandleLegacyUse);
+
+		// TODO: Add to actions.manifest
+		RegisterAction("input", "QuickSave", &VR::Input::Other::HandleQuickSave);
+		RegisterAction("input", "QuickLoad", &VR::Input::Other::HandleQuickLoad);
+		RegisterAction("input", "RestartCurrentMap", &VR::Input::Other::HandleRestartCurrentMap);
+		RegisterAction("input", "PauseGame", &VR::Input::Other::HandlePauseGame);
+		RegisterAction("input", "ExitGame", &VR::Input::Other::HandleExitGame);
 	}
 	if (RegisterActionSet("feedback"))
 	{
@@ -117,6 +194,13 @@ void VRInput::RegisterActionSets()
 		RegisterAction("poses", "Movement", &VR::Input::Poses::HandleMovement);
 		RegisterAction("poses", "Teleporter", &VR::Input::Poses::HandleTeleporter);
 		RegisterAction("poses", "Weapon", &VR::Input::Poses::HandleWeapon);
+	}
+	if (RegisterActionSet("custom"))
+	{
+		for (const auto& customAction : m_customActions)
+		{
+			RegisterAction("custom", customAction.first, &VR::Input::Other::HandleCustomAction);
+		}
 	}
 }
 
@@ -346,4 +430,20 @@ void VRInput::UpdateActionStates()
 			gEngfuncs.Con_DPrintf("Error while trying to get active state for input action set /actions/%s. (Error code: %i)\n", actionSet.first, result);
 		}
 	}
+}
+
+void VRInput::ExecuteCustomAction(const std::string& action)
+{
+	if (m_customActions.count(action) == 0)
+		return;
+
+	if (m_customActions[action].commands.empty())
+		return;
+
+	if (m_customActions[action].currentCommand >= m_customActions[action].commands.size())
+		m_customActions[action].currentCommand = 0;
+
+	ClientCmd(m_customActions[action].commands[m_customActions[action].currentCommand].data());
+
+	m_customActions[action].currentCommand++;
 }

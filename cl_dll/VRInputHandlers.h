@@ -55,6 +55,12 @@ namespace VR
 			static void HandleFlashlight(vr::InputDigitalActionData_t data, const std::string& action);
 			static void HandleGrab(vr::InputDigitalActionData_t data, const std::string& action);
 			static void HandleLegacyUse(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandleQuickSave(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandleQuickLoad(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandleRestartCurrentMap(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandlePauseGame(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandleExitGame(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandleCustomAction(vr::InputDigitalActionData_t data, const std::string& action);
 		};
 
 		class Poses

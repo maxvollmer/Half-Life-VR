@@ -55,5 +55,33 @@ namespace VR
 				ClientCmd(on ? "+use" : "-use");
 			}
 		}
+
+		void Other::HandleQuickSave(vr::InputDigitalActionData_t data, const std::string& action)
+		{
+		}
+
+		void Other::HandleQuickLoad(vr::InputDigitalActionData_t data, const std::string& action)
+		{
+		}
+
+		void Other::HandleRestartCurrentMap(vr::InputDigitalActionData_t data, const std::string& action)
+		{
+		}
+
+		void Other::HandlePauseGame(vr::InputDigitalActionData_t data, const std::string& action)
+		{
+		}
+
+		void Other::HandleExitGame(vr::InputDigitalActionData_t data, const std::string& action)
+		{
+		}
+
+		void Other::HandleCustomAction(vr::InputDigitalActionData_t data, const std::string& action)
+		{
+			if (data.bActive && data.bState && data.bChanged)
+			{
+				g_vrInput.ExecuteCustomAction(action);
+			}
+		}
 	}
 }

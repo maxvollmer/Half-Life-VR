@@ -152,14 +152,14 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 
 	if (modelInfo.m_isValid && iAnim < modelInfo.m_numSequences)
 	{
-		ALERT(at_console, "VRController::PlayWeaponAnimation: Playing sequence %i of %i with framerate %.0f for %s (%s)\n", iAnim, modelInfo.m_numSequences, modelInfo.m_sequences[iAnim].framerate, STRING(m_modelName), STRING(pModel->pev->model));
+		// ALERT(at_console, "VRController::PlayWeaponAnimation: Playing sequence %i of %i with framerate %.0f for %s (%s)\n", iAnim, modelInfo.m_numSequences, modelInfo.m_sequences[iAnim].framerate, STRING(m_modelName), STRING(pModel->pev->model));
 		pModel->pev->sequence = iAnim;
 		pModel->pev->body = body;
 		pModel->pev->framerate = modelInfo.m_sequences[iAnim].framerate / max(1, modelInfo.m_sequences[iAnim].numFrames - 1);
 	}
 	else
 	{
-		ALERT(at_console, "VRController::PlayWeaponAnimation: Invalid sequence %i of %i for %s (%s)\n", iAnim, modelInfo.m_numSequences, STRING(m_modelName), STRING(pModel->pev->model));
+		// ALERT(at_console, "VRController::PlayWeaponAnimation: Invalid sequence %i of %i for %s (%s)\n", iAnim, modelInfo.m_numSequences, STRING(m_modelName), STRING(pModel->pev->model));
 		pModel->pev->sequence = 0;
 		pModel->pev->body = 0;
 		pModel->pev->framerate = 1.f;

@@ -56,7 +56,10 @@ public:
 
 	void FireFeedback(FeedbackType feedback, int damageType, float durationInSeconds, float frequency, float amplitude);
 
+	void ExecuteCustomAction(const std::string& action);
+
 private:
+	void LoadCustomActions();
 	void RegisterActionSets();
 	bool RegisterActionSet(const std::string& actionSet);
 	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler);
@@ -81,7 +84,16 @@ private:
 		std::unordered_map<std::string, vr::VRActionHandle_t>	feedbackActions;
 	};
 
-	std::unordered_map<std::string, ActionSet>		m_actionSets;
+	struct CustomAction
+	{
+	public:
+		std::string					name;
+		std::vector<std::string>	commands;
+		size_t						currentCommand{ 0 };
+	};
+
+	std::unordered_map<std::string, ActionSet>			m_actionSets;
+	std::unordered_map<std::string, CustomAction>		m_customActions;
 };
 
 extern VRInput g_vrInput;

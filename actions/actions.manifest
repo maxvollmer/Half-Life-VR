@@ -168,6 +168,31 @@
       "requirement": "optional",
       "type": "boolean"
     },
+    {
+      "name": "/actions/input/in/QuickSave",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/input/in/QuickLoad",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/input/in/RestartCurrentMap",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/input/in/PauseGame",
+      "requirement": "optional",
+      "type": "boolean"
+    },
+    {
+      "name": "/actions/input/in/ExitGame",
+      "requirement": "optional",
+      "type": "boolean"
+    },
 
     {
       "name": "/actions/feedback/out/Recoil",
@@ -310,6 +335,12 @@
       "name": "/actions/poses/in/Weapon",
       "requirement": "suggested",
       "type": "pose"
+    },
+
+    {
+      "name": "/actions/custom/in/ExampleCustomAction",
+      "requirement": "optional",
+      "type": "boolean"
     }
   ],
   "action_sets": [
@@ -328,6 +359,10 @@
     {
       "name": "/actions/poses",
       "usage": "leftright"
+    },
+    {
+      "name": "/actions/custom",
+      "usage": "leftright"
     }
   ],
   "localization" : [
@@ -338,6 +373,7 @@
         "/actions/feedback" : "Force Feedback (e.g. recoil or earthquakes)",
         "/actions/damagefeedback" : "Damage Feedback (e.g. for feedback vests) - Note that not all damage types are actually used by the game, I just added all that the game defines as well.",
         "/actions/poses" : "Controller Positions",
+        "/actions/custom" : "Custom Actions",
 
         "/actions/input/in/MoveForward" : "Move forward",
         "/actions/input/in/MoveBackward" : "Move backward",
@@ -375,6 +411,11 @@
         "/actions/input/in/ToggleFlashlight" : "Toggle flashlight",
         "/actions/input/in/Grab" : "Grab/Interact (This is for rotating valves, pulling/lifting crates, interacting with NPCs etc. using a VR controller.)",
         "/actions/input/in/LegacyUse" : "Legacy Use (This triggers the default ingame use action, which 'uses' objects that you look at.)",
+        "/actions/input/in/QuickSave" : "Quick Save",
+        "/actions/input/in/QuickLoad" : "Quick Load",
+        "/actions/input/in/RestartCurrentMap" : "Restart Current Map",
+        "/actions/input/in/PauseGame" : "Pause Game",
+        "/actions/input/in/ExitGame" : "Exit Game",
 
         "/actions/feedback/out/Recoil" : "Recoil vibration",
         "/actions/feedback/out/Earthquake" : "Earthquake shake feedback",
@@ -406,7 +447,9 @@
         "/actions/poses/in/Flashlight" : "Flashlight (If not set, flashlight is attached to left hand or right hand.)",
         "/actions/poses/in/Movement" : "Movement (If not set, movement follows HMD orientation.)",
         "/actions/poses/in/Teleporter" : "Teleporter (If not set, flashlight is attached to left hand or right hand.)",
-        "/actions/poses/in/Weapon" : "Weapon (If not set, flashlight is attached to right hand or left hand.)"
+        "/actions/poses/in/Weapon" : "Weapon (If not set, flashlight is attached to right hand or left hand.)",
+
+        "/actions/custom/in/ExampleCustomAction" : "Example Custom Action"
     }
   ]
 }
