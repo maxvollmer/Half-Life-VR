@@ -193,13 +193,13 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceRe
 				teleportDestination = beamEndPos = beamEndPos - (delta.Normalize() * 32.0f);
 			}
 			vr_fTelePointsInWater = true;
-			return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			return true;
 		}
 		else if (pPlayer->pev->waterlevel > 0 && UTIL_PointContents(beamStartPos) == CONTENTS_WATER)
 		{
 			teleportDestination = beamEndPos = UTIL_WaterLevelPos(beamStartPos, beamEndPos);
 			vr_fTelePointsInWater = true;
-			return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			return true;
 		}
 		// Detect ladders
 		else if (tr.pHit != nullptr && FClassnameIs(tr.pHit, "func_ladder"))
@@ -269,8 +269,41 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceRe
 			}
 			// else wall, ceiling or other surface we can't teleport on
 		}
-		// else beam ended in air
+		// else beam ended in air, check if we are in an upwards trigger_push
+		else if (TryTeleportInUpwardsTriggerPush(pPlayer, beamStartPos, beamEndPos, teleportDestination))
+		{
+			return true;
+		}
 	}
+	return false;
+}
+
+bool VRControllerTeleporter::TryTeleportInUpwardsTriggerPush(CBasePlayer *pPlayer, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination)
+{
+	// Don't teleport downwards in upwards trigger_push
+	if (beamEndPos.z <= beamStartPos.z)
+		return false;
+
+	CBaseEntity* pTriggerPush = pPlayer->GetCurrentUpwardsTriggerPush();
+
+	if (pTriggerPush)
+	{
+		if (UTIL_PointInsideBBox(beamEndPos, pTriggerPush->pev->absmin, pTriggerPush->pev->absmax))
+		{
+			teleportDestination = beamEndPos;
+			return true;
+		}
+		else
+		{
+			Vector result;
+			if (UTIL_GetLineIntersectionWithBBox(beamEndPos, beamStartPos, pTriggerPush->pev->absmin, pTriggerPush->pev->absmax, result))
+			{
+				teleportDestination = beamEndPos = result;
+				return true;
+			}
+		}
+	}
+
 	return false;
 }
 

@@ -18,6 +18,7 @@ public:
 private:
 	void TouchTriggersInTeleportPath(CBasePlayer *pPlayer); // Touches all entities with SOLID_TRIGGER when a player teleports through them
 	bool CanTeleportHere(CBasePlayer *pPlayer, const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportSpritePos);
+	bool TryTeleportInUpwardsTriggerPush(CBasePlayer *pPlayer, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination);
 	void EnableXenMoundParabolaAndUpdateTeleDestination(CBasePlayer *pPlayer, const Vector& beamStartPos, const Vector& beamEndPos, Vector & teleportDestination);
 	void DisableXenMoundParabola();
 	float GetCurrentTeleLength(CBasePlayer *pPlayer);

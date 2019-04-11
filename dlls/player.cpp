@@ -5114,3 +5114,22 @@ void CBasePlayer::UpdateVRTele()
 	m_vrControllerTeleporter.UpdateTele(this, m_vrControllers[GetTeleporterControllerID()]);
 }
 
+
+void CBasePlayer::SetCurrentUpwardsTriggerPush(CBaseEntity* pEntity)
+{
+	m_hCurrentUpwardsTriggerPush = pEntity;
+}
+
+CBaseEntity* CBasePlayer::GetCurrentUpwardsTriggerPush()
+{
+	if (m_hCurrentUpwardsTriggerPush)
+	{
+		// Make sure it's still valid
+		if (
+			!UTIL_BBoxIntersectsBBox(m_hCurrentUpwardsTriggerPush->pev->absmin, m_hCurrentUpwardsTriggerPush->pev->absmax, pev->absmin, pev->absmax)
+			|| ((m_hCurrentUpwardsTriggerPush->pev->speed * m_hCurrentUpwardsTriggerPush->pev->movedir.z) <= (g_psv_gravity->value * pev->gravity))
+			)
+			m_hCurrentUpwardsTriggerPush = nullptr;
+	}
+	return m_hCurrentUpwardsTriggerPush;
+}

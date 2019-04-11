@@ -1943,8 +1943,31 @@ void CTriggerPush :: Touch( CBaseEntity *pOther )
 	{
 	case MOVETYPE_NONE:
 	case MOVETYPE_PUSH:
-	case MOVETYPE_NOCLIP:
 	case MOVETYPE_FOLLOW:
+		return;
+		case MOVETYPE_NOCLIP:
+			// Since movetype in VR is always noclip, we must not return here if this is the player! - Max Vollmer, 2019-04-13
+			if (!pOther->IsPlayer())
+			{
+				return;
+			}
+			break;
+		default:
+			break;
+	}
+
+	// Allow disabling trigger_pushs to avoid nausea in VR - Max Vollmer, 2019-04-13
+	if (pOther->IsPlayer() && CVAR_GET_FLOAT("vr_disable_triggerpush") != 0.f)
+	{
+		// Dont' fall down if this is an upward push
+		// (but also don't get pushed up, instead players can use the teleporter here like under water)
+		extern cvar_t* g_psv_gravity;
+		if ((pev->speed * pev->movedir.z) > (g_psv_gravity->value * pOther->pev->gravity))
+		{
+			pOther->pev->velocity.z = max(0.f, pOther->pev->velocity.z);
+			pOther->pev->basevelocity.z = max(0.f, pOther->pev->basevelocity.z);
+			((CBasePlayer*)pOther)->SetCurrentUpwardsTriggerPush(this);
+		}
 		return;
 	}
 

@@ -473,6 +473,7 @@ cvar_t vr_no_gauss_recoil = { "vr_no_gauss_recoil", "1" };
 cvar_t vr_force_introtrainride = { "vr_force_introtrainride", "1" };
 cvar_t vr_semicheat_spinthingyspeed = { "vr_semicheat_spinthingyspeed", "0" };
 cvar_t vr_disable_func_friction = { "vr_disable_func_friction", "0" };
+cvar_t vr_disable_triggerpush = { "vr_disable_triggerpush", "0" };
 
 
 // Register your console variables here
@@ -933,6 +934,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&vr_force_introtrainride);
 	CVAR_REGISTER(&vr_semicheat_spinthingyspeed);
 	CVAR_REGISTER(&vr_disable_func_friction);
+	CVAR_REGISTER(&vr_disable_triggerpush);
 
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

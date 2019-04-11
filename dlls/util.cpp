@@ -1254,6 +1254,52 @@ bool UTIL_PointInsideBBox(const Vector &vec, const Vector &absmin, const Vector 
 	return absmin.x < vec.x && absmin.y < vec.y && absmin.z < vec.z && absmax.x > vec.x && absmax.y > vec.y && absmax.z > vec.z;
 }
 
+// From https://stackoverflow.com/a/3235902/9199167
+bool GetIntersection(float fDst1, float fDst2, const Vector& vec1, const Vector& vec2, Vector& result)
+{
+	if ((fDst1 * fDst2) >= 0.0f) return false;
+	if (fDst1 == fDst2) return false;
+	result = vec1 + (vec2 - vec1) * (-fDst1 / (fDst2 - fDst1));
+	return true;
+}
+
+bool InBox(const Vector& v, const Vector& absmin, const Vector& absmax, int axis)
+{
+	if (axis == 1 && v.z > absmin.z && v.z < absmax.z && v.y > absmin.y && v.y < absmax.y) return true;
+	if (axis == 2 && v.z > absmin.z && v.z < absmax.z && v.x > absmin.x && v.x < absmax.x) return true;
+	if (axis == 3 && v.x > absmin.x && v.x < absmax.x && v.y > absmin.y && v.y < absmax.y) return true;
+	return false;
+}
+
+bool UTIL_GetLineIntersectionWithBBox(const Vector &vec1, const Vector &vec2, const Vector &absmin, const Vector &absmax, Vector& result)
+{
+	if (vec2.x < absmin.x && vec1.x < absmin.x) return false;
+	if (vec2.x > absmax.x && vec1.x > absmax.x) return false;
+	if (vec2.y < absmin.y && vec1.y < absmin.y) return false;
+	if (vec2.y > absmax.y && vec1.y > absmax.y) return false;
+	if (vec2.z < absmin.z && vec1.z < absmin.z) return false;
+	if (vec2.z > absmax.z && vec1.z > absmax.z) return false;
+	if (vec1.x > absmin.x && vec1.x < absmax.x &&
+		vec1.y > absmin.y && vec1.y < absmax.y &&
+		vec1.z > absmin.z && vec1.z < absmax.z)
+	{
+		result = vec1;
+		return true;
+	}
+
+	if ((GetIntersection(vec1.x - absmin.x, vec2.x - absmin.x, vec1, vec2, result) && InBox(result, absmin, absmax, 1))
+		|| (GetIntersection(vec1.y - absmin.y, vec2.y - absmin.y, vec1, vec2, result) && InBox(result, absmin, absmax, 2))
+		|| (GetIntersection(vec1.z - absmin.z, vec2.z - absmin.z, vec1, vec2, result) && InBox(result, absmin, absmax, 3))
+		|| (GetIntersection(vec1.x - absmax.x, vec2.x - absmax.x, vec1, vec2, result) && InBox(result, absmin, absmax, 1))
+		|| (GetIntersection(vec1.y - absmax.y, vec2.y - absmax.y, vec1, vec2, result) && InBox(result, absmin, absmax, 2))
+		|| (GetIntersection(vec1.z - absmax.z, vec2.z - absmax.z, vec1, vec2, result) && InBox(result, absmin, absmax, 3)))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 // Convenience method to check if a point is inside a brush model (Algorithm could be more performant, but this is HL after all) - Max Vollmer, 2017-08-26
 bool UTIL_PointInsideBSPModel(const Vector &vec, const Vector &absmin, const Vector &absmax)
 {

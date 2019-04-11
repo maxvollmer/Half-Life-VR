@@ -380,6 +380,8 @@ private:
 	void UpdateFlashlight();
 	void UpdateVRTele();
 
+	EHANDLE			m_hCurrentUpwardsTriggerPush;
+
 public:
 	void StartVRTele();
 	void StopVRTele();
@@ -402,6 +404,9 @@ public:
 
 	void PlayVRWeaponAnimation(int iAnim, int body);
 	void PlayVRWeaponMuzzleflash();
+
+	void SetCurrentUpwardsTriggerPush(CBaseEntity* pEntity);
+	CBaseEntity* GetCurrentUpwardsTriggerPush();
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

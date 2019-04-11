@@ -273,6 +273,7 @@ extern void			UTIL_TraceModel			(const Vector &vecStart, const Vector &vecEnd, i
 extern Vector		UTIL_GetAimVector		(edict_t* pent, float flSpeed);
 extern int			UTIL_PointContents		(const Vector &vec, bool detectSolidEntities = false, edict_t** pPent = nullptr);
 extern bool			UTIL_PointInsideBBox	(const Vector &vec, const Vector &absmin, const Vector &absmax);
+extern bool			UTIL_GetLineIntersectionWithBBox(const Vector &vec1, const Vector &vec2, const Vector &absmin, const Vector &absmax, Vector& result);
 extern bool			UTIL_PointInsideBSPModel(const Vector &vec, const Vector &absmin, const Vector &absmax);
 //extern bool			UTIL_BBoxIntersectsBSPModel(const Vector &origin, const Vector &mins, const Vector &maxs);
 extern bool			UTIL_BBoxIntersectsBBox	(const Vector &absmins1, const Vector &absmaxs1, const Vector &absmins2, const Vector &absmaxs2);
