@@ -14,11 +14,13 @@ public:
 	{
 	public:
 		SequenceInfo();
-		SequenceInfo(Vector mins, Vector maxs, float framerate);
+		SequenceInfo(Vector mins, Vector maxs, float framerate, int numFrames, bool isLooping);
 		const Vector bboxMins;
 		const Vector bboxMaxs;
 		const float bboxRadius;
 		const float framerate;
+		const int numFrames;
+		const bool isLooping;
 	};
 
 	VRModelInfo();

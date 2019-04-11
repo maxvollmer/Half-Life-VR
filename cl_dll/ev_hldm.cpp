@@ -12,6 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
+#include <string>
+
 #include "hud.h"
 #include "cl_util.h"
 #include "const.h"
@@ -478,7 +481,7 @@ void EV_FireGlock1( event_args_t *args )
 	if ( EV_IsLocal( idx ) )
 	{
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( empty ? GLOCK_SHOOT_EMPTY : GLOCK_SHOOT, 2 );
+		InterCept_EV_WeaponAnimation( empty ? GLOCK_SHOOT_EMPTY : GLOCK_SHOOT, 2 );
 
 		V_PunchAxis( 0, -2.0 );
 	}
@@ -525,7 +528,7 @@ void EV_FireGlock2( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( GLOCK_SHOOT, 2 );
+		InterCept_EV_WeaponAnimation( GLOCK_SHOOT, 2 );
 
 		V_PunchAxis( 0, -2.0 );
 	}
@@ -583,7 +586,7 @@ void EV_FireShotGunDouble( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE2, 2 );
+		InterCept_EV_WeaponAnimation( SHOTGUN_FIRE2, 2 );
 		V_PunchAxis( 0, -10.0 );
 	}
 
@@ -639,7 +642,7 @@ void EV_FireShotGunSingle( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( SHOTGUN_FIRE, 2 );
+		InterCept_EV_WeaponAnimation( SHOTGUN_FIRE, 2 );
 
 		V_PunchAxis( 0, -5.0 );
 	}
@@ -698,7 +701,7 @@ void EV_FireMP5( event_args_t *args )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP5_FIRE1 + gEngfuncs.pfnRandomLong(0,2), 2 );
+		InterCept_EV_WeaponAnimation( MP5_FIRE1 + gEngfuncs.pfnRandomLong(0,2), 2 );
 
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
@@ -743,7 +746,7 @@ void EV_FireMP52( event_args_t *args )
 
 	if ( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP5_LAUNCH, 2 );
+		InterCept_EV_WeaponAnimation( MP5_LAUNCH, 2 );
 		V_PunchAxis( 0, -10 );
 	}
 	
@@ -795,7 +798,7 @@ void EV_FirePython( event_args_t *args )
 
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( PYTHON_FIRE1, multiplayer ? 1 : 0 );
+		InterCept_EV_WeaponAnimation( PYTHON_FIRE1, multiplayer ? 1 : 0 );
 
 		V_PunchAxis( 0, -10.0 );
 	}
@@ -914,7 +917,7 @@ void EV_FireGauss( event_args_t *args )
 	if ( EV_IsLocal( idx ) )
 	{
 		V_PunchAxis( 0, -2.0 );
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( GAUSS_FIRE2, 2 );
+		InterCept_EV_WeaponAnimation( GAUSS_FIRE2, 2 );
 
 		if ( m_fPrimaryFire == false )
 			 g_flApplyVel = flDamage;	
@@ -1184,16 +1187,16 @@ void EV_Crowbar( event_args_t *args )
 	/*
 	if ( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( CROWBAR_ATTACK1MISS, 1 );
+		InterCept_EV_WeaponAnimation( CROWBAR_ATTACK1MISS, 1 );
 
 		switch( (g_iSwing++) % 3 )
 		{
 			case 0:
-				gEngfuncs.pEventAPI->EV_WeaponAnimation ( CROWBAR_ATTACK1MISS, 1 ); break;
+				InterCept_EV_WeaponAnimation ( CROWBAR_ATTACK1MISS, 1 ); break;
 			case 1:
-				gEngfuncs.pEventAPI->EV_WeaponAnimation ( CROWBAR_ATTACK2MISS, 1 ); break;
+				InterCept_EV_WeaponAnimation ( CROWBAR_ATTACK2MISS, 1 ); break;
 			case 2:
-				gEngfuncs.pEventAPI->EV_WeaponAnimation ( CROWBAR_ATTACK3MISS, 1 ); break;
+				InterCept_EV_WeaponAnimation ( CROWBAR_ATTACK3MISS, 1 ); break;
 		}
 	}
 	*/
@@ -1261,9 +1264,9 @@ void EV_FireCrossbow2( event_args_t *args )
 	if ( EV_IsLocal( idx ) )
 	{
 		if ( args->iparam1 )
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE1, 1 );
+			InterCept_EV_WeaponAnimation( CROSSBOW_FIRE1, 1 );
 		else if ( args->iparam2 )
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE3, 1 );
+			InterCept_EV_WeaponAnimation( CROSSBOW_FIRE3, 1 );
 	}
 
 	// Store off the old count
@@ -1339,9 +1342,9 @@ void EV_FireCrossbow( event_args_t *args )
 	if ( EV_IsLocal( idx ) )
 	{
 		if ( args->iparam1 )
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE1, 1 );
+			InterCept_EV_WeaponAnimation( CROSSBOW_FIRE1, 1 );
 		else if ( args->iparam2 )
-			gEngfuncs.pEventAPI->EV_WeaponAnimation( CROSSBOW_FIRE3, 1 );
+			InterCept_EV_WeaponAnimation( CROSSBOW_FIRE3, 1 );
 
 		V_PunchAxis( 0, -2.0 );
 	}
@@ -1384,7 +1387,7 @@ void EV_FireRpg( event_args_t *args )
 	//Only play the weapon anims if I shot it. 
 	if ( EV_IsLocal( idx ) )
 	{
-		gEngfuncs.pEventAPI->EV_WeaponAnimation( RPG_FIRE2, 1 );
+		InterCept_EV_WeaponAnimation( RPG_FIRE2, 1 );
 	
 		V_PunchAxis( 0, -5.0 );
 	}
@@ -1462,7 +1465,7 @@ void EV_EgonFire( event_args_t *args )
 
 	//Only play the weapon anims if I shot it.
 	if ( EV_IsLocal( idx ) )
-		gEngfuncs.pEventAPI->EV_WeaponAnimation ( g_fireAnims1[ gEngfuncs.pfnRandomLong( 0, 3 ) ], 1 );
+		InterCept_EV_WeaponAnimation ( g_fireAnims1[ gEngfuncs.pfnRandomLong( 0, 3 ) ], 1 );
 
 	if ( iStartup == 1 && EV_IsLocal( idx ) && !pBeam && !pBeam2 && cl_lw->value ) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
 	{
@@ -1581,7 +1584,7 @@ void EV_HornetGunFire( event_args_t *args )
 	if ( EV_IsLocal( idx ) )
 	{
 		V_PunchAxis( 0, gEngfuncs.pfnRandomLong ( 0, 2 ) );
-		gEngfuncs.pEventAPI->EV_WeaponAnimation ( HGUN_SHOOT, 1 );
+		InterCept_EV_WeaponAnimation ( HGUN_SHOOT, 1 );
 	}
 
 	switch ( gEngfuncs.pfnRandomLong ( 0 , 2 ) )
@@ -1642,7 +1645,7 @@ void EV_TripmineFire( event_args_t *args )
 
 	//Hit something solid
 	if ( tr.fraction < 1.0 )
-		 gEngfuncs.pEventAPI->EV_WeaponAnimation ( TRIPMINE_DRAW, 0 );
+		 InterCept_EV_WeaponAnimation ( TRIPMINE_DRAW, 0 );
 	
 	gEngfuncs.pEventAPI->EV_PopPMStates();
 }
@@ -1692,7 +1695,7 @@ void EV_SnarkFire( event_args_t *args )
 
 	//Find space to drop the thing.
 	if ( tr.allsolid == 0 && tr.startsolid == 0 && tr.fraction > 0.25 )
-		 gEngfuncs.pEventAPI->EV_WeaponAnimation ( SQUEAK_THROW, 0 );
+		 InterCept_EV_WeaponAnimation ( SQUEAK_THROW, 0 );
 	
 	gEngfuncs.pEventAPI->EV_PopPMStates();
 }
@@ -1754,4 +1757,18 @@ void EV_TrainPitchAdjust( event_args_t *args )
 int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 )
 {
 	return 0;
+}
+
+
+void InterCept_EV_WeaponAnimation(int sequence, int body)
+{
+	// "Hack" - Since we use server side entities for our weapons bound to VR controllers,
+	// and some weapon animations are client side only,
+	// we simply send a message up to the server here instead of fixing all places in code
+	// where client side animations are used. - Max Vollmer, 2019-04-13
+
+	std::string cmd = "vr_wpnanim " + std::to_string(sequence) + " " + std::to_string(body);
+	gEngfuncs.pfnClientCmd(cmd.data());
+
+	gEngfuncs.pEventAPI->EV_WeaponAnimation(sequence, body);
 }

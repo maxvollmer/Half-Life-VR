@@ -13,22 +13,26 @@
 #include "StudioModel.h"
 
 extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
-extern int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflGroundSpeed);
+extern int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflGroundSpeed, float *pflFPS, int *piNumFrames, bool *pfIsLooping);
 extern int GetNumSequences(void *pmodel);
 
 VRModelInfo::SequenceInfo::SequenceInfo() :
 	bboxMins{},
 	bboxMaxs{},
 	bboxRadius{ 0.f },
-	framerate{ 0.f }
+	framerate{ 0.f },
+	numFrames{ 0 },
+	isLooping{ false }
 {
 }
 
-VRModelInfo::SequenceInfo::SequenceInfo(Vector mins, Vector maxs, float framerate) :
+VRModelInfo::SequenceInfo::SequenceInfo(Vector mins, Vector maxs, float framerate, int numFrames, bool isLooping) :
 	bboxMins{ mins },
 	bboxMaxs{ maxs },
 	bboxRadius{ (maxs - mins).Length() * 0.5f },
-	framerate{ framerate }
+	framerate{ framerate },
+	numFrames{ numFrames },
+	isLooping{ isLooping }
 {
 }
 
@@ -59,11 +63,13 @@ VRModelInfo::VRModelInfo(CBaseEntity *pModel) :
 					Vector mins;
 					Vector maxs;
 					float framerate;
+					int numFrames;
+					bool isLooping;
 					float dummy;
 					if (ExtractBbox(pmodel, sequence, mins, maxs)
-						&& GetSequenceInfo(pmodel, sequence, &framerate, &dummy))
+						&& GetSequenceInfo(pmodel, sequence, &dummy, &dummy, &framerate, &numFrames, &isLooping))
 					{
-						m_sequences.emplace_back(mins, maxs, framerate);
+						m_sequences.emplace_back(mins, maxs, framerate, numFrames, isLooping);
 					}
 					else
 					{

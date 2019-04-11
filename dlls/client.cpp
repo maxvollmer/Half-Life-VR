@@ -442,6 +442,16 @@ void ClientCommand( edict_t *pEntity )
 		edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
 		pPlayer->StartObserver( pev->origin, VARS(pentSpawnSpot)->angles);
 	}
+	else if (FStrEq(pcmd, "vr_wpnanim"))	// Client side weapon animations are now sent to the server - Max Vollmer, 2019-04-13
+	{
+		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+
+		int sequence = atoi(CMD_ARGV(1));
+		int body = atoi(CMD_ARGV(2));
+
+		pPlayer->pev->weaponanim = sequence;
+		pPlayer->PlayVRWeaponAnimation(sequence, body);
+	}
 	else if (FStrEq(pcmd, "vrupd_hmd") || FStrEq(pcmd, "vrupd_lft") || FStrEq(pcmd, "vrupd_rt"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();

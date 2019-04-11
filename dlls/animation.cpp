@@ -229,12 +229,12 @@ int GetNumSequences(void *pmodel)
 	return pstudiohdr->numseq;
 }
 
-int GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed )
+int GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed, float *pflFPS, int *piNumFrames, bool *pfIsLooping)
 {
-	return GetSequenceInfo(pmodel, pev->sequence, pflFrameRate, pflGroundSpeed);
+	return GetSequenceInfo(pmodel, pev->sequence, pflFrameRate, pflGroundSpeed, pflFPS, piNumFrames, pfIsLooping);
 }
 
-int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflGroundSpeed)
+int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflGroundSpeed, float *pflFPS, int *piNumFrames, bool *pfIsLooping)
 {
 	studiohdr_t *pstudiohdr;
 
@@ -252,6 +252,10 @@ int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflG
 	}
 
 	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + sequence;
+
+	if (pflFPS) *pflFPS = pseqdesc->fps;
+	if (piNumFrames) *piNumFrames = pseqdesc->numframes;
+	if (pfIsLooping) *pfIsLooping = pseqdesc->flags & STUDIO_LOOPING;
 
 	if (pseqdesc->numframes > 1)
 	{

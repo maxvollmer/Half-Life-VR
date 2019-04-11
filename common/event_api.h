@@ -46,6 +46,8 @@ typedef struct event_api_s
 	void    ( *EV_KillEvents ) ( int entnum, const char *eventname );
 } event_api_t;
 
+void InterCept_EV_WeaponAnimation(int sequence, int body);
+
 extern event_api_t eventapi;
 
 #endif
