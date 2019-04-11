@@ -76,6 +76,7 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	else
 	{
 		pModel->pev->effects |= EF_NODRAW;
+		pModel->pev->effects &= ~EF_MUZZLEFLASH;
 		m_isBBoxValid = false;
 	}
 }
