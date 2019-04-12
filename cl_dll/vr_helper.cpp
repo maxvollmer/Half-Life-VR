@@ -289,6 +289,12 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_playerturn_enabled", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_rotate_with_trains", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_flashlight_toggle", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_mode", "2", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_ammo", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_health", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_flashlight", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_size", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_textscale", "1", FCVAR_ARCHIVE);
 
 	g_vrInput.Init();
 
@@ -992,46 +998,28 @@ void VRHelper::TestRenderControllerPosition(bool leftOrRight)
 	}
 }
 
-bool VRHelper::IsRightControllerValid()
-{
-	return m_fRightControllerValid;
-}
-
-bool VRHelper::IsLeftControllerValid()
-{
-	return m_fLeftControllerValid;
-}
-
 bool VRHelper::HasValidWeaponController()
 {
 	if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
 	{
-		return IsLeftControllerValid();
+		return m_fLeftControllerValid;
 	}
 	else
 	{
-		return IsRightControllerValid();
+		return m_fRightControllerValid;
 	}
 }
 
-const Vector & VRHelper::GetLeftHandPosition()
+bool VRHelper::HasValidHandController()
 {
-	return m_leftControllerPosition;
-}
-
-const Vector & VRHelper::GetLeftHandAngles()
-{
-	return m_leftControllerAngles;
-}
-
-const Vector & VRHelper::GetRightHandPosition()
-{
-	return m_rightControllerPosition;
-}
-
-const Vector & VRHelper::GetRightHandAngles()
-{
-	return m_rightControllerAngles;
+	if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
+	{
+		return m_fRightControllerValid;
+	}
+	else
+	{
+		return m_fLeftControllerValid;
+	}
 }
 
 vr::IVRSystem* VRHelper::GetVRSystem()
@@ -1068,43 +1056,87 @@ Vector VRHelper::GetAutoaimVector(float flDelta)
 	return forward;
 }
 
-const Vector VRHelper::GetWeaponPosition()
+Vector VRHelper::GetWeaponPosition()
 {
 	if (HasValidWeaponController())
 	{
 		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
-			return GetLeftHandPosition();
+			return m_leftControllerPosition;
 		else
-			return GetRightHandPosition();
+			return m_rightControllerPosition;
 	}
 	else
 	{
-		Vector result;
-		GetViewOrg(result);
-		return result;
+		Vector pos;
+		GetViewOrg(pos);
+		return pos;
 	}
 }
-const Vector VRHelper::GetWeaponAngles()
+Vector VRHelper::GetWeaponAngles()
 {
-	if (HasValidWeaponController())
+	if (HasValidHandController())
 	{
 		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
-			return GetLeftHandAngles();
+			return m_leftControllerAngles;
 		else
-			return GetRightHandAngles();
+			return m_rightControllerAngles;
 	}
 	else
 	{
-		Vector angles;
-		GetViewAngles(vr::EVREye::Eye_Right, angles);
-		//angles.x = -angles.x;
 		cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
 		return localPlayer->curstate.angles;
 	}
 }
+Vector VRHelper::GetWeaponHUDPosition()
+{
+	if (HasValidWeaponController() && GetViewEntity())
+	{
+		return GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 2];
+	}
+	else
+	{
+		return GetWeaponPosition();
+	}
+}
+
+Vector VRHelper::GetHandPosition()
+{
+	if (HasValidWeaponController())
+	{
+		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
+			return m_rightControllerPosition;
+		else
+			return m_leftControllerPosition;
+	}
+	else
+	{
+		Vector pos;
+		GetViewOrg(pos);
+		return pos;
+	}
+}
+Vector VRHelper::GetHandAngles()
+{
+	if (HasValidHandController())
+	{
+		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
+			return m_rightControllerAngles;
+		else
+			return m_leftControllerAngles;
+	}
+	else
+	{
+		cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
+		return localPlayer->curstate.angles;
+	}
+}
+Vector VRHelper::GetHandHUDPosition()
+{
+	// TODO: Hand HUD position doesn't work yet because no attachment update...
+	return GetHandPosition();
+}
+
 float VRHelper::GetAnalogFire()
 {
 	return g_vrInput.analogfire;
 }
-
-

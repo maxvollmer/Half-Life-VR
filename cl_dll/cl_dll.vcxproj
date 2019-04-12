@@ -248,6 +248,7 @@
     <ClCompile Include="vgui_TeamFortressViewport.cpp" />
     <ClCompile Include="vgui_teammenu.cpp" />
     <ClCompile Include="view.cpp" />
+    <ClCompile Include="VRHUDRenderer.cpp" />
     <ClCompile Include="VRInputMovementHandlers.cpp" />
     <ClCompile Include="VRInputOtherHandlers.cpp" />
     <ClCompile Include="VRInputPosesHandlers.cpp" />

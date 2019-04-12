@@ -125,16 +125,18 @@ private:
 	Vector m_rightControllerVelocity;
 
 public:
-	const Vector3 & GetVRToHL();
-	const Vector3 & GetHLToVR();
+	const Vector3& GetVRToHL();
+	const Vector3& GetHLToVR();
 
-	bool IsRightControllerValid();
-	bool IsLeftControllerValid();
 	bool HasValidWeaponController();
-	const Vector & GetLeftHandPosition();
-	const Vector & GetLeftHandAngles();
-	const Vector & GetRightHandPosition();
-	const Vector & GetRightHandAngles();
+	Vector GetWeaponPosition();
+	Vector GetWeaponAngles();
+	Vector GetWeaponHUDPosition();
+
+	bool HasValidHandController();
+	Vector GetHandPosition();
+	Vector GetHandAngles();
+	Vector GetHandHUDPosition();
 
 	vr::IVRSystem* GetVRSystem();
 
@@ -142,7 +144,5 @@ public:
 
 	Vector GetGunPosition();
 	Vector GetAutoaimVector(float flDelta = 0.f);
-	const Vector GetWeaponPosition();
-	const Vector GetWeaponAngles();
 	float GetAnalogFire();
 };

@@ -307,6 +307,9 @@
     <ClCompile Include="vr_legacy_input.cpp">
       <Filter>VR\input</Filter>
     </ClCompile>
+    <ClCompile Include="VRHUDRenderer.cpp">
+      <Filter>VR</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parsemsg.h">

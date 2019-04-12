@@ -568,6 +568,9 @@ private:
 
 	int m_iGroundEntIndex{ 0 };
 	int m_iMirroredEntIndex{ 0 };
+	bool m_hasTrainControls{ false };
+	Vector m_trainControlPosition;
+	Vector m_trainControlAngles;
 
 public:
 
@@ -667,6 +670,9 @@ public:
 	// Ground entity for rotating with them in VR (since player rotation is done client side completely) - Max Vollmer, 2019-04-09
 	struct cl_entity_s* GetGroundEntity();
 	struct cl_entity_s* GetMirroredEnt();
+
+	// HUD (train control sprites) attachment for train we are controlling
+	bool GetTrainControlsOriginAndOrientation(Vector& origin, Vector& angles);
 };
 
 class TeamFortressViewport;

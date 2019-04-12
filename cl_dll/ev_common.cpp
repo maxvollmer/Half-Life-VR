@@ -116,6 +116,7 @@ void EV_GetGunAim(struct event_args_s *args, float *forward, float *right, float
 	extern Vector VRGlobalGetAutoaimVector();
 	Vector dir = VRGlobalGetAutoaimVector();
 	VectorAngles(dir, angles);
+	angles[0] = -angles[0];
 	AngleVectors(angles, forward, right, up);
 }
 

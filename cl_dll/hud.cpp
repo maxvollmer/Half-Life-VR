@@ -728,3 +728,14 @@ cl_entity_t* CHud::GetMirroredEnt()
 		return nullptr;
 	}
 }
+
+bool CHud::GetTrainControlsOriginAndOrientation(Vector& origin, Vector& angles)
+{
+	if (m_hasTrainControls)
+	{
+		origin = m_trainControlPosition;
+		angles = m_trainControlAngles;
+		return true;
+	}
+	return false;
+}

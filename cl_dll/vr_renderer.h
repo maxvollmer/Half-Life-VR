@@ -43,12 +43,6 @@ public:
 
 	// For studiomodelrenderer
 	void EnableDepthTest();
-	int GetLeftHandModelIndex();
-	bool IsRightControllerValid();
-	bool IsLeftControllerValid();
-	const Vector & GetLeftHandPosition();
-	const Vector & GetLeftHandAngles();
-
 	void ReverseCullface();
 	void RestoreCullface();
 
@@ -92,6 +86,10 @@ private:
 	int m_hudRedrawIntermission{0};
 
 	void GetStartingPosForHUDRenderType(const VRHUDRenderType m_hudRenderType, float & hudStartPositionUpOffset, float & hudStartPositionRightOffset);
+	bool GetHUDSpriteOriginAndOrientation(const VRHUDRenderType m_hudRenderType, Vector&origin, Vector&angles);
+	bool GetHUDAmmoOriginAndOrientation(Vector&origin, Vector&angles);
+	bool GetHUDHealthOriginAndOrientation(Vector&origin, Vector&angles);
+	void GetViewAlignedHUDOrientationFromPosition(const Vector& origin, Vector& angles);
 };
 
 extern VRRenderer gVRRenderer;
