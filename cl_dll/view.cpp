@@ -300,12 +300,12 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 
 	// never let view origin sit exactly on a node line, because a water plane can
 	// dissapear when viewed with the eye exactly on it.
-	// FIXME, we send origin at 1/128 now, change this?
+	// FIXME, we send origin at 1/128 now, change this? - yup - Max Vollmer, 2019-04-12
 	// the server protocol only specifies to 1/16 pixel, so add 1/32 in each axis
-	
-	pparams->vieworg[0] += 1.0/32;
-	pparams->vieworg[1] += 1.0/32;
-	pparams->vieworg[2] += 1.0/32;
+
+	pparams->vieworg[0] += 1.f / 256.f;//1.0/32;
+	pparams->vieworg[1] += 1.f / 256.f;//1.0/32;
+	pparams->vieworg[2] += 1.f / 256.f;//1.0/32;
 
 	// Check for problems around water, move the viewer artificially if necessary 
 	// -- this prevents drawing errors in GL due to waves
