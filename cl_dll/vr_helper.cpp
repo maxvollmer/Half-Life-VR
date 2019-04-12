@@ -288,6 +288,7 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_rotate_with_trains", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_debug_physics", "0", 0);
 	CVAR_CREATE("vr_debug_controllers", "0", 0);
+	CVAR_CREATE("vr_flashlight_toggle", "0", 0);
 
 	g_vrInput.Init();
 

@@ -81,14 +81,14 @@ void VRRenderer::Frame(double time)
 		//CaptureCurrentScreenToTexture(vrGLHUDTexture);
 		isInMenu = true;
 	}
-
-	vrHelper->PollEvents();
 }
 
 void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 {
 	if (pparams->nextView == 0)
 	{
+		vrHelper->PollEvents();
+
 		vrHelper->UpdatePositions(pparams);
 		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left, pparams);
 		vrHelper->GetViewOrg(pparams->vieworg);
