@@ -442,6 +442,36 @@ void ClientCommand( edict_t *pEntity )
 		edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
 		pPlayer->StartObserver( pev->origin, VARS(pentSpawnSpot)->angles);
 	}
+	else if (FStrEq(pcmd, "vr_flashlight"))
+	{
+		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		if (atoi(CMD_ARGV(1)))
+		{
+			Vector offset( atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4)) );
+			Vector angles( atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7)) );
+			pPlayer->SetFlashlightPose(offset, angles);
+		}
+		else
+		{
+			pPlayer->ClearFlashlightPose();
+		}
+	}
+	else if (FStrEq(pcmd, "vr_teleporter"))
+	{
+		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		VRControllerID id = VRControllerID(atoi(CMD_ARGV(1)));
+		pPlayer->SetTeleporterController(id);
+	}
+	else if (FStrEq(pcmd, "vr_lngjump"))
+	{
+		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		pPlayer->DoLongJump();
+	}
+	else if (FStrEq(pcmd, "vr_restartmap"))
+	{
+		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		pPlayer->RestartCurrentMap();
+	}
 	else if (FStrEq(pcmd, "vr_wpnanim"))	// Client side weapon animations are now sent to the server - Max Vollmer, 2019-04-13
 	{
 		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
@@ -457,44 +487,48 @@ void ClientCommand( edict_t *pEntity )
 		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
 		pPlayer->PlayVRWeaponMuzzleflash();
 	}
-	else if (FStrEq(pcmd, "vrupd_hmd") || FStrEq(pcmd, "vrupdctrl"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
+	else if (FStrEq(pcmd, "vrupd_hmd"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
-		if (size > 3)
+		if (size == 10)
 		{
 			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
 			int timestamp = atoi(CMD_ARGV(1));
-			if (FStrEq(pcmd, "vrupd_hmd") && size == 10/*13*/)
-			{
-				pPlayer->UpdateVRHeadset(timestamp,
-					Vector(atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4))),
-					Vector(atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7))),
-					atof(CMD_ARGV(8)), atof(CMD_ARGV(9))
-				);
-				return;
-			}
-			else if (FStrEq(pcmd, "vrupdctrl") && size == 15)
-			{
-				bool isValid = atoi(CMD_ARGV(2)) != 0;
-				VRControllerID id = VRControllerID(atoi(CMD_ARGV(3)));
-				bool isMirrored = atoi(CMD_ARGV(4)) != 0;
-				bool isDragging = atoi(CMD_ARGV(14)) != 0;
-				pPlayer->UpdateVRController(
-					id,
-					timestamp,
-					isValid,
-					isMirrored,
-					Vector(atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7))),
-					Vector(atof(CMD_ARGV(8)), atof(CMD_ARGV(9)), atof(CMD_ARGV(10))),
-					Vector(atof(CMD_ARGV(11)), atof(CMD_ARGV(12)), atof(CMD_ARGV(13))),
-					isDragging
-				);
-				return;
-			}
+			Vector offset( atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4)) );
+			Vector yawOffsetDelta( atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7)) );
+			float prevYaw = atof(CMD_ARGV(8));
+			float currentYaw = atof(CMD_ARGV(9));
+			pPlayer->UpdateVRHeadset(timestamp, offset, yawOffsetDelta, prevYaw, currentYaw);
 		}
-		char errormsg[1024] = { 0 };
-		sprintf_s(errormsg, "Invalid vr update (%i): %s %s!\n", size, pcmd, CMD_ARGS());
-		ClientPrint(&pEntity->v, HUD_PRINTCONSOLE, errormsg);
+		else
+		{
+			char errormsg[1024] = { 0 };
+			sprintf_s(errormsg, "Invalid vr update (%i): %s %s!\n", size, pcmd, CMD_ARGS());
+			ClientPrint(&pEntity->v, HUD_PRINTCONSOLE, errormsg);
+		}
+	}
+	else if (FStrEq(pcmd, "vrupdctrl"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
+	{
+		int size = CMD_ARGC();
+		if (size == 15)
+		{
+			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+			int timestamp = atoi(CMD_ARGV(1));
+			bool isValid = atoi(CMD_ARGV(2)) != 0;
+			VRControllerID id = VRControllerID(atoi(CMD_ARGV(3)));
+			bool isMirrored = atoi(CMD_ARGV(4)) != 0;
+			Vector offset( atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7)) );
+			Vector angles( atof(CMD_ARGV(8)), atof(CMD_ARGV(9)), atof(CMD_ARGV(10)) );
+			Vector velocity( atof(CMD_ARGV(11)), atof(CMD_ARGV(12)), atof(CMD_ARGV(13)) );
+			bool isDragging = atoi(CMD_ARGV(14)) != 0;
+			pPlayer->UpdateVRController(id, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging);
+		}
+		else
+		{
+			char errormsg[1024] = { 0 };
+			sprintf_s(errormsg, "Invalid vr update (%i): %s %s!\n", size, pcmd, CMD_ARGS());
+			ClientPrint(&pEntity->v, HUD_PRINTCONSOLE, errormsg);
+		}
 	}
 	else if (FStrEq(pcmd, "vrtele"))
 	{

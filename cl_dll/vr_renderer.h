@@ -15,6 +15,11 @@ enum class VRHUDRenderType
 	PAIN
 };
 
+namespace vr
+{
+	class IVRSystem;
+}
+
 class VRRenderer
 {
 public:
@@ -33,6 +38,8 @@ public:
 	void InterceptHUDRedraw(float time, int intermission);
 
 	void GetViewAngles(float * angles);
+	Vector GetMovementAngles();
+
 
 	// For studiomodelrenderer
 	void EnableDepthTest();
@@ -55,6 +62,9 @@ public:
 	void InterceptSPR_Set(HSPRITE_VALVE hPic, int r, int g, int b);
 	void InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t *prc);
 	void VRHUDDrawFinished();
+
+	VRHelper* GetHelper() { return vrHelper; }
+	vr::IVRSystem* GetVRSystem();
 
 private:
 

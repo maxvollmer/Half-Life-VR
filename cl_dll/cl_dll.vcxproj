@@ -304,6 +304,7 @@
     <ClInclude Include="vgui_SpectatorPanel.h" />
     <ClInclude Include="vgui_TeamFortressViewport.h" />
     <ClInclude Include="view.h" />
+    <ClInclude Include="VRCommon.h" />
     <ClInclude Include="VRInputAction.h" />
     <ClInclude Include="VRInputHandlers.h" />
     <ClInclude Include="vr_gl.h" />

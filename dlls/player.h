@@ -363,19 +363,16 @@ private:
 	VRControllerInteractionManager		m_vrControllerInteractionManager;
 	VRGroundEntityHandler				m_vrGroundEntityHandler{ this };
 
-	// TODO: Make configurable
+	VRControllerID						m_teleporterControllerID{ VRControllerID::HAND };
 	VRControllerID GetTeleporterControllerID()
 	{
-		return VRControllerID::HAND;
+		return m_teleporterControllerID;
 	}
-	VRControllerID GetFlashlightControllerID()
-	{
-		return VRControllerID::HAND;
-	}
-	VRControllerID GetWeaponControllerID()
-	{
-		return VRControllerID::WEAPON;
-	}
+
+	void GetFlashlightPose(Vector& position, Vector& dir);
+	bool								m_vrHasFlashlightPose{ false };
+	Vector								m_vrFlashlightOffset;
+	Vector								m_vrFlashlightAngles;
 
 	void UpdateFlashlight();
 	void UpdateVRTele();
@@ -407,6 +404,14 @@ public:
 
 	void SetCurrentUpwardsTriggerPush(CBaseEntity* pEntity);
 	CBaseEntity* GetCurrentUpwardsTriggerPush();
+
+	void SetFlashlightPose(const Vector& offset, const Vector& angles);
+	void ClearFlashlightPose();
+
+	void SetTeleporterController(VRControllerID id) { m_teleporterControllerID = id; }
+
+	void DoLongJump();
+	void RestartCurrentMap();
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

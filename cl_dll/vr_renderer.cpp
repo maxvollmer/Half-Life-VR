@@ -205,6 +205,11 @@ void VRRenderer::GetViewAngles(float * angles)
 	vrHelper->GetViewAngles(vr::EVREye::Eye_Right, angles);
 }
 
+Vector VRRenderer::GetMovementAngles()
+{
+	return vrHelper->GetMovementAngles();
+}
+
 bool VRRenderer::ShouldMirrorCurrentModel(cl_entity_t *ent)
 {
 	return gHUD.GetMirroredEnt() == ent;
@@ -1016,6 +1021,11 @@ void VRRenderer::GetStartingPosForHUDRenderType(const VRHUDRenderType m_hudRende
 		hudStartPositionRightOffset = 0;
 		break;
 	}
+}
+
+vr::IVRSystem* VRRenderer::GetVRSystem()
+{
+	return vrHelper->GetVRSystem();
 }
 
 

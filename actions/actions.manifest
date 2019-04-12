@@ -331,11 +331,6 @@
       "requirement": "suggested",
       "type": "pose"
     },
-    {
-      "name": "/actions/poses/in/Weapon",
-      "requirement": "suggested",
-      "type": "pose"
-    },
 
     {
       "name": "/actions/custom/in/ExampleCustomAction",
@@ -447,7 +442,6 @@
         "/actions/poses/in/Flashlight" : "Flashlight (If not set, flashlight is attached to left hand or right hand.)",
         "/actions/poses/in/Movement" : "Movement (If not set, movement follows HMD orientation.)",
         "/actions/poses/in/Teleporter" : "Teleporter (If not set, flashlight is attached to left hand or right hand.)",
-        "/actions/poses/in/Weapon" : "Weapon (If not set, flashlight is attached to right hand or left hand.)",
 
         "/actions/custom/in/ExampleCustomAction" : "Example Custom Action"
     }

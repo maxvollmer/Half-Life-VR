@@ -35,10 +35,17 @@ public:
 		extern kbutton_t in_duck;
 		return m_isDucking || (in_duck.state & 3);
 	}
-	inline bool IsDragOn(vr::TrackedDeviceIndex_t controllerIndex) const
+	inline bool IsDragOn(vr::ETrackedControllerRole controllerRole) const
 	{
-		// TODO
-		return false;
+		const auto& state = m_dragStates.find(controllerRole);
+		if (state != m_dragStates.end())
+			return state->second;
+		else
+			return false;
+	}
+	void SetDrag(vr::ETrackedControllerRole controllerRole, bool on)
+	{
+		m_dragStates[controllerRole] = on;
 	}
 	inline bool IsLegacyInput() const
 	{
@@ -58,6 +65,14 @@ public:
 
 	void ExecuteCustomAction(const std::string& action);
 
+	bool m_rotateLeft{ false };
+	bool m_rotateRight{ false };
+
+	float analogforward{ 0.f };
+	float analogsidemove{ 0.f };
+	float analogupmove{ 0.f };
+	float analogturn{ 0.f };
+
 private:
 	void LoadCustomActions();
 	void RegisterActionSets();
@@ -71,8 +86,6 @@ private:
 
 	void UpdateActionStates();
 
-	bool m_rotateLeft{ false };
-	bool m_rotateRight{ false };
 	bool m_isDucking{ false };	// TODO: Controller support for ducking
 	bool m_isLegacyInput{ false };
 
@@ -92,8 +105,10 @@ private:
 		size_t						currentCommand{ 0 };
 	};
 
-	std::unordered_map<std::string, ActionSet>			m_actionSets;
-	std::unordered_map<std::string, CustomAction>		m_customActions;
+	std::unordered_map<std::string, ActionSet>				m_actionSets;
+	std::unordered_map<std::string, CustomAction>			m_customActions;
+
+	std::unordered_map<vr::ETrackedControllerRole, bool>	m_dragStates;
 };
 
 extern VRInput g_vrInput;

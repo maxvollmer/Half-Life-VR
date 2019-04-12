@@ -12,64 +12,63 @@ namespace VR
 		class Movement
 		{
 		public:
-			static void HandleMoveForward(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleMoveBackward(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleMoveLeft(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleMoveRight(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleMoveUp(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleMoveDown(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleTurnLeft(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleTurnRight(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleTurn90Left(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleTurn90Right(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleTurn180(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleJump(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleCrouch(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleLongJump(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleMoveForwardBackward(vr::InputAnalogActionData_t data, const std::string& action);
-			static void HandleMoveSideways(vr::InputAnalogActionData_t data, const std::string& action);
-			static void HandleMoveUpDown(vr::InputAnalogActionData_t data, const std::string& action);
-			static void HandleTurn(vr::InputAnalogActionData_t data, const std::string& action);
-			static void HandleMoveForwardBackwardSideways(vr::InputAnalogActionData_t data, const std::string& action);
-			static void HandleMoveForwardBackwardTurn(vr::InputAnalogActionData_t data, const std::string& action);
-			static void HandleMoveForwardBackwardSidewaysUpDown(vr::InputAnalogActionData_t data, const std::string& action);
-			static void HandleMoveForwardBackwardTurnUpDown(vr::InputAnalogActionData_t data, const std::string& action);
+			static void HandleMoveForward(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleMoveBackward(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleMoveLeft(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleMoveRight(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleMoveUp(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleMoveDown(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleTurnLeft(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleTurnRight(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleTurn90Left(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleTurn90Right(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleTurn180(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleJump(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleCrouch(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleLongJump(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleMoveForwardBackward(const vr::InputAnalogActionData_t& data, const std::string& action);
+			static void HandleMoveSideways(const vr::InputAnalogActionData_t& data, const std::string& action);
+			static void HandleMoveUpDown(const vr::InputAnalogActionData_t& data, const std::string& action);
+			static void HandleTurn(const vr::InputAnalogActionData_t& data, const std::string& action);
+			static void HandleMoveForwardBackwardSideways(const vr::InputAnalogActionData_t& data, const std::string& action);
+			static void HandleMoveForwardBackwardTurn(const vr::InputAnalogActionData_t& data, const std::string& action);
+			static void HandleMoveForwardBackwardSidewaysUpDown(const vr::InputAnalogActionData_t& data, const std::string& action);
+			static void HandleMoveForwardBackwardTurnUpDown(const vr::InputAnalogActionData_t& data, const std::string& action);
 		};
 
 		class Weapons
 		{
 		public:
-			static void HandleFire(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleAltFire(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleAnalogFire(vr::InputAnalogActionData_t data, const std::string& action);
-			static void HandleReload(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleHolster(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleNext(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandlePrevious(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandleFire(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleAltFire(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleAnalogFire(const vr::InputAnalogActionData_t& data, const std::string& action);
+			static void HandleReload(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleHolster(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleNext(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandlePrevious(const vr::InputDigitalActionData_t& data, const std::string& action);
 		};
 
 		class Other
 		{
 		public:
-			static void HandleTeleport(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleFlashlight(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleGrab(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleLegacyUse(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleQuickSave(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleQuickLoad(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleRestartCurrentMap(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandlePauseGame(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleExitGame(vr::InputDigitalActionData_t data, const std::string& action);
-			static void HandleCustomAction(vr::InputDigitalActionData_t data, const std::string& action);
+			static void HandleTeleport(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleFlashlight(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleGrab(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleLegacyUse(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleQuickSave(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleQuickLoad(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleRestartCurrentMap(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandlePauseGame(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleExitGame(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleCustomAction(const vr::InputDigitalActionData_t& data, const std::string& action);
 		};
 
 		class Poses
 		{
 		public:
-			static void HandleFlashlight(vr::InputPoseActionData_t data, const std::string& action);
-			static void HandleMovement(vr::InputPoseActionData_t data, const std::string& action);
-			static void HandleTeleporter(vr::InputPoseActionData_t data, const std::string& action);
-			static void HandleWeapon(vr::InputPoseActionData_t data, const std::string& action);
+			static void HandleFlashlight(const vr::InputPoseActionData_t& data, const std::string& action);
+			static void HandleMovement(const vr::InputPoseActionData_t& data, const std::string& action);
+			static void HandleTeleporter(const vr::InputPoseActionData_t& data, const std::string& action);
 		};
 	}
 }

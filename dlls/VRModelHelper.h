@@ -32,6 +32,8 @@ public:
 	std::string					m_name;
 	int							m_numSequences;
 	std::vector<SequenceInfo>	m_sequences;
+
+	static const VRModelInfo	INVALID;
 };
 
 class VRModelHelper

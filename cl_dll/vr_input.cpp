@@ -94,7 +94,7 @@ void VRInput::LoadCustomActions()
 					m_customActions[customActionName].name = customActionName;
 					m_customActions[customActionName].commands.push_back(customActionCommand);
 
-					gEngfuncs.Con_DPrintf("Found custom command in /vr/actions/customactions.cfg (line %i): \"%s\"/\"%s\"\n", lineNum, customActionName.data(), customActionCommand.data());
+					gEngfuncs.Con_DPrintf("Successfully loaded custom action %s: %s\n", customActionName.data(), customActionCommand.data());
 				}
 				else
 				{
@@ -193,7 +193,6 @@ void VRInput::RegisterActionSets()
 		RegisterAction("poses", "Flashlight", &VR::Input::Poses::HandleFlashlight);
 		RegisterAction("poses", "Movement", &VR::Input::Poses::HandleMovement);
 		RegisterAction("poses", "Teleporter", &VR::Input::Poses::HandleTeleporter);
-		RegisterAction("poses", "Weapon", &VR::Input::Poses::HandleWeapon);
 	}
 	if (RegisterActionSet("custom"))
 	{

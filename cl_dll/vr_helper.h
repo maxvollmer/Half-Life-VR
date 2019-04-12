@@ -2,6 +2,10 @@
 
 #include "openvr/openvr.h"
 
+#include "Matrices.h"
+
+#include "VRCommon.h"
+
 extern void VectorAngles(const float *forward, float *angles);
 
 class Positions
@@ -37,6 +41,15 @@ public:
 
 	void TestRenderControllerPosition(bool leftOrRight);
 
+	void SetPose(VRPoseType poseType, const vr::TrackedDevicePose_t& pose, vr::ETrackedControllerRole role);
+	void ClearPose(VRPoseType poseType);
+
+	bool m_hasMovementAngles{ false };
+	Vector m_movementAngles;
+	bool m_handAnglesValid{ false };
+	Vector m_handAngles;
+	Vector GetMovementAngles();
+
 private:
 
 	bool AcceptsDisclaimer();
@@ -49,6 +62,7 @@ private:
 
 	Matrix4 GetAbsoluteHMDTransform();
 	Matrix4 GetAbsoluteControllerTransform(vr::TrackedDeviceIndex_t controllerIndex);
+	Matrix4 GetAbsoluteTransform(const vr::HmdMatrix34_t& vrTransform);
 
 	Matrix4 GetHMDMatrixProjectionEye(vr::EVREye eEye);
 	Matrix4 GetHMDMatrixPoseEye(vr::EVREye eEye);
@@ -86,6 +100,7 @@ private:
 	float m_lastYawUpdateTime = -1.f;
 	float m_prevYaw = 0.f;
 	float m_currentYaw = 0.f;
+	float m_instantRotateYawValue = 0.f;
 	Vector m_currentYawOffsetDelta;
 	float m_hmdDuckHeightDelta = 0.f;
 
@@ -116,4 +131,8 @@ public:
 	const Vector & GetLeftHandAngles();
 	const Vector & GetRightHandPosition();
 	const Vector & GetRightHandAngles();
+
+	vr::IVRSystem* GetVRSystem();
+
+	void InstantRotateYaw(float value);
 };

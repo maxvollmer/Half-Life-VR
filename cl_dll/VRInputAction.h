@@ -8,9 +8,9 @@
 class VRInputAction
 {
 public:
-	typedef void(*DigitalActionHandler)(vr::InputDigitalActionData_t, const std::string&);
-	typedef void(*AnalogActionHandler)(vr::InputAnalogActionData_t, const std::string&);
-	typedef void(*PoseActionHandler)(vr::InputPoseActionData_t, const std::string&);
+	typedef void(*DigitalActionHandler)(const vr::InputDigitalActionData_t&, const std::string&);
+	typedef void(*AnalogActionHandler)(const vr::InputAnalogActionData_t&, const std::string&);
+	typedef void(*PoseActionHandler)(const vr::InputPoseActionData_t&, const std::string&);
 
 	enum class ActionType
 	{

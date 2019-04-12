@@ -9,29 +9,58 @@
 #include "openvr/openvr.h"
 #include "vr_input.h"
 #include "eiface.h"
+#include "vr_renderer.h"
+#include "vr_helper.h"
 
 namespace VR
 {
 	namespace Input
 	{
-		void Poses::HandleFlashlight(vr::InputPoseActionData_t data, const std::string& action)
+		vr::ETrackedControllerRole GetRole(vr::VRInputValueHandle_t origin)
 		{
-
+			vr::InputOriginInfo_t originInfo;
+			vr::ETrackedControllerRole role{ vr::TrackedControllerRole_Invalid };
+			if (vr::VRInputError_None == vr::VRInput()->GetOriginTrackedDeviceInfo(origin, &originInfo, sizeof(vr::InputOriginInfo_t)))
+			{
+				role = gVRRenderer.GetVRSystem()->GetControllerRoleForTrackedDeviceIndex(originInfo.trackedDeviceIndex);
+			}
+			return role;
 		}
 
-		void Poses::HandleMovement(vr::InputPoseActionData_t data, const std::string& action)
+		void Poses::HandleFlashlight(const vr::InputPoseActionData_t& data, const std::string& action)
 		{
-
+			if (data.bActive)
+			{
+				gVRRenderer.GetHelper()->SetPose(VRPoseType::FLASHLIGHT, data.pose, GetRole(data.activeOrigin));
+			}
+			else
+			{
+				gVRRenderer.GetHelper()->ClearPose(VRPoseType::FLASHLIGHT);
+			}
 		}
 
-		void Poses::HandleTeleporter(vr::InputPoseActionData_t data, const std::string& action)
+		void Poses::HandleMovement(const vr::InputPoseActionData_t& data, const std::string& action)
 		{
-
+			if (data.bActive)
+			{
+				gVRRenderer.GetHelper()->SetPose(VRPoseType::MOVEMENT, data.pose, GetRole(data.activeOrigin));
+			}
+			else
+			{
+				gVRRenderer.GetHelper()->ClearPose(VRPoseType::MOVEMENT);
+			}
 		}
 
-		void Poses::HandleWeapon(vr::InputPoseActionData_t data, const std::string& action)
+		void Poses::HandleTeleporter(const vr::InputPoseActionData_t& data, const std::string& action)
 		{
-
+			if (data.bActive)
+			{
+				gVRRenderer.GetHelper()->SetPose(VRPoseType::TELEPORTER, data.pose, GetRole(data.activeOrigin));
+			}
+			else
+			{
+				gVRRenderer.GetHelper()->ClearPose(VRPoseType::TELEPORTER);
+			}
 		}
 	}
 }

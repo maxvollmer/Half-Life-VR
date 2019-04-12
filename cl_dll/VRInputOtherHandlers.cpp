@@ -9,21 +9,22 @@
 #include "openvr/openvr.h"
 #include "vr_input.h"
 #include "eiface.h"
+#include "vr_renderer.h"
 
 namespace VR
 {
 	namespace Input
 	{
-		void Other::HandleTeleport(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandleTeleport(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
 			if (data.bChanged)
 			{
 				bool on = data.bActive && data.bState;
-				// TODO: Send telestart or telestop event to server
+				ServerCmd(on ? "vrtele 1" : "vrtele 0");
 			}
 		}
 
-		void Other::HandleFlashlight(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandleFlashlight(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
 			if (CVAR_GET_FLOAT("vr_flashlight_toggle") != 0.f)
 			{
@@ -42,12 +43,31 @@ namespace VR
 			}
 		}
 
-		void Other::HandleGrab(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandleGrab(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
-			//g_vrInput.
+			bool on = data.bActive && data.bState;
+			vr::InputOriginInfo_t originInfo;
+			vr::ETrackedControllerRole role{ vr::TrackedControllerRole_Invalid };
+			if (vr::VRInputError_None == vr::VRInput()->GetOriginTrackedDeviceInfo(data.activeOrigin, &originInfo, sizeof(vr::InputOriginInfo_t)))
+			{
+				role = gVRRenderer.GetVRSystem()->GetControllerRoleForTrackedDeviceIndex(originInfo.trackedDeviceIndex);
+			}
+			switch (role)
+			{
+			case vr::TrackedControllerRole_LeftHand:
+				g_vrInput.SetDrag(vr::TrackedControllerRole_LeftHand, on);
+				break;
+			case vr::TrackedControllerRole_RightHand:
+				g_vrInput.SetDrag(vr::TrackedControllerRole_RightHand, on);
+				break;
+			default:
+				g_vrInput.SetDrag(vr::TrackedControllerRole_LeftHand, on);
+				g_vrInput.SetDrag(vr::TrackedControllerRole_RightHand, on);
+				break;
+			}
 		}
 
-		void Other::HandleLegacyUse(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandleLegacyUse(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
 			if (data.bChanged)
 			{
@@ -56,27 +76,47 @@ namespace VR
 			}
 		}
 
-		void Other::HandleQuickSave(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandleQuickSave(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
+			if (data.bActive && data.bState && data.bChanged)
+			{
+				ClientCmd("save quick");
+			}
 		}
 
-		void Other::HandleQuickLoad(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandleQuickLoad(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
+			if (data.bActive && data.bState && data.bChanged)
+			{
+				ClientCmd("load quick");
+			}
 		}
 
-		void Other::HandleRestartCurrentMap(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandleRestartCurrentMap(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
+			if (data.bActive && data.bState && data.bChanged)
+			{
+				ClientCmd("vr_restartmap");
+			}
 		}
 
-		void Other::HandlePauseGame(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandlePauseGame(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
+			if (data.bActive && data.bState && data.bChanged)
+			{
+				ClientCmd("pause");
+			}
 		}
 
-		void Other::HandleExitGame(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandleExitGame(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
+			if (data.bActive && data.bState && data.bChanged)
+			{
+				ClientCmd("quit");
+			}
 		}
 
-		void Other::HandleCustomAction(vr::InputDigitalActionData_t data, const std::string& action)
+		void Other::HandleCustomAction(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
 			if (data.bActive && data.bState && data.bChanged)
 			{

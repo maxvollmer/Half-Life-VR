@@ -85,6 +85,9 @@ VRModelInfo::VRModelInfo(CBaseEntity *pModel) :
 
 const VRModelInfo& VRModelHelper::GetModelInfo(CBaseEntity *pEntity)
 {
+	if (!pEntity)
+		return VRModelInfo::INVALID;
+
 	auto& info = m_instance.m_modelInfoMap.find(pEntity->pev->model);
 	if (info != m_instance.m_modelInfoMap.end())
 	{
@@ -170,3 +173,4 @@ bool VRModelHelper::GetAttachment(CBaseEntity *pModel, int attachmentIndex, Vect
 }
 
 VRModelHelper VRModelHelper::m_instance{};
+const VRModelInfo VRModelInfo::INVALID{};

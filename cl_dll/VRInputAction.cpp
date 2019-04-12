@@ -9,6 +9,7 @@
 #include "openvr/openvr.h"
 #include "vr_input.h"
 #include "eiface.h"
+#include "vr_renderer.h"
 
 VRInputAction::VRInputAction() :
 	m_type{ ActionType::INVALID }

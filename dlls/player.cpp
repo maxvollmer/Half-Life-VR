@@ -58,6 +58,7 @@ TYPEDESCRIPTION g_vrLevelChangeDataSaveData[] =
 };
 
 #include "pm_defs.h"
+#include "pm_movevars.h"
 extern playermove_t *pmove;
 
 
@@ -2500,6 +2501,8 @@ void CBasePlayer::PostThink()
 	// P.S. In pm_shared.cpp we do some modified normal movement as if we were MOVETYPE_WALK
 	m_vrGroundEntityHandler.HandleMovingWithSolidGroundEntities();
 
+	UpdateFlashlight();
+	UpdateVRTele();
 
 	// Handle Tank controlling
 	if ( m_pTank != NULL )
@@ -3556,6 +3559,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
+		GiveNamedItem( "item_longjump" );
 		GiveNamedItem( "weapon_crowbar" );
 		GiveNamedItem( "weapon_9mmhandgun" );
 		GiveNamedItem( "ammo_9mmclip" );
@@ -4297,18 +4301,17 @@ void CBasePlayer::ResetAutoaim()
 Vector CBasePlayer::GetGunPosition()
 {
 	// Gun position and angles determined by attachments on weapon model - Max Vollmer, 2019-03-30
-	Vector pos;
-	bool result = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[GetWeaponControllerID()].GetModel(), VR_MUZZLE_ATTACHMENT, pos);
-	if (result)
+	if (m_vrControllers[VRControllerID::WEAPON].IsValid())
 	{
-		//ALERT(at_console, "CBasePlayer::GetAimPosition for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), pos.x, pos.y, pos.z);
-		return pos;
+		Vector pos;
+		bool result = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT, pos);
+		if (result)
+		{
+			return pos;
+		}
 	}
-	else
-	{
-		//ALERT(at_console, "CBasePlayer::GetAimPosition for %s got invalid attachment, falling back to weapon origin.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
-		return GetWeaponPosition();
-	}
+
+	return GetWeaponPosition();
 }
 
 Vector CBasePlayer::GetAimAngles()
@@ -4319,22 +4322,20 @@ Vector CBasePlayer::GetAimAngles()
 Vector CBasePlayer::GetAutoaimVector(float flDelta)
 {
 	// Gun position and angles determined by attachments on weapon model - Max Vollmer, 2019-03-30
-	Vector pos1;
-	Vector pos2;
-	bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[GetWeaponControllerID()].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
-	bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[GetWeaponControllerID()].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
-	if (result1 && result2 && pos2 != pos1)
+	if (m_vrControllers[VRControllerID::WEAPON].IsValid())
 	{
-		Vector dir = (pos2 - pos1).Normalize();
-		//ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s: %f %f %f\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model), dir.x, dir.y, dir.z);
-		return dir;
+		Vector pos1;
+		Vector pos2;
+		bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
+		bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+		if (result1 && result2 && pos2 != pos1)
+		{
+			return (pos2 - pos1).Normalize();
+		}
 	}
-	else
-	{
-		//ALERT(at_console, "CBasePlayer::GetAutoaimVector for %s got invalid attachment(s), falling back to weapon angles.\n", STRING(m_vrControllers[GetWeaponControllerID()].GetModel()->pev->model));
-		UTIL_MakeAimVectors(GetWeaponAngles());
-		return gpGlobals->v_forward;
-	}
+
+	UTIL_MakeAimVectors(GetWeaponAngles());
+	return gpGlobals->v_forward;
 }
 
 
@@ -4903,7 +4904,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging)
 {
 	int weaponId = WEAPON_BAREHAND;
-	if (vrControllerID == GetWeaponControllerID())
+	if (vrControllerID == VRControllerID::WEAPON)
 	{
 		ItemInfo itemInfo = {};
 		if (m_pActiveItem != nullptr && m_pActiveItem->GetItemInfo(&itemInfo))
@@ -4913,25 +4914,29 @@ void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const 
 	}
 
 	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging, weaponId);
-
-	if (vrControllerID == GetFlashlightControllerID())
-	{
-		UpdateFlashlight();
-	}
-
-	if (vrControllerID == GetTeleporterControllerID())
-	{
-		UpdateVRTele();
-	}
 }
 
 const Vector CBasePlayer::GetWeaponPosition()
 {
-	return GetClientOrigin() + m_vrControllers[GetWeaponControllerID()].GetOffset();
+	if (m_vrControllers[VRControllerID::WEAPON].IsValid())
+	{
+		return GetClientOrigin() + m_vrControllers[VRControllerID::WEAPON].GetOffset();
+	}
+	else
+	{
+		return EyePosition() + (GetAutoaimVector() * 32.f);
+	}
 }
 const Vector CBasePlayer::GetWeaponAngles()
 {
-	return m_vrControllers[GetWeaponControllerID()].GetAngles();
+	if (m_vrControllers[VRControllerID::WEAPON].IsValid())
+	{
+		return m_vrControllers[VRControllerID::WEAPON].GetAngles();
+	}
+	else
+	{
+		return pev->angles;
+	}
 }
 const Vector CBasePlayer::GetWeaponViewAngles()
 {
@@ -4941,7 +4946,14 @@ const Vector CBasePlayer::GetWeaponViewAngles()
 }
 const Vector CBasePlayer::GetWeaponVelocity()
 {
-	return m_vrControllers[GetWeaponControllerID()].GetVelocity();
+	if (m_vrControllers[VRControllerID::WEAPON].IsValid())
+	{
+		return m_vrControllers[VRControllerID::WEAPON].GetVelocity();
+	}
+	else
+	{
+		return Vector{};
+	}
 }
 const Vector CBasePlayer::GetClientOrigin()
 {
@@ -4958,17 +4970,10 @@ bool CBasePlayer::IsWeaponUnderWater()
 }
 bool CBasePlayer::IsWeaponPositionValid()
 {
-	if (m_vrControllers[GetWeaponControllerID()].IsValid())
-	{
-		int weaponOriginContent = UTIL_PointContents(GetWeaponPosition(), true);
-		int weaponMuzzleContent = UTIL_PointContents(GetGunPosition(), true);
-		return (weaponOriginContent == CONTENTS_EMPTY || weaponOriginContent == CONTENTS_WATER)
-			&& (weaponMuzzleContent == CONTENTS_EMPTY || weaponMuzzleContent == CONTENTS_WATER);
-	}
-	else
-	{
-		return false;
-	}
+	int weaponOriginContent = UTIL_PointContents(GetWeaponPosition(), true);
+	int weaponMuzzleContent = UTIL_PointContents(GetGunPosition(), true);
+	return (weaponOriginContent == CONTENTS_EMPTY || weaponOriginContent == CONTENTS_WATER)
+		&& (weaponMuzzleContent == CONTENTS_EMPTY || weaponMuzzleContent == CONTENTS_WATER);
 }
 
 #define	CROWBAR_BODYHIT_VOLUME 128
@@ -5052,12 +5057,12 @@ void CBasePlayer::PlayMeleeSmackSound(CBaseEntity *pSmackedEntity, const int wea
 void CBasePlayer::PlayVRWeaponAnimation(int iAnim, int body)
 {
 	pev->weaponanim = iAnim;
-	m_vrControllers[GetWeaponControllerID()].PlayWeaponAnimation(iAnim, body);
+	m_vrControllers[VRControllerID::WEAPON].PlayWeaponAnimation(iAnim, body);
 }
 
 void CBasePlayer::PlayVRWeaponMuzzleflash()
 {
-	m_vrControllers[GetWeaponControllerID()].PlayWeaponMuzzleflash();
+	m_vrControllers[VRControllerID::WEAPON].PlayWeaponMuzzleflash();
 }
 
 void CBasePlayer::UpdateFlashlight()
@@ -5071,29 +5076,22 @@ void CBasePlayer::UpdateFlashlight()
 		}
 		if (hFlashLight)
 		{
-			VRController& controller = m_vrControllers[GetFlashlightControllerID()];
-			if (controller.IsValid())
+			Vector position;
+			Vector dir;
+			GetFlashlightPose(position, dir);
+			TraceResult tr;
+			UTIL_TraceLine(position, dir * 8192., dont_ignore_monsters, edict(), &tr);
+			CBaseMonster *pFlashlightMonster = CBaseEntity::GetMonsterPointer(tr.pHit);
+			if (pFlashlightMonster != nullptr)
 			{
-				Vector flashLightDir;
-				UTIL_MakeAimVectorsPrivate(controller.GetAngles(), flashLightDir, NULL, NULL);
-				TraceResult tr;
-				UTIL_TraceLine(controller.GetPosition(), flashLightDir * 8192., dont_ignore_monsters, edict(), &tr);
-				CBaseMonster *pFlashlightMonster = CBaseEntity::GetMonsterPointer(tr.pHit);
-				if (pFlashlightMonster != nullptr)
-				{
-					SetBits(pFlashlightMonster->pev->effects, EF_DIMLIGHT);
-					hFlashlightMonster = pFlashlightMonster;
-					hFlashLight->pev->effects = EF_NODRAW;
-				}
-				else
-				{
-					UTIL_SetOrigin(hFlashLight->pev, tr.vecEndPos - flashLightDir);
-					hFlashLight->pev->effects = EF_DIMLIGHT;
-				}
+				SetBits(pFlashlightMonster->pev->effects, EF_DIMLIGHT);
+				hFlashlightMonster = pFlashlightMonster;
+				hFlashLight->pev->effects = EF_NODRAW;
 			}
 			else
 			{
-				hFlashLight->pev->effects = EF_NODRAW;
+				UTIL_SetOrigin(hFlashLight->pev, tr.vecEndPos - dir);
+				hFlashLight->pev->effects = EF_DIMLIGHT;
 			}
 		}
 	}
@@ -5132,4 +5130,100 @@ CBaseEntity* CBasePlayer::GetCurrentUpwardsTriggerPush()
 			m_hCurrentUpwardsTriggerPush = nullptr;
 	}
 	return m_hCurrentUpwardsTriggerPush;
+}
+
+void CBasePlayer::SetFlashlightPose(const Vector& offset, const Vector& angles)
+{
+	m_vrFlashlightOffset = offset;
+	m_vrFlashlightAngles = angles;
+	m_vrHasFlashlightPose = true;
+}
+
+void CBasePlayer::ClearFlashlightPose()
+{
+	m_vrHasFlashlightPose = false;
+}
+
+void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
+{
+	if (m_vrHasFlashlightPose)
+	{
+		position = GetClientOrigin() + m_vrFlashlightOffset;
+		UTIL_MakeVectorsPrivate(m_vrFlashlightAngles, dir, nullptr, nullptr);
+	}
+	else if (m_vrControllers[VRControllerID::HAND].IsValid())
+	{
+		position = m_vrControllers[VRControllerID::HAND].GetPosition();
+		UTIL_MakeVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
+	}
+	else
+	{
+		position = EyePosition();
+		UTIL_MakeVectorsPrivate(pev->angles, dir, nullptr, nullptr);
+	}
+}
+
+
+void CBasePlayer::RestartCurrentMap()
+{
+	ALERT(at_console, "RestartCurrentMap not implemented yet, sorry!\n");
+}
+
+// In VR it's rather difficult to longjump (run + crouch + jump + correct timing),
+// so players can map the long jump on a simple VR input action.
+// - Max Vollmer - 2019-04-13
+#define BUNNYJUMP_MAX_SPEED_FACTOR 1.7f
+#define PLAYER_LONGJUMP_SPEED 350
+void CBasePlayer::DoLongJump()
+{
+	if (pev->waterlevel)
+		return;
+
+	if (pev->button & IN_JUMP)
+		return;
+
+	if (pev->oldbuttons & IN_JUMP)
+		return;
+
+	if (pmove->waterjumptime)
+		return;
+
+	if (!(pev->flags & FL_ONGROUND))
+		return;
+
+	float maxscaledspeed = BUNNYJUMP_MAX_SPEED_FACTOR * pmove->maxspeed;
+	if (maxscaledspeed <= 0.f)
+		return;
+
+	float speed = pev->velocity.Length();
+	if (speed > maxscaledspeed)
+	{
+		pev->velocity = pev->velocity * (maxscaledspeed * 0.65f / speed);
+	}
+
+	extern void PM_PlayStepSound(int step, float fvol);
+	extern int PM_MapTextureTypeStepType(char chTextureType);
+	PM_PlayStepSound(PM_MapTextureTypeStepType(pmove->chtexturetype), 1.0f);
+
+	if (m_fLongJump)
+	{
+		pev->punchangle.x = -5.f;
+		pev->velocity = pmove->forward * PLAYER_LONGJUMP_SPEED * 1.6f;
+		pev->velocity.z = sqrt(2.f * 800.f * 56.f);
+		SetAnimation(PLAYER_SUPERJUMP);
+	}
+	else
+	{
+		pev->velocity.z = sqrt(2.f * 800.f * 56.f);
+		SetAnimation(PLAYER_JUMP);
+	}
+
+	pev->velocity.z -= (pev->gravity * g_psv_gravity->value * gpGlobals->frametime * 0.5f);
+
+	if (pev->velocity.x > pmove->movevars->maxvelocity) pev->velocity.x = pmove->movevars->maxvelocity;
+	if (pev->velocity.y > pmove->movevars->maxvelocity) pev->velocity.y = pmove->movevars->maxvelocity;
+	if (pev->velocity.z > pmove->movevars->maxvelocity) pev->velocity.z = pmove->movevars->maxvelocity;
+	if (pev->velocity.x < -pmove->movevars->maxvelocity) pev->velocity.x = -pmove->movevars->maxvelocity;
+	if (pev->velocity.y < -pmove->movevars->maxvelocity) pev->velocity.y = -pmove->movevars->maxvelocity;
+	if (pev->velocity.z < -pmove->movevars->maxvelocity) pev->velocity.z = -pmove->movevars->maxvelocity;
 }

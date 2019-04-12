@@ -11,6 +11,7 @@
 
 // Quake is a trademark of Id Software, Inc., (c) 1996 Id Software, Inc. All
 // rights reserved.
+#include "vr_input.h"
 #include "hud.h"
 #include "cl_util.h"
 #include "camera.h"
@@ -640,6 +641,12 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 			cmd->upmove *= cl_movespeedkey->value;
 		}
 
+		// Add in analog VR input - Max Vollmer, 2019-04-11
+		if (g_vrInput.analogforward > EPSILON) cmd->forwardmove += g_vrInput.analogforward * cl_forwardspeed->value;
+		if (g_vrInput.analogforward < -EPSILON) cmd->forwardmove += g_vrInput.analogforward * cl_backspeed->value;
+		if (fabs(g_vrInput.analogsidemove) > EPSILON) cmd->sidemove += g_vrInput.analogsidemove * cl_sidespeed->value;
+		if (fabs(g_vrInput.analogupmove) > EPSILON) cmd->upmove += g_vrInput.analogupmove * cl_upspeed->value;
+
 		// clip to maxspeed
 		spd = gEngfuncs.GetClientMaxspeed();
 		if ( spd != 0.0 )
@@ -675,7 +682,12 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 	vec3_t viewangles;
 	gVRRenderer.GetViewAngles(viewangles);
 	gEngfuncs.SetViewAngles(viewangles);
-	VectorCopy(viewangles, cmd->viewangles);
+
+	// Hackhack - Use movement angles to set "viewangles",
+	// as these are actually used to determine movement direction
+	// (see line 2937 in pm_shared.cpp)
+	// - Max Vollmer, 2019-04-11
+	VectorCopy(gVRRenderer.GetMovementAngles(), cmd->viewangles);
 }
 
 /*
