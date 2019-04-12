@@ -103,38 +103,20 @@ Figure out the height of the gun
 =================
 */
 // Gun position and aim vector in VR is given by special model attachments - Max Vollmer, 2019-03-30 / 2019-04-07
-#define VR_MUZZLE_ATTACHMENT 0
-/*
-#define VR_MUZZLE_FORWARD 1
-#define VR_MUZZLE_RIGHT 2
-#define VR_MUZZLE_UP 3
-*/
 void EV_GetGunPosition(event_args_t *args, float *pos)
 {
-	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
-	if (viewModel != nullptr)
-	{
-		viewModel->attachment[VR_MUZZLE_ATTACHMENT].CopyToArray(pos);
-	}
+	// we are in include hell, so just use an external global function here :/
+	extern Vector VRGlobalGetGunPosition();
+	VRGlobalGetGunPosition().CopyToArray(pos);
 }
 void EV_GetGunAim(struct event_args_s *args, float *forward, float *right, float *up, float *angles)
 {
+	// we are in include hell, so just use an external global function here :/
 	extern void VectorAngles(const float *forward, float *angles);
-	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
-	if (viewModel != nullptr)
-	{
-		/*
-		viewModel->attachment[VR_MUZZLE_FORWARD].CopyToArray(forward);
-		viewModel->attachment[VR_MUZZLE_RIGHT].CopyToArray(right);
-		viewModel->attachment[VR_MUZZLE_UP].CopyToArray(up);
-		*/
-		Vector pos1, pos2;
-		viewModel->attachment[VR_MUZZLE_ATTACHMENT].CopyToArray(pos1);
-		viewModel->attachment[VR_MUZZLE_ATTACHMENT].CopyToArray(pos2);
-		Vector dir = (pos2 - pos1).Normalize();
-		VectorAngles(dir, angles);
-		AngleVectors(angles, forward, right, up);
-	}
+	extern Vector VRGlobalGetAutoaimVector();
+	Vector dir = VRGlobalGetAutoaimVector();
+	VectorAngles(dir, angles);
+	AngleVectors(angles, forward, right, up);
 }
 
 /*

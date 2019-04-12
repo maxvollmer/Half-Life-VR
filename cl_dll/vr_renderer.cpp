@@ -1038,3 +1038,14 @@ void InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t *prc)
 {
 	gVRRenderer.InterceptSPR_DrawAdditive(frame, x, y, prc);
 }
+
+
+// For ev_common.cpp
+Vector VRGlobalGetGunPosition()
+{
+	return gVRRenderer.GetHelper()->GetGunPosition();
+}
+Vector VRGlobalGetAutoaimVector()
+{
+	return gVRRenderer.GetHelper()->GetAutoaimVector();
+}

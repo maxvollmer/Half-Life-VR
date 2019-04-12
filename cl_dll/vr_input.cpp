@@ -407,28 +407,28 @@ void VRInput::HandleInput()
 	if (IsLegacyInput())
 		return;
 
-	UpdateActionStates();
 	for (auto &[actionSetName, actionSet] : m_actionSets)
 	{
-		for (auto &[actionName, action] : actionSet.actions)
+		if (UpdateActionStates(actionSetName, actionSet))
 		{
-			action.HandleInput();
+			for (auto &[actionName, action] : actionSet.actions)
+			{
+				action.HandleInput();
+			}
 		}
 	}
 }
 
-void VRInput::UpdateActionStates()
+bool VRInput::UpdateActionStates(const std::string& actionSetName, const ActionSet& actionSet)
 {
-	for (auto& actionSet : m_actionSets)
+	vr::VRActiveActionSet_t activeActionSet{ 0 };
+	activeActionSet.ulActionSet = actionSet.handle;
+	vr::EVRInputError result = vr::VRInput()->UpdateActionState(&activeActionSet, sizeof(vr::VRActiveActionSet_t), 1);
+	if (result != vr::VRInputError_None)
 	{
-		vr::VRActiveActionSet_t activeActionSet{ 0 };
-		activeActionSet.ulActionSet = actionSet.second.handle;
-		vr::EVRInputError result = vr::VRInput()->UpdateActionState(&activeActionSet, sizeof(vr::VRActiveActionSet_t), 1);
-		if (result != vr::VRInputError_None)
-		{
-			gEngfuncs.Con_DPrintf("Error while trying to get active state for input action set /actions/%s. (Error code: %i)\n", actionSet.first, result);
-		}
+		gEngfuncs.Con_DPrintf("Error while trying to get active state for input action set /actions/%s. (Error code: %i)\n", actionSetName, result);
 	}
+	return result == vr::VRInputError_None;
 }
 
 void VRInput::ExecuteCustomAction(const std::string& action)

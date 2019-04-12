@@ -75,21 +75,6 @@ public:
 	float analogfire{ 0.f };
 
 private:
-	void LoadCustomActions();
-	void RegisterActionSets();
-	bool RegisterActionSet(const std::string& actionSet);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler);
-	bool RegisterFeedback(const std::string& actionSet, const std::string& action);
-
-	void FireDamageFeedback(const std::string& action, float durationInSeconds, float frequency, float amplitude);
-
-	void UpdateActionStates();
-
-	bool m_isDucking{ false };	// TODO: Controller support for ducking
-	bool m_isLegacyInput{ false };
-
 	struct ActionSet
 	{
 	public:
@@ -105,6 +90,21 @@ private:
 		std::vector<std::string>	commands;
 		size_t						currentCommand{ 0 };
 	};
+
+	void LoadCustomActions();
+	void RegisterActionSets();
+	bool RegisterActionSet(const std::string& actionSet);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler);
+	bool RegisterFeedback(const std::string& actionSet, const std::string& action);
+
+	void FireDamageFeedback(const std::string& action, float durationInSeconds, float frequency, float amplitude);
+
+	bool UpdateActionStates(const std::string& actionSetName, const ActionSet& actionSet);
+
+	bool m_isDucking{ false };	// TODO: Controller support for ducking
+	bool m_isLegacyInput{ false };
 
 	std::unordered_map<std::string, ActionSet>				m_actionSets;
 	std::unordered_map<std::string, CustomAction>			m_customActions;

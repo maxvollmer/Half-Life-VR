@@ -2616,13 +2616,12 @@ pt_end:
 				
 				if ( gun && gun->UseDecrement() )
 				{
-					gun->m_flNextPrimaryAttack		= max( gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0 );
-					gun->m_flNextSecondaryAttack	= max( gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001 );
-
-					if ( gun->m_flTimeWeaponIdle != 1000 )
-					{
-						gun->m_flTimeWeaponIdle		= max( gun->m_flTimeWeaponIdle - gpGlobals->frametime, -0.001 );
-					}
+					//gun->m_flNextPrimaryAttack.DecrementTo(-1.0f);
+					//gun->m_flNextSecondaryAttack.DecrementTo(-0.001f);
+					//gun->m_flTimeWeaponIdle.DecrementTo(-0.001f);
+					gun->m_flNextPrimaryAttack = max(gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0f);
+					gun->m_flNextSecondaryAttack = max(gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001f);
+					gun->m_flTimeWeaponIdle = max(gun->m_flTimeWeaponIdle - gpGlobals->frametime, -0.001f);
 
 					if ( gun->pev->fuser1 != 1000 )
 					{
@@ -5204,7 +5203,20 @@ float CalculateWeaponTimeOffset(float offset)
 		float analogfire = fabs(((CBasePlayer*)(CBaseEntity*)m_hAnalogFirePlayer)->GetAnalogFire());
 		if (analogfire > EPSILON && analogfire < 1.f)
 		{
-			return offset * 1.f / analogfire;
+			return offset / analogfire;
+		}
+	}
+	return offset;
+}
+
+float CalculateWeaponTimeOffsetReverse(float offset)
+{
+	if (m_hAnalogFirePlayer)
+	{
+		float analogfire = fabs(((CBasePlayer*)(CBaseEntity*)m_hAnalogFirePlayer)->GetAnalogFire());
+		if (analogfire > EPSILON && analogfire < 1.f)
+		{
+			return offset * analogfire;
 		}
 	}
 	return offset;

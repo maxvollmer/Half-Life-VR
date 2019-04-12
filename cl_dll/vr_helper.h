@@ -57,6 +57,7 @@ private:
 
 	void UpdateGunPosition(struct ref_params_s* pparams);
 	void SendPositionUpdateToServer();
+	void UpdateViewEnt(bool isControllerValid, const Vector& controllerPosition, const Vector& controllerAngles, const Vector& controllerVelocity);
 
 	void SubmitImage(vr::EVREye eEye, unsigned int texture);
 
@@ -118,8 +119,10 @@ private:
 	bool m_fLeftControllerValid = false;
 	Vector m_leftControllerPosition;
 	Vector m_leftControllerAngles;
+	Vector m_leftControllerVelocity;
 	Vector m_rightControllerPosition;
 	Vector m_rightControllerAngles;
+	Vector m_rightControllerVelocity;
 
 public:
 	const Vector3 & GetVRToHL();
@@ -127,6 +130,7 @@ public:
 
 	bool IsRightControllerValid();
 	bool IsLeftControllerValid();
+	bool HasValidWeaponController();
 	const Vector & GetLeftHandPosition();
 	const Vector & GetLeftHandAngles();
 	const Vector & GetRightHandPosition();
@@ -135,4 +139,10 @@ public:
 	vr::IVRSystem* GetVRSystem();
 
 	void InstantRotateYaw(float value);
+
+	Vector GetGunPosition();
+	Vector GetAutoaimVector(float flDelta = 0.f);
+	const Vector GetWeaponPosition();
+	const Vector GetWeaponAngles();
+	float GetAnalogFire();
 };

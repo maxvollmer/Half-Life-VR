@@ -33,6 +33,8 @@ This file contains "stubs" of class member implementations so that we can predic
 #include	"../hud_iface.h"
 #include	"../wrect.h"
 #include	"cdll_int.h"
+#include	"../vr_helper.h"
+#include	"../vr_renderer.h"
 
 // Globals used by game logic
 const Vector g_vecZero = Vector( 0, 0, 0 );
@@ -310,39 +312,13 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore ) { }
 void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore ) { }
 
 // VR related functions
-extern struct cl_entity_s *GetViewEntity(void);
-#define VR_MUZZLE_ATTACHMENT 0
 Vector CBasePlayer::GetGunPosition(void)
 {
-	if (GetViewEntity())
-	{
-		return GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT];
-	}
-	else
-	{
-		return GetWeaponPosition();
-	}
+	return gVRRenderer.GetHelper()->GetGunPosition();
 }
 Vector CBasePlayer::GetAutoaimVector(float flDelta)
 {
-	Vector pos1{};
-	Vector pos2{};
-	if (GetViewEntity())
-	{
-		pos1 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT];
-		pos2 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 1];
-	}
-	if (pos2.LengthSquared() == 0.f || pos2 == pos1)
-	{
-		Vector forward;
-		gEngfuncs.pfnAngleVectors(GetWeaponAngles(), forward, NULL, NULL);
-		return forward;
-	}
-	else
-	{
-		Vector dir = (pos2 - pos1).Normalize();
-		return dir;
-	}
+	return gVRRenderer.GetHelper()->GetAutoaimVector(flDelta);
 }
 Vector CBasePlayer::GetAimAngles()
 {
@@ -350,42 +326,17 @@ Vector CBasePlayer::GetAimAngles()
 }
 const Vector CBasePlayer::GetWeaponPosition()
 {
-	if (GetViewEntity())
-	{
-		return GetViewEntity()->curstate.origin;
-	}
-	else
-	{
-		return g_vecZero;
-	}
+	return gVRRenderer.GetHelper()->GetWeaponPosition();
 }
 const Vector CBasePlayer::GetWeaponAngles()
 {
-	if (GetViewEntity())
-	{
-		return GetViewEntity()->curstate.angles;
-	}
-	else
-	{
-		return g_vecZero;
-	}
+	return gVRRenderer.GetHelper()->GetWeaponAngles();
 }
 const Vector CBasePlayer::GetWeaponViewAngles()
 {
 	Vector angles = GetWeaponAngles();
 	angles.x = -angles.x;
 	return angles;
-}
-const Vector CBasePlayer::GetWeaponVelocity()
-{
-	if (GetViewEntity())
-	{
-		return GetViewEntity()->curstate.velocity;
-	}
-	else
-	{
-		return g_vecZero;
-	}
 }
 bool CBasePlayer::IsWeaponUnderWater()
 {
@@ -401,6 +352,10 @@ bool CBasePlayer::IsWeaponPositionValid()
 	GetWeaponPosition().CopyToArray(weaponPos);
 	int weaponOriginContent = gEngfuncs.PM_PointContents(weaponPos, NULL);
 	return weaponOriginContent == CONTENTS_EMPTY || weaponOriginContent == CONTENTS_WATER;
+}
+float CBasePlayer::GetAnalogFire()
+{
+	return gVRRenderer.GetHelper()->GetAnalogFire();
 }
 
 

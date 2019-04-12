@@ -23,6 +23,8 @@
 
 */
 
+#include <algorithm>
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -1586,13 +1588,16 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 					 	
 						item->m_iId						= II.iId;
 						item->m_iClip					= gun->m_iClip;
-
-						item->m_flTimeWeaponIdle		= max( gun->m_flTimeWeaponIdle, -0.001 );
-						item->m_flNextPrimaryAttack		= max( gun->m_flNextPrimaryAttack, -0.001 );
-						item->m_flNextSecondaryAttack	= max( gun->m_flNextSecondaryAttack, -0.001 );
+						
+						//item->m_flTimeWeaponIdle		= (std::max)( gun->m_flTimeWeaponIdle.GetRaw(), -0.001f );
+						//item->m_flNextPrimaryAttack		= (std::max)( gun->m_flNextPrimaryAttack.GetRaw(), -0.001f );
+						//item->m_flNextSecondaryAttack	= (std::max)( gun->m_flNextSecondaryAttack.GetRaw(), -0.001f );
+						item->m_flTimeWeaponIdle		= (std::max)( gun->m_flTimeWeaponIdle, -0.001f );
+						item->m_flNextPrimaryAttack		= (std::max)( gun->m_flNextPrimaryAttack, -0.001f );
+						item->m_flNextSecondaryAttack	= (std::max)( gun->m_flNextSecondaryAttack, -0.001f );
 						item->m_fInReload				= gun->m_fInReload;
 						item->m_fInSpecialReload		= gun->m_fInSpecialReload;
-						item->fuser1					= max( gun->pev->fuser1, -0.001 );
+						item->fuser1					= (std::max)( gun->pev->fuser1, -0.001f );
 						item->fuser2					= gun->m_flStartThrow;
 						item->fuser3					= gun->m_flReleaseThrow;
 						item->iuser1					= gun->m_chargeReady;

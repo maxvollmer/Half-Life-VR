@@ -322,13 +322,29 @@ public:
 // Simple class that wraps a weapon time difference,
 // so that all weapons can be sped down using analog fire input
 // - Max Vollmer, 2019-04-13
+/* this doesn't work, leave it for now
 class WeaponTime
 {
 public:
 	WeaponTime(float value) :
 		m_weaponTimeBase{ UTIL_WeaponTimeBase() },
-		m_offset{ UTIL_WeaponTimeBase() - value }
+		m_offset{ value - UTIL_WeaponTimeBase() }
 	{
+		if (m_offset == std::numeric_limits<float>::infinity())
+		{
+			// TODO: Fix this
+			m_offset = 1.f;
+		}
+	}
+	WeaponTime(const WeaponTime& other) :
+		m_weaponTimeBase{ other.m_weaponTimeBase },
+		m_offset{ other.m_offset }
+	{
+		if (m_offset == std::numeric_limits<float>::infinity())
+		{
+			// TODO: Fix this
+			m_offset = 1.f;
+		}
 	}
 	WeaponTime() {}
 
@@ -338,10 +354,30 @@ public:
 		return m_weaponTimeBase + CalculateWeaponTimeOffset(m_offset);
 	}
 
+	// we need the raw value for sending time to client (used in client.cpp)
+	const float GetRaw() const { return m_weaponTimeBase + m_offset; }
+
+	// Used in CBasePlayer::PostThink, (the original statement caused the value to grow to infinity)
+	void DecrementTo(float target)
+	{
+		extern float CalculateWeaponTimeOffsetReverse(float offset);
+		float decrementedValue = float(*this) - gpGlobals->frametime;
+		if (decrementedValue < target)
+		{
+			(*this) = CalculateWeaponTimeOffsetReverse(target);
+		}
+		else
+		{
+			m_weaponTimeBase = UTIL_WeaponTimeBase();
+			m_offset = CalculateWeaponTimeOffsetReverse(decrementedValue - UTIL_WeaponTimeBase());
+		}
+	}
+
 private:
 	float m_weaponTimeBase{ 0.f };
 	float m_offset{ 0.f };
 };
+*/
 
 // inventory items that 
 class CBasePlayerWeapon : public CBasePlayerItem
@@ -401,9 +437,9 @@ public:
 
 	float m_flPumpTime;
 	int		m_fInSpecialReload;									// Are we in the middle of a reload for the shotguns
-	WeaponTime	m_flNextPrimaryAttack;								// soonest time ItemPostFrame will call PrimaryAttack
-	WeaponTime	m_flNextSecondaryAttack;							// soonest time ItemPostFrame will call SecondaryAttack
-	WeaponTime	m_flTimeWeaponIdle;									// soonest time ItemPostFrame will call WeaponIdle
+	float	m_flNextPrimaryAttack;								// soonest time ItemPostFrame will call PrimaryAttack
+	float	m_flNextSecondaryAttack;							// soonest time ItemPostFrame will call SecondaryAttack
+	float	m_flTimeWeaponIdle;									// soonest time ItemPostFrame will call WeaponIdle
 	int		m_iPrimaryAmmoType;									// "primary" ammo index into players m_rgAmmo[]
 	int		m_iSecondaryAmmoType;								// "secondary" ammo index into players m_rgAmmo[]
 	int		m_iClip;											// number of shots left in the primary weapon clip, -1 it not used
