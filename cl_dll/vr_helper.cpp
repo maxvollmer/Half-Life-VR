@@ -280,15 +280,15 @@ void VRHelper::Init()
 		}
 	}
 
+	CVAR_CREATE("vr_debug_physics", "0", 0);
+	CVAR_CREATE("vr_debug_controllers", "0", 0);
 	CVAR_CREATE("vr_movecontrols", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_world_scale", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_world_z_strech", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_lefthand_mode", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_playerturn_enabled", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_rotate_with_trains", "1", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_debug_physics", "0", 0);
-	CVAR_CREATE("vr_debug_controllers", "0", 0);
-	CVAR_CREATE("vr_flashlight_toggle", "0", 0);
+	CVAR_CREATE("vr_flashlight_toggle", "0", FCVAR_ARCHIVE);
 
 	g_vrInput.Init();
 
