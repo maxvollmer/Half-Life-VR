@@ -62,6 +62,12 @@ TYPEDESCRIPTION g_vrLevelChangeDataSaveData[] =
 extern playermove_t *pmove;
 
 
+// If anyone ever wants to multiplayer this mod,
+// you somehow need to know which player is CalculateWeaponTimeOffset being called for:
+namespace
+{
+	EHANDLE m_hAnalogFirePlayer;
+}
 
 extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
@@ -5167,6 +5173,41 @@ void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 void CBasePlayer::RestartCurrentMap()
 {
 	ALERT(at_console, "RestartCurrentMap not implemented yet, sorry!\n");
+}
+
+
+void CBasePlayer::SetAnalogFire(float analogfire)
+{
+	if (fabs(analogfire) < EPSILON)
+	{
+		vr_analogFire = 0.f;
+		m_hAnalogFirePlayer = nullptr;
+	}
+	else
+	{
+		vr_analogFire = analogfire;
+		if (vr_analogFire > 1.f) vr_analogFire = 1.f;
+		if (vr_analogFire < -1.f) vr_analogFire = -1.f;
+		m_hAnalogFirePlayer = this;
+	}
+}
+
+float CBasePlayer::GetAnalogFire()
+{
+	return vr_analogFire;
+}
+
+float CalculateWeaponTimeOffset(float offset)
+{
+	if (m_hAnalogFirePlayer)
+	{
+		float analogfire = fabs(((CBasePlayer*)(CBaseEntity*)m_hAnalogFirePlayer)->GetAnalogFire());
+		if (analogfire > EPSILON && analogfire < 1.f)
+		{
+			return offset * 1.f / analogfire;
+		}
+	}
+	return offset;
 }
 
 // In VR it's rather difficult to longjump (run + crouch + jump + correct timing),

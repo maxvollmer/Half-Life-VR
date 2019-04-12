@@ -692,7 +692,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		m_fInReload = FALSE;
 	}
 
-	if ((m_pPlayer->pev->button & IN_ATTACK2) && CanAttack( m_pPlayer, m_flNextSecondaryAttack, gpGlobals->time, UseDecrement() ) )
+	if ((m_pPlayer->pev->button & IN_ATTACK2 || m_pPlayer->GetAnalogFire() < 0.f) && CanAttack( m_pPlayer, m_flNextSecondaryAttack, gpGlobals->time, UseDecrement() ) )
 	{
 		if ( pszAmmo2() && !m_pPlayer->m_rgAmmo[SecondaryAmmoIndex()] )
 		{
@@ -703,7 +703,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		SecondaryAttack();
 		m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
-	else if ((m_pPlayer->pev->button & IN_ATTACK) && CanAttack( m_pPlayer, m_flNextPrimaryAttack, gpGlobals->time, UseDecrement() ) )
+	else if ((m_pPlayer->pev->button & IN_ATTACK || m_pPlayer->GetAnalogFire() > 0.f) && CanAttack( m_pPlayer, m_flNextPrimaryAttack, gpGlobals->time, UseDecrement() ) )
 	{
 		if ( (m_iClip == 0 && pszAmmo1()) || (iMaxClip() == -1 && !m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] ) )
 		{

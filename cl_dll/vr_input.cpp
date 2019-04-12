@@ -446,3 +446,15 @@ void VRInput::ExecuteCustomAction(const std::string& action)
 
 	m_customActions[action].currentCommand++;
 }
+
+
+// Used by weapon code (extern)
+float CalculateWeaponTimeOffset(float offset)
+{
+	float analogfire = fabs(g_vrInput.analogfire);
+	if (analogfire > EPSILON && analogfire < 1.f)
+	{
+		return offset * 1.f / analogfire;
+	}
+	return offset;
+}

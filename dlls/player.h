@@ -379,6 +379,8 @@ private:
 
 	EHANDLE			m_hCurrentUpwardsTriggerPush;
 
+	float vr_analogFire{ 0.f };
+
 public:
 	void StartVRTele();
 	void StopVRTele();
@@ -412,6 +414,9 @@ public:
 
 	void DoLongJump();
 	void RestartCurrentMap();
+
+	float GetAnalogFire();
+	void SetAnalogFire(float analogfire);
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

@@ -319,6 +319,30 @@ public:
 };
 
 
+// Simple class that wraps a weapon time difference,
+// so that all weapons can be sped down using analog fire input
+// - Max Vollmer, 2019-04-13
+class WeaponTime
+{
+public:
+	WeaponTime(float value) :
+		m_weaponTimeBase{ UTIL_WeaponTimeBase() },
+		m_offset{ UTIL_WeaponTimeBase() - value }
+	{
+	}
+	WeaponTime() {}
+
+	operator float()
+	{
+		extern float CalculateWeaponTimeOffset(float offset);
+		return m_weaponTimeBase + CalculateWeaponTimeOffset(m_offset);
+	}
+
+private:
+	float m_weaponTimeBase{ 0.f };
+	float m_offset{ 0.f };
+};
+
 // inventory items that 
 class CBasePlayerWeapon : public CBasePlayerItem
 {
@@ -377,9 +401,9 @@ public:
 
 	float m_flPumpTime;
 	int		m_fInSpecialReload;									// Are we in the middle of a reload for the shotguns
-	float	m_flNextPrimaryAttack;								// soonest time ItemPostFrame will call PrimaryAttack
-	float	m_flNextSecondaryAttack;							// soonest time ItemPostFrame will call SecondaryAttack
-	float	m_flTimeWeaponIdle;									// soonest time ItemPostFrame will call WeaponIdle
+	WeaponTime	m_flNextPrimaryAttack;								// soonest time ItemPostFrame will call PrimaryAttack
+	WeaponTime	m_flNextSecondaryAttack;							// soonest time ItemPostFrame will call SecondaryAttack
+	WeaponTime	m_flTimeWeaponIdle;									// soonest time ItemPostFrame will call WeaponIdle
 	int		m_iPrimaryAmmoType;									// "primary" ammo index into players m_rgAmmo[]
 	int		m_iSecondaryAmmoType;								// "secondary" ammo index into players m_rgAmmo[]
 	int		m_iClip;											// number of shots left in the primary weapon clip, -1 it not used

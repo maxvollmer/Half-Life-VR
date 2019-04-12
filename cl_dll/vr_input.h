@@ -72,6 +72,7 @@ public:
 	float analogsidemove{ 0.f };
 	float analogupmove{ 0.f };
 	float analogturn{ 0.f };
+	float analogfire{ 0.f };
 
 private:
 	void LoadCustomActions();

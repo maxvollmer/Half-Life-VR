@@ -13,6 +13,11 @@
 namespace
 {
 	WEAPON *g_pHolsteredWeapon{ nullptr };
+
+#ifndef MAX_COMMAND_SIZE
+#define MAX_COMMAND_SIZE 256
+#endif
+
 }
 
 namespace VR
@@ -43,7 +48,19 @@ namespace VR
 
 		void Weapons::HandleAnalogFire(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
-			//gEngfuncs.Con_DPrintf("HandleAnalogFire: active: %i, x: %f, deltaX: %f\n", data.bActive, data.x, data.deltaX);
+			float analogfire = (data.bActive) ? fabs(data.x) : 0.f;
+			if (analogfire == 0.f && g_vrInput.analogfire != 0.f)
+			{
+				g_vrInput.analogfire = 0.f;
+				ClientCmd("vr_anlgfire 0");
+			}
+			else if (analogfire != 0.f)
+			{
+				g_vrInput.analogfire = analogfire;
+				char cmdAnalogFire[MAX_COMMAND_SIZE] = { 0 };
+				sprintf_s(cmdAnalogFire, "vr_anlgfire %.2f", analogfire);
+				gEngfuncs.pfnClientCmd(cmdAnalogFire);
+			}
 		}
 
 		void Weapons::HandleReload(const vr::InputDigitalActionData_t& data, const std::string& action)

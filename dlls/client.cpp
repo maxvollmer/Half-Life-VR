@@ -462,6 +462,11 @@ void ClientCommand( edict_t *pEntity )
 		VRControllerID id = VRControllerID(atoi(CMD_ARGV(1)));
 		pPlayer->SetTeleporterController(id);
 	}
+	else if (FStrEq(pcmd, "vr_anlgfire"))
+	{
+		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		pPlayer->SetAnalogFire(atof(CMD_ARGV(1)));
+	}
 	else if (FStrEq(pcmd, "vr_lngjump"))
 	{
 		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
