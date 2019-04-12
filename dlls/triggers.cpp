@@ -542,6 +542,8 @@ public:
 	void InitTrigger( void );
 
 	virtual int	ObjectCaps( void ) { return CBaseToggle :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+
+	bool m_isXenJumpTrigger{ false };
 };
 
 LINK_ENTITY_TO_CLASS( trigger, CBaseTrigger );
@@ -1166,6 +1168,9 @@ int CTriggerOnce::Restore(CRestore &restore)
 
 void CBaseTrigger :: MultiTouch( CBaseEntity *pOther )
 {
+	if (pOther->IsPlayer() && m_isXenJumpTrigger && CVAR_GET_FLOAT("vr_xenjumpthingies_teleporteronly") != 0.f)
+		return;
+
 	entvars_t	*pevToucher;
 
 	pevToucher = pOther->pev;
@@ -1924,9 +1929,11 @@ void CTriggerPush :: Spawn( )
 			{
 				// Register the multi_manager for this xen mound at this position
 				gGlobalXenMounds.Add((pev->absmin + pev->absmax) * 0.5f, pTriggerMultiple->pev->target);
-				// Then delete trigger_multiple and this trigger_push (only controller beam will activate the mound)
-				UTIL_Remove(this);
-				UTIL_Remove(pTriggerMultiple);
+
+				// Flag trigger_multiple and this trigger_push,
+				// so players can disable xen jump push in VR (then only controller beam will activate the mound)
+				m_isXenJumpTrigger = true;
+				((CBaseTrigger*)pTriggerMultiple)->m_isXenJumpTrigger = true;
 				return;
 			}
 		}
@@ -1936,6 +1943,9 @@ void CTriggerPush :: Spawn( )
 
 void CTriggerPush :: Touch( CBaseEntity *pOther )
 {
+	if (pOther->IsPlayer() && m_isXenJumpTrigger && CVAR_GET_FLOAT("vr_xenjumpthingies_teleporteronly") != 0.f)
+		return;
+
 	entvars_t* pevToucher = pOther->pev;
 
 	// UNDONE: Is there a better way than health to detect things that have physics? (clients/monsters)
