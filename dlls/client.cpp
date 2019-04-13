@@ -482,11 +482,8 @@ void ClientCommand( edict_t *pEntity )
 	else if (FStrEq(pcmd, "vr_wpnanim"))	// Client side weapon animations are now sent to the server - Max Vollmer, 2019-04-13
 	{
 		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
-
 		int sequence = atoi(CMD_ARGV(1));
 		int body = atoi(CMD_ARGV(2));
-
-		pPlayer->pev->weaponanim = sequence;
 		pPlayer->PlayVRWeaponAnimation(sequence, body);
 	}
 	else if (FStrEq(pcmd, "vr_muzzleflash"))	// Client side weapon animations are now sent to the server - Max Vollmer, 2019-04-13

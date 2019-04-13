@@ -781,6 +781,35 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	return result;
 }
 
+bool VRPhysicsHelper::GetBSPModelBBox(CBaseEntity *pModel, Vector* bboxMins, Vector* bboxMaxs, Vector* bboxCenter)
+{
+	if (!CheckWorld())
+		return false;
+
+	if (!pModel->pev->model)
+		return false;
+
+	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
+	if (bspModelData == m_bspModelData.end())
+		return false;
+
+	if (!bspModelData->second.HasData())
+		return false;
+
+	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform::identity());
+
+	if (bboxMins)
+		*bboxMins = RP3DVecToHLVec(bspModelData->second.m_collisionBody->getAABB().getMin());
+
+	if (bboxMaxs)
+		*bboxMaxs = RP3DVecToHLVec(bspModelData->second.m_collisionBody->getAABB().getMax());
+
+	if (bboxCenter)
+		*bboxCenter = RP3DVecToHLVec(bspModelData->second.m_collisionBody->getAABB().getCenter());
+
+	return true;
+}
+
 bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& capsuleCenter, float radius, float height)
 {
 	if (!CheckWorld())
@@ -791,6 +820,9 @@ bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& 
 
 	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
 	if (bspModelData == m_bspModelData.end())
+		return false;
+
+	if (!bspModelData->second.HasData())
 		return false;
 
 	if (!m_capsuleBody)
@@ -830,6 +862,9 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bbo
 	if (bspModelData == m_bspModelData.end())
 		return false;
 
+	if (!bspModelData->second.HasData())
+		return false;
+
 	if (!m_bboxBody)
 	{
 		m_bboxBody = m_collisionWorld->createCollisionBody(rp3d::Transform::identity());
@@ -867,7 +902,7 @@ bool VRPhysicsHelper::ModelIntersectsWorld(CBaseEntity *pModel)
 		return false;
 
 	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
-	if (bspModelData != m_bspModelData.end())
+	if (bspModelData != m_bspModelData.end() && bspModelData->second.HasData())
 	{
 		bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DTransform(pModel->pev->angles) });
 		return m_collisionWorld->testOverlap(m_bspModelData[m_currentMapName].m_collisionBody, bspModelData->second.m_collisionBody);

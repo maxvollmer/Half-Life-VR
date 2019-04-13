@@ -1105,6 +1105,35 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 	vec3_t dir;
 
 	m_pCurrentEntity = IEngineStudio.GetCurrentEntity();
+
+	// A bit hacky, but oh well. Copies precise position and angles into controller weapon/hand model entities
+	// (otherwise location jitters in 0.25 unit steps due to network "compression") - Max Vollmer, 2019-04-13
+	if (m_pCurrentEntity->index > 0)
+	{
+		if (gVRRenderer.HasValidHandController()
+			&& gHUD.m_handControllerEntData.isValid
+			&& m_pCurrentEntity->index == gHUD.m_handControllerEntData.entIndex)
+		{
+			m_pCurrentEntity->origin = gHUD.m_handControllerEntData.origin;
+			m_pCurrentEntity->curstate.origin = gHUD.m_handControllerEntData.origin;
+			m_pCurrentEntity->latched.prevorigin = gHUD.m_handControllerEntData.origin;
+			m_pCurrentEntity->angles = gHUD.m_handControllerEntData.angles;
+			m_pCurrentEntity->curstate.angles = gHUD.m_handControllerEntData.angles;
+			m_pCurrentEntity->latched.prevangles = gHUD.m_handControllerEntData.angles;
+		}
+		else if (gVRRenderer.HasValidWeaponController()
+			&& gHUD.m_weaponControllerEntData.isValid
+			&& m_pCurrentEntity->index == gHUD.m_weaponControllerEntData.entIndex)
+		{
+			m_pCurrentEntity->origin = gHUD.m_weaponControllerEntData.origin;
+			m_pCurrentEntity->curstate.origin = gHUD.m_weaponControllerEntData.origin;
+			m_pCurrentEntity->latched.prevorigin = gHUD.m_weaponControllerEntData.origin;
+			m_pCurrentEntity->angles = gHUD.m_weaponControllerEntData.angles;
+			m_pCurrentEntity->curstate.angles = gHUD.m_weaponControllerEntData.angles;
+			m_pCurrentEntity->latched.prevangles = gHUD.m_weaponControllerEntData.angles;
+		}
+	}
+
 	IEngineStudio.GetTimes( &m_nFrameCount, &m_clTime, &m_clOldTime );
 	IEngineStudio.GetViewInfo( m_vRenderOrigin, m_vUp, m_vRight, m_vNormal );
 	IEngineStudio.GetAliasScale( &m_fSoftwareXScale, &m_fSoftwareYScale );
@@ -1192,20 +1221,6 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 	cl_entity_t *viewmodel = gEngfuncs.GetViewModel();
 	if (viewmodel != nullptr && m_pCurrentEntity == viewmodel)
 	{
-		// Copy VR muzzle attachment transform from bone into attachments - Max Vollmer, 2019-04-07
-		/* doesn't work :<
-		mstudioattachment_t* pattachments = (mstudioattachment_t *)((byte *)m_pStudioHeader + m_pStudioHeader->attachmentindex);
-		if (m_pStudioHeader->numattachments > 0)
-		{
-			// TODO: Use weapon angles or use identity?
-			Vector forward, right, up;
-			AngleVectors(viewmodel->curstate.angles, forward, right, up);
-			VectorTransform(forward/, (*m_plighttransform)[pattachments[VR_MUZZLE_ATTACHMENT].bone], m_pCurrentEntity->attachment[VR_MUZZLE_FORWARD]);
-			VectorTransform(right, (*m_plighttransform)[pattachments[VR_MUZZLE_ATTACHMENT].bone], m_pCurrentEntity->attachment[VR_MUZZLE_RIGHT]);
-			VectorTransform(up, (*m_plighttransform)[pattachments[VR_MUZZLE_ATTACHMENT].bone], m_pCurrentEntity->attachment[VR_MUZZLE_UP]);
-		}
-		*/
-
 		// Don't draw viewmodel, server has proper controller entities for rendering instead - Max Vollmer, 2019-03-30
 		return 1;
 	}
@@ -1749,3 +1764,16 @@ void CStudioModelRenderer::StudioRenderFinal(void)
 	}
 }
 
+
+
+
+int VRGlobalNumAttachmentsForEntity(cl_entity_t* ent)
+{
+	if (ent && ent->model)
+	{
+		studiohdr_t* pstudiohdr = ((studiohdr_t*)IEngineStudio.Mod_Extradata(ent->model));
+		if (pstudiohdr)
+			return pstudiohdr->numattachments;
+	}
+	return 0;
+}

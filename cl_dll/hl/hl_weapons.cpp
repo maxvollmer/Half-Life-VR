@@ -274,9 +274,9 @@ Animate weapon model
 */
 void CBasePlayerWeapon::SendWeaponAnim( int iAnim, int skiplocal, int body )
 {
-	m_pPlayer->pev->weaponanim = iAnim;
-	
+	//m_pPlayer->pev->weaponanim = iAnim;
 	HUD_SendWeaponAnim( iAnim, body, 0 );
+	InterCept_EV_WeaponAnimation(iAnim, body);
 }
 
 /*
@@ -815,7 +815,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	player.pev->waterlevel = from->client.waterlevel;
 	player.pev->maxspeed    = from->client.maxspeed;
 	player.pev->fov = from->client.fov;
-	player.pev->weaponanim = from->client.weaponanim;
+	player.pev->weaponanim = 0;// from->client.weaponanim;
 	player.pev->viewmodel = from->client.viewmodel;
 	player.m_flNextAttack = from->client.m_flNextAttack;
 	player.m_flNextAmmoBurn = from->client.fuser2;
@@ -889,7 +889,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	// Copy in results of prediction code
 	to->client.viewmodel				= player.pev->viewmodel;
 	to->client.fov						= player.pev->fov;
-	to->client.weaponanim				= player.pev->weaponanim;
+	to->client.weaponanim				= 0;// player.pev->weaponanim;
 	to->client.m_flNextAttack			= player.m_flNextAttack;
 	to->client.fuser2					= player.m_flNextAmmoBurn;
 	to->client.fuser3					= player.m_flAmmoStartCharge;
@@ -914,6 +914,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	// Make sure that weapon animation matches what the game .dll is telling us
 	//  over the wire ( fixes some animation glitches )
+	/*
 	if ( g_runfuncs && ( HUD_GetWeaponAnim() != to->client.weaponanim ) )
 	{
 		int body = 2;
@@ -929,6 +930,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		// Force a fixed anim down to viewmodel
 		HUD_SendWeaponAnim( to->client.weaponanim, body, 1 );
 	}
+	*/
 
 	for ( i = 0; i < 32; i++ )
 	{

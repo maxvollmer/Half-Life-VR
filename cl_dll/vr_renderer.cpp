@@ -178,8 +178,7 @@ void VRRenderer::DrawTransparent()
 
 		if (CVAR_GET_FLOAT("vr_debug_controllers") != 0.f)
 		{
-			vrHelper->TestRenderControllerPosition(true);
-			vrHelper->TestRenderControllerPosition(false);
+			vrHelper->TestRenderControllerPositions();
 		}
 
 		RenderHUDSprites();
@@ -823,7 +822,8 @@ Vector VRGlobalGetGunPosition()
 {
 	return gVRRenderer.GetHelper()->GetGunPosition();
 }
-Vector VRGlobalGetAutoaimVector()
+void VRGlobalGetGunAim(Vector& forward, Vector& right, Vector& up, Vector& angles)
 {
-	return gVRRenderer.GetHelper()->GetAutoaimVector();
+	gVRRenderer.GetHelper()->GetGunAim(forward, right, up, angles);
 }
+

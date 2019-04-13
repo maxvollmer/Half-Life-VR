@@ -81,6 +81,21 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 #define WRITE_COORD		(*g_engfuncs.pfnWriteCoord)
 #define WRITE_STRING	(*g_engfuncs.pfnWriteString)
 #define WRITE_ENTITY	(*g_engfuncs.pfnWriteEntity)
+inline void WRITE_FLOAT(float f)
+{
+	// Hackedihack I'm going to hell - Max Vollmer, 2019-04-13
+	unsigned char* floatbytes = (unsigned char*)(&f);
+	WRITE_BYTE(floatbytes[0]);
+	WRITE_BYTE(floatbytes[1]);
+	WRITE_BYTE(floatbytes[2]);
+	WRITE_BYTE(floatbytes[3]);
+}
+inline void WRITE_PRECISE_VECTOR(Vector v)
+{
+	WRITE_FLOAT(v.x);
+	WRITE_FLOAT(v.y);
+	WRITE_FLOAT(v.z);
+}
 #define CVAR_REGISTER	(*g_engfuncs.pfnCVarRegister)
 #define CVAR_GET_FLOAT	(*g_engfuncs.pfnCVarGetFloat)
 #define CVAR_GET_STRING	(*g_engfuncs.pfnCVarGetString)

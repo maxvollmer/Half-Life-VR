@@ -288,7 +288,7 @@ int GetSequenceFlags( void *pmodel, entvars_t *pev )
 }
 
 
-int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEvent, float flStart, float flEnd, int index )
+int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEvent, float flStart, float flEnd, int index, ClientAnimEvent_t *pClientAnimEvent)
 {
 	studiohdr_t *pstudiohdr;
 	
@@ -320,16 +320,28 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 
 	for (; index < pseqdesc->numevents; index++)
 	{
-		// Don't send client-side events to the server AI
-		if ( pevent[index].event >= EVENT_CLIENT )
-			continue;
-
-		if ( (pevent[index].frame >= flStart && pevent[index].frame < flEnd) || 
-			((pseqdesc->flags & STUDIO_LOOPING) && flEnd >= pseqdesc->numframes - 1 && pevent[index].frame < flEnd - pseqdesc->numframes + 1) )
+		if ((pevent[index].frame >= flStart && pevent[index].frame < flEnd) ||
+				((pseqdesc->flags & STUDIO_LOOPING) && flEnd >= pseqdesc->numframes - 1 && pevent[index].frame < flEnd - pseqdesc->numframes + 1))
 		{
-			pMonsterEvent->event = pevent[index].event;
-			pMonsterEvent->options = pevent[index].options;
-			return index + 1;
+			// Don't send client-side events to the server AI
+			if (pevent[index].event >= EVENT_CLIENT)
+			{
+				if (pClientAnimEvent)
+				{
+					pClientAnimEvent->isSet = true;
+					pClientAnimEvent->event = pevent[index].event;
+					pClientAnimEvent->options = pevent[index].options;
+					return index + 1;
+				}
+			}
+			else
+			{
+				if (pClientAnimEvent)
+					pClientAnimEvent->isSet = false;
+				pMonsterEvent->event = pevent[index].event;
+				pMonsterEvent->options = pevent[index].options;
+				return index + 1;
+			}
 		}
 	}
 	return 0;

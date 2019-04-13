@@ -37,9 +37,11 @@ public:
 	unsigned int GetVRTexture(vr::EVREye eEye);
 
 	void GetViewAngles(vr::EVREye eEye, float * angles);
+	void GetViewMatrix(vr::EVREye eEye, float* matrix);
 	void GetViewOrg(float * origin);
+	void GetViewVectors(Vector& forward, Vector& right, Vector& up);
 
-	void TestRenderControllerPosition(bool leftOrRight);
+	void TestRenderControllerPositions();
 
 	void SetPose(VRPoseType poseType, const vr::TrackedDevicePose_t& pose, vr::ETrackedControllerRole role);
 	void ClearPose(VRPoseType poseType);
@@ -55,11 +57,19 @@ private:
 	bool AcceptsDisclaimer();
 	void Exit(const char* lpErrorMessage = nullptr);
 
-	void UpdateGunPosition(struct ref_params_s* pparams);
+	void UpdateHMD();
+	void UpdateControllers();
+	bool UpdateController(
+		vr::TrackedDeviceIndex_t controllerIndex,
+		Matrix4& controllerMatrix,
+		Vector& controllerOffset, Vector& controllerPosition, Vector& controllerAngles, Vector& controllerVelocity,
+		Vector &controllerForward, Vector &controllerRight, Vector &controllerUp);
 	void SendPositionUpdateToServer();
 	void UpdateViewEnt(bool isControllerValid, const Vector& controllerPosition, const Vector& controllerAngles, const Vector& controllerVelocity);
 
 	void SubmitImage(vr::EVREye eEye, unsigned int texture);
+
+	void MatrixVectors(const Matrix4& source, Vector& forward, Vector& right, Vector& up);
 
 	Matrix4 GetAbsoluteHMDTransform();
 	Matrix4 GetAbsoluteControllerTransform(vr::TrackedDeviceIndex_t controllerIndex);
@@ -115,13 +125,24 @@ private:
 	void UpdateVRHLConversionVectors();
 	void UpdateWorldRotation();
 
-	bool m_fRightControllerValid = false;
 	bool m_fLeftControllerValid = false;
+	Matrix4 m_leftControllerMatrix;
+	Vector m_leftControllerOffset;
 	Vector m_leftControllerPosition;
 	Vector m_leftControllerAngles;
+	Vector m_leftControllerForward;
+	Vector m_leftControllerRight;
+	Vector m_leftControllerUp;
 	Vector m_leftControllerVelocity;
+
+	bool m_fRightControllerValid = false;
+	Matrix4 m_rightControllerMatrix;
+	Vector m_rightControllerOffset;
 	Vector m_rightControllerPosition;
 	Vector m_rightControllerAngles;
+	Vector m_rightControllerForward;
+	Vector m_rightControllerRight;
+	Vector m_rightControllerUp;
 	Vector m_rightControllerVelocity;
 
 public:
@@ -132,17 +153,23 @@ public:
 	Vector GetWeaponPosition();
 	Vector GetWeaponAngles();
 	Vector GetWeaponHUDPosition();
+	void GetWeaponVectors(Vector& forward, Vector& right, Vector& up);
+	void GetWeaponHUDMatrix(float* matrix);
 
 	bool HasValidHandController();
 	Vector GetHandPosition();
 	Vector GetHandAngles();
 	Vector GetHandHUDPosition();
+	void GetHandVectors(Vector& forward, Vector& right, Vector& up);
+	void GetHandHUDMatrix(float* matrix);
 
 	vr::IVRSystem* GetVRSystem();
 
 	void InstantRotateYaw(float value);
 
 	Vector GetGunPosition();
-	Vector GetAutoaimVector(float flDelta = 0.f);
+	Vector GetAutoaimVector();
+	void GetGunAim(Vector& forward, Vector& right, Vector& up, Vector& angles);
 	float GetAnalogFire();
+	Vector GetLocalPlayerAngles();
 };

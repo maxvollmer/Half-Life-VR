@@ -135,8 +135,6 @@ BOOL CBaseAnimating :: GetSequenceFlags( )
 //=========================================================
 void CBaseAnimating :: DispatchAnimEvents ( float flInterval )
 {
-	MonsterEvent_t	event;
-
 	void *pmodel = GET_MODEL_PTR( ENT(pev) );
 
 	if ( !pmodel )
@@ -159,9 +157,14 @@ void CBaseAnimating :: DispatchAnimEvents ( float flInterval )
 
 	int index = 0;
 
-	while ( (index = GetAnimationEvent( pmodel, pev, &event, flStart, flEnd, index ) ) != 0 )
+	MonsterEvent_t event{ 0 };
+	ClientAnimEvent_t clientevent{ 0 };
+	while ( (index = GetAnimationEvent( pmodel, pev, &event, flStart, flEnd, index, &clientevent ) ) != 0 )
 	{
-		HandleAnimEvent( &event );
+		if (clientevent.isSet)
+			HandleClientAnimEvent(&clientevent);
+		else
+			HandleAnimEvent(&event);
 	}
 }
 

@@ -86,10 +86,10 @@ void HUD_SendWeaponAnim( int iAnim, int body, int force )
 	if ( !g_runfuncs && !force )
 		return;
 
-	g_currentanim = iAnim;
+	//g_currentanim = iAnim;
 
 	// Tell animation system new info
-	gEngfuncs.pfnWeaponAnim( iAnim, body );
+	//gEngfuncs.pfnWeaponAnim( iAnim, body );
 }
 
 /*

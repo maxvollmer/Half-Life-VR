@@ -163,4 +163,3 @@ float READ_HIRESANGLE( void )
 {
 	return (float)(READ_SHORT() * (360.0/65536));
 }
-

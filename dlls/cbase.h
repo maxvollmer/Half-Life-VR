@@ -538,6 +538,7 @@ public:
 	int  LookupSequence ( const char *label );
 	void ResetSequenceInfo ( );
 	void DispatchAnimEvents ( float flFutureInterval = 0.1 ); // Handle events that have happend since last time called up until X seconds into the future
+	virtual void HandleClientAnimEvent(ClientAnimEvent_t *pEvent) { return; };	// Client side events for VR controller weapon models (fixes some issues) - Max Vollmer - 2019-04-13
 	virtual void HandleAnimEvent( MonsterEvent_t *pEvent ) { return; };
 	float SetBoneController ( int iController, float flValue );
 	void InitBoneControllers ( void );

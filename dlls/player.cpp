@@ -222,7 +222,8 @@ int gmsgStatusValue = 0;
 int gmsgVRRestoreYaw = 0;
 int gmsgVRGroundEntity = 0;
 int gmsgVRSetSpawnYaw = 0;
-int gmsgVRMirroredEntity = 0;
+int gmsgVRControllerEnt = 0;
+int gmsgVRTrainControls = 0;
 
 
 void LinkUserMessages( void )
@@ -273,7 +274,8 @@ void LinkUserMessages( void )
 	gmsgVRRestoreYaw = REG_USER_MSG("VRRstrYaw", 2);
 	gmsgVRGroundEntity = REG_USER_MSG("GroundEnt", 2);
 	gmsgVRSetSpawnYaw = REG_USER_MSG("VRSpawnYaw", 1);
-	gmsgVRMirroredEntity = REG_USER_MSG("MirrorEnt", 2);
+	gmsgVRControllerEnt = REG_USER_MSG("VRCtrlEnt", 29);
+	gmsgVRTrainControls = REG_USER_MSG("TrainCtrl", 7);
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer );
@@ -1884,6 +1886,13 @@ void CBasePlayer::PreThink(void)
 			vel = -1;
 			pTrain->Use( this, this, USE_SET, (float)vel );
 		}
+
+		Vector forward;
+		Vector right;
+		Vector up;
+		UTIL_MakeVectorsPrivate(pTrain->pev->angles, forward, right, up);
+		vr_trainControlPosition = pTrain->pev->origin + (forward * -48.f) + (right * 16.f) + (up * 24.f);
+		vr_trainControlYaw = pTrain->pev->angles.y;
 
 		if (vel)
 		{
@@ -4132,16 +4141,22 @@ void CBasePlayer :: UpdateClientData( void )
 		MESSAGE_END();
 	}
 
-
 	if (m_iTrain & TRAIN_NEW)
 	{
-		ASSERT( gmsgTrain > 0 );
-		// send "health" update message
 		MESSAGE_BEGIN( MSG_ONE, gmsgTrain, NULL, pev );
-			WRITE_BYTE(m_iTrain & 0xF);
+		WRITE_BYTE(m_iTrain & 0xF);
 		MESSAGE_END();
-
 		m_iTrain &= ~TRAIN_NEW;
+	}
+
+	if (m_iTrain)
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgVRTrainControls, NULL, pev);
+		WRITE_COORD(vr_trainControlPosition.x);
+		WRITE_COORD(vr_trainControlPosition.y);
+		WRITE_COORD(vr_trainControlPosition.z);
+		WRITE_ANGLE(vr_trainControlYaw);
+		MESSAGE_END();
 	}
 
 	//
@@ -4338,7 +4353,6 @@ Vector CBasePlayer::GetAutoaimVector(float flDelta)
 			return (pos2 - pos1).Normalize();
 		}
 	}
-
 	UTIL_MakeAimVectors(GetWeaponAngles());
 	return gpGlobals->v_forward;
 }
@@ -4918,7 +4932,7 @@ void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const 
 		}
 	}
 
-	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging, weaponId);
+	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging, vrControllerID, weaponId);
 }
 
 const Vector CBasePlayer::GetWeaponPosition()
@@ -4929,7 +4943,7 @@ const Vector CBasePlayer::GetWeaponPosition()
 	}
 	else
 	{
-		return EyePosition() + (GetAutoaimVector() * 32.f);
+		return EyePosition();// +(GetAutoaimVector() * 32.f);
 	}
 }
 const Vector CBasePlayer::GetWeaponAngles()
@@ -4940,7 +4954,9 @@ const Vector CBasePlayer::GetWeaponAngles()
 	}
 	else
 	{
-		return pev->angles;
+		Vector angles = pev->angles;
+		angles.x = -angles.x;
+		return angles;
 	}
 }
 const Vector CBasePlayer::GetWeaponViewAngles()
@@ -5061,7 +5077,7 @@ void CBasePlayer::PlayMeleeSmackSound(CBaseEntity *pSmackedEntity, const int wea
 
 void CBasePlayer::PlayVRWeaponAnimation(int iAnim, int body)
 {
-	pev->weaponanim = iAnim;
+	//pev->weaponanim = iAnim;
 	m_vrControllers[VRControllerID::WEAPON].PlayWeaponAnimation(iAnim, body);
 }
 

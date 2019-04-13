@@ -84,6 +84,7 @@
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
       <DisableSpecificWarnings>4996;4838;4005;4091;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -180,6 +181,7 @@
       <DisableSpecificWarnings>4996;4838;4005;4091;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -316,6 +318,7 @@
     <ClCompile Include="VRCommons.cpp" />
     <ClCompile Include="VRController.cpp" />
     <ClCompile Include="VRControllerInteractionManager.cpp" />
+    <ClCompile Include="VRControllerModel.cpp" />
     <ClCompile Include="VRControllerTeleporter.cpp" />
     <ClCompile Include="VRGroundEntityHandler.cpp" />
     <ClCompile Include="VRModelHelper.cpp" />
@@ -376,6 +379,7 @@
     <ClInclude Include="VRCommons.h" />
     <ClInclude Include="VRController.h" />
     <ClInclude Include="VRControllerInteractionManager.h" />
+    <ClInclude Include="VRControllerModel.h" />
     <ClInclude Include="VRControllerTeleporter.h" />
     <ClInclude Include="VRGroundEntityHandler.h" />
     <ClInclude Include="VRModelHelper.h" />

@@ -233,9 +233,14 @@ int __MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf)
 	return gHUD.MsgFunc_GroundEnt(pszName, iSize, pbuf);
 }
 
-int __MsgFunc_MirrorEnt(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_VRCtrlEnt(const char *pszName, int iSize, void *pbuf)
 {
-	return gHUD.MsgFunc_MirrorEnt(pszName, iSize, pbuf);
+	return gHUD.MsgFunc_VRCtrlEnt(pszName, iSize, pbuf);
+}
+
+int __MsgFunc_TrainCtrl(const char *pszName, int iSize, void *pbuf)
+{
+	return gHUD.MsgFunc_TrainCtrl(pszName, iSize, pbuf);
 }
 
 int __MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
@@ -340,8 +345,9 @@ void CHud :: Init( void )
 	// Messages for VR
 	HOOK_MESSAGE(VRRstrYaw);
 	HOOK_MESSAGE(GroundEnt);
-	HOOK_MESSAGE(MirrorEnt);
+	HOOK_MESSAGE(VRCtrlEnt);
 	HOOK_MESSAGE(VRSpawnYaw);
+	HOOK_MESSAGE(TrainCtrl);
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
@@ -719,9 +725,13 @@ cl_entity_t* CHud::GetGroundEntity()
 
 cl_entity_t* CHud::GetMirroredEnt()
 {
-	if (m_iMirroredEntIndex > 0)
+	if (gVRRenderer.HasValidHandController() && m_handControllerEntData.isValid && m_handControllerEntData.isMirrored)
 	{
-		return gEngfuncs.GetEntityByIndex(m_iMirroredEntIndex);
+		return gEngfuncs.GetEntityByIndex(m_handControllerEntData.entIndex);
+	}
+	else if (gVRRenderer.HasValidWeaponController() && m_weaponControllerEntData.isValid && m_weaponControllerEntData.isMirrored)
+	{
+		return gEngfuncs.GetEntityByIndex(m_weaponControllerEntData.entIndex);
 	}
 	else
 	{
@@ -731,10 +741,12 @@ cl_entity_t* CHud::GetMirroredEnt()
 
 bool CHud::GetTrainControlsOriginAndOrientation(Vector& origin, Vector& angles)
 {
-	if (m_hasTrainControls)
+	if (m_Train.m_iPos)
 	{
 		origin = m_trainControlPosition;
-		angles = m_trainControlAngles;
+		angles.x = -20.f;
+		angles.y = m_trainControlYaw;
+		angles.z = 0.f;
 		return true;
 	}
 	return false;

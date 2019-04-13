@@ -91,7 +91,10 @@ inline void SPR_DrawAdditive(int frame, int x, int y, const wrect_t *prc)
 #define GetScreenInfo (*gEngfuncs.pfnGetScreenInfo)
 #define ServerCmd (*gEngfuncs.pfnServerCmd)
 #define ClientCmd (*gEngfuncs.pfnClientCmd)
-#define SetCrosshair (*gEngfuncs.pfnSetCrosshair)
+inline void SetCrosshair(HSPRITE_VALVE hspr, wrect_t rc, int r, int g, int b)
+{
+	// No crosshair in VR
+}
 #define AngleVectors (*gEngfuncs.pfnAngleVectors)
 
 

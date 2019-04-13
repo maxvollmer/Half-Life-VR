@@ -85,6 +85,8 @@ public:
 
 	float		m_lastTime;
 	float		m_maxFrame;
+
+	bool		m_fSetAnimtime{ false };
 };
 
 

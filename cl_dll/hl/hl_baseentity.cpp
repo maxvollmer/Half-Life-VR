@@ -318,7 +318,7 @@ Vector CBasePlayer::GetGunPosition(void)
 }
 Vector CBasePlayer::GetAutoaimVector(float flDelta)
 {
-	return gVRRenderer.GetHelper()->GetAutoaimVector(flDelta);
+	return gVRRenderer.GetHelper()->GetAutoaimVector();
 }
 Vector CBasePlayer::GetAimAngles()
 {

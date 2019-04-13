@@ -492,24 +492,9 @@ bool VRHelper::UpdatePositions(struct ref_params_s* pparams)
 			&& positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid
 			&& positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].eTrackingResult == vr::TrackingResult_Running_OK)
 		{
-			//Matrix4 m_mat4SeatedPose = ConvertSteamVRMatrixToMatrix4(vrSystem->GetSeatedZeroPoseToStandingAbsoluteTrackingPose()).invert();
-			//Matrix4 m_mat4StandingPose = ConvertSteamVRMatrixToMatrix4(vrSystem->GetRawZeroPoseToStandingAbsoluteTrackingPose()).invert();
-
-			Matrix4 m_mat4HMDPose = GetAbsoluteHMDTransform().invert();
-
-			positions.m_mat4LeftProjection = GetHMDMatrixProjectionEye(vr::Eye_Left);
-			positions.m_mat4RightProjection = GetHMDMatrixProjectionEye(vr::Eye_Right);
-
-			cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
-			Vector clientGroundPosition = localPlayer->curstate.origin;
-			clientGroundPosition.z += localPlayer->curstate.mins.z;
-			positions.m_mat4LeftModelView = GetHMDMatrixPoseEye(vr::Eye_Left) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, -clientGroundPosition);
-			positions.m_mat4RightModelView = GetHMDMatrixPoseEye(vr::Eye_Right) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, -clientGroundPosition);
-
-			UpdateGunPosition(pparams);
-
+			UpdateHMD();
+			UpdateControllers();
 			SendPositionUpdateToServer();
-
 			return true;
 		}
 	}
@@ -591,6 +576,49 @@ void VRHelper::GetViewAngles(vr::EVREye eEye, float * angles)
 	}
 }
 
+void ExtractRotationMatrix(const Matrix4& source, float* target)
+{
+	const float* sourceTranspose = const_cast<Matrix4&>(source).getTranspose();
+	for (int i = 0; i < 16; i++)
+	{
+		target[i] = sourceTranspose[i];
+	}
+	target[3] = target[7] = target[11] = target[12] = target[13] = target[14] = 0.f;
+	target[15] = 1.f;
+}
+
+void VRHelper::MatrixVectors(const Matrix4& source, Vector& forward, Vector& right, Vector& up)
+{
+	Vector4 forwardInVRSpace = source * Vector4(0, 0, -1, 0);
+	Vector4 rightInVRSpace = source * Vector4(1, 0, 0, 0);
+	Vector4 upInVRSpace = source * Vector4(0, 1, 0, 0);
+
+	forward = Vector{ forwardInVRSpace.x * GetVRToHL().x, -forwardInVRSpace.z * GetVRToHL().z, forwardInVRSpace.y * GetVRToHL().y };
+	right = Vector{ rightInVRSpace.x * GetVRToHL().x, -rightInVRSpace.z * GetVRToHL().z, rightInVRSpace.y * GetVRToHL().y };
+	up = Vector{ upInVRSpace.x * GetVRToHL().x, -upInVRSpace.z * GetVRToHL().z, upInVRSpace.y * GetVRToHL().y };
+
+	forward.InlineNormalize();
+	right.InlineNormalize();
+	up.InlineNormalize();
+}
+
+void VRHelper::GetViewMatrix(vr::EVREye eEye, float* matrix)
+{
+	if (eEye == vr::EVREye::Eye_Left)
+	{
+		ExtractRotationMatrix(positions.m_mat4LeftModelView, matrix);
+	}
+	else
+	{
+		ExtractRotationMatrix(positions.m_mat4RightModelView, matrix);
+	}
+}
+
+void VRHelper::GetViewVectors(Vector& forward, Vector& right, Vector& up)
+{
+	MatrixVectors(GetAbsoluteHMDTransform(), forward, right, up);
+}
+
 Matrix4 VRHelper::GetAbsoluteHMDTransform()
 {
 	auto vrTransform = positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
@@ -629,12 +657,6 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	}
 
 	return Matrix4{}.rotateY(m_currentYaw) * hlTransform;
-}
-
-Matrix4 VRHelper::GetAbsoluteControllerTransform(vr::TrackedDeviceIndex_t controllerIndex)
-{
-	auto vrTransform = positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking;
-	return GetAbsoluteTransform(vrTransform);
 }
 
 Matrix4 VRHelper::GetAbsoluteTransform(const vr::HmdMatrix34_t& vrTransform)
@@ -687,116 +709,99 @@ Matrix4 VRHelper::GetAbsoluteTransform(const vr::HmdMatrix34_t& vrTransform)
 	};
 }
 
+Matrix4 VRHelper::GetAbsoluteControllerTransform(vr::TrackedDeviceIndex_t controllerIndex)
+{
+	auto vrTransform = positions.m_rTrackedDevicePose[controllerIndex].mDeviceToAbsoluteTracking;
+	return GetAbsoluteTransform(vrTransform);
+}
+
 void VRHelper::GetViewOrg(float * origin)
 {
 	GetPositionInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform()).CopyToArray(origin);
 }
 
-void VRHelper::UpdateGunPosition(struct ref_params_s* pparams)
+bool VRHelper::UpdateController(
+	vr::TrackedDeviceIndex_t controllerIndex,
+	Matrix4& controllerMatrix,
+	Vector& controllerOffset, Vector& controllerPosition, Vector& controllerAngles, Vector& controllerVelocity,
+	Vector &controllerForward, Vector &controllerRight, Vector &controllerUp)
 {
-	cl_entity_t *viewent = gEngfuncs.GetViewModel();
-	if (viewent != nullptr)
+	if (controllerIndex > 0 && controllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
 	{
-		vr::TrackedDeviceIndex_t controllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
+		cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
 
-		if (controllerIndex > 0 && controllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
-		{
-			Matrix4 controllerAbsoluteTrackingMatrix = GetAbsoluteControllerTransform(controllerIndex);
-
-			m_rightControllerPosition = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(controllerAbsoluteTrackingMatrix);
-
-			m_rightControllerAngles = GetHLAnglesFromVRMatrix(controllerAbsoluteTrackingMatrix);
-
-			Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[controllerIndex].vVelocity.v);
-			if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
-			{
-				Vector3 rotatedVelocity = Matrix4{}.rotateY(m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
-				velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
-			}
-			m_rightControllerVelocity = Vector{ velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y };
-
-			m_fRightControllerValid = true;
-		}
-		else
-		{
-			// Keep model visible and place it in front of player
-			// studiomodelrenderer will discard it
-			// that way we can always ensure rendering of left hand (see StudioModelRenderer::StudioDrawModel)
-			// viewent->model = NULL;
-			m_fRightControllerValid = false;
-		}
-
-		float worldScale = CVAR_GET_FLOAT("vr_world_scale");
-		if (worldScale < 0.1f)
-		{
-			worldScale = 0.1f;
-		}
-		else if (worldScale > 100.f)
-		{
-			worldScale = 100.f;
-		}
-		viewent->curstate.scale = 1.f / worldScale;
-	}
-}
-
-void VRHelper::SendPositionUpdateToServer()
-{
-	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
-	cl_entity_t *viewent = gEngfuncs.GetViewModel();
-
-	Matrix4 hdmAbsoluteTrackingMatrix = GetAbsoluteHMDTransform();
-	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(hdmAbsoluteTrackingMatrix);
-	hmdOffset.z += localPlayer->curstate.mins.z;
-
-	vr::TrackedDeviceIndex_t leftControllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_LeftHand);
-	bool isLeftControllerValid = leftControllerIndex > 0 && leftControllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[leftControllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[leftControllerIndex].bPoseIsValid;
-
-	vr::TrackedDeviceIndex_t rightControllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
-	bool isRightControllerValid = rightControllerIndex > 0 && rightControllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[rightControllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[rightControllerIndex].bPoseIsValid;
-
-	Vector leftControllerOffset(0, 0, 0);
-	bool leftDragOn = false;
-	if (isLeftControllerValid)
-	{
-		Matrix4 leftControllerAbsoluteTrackingMatrix = GetAbsoluteControllerTransform(leftControllerIndex);
-		leftControllerOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(leftControllerAbsoluteTrackingMatrix);
-		leftControllerOffset.z += localPlayer->curstate.mins.z;
-		m_leftControllerAngles = GetHLAnglesFromVRMatrix(leftControllerAbsoluteTrackingMatrix);
-
-		Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[leftControllerIndex].vVelocity.v);
+		Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[controllerIndex].vVelocity.v);
 		if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
 		{
 			Vector3 rotatedVelocity = Matrix4{}.rotateY(m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
 			velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
 		}
-		m_leftControllerVelocity = Vector(velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y);
 
-		m_fLeftControllerValid = true;
-		m_leftControllerPosition = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(leftControllerAbsoluteTrackingMatrix);
+		controllerMatrix = GetAbsoluteControllerTransform(controllerIndex);
+		MatrixVectors(controllerMatrix, controllerForward, controllerRight, controllerUp);
+		controllerOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(controllerMatrix);
+		controllerOffset.z += localPlayer->curstate.mins.z;
+		controllerPosition = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(controllerMatrix);
+		controllerAngles = GetHLAnglesFromVRMatrix(controllerMatrix);
+		controllerVelocity = Vector{ velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y };
 
-		leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);
+		return true;
+	}
+	return false;
+}
+
+void VRHelper::UpdateHMD()
+{
+	Matrix4 m_mat4HMDPose = GetAbsoluteHMDTransform().invert();
+
+	positions.m_mat4LeftProjection = GetHMDMatrixProjectionEye(vr::Eye_Left);
+	positions.m_mat4RightProjection = GetHMDMatrixProjectionEye(vr::Eye_Right);
+
+	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
+	Vector clientGroundPosition = localPlayer->curstate.origin;
+	clientGroundPosition.z += localPlayer->curstate.mins.z;
+	positions.m_mat4LeftModelView = GetHMDMatrixPoseEye(vr::Eye_Left) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, -clientGroundPosition);
+	positions.m_mat4RightModelView = GetHMDMatrixPoseEye(vr::Eye_Right) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, -clientGroundPosition);
+}
+
+void VRHelper::UpdateControllers()
+{
+	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
+
+	vr::TrackedDeviceIndex_t leftControllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_LeftHand);
+	m_fLeftControllerValid = UpdateController(
+		leftControllerIndex,
+		m_leftControllerMatrix,
+		m_leftControllerOffset, m_leftControllerPosition, m_leftControllerAngles, m_leftControllerVelocity,
+		m_leftControllerForward, m_leftControllerRight, m_leftControllerUp);
+
+	vr::TrackedDeviceIndex_t rightControllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
+	m_fRightControllerValid = UpdateController(
+		rightControllerIndex,
+		m_rightControllerMatrix,
+		m_rightControllerOffset, m_rightControllerPosition, m_rightControllerAngles, m_rightControllerVelocity,
+		m_rightControllerForward, m_rightControllerRight, m_rightControllerUp);
+
+	if (leftHandMode)
+	{
+		m_handAnglesValid = m_fRightControllerValid;
+		m_handAngles = m_rightControllerAngles;
+		UpdateViewEnt(m_fLeftControllerValid, m_leftControllerPosition, m_leftControllerAngles, m_leftControllerVelocity);
 	}
 	else
 	{
-		m_fLeftControllerValid = false;
+		m_handAnglesValid = m_fLeftControllerValid;
+		m_handAngles = m_leftControllerAngles;
+		UpdateViewEnt(m_fRightControllerValid, m_rightControllerPosition, m_rightControllerAngles, m_rightControllerVelocity);
 	}
+}
 
-	Vector rightControllerOffset(0, 0, 0);
-	bool rightDragOn = false;
-	if (isRightControllerValid)
-	{
-		rightControllerOffset = m_rightControllerPosition - localPlayer->curstate.origin;
-		rightDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand);
-		m_fRightControllerValid = true;
-	}
-	else
-	{
-		m_fRightControllerValid = false;
-	}
+void VRHelper::SendPositionUpdateToServer()
+{
+	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform());
+	hmdOffset.z += gEngfuncs.GetLocalPlayer()->curstate.mins.z;
 
 	char cmdHMD[MAX_COMMAND_SIZE] = { 0 };
-	char cmdLeftController[MAX_COMMAND_SIZE] = { 0 };
-	char cmdRightController[MAX_COMMAND_SIZE] = { 0 };
 	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
 		m_vrUpdateTimestamp,
 		hmdOffset.x, hmdOffset.y, hmdOffset.z,
@@ -806,45 +811,37 @@ void VRHelper::SendPositionUpdateToServer()
 	m_currentYawOffsetDelta = Vector{}; // reset after sending
 
 	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
+	bool leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);
+	bool rightDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand);
 
+	char cmdLeftController[MAX_COMMAND_SIZE] = { 0 };
 	sprintf_s(cmdLeftController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i",
 		m_vrUpdateTimestamp,
-		isLeftControllerValid ? 1 : 0,
+		m_fLeftControllerValid ? 1 : 0,
 		int(leftHandMode ? VRControllerID::WEAPON : VRControllerID::HAND),
 		1/*isMirrored*/,
-		leftControllerOffset.x, leftControllerOffset.y, leftControllerOffset.z,
+		m_leftControllerOffset.x, m_leftControllerOffset.y, m_leftControllerOffset.z,
 		m_leftControllerAngles.x, m_leftControllerAngles.y, m_leftControllerAngles.z,
 		m_leftControllerVelocity.x, m_leftControllerVelocity.y, m_leftControllerVelocity.z,
 		leftDragOn ? 1 : 0
 	);
 
+	char cmdRightController[MAX_COMMAND_SIZE] = { 0 };
 	sprintf_s(cmdRightController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i",
 		m_vrUpdateTimestamp,
-		isRightControllerValid ? 1 : 0,
+		m_fRightControllerValid ? 1 : 0,
 		int(leftHandMode ? VRControllerID::HAND : VRControllerID::WEAPON),
 		0/*isMirrored*/,
-		rightControllerOffset.x, rightControllerOffset.y, rightControllerOffset.z,
+		m_rightControllerOffset.x, m_rightControllerOffset.y, m_rightControllerOffset.z,
 		m_rightControllerAngles.x, m_rightControllerAngles.y, m_rightControllerAngles.z,
 		m_rightControllerVelocity.x, m_rightControllerVelocity.y, m_rightControllerVelocity.z,
 		rightDragOn ? 1 : 0
 	);
 
-	if (leftHandMode)
-	{
-		m_handAnglesValid = isRightControllerValid;
-		m_handAngles = m_rightControllerAngles;
-		UpdateViewEnt(isLeftControllerValid, m_leftControllerPosition, m_leftControllerAngles, m_leftControllerVelocity);
-	}
-	else
-	{
-		m_handAnglesValid = isLeftControllerValid;
-		m_handAngles = m_leftControllerAngles;
-		UpdateViewEnt(isRightControllerValid, m_rightControllerPosition, m_rightControllerAngles, m_rightControllerVelocity);
-	}
-
 	gEngfuncs.pfnClientCmd(cmdHMD);
 	gEngfuncs.pfnClientCmd(cmdLeftController);
 	gEngfuncs.pfnClientCmd(cmdRightController);
+
 	m_vrUpdateTimestamp++;
 }
 
@@ -870,10 +867,10 @@ void VRHelper::UpdateViewEnt(bool isControllerValid, const Vector& controllerPos
 		VectorCopy(localPlayer->curstate.origin, viewent->origin);
 		VectorCopy(localPlayer->curstate.origin, viewent->curstate.origin);
 		VectorCopy(localPlayer->curstate.origin, viewent->latched.prevorigin);
-		VectorCopy(localPlayer->curstate.angles, viewent->angles);
-		VectorCopy(localPlayer->curstate.angles, viewent->curstate.angles);
-		VectorCopy(localPlayer->curstate.angles, viewent->latched.prevangles);
-		viewent->curstate.velocity = localPlayer->curstate.origin;
+		VectorCopy(GetLocalPlayerAngles(), viewent->angles);
+		VectorCopy(GetLocalPlayerAngles(), viewent->curstate.angles);
+		VectorCopy(GetLocalPlayerAngles(), viewent->latched.prevangles);
+		viewent->curstate.velocity = localPlayer->curstate.velocity;
 	 }
 }
 
@@ -960,42 +957,31 @@ void RenderLine(Vector v1, Vector v2, Vector color)
 	glEnd();
 }
 
-void VRHelper::TestRenderControllerPosition(bool leftOrRight)
+void VRHelper::TestRenderControllerPositions()
 {
-	vr::TrackedDeviceIndex_t controllerIndex = vrSystem->GetTrackedDeviceIndexForControllerRole(leftOrRight ? vr::ETrackedControllerRole::TrackedControllerRole_LeftHand : vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
-
-	if (controllerIndex > 0 && controllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
+	if (m_fLeftControllerValid)
 	{
-		Matrix4 controllerAbsoluteTrackingMatrix = GetAbsoluteControllerTransform(controllerIndex);
-
-		Vector originInHLSpace = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(controllerAbsoluteTrackingMatrix);
-
-		Vector4 forwardInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(0, 0, -1, 0);
-		Vector4 rightInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(1, 0, 0, 0);
-		Vector4 upInVRSpace = controllerAbsoluteTrackingMatrix * Vector4(0, 1, 0, 0);
-
-		Vector forward(forwardInVRSpace.x * GetVRToHL().x, -forwardInVRSpace.z * GetVRToHL().z, forwardInVRSpace.y * GetVRToHL().y);
-		Vector right(rightInVRSpace.x * GetVRToHL().x, -rightInVRSpace.z * GetVRToHL().z, rightInVRSpace.y * GetVRToHL().y);
-		Vector up(upInVRSpace.x * GetVRToHL().x, -upInVRSpace.z * GetVRToHL().z, upInVRSpace.y * GetVRToHL().y);
-
-		Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[controllerIndex].vVelocity.v);
-		if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
-		{
-			Vector3 rotatedVelocity = Matrix4{}.rotateY(m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
-			velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
-		}
-		Vector velocity = Vector(velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y);
-
-		if (leftOrRight)
-		{
-			right = -right; // left
-		}
-
-		RenderLine(originInHLSpace, originInHLSpace + forward, Vector(1, 0, 0));
-		RenderLine(originInHLSpace, originInHLSpace + right, Vector(0, 1, 0));
-		RenderLine(originInHLSpace, originInHLSpace + up, Vector(0, 0, 1));
-		RenderLine(originInHLSpace, originInHLSpace + velocity, Vector(1, 0, 1));
+		RenderLine(m_leftControllerPosition, m_leftControllerPosition + m_leftControllerForward * 16.f, Vector(1, 0, 0));
+		RenderLine(m_leftControllerPosition, m_leftControllerPosition - m_leftControllerRight * 16.f, Vector(0, 1, 0));
+		RenderLine(m_leftControllerPosition, m_leftControllerPosition + m_leftControllerUp * 16.f, Vector(0, 0, 1));
+		RenderLine(m_leftControllerPosition, m_leftControllerPosition + m_leftControllerVelocity, Vector(1, 0, 1));
 	}
+
+	if (m_fRightControllerValid)
+	{
+		RenderLine(m_rightControllerPosition, m_rightControllerPosition + m_rightControllerForward * 16.f, Vector(1, 0, 0));
+		RenderLine(m_rightControllerPosition, m_rightControllerPosition + m_rightControllerRight * 16.f, Vector(0, 1, 0));
+		RenderLine(m_rightControllerPosition, m_rightControllerPosition + m_rightControllerUp * 16.f, Vector(0, 0, 1));
+		RenderLine(m_rightControllerPosition, m_rightControllerPosition + m_rightControllerVelocity, Vector(1, 0, 1));
+	}
+
+	Vector org, forward, right, up;
+	GetViewOrg(org);
+	GetViewVectors(forward, right, up);
+	org = org + forward * 16.f;
+	RenderLine(org, org + forward * 16.f, Vector(1, 0, 0));
+	RenderLine(org, org + right * 16.f, Vector(0, 1, 0));
+	RenderLine(org, org + up * 16.f, Vector(0, 0, 1));
 }
 
 bool VRHelper::HasValidWeaponController()
@@ -1032,7 +1018,8 @@ extern struct cl_entity_s *GetViewEntity(void);
 #define VR_MUZZLE_ATTACHMENT 0
 Vector VRHelper::GetGunPosition()
 {
-	if (HasValidWeaponController() && GetViewEntity())
+	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t* ent);
+	if (HasValidWeaponController() && GetViewEntity() && VRGlobalNumAttachmentsForEntity(GetViewEntity()) >= 1)
 	{
 		return GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT];
 	}
@@ -1042,9 +1029,10 @@ Vector VRHelper::GetGunPosition()
 	}
 }
 
-Vector VRHelper::GetAutoaimVector(float flDelta)
+Vector VRHelper::GetAutoaimVector()
 {
-	if (HasValidWeaponController() && GetViewEntity())
+	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t* ent);
+	if (HasValidWeaponController() && GetViewEntity() && VRGlobalNumAttachmentsForEntity(GetViewEntity()) >= 2)
 	{
 		Vector pos1 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT];
 		Vector pos2 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 1];
@@ -1052,8 +1040,18 @@ Vector VRHelper::GetAutoaimVector(float flDelta)
 		return dir;
 	}
 	Vector forward;
-	gEngfuncs.pfnAngleVectors(GetWeaponAngles(), forward, NULL, NULL);
+	Vector angles = GetWeaponAngles();
+	angles.x = -angles.x;
+	gEngfuncs.pfnAngleVectors(angles, forward, nullptr, nullptr);
 	return forward;
+}
+
+void VRHelper::GetGunAim(Vector& forward, Vector& right, Vector& up, Vector& angles)
+{
+	forward = GetAutoaimVector();
+	angles = GetWeaponAngles();
+	angles.x = -angles.x;
+	gEngfuncs.pfnAngleVectors(angles, nullptr, right, up);
 }
 
 Vector VRHelper::GetWeaponPosition()
@@ -1074,7 +1072,7 @@ Vector VRHelper::GetWeaponPosition()
 }
 Vector VRHelper::GetWeaponAngles()
 {
-	if (HasValidHandController())
+	if (HasValidWeaponController())
 	{
 		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
 			return m_leftControllerAngles;
@@ -1083,13 +1081,15 @@ Vector VRHelper::GetWeaponAngles()
 	}
 	else
 	{
-		cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
-		return localPlayer->curstate.angles;
+		Vector angles = GetLocalPlayerAngles();
+		angles.x = -angles.x;
+		return angles;
 	}
 }
 Vector VRHelper::GetWeaponHUDPosition()
 {
-	if (HasValidWeaponController() && GetViewEntity())
+	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t* ent);
+	if (HasValidWeaponController() && GetViewEntity() && VRGlobalNumAttachmentsForEntity(GetViewEntity()) >= 3)
 	{
 		return GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 2];
 	}
@@ -1098,10 +1098,36 @@ Vector VRHelper::GetWeaponHUDPosition()
 		return GetWeaponPosition();
 	}
 }
+void VRHelper::GetWeaponHUDMatrix(float* matrix)
+{
+	if (HasValidWeaponController())
+	{
+		ExtractRotationMatrix((CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerMatrix : m_rightControllerMatrix, matrix);
+	}
+}
+void VRHelper::GetWeaponVectors(Vector& forward, Vector& right, Vector& up)
+{
+	if (HasValidWeaponController())
+	{
+		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
+		{
+			forward = m_leftControllerForward;
+			right = m_leftControllerRight;
+			up = m_leftControllerUp;
+		}
+		else
+		{
+			forward = m_rightControllerForward;
+			right = m_rightControllerRight;
+			up = m_rightControllerUp;
+		}
+	}
+}
+
 
 Vector VRHelper::GetHandPosition()
 {
-	if (HasValidWeaponController())
+	if (HasValidHandController())
 	{
 		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
 			return m_rightControllerPosition;
@@ -1126,17 +1152,53 @@ Vector VRHelper::GetHandAngles()
 	}
 	else
 	{
-		cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
-		return localPlayer->curstate.angles;
+		return GetLocalPlayerAngles();
 	}
 }
 Vector VRHelper::GetHandHUDPosition()
 {
-	// TODO: Hand HUD position doesn't work yet because no attachment update...
+	// TODO: Get hand model from gHUD.m_somethingsomethingleftentbla
 	return GetHandPosition();
+}
+void VRHelper::GetHandHUDMatrix(float* matrix)
+{
+	if (HasValidHandController())
+	{
+		ExtractRotationMatrix((CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_rightControllerMatrix : m_leftControllerMatrix, matrix);
+	}
+}
+void VRHelper::GetHandVectors(Vector& forward, Vector& right, Vector& up)
+{
+	if (HasValidHandController())
+	{
+		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
+		{
+			forward = m_rightControllerForward;
+			right = m_rightControllerRight;
+			up = m_rightControllerUp;
+		}
+		else
+		{
+			forward = m_leftControllerForward;
+			right = m_leftControllerRight;
+			up = m_leftControllerUp;
+		}
+	}
 }
 
 float VRHelper::GetAnalogFire()
 {
 	return g_vrInput.analogfire;
+}
+
+Vector VRHelper::GetLocalPlayerAngles()
+{
+	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
+	Vector angles = localPlayer->curstate.angles;
+	angles.x *= -3.0f;
+
+	Vector viewangles;
+	GetViewAngles(vr::Eye_Left, viewangles);
+
+	return angles;
 }

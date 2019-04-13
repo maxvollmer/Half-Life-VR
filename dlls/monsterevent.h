@@ -21,6 +21,14 @@ typedef struct
 	char		*options;
 } MonsterEvent_t;
 
+// Client events for VR controller weapon models - Max Vollmer, 2019-04-13
+typedef struct
+{
+	bool isSet{ false };
+	int event{ 0 };
+	const char *options;
+} ClientAnimEvent_t;
+
 #define EVENT_SPECIFIC			0
 #define EVENT_SCRIPTED			1000
 #define EVENT_SHARED			2000

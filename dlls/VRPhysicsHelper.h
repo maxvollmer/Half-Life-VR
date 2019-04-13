@@ -51,6 +51,8 @@ public:
 	bool ModelIntersectsWorld(CBaseEntity *pModel);
 	bool ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2);
 
+	bool GetBSPModelBBox(CBaseEntity *pModel, Vector* bboxMins, Vector* bboxMaxs, Vector* bboxCenter = nullptr);
+
 	class BSPModelData
 	{
 	public:

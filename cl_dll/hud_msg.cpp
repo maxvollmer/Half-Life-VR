@@ -120,9 +120,25 @@ int CHud::MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf)
 	return 1;
 }
 
-int CHud::MsgFunc_MirrorEnt(const char *pszName, int iSize, void *pbuf)
+int CHud::MsgFunc_VRCtrlEnt(const char *pszName, int iSize, void *pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
-	m_iMirroredEntIndex = READ_SHORT();
+	int entIndex = READ_SHORT();
+	bool isWeapon = READ_BYTE() != 0;
+	auto& data = isWeapon ? m_weaponControllerEntData : m_handControllerEntData;
+	data.origin = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
+	data.angles = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
+	data.isMirrored = READ_BYTE() != 0;
+	data.isValid = READ_BYTE() != 0;
+	return 1;
+}
+
+int CHud::MsgFunc_TrainCtrl(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	m_trainControlPosition.x = READ_COORD();
+	m_trainControlPosition.y = READ_COORD();
+	m_trainControlPosition.z = READ_COORD();
+	m_trainControlYaw = READ_ANGLE();
 	return 1;
 }

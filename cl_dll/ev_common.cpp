@@ -112,12 +112,13 @@ void EV_GetGunPosition(event_args_t *args, float *pos)
 void EV_GetGunAim(struct event_args_s *args, float *forward, float *right, float *up, float *angles)
 {
 	// we are in include hell, so just use an external global function here :/
-	extern void VectorAngles(const float *forward, float *angles);
-	extern Vector VRGlobalGetAutoaimVector();
-	Vector dir = VRGlobalGetAutoaimVector();
-	VectorAngles(dir, angles);
-	angles[0] = -angles[0];
-	AngleVectors(angles, forward, right, up);
+	Vector f, r, u, a;
+	extern void VRGlobalGetGunAim(Vector&, Vector&, Vector&, Vector&);
+	VRGlobalGetGunAim(f, r, u, a);
+	f.CopyToArray(forward);
+	r.CopyToArray(right);
+	u.CopyToArray(up);
+	a.CopyToArray(angles);
 }
 
 /*

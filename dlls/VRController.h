@@ -10,7 +10,7 @@ typedef int string_t;
 class VRController
 {
 public:
-	void Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, int weaponId);
+	void Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, VRControllerID id, int weaponId);
 
 	CBaseEntity* GetModel() const;
 	void PlayWeaponAnimation(int iAnim, int body);
@@ -39,7 +39,7 @@ public:
 
 private:
 	void ExtractBBoxIfPossibleAndNecessary();
-	void SendMirroredEntityToClient(CBasePlayer *pPlayer);
+	void SendEntityDataToClient(CBasePlayer *pPlayer, VRControllerID id);
 
 	Vector m_offset;
 	Vector m_position;

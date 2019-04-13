@@ -696,13 +696,12 @@ void EV_FireMP5( event_args_t *args )
 	VectorCopy(forward, vecAiming);
 
 	shell = gEngfuncs.pEventAPI->EV_FindModelIndex ("models/shell.mdl");// brass shell
-	
+
 	if ( EV_IsLocal( idx ) )
 	{
 		// Add muzzle flash to current weapon model
 		EV_MuzzleFlash();
 		InterCept_EV_WeaponAnimation( MP5_FIRE1 + gEngfuncs.pfnRandomLong(0,2), 2 );
-
 		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
 	}
 
@@ -1770,5 +1769,5 @@ void InterCept_EV_WeaponAnimation(int sequence, int body)
 	std::string cmd = "vr_wpnanim " + std::to_string(sequence) + " " + std::to_string(body);
 	gEngfuncs.pfnClientCmd(cmd.data());
 
-	gEngfuncs.pEventAPI->EV_WeaponAnimation(sequence, body);
+	// gEngfuncs.pEventAPI->EV_WeaponAnimation(sequence, body);
 }

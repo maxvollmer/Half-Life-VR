@@ -1240,7 +1240,7 @@ GLPROXY_EXTERN void GLPROXY_DECL glLoadMatrixf(const GLfloat * m)
 GLPROXY_EXTERN void GLPROXY_DECL glMultMatrixd(const GLdouble * m)
 {
 	GLPROXY_LOG_CALL("glMultMatrixd");
-	if (!hlvr_GLMatricesLocked)
+	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
 		static GLProxy::TGLFunc<void, const GLdouble *> TGLFUNC_DECL(glMultMatrixd);
 		TGLFUNC_CALL(glMultMatrixd, m);
@@ -1250,7 +1250,7 @@ GLPROXY_EXTERN void GLPROXY_DECL glMultMatrixd(const GLdouble * m)
 GLPROXY_EXTERN void GLPROXY_DECL glMultMatrixf(const GLfloat * m)
 {
 	GLPROXY_LOG_CALL("glMultMatrixf");
-	if (!hlvr_GLMatricesLocked)
+	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
 		static GLProxy::TGLFunc<void, const GLfloat *> TGLFUNC_DECL(glMultMatrixf);
 		TGLFUNC_CALL(glMultMatrixf, m);

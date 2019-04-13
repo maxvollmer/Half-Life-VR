@@ -381,6 +381,10 @@ private:
 
 	float vr_analogFire{ 0.f };
 
+	// For VR suitable display of train controls
+	Vector								vr_trainControlPosition;
+	float								vr_trainControlYaw;
+
 public:
 	void StartVRTele();
 	void StopVRTele();

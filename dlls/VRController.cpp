@@ -4,16 +4,15 @@
 #include "vector.h"
 #include "cbase.h"
 #include "player.h"
-
 #include "weapons.h"
-
+#include "VRControllerModel.h"
 #include "VRController.h"
 #include "VRPhysicsHelper.h"
 #include "VRModelHelper.h"
 
 
 
-void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, int weaponId)
+void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, VRControllerID id, int weaponId)
 {
 	// Filter out outdated updates
 	if (timestamp <= m_lastUpdateClienttime && m_lastUpdateServertime >= gpGlobals->time)
@@ -47,7 +46,7 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 		m_modelName = pPlayer->pev->viewmodel;
 	}
 
-	CBaseEntity *pModel = GetModel();
+	CVRControllerModel *pModel = (CVRControllerModel*)GetModel();
 	pModel->pev->origin = GetPosition();
 	pModel->pev->angles = GetAngles();
 	pModel->pev->velocity = GetVelocity();
@@ -55,16 +54,14 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 
 	if (pModel->pev->model != m_modelName)
 	{
-		pModel->pev->model = m_modelName;
-		SET_MODEL(pModel->edict(), STRING(m_modelName));
+		pModel->SetModel(m_modelName);
 	}
 
 	ExtractBBoxIfPossibleAndNecessary();
 
 	if (m_isValid)
 	{
-		pModel->pev->effects &= ~EF_NODRAW;
-		pModel->pev->scale = GetWeaponScale(STRING(m_modelName));
+		pModel->TurnOn();
 		if (m_isBBoxValid)
 		{
 			pModel->pev->mins = m_mins;
@@ -76,29 +73,24 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	}
 	else
 	{
-		pModel->pev->effects |= EF_NODRAW;
+		pModel->TurnOff();
 		m_isBBoxValid = false;
 	}
 
-	SendMirroredEntityToClient(pPlayer);
+	SendEntityDataToClient(pPlayer, id);
 }
 
-void VRController::SendMirroredEntityToClient(CBasePlayer *pPlayer)
+void VRController::SendEntityDataToClient(CBasePlayer *pPlayer, VRControllerID id)
 {
-	if (IsMirrored())
-	{
-		extern int gmsgVRMirroredEntity;
-		MESSAGE_BEGIN(MSG_ALL, gmsgVRMirroredEntity, NULL);
-		if (IsValid())
-		{
-			WRITE_ENTITY(ENTINDEX(GetModel()->edict()));
-		}
-		else
-		{
-			WRITE_SHORT(0);
-		}
-		MESSAGE_END();
-	}
+	extern int gmsgVRControllerEnt;
+	MESSAGE_BEGIN(MSG_ALL, gmsgVRControllerEnt, NULL);
+	WRITE_ENTITY(ENTINDEX(GetModel()->edict()));
+	WRITE_BYTE((id == VRControllerID::WEAPON) ? 1 : 0);
+	WRITE_PRECISE_VECTOR(GetModel()->pev->origin);
+	WRITE_PRECISE_VECTOR(GetModel()->pev->angles);
+	WRITE_BYTE(IsMirrored() ? 1 : 0);
+	WRITE_BYTE(IsValid() ? 1 : 0);
+	MESSAGE_END();
 }
 
 void VRController::ExtractBBoxIfPossibleAndNecessary()
@@ -131,14 +123,10 @@ CBaseEntity* VRController::GetModel() const
 {
 	if (!m_hModel)
 	{
-		CSprite *pModel = CSprite::SpriteCreate(m_modelName ? STRING(m_modelName) : "models/v_gordon_hand.mdl", GetPosition(), FALSE);
-		pModel->m_maxFrame = 255;
-		pModel->pev->framerate = 1.f;
-		pModel->pev->scale = GetWeaponScale(STRING(m_modelName));
-		pModel->TurnOn();
-		if (!IsValid())
+		CVRControllerModel *pModel = CVRControllerModel::Create(m_modelName ? STRING(m_modelName) : "models/v_gordon_hand.mdl", GetPosition());
+		if (IsValid())
 		{
-			pModel->pev->effects |= EF_NODRAW;
+			pModel->TurnOn();
 		}
 		m_hModel = pModel;
 	}
@@ -150,27 +138,18 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 	if (!IsValid())
 		return;
 
-	CBaseEntity *pModel = GetModel();
+	CVRControllerModel *pModel = (CVRControllerModel*)GetModel();
 	auto& modelInfo = VRModelHelper::GetInstance().GetModelInfo(pModel);
-
 	if (modelInfo.m_isValid && iAnim < modelInfo.m_numSequences)
 	{
 		// ALERT(at_console, "VRController::PlayWeaponAnimation: Playing sequence %i of %i with framerate %.0f for %s (%s)\n", iAnim, modelInfo.m_numSequences, modelInfo.m_sequences[iAnim].framerate, STRING(m_modelName), STRING(pModel->pev->model));
-		pModel->pev->sequence = iAnim;
-		pModel->pev->body = body;
-		pModel->pev->framerate = modelInfo.m_sequences[iAnim].framerate / max(1, modelInfo.m_sequences[iAnim].numFrames - 1);
+		pModel->SetSequence(iAnim);
 	}
 	else
 	{
 		// ALERT(at_console, "VRController::PlayWeaponAnimation: Invalid sequence %i of %i for %s (%s)\n", iAnim, modelInfo.m_numSequences, STRING(m_modelName), STRING(pModel->pev->model));
-		pModel->pev->sequence = 0;
-		pModel->pev->body = 0;
-		pModel->pev->framerate = 1.f;
+		pModel->SetSequence(0);
 	}
-
-	pModel->pev->scale = GetWeaponScale(STRING(m_modelName));
-	pModel->pev->frame = 0;
-	pModel->pev->animtime = gpGlobals->time;
 }
 
 void VRController::PlayWeaponMuzzleflash()

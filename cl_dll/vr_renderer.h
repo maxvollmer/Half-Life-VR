@@ -60,6 +60,9 @@ public:
 	VRHelper* GetHelper() { return vrHelper; }
 	vr::IVRSystem* GetVRSystem();
 
+	bool HasValidHandController();
+	bool HasValidWeaponController();
+
 private:
 
 	void RenderWorldBackfaces();
@@ -86,10 +89,9 @@ private:
 	int m_hudRedrawIntermission{0};
 
 	void GetStartingPosForHUDRenderType(const VRHUDRenderType m_hudRenderType, float & hudStartPositionUpOffset, float & hudStartPositionRightOffset);
-	bool GetHUDSpriteOriginAndOrientation(const VRHUDRenderType m_hudRenderType, Vector&origin, Vector&angles);
-	bool GetHUDAmmoOriginAndOrientation(Vector&origin, Vector&angles);
-	bool GetHUDHealthOriginAndOrientation(Vector&origin, Vector&angles);
-	void GetViewAlignedHUDOrientationFromPosition(const Vector& origin, Vector& angles);
+	bool GetHUDSpriteOriginAndOrientation(const VRHUDRenderType m_hudRenderType, Vector& origin, Vector& forward, Vector& right, Vector& up);
+	bool GetHUDAmmoOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up);
+	bool GetHUDHealthOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up);
 };
 
 extern VRRenderer gVRRenderer;

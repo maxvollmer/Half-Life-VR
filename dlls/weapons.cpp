@@ -72,6 +72,15 @@ float GetWeaponScale(const char* weaponModelName)
 	if (baseWeaponScale < 0.01f)
 		baseWeaponScale = 1.f;
 
+	float worldScale = CVAR_GET_FLOAT("vr_world_scale");
+	if (worldScale == 0.f)
+		worldScale = 1.f;
+	else if (worldScale < 0.1f)
+		worldScale = 0.1f;
+	else if (worldScale > 100.f)
+		worldScale = 100.f;
+	baseWeaponScale /= worldScale;
+
 	// "models/v_<weapon>.mdl" -> "vr_<weapon>_scale"
 	std::string cvarWeaponModelScale =
 		std::regex_replace(
@@ -898,7 +907,7 @@ void CBasePlayerWeapon::SendWeaponAnim( int iAnim, int skiplocal, int body )
 	else
 		skiplocal = 0;
 
-	m_pPlayer->pev->weaponanim = iAnim;
+	//m_pPlayer->pev->weaponanim = iAnim;
 	m_pPlayer->PlayVRWeaponAnimation(iAnim, pev->body);
 
 #if defined( CLIENT_WEAPONS )

@@ -1247,6 +1247,9 @@ void CSprite::AnimateThink( void )
 
 	pev->nextthink		= gpGlobals->time + 0.1;
 	m_lastTime			= gpGlobals->time;
+
+	if (m_fSetAnimtime)
+		pev->animtime		= gpGlobals->time;
 }
 
 void CSprite::AnimateUntilDead( void )

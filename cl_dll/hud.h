@@ -206,9 +206,9 @@ public:
 	int Draw(float flTime);
 	int MsgFunc_Train(const char *pszName, int iSize, void *pbuf);
 
+	int m_iPos{ 0 };
 private:
 	HSPRITE_VALVE m_hSprite;
-	int m_iPos;
 
 };
 
@@ -554,6 +554,16 @@ private:
 //
 
 
+// For precise position when rendering
+struct ControllerEntData
+{
+	int entIndex{ 0 };
+	Vector origin;
+	Vector angles;
+	bool isMirrored{ false };
+	bool isValid{ false };
+};
+
 
 class CHud
 {
@@ -567,12 +577,13 @@ private:
 	int							m_iConcussionEffect;
 
 	int m_iGroundEntIndex{ 0 };
-	int m_iMirroredEntIndex{ 0 };
-	bool m_hasTrainControls{ false };
 	Vector m_trainControlPosition;
-	Vector m_trainControlAngles;
+	float m_trainControlYaw{ 0.f };
 
 public:
+
+	ControllerEntData	m_handControllerEntData{ 0 };
+	ControllerEntData	m_weaponControllerEntData{ 0 };
 
 	HSPRITE_VALVE						m_hsprCursor;
 	float m_flTime;	   // the current client time
@@ -652,7 +663,8 @@ public:
 	int _cdecl MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf);
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf);
-	int _cdecl MsgFunc_MirrorEnt(const char *pszName, int iSize, void *pbuf);
+	int _cdecl MsgFunc_VRCtrlEnt(const char *pszName, int iSize, void *pbuf);
+	int _cdecl MsgFunc_TrainCtrl(const char *pszName, int iSize, void *pbuf);
 
 	// Screen information
 	SCREENINFO	m_scrinfo;

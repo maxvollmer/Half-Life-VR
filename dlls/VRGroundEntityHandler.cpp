@@ -81,6 +81,7 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 		m_isTouchingGroundEntityFloor = false;
 	}
 
+	/*
 	if (m_hGroundEntity != pGroundEntity)
 	{
 		if (pGroundEntity)
@@ -92,6 +93,7 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 			ALERT(at_console, "NO GROUNDENTITY\n");
 		}
 	}
+	*/
 
 	m_hGroundEntity = pGroundEntity;
 }

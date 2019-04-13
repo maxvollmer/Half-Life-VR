@@ -1,4 +1,6 @@
 
+#include <functional>
+
 #include "Matrices.h"
 
 #include "hud.h"
@@ -42,13 +44,24 @@ enum class HUDRenderMode
 {
 	NONE,
 	ACTUAL_HUD_IN_VIEW,
-	ON_CONTROLLERS_ALIGNED_WITH_CONTROLLERS,
-	ON_CONTROLLERS_ALIGNED_WITH_VIEW
+	ON_CONTROLLERS
 };
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846f
 #endif
+
+namespace
+{
+	const Vector VR_HUD_ACTUALHUD_AMMO_OFFSET{ 8.f, 0.f, 0.f };
+	const Vector VR_HUD_ACTUALHUD_HEALTH_OFFSET{ 8.f, 1.f, 1.f };
+
+	constexpr const float VR_HUD_TRAINCONTROLS_SPRITE_SCALE = 0.5f;
+	constexpr const float VR_HUD_CONTROLLER_SPRITE_SCALE = 0.1f;
+	constexpr const float VR_HUD_ACTUALHUD_SPRITE_SCALE = 0.01f;
+
+	constexpr const int VR_HUD_SPRITE_OFFSET_STEPSIZE = 40;
+}
 
 void RotateVectorX(Vector &vecToRotate, const float angle)
 {
@@ -95,14 +108,39 @@ void RotateVectorZ(Vector &vecToRotate, const float angle)
 	}
 }
 
-void RotateVector(Vector &vecToRotate, const Vector &vecAngles)
+void RotateVector(Vector &vecToRotate, const Vector &vecAngles, const bool reverse = false)
 {
 	if (vecToRotate.LengthSquared() > 0.f && vecAngles.LengthSquared() > 0.f)
 	{
-		RotateVectorZ(vecToRotate, vecAngles.z / 180.*M_PI);
-		RotateVectorX(vecToRotate, vecAngles.x / 180.*M_PI);
-		RotateVectorY(vecToRotate, vecAngles.y / 180.*M_PI);
+		if (reverse)
+		{
+			RotateVectorY(vecToRotate, vecAngles.y / 180.*M_PI);
+			RotateVectorX(vecToRotate, vecAngles.x / 180.*M_PI);
+			RotateVectorZ(vecToRotate, vecAngles.z / 180.*M_PI);
+		}
+		else
+		{
+			RotateVectorZ(vecToRotate, vecAngles.z / 180.*M_PI);
+			RotateVectorX(vecToRotate, vecAngles.x / 180.*M_PI);
+			RotateVectorY(vecToRotate, vecAngles.y / 180.*M_PI);
+		}
 	}
+}
+
+inline void HLAnglesToGLMatrix(const Vector& angles, float matrix[16])
+{
+	Vector modifiedAngles = -angles;
+	Vector forward{ 1.f, 0.f, 0.f };
+	Vector right{ 0.f, 1.f, 0.f };
+	Vector up{ 0.f, 0.f, 1.f };
+	RotateVector(forward, modifiedAngles, true);
+	RotateVector(right, modifiedAngles, true);
+	RotateVector(up, modifiedAngles, true);
+	forward.CopyToArray(matrix);
+	right.CopyToArray(matrix + 4);
+	up.CopyToArray(matrix + 8);
+	matrix[3] = matrix[7] = matrix[11] = matrix[12] = matrix[13] = matrix[14] = 0.f;
+	matrix[15] = 1.f;
 }
 
 HUDRenderMode GetHUDRenderMode()
@@ -111,10 +149,8 @@ HUDRenderMode GetHUDRenderMode()
 	{
 	case HUDRenderMode::ACTUAL_HUD_IN_VIEW:
 		return HUDRenderMode::ACTUAL_HUD_IN_VIEW;
-	case HUDRenderMode::ON_CONTROLLERS_ALIGNED_WITH_CONTROLLERS:
-		return HUDRenderMode::ON_CONTROLLERS_ALIGNED_WITH_CONTROLLERS;
-	case HUDRenderMode::ON_CONTROLLERS_ALIGNED_WITH_VIEW:
-		return HUDRenderMode::ON_CONTROLLERS_ALIGNED_WITH_VIEW;
+	case HUDRenderMode::ON_CONTROLLERS:
+		return HUDRenderMode::ON_CONTROLLERS;
 	default:
 		return HUDRenderMode::NONE;
 	}
@@ -167,18 +203,6 @@ void VRRenderer::InterceptSPR_Set(HSPRITE_VALVE hPic, int r, int g, int b)
 	m_hudSpriteColor.b = byte(b);
 }
 
-namespace
-{
-	const Vector VR_HUD_ACTUALHUD_AMMO_OFFSET{ 8.f, 0.f, 0.f };
-	const Vector VR_HUD_ACTUALHUD_HEALTH_OFFSET{ 8.f, 1.f, 1.f };
-
-	constexpr const float VR_HUD_TRAINCONTROLS_SPRITE_SCALE = 1.f;
-	constexpr const float VR_HUD_CONTROLLER_SPRITE_SCALE = 0.1f;
-	constexpr const float VR_HUD_ACTUALHUD_SPRITE_SCALE = 0.1f;
-
-	constexpr const int VR_HUD_SPRITE_OFFSET_STEPSIZE = 4;
-}
-
 float GetVRHudSpriteScale(const VRHUDRenderType hudRenderType)
 {
 	if (hudRenderType == VRHUDRenderType::TRAINCONTROLS)
@@ -204,7 +228,7 @@ float GetVRHudSpriteScale(const VRHUDRenderType hudRenderType)
 	return scale;
 }
 
-Vector GetActualHUDOffset(const Vector& offset, const Vector& angles)
+Vector GetActualHUDOffset(const Vector& offset, const Vector& forward, const Vector& right, const Vector& up)
 {
 	Vector actualOffset = offset;
 	float scale = CVAR_GET_FLOAT("vr_hud_size");
@@ -213,84 +237,85 @@ Vector GetActualHUDOffset(const Vector& offset, const Vector& angles)
 		actualOffset.y *= scale;
 		actualOffset.z *= scale;
 	}
-	RotateVector(actualOffset, angles);
-	return actualOffset;
+	return (forward * actualOffset.x) + (right * actualOffset.y) + (up * actualOffset.z);
 }
 
-void VRRenderer::GetViewAlignedHUDOrientationFromPosition(const Vector& origin, Vector& angles)
-{
-	Vector viewPos;
-	vrHelper->GetViewOrg(viewPos);
-	VectorAngles((origin - viewPos).Normalize(), angles);
-}
-
-bool VRRenderer::GetHUDAmmoOriginAndOrientation(Vector&origin, Vector&angles)
+bool VRRenderer::GetHUDAmmoOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up)
 {
 	if (GetHUDRenderMode() == HUDRenderMode::ACTUAL_HUD_IN_VIEW)
 	{
-		vrHelper->GetViewAngles(vr::Eye_Left, angles);
 		vrHelper->GetViewOrg(origin);
-		origin = origin + GetActualHUDOffset(VR_HUD_ACTUALHUD_AMMO_OFFSET, angles);
+		vrHelper->GetViewVectors(forward, right, up);
+		origin = origin + GetActualHUDOffset(VR_HUD_ACTUALHUD_AMMO_OFFSET, forward, right, up);
 		return true;
 	}
-	else
+	else if (GetHUDRenderMode() == HUDRenderMode::ON_CONTROLLERS)
 	{
 		if (!vrHelper->HasValidWeaponController())
 			return false;
+
 		origin = vrHelper->GetWeaponHUDPosition();
-		if (GetHUDRenderMode() == HUDRenderMode::ON_CONTROLLERS_ALIGNED_WITH_CONTROLLERS)
-		{
-			angles = vrHelper->GetWeaponAngles();
-		}
-		else
-		{
-			GetViewAlignedHUDOrientationFromPosition(origin, angles);
-		}
+		vrHelper->GetWeaponVectors(forward, right, up);
 		return true;
 	}
+
+	return false;
 }
 
-bool VRRenderer::GetHUDHealthOriginAndOrientation(Vector&origin, Vector&angles)
+bool VRRenderer::GetHUDHealthOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up)
 {
 	if (GetHUDRenderMode() == HUDRenderMode::ACTUAL_HUD_IN_VIEW)
 	{
-		vrHelper->GetViewAngles(vr::Eye_Left, angles);
 		vrHelper->GetViewOrg(origin);
-		origin = origin + GetActualHUDOffset(VR_HUD_ACTUALHUD_HEALTH_OFFSET, angles);
+		vrHelper->GetViewVectors(forward, right, up);
+		origin = origin + GetActualHUDOffset(VR_HUD_ACTUALHUD_HEALTH_OFFSET, forward, right, up);
 		return true;
 	}
-	else
+	else if (GetHUDRenderMode() == HUDRenderMode::ON_CONTROLLERS)
 	{
 		if (!vrHelper->HasValidHandController())
 			return false;
+
 		origin = vrHelper->GetHandHUDPosition();
-		if (GetHUDRenderMode() == HUDRenderMode::ON_CONTROLLERS_ALIGNED_WITH_CONTROLLERS)
-		{
-			angles = vrHelper->GetHandAngles();
-		}
-		else
-		{
-			GetViewAlignedHUDOrientationFromPosition(origin, angles);
-		}
+		vrHelper->GetHandVectors(forward, right, up);
+		return true;
 	}
+
+	return false;
 }
 
-bool VRRenderer::GetHUDSpriteOriginAndOrientation(const VRHUDRenderType hudRenderType, Vector&origin, Vector&angles)
+bool VRRenderer::GetHUDSpriteOriginAndOrientation(const VRHUDRenderType hudRenderType, Vector& origin, Vector& forward, Vector& right, Vector& up)
 {
 	switch (hudRenderType)
 	{
 	case VRHUDRenderType::AMMO:
 	case VRHUDRenderType::AMMO_SECONDARY:
-		return GetHUDAmmoOriginAndOrientation(origin, angles);
+		return GetHUDAmmoOriginAndOrientation(origin, forward, right, up);
 	case VRHUDRenderType::HEALTH:
 	case VRHUDRenderType::BATTERY:
 	case VRHUDRenderType::FLASHLIGHT:
-		return GetHUDHealthOriginAndOrientation(origin, angles);
+		return GetHUDHealthOriginAndOrientation(origin, forward, right, up);
 	case VRHUDRenderType::TRAINCONTROLS:
-		return gHUD.GetTrainControlsOriginAndOrientation(origin, angles);
+	{
+		Vector angles;
+		if (gHUD.GetTrainControlsOriginAndOrientation(origin, angles))
+		{
+			AngleVectors(angles, forward, right, up);
+			return true;
+		}
+	}
 	default:
 		return false;
 	}
+}
+
+void RotatedGLCall(float x, float y, float z, Vector forward, Vector right, Vector up, std::function<void(float,float,float)> glCallback)
+{
+	// Can't wrap my head around getting a proper GL matrix from HL's euler angle mess,
+	// so instead I just transform the coordinates in HL space by hand before sending them down to OpenGL
+	// (can't be much slower anyways with these ffp calls...
+	Vector result = (right * x) + (forward * y) + (up * z);
+	glCallback(result.x, result.y, result.z);
 }
 
 void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t *prc)
@@ -298,9 +323,8 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 	if (!ShouldRenderHUD(m_hudRenderType))
 		return;
 
-	Vector spriteOrigin;
-	Vector spriteAngles;
-	if (!GetHUDSpriteOriginAndOrientation(m_hudRenderType, spriteOrigin, spriteAngles))
+	Vector spriteOrigin, spriteForward, spriteRight, spriteUp;
+	if (!GetHUDSpriteOriginAndOrientation(m_hudRenderType, spriteOrigin, spriteForward, spriteRight, spriteUp))
 		return;
 
 	if (m_fIsFirstSprite)
@@ -354,37 +378,55 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 	float hudStartPositionUpOffset = 0;
 	float hudStartPositionRightOffset = 0;
 	GetStartingPosForHUDRenderType(m_hudRenderType, hudStartPositionUpOffset, hudStartPositionRightOffset);
-
-	// Scale sprite
-	cl_entity_t *viewent = gEngfuncs.GetViewModel();
-	if (viewent != nullptr)
-	{
-		spriteWidth *= viewent->curstate.scale;
-		spriteHeight *= viewent->curstate.scale;
-		hudStartPositionUpOffset *= viewent->curstate.scale;
-		hudStartPositionRightOffset *= viewent->curstate.scale;
-	}
+	hudStartPositionUpOffset *= GetVRHudSpriteScale(m_hudRenderType);
+	hudStartPositionRightOffset *= GetVRHudSpriteScale(m_hudRenderType);
 
 	glPushMatrix();
 
 	// Move to controller position
 	glTranslatef(spriteOrigin.x, spriteOrigin.y, spriteOrigin.z);
 
+	//glRotatef(90, 0, 0, 1);
+
 	// Rotate sprite
+	/*
 	glRotatef(spriteAngles.y + 90, 0, 0, 1);
+	glRotatef(spriteAngles.x, 1, 0, 0);
+	glRotatef(spriteAngles.z, 0, 0, 1);
+	*/
+	/*
+	glRotatef(spriteAngles.y + 90, 0, 0, 1);
+	glRotatef(spriteAngles.x, 1, 0, 0);
+	glRotatef(spriteAngles.z, 0, 1, 0);
+	*/
+	/*
+	float matrix[16];
+	matrix[3] = matrix[7] = matrix[11] = matrix[12] = matrix[13] = matrix[14] = 0.f;
+	matrix[15] = 1.f;
+	spriteAngles.y = -spriteAngles.y;
+	AngleVectors(spriteAngles, matrix, matrix + 4, matrix + 8);
+	glMultMatrixf(matrix);
+	*/
+	//float matrix[16];
+	//HLAnglesToGLMatrix(spriteAngles, matrix);
+	//glMultMatrixf(matrix);
+	//glMultMatrixf(spriteMatrix);
+
 
 	// Move to starting position for HUD type
-	glTranslatef(-hudStartPositionRightOffset, 0, hudStartPositionUpOffset);
+	//glTranslatef(-hudStartPositionRightOffset, 0, hudStartPositionUpOffset);
+	RotatedGLCall(-hudStartPositionRightOffset, 0.f, hudStartPositionUpOffset, spriteForward, spriteRight, spriteUp, &glTranslatef);
 
 	// Move to HUD offset
-	glTranslatef((m_iHUDFirstSpriteX - x) * GetVRHudSpriteScale(m_hudRenderType), 0, (y - m_iHUDFirstSpriteY) * GetVRHudSpriteScale(m_hudRenderType));
+	//glTranslatef((m_iHUDFirstSpriteX - x) * GetVRHudSpriteScale(m_hudRenderType), 0, (y - m_iHUDFirstSpriteY) * GetVRHudSpriteScale(m_hudRenderType));
+	RotatedGLCall((m_iHUDFirstSpriteX - x) * GetVRHudSpriteScale(m_hudRenderType), 0.f, (y - m_iHUDFirstSpriteY) * GetVRHudSpriteScale(m_hudRenderType), spriteForward, spriteRight, spriteUp, &glTranslatef);
 
 	// Draw sprite
 	glBegin(GL_QUADS);
-	glTexCoord2f(textureRight, textureTop);		glVertex3i(0, 0, spriteHeight);
-	glTexCoord2f(textureLeft, textureTop);		glVertex3i(spriteWidth, 0, spriteHeight);
-	glTexCoord2f(textureLeft, textureBottom);	glVertex3i(spriteWidth, 0, 0);
-	glTexCoord2f(textureRight, textureBottom);	glVertex3i(0, 0, 0);
+	glTexCoord2f(textureRight, textureTop);		RotatedGLCall(0.f, 0.f, spriteHeight, spriteForward, spriteRight, spriteUp, &glVertex3f);//glVertex3i(0, 0, spriteHeight);
+	glTexCoord2f(textureLeft, textureTop);		RotatedGLCall(spriteWidth, 0.f, spriteHeight, spriteForward, spriteRight, spriteUp, &glVertex3f);//glVertex3i(spriteWidth, 0, spriteHeight);
+	glTexCoord2f(textureLeft, textureBottom);	RotatedGLCall(spriteWidth, 0.f, 0.f, spriteForward, spriteRight, spriteUp, &glVertex3f);//glVertex3i(spriteWidth, 0, 0);
+	glTexCoord2f(textureRight, textureBottom);	RotatedGLCall(0.f, 0.f, 0.f, spriteForward, spriteRight, spriteUp, &glVertex3f);//glVertex3i(0, 0, 0);
 	glEnd();
 
 	glPopMatrix();
@@ -444,10 +486,21 @@ void VRRenderer::GetStartingPosForHUDRenderType(const VRHUDRenderType hudRenderT
 	case VRHUDRenderType::FLASHLIGHT:
 		hudStartPositionUpOffset = VR_HUD_SPRITE_OFFSET_STEPSIZE * 2;
 		hudStartPositionRightOffset = 0;
+	case VRHUDRenderType::TRAINCONTROLS:
+		hudStartPositionUpOffset = 0;
+		hudStartPositionRightOffset = 32;
 		break;
 	}
 }
 
+bool VRRenderer::HasValidHandController()
+{
+	return vrHelper->HasValidHandController();
+}
+bool VRRenderer::HasValidWeaponController()
+{
+	return vrHelper->HasValidWeaponController();
+}
 
 // For extern declarations in cl_util.h
 void InterceptSPR_Set(HSPRITE_VALVE hPic, int r, int g, int b)
