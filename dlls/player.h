@@ -25,6 +25,7 @@
 #include "VRController.h"
 #include "VRControllerInteractionManager.h"
 #include "VRControllerTeleporter.h"
+#include "VRGroundEntityHandler.h"
 
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
@@ -325,12 +326,16 @@ public:
 
 	// Methods and members for VR stuff - Max Vollmer, 2017-08-18
 private:
-	void VRHandleMovingWithSolidGroundEntities();
-
 	Vector vr_lastHMDOffset;
 	int vr_hmdLastUpdateClienttime = 0;
 	float vr_hmdLastUpdateServertime = 0;
 
+	//public for gamerules.cpp
+public:
+	float vr_spawnYaw{ 0.f };
+	bool vr_IsJustSpawned{ false };
+
+private:
 	Vector vr_ClientOriginOffset;	// Must be Vector instead of Vector2D for save/restore. z is not used.
 
 	EHANDLE hFlashLight;
@@ -346,6 +351,7 @@ private:
 	// server sends these when loading/restoring
 	float vr_prevYaw = 0.f;
 	float vr_currentYaw = 0.f;
+	bool vr_needsToSendRestoreYawMsgToClient{ false };
 
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrInUseButtons;
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrLeftMeleeEntities;
@@ -355,6 +361,7 @@ private:
 
 	VRControllerTeleporter				m_vrControllerTeleporter;
 	VRControllerInteractionManager		m_vrControllerInteractionManager;
+	VRGroundEntityHandler				m_vrGroundEntityHandler{ this };
 
 	// TODO: Make configurable
 	VRControllerID GetTeleporterControllerID()

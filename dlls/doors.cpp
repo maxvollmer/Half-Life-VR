@@ -809,6 +809,7 @@ class CRotDoor : public CBaseDoor
 public:
 	void Spawn( void );
 	virtual void SetToggleState( int state );
+	virtual int Restore(CRestore &restore);
 };
 
 LINK_ENTITY_TO_CLASS( func_door_rotating, CRotDoor );
@@ -861,6 +862,44 @@ void CRotDoor::Spawn( void )
 	}
 	else // touchable button
 		SetTouch(&CBaseDoor::DoorTouch );
+
+	// Slow down fast spinning thingies in c1a4f to avoid nausea in VR
+	if ((strcmp(STRING(pev->model), "*1") == 0 && strcmp(STRING(pev->targetname), "bucket") == 0)
+		|| (strcmp(STRING(pev->model), "*15") == 0 && strcmp(STRING(pev->targetname), "crazybucket") == 0))
+	{
+		float speed = CVAR_GET_FLOAT("vr_semicheat_spinthingyspeed");
+		if (speed > 0.f)
+		{
+			pev->speed = min(speed, 110.f);
+		}
+		else
+		{
+			pev->speed = 110.f;
+		}
+	}
+}
+
+int CRotDoor::Restore(CRestore &restore)
+{
+	if (!CBaseDoor::Restore(restore))
+		return 0;
+
+	// Slow down fast spinning thingies in c1a4f to avoid nausea in VR
+	if ((strcmp(STRING(pev->model), "*1") == 0 && strcmp(STRING(pev->targetname), "bucket") == 0)
+		|| (strcmp(STRING(pev->model), "*15") == 0 && strcmp(STRING(pev->targetname), "crazybucket") == 0))
+	{
+		float speed = CVAR_GET_FLOAT("vr_semicheat_spinthingyspeed");
+		if (speed > 0.f)
+		{
+			pev->speed = min(speed, 110.f);
+		}
+		else
+		{
+			pev->speed = 110.f;
+		}
+	}
+
+	return 1;
 }
 
 

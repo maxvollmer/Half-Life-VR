@@ -22,10 +22,14 @@
 const Vector3 HL_TO_VR(1.44f / 10.f, 2.0f / 10.f, 1.44f / 10.f);
 const Vector3 VR_TO_HL(1.f / HL_TO_VR.x, 1.f / HL_TO_VR.y, 1.f / HL_TO_VR.z);
 
-// Set by message from server on load/restore
+// Set by message from server on load/restore/levelchange
 float g_vrRestoreYaw_PrevYaw = 0.f;
 float g_vrRestoreYaw_CurrentYaw = 0.f;
 bool g_vrRestoreYaw_HasData = false;
+
+// Set by message from server on spawn
+float g_vrSpawnYaw = 0.f;
+bool g_vrSpawnYaw_HasData = false;
 
 extern engine_studio_api_t IEngineStudio;
 
@@ -117,6 +121,16 @@ void VRHelper::UpdateWorldRotation()
 	}
 	else
 	{
+		if (g_vrSpawnYaw_HasData)
+		{
+			// Fix spawn yaw
+			Vector currentViewAngles;
+			GetViewAngles(vr::EVREye::Eye_Left, currentViewAngles);
+			m_currentYaw += g_vrSpawnYaw - currentViewAngles.y;
+			g_vrSpawnYaw = 0.f;
+			g_vrSpawnYaw_HasData = false;
+		}
+
 		// Already up to date
 		if (gHUD.m_flTime == m_lastYawUpdateTime)
 		{
@@ -138,16 +152,19 @@ void VRHelper::UpdateWorldRotation()
 
 		// Rotate with trains and platforms
 		cl_entity_t *groundEntity = gHUD.GetGroundEntity();
-		if (CVAR_GET_FLOAT("vr_rotate_with_trains") != 0.f && groundEntity)
+		if (groundEntity)
 		{
 			if (groundEntity != m_groundEntity)
 			{
 				m_groundEntity = groundEntity;
 				m_hasGroundEntityYaw = false;
 			}
-			if (m_hasGroundEntityYaw)
+			if (CVAR_GET_FLOAT("vr_rotate_with_trains") != 0.f)
 			{
-				m_currentYaw += groundEntity->angles.y - m_groundEntityYaw;
+				if (m_hasGroundEntityYaw)
+				{
+					m_currentYaw += groundEntity->angles.y - m_groundEntityYaw;
+				}
 			}
 			m_groundEntityYaw = groundEntity->angles.y;
 			m_hasGroundEntityYaw = true;
@@ -158,6 +175,7 @@ void VRHelper::UpdateWorldRotation()
 			m_groundEntityYaw = 0.f;
 			m_hasGroundEntityYaw = false;
 		}
+		//g_vrInput.MoveWithGroundEntity(m_groundEntity);
 
 		// Normalize angle
 		m_currentYaw = std::fmodf(m_currentYaw, 360.f);

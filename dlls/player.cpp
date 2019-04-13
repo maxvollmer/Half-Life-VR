@@ -40,6 +40,7 @@
 #include "talkmonster.h"
 
 #include "VRPhysicsHelper.h"
+#include "VRGroundEntityHandler.h"
 #include <algorithm>
 
 
@@ -212,6 +213,7 @@ int gmsgStatusValue = 0;
 // VR messages
 int gmsgVRRestoreYaw = 0;
 int gmsgVRGroundEntity = 0;
+int gmsgVRSetSpawnYaw = 0;
 
 
 void LinkUserMessages( void )
@@ -261,6 +263,7 @@ void LinkUserMessages( void )
 
 	gmsgVRRestoreYaw = REG_USER_MSG("VRRstrYaw", 2);
 	gmsgVRGroundEntity = REG_USER_MSG("GroundEnt", 2);
+	gmsgVRSetSpawnYaw = REG_USER_MSG("VRSpawnYaw", 1);
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer );
@@ -2426,7 +2429,7 @@ void CBasePlayer::PostThink()
 	// VR: We are MOVETYPE_NOCLIP, so the engine doesn't handle collisions with solid entities for various reasons (getting stuck, pushables not working nicely in VR etc.)
 	// This also means that trains and elevators just move through us. To avoid this, we do appropriate movement handling here.
 	// P.S. In pm_shared.cpp we do some modified normal movement as if we were MOVETYPE_WALK
-	VRHandleMovingWithSolidGroundEntities();
+	m_vrGroundEntityHandler.HandleMovingWithSolidGroundEntities();
 
 
 	if ( g_fGameOver )
@@ -2913,6 +2916,7 @@ int CBasePlayer::Restore( CRestore &restore )
 		this->vr_prevYaw = g_vrLevelChangeData.prevYaw;
 		this->vr_currentYaw = g_vrLevelChangeData.currentYaw;
 		g_vrLevelChangeData.hasData = false;
+		vr_needsToSendRestoreYawMsgToClient = true;
 	}
 
 	pev->v_angle.z = 0;	// Clear out roll
@@ -3926,11 +3930,15 @@ void CBasePlayer :: UpdateClientData( void )
 
 		InitStatusBar();
 
+	}
+
+	if (vr_needsToSendRestoreYawMsgToClient)
+	{
 		MESSAGE_BEGIN(MSG_ONE, gmsgVRRestoreYaw, NULL, pev);
 		WRITE_ANGLE(this->vr_prevYaw);
 		WRITE_ANGLE(this->vr_currentYaw);
 		MESSAGE_END();
-
+		vr_needsToSendRestoreYawMsgToClient = false;
 	}
 
 	if ( m_iHideHUD != m_iClientHideHUD )
@@ -4684,6 +4692,23 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 	{
 		return;
 	}
+
+	// If we just spawned we need to make sure that the HMD offset gets moved into the spawn position
+	// Thus we set vr_lastHMDOffset to the current HMD offset,
+	// and use the current HMD offset to set the client origin offset.
+	// We also send the initial spawn yaw down to the client so it adjusts and looks in the direction of the spawn spot.
+	// - Max Vollmer, 2019-04-13
+	if (vr_IsJustSpawned)
+	{
+		vr_lastHMDOffset = hmdOffset;
+		vr_ClientOriginOffset.x = -hmdOffset.x;
+		vr_ClientOriginOffset.y = -hmdOffset.y;
+		MESSAGE_BEGIN(MSG_ONE, gmsgVRSetSpawnYaw, NULL, pev);
+		WRITE_ANGLE(vr_spawnYaw);
+		MESSAGE_END();
+		vr_IsJustSpawned = false;
+	}
+
 	vr_prevYaw = prevYaw;
 	vr_currentYaw = currentYaw;
 
@@ -5015,118 +5040,3 @@ void CBasePlayer::UpdateVRTele()
 	m_vrControllerTeleporter.UpdateTele(this, m_vrControllers[GetTeleporterControllerID()]);
 }
 
-constexpr const int VR_MIN_VALID_LIFT_OR_TRAIN_WIDTH = 64;	// Special handling of entities that are less than 64x64 in horizontal size
-Vector gVRTempPlayerOrigin;
-Vector gVRTempPlayerEyePosition;
-Vector gVRTempPlayerHalfAbsmin;
-Vector gVRTempPlayerHalfAbsmax;
-void CBasePlayer::VRHandleMovingWithSolidGroundEntities()
-{
-	CBaseEntity *pGroundEntity = nullptr;
-	if (!FNullEnt(pev->groundentity) && pev->groundentity != ENT(0))
-	{
-		pGroundEntity = CBaseEntity::Instance(pev->groundentity);
-	}
-	if (pGroundEntity == nullptr || (pGroundEntity->pev->velocity.Length()<0.01f && pGroundEntity->pev->avelocity.Length()<0.01f))
-	{
-		gVRTempPlayerOrigin = pev->origin;
-		gVRTempPlayerEyePosition = EyePosition();
-		gVRTempPlayerHalfAbsmin = pev->origin + Vector{ pev->mins.x / 2, pev->mins.y / 2, pev->mins.z };
-		gVRTempPlayerHalfAbsmax = pev->origin + Vector{ pev->maxs.x / 2, pev->maxs.y / 2, pev->maxs.z };
-		UTIL_FindEntityByFilter(&pGroundEntity, [](CBaseEntity *pEntity)->bool {
-			if (pEntity->pev->solid == SOLID_BSP && (pEntity->pev->velocity.Length()>0 || pEntity->pev->avelocity.Length()>0))
-			{
-				if ((pEntity->pev->maxs.x - pEntity->pev->mins.x) < VR_MIN_VALID_LIFT_OR_TRAIN_WIDTH && (pEntity->pev->maxs.y - pEntity->pev->mins.y) < VR_MIN_VALID_LIFT_OR_TRAIN_WIDTH)
-				{
-					// If entity is narrow (e.g. a door) we check if origin or eye position are inside (this prevents being dragged by sliding doors)
-					return UTIL_PointInsideRotatedBBox(pEntity->pev->origin, pEntity->pev->angles, pEntity->pev->mins, pEntity->pev->maxs, gVRTempPlayerOrigin)
-						|| UTIL_PointInsideRotatedBBox(pEntity->pev->origin, pEntity->pev->angles, pEntity->pev->mins, pEntity->pev->maxs, gVRTempPlayerEyePosition);
-				}
-				else
-				{
-					// If entity is wide (e.g. a train or elevator) we check if half bbox is inside (this prevents falling off when standing on edge)
-					return VRPhysicsHelper::Instance().ModelIntersectsBBox(
-						pEntity,
-						Vector{}, gVRTempPlayerHalfAbsmin, gVRTempPlayerHalfAbsmax);
-				}
-			}
-			return false;
-		});
-	}
-	if (pGroundEntity != nullptr)
-	{
-		// Calculate ground velocity
-		Vector groundVelocity = pGroundEntity->pev->velocity;
-
-		// Add avelocity
-		if (pGroundEntity->pev->avelocity.Length() > 0.01f)
-		{
-			groundVelocity = groundVelocity + VRPhysicsHelper::Instance().AngularVelocityToLinearVelocity(pGroundEntity->pev->avelocity, pev->origin - pGroundEntity->pev->origin);
-		}
-
-		// Don't slow down falling when moving downwards and player mins still inside ground entity
-		if (groundVelocity.z < 0 && pGroundEntity->pev->absmin.z < pev->absmin.z) {
-			groundVelocity.z = (std::min)(groundVelocity.z, pev->velocity.z);
-		}
-
-		// Apply ground velocity and get new origin
-		Vector newOrigin = pev->origin + (groundVelocity * gpGlobals->frametime);
-
-		// Make sure new origin is valid (don't get moved through walls/into void etc)
-		Vector dir = (newOrigin - pev->origin).Normalize();
-		Vector newEyePosition = newOrigin + pev->view_ofs;
-		Vector predictedEyePosition = pev->origin + pev->view_ofs + (dir * 16.f);
-		int newEyeContents = UTIL_PointContents(newEyePosition);
-		int predictedEyeContents = UTIL_PointContents(predictedEyePosition);
-		if (newEyeContents != CONTENTS_SKY && newEyeContents != CONTENTS_SOLID
-			&& predictedEyeContents != CONTENTS_SKY && predictedEyeContents != CONTENTS_SOLID)
-		{
-			// Apply new origin
-			pev->origin = newOrigin;
-		}
-		else
-		{
-			// When we're moving up- or downwards, and the groundentity's center is valid,
-			// "slide" on x/y towards the center of the groundentity origin to avoid ceilings/corners/walls
-			Vector groundEntityCenter = (pGroundEntity->pev->absmin + pGroundEntity->pev->absmax) / 2;
-			int groundEntityCenterContents = UTIL_PointContents(groundEntityCenter);
-			if (groundEntityCenterContents != CONTENTS_SKY && groundEntityCenterContents != CONTENTS_SOLID)
-			{
-				Vector dirToCenter2D = groundEntityCenter - pev->origin;
-				dirToCenter2D.z = 0.f;
-				float distanceToCenter2D = dirToCenter2D.Length();
-				if (distanceToCenter2D > 8.f)
-				{
-					dirToCenter2D = dirToCenter2D.Normalize();
-					float moveDistance = (std::min)((std::max)(groundVelocity.Length() * gpGlobals->frametime, 1.f), distanceToCenter2D);
-					pev->origin.x += dirToCenter2D.x * moveDistance;
-					pev->origin.y += dirToCenter2D.y * moveDistance;
-					pev->origin.z = newOrigin.z;
-				}
-				else
-				{
-					ALERT(at_console, "distanceToCenter2D <= 8! pev->origin.z: %f\n", pev->origin.z);
-				}
-			}
-			else
-			{
-				ALERT(at_console, "groundEntityCenterContents are solid! pev->origin.z: %f\n", pev->origin.z);
-			}
-		}
-
-		// Remember ground entity
-		pev->groundentity = pGroundEntity->edict();
-	}
-
-	// Send ground entity down to client for yaw rotation in VR
-	MESSAGE_BEGIN(MSG_ONE, gmsgVRGroundEntity, NULL, pev);
-	if (pev->groundentity && !FNullEnt(pev->groundentity))
-	{
-		WRITE_ENTITY(ENTINDEX(pev->groundentity));
-	}
-	else
-	{
-		WRITE_SHORT(0);
-	}
-	MESSAGE_END();
-}

@@ -216,6 +216,17 @@ int __MsgFunc_VRRstrYaw(const char *pszName, int iSize, void *pbuf)
 	return 0;
 }
 
+int __MsgFunc_VRSpawnYaw(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	// a bit hacky, but oh well
+	extern float g_vrSpawnYaw;
+	extern bool g_vrSpawnYaw_HasData;
+	g_vrSpawnYaw = READ_ANGLE();
+	g_vrSpawnYaw_HasData = true;
+	return 0;
+}
+
 // Sends index of current grund entity
 int __MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf)
 {
@@ -324,6 +335,7 @@ void CHud :: Init( void )
 	// Messages for VR
 	HOOK_MESSAGE(VRRstrYaw);
 	HOOK_MESSAGE(GroundEnt);
+	HOOK_MESSAGE(VRSpawnYaw);
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round

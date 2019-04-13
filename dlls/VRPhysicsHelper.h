@@ -8,6 +8,7 @@ namespace reactphysics3d {
 	class CollisionWorld;
 	class DynamicsWorld;
 	class BoxShape;
+	class CapsuleShape;
 	class CollisionBody;
 	class TriangleVertexArray;
 	class TriangleMesh;
@@ -46,6 +47,7 @@ public:
 	void TraceLine(const Vector &vecStart, const Vector &vecEnd, edict_t* pentIgnore, TraceResult *ptr);
 
 	bool ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs);
+	bool ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& capsuleCenter, float radius, float height);
 	bool ModelIntersectsWorld(CBaseEntity *pModel);
 	bool ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2);
 
@@ -113,6 +115,9 @@ private:
 	reactphysics3d::BoxShape*								m_bboxShape{ nullptr };
 	reactphysics3d::ProxyShape*								m_bboxProxyShape{ nullptr };
 
+	reactphysics3d::CollisionBody*							m_capsuleBody{ nullptr };
+	reactphysics3d::CapsuleShape*							m_capsuleShape{ nullptr };
+	reactphysics3d::ProxyShape*								m_capsuleProxyShape{ nullptr };
 
 	static VRPhysicsHelper*		m_instance;
 };

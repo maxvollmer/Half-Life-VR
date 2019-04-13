@@ -470,6 +470,8 @@ cvar_t vr_crowbar_scale = { "vr_crowbar_scale", "1" };
 cvar_t vr_rpg_scale = { "vr_rpg_scale", "1" };
 cvar_t vr_melee_swing_speed = { "vr_melee_swing_speed", "150" };
 cvar_t vr_no_gauss_recoil = { "vr_no_gauss_recoil", "1" };
+cvar_t vr_force_introtrainride = { "vr_force_introtrainride", "1" };
+cvar_t vr_semicheat_spinthingyspeed = { "vr_semicheat_spinthingyspeed", "0" };
 
 
 // Register your console variables here
@@ -927,6 +929,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&vr_rpg_scale);
 	CVAR_REGISTER(&vr_melee_swing_speed);
 	CVAR_REGISTER(&vr_no_gauss_recoil);
+	CVAR_REGISTER(&vr_force_introtrainride);
+	CVAR_REGISTER(&vr_semicheat_spinthingyspeed);
 
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

@@ -65,11 +65,12 @@ edict_t *CGameRules :: GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 	edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer );
 
 	pPlayer->pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
-	//pPlayer->pev->v_angle  = g_vecZero;
 	pPlayer->pev->velocity = g_vecZero;
-	//pPlayer->pev->angles = VARS(pentSpawnSpot)->angles;
-	//pPlayer->pev->punchangle = g_vecZero;
-	//pPlayer->pev->fixangle = TRUE;
+	// Remember spawn yaw to send down to client
+	pPlayer->vr_spawnYaw = VARS(pentSpawnSpot)->angles.y;
+	// We just spawned, so we need to account for this in UpdateVRHeadset (HMD offset needs to be shifted into spawn position),
+	// this flag will do this - Max Vollmer, 2019-04-13
+	pPlayer->vr_IsJustSpawned = true;
 
 	return pentSpawnSpot;
 }

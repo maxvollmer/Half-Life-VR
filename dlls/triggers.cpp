@@ -1101,6 +1101,7 @@ class CTriggerOnce : public CTriggerMultiple
 {
 public:
 	void Spawn( void );
+	virtual int Restore(CRestore &restore);
 };
 
 LINK_ENTITY_TO_CLASS( trigger_once, CTriggerOnce );
@@ -1126,6 +1127,30 @@ void CTriggerOnce::Spawn( void )
 	{
 		CTriggerMultiple::Spawn();
 	}
+}
+
+int CTriggerOnce::Restore(CRestore &restore)
+{
+	if (!CTriggerMultiple::Restore(restore))
+		return 0;
+
+	// There is a weird left-over trigger_once in c1a4i that is behind a clipwall but reachable in VR
+	// It was probably forgotten by Valve before shipping the game and has survived all this time
+	// When touched, it activates the rocket fire that kills the tentacles, even if oxygen and power have not been turned on yet.
+	// Instead of modifying the bsp-file and shipping a custom map with our mod, we simply self-kill it here.
+	// - Max Vollmer, 2019-04-08
+	if (pev->spawnflags == 0
+		&& strcmp(STRING(pev->target), "init_rocket_fire") == 0
+		&& strcmp(STRING(pev->model), "*95") == 0)
+	{
+		pev->target = iStringNull;
+		SetTouch(NULL);
+		pev->nextthink = gpGlobals->time + 0.1;
+		SetThink(&CBaseTrigger::SUB_Remove);
+		return 0;
+	}
+
+	return 1;
 }
 
 
