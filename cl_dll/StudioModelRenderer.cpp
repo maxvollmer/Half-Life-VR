@@ -29,7 +29,7 @@
 #include "StudioModelRenderer.h"
 #include "GameStudioModelRenderer.h"
 
-#include "vr_renderer.h"
+#include "VRRenderer.h"
 
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;

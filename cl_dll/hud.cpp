@@ -31,7 +31,7 @@
 #include "demo_api.h"
 #include "vgui_scorepanel.h"
 
-#include "vr_renderer.h"
+#include "VRRenderer.h"
 
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper

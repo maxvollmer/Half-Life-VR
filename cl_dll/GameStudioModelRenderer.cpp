@@ -27,7 +27,7 @@
 #include "StudioModelRenderer.h"
 #include "GameStudioModelRenderer.h"
 
-#include "vr_renderer.h"
+#include "VRRenderer.h"
 
 //
 // Override the StudioModelRender virtual member functions here to implement custom bone

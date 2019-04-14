@@ -26,7 +26,7 @@
 #include "shake.h"
 #include "hltv.h"
 
-#include "vr_renderer.h"
+#include "VRRenderer.h"
 
 // Spectator Mode
 extern "C" 

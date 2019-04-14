@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
-#include "vr_renderer.h"
+#include "VRRenderer.h"
 
 DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoVal );
 DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoIcon );

@@ -26,7 +26,7 @@
 #include "cl_util.h"
 #include "parsemsg.h"
 
-#include "vr_renderer.h"
+#include "VRRenderer.h"
 
 #include <string.h>
 

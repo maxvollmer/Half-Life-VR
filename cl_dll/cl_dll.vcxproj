@@ -134,6 +134,7 @@
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
       <DisableSpecificWarnings>4996;4838;4005;4091;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -220,6 +221,7 @@
     <ClCompile Include="input.cpp" />
     <ClCompile Include="inputw32.cpp" />
     <ClCompile Include="in_camera.cpp" />
+    <ClCompile Include="LodePNG\lodepng.cpp" />
     <ClCompile Include="Matrices.cpp" />
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="message.cpp" />
@@ -250,17 +252,22 @@
     <ClCompile Include="vgui_TeamFortressViewport.cpp" />
     <ClCompile Include="vgui_teammenu.cpp" />
     <ClCompile Include="view.cpp" />
+    <ClCompile Include="VRDebugPhysicsRenderer.cpp" />
     <ClCompile Include="VRHUDRenderer.cpp" />
+    <ClCompile Include="VRInputHLMenu.cpp" />
+    <ClCompile Include="VRInputHLWindow.cpp" />
     <ClCompile Include="VRInputMovementHandlers.cpp" />
     <ClCompile Include="VRInputOtherHandlers.cpp" />
     <ClCompile Include="VRInputPosesHandlers.cpp" />
     <ClCompile Include="VRInputWeaponsHandlers.cpp" />
+    <ClCompile Include="VRIntermissionAndMenuRenderer.cpp" />
+    <ClCompile Include="VRTextureHelper.cpp" />
     <ClCompile Include="vr_gl.cpp" />
-    <ClCompile Include="vr_helper.cpp" />
-    <ClCompile Include="vr_input.cpp" />
+    <ClCompile Include="VRHelper.cpp" />
+    <ClCompile Include="VRInput.cpp" />
     <ClCompile Include="VRInputAction.cpp" />
-    <ClCompile Include="vr_legacy_input.cpp" />
-    <ClCompile Include="vr_renderer.cpp" />
+    <ClCompile Include="VRLegacyInput.cpp" />
+    <ClCompile Include="VRRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\itrackeruser.h" />
@@ -288,8 +295,10 @@
     <ClInclude Include="hud_servers.h" />
     <ClInclude Include="hud_servers_priv.h" />
     <ClInclude Include="hud_spectator.h" />
+    <ClInclude Include="IGameConsole.h" />
     <ClInclude Include="in_defs.h" />
     <ClInclude Include="kbutton.h" />
+    <ClInclude Include="LodePNG\lodepng.h" />
     <ClInclude Include="Matrices.h" />
     <ClInclude Include="overview.h" />
     <ClInclude Include="parsemsg.h" />
@@ -310,10 +319,11 @@
     <ClInclude Include="VRCommon.h" />
     <ClInclude Include="VRInputAction.h" />
     <ClInclude Include="VRInputHandlers.h" />
+    <ClInclude Include="VRTextureHelper.h" />
     <ClInclude Include="vr_gl.h" />
-    <ClInclude Include="vr_helper.h" />
-    <ClInclude Include="vr_input.h" />
-    <ClInclude Include="vr_renderer.h" />
+    <ClInclude Include="VRHelper.h" />
+    <ClInclude Include="VRInput.h" />
+    <ClInclude Include="VRRenderer.h" />
     <ClInclude Include="wrect.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

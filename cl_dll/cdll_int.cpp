@@ -30,7 +30,7 @@
 #include "vgui_int.h"
 #include "interface.h"
 
-#include "vr_renderer.h"
+#include "VRRenderer.h"
 
 #define DLLEXPORT __declspec( dllexport )
 

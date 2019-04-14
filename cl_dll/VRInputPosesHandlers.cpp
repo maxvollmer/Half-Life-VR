@@ -7,10 +7,10 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "openvr/openvr.h"
-#include "vr_input.h"
+#include "VRInput.h"
 #include "eiface.h"
-#include "vr_renderer.h"
-#include "vr_helper.h"
+#include "VRRenderer.h"
+#include "VRHelper.h"
 
 namespace VR
 {

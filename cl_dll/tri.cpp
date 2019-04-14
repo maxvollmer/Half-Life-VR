@@ -17,7 +17,7 @@
 #include "cl_entity.h"
 #include "triangleapi.h"
 
-#include "vr_renderer.h"
+#include "VRRenderer.h"
 
 #define DLLEXPORT __declspec( dllexport )
 

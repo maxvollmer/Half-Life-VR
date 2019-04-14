@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <windows.h>
 #include "GL/gl.h"
 
 #define GL_FRAMEBUFFER 0x8D40
@@ -22,6 +23,7 @@ typedef void (APIENTRY * PFNGLRENDERBUFFERSTORAGEPROC) (GLenum target, GLenum in
 typedef void (APIENTRY * PFNGLFRAMEBUFFERRENDERBUFFERPROC) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
 
 typedef void (APIENTRY * PFNGLACTIVETEXTUREPROC) (GLenum texture);
+typedef void (APIENTRY * PFNGLGENERATEMIPMAPPROC) (GLenum texture);
 
 typedef void (APIENTRY * PFNHLVRLOCKGLMATRICESPROC) (void);
 typedef void (APIENTRY * PFNHLVRUNLOCKGLMATRICESPROC) (void);
@@ -40,6 +42,8 @@ extern PFNHLVRLOCKGLMATRICESPROC hlvrLockGLMatrices;
 extern PFNHLVRUNLOCKGLMATRICESPROC hlvrUnlockGLMatrices;
 
 extern PFNGLACTIVETEXTUREPROC glActiveTexture;
+extern PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
+
 
 bool CreateGLTexture(unsigned int* texture, int width, int height);
 bool CreateGLFrameBuffer(unsigned int* framebuffer, unsigned int texture, int width, int height);

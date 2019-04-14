@@ -26,6 +26,21 @@
     <Filter Include="VR\input\handlers">
       <UniqueIdentifier>{79ae2d23-5186-418d-b09c-de9e55b35f6d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\renderer">
+      <UniqueIdentifier>{aad6ad09-80c5-46ff-b7b6-ac0e998ee368}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\stuff">
+      <UniqueIdentifier>{03e43685-6e0c-43dd-a40b-c1d6dd329a41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\stuff\LodePNG">
+      <UniqueIdentifier>{ee18c929-fe94-4059-97f0-3e75645f85a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\helpers">
+      <UniqueIdentifier>{a7782f82-9407-4a70-b86b-d27e16554e47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\gameui">
+      <UniqueIdentifier>{50c4a45e-cd62-43a2-89e2-12a35b62e2cd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dlls\crossbow.cpp">
@@ -277,19 +292,7 @@
     <ClCompile Include="..\pm_shared\pm_math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vr_renderer.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
-    <ClCompile Include="vr_gl.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
-    <ClCompile Include="vr_helper.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
     <ClCompile Include="VRInputAction.cpp">
-      <Filter>VR\input</Filter>
-    </ClCompile>
-    <ClCompile Include="vr_input.cpp">
       <Filter>VR\input</Filter>
     </ClCompile>
     <ClCompile Include="VRInputMovementHandlers.cpp">
@@ -304,11 +307,41 @@
     <ClCompile Include="VRInputPosesHandlers.cpp">
       <Filter>VR\input\handlers</Filter>
     </ClCompile>
-    <ClCompile Include="vr_legacy_input.cpp">
+    <ClCompile Include="LodePNG\lodepng.cpp">
+      <Filter>VR\stuff\LodePNG</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputHLWindow.cpp">
       <Filter>VR\input</Filter>
     </ClCompile>
+    <ClCompile Include="VRDebugPhysicsRenderer.cpp">
+      <Filter>VR\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="VRHUDRenderer.cpp">
-      <Filter>VR</Filter>
+      <Filter>VR\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="VRIntermissionAndMenuRenderer.cpp">
+      <Filter>VR\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="vr_gl.cpp">
+      <Filter>VR\stuff</Filter>
+    </ClCompile>
+    <ClCompile Include="VRTextureHelper.cpp">
+      <Filter>VR\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInput.cpp">
+      <Filter>VR\input</Filter>
+    </ClCompile>
+    <ClCompile Include="VRLegacyInput.cpp">
+      <Filter>VR\input</Filter>
+    </ClCompile>
+    <ClCompile Include="VRRenderer.cpp">
+      <Filter>VR\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="VRHelper.cpp">
+      <Filter>VR\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputHLMenu.cpp">
+      <Filter>VR\input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -447,26 +480,35 @@
     <ClInclude Include="Vectors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vr_renderer.h">
-      <Filter>VR</Filter>
-    </ClInclude>
-    <ClInclude Include="vr_gl.h">
-      <Filter>VR</Filter>
-    </ClInclude>
-    <ClInclude Include="vr_helper.h">
-      <Filter>VR</Filter>
-    </ClInclude>
     <ClInclude Include="VRInputAction.h">
-      <Filter>VR\input</Filter>
-    </ClInclude>
-    <ClInclude Include="vr_input.h">
       <Filter>VR\input</Filter>
     </ClInclude>
     <ClInclude Include="VRInputHandlers.h">
       <Filter>VR\input</Filter>
     </ClInclude>
+    <ClInclude Include="LodePNG\lodepng.h">
+      <Filter>VR\stuff\LodePNG</Filter>
+    </ClInclude>
+    <ClInclude Include="vr_gl.h">
+      <Filter>VR\stuff</Filter>
+    </ClInclude>
     <ClInclude Include="VRCommon.h">
-      <Filter>VR</Filter>
+      <Filter>VR\stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="VRTextureHelper.h">
+      <Filter>VR\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRInput.h">
+      <Filter>VR\input</Filter>
+    </ClInclude>
+    <ClInclude Include="VRRenderer.h">
+      <Filter>VR\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="VRHelper.h">
+      <Filter>VR\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="IGameConsole.h">
+      <Filter>Header Files\gameui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

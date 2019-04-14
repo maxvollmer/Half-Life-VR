@@ -1,5 +1,4 @@
 
-#include <windows.h>
 #include "vr_gl.h"
 
 PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers = nullptr;
@@ -16,6 +15,7 @@ PFNHLVRLOCKGLMATRICESPROC hlvrLockGLMatrices = nullptr;
 PFNHLVRUNLOCKGLMATRICESPROC hlvrUnlockGLMatrices = nullptr;
 
 PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
+PFNGLGENERATEMIPMAPPROC glGenerateMipmap = nullptr;
 
 void* GetOpenGLFuncAddress(const char *name)
 {
@@ -36,9 +36,13 @@ void* GetOpenGLFuncAddress(const char *name)
 
 bool CreateGLTexture(unsigned int* texture, int width, int height)
 {
-	//SetActiveTexture(GL_TEXTURE0);
-	glGenTextures(1, texture);
 	glEnable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE0);
+	if (*texture)
+	{
+		glDeleteTextures(1, texture);
+	}
+	glGenTextures(1, texture);
 	glBindTexture(GL_TEXTURE_2D, *texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_BYTE, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -79,6 +83,7 @@ bool InitAdditionalGLFunctions()
 	glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC)GetOpenGLFuncAddress("glFramebufferRenderbuffer");
 
 	glActiveTexture = (PFNGLACTIVETEXTUREPROC)GetOpenGLFuncAddress("glActiveTexture");
+	glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)GetOpenGLFuncAddress("glGenerateMipmap");
 
 	return
 		glGenFramebuffers != nullptr &&
@@ -88,7 +93,8 @@ bool InitAdditionalGLFunctions()
 		glFramebufferTexture2D != nullptr &&
 		glRenderbufferStorage != nullptr &&
 		glFramebufferRenderbuffer != nullptr &&
-		glActiveTexture != nullptr;
+		glActiveTexture != nullptr &&
+		glGenerateMipmap != nullptr;
 }
 
 // Separate for better error messages

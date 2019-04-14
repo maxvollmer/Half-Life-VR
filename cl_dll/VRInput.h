@@ -74,6 +74,9 @@ public:
 	float analogturn{ 0.f };
 	float analogfire{ 0.f };
 
+	void ShowHLMenu();
+	void HideHLMenu();
+
 private:
 	struct ActionSet
 	{
@@ -98,6 +101,15 @@ private:
 	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler);
 	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler);
 	bool RegisterFeedback(const std::string& actionSet, const std::string& action);
+
+	vr::VROverlayHandle_t		m_hlMenu{ vr::k_ulOverlayHandleInvalid };
+	bool						m_isHLMenuShown{ false };
+	bool						m_vrMenuKeyboardOpen{ false };
+	void CreateHLMenu();
+	void HandleHLMenuInput();
+
+	void SendMousePosToHLWindow(float x, float y);
+	void SendMouseButtonClickToHLWindow(float x, float y);
 
 	void FireDamageFeedback(const std::string& action, float durationInSeconds, float frequency, float amplitude);
 

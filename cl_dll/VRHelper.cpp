@@ -1,13 +1,13 @@
 
-#include <windows.h>
 #include "Matrices.h"
 #include "hud.h"
 #include "cl_util.h"
 #include "r_studioint.h"
 #include "ref_params.h"
-#include "vr_helper.h"
+#include "VRHelper.h"
+#include "VRTextureHelper.h"
 #include "vr_gl.h"
-#include "vr_input.h"
+#include "VRInput.h"
 #include <string>
 #include <algorithm>
 
@@ -32,6 +32,8 @@ float g_vrSpawnYaw = 0.f;
 bool g_vrSpawnYaw_HasData = false;
 
 extern engine_studio_api_t IEngineStudio;
+
+extern cl_entity_t* SaveGetLocalPlayer();
 
 enum class VRControllerID : int32_t {
 	WEAPON = 0,
@@ -262,9 +264,10 @@ void VRHelper::Init()
 			CreateGLTexture(&vrGLRightEyeTexture, vrRenderWidth, vrRenderHeight);
 			int viewport[4];
 			glGetIntegerv(GL_VIEWPORT, viewport);
+			m_vrGLMenuTextureWidth = viewport[2];
+			m_vrGLMenuTextureHeight = viewport[3];
 			CreateGLTexture(&vrGLMenuTexture, viewport[2], viewport[3]);
-			CreateGLTexture(&vrGLHUDTexture, viewport[2], viewport[3]);
-			if (vrGLLeftEyeTexture == 0 || vrGLRightEyeTexture == 0 || vrGLMenuTexture == 0 || vrGLHUDTexture == 0)
+			if (vrGLLeftEyeTexture == 0 || vrGLRightEyeTexture == 0 || vrGLMenuTexture == 0)
 			{
 				Exit(TEXT("Failed to initialize OpenGL textures for VR enviroment. Make sure you have a graphics card that can handle VR and up-to-date drivers."));
 			}
@@ -295,10 +298,14 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_hud_flashlight", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_size", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_textscale", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hd_textures_enabled", "1", FCVAR_ARCHIVE);
 
 	g_vrInput.Init();
 
 	UpdateVRHLConversionVectors();
+
+	// Set skybox
+	SetSkybox("desert");
 }
 
 bool VRHelper::AcceptsDisclaimer()
@@ -418,14 +425,20 @@ Vector VRHelper::GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & 
 {
 	Vector originInRelativeHLSpace = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(absoluteTrackingMatrix);
 
-	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
-	Vector clientGroundPosition = localPlayer->curstate.origin;
-	clientGroundPosition.z += localPlayer->curstate.mins.z;
-
-	return clientGroundPosition + originInRelativeHLSpace;
+	cl_entity_t *localPlayer = SaveGetLocalPlayer();
+	if (localPlayer)
+	{
+		Vector clientGroundPosition = localPlayer->curstate.origin;
+		clientGroundPosition.z += localPlayer->curstate.mins.z;
+		return clientGroundPosition + originInRelativeHLSpace;
+	}
+	else
+	{
+		return originInRelativeHLSpace;
+	}
 }
 
-void VRHelper::PollEvents()
+void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 {
 	UpdateVRHLConversionVectors();
 	UpdateWorldRotation();
@@ -477,14 +490,13 @@ void VRHelper::PollEvents()
 	}
 }
 
-bool VRHelper::UpdatePositions(struct ref_params_s* pparams)
+bool VRHelper::UpdatePositions()
 {
 	UpdateVRHLConversionVectors();
 	UpdateWorldRotation();
 
 	if (vrSystem != nullptr && vrCompositor != nullptr)
 	{
-		vrCompositor->GetCurrentSceneFocusProcess();
 		vrCompositor->SetTrackingSpace(isVRRoomScale ? vr::TrackingUniverseStanding : vr::TrackingUniverseSeated);
 		vrCompositor->WaitGetPoses(positions.m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
@@ -502,7 +514,7 @@ bool VRHelper::UpdatePositions(struct ref_params_s* pparams)
 	return false;
 }
 
-void VRHelper::PrepareVRScene(vr::EVREye eEye, struct ref_params_s* pparams)
+void VRHelper::PrepareVRScene(vr::EVREye eEye)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, eEye == vr::EVREye::Eye_Left ? vrGLLeftEyeFrameBuffer : vrGLRightEyeFrameBuffer);
 
@@ -527,7 +539,7 @@ void VRHelper::PrepareVRScene(vr::EVREye eEye, struct ref_params_s* pparams)
 	hlvrLockGLMatrices();
 }
 
-void VRHelper::FinishVRScene(struct ref_params_s* pparams)
+void VRHelper::FinishVRScene(float width, float height)
 {
 	hlvrUnlockGLMatrices();
 
@@ -539,7 +551,7 @@ void VRHelper::FinishVRScene(struct ref_params_s* pparams)
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glViewport(0, 0, pparams->viewport[2], pparams->viewport[3]);
+	glViewport(0, 0, width, height);
 }
 
 void VRHelper::SubmitImage(vr::EVREye eEye, unsigned int texture)
@@ -562,6 +574,19 @@ void VRHelper::SubmitImages()
 unsigned int VRHelper::GetVRTexture(vr::EVREye eEye)
 {
 	return eEye == vr::EVREye::Eye_Left ? vrGLLeftEyeTexture : vrGLRightEyeTexture;
+}
+
+unsigned int VRHelper::GetVRGLMenuTexture()
+{
+	int viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	if (m_vrGLMenuTextureWidth != viewport[2] || m_vrGLMenuTextureHeight != viewport[3])
+	{
+		m_vrGLMenuTextureWidth = viewport[2];
+		m_vrGLMenuTextureHeight = viewport[3];
+		CreateGLTexture(&vrGLMenuTexture, m_vrGLMenuTextureWidth, m_vrGLMenuTextureHeight);
+	}
+	return vrGLMenuTexture;
 }
 
 void VRHelper::GetViewAngles(vr::EVREye eEye, float * angles)
@@ -728,7 +753,7 @@ bool VRHelper::UpdateController(
 {
 	if (controllerIndex > 0 && controllerIndex != vr::k_unTrackedDeviceIndexInvalid && positions.m_rTrackedDevicePose[controllerIndex].bDeviceIsConnected && positions.m_rTrackedDevicePose[controllerIndex].bPoseIsValid)
 	{
-		cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
+		cl_entity_t *localPlayer = SaveGetLocalPlayer();
 
 		Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[controllerIndex].vVelocity.v);
 		if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
@@ -740,7 +765,7 @@ bool VRHelper::UpdateController(
 		controllerMatrix = GetAbsoluteControllerTransform(controllerIndex);
 		MatrixVectors(controllerMatrix, controllerForward, controllerRight, controllerUp);
 		controllerOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(controllerMatrix);
-		controllerOffset.z += localPlayer->curstate.mins.z;
+		if (localPlayer) controllerOffset.z += localPlayer->curstate.mins.z;
 		controllerPosition = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(controllerMatrix);
 		controllerAngles = GetHLAnglesFromVRMatrix(controllerMatrix);
 		controllerVelocity = Vector{ velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y };
@@ -757,9 +782,13 @@ void VRHelper::UpdateHMD()
 	positions.m_mat4LeftProjection = GetHMDMatrixProjectionEye(vr::Eye_Left);
 	positions.m_mat4RightProjection = GetHMDMatrixProjectionEye(vr::Eye_Right);
 
-	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
-	Vector clientGroundPosition = localPlayer->curstate.origin;
-	clientGroundPosition.z += localPlayer->curstate.mins.z;
+	Vector clientGroundPosition;
+	cl_entity_t *localPlayer = SaveGetLocalPlayer();
+	if (localPlayer)
+	{
+		clientGroundPosition = localPlayer->curstate.origin;
+		clientGroundPosition.z += localPlayer->curstate.mins.z;
+	}
 	positions.m_mat4LeftModelView = GetHMDMatrixPoseEye(vr::Eye_Left) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, -clientGroundPosition);
 	positions.m_mat4RightModelView = GetHMDMatrixPoseEye(vr::Eye_Right) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, -clientGroundPosition);
 }
@@ -798,8 +827,9 @@ void VRHelper::UpdateControllers()
 
 void VRHelper::SendPositionUpdateToServer()
 {
+	cl_entity_t *localPlayer = SaveGetLocalPlayer();
 	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform());
-	hmdOffset.z += gEngfuncs.GetLocalPlayer()->curstate.mins.z;
+	if (localPlayer) hmdOffset.z += localPlayer->curstate.mins.z;
 
 	char cmdHMD[MAX_COMMAND_SIZE] = { 0 };
 	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
@@ -863,14 +893,17 @@ void VRHelper::UpdateViewEnt(bool isControllerValid, const Vector& controllerPos
 	}
 	else
 	{
-		cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
-		VectorCopy(localPlayer->curstate.origin, viewent->origin);
-		VectorCopy(localPlayer->curstate.origin, viewent->curstate.origin);
-		VectorCopy(localPlayer->curstate.origin, viewent->latched.prevorigin);
-		VectorCopy(GetLocalPlayerAngles(), viewent->angles);
-		VectorCopy(GetLocalPlayerAngles(), viewent->curstate.angles);
-		VectorCopy(GetLocalPlayerAngles(), viewent->latched.prevangles);
-		viewent->curstate.velocity = localPlayer->curstate.velocity;
+		cl_entity_t *localPlayer = SaveGetLocalPlayer();
+		if (localPlayer)
+		{
+			VectorCopy(localPlayer->curstate.origin, viewent->origin);
+			VectorCopy(localPlayer->curstate.origin, viewent->curstate.origin);
+			VectorCopy(localPlayer->curstate.origin, viewent->latched.prevorigin);
+			VectorCopy(GetLocalPlayerAngles(), viewent->angles);
+			VectorCopy(GetLocalPlayerAngles(), viewent->curstate.angles);
+			VectorCopy(GetLocalPlayerAngles(), viewent->latched.prevangles);
+			viewent->curstate.velocity = localPlayer->curstate.velocity;
+		}
 	 }
 }
 
@@ -884,10 +917,10 @@ void VRHelper::SetPose(VRPoseType poseType, const vr::TrackedDevicePose_t& pose,
 
 	if (poseType == VRPoseType::FLASHLIGHT)
 	{
-		cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
+		cl_entity_t *localPlayer = SaveGetLocalPlayer();
 		Matrix4 flashlightAbsoluteTrackingMatrix = GetAbsoluteTransform(pose.mDeviceToAbsoluteTracking);
 		Vector flashlightOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(flashlightAbsoluteTrackingMatrix);
-		flashlightOffset.z += localPlayer->curstate.mins.z;
+		if (localPlayer) flashlightOffset.z += localPlayer->curstate.mins.z;
 		Vector flashlightAngles = GetHLAnglesFromVRMatrix(flashlightAbsoluteTrackingMatrix);
 		char cmdFlashlight[MAX_COMMAND_SIZE] = { 0 };
 		sprintf_s(cmdFlashlight, "vr_flashlight 1 %.2f %.2f %.2f %.2f %.2f %.2f",
@@ -1193,12 +1226,38 @@ float VRHelper::GetAnalogFire()
 
 Vector VRHelper::GetLocalPlayerAngles()
 {
-	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
-	Vector angles = localPlayer->curstate.angles;
-	angles.x *= -3.0f;
+	cl_entity_t *localPlayer = SaveGetLocalPlayer();
+	if (localPlayer)
+	{
+		Vector angles = localPlayer->curstate.angles;
+		angles.x *= -3.0f;
+		return angles;
+	}
+	else
+	{
+		Vector viewangles;
+		GetViewAngles(vr::Eye_Left, viewangles);
+		viewangles.x = -viewangles.x;
+		return viewangles;
+	}
+}
 
-	Vector viewangles;
-	GetViewAngles(vr::Eye_Left, viewangles);
+void VRHelper::SetSkybox(const char* name)
+{
+	if (!vrCompositor)
+		return;
 
-	return angles;
+	vr::Texture_t skyboxTextures[6];
+	for (int i = 0; i < 6; i++)
+	{
+		skyboxTextures[i].eType = vr::TextureType_OpenGL;
+		skyboxTextures[i].eColorSpace = vr::ColorSpace_Auto;
+		skyboxTextures[i].handle = reinterpret_cast<void*>(VRTextureHelper::Instance().GetSkyboxTexture(name, i));
+	}
+	vrCompositor->SetSkyboxOverride(skyboxTextures, 6);
+}
+
+void VRHelper::SetSkyboxFromMap(const char* mapName)
+{
+	SetSkybox(VRTextureHelper::Instance().GetSkyboxNameFromMapName(mapName));
 }

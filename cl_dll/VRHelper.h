@@ -28,13 +28,17 @@ public:
 
 	void Init();
 
-	void PollEvents();
-	bool UpdatePositions(struct ref_params_s* pparams);
+	void PollEvents(bool isInGame, bool isInMenu);
+	bool UpdatePositions();
 	void SubmitImages();
-	void PrepareVRScene(vr::EVREye eEye, struct ref_params_s* pparams);
-	void FinishVRScene(struct ref_params_s* pparams);
+	void PrepareVRScene(vr::EVREye eEye);
+	void FinishVRScene(float width, float height);
 
 	unsigned int GetVRTexture(vr::EVREye eEye);
+	unsigned int GetVRGLMenuTexture();
+
+	int GetVRGLMenuTextureWidth() { return m_vrGLMenuTextureWidth; }
+	int GetVRGLMenuTextureHeight() { return m_vrGLMenuTextureHeight; }
 
 	void GetViewAngles(vr::EVREye eEye, float * angles);
 	void GetViewMatrix(vr::EVREye eEye, float* matrix);
@@ -51,6 +55,9 @@ public:
 	bool m_handAnglesValid{ false };
 	Vector m_handAngles;
 	Vector GetMovementAngles();
+
+	void SetSkybox(const char* name);
+	void SetSkyboxFromMap(const char* namename);
 
 private:
 
@@ -99,9 +106,10 @@ private:
 
 	unsigned int vrGLLeftEyeTexture = 0;
 	unsigned int vrGLRightEyeTexture = 0;
-
 	unsigned int vrGLMenuTexture = 0;
-	unsigned int vrGLHUDTexture = 0;
+
+	int m_vrGLMenuTextureWidth = 0;
+	int m_vrGLMenuTextureHeight = 0;
 
 	unsigned int vrRenderWidth = 0;
 	unsigned int vrRenderHeight = 0;

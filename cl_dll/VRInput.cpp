@@ -9,20 +9,15 @@
 
 #include "hud.h"
 #include "cl_util.h"
-#include "vr_input.h"
+#include "VRInput.h"
 #include "eiface.h"
+#include "VRCommon.h"
 
 VRInput g_vrInput;
 
 static inline void TrimString(std::string &s) {
 	s.erase(s.begin(), std::find_if_not(s.begin(), s.end(), std::isspace));
 	s.erase(std::find_if_not(s.rbegin(), s.rend(), std::isspace).base(), s.end());
-}
-
-std::filesystem::path GetPathFor(const std::string& file)
-{
-	std::filesystem::path relativePath = gEngfuncs.pfnGetGameDirectory() + file;
-	return std::filesystem::absolute(relativePath);
 }
 
 void VRInput::Init()

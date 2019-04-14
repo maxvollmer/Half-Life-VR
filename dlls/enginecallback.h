@@ -90,11 +90,11 @@ inline void WRITE_FLOAT(float f)
 	WRITE_BYTE(floatbytes[2]);
 	WRITE_BYTE(floatbytes[3]);
 }
-inline void WRITE_PRECISE_VECTOR(Vector v)
+inline void WRITE_PRECISE_VECTOR(float* v)
 {
-	WRITE_FLOAT(v.x);
-	WRITE_FLOAT(v.y);
-	WRITE_FLOAT(v.z);
+	WRITE_FLOAT(v[0]);
+	WRITE_FLOAT(v[1]);
+	WRITE_FLOAT(v[2]);
 }
 #define CVAR_REGISTER	(*g_engfuncs.pfnCVarRegister)
 #define CVAR_GET_FLOAT	(*g_engfuncs.pfnCVarGetFloat)

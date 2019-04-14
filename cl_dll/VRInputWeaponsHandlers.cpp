@@ -7,7 +7,7 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "openvr/openvr.h"
-#include "vr_input.h"
+#include "VRInput.h"
 #include "eiface.h"
 
 namespace

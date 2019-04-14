@@ -11,7 +11,7 @@
 
 // Quake is a trademark of Id Software, Inc., (c) 1996 Id Software, Inc. All
 // rights reserved.
-#include "vr_input.h"
+#include "VRInput.h"
 #include "hud.h"
 #include "cl_util.h"
 #include "camera.h"
@@ -29,7 +29,7 @@ extern "C"
 #include <ctype.h>
 
 #include "vgui_TeamFortressViewport.h"
-#include "vr_renderer.h"
+#include "VRRenderer.h"
 
 
 extern "C" 

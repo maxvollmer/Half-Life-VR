@@ -28,13 +28,12 @@
 #include "r_efx.h"
 #include "r_studioint.h"
 
-#include "vr_renderer.h"
-#include "vr_helper.h"
+#include "VRRenderer.h"
+#include "VRHelper.h"
 
 #define HARDWARE_MODE
 #include "com_model.h"
 
-#include <windows.h>
 #include "vr_gl.h"
 
 
@@ -314,7 +313,7 @@ void RotatedGLCall(float x, float y, float z, Vector forward, Vector right, Vect
 	// Can't wrap my head around getting a proper GL matrix from HL's euler angle mess,
 	// so instead I just transform the coordinates in HL space by hand before sending them down to OpenGL
 	// (can't be much slower anyways with these ffp calls...
-	Vector result = (right * x) + (forward * y) + (up * z);
+	Vector result = (-right * x) + (forward * y) + (up * z);
 	glCallback(result.x, result.y, result.z);
 }
 

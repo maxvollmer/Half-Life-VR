@@ -29,7 +29,7 @@
 #include "ammohistory.h"
 #include "vgui_TeamFortressViewport.h"
 
-#include "vr_renderer.h"
+#include "VRRenderer.h"
 
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item

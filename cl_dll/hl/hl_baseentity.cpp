@@ -33,8 +33,8 @@ This file contains "stubs" of class member implementations so that we can predic
 #include	"../hud_iface.h"
 #include	"../wrect.h"
 #include	"cdll_int.h"
-#include	"../vr_helper.h"
-#include	"../vr_renderer.h"
+#include	"../VRHelper.h"
+#include	"../VRRenderer.h"
 
 // Globals used by game logic
 const Vector g_vecZero = Vector( 0, 0, 0 );

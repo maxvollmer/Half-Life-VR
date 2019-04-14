@@ -30,6 +30,7 @@ public:
 	void VidInit();
 
 	void Frame(double time);
+	void UpdateGameRenderState();
 	void CalcRefdef(struct ref_params_s* pparams);
 
 	void DrawTransparent();
@@ -48,8 +49,12 @@ public:
 
 	bool ShouldMirrorCurrentModel(cl_entity_t *ent);
 
+	// Called in Frame if no game is running
+	void RenderIntermissionRoom();
+
 	// Called in DrawTransparent()
 	void RenderHUDSprites();
+	void RenderScreenFade();
 
 	// Called by HUD draw code
 	void VRHUDDrawBegin(const VRHUDRenderType renderType);
@@ -63,19 +68,28 @@ public:
 	bool HasValidHandController();
 	bool HasValidWeaponController();
 
+	struct cl_entity_s* SaveGetLocalPlayer();
+
 private:
 
+	struct model_s* m_currentMapModel{ nullptr };
+	bool m_hdTexturesEnabled{ false };
 	void RenderWorldBackfaces();
 	void RenderBSPBackfaces(struct model_s* model);
+	void ReplaceAllTexturesWithHDVersion(struct cl_entity_s *ent, bool enableHD);
+	void CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s *ent);
 
-	unsigned int vrGLMenuTexture = 0;
-	unsigned int vrGLHUDTexture = 0;
-
-	bool isInMenu = true;
+	void DebugRenderPhysicsPolygons();
 
 	bool m_fIsOnlyClientDraw = false;
 
 	VRHelper * vrHelper = nullptr;
+
+	bool m_isInGame{ false };
+	bool m_isInMenu{ false };
+	bool m_wasMenuJustRendered{ false };
+	bool m_CalcRefdefWasCalled{ false };
+	bool m_HUDRedrawWasCalled{ false };
 
 	// HUD Render stuff
 	VRHUDRenderType m_hudRenderType{VRHUDRenderType::NONE};

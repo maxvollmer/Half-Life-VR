@@ -1,10 +1,9 @@
 
-#include <windows.h>
 #include "Matrices.h"
 #include "hud.h"
 #include "cl_util.h"
 #include "openvr/openvr.h"
-#include "vr_input.h"
+#include "VRInput.h"
 
 void VRInput::LegacyHandleButtonPress(unsigned int button, vr::VRControllerState_t controllerState, bool leftOrRight, bool downOrUp)
 {
@@ -23,7 +22,6 @@ void VRInput::LegacyHandleButtonPress(unsigned int button, vr::VRControllerState
 			{
 				ClientCmd("impulse 100");
 			}
-			//downOrUp ? ClientCmd("impulse 1337") : ClientCmd("impulse 1338");
 		}
 		break;
 		case vr::EVRButtonId::k_EButton_SteamVR_Touchpad:
@@ -32,30 +30,8 @@ void VRInput::LegacyHandleButtonPress(unsigned int button, vr::VRControllerState
 			{
 				vr::VRControllerAxis_t touchPadAxis = controllerState.rAxis[vr::EVRButtonId::k_EButton_SteamVR_Touchpad - vr::EVRButtonId::k_EButton_Axis0];
 
-				// TODO: Move in direction controller is pointing, not direction player is looking!
-
 				m_rotateLeft = (touchPadAxis.x < -0.5f && downOrUp);
 				m_rotateRight = (touchPadAxis.x > 0.5f && downOrUp);
-
-				/*
-				if (touchPadAxis.x < -0.5f && downOrUp)
-				{
-				ClientCmd("+moveleft");
-				}
-				else
-				{
-				ClientCmd("-moveleft");
-				}
-
-				if (touchPadAxis.x > 0.5f && downOrUp)
-				{
-				ClientCmd("+moveright");
-				}
-				else
-				{
-				ClientCmd("-moveright");
-				}
-				*/
 
 				if (touchPadAxis.y > 0.5f && downOrUp)
 				{
@@ -122,7 +98,6 @@ void VRInput::LegacyHandleButtonPress(unsigned int button, vr::VRControllerState
 					// Select hand when current weapon is last weapon
 					ServerCmd("weapon_barehand");
 					PlaySound("common/wpn_select.wav", 1);
-					//PlaySound("common/wpn_hudon.wav", 1);
 					gHUD.m_Ammo.m_pWeapon = nullptr;
 				}
 				else
@@ -139,7 +114,6 @@ void VRInput::LegacyHandleButtonPress(unsigned int button, vr::VRControllerState
 					// Select hand when current weapon is first weapon
 					ServerCmd("weapon_barehand");
 					PlaySound("common/wpn_select.wav", 1);
-					//PlaySound("common/wpn_moveselect.wav", 1);
 					gHUD.m_Ammo.m_pWeapon = nullptr;
 				}
 				else
