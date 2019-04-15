@@ -27,6 +27,9 @@
 #include <string.h> // strcpy
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
+#include "edict.h"
+#include "eiface.h"
+#include "enginecallback.h"
 
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
@@ -995,6 +998,14 @@ void PM_Accelerate (vec3_t wishdir, float wishspeed, float accel)
 	if (pmove->waterjumptime)
 		return;
 
+	// If player has enabled instant acceleration in VR,
+	// we simply set the velocity to wishdir*wishspeed and are done here.
+	if (CVAR_GET_FLOAT("vr_move_instant_accelerate") != 0.f)
+	{
+		VectorScale(wishdir, wishspeed, pmove->velocity);
+		return;
+	}
+
 	// See if we are changing direction a bit
 	currentspeed = DotProduct (pmove->velocity, wishdir);
 
@@ -1015,7 +1026,7 @@ void PM_Accelerate (vec3_t wishdir, float wishspeed, float accel)
 	// Adjust velocity.
 	for (i=0 ; i<3 ; i++)
 	{
-		pmove->velocity[i] += accelspeed * wishdir[i];	
+		pmove->velocity[i] += accelspeed * wishdir[i];
 	}
 }
 
@@ -1205,6 +1216,14 @@ void PM_Friction (void)
 	if (pmove->waterjumptime)
 		return;
 
+	// If player has enabled instant stop in VR,
+	// we simply set the velocity to 0 and are done here.
+	if (CVAR_GET_FLOAT("vr_move_instant_decelerate") != 0.f)
+	{
+		VectorClear(pmove->velocity);
+		return;
+	}
+
 	// Get velocity
 	vel = pmove->velocity;
 	
@@ -1225,18 +1244,18 @@ void PM_Friction (void)
 		vec3_t start, stop;
 		pmtrace_t trace;
 
-		start[0] = stop[0] = pmove->origin[0] + vel[0]/speed*16;
-		start[1] = stop[1] = pmove->origin[1] + vel[1]/speed*16;
+		start[0] = stop[0] = pmove->origin[0] + vel[0] / speed * 16;
+		start[1] = stop[1] = pmove->origin[1] + vel[1] / speed * 16;
 		start[2] = pmove->origin[2] + pmove->player_mins[pmove->usehull][2];
 		stop[2] = start[2] - 34;
 
-		trace = pmove->PM_PlayerTrace (start, stop, PM_NORMAL, -1 );
+		trace = pmove->PM_PlayerTrace(start, stop, PM_NORMAL, -1);
 
 		if (trace.fraction == 1.0)
 			friction = pmove->movevars->friction*pmove->movevars->edgefriction;
 		else
 			friction = pmove->movevars->friction;
-		
+
 		// Grab friction value.
 		//friction = pmove->movevars->friction;      
 
@@ -1247,7 +1266,7 @@ void PM_Friction (void)
 		control = (speed < pmove->movevars->stopspeed) ?
 			pmove->movevars->stopspeed : speed;
 		// Add the amount to t'he drop amount.
-		drop += control*friction*pmove->frametime;
+		drop += control * friction*pmove->frametime;
 	}
 
 // apply water friction

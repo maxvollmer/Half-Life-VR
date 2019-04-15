@@ -475,6 +475,8 @@ cvar_t vr_semicheat_spinthingyspeed = { "vr_semicheat_spinthingyspeed", "0" };
 cvar_t vr_disable_func_friction = { "vr_disable_func_friction", "0" };
 cvar_t vr_disable_triggerpush = { "vr_disable_triggerpush", "0" };
 cvar_t vr_xenjumpthingies_teleporteronly = { "vr_xenjumpthingies_teleporteronly", "0" };
+cvar_t vr_move_instant_decelerate = { "vr_move_instant_decelerate", "0" };
+cvar_t vr_move_instant_accelerate = { "vr_move_instant_accelerate", "0" };
 
 
 // Register your console variables here
@@ -937,6 +939,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&vr_disable_func_friction);
 	CVAR_REGISTER(&vr_disable_triggerpush);
 	CVAR_REGISTER(&vr_xenjumpthingies_teleporteronly);
+	CVAR_REGISTER(&vr_move_instant_decelerate);
+	CVAR_REGISTER(&vr_move_instant_accelerate);
 
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

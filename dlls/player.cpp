@@ -3571,33 +3571,40 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 
 	case 101:
 		gEvilImpulse101 = TRUE;
-		GiveNamedItem( "item_suit" );
-		GiveNamedItem( "item_battery" );
-		GiveNamedItem( "item_longjump" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_9mmhandgun" );
-		GiveNamedItem( "ammo_9mmclip" );
-		GiveNamedItem( "weapon_shotgun" );
-		GiveNamedItem( "ammo_buckshot" );
-		GiveNamedItem( "weapon_9mmAR" );
-		GiveNamedItem( "ammo_9mmAR" );
-		GiveNamedItem( "ammo_ARgrenades" );
-		GiveNamedItem( "weapon_handgrenade" );
-		GiveNamedItem( "weapon_tripmine" );
-#ifndef OEM_BUILD
-		GiveNamedItem( "weapon_357" );
-		GiveNamedItem( "ammo_357" );
-		GiveNamedItem( "weapon_crossbow" );
-		GiveNamedItem( "ammo_crossbow" );
-		GiveNamedItem( "weapon_egon" );
-		GiveNamedItem( "weapon_gauss" );
-		GiveNamedItem( "ammo_gaussclip" );
-		GiveNamedItem( "weapon_rpg" );
-		GiveNamedItem( "ammo_rpgclip" );
-		GiveNamedItem( "weapon_satchel" );
-		GiveNamedItem( "weapon_snark" );
-		GiveNamedItem( "weapon_hornetgun" );
-#endif
+		// all the items
+		GiveNamedItem("item_suit");
+		GiveNamedItem("item_battery");
+		GiveNamedItem("item_longjump");
+		// all the weapons
+		GiveNamedItem("weapon_crowbar");
+		GiveNamedItem("weapon_9mmhandgun");
+		GiveNamedItem("weapon_shotgun");
+		GiveNamedItem("weapon_9mmAR");
+		GiveNamedItem("weapon_357");
+		GiveNamedItem("weapon_crossbow");
+		GiveNamedItem("weapon_egon");
+		GiveNamedItem("weapon_gauss");
+		GiveNamedItem("weapon_rpg");
+		GiveNamedItem("weapon_hornetgun");
+		GiveNamedItem("weapon_satchel");
+		GiveNamedItem("weapon_snark");
+		GiveNamedItem("weapon_handgrenade");
+		GiveNamedItem("weapon_tripmine");
+		// all the ammo, and i mean /all/ the ammo
+		for (int i = 0; i < (URANIUM_MAX_CARRY / AMMO_URANIUMBOX_GIVE); i++)
+			GiveNamedItem("ammo_gaussclip");
+		for (int i = 0; i < (ROCKET_MAX_CARRY / AMMO_RPGCLIP_GIVE); i++)
+			GiveNamedItem("ammo_rpgclip");
+		for (int i = 0; i < (BOLT_MAX_CARRY / AMMO_CROSSBOWCLIP_GIVE); i++)
+			GiveNamedItem("ammo_crossbow");
+		for (int i = 0; i < (_357_MAX_CARRY / AMMO_357BOX_GIVE); i++)
+			GiveNamedItem("ammo_357");
+		for (int i = 0; i < (_9MM_MAX_CARRY / AMMO_MP5CLIP_GIVE); i++)
+			GiveNamedItem("ammo_9mmAR");
+		for (int i = 0; i < (BUCKSHOT_MAX_CARRY / AMMO_BUCKSHOTBOX_GIVE); i++)
+			GiveNamedItem("ammo_buckshot");
+		for (int i = 0; i < (M203_GRENADE_MAX_CARRY / AMMO_M203BOX_GIVE); i++)
+			GiveNamedItem("ammo_ARgrenades");
 		gEvilImpulse101 = FALSE;
 		break;
 

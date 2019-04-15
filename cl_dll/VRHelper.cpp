@@ -299,6 +299,8 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_hud_size", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_textscale", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hd_textures_enabled", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_move_instant_decelerate", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_move_instant_accelerate", "0", FCVAR_ARCHIVE);
 
 	g_vrInput.Init();
 

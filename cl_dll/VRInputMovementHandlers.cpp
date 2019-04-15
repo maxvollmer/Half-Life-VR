@@ -96,7 +96,7 @@ namespace VR
 		{
 			if (data.bActive && data.bState && data.bChanged)
 			{
-				gVRRenderer.GetHelper()->InstantRotateYaw(-90.f);
+				gVRRenderer.GetHelper()->InstantRotateYaw(90.f);
 			}
 		}
 
@@ -104,7 +104,7 @@ namespace VR
 		{
 			if (data.bActive && data.bState && data.bChanged)
 			{
-				gVRRenderer.GetHelper()->InstantRotateYaw(90.f);
+				gVRRenderer.GetHelper()->InstantRotateYaw(-90.f);
 			}
 		}
 
