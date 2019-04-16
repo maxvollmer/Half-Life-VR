@@ -1536,7 +1536,13 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 	}
 	else
 	{
-		EMIT_SOUND_DYN2(entity, channel, sample, volume, attenuation, flags, pitch);
+		std::string ssample{ sample };
+		if (CBaseEntity::Instance(entity)->IsFemaleNPC() && ssample.find("scientist/") == 0)
+		{
+			ssample = std::regex_replace(ssample, std::regex{ "scientist/" }, "fsci/");
+		}
+
+		EMIT_SOUND_DYN2(entity, channel, ssample.data(), volume, attenuation, flags, pitch);
 	}
 }
 

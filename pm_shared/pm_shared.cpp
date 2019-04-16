@@ -27,10 +27,20 @@
 #include <string.h> // strcpy
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
+
+
+// and again we are in include hell and use an extern declaration to escape :S
+extern float CVAR_GET_FLOAT(const char *x);
+/*
+#ifdef CLIENT_DLL
+#include "../cl_dll/cl_dll.h"
+#include "../cl_dll/cl_util.h"
+#else
 #include "edict.h"
 #include "eiface.h"
 #include "enginecallback.h"
-
+#endif
+*/
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
 void PM_CheckWaterJump(void);

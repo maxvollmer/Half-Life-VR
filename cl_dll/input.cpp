@@ -647,6 +647,11 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 		if (fabs(g_vrInput.analogsidemove) > EPSILON) cmd->sidemove += g_vrInput.analogsidemove * cl_sidespeed->value;
 		if (fabs(g_vrInput.analogupmove) > EPSILON) cmd->upmove += g_vrInput.analogupmove * cl_upspeed->value;
 
+		// Clear analog VR input data
+		g_vrInput.analogforward = 0.f;
+		g_vrInput.analogsidemove = 0.f;
+		g_vrInput.analogupmove = 0.f;
+
 		// clip to maxspeed
 		spd = gEngfuncs.GetClientMaxspeed();
 		if ( spd != 0.0 )

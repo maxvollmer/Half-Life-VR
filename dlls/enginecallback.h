@@ -97,8 +97,14 @@ inline void WRITE_PRECISE_VECTOR(float* v)
 	WRITE_FLOAT(v[2]);
 }
 #define CVAR_REGISTER	(*g_engfuncs.pfnCVarRegister)
-#define CVAR_GET_FLOAT	(*g_engfuncs.pfnCVarGetFloat)
-#define CVAR_GET_STRING	(*g_engfuncs.pfnCVarGetString)
+inline float CVAR_GET_FLOAT(const char *szVarName)
+{
+	return g_engfuncs.pfnCVarGetFloat(szVarName);
+}
+inline const char* CVAR_GET_STRING(const char *szVarName)
+{
+	return g_engfuncs.pfnCVarGetString(szVarName);
+}
 #define CVAR_SET_FLOAT	(*g_engfuncs.pfnCVarSetFloat)
 #define CVAR_SET_STRING	(*g_engfuncs.pfnCVarSetString)
 #define CVAR_GET_POINTER (*g_engfuncs.pfnCVarGetPointer)

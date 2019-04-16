@@ -164,6 +164,7 @@ void VRHelper::UpdateWorldRotation()
 		if (fabs(g_vrInput.analogturn) > EPSILON)
 		{
 			m_currentYaw += deltaTime * g_vrInput.analogturn * CVAR_GET_FLOAT("cl_yawspeed");
+			g_vrInput.analogturn = 0.f;
 		}
 
 		// Calculate in instant rotation values from VR input
@@ -299,8 +300,12 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_hud_size", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_textscale", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hd_textures_enabled", "1", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_move_instant_decelerate", "0", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_move_instant_accelerate", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_move_instant_decelerate", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_move_instant_accelerate", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_move_analogforward_inverted", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_move_analogsideways_inverted", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_move_analogupdown_inverted", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_move_analogturn_inverted", "0", FCVAR_ARCHIVE);
 
 	g_vrInput.Init();
 

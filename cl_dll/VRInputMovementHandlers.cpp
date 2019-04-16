@@ -146,50 +146,62 @@ namespace VR
 			}
 		}
 
+		void TryAddInAnalogSpeed(float& target, const float& inputValue, const char* cvar_inverted)
+		{
+			if (fabs(inputValue) > EPSILON)
+			{
+				target += (CVAR_GET_FLOAT(cvar_inverted) != 0.f) ? -inputValue : inputValue;
+			}
+		}
+
 		void Movement::HandleMoveForwardBackward(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
-			g_vrInput.analogforward = (data.bActive) ? data.x : 0.f;
+			TryAddInAnalogSpeed(g_vrInput.analogforward, data.x, "vr_move_analogforward_inverted");
 		}
 
 		void Movement::HandleMoveSideways(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
-			g_vrInput.analogsidemove = (data.bActive) ? data.x : 0.f;
+			TryAddInAnalogSpeed(g_vrInput.analogsidemove, data.x, "vr_move_analogsideways_inverted");
 		}
 
 		void Movement::HandleMoveUpDown(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
-			g_vrInput.analogupmove = (data.bActive) ? data.x : 0.f;
+			TryAddInAnalogSpeed(g_vrInput.analogupmove, data.x, "vr_move_analogupdown_inverted");
 		}
 
 		void Movement::HandleTurn(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
-			g_vrInput.analogturn = (data.bActive) ? data.x : 0.f;
+			TryAddInAnalogSpeed(g_vrInput.analogturn, data.x, "vr_move_analogturn_inverted");
 		}
 
 		void Movement::HandleMoveForwardBackwardSideways(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
-			g_vrInput.analogforward = (data.bActive) ? data.x : 0.f;
-			g_vrInput.analogsidemove = (data.bActive) ? data.y : 0.f;
+			// y is forward, x is sideways
+			TryAddInAnalogSpeed(g_vrInput.analogforward, data.y, "vr_move_analogforward_inverted");
+			TryAddInAnalogSpeed(g_vrInput.analogsidemove, data.x, "vr_move_analogsideways_inverted");
 		}
 
 		void Movement::HandleMoveForwardBackwardTurn(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
-			g_vrInput.analogforward = (data.bActive) ? data.x : 0.f;
-			g_vrInput.analogturn = (data.bActive) ? data.y : 0.f;
+			// y is forward, x is turn
+			TryAddInAnalogSpeed(g_vrInput.analogforward, data.y, "vr_move_analogforward_inverted");
+			TryAddInAnalogSpeed(g_vrInput.analogturn, data.x, "vr_move_analogturn_inverted");
 		}
 
 		void Movement::HandleMoveForwardBackwardSidewaysUpDown(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
-			g_vrInput.analogforward = (data.bActive) ? data.x : 0.f;
-			g_vrInput.analogsidemove = (data.bActive) ? data.y : 0.f;
-			g_vrInput.analogupmove = (data.bActive) ? data.z : 0.f;
+			// y is forward, x is sideways, z is updown
+			TryAddInAnalogSpeed(g_vrInput.analogforward, data.y, "vr_move_analogforward_inverted");
+			TryAddInAnalogSpeed(g_vrInput.analogsidemove, data.x, "vr_move_analogsideways_inverted");
+			TryAddInAnalogSpeed(g_vrInput.analogupmove, data.z, "vr_move_analogupdown_inverted");
 		}
 
 		void Movement::HandleMoveForwardBackwardTurnUpDown(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
-			g_vrInput.analogforward = (data.bActive) ? data.x : 0.f;
-			g_vrInput.analogturn = (data.bActive) ? data.y : 0.f;
-			g_vrInput.analogupmove = (data.bActive) ? data.z : 0.f;
+			// y is forward, x is turn, z is updown
+			TryAddInAnalogSpeed(g_vrInput.analogforward, data.y, "vr_move_analogforward_inverted");
+			TryAddInAnalogSpeed(g_vrInput.analogturn, data.x, "vr_move_analogturn_inverted");
+			TryAddInAnalogSpeed(g_vrInput.analogupmove, data.z, "vr_move_analogupdown_inverted");
 		}
 
 	}

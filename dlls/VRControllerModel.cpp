@@ -64,7 +64,7 @@ void CVRControllerModel::TurnOn()
 
 	pev->effects &= ~EF_NODRAW;
 	SetSequence(0);
-	SetThink(&CVRControllerModel::Think);
+	SetThink(&CVRControllerModel::ControllerModelThink);
 	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
@@ -74,7 +74,7 @@ void CVRControllerModel::SetSequence(int sequence)
 	ResetSequenceInfo();
 }
 
-void CVRControllerModel::Think()
+void CVRControllerModel::ControllerModelThink()
 {
 	pev->nextthink = gpGlobals->time + 0.1f;
 

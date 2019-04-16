@@ -6,7 +6,7 @@ class CVRControllerModel : public CBaseAnimating
 {
 public:
 	void Spawn() override;
-	void EXPORT Think();
+	void EXPORT ControllerModelThink(void);
 	void HandleClientAnimEvent(ClientAnimEvent_t *pEvent) override;
 	void HandleAnimEvent(MonsterEvent_t *pEvent) override;
 	void SetSequence(int sequence);
