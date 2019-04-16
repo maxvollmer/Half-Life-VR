@@ -306,12 +306,12 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_move_analogsideways_inverted", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_move_analogupdown_inverted", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_move_analogturn_inverted", "0", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_hud_ammo_offset_x", "0", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_hud_ammo_offset_y", "0", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_hud_health_offset_x", "0", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_hud_health_offset_y", "0", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_hud_flashlight_offset_x", "0", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_hud_flashlight_offset_y", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_ammo_offset_x", "3", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_ammo_offset_y", "-3", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_health_offset_x", "-4", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_health_offset_y", "-3", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_flashlight_offset_x", "-5", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_flashlight_offset_y", "2", FCVAR_ARCHIVE);
 
 	g_vrInput.Init();
 
