@@ -306,6 +306,12 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_move_analogsideways_inverted", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_move_analogupdown_inverted", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_move_analogturn_inverted", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_ammo_offset_x", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_ammo_offset_y", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_health_offset_x", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_health_offset_y", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_flashlight_offset_x", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_flashlight_offset_y", "0", FCVAR_ARCHIVE);
 
 	g_vrInput.Init();
 
@@ -1179,6 +1185,23 @@ Vector VRHelper::GetWeaponHUDPosition()
 		return GetWeaponPosition();
 	}
 }
+Vector VRHelper::GetWeaponHUDUp()
+{
+	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t* ent);
+	if (HasValidWeaponController() && GetViewEntity() && VRGlobalNumAttachmentsForEntity(GetViewEntity()) >= 4)
+	{
+		Vector pos1 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 2];
+		Vector pos2 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 3];
+		Vector dir = (pos2 - pos1).Normalize();
+		return dir;
+	}
+	else
+	{
+		Vector dummy, up;
+		GetWeaponVectors(dummy, dummy, up);
+		return up;
+	}
+}
 void VRHelper::GetWeaponHUDMatrix(float* matrix)
 {
 	if (HasValidWeaponController())
@@ -1254,8 +1277,34 @@ Vector VRHelper::GetHandAngles()
 }
 Vector VRHelper::GetHandHUDPosition()
 {
-	// TODO: Get hand model from gHUD.m_somethingsomethingleftentbla
-	return GetHandPosition();
+	cl_entity_t* pEnt = gHUD.GetHandControllerEntity();
+	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t* ent);
+	if (HasValidWeaponController() && pEnt && VRGlobalNumAttachmentsForEntity(pEnt) >= 3)
+	{
+		return pEnt->attachment[VR_MUZZLE_ATTACHMENT + 2];
+	}
+	else
+	{
+		return GetHandPosition();
+	}
+}
+Vector VRHelper::GetHandHUDUp()
+{
+	cl_entity_t* pEnt = gHUD.GetHandControllerEntity();
+	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t* ent);
+	if (HasValidWeaponController() && pEnt && VRGlobalNumAttachmentsForEntity(pEnt) >= 4)
+	{
+		Vector pos1 = pEnt->attachment[VR_MUZZLE_ATTACHMENT + 2];
+		Vector pos2 = pEnt->attachment[VR_MUZZLE_ATTACHMENT + 3];
+		Vector dir = (pos2 - pos1).Normalize();
+		return dir;
+	}
+	else
+	{
+		Vector dummy, up;
+		GetHandVectors(dummy, dummy, up);
+		return up;
+	}
 }
 void VRHelper::GetHandHUDMatrix(float* matrix)
 {

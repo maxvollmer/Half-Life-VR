@@ -685,6 +685,9 @@ public:
 
 	// HUD (train control sprites) attachment for train we are controlling
 	bool GetTrainControlsOriginAndOrientation(Vector& origin, Vector& angles);
+
+	struct cl_entity_s* CHud::GetWeaponControllerEntity();
+	struct cl_entity_s* CHud::GetHandControllerEntity();
 };
 
 class TeamFortressViewport;

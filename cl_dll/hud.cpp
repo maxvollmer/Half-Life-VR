@@ -751,3 +751,27 @@ bool CHud::GetTrainControlsOriginAndOrientation(Vector& origin, Vector& angles)
 	}
 	return false;
 }
+
+cl_entity_t* CHud::GetWeaponControllerEntity()
+{
+	if (gVRRenderer.HasValidWeaponController() && m_weaponControllerEntData.isValid)
+	{
+		return gEngfuncs.GetEntityByIndex(m_weaponControllerEntData.entIndex);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+cl_entity_t* CHud::GetHandControllerEntity()
+{
+	if (gVRRenderer.HasValidHandController() && m_handControllerEntData.isValid)
+	{
+		return gEngfuncs.GetEntityByIndex(m_handControllerEntData.entIndex);
+	}
+	else
+	{
+		return nullptr;
+	}
+}

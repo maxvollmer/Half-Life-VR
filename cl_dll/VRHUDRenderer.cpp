@@ -52,12 +52,11 @@ enum class HUDRenderMode
 
 namespace
 {
-	const Vector VR_HUD_ACTUALHUD_AMMO_OFFSET{ 8.f, 0.f, 0.f };
-	const Vector VR_HUD_ACTUALHUD_HEALTH_OFFSET{ 8.f, 1.f, 1.f };
+	constexpr const float VR_HUD_ACTUALHUD_SPRITE_SCALE = 0.02f;
+
+	constexpr const float VR_HUD_CONTROLLER_SPRITE_SCALE = 0.05f;
 
 	constexpr const float VR_HUD_TRAINCONTROLS_SPRITE_SCALE = 0.5f;
-	constexpr const float VR_HUD_CONTROLLER_SPRITE_SCALE = 0.1f;
-	constexpr const float VR_HUD_ACTUALHUD_SPRITE_SCALE = 0.01f;
 
 	constexpr const int VR_HUD_SPRITE_OFFSET_STEPSIZE = 40;
 }
@@ -227,6 +226,13 @@ float GetVRHudSpriteScale(const VRHUDRenderType hudRenderType)
 	return scale;
 }
 
+Vector GetLocalActualHUDOffset(const std::string& name)
+{
+	float x = CVAR_GET_FLOAT(("vr_hud_"+ name +"_offset_x").data());
+	float y = CVAR_GET_FLOAT(("vr_hud_" + name + "_offset_y").data());
+	return Vector{ 8.f, x, y };
+}
+
 Vector GetActualHUDOffset(const Vector& offset, const Vector& forward, const Vector& right, const Vector& up)
 {
 	Vector actualOffset = offset;
@@ -245,7 +251,7 @@ bool VRRenderer::GetHUDAmmoOriginAndOrientation(Vector& origin, Vector& forward,
 	{
 		vrHelper->GetViewOrg(origin);
 		vrHelper->GetViewVectors(forward, right, up);
-		origin = origin + GetActualHUDOffset(VR_HUD_ACTUALHUD_AMMO_OFFSET, forward, right, up);
+		origin = origin + GetActualHUDOffset(GetLocalActualHUDOffset("ammo"), forward, right, up);
 		return true;
 	}
 	else if (GetHUDRenderMode() == HUDRenderMode::ON_CONTROLLERS)
@@ -255,6 +261,7 @@ bool VRRenderer::GetHUDAmmoOriginAndOrientation(Vector& origin, Vector& forward,
 
 		origin = vrHelper->GetWeaponHUDPosition();
 		vrHelper->GetWeaponVectors(forward, right, up);
+		up = vrHelper->GetWeaponHUDUp();
 		return true;
 	}
 
@@ -267,7 +274,7 @@ bool VRRenderer::GetHUDHealthOriginAndOrientation(Vector& origin, Vector& forwar
 	{
 		vrHelper->GetViewOrg(origin);
 		vrHelper->GetViewVectors(forward, right, up);
-		origin = origin + GetActualHUDOffset(VR_HUD_ACTUALHUD_HEALTH_OFFSET, forward, right, up);
+		origin = origin + GetActualHUDOffset(GetLocalActualHUDOffset("health"), forward, right, up);
 		return true;
 	}
 	else if (GetHUDRenderMode() == HUDRenderMode::ON_CONTROLLERS)
@@ -277,7 +284,26 @@ bool VRRenderer::GetHUDHealthOriginAndOrientation(Vector& origin, Vector& forwar
 
 		origin = vrHelper->GetHandHUDPosition();
 		vrHelper->GetHandVectors(forward, right, up);
+		up = vrHelper->GetHandHUDUp();
 		return true;
+	}
+
+	return false;
+}
+
+bool VRRenderer::GetHUDFlashlightOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up)
+{
+	if (GetHUDRenderMode() == HUDRenderMode::ACTUAL_HUD_IN_VIEW)
+	{
+		vrHelper->GetViewOrg(origin);
+		vrHelper->GetViewVectors(forward, right, up);
+		origin = origin + GetActualHUDOffset(GetLocalActualHUDOffset("flashlight"), forward, right, up);
+		return true;
+	}
+	else if (GetHUDRenderMode() == HUDRenderMode::ON_CONTROLLERS)
+	{
+		// No flashlight on controllers (too much clutter)
+		return false;
 	}
 
 	return false;
@@ -292,8 +318,9 @@ bool VRRenderer::GetHUDSpriteOriginAndOrientation(const VRHUDRenderType hudRende
 		return GetHUDAmmoOriginAndOrientation(origin, forward, right, up);
 	case VRHUDRenderType::HEALTH:
 	case VRHUDRenderType::BATTERY:
-	case VRHUDRenderType::FLASHLIGHT:
 		return GetHUDHealthOriginAndOrientation(origin, forward, right, up);
+	case VRHUDRenderType::FLASHLIGHT:
+		return GetHUDFlashlightOriginAndOrientation(origin, forward, right, up);
 	case VRHUDRenderType::TRAINCONTROLS:
 	{
 		Vector angles;

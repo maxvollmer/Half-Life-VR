@@ -163,6 +163,7 @@ public:
 	Vector GetWeaponPosition();
 	Vector GetWeaponAngles();
 	Vector GetWeaponHUDPosition();
+	Vector GetWeaponHUDUp();
 	void GetWeaponVectors(Vector& forward, Vector& right, Vector& up);
 	void GetWeaponHUDMatrix(float* matrix);
 
@@ -170,6 +171,7 @@ public:
 	Vector GetHandPosition();
 	Vector GetHandAngles();
 	Vector GetHandHUDPosition();
+	Vector GetHandHUDUp();
 	void GetHandVectors(Vector& forward, Vector& right, Vector& up);
 	void GetHandHUDMatrix(float* matrix);
 
