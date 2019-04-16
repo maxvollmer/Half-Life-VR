@@ -299,7 +299,7 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_hud_flashlight", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_size", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_textscale", "1", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_hd_textures_enabled", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hd_textures_enabled", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_move_instant_decelerate", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_move_instant_accelerate", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_move_analogforward_inverted", "0", FCVAR_ARCHIVE);
@@ -818,17 +818,21 @@ void VRHelper::UpdateControllers()
 		m_rightControllerOffset, m_rightControllerPosition, m_rightControllerAngles, m_rightControllerVelocity,
 		m_rightControllerForward, m_rightControllerRight, m_rightControllerUp);
 
-	if (leftHandMode)
+	bool areBothControllersValid = m_fLeftControllerValid && m_fRightControllerValid;
+
+	bool useLeftControllerForViewEntity = (areBothControllersValid && leftHandMode) || (!areBothControllersValid && m_fLeftControllerValid);
+
+	if (useLeftControllerForViewEntity)
 	{
 		m_handAnglesValid = m_fRightControllerValid;
 		m_handAngles = m_rightControllerAngles;
-		UpdateViewEnt(m_fLeftControllerValid, m_leftControllerPosition, m_leftControllerAngles, m_leftControllerVelocity);
+		UpdateViewEnt(m_fLeftControllerValid, m_leftControllerPosition, m_leftControllerAngles, m_leftControllerVelocity, true);
 	}
 	else
 	{
 		m_handAnglesValid = m_fLeftControllerValid;
 		m_handAngles = m_leftControllerAngles;
-		UpdateViewEnt(m_fRightControllerValid, m_rightControllerPosition, m_rightControllerAngles, m_rightControllerVelocity);
+		UpdateViewEnt(m_fRightControllerValid, m_rightControllerPosition, m_rightControllerAngles, m_rightControllerVelocity, false);
 	}
 }
 
@@ -851,11 +855,26 @@ void VRHelper::SendPositionUpdateToServer()
 	bool leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);
 	bool rightDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand);
 
+	VRControllerID leftControllerID;
+	VRControllerID rightControllerID;
+
+	// either both valid or both invalid - chose controller id based on left hand mode
+	if (m_fLeftControllerValid == m_fRightControllerValid)
+	{
+		leftControllerID = leftHandMode ? VRControllerID::WEAPON : VRControllerID::HAND;
+		rightControllerID = leftHandMode ? VRControllerID::HAND : VRControllerID::WEAPON;
+	}
+	else // only one is valid, chose controller id based on the valid one (the valid one is the weapon)
+	{
+		leftControllerID = m_fLeftControllerValid ? VRControllerID::WEAPON : VRControllerID::HAND;
+		rightControllerID = m_fRightControllerValid ? VRControllerID::WEAPON : VRControllerID::HAND;
+	}
+
 	char cmdLeftController[MAX_COMMAND_SIZE] = { 0 };
 	sprintf_s(cmdLeftController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i",
 		m_vrUpdateTimestamp,
 		m_fLeftControllerValid ? 1 : 0,
-		int(leftHandMode ? VRControllerID::WEAPON : VRControllerID::HAND),
+		leftControllerID,
 		1/*isMirrored*/,
 		m_leftControllerOffset.x, m_leftControllerOffset.y, m_leftControllerOffset.z,
 		m_leftControllerAngles.x, m_leftControllerAngles.y, m_leftControllerAngles.z,
@@ -867,7 +886,7 @@ void VRHelper::SendPositionUpdateToServer()
 	sprintf_s(cmdRightController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i",
 		m_vrUpdateTimestamp,
 		m_fRightControllerValid ? 1 : 0,
-		int(leftHandMode ? VRControllerID::HAND : VRControllerID::WEAPON),
+		rightControllerID,
 		0/*isMirrored*/,
 		m_rightControllerOffset.x, m_rightControllerOffset.y, m_rightControllerOffset.z,
 		m_rightControllerAngles.x, m_rightControllerAngles.y, m_rightControllerAngles.z,
@@ -882,11 +901,16 @@ void VRHelper::SendPositionUpdateToServer()
 	m_vrUpdateTimestamp++;
 }
 
-void VRHelper::UpdateViewEnt(bool isControllerValid, const Vector& controllerPosition, const Vector& controllerAngles, const Vector& controllerVelocity)
+void VRHelper::UpdateViewEnt(bool isControllerValid, const Vector& controllerPosition, const Vector& controllerAngles, const Vector& controllerVelocity, bool isMirrored)
 {
 	cl_entity_t *viewent = gEngfuncs.GetViewModel();
 	if (!viewent)
+	{
+		mIsViewEntMirrored = false;
 		return;
+	}
+
+	mIsViewEntMirrored = isMirrored;
 
 	if (isControllerValid)
 	{
@@ -1026,6 +1050,9 @@ void VRHelper::TestRenderControllerPositions()
 
 bool VRHelper::HasValidWeaponController()
 {
+	// if only one controller is active, it automatically becomes the weapon controller
+	return m_fLeftControllerValid || m_fRightControllerValid;
+	/*
 	if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
 	{
 		return m_fLeftControllerValid;
@@ -1034,10 +1061,15 @@ bool VRHelper::HasValidWeaponController()
 	{
 		return m_fRightControllerValid;
 	}
+	*/
 }
 
 bool VRHelper::HasValidHandController()
 {
+	// if only one controller is active, it automatically becomes the weapon controller,
+	// thus the hand controller is only valid if both are active
+	return m_fLeftControllerValid && m_fRightControllerValid;
+	/*
 	if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
 	{
 		return m_fRightControllerValid;
@@ -1046,6 +1078,7 @@ bool VRHelper::HasValidHandController()
 	{
 		return m_fLeftControllerValid;
 	}
+	*/
 }
 
 vr::IVRSystem* VRHelper::GetVRSystem()
@@ -1098,10 +1131,14 @@ Vector VRHelper::GetWeaponPosition()
 {
 	if (HasValidWeaponController())
 	{
-		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
-			return m_leftControllerPosition;
-		else
-			return m_rightControllerPosition;
+		if (HasValidHandController())	// if hand is valid decide weapon controller based on left hand mode
+		{
+			return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerPosition : m_rightControllerPosition;
+		}
+		else	// if hand is not valid, decide weapon controller based on which controller is valid
+		{
+			return m_fLeftControllerValid ? m_leftControllerPosition : m_rightControllerPosition;
+		}
 	}
 	else
 	{
@@ -1114,10 +1151,14 @@ Vector VRHelper::GetWeaponAngles()
 {
 	if (HasValidWeaponController())
 	{
-		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
-			return m_leftControllerAngles;
-		else
-			return m_rightControllerAngles;
+		if (HasValidHandController())	// if hand is valid decide weapon controller based on left hand mode
+		{
+			return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerAngles : m_rightControllerAngles;
+		}
+		else	// if hand is not valid, decide weapon controller based on which controller is valid
+		{
+			return m_fLeftControllerValid ? m_leftControllerAngles : m_rightControllerAngles;
+		}
 	}
 	else
 	{
@@ -1142,14 +1183,30 @@ void VRHelper::GetWeaponHUDMatrix(float* matrix)
 {
 	if (HasValidWeaponController())
 	{
-		ExtractRotationMatrix((CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerMatrix : m_rightControllerMatrix, matrix);
+		if (HasValidHandController())	// if hand is valid decide weapon controller based on left hand mode
+		{
+			ExtractRotationMatrix((CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerMatrix : m_rightControllerMatrix, matrix);
+		}
+		else	// if hand is not valid, decide weapon controller based on which controller is valid
+		{
+			ExtractRotationMatrix((m_fLeftControllerValid) ? m_leftControllerMatrix : m_rightControllerMatrix, matrix);
+		}
 	}
 }
 void VRHelper::GetWeaponVectors(Vector& forward, Vector& right, Vector& up)
 {
 	if (HasValidWeaponController())
 	{
-		if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
+		bool useLeftController;
+		if (HasValidHandController())	// if hand is valid decide weapon controller based on left hand mode
+		{
+			useLeftController = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
+		}
+		else	// if hand is not valid, decide weapon controller based on which controller is valid
+		{
+			useLeftController = m_fLeftControllerValid;
+		}
+		if (useLeftController)
 		{
 			forward = m_leftControllerForward;
 			right = m_leftControllerRight;

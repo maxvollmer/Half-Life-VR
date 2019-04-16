@@ -72,7 +72,7 @@ private:
 		Vector& controllerOffset, Vector& controllerPosition, Vector& controllerAngles, Vector& controllerVelocity,
 		Vector &controllerForward, Vector &controllerRight, Vector &controllerUp);
 	void SendPositionUpdateToServer();
-	void UpdateViewEnt(bool isControllerValid, const Vector& controllerPosition, const Vector& controllerAngles, const Vector& controllerVelocity);
+	void UpdateViewEnt(bool isControllerValid, const Vector& controllerPosition, const Vector& controllerAngles, const Vector& controllerVelocity, bool isMirrored);
 
 	void SubmitImage(vr::EVREye eEye, unsigned int texture);
 
@@ -153,6 +153,8 @@ private:
 	Vector m_rightControllerUp;
 	Vector m_rightControllerVelocity;
 
+	bool		mIsViewEntMirrored{ false };
+
 public:
 	const Vector3& GetVRToHL();
 	const Vector3& GetHLToVR();
@@ -180,4 +182,6 @@ public:
 	void GetGunAim(Vector& forward, Vector& right, Vector& up, Vector& angles);
 	float GetAnalogFire();
 	Vector GetLocalPlayerAngles();
+
+	bool IsViewEntMirrored() { return mIsViewEntMirrored; }
 };

@@ -285,7 +285,16 @@ Vector VRRenderer::GetMovementAngles()
 
 bool VRRenderer::ShouldMirrorCurrentModel(cl_entity_t *ent)
 {
-	return gHUD.GetMirroredEnt() == ent;
+	if (!ent)
+		return false;
+
+	if (gHUD.GetMirroredEnt() == ent)
+		return true;
+
+	if (gEngfuncs.GetViewModel() == ent)
+		return vrHelper->IsViewEntMirrored();
+
+	return false;
 }
 
 void VRRenderer::ReverseCullface()
