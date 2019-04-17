@@ -5,6 +5,10 @@
 class CVRControllerModel : public CBaseAnimating
 {
 public:
+	// Don't save/restore
+	virtual int Save(CSave &save) override { return 0; }
+	virtual int Restore(CRestore &restore) override { return 0; }
+
 	void Spawn() override;
 	void EXPORT ControllerModelThink(void);
 	void HandleClientAnimEvent(ClientAnimEvent_t *pEvent) override;
