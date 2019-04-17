@@ -222,10 +222,8 @@ void CMP5::SecondaryAttack( void )
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
- 	UTIL_MakeVectors( m_pPlayer->GetWeaponViewAngles() );
-
 	// we don't add in player velocity anymore.
-	CGrenade::ShootContact( m_pPlayer->pev, m_pPlayer->GetWeaponPosition() + gpGlobals->v_forward * 16, gpGlobals->v_forward * 800 );
+	CGrenade::ShootContact( m_pPlayer->pev, m_pPlayer->GetGunPosition(), m_pPlayer->GetAutoaimVector() * 800 );
 
 	int flags;
 #if defined( CLIENT_WEAPONS )

@@ -393,7 +393,7 @@ void CSatchel::Throw( void )
 	if ( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
 #ifndef CLIENT_DLL
-		Vector vecSrc = m_pPlayer->GetWeaponPosition();
+		Vector vecSrc = m_pPlayer->GetGunPosition();
 		Vector vecThrow = m_pPlayer->GetWeaponVelocity() * 1.5f;
 
 		CBaseEntity *pSatchel = Create( "monster_satchel", vecSrc, Vector( 0, 0, 0), m_pPlayer->edict() );

@@ -181,7 +181,7 @@ void CHandGrenade::WeaponIdle( void )
 			time = 0;
 
 #ifndef CLIENT_DLL
-		CGrenade *pGrenade = CGrenade::ShootTimed(m_pPlayer->pev, m_pPlayer->GetWeaponPosition(), m_pPlayer->GetWeaponVelocity() * 2, time);
+		CGrenade *pGrenade = CGrenade::ShootTimed(m_pPlayer->pev, m_pPlayer->GetGunPosition(), m_pPlayer->GetWeaponVelocity() * 2, time);
 		pGrenade->pev->dmg = this->pev->dmg; // Original HL ignored skill setting for grenades...
 #endif
 
