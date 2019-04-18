@@ -35,6 +35,7 @@ extern bool VRGlobalIsInstantDecelerateOn();
 extern void VRGlobalGetEntityOrigin(int ent, float* entorigin);
 extern void VRGlobalGetWorldUnstuckDir(const float* pos, const float* velocity, float* unstuckdir);
 extern bool VRGlobalGetNoclipMode();
+extern bool VRGlobalIsPointInsideEnt(const float* point, int ent);
 
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
@@ -2398,7 +2399,9 @@ void PM_NoClip(bool unstuckMove=false)
 		}
 		*/
 		// bruteforce our way out of this!
+		int stuckent = pmove->PM_TestPlayerPosition(wishend, nullptr);
 		bool foundend = false;
+		bool foundendinsideent = false;
 		vec3_t foundendoffset;
 		for (int i = 0; !foundend && i <= VR_UNSTUCK_DISTANCE; i++)
 		{
@@ -2417,7 +2420,13 @@ void PM_NoClip(bool unstuckMove=false)
 						VectorAdd(wishend, offset, testend);
 						if (pmove->PM_TestPlayerPosition(testend, nullptr) == -1)
 						{
-							if (!foundend || Length(offset) < Length(foundendoffset))
+							if (stuckent > 0 && VRGlobalIsPointInsideEnt(testend, stuckent)
+								&& (!foundendinsideent || Length(offset) < Length(foundendoffset)))
+							{
+								VectorCopy(offset, foundendoffset);
+								foundendinsideent = true;
+							}
+							else if (!foundendinsideent && (!foundend || Length(offset) < Length(foundendoffset)))
 							{
 								VectorCopy(offset, foundendoffset);
 							}

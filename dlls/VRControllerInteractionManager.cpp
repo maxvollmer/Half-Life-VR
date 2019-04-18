@@ -15,6 +15,7 @@
 
 #include "VRControllerInteractionManager.h"
 #include "VRPhysicsHelper.h"
+#include "CWorldsSmallestCup.h"
 
 
 #define SF_BUTTON_TOUCH_ONLY	256	// button only fires as a result of USE key.
@@ -179,7 +180,7 @@ bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& contro
 	if (!controller.IsValid() || !controller.IsBBoxValid())
 		return false;
 
-	if (hEntity->pev->solid == SOLID_NOT)
+	if (hEntity->pev->solid == SOLID_NOT && !FClassnameIs(hEntity->pev, "vr_easteregg"))
 		return false;
 
 	bool isTouching = false;
@@ -236,7 +237,8 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 			flHitDamage = DoDamage(pPlayer, hEntity, controller);
 		}
 
-		if (HandleRetinaScanners(pPlayer, hEntity, controller, isTouching, didTouchChange));
+		if (HandleEasterEgg(pPlayer, hEntity, controller, isTouching, didTouchChange));	// easter egg first, obviously the most important
+		else if (HandleRetinaScanners(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleButtons(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleDoors(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleRechargers(pPlayer, hEntity, controller, isTouching, didTouchChange));
@@ -329,6 +331,27 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEn
 	}
 
 	return damage;
+}
+
+bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+{
+	if (FClassnameIs(hEntity->pev, "vr_easteregg"))
+	{
+		CWorldsSmallestCup* pWorldsSmallestCup = dynamic_cast<CWorldsSmallestCup*>((CBaseEntity*)hEntity);
+		if (isTouching && controller.IsDragging())
+		{
+			pWorldsSmallestCup->m_isBeingDragged.insert(controller.GetID());
+			pWorldsSmallestCup->pev->origin = pPlayer->GetGunPosition();
+			pWorldsSmallestCup->pev->angles = controller.GetAngles();
+			pWorldsSmallestCup->pev->velocity = controller.GetVelocity();
+		}
+		else
+		{
+			pWorldsSmallestCup->m_isBeingDragged.erase(controller.GetID());
+		}
+		return true;
+	}
+	return false;
 }
 
 bool VRControllerInteractionManager::HandleRetinaScanners(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)

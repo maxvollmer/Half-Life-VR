@@ -9,14 +9,8 @@
 #include "animation.h"
 #include "activity.h"
 #include "VRPhysicsHelper.h"
+#include "VRModelHelper.h"
 #include "CWorldsSmallestCup.h"
-
-TYPEDESCRIPTION	CWorldsSmallestCup::m_SaveData[] =
-{
-	DEFINE_FIELD(CWorldsSmallestCup, m_isBeingDragged, FIELD_BOOLEAN),
-};
-
-IMPLEMENT_SAVERESTORE(CWorldsSmallestCup, CBaseEntity);
 
 LINK_ENTITY_TO_CLASS(vr_easteregg, CWorldsSmallestCup);
 
@@ -56,15 +50,36 @@ void CWorldsSmallestCup::CupThink()
 		return;
 	}
 
+	if (pev->size.LengthSquared() == 0.f)
+	{
+		const auto& modelInfo = VRModelHelper::GetInstance().GetModelInfo(this);
+		pev->mins = modelInfo.m_sequences[0].bboxMins;
+		pev->maxs = modelInfo.m_sequences[0].bboxMaxs;
+		pev->size = pev->maxs - pev->mins;
+	}
+
 	m_instance = this;
 
-	if (m_isBeingDragged)
+	if (m_isBeingDragged.empty())
 	{
-		VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
+		VRPhysicsHelper::Instance().GetWorldsSmallestCupPosition(this);
 	}
 	else
 	{
-		VRPhysicsHelper::Instance().GetWorldsSmallestCupPosition(this);
+		VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
+	}
+
+	pev->absmin = pev->origin + pev->mins;
+	pev->absmax = pev->origin + pev->maxs;
+
+	// if we fall out of the world, respawn where the player is
+	if (!IsInWorld())
+	{
+		auto* pPlayer = UTIL_PlayerByIndex(0);
+		if (pPlayer != nullptr)
+		{
+			pev->origin = pPlayer->pev->origin;
+		}
 	}
 }
 

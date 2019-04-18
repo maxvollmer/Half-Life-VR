@@ -1410,3 +1410,12 @@ bool VRGlobalGetNoclipMode()
 	// TODO: Add something to enable noclip in VR
 	return false;
 }
+
+bool VRGlobalIsPointInsideEnt(const float* point, int ent)
+{
+	Vector absmin = gEngfuncs.GetEntityByIndex(ent)->curstate.origin + gEngfuncs.GetEntityByIndex(ent)->curstate.mins;
+	Vector absmax = gEngfuncs.GetEntityByIndex(ent)->curstate.origin + gEngfuncs.GetEntityByIndex(ent)->curstate.maxs;
+	return point[0] > absmin.x && point[0] < absmax.x
+		&& point[1] > absmin.y && point[1] < absmax.y
+		&& point[2] > absmin.z && point[2] < absmax.z;
+}
