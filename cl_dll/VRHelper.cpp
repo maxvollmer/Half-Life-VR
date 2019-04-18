@@ -1392,3 +1392,23 @@ bool VRGlobalIsInstantDecelerateOn()
 {
 	return CVAR_GET_FLOAT("vr_move_instant_decelerate") != 0.f;
 }
+
+void VRGlobalGetEntityOrigin(int ent, float* entorigin)
+{
+	Vector absmin = gEngfuncs.GetEntityByIndex(ent)->curstate.origin + gEngfuncs.GetEntityByIndex(ent)->curstate.mins;
+	Vector absmax = gEngfuncs.GetEntityByIndex(ent)->curstate.origin + gEngfuncs.GetEntityByIndex(ent)->curstate.maxs;
+	((absmin + absmax) * 0.5f).CopyToArray(entorigin);
+}
+
+void VRGlobalGetWorldUnstuckDir(const float* pos, const float* velocity, float* unstuckdir)
+{
+	// We cannot predict this and simply return velocity, server code will correct for this
+	// (If anyone ever tries to make this mod work in multiplayer, this is a place you want to tackle)
+	VectorCopy(velocity, unstuckdir);
+}
+
+bool VRGlobalGetNoclipMode()
+{
+	// TODO: Add something to enable noclip in VR
+	return false;
+}

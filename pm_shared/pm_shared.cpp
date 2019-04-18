@@ -32,6 +32,9 @@
 // and again we are in include hell and use an extern declaration to escape :S
 extern bool VRGlobalIsInstantAccelerateOn();
 extern bool VRGlobalIsInstantDecelerateOn();
+extern void VRGlobalGetEntityOrigin(int ent, float* entorigin);
+extern void VRGlobalGetWorldUnstuckDir(const float* pos, const float* velocity, float* unstuckdir);
+extern bool VRGlobalGetNoclipMode();
 
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
@@ -697,6 +700,7 @@ int PM_ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 	angle = normal[ 2 ];
 
 	blocked = 0x00;            // Assume unblocked.
+
 	if (angle > 0)      // If the plane that is blocking us has a positive z component, then assume it's a floor.
 		blocked |= 0x01;		// 
 	if (!angle)         // If the plane has no Z, it is vertical (wall/step)
@@ -788,6 +792,14 @@ void PM_FixupGravityVelocity ()
 	PM_CheckVelocity();
 }
 
+void PM_VR_MoveAwayFromStuckEntityIfPossible(vec3_t end, pmtrace_t& trace)
+{
+	// TODO!
+	trace.fraction = 1;
+	trace.allsolid = false;
+	VectorCopy(end, trace.endpos);
+}
+
 /*
 ============
 PM_FlyMove
@@ -833,16 +845,21 @@ int PM_FlyMove (void)
 		// See if we can make it from origin to end point.
 		trace = pmove->PM_PlayerTrace (pmove->origin, end, PM_NORMAL, -1 );
 
-		allFraction += trace.fraction;
 		// If we started in a solid object, or we were in solid space
 		//  the whole way, zero out our velocity and return that we
 		//  are blocked by floor and wall.
 		if (trace.allsolid)
-		{	// entity is trapped in another solid
+		{
+			PM_VR_MoveAwayFromStuckEntityIfPossible(end, trace);
+			/*
+			// entity is trapped in another solid
 			VectorCopy (vec3_origin, pmove->velocity);
 			//Con_DPrintf("Trapped 4\n");
 			return 4;
+			*/
 		}
+
+		allFraction += trace.fraction;
 
 		// If we moved some portion of the total distance, then
 		//  copy the end position into the pmove->origin and 
@@ -2322,6 +2339,8 @@ PM_NoClip
 
 ====================
 */
+// the maximum distance we try to move a stuck player
+#define VR_UNSTUCK_DISTANCE 32
 void PM_NoClip(bool unstuckMove=false)
 {
 	int			i;
@@ -2345,47 +2364,73 @@ void PM_NoClip(bool unstuckMove=false)
 	// Zero out the velocity so that we don't accumulate a huge downward velocity from gravity, etc.
 	VectorClear(pmove->velocity);
 
+	vec3_t wishend;
+	VectorMA(pmove->origin, pmove->frametime, wishvel, wishend);
+
 	// Trying to determine if a player can move while being stuck (move away from wall) - Max Vollmer, 2018-04-01
 	if (unstuckMove)
 	{
-		// set z velocity to 0
-		wishvel[2] = 0.f;
-
+		/*
 		// check if position is good after moving one frame
-		vec3_t originAfterMovingOneFrame{ pmove->origin[0] + (wishvel[0] * pmove->frametime), pmove->origin[1] + (wishvel[1] * pmove->frametime), pmove->origin[2] };
-		if (pmove->PM_TestPlayerPosition(originAfterMovingOneFrame, nullptr) != -1)
+		int stuckent = pmove->PM_TestPlayerPosition(wishend, nullptr);
+		if (stuckent != -1)
 		{
-			// position is still bad after moving one frame
+			// Determine the direction we need to go to get unstuck
+			vec3_t unstuckdir;
 
-			// get normalized direction vector from wishvel
-			float wishvelSpeed = sqrtf(wishvel[0] * wishvel[0] + wishvel[1] * wishvel[1]);
-			vec3_t wishDir{ wishvel[0], wishvel[1], 0.f };
-			wishDir[0] /= wishvelSpeed;
-			wishDir[1] /= wishvelSpeed;
-
-			// check if position is good after moving some units
-			vec3_t originAfterMovingSomeUnits{ pmove->origin[0] + (wishDir[0] * VR_UNSTUCK_CHECK_DISTANCE), pmove->origin[1] + (wishDir[1] * VR_UNSTUCK_CHECK_DISTANCE), pmove->origin[2] };
-			if (pmove->PM_TestPlayerPosition(originAfterMovingSomeUnits, nullptr) != -1)
+			// If we are stuck on a normal entity, get its origin and determine unstuck direction from that
+			if (stuckent > 0)
 			{
-				// position is still bad after moving some units
+				vec3_t entorigin;
+				VRGlobalGetEntityOrigin(stuckent, entorigin);
+				VectorSubtract(wishend, entorigin, unstuckdir);
+				VectorNormalize(unstuckdir);
+			}
+			// stuck on world, get unstuck direction from physics engine (client can't predict this, and instead just returns wishvel)
+			else
+			{
+				VRGlobalGetWorldUnstuckDir(wishend, wishvel, unstuckdir);
+			}
 
-				// check if position is good if we add a bit to the z position (stuck in floor)
-				vec3_t originAfterMovingSomeUnitsPlusZFix{ originAfterMovingSomeUnits[0], originAfterMovingSomeUnits[1], originAfterMovingSomeUnits[2] + VR_UNSTUCK_Z_FIX };
-				if (pmove->PM_TestPlayerPosition(originAfterMovingSomeUnitsPlusZFix, nullptr) != -1)
+			float speed = Length(wishvel);
+			VectorScale(unstuckdir, speed, unstuckdir);
+			VectorMA(pmove->origin, pmove->frametime, unstuckdir, wishend);
+		}
+		*/
+		// bruteforce our way out of this!
+		bool foundend = false;
+		for (int i = 0; !foundend && i <= VR_UNSTUCK_DISTANCE; i++)
+		{
+			for (int x = -1; !foundend && x <= 1; x += 2)
+			{
+				for (int y = -1; !foundend && y <= 1; y += 2)
 				{
-					// still stuck, no chance, we cannot move in that direction
-					return;
-				}
-				else
-				{
-					// stuck in floor, update z
-					pmove->origin[2] += VR_UNSTUCK_Z_FIX * pmove->frametime;
+					// go positive in z direction first (unstucking upwards is always better than downwards)
+					for (int z = 1; !foundend && z >= -1; z -= 2)
+					{
+						vec3_t testend;
+						vec3_t offset;
+						offset[0] = x * i;
+						offset[1] = y * i;
+						offset[2] = z * i;
+						VectorAdd(wishend, offset, testend);
+						if (pmove->PM_TestPlayerPosition(testend, nullptr) == -1)
+						{
+							VectorCopy(testend, wishend);
+							foundend = true;
+						}
+					}
 				}
 			}
 		}
+		if (!foundend)
+		{
+			// still stuck, can't unstuck :(
+			return;
+		}
 	}
 
-	VectorMA (pmove->origin, pmove->frametime, wishvel, pmove->origin);
+	VectorCopy(wishend, pmove->origin);
 }
 
 /*
@@ -3125,12 +3170,16 @@ void PM_PlayerMove ( qboolean server )
 		VectorSubtract (pmove->velocity, pmove->basevelocity, pmove->velocity);
 		break;
 
-	case MOVETYPE_NOCLIP:
-		//PM_NoClip();
-		//break;
-
+	case MOVETYPE_NOCLIP:	// In VR player movetype is always NOCLIP so doors, elevators etc don't crush us
 	case MOVETYPE_WALK:
-		PM_YesClip(pLadder);	// Moved all the walking code in this switch-statement to its own method
+		if (VRGlobalGetNoclipMode())
+		{
+			PM_NoClip(false);
+		}
+		else
+		{
+			PM_YesClip(pLadder);	// Moved all the walking code in this switch-statement to its own method
+		}
 		break;
 	}
 }

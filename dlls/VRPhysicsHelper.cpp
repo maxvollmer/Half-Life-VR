@@ -1897,3 +1897,9 @@ void VRPhysicsHelper::GetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestC
 	pWorldsSmallestCup->pev->angles = RP3DTransformToHLAngles(transform.getOrientation().getMatrix());
 	pWorldsSmallestCup->pev->velocity = RP3DVecToHLVec(m_worldsSmallestCupBody->getLinearVelocity());
 }
+
+void VRPhysicsHelper::GetWorldUnstuckDir(const Vector& pos, const Vector& velocity, Vector& unstuckdir)
+{
+	// TODO!
+	unstuckdir = velocity.Normalize();
+}
