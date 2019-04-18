@@ -30,17 +30,9 @@
 
 
 // and again we are in include hell and use an extern declaration to escape :S
-extern float CVAR_GET_FLOAT(const char *x);
-/*
-#ifdef CLIENT_DLL
-#include "../cl_dll/cl_dll.h"
-#include "../cl_dll/cl_util.h"
-#else
-#include "edict.h"
-#include "eiface.h"
-#include "enginecallback.h"
-#endif
-*/
+extern bool VRGlobalIsInstantAccelerateOn();
+extern bool VRGlobalIsInstantDecelerateOn();
+
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
 void PM_CheckWaterJump(void);
@@ -1010,7 +1002,7 @@ void PM_Accelerate (vec3_t wishdir, float wishspeed, float accel)
 
 	// If player has enabled instant acceleration in VR,
 	// we simply set the velocity to wishdir*wishspeed and are done here.
-	if (CVAR_GET_FLOAT("vr_move_instant_accelerate") != 0.f)
+	if (VRGlobalIsInstantAccelerateOn())
 	{
 		VectorScale(wishdir, wishspeed, pmove->velocity);
 		return;
@@ -1228,7 +1220,7 @@ void PM_Friction (void)
 
 	// If player has enabled instant stop in VR,
 	// we simply set the velocity to 0 and are done here.
-	if (CVAR_GET_FLOAT("vr_move_instant_decelerate") != 0.f)
+	if (VRGlobalIsInstantDecelerateOn())
 	{
 		VectorClear(pmove->velocity);
 		return;

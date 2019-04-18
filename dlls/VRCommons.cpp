@@ -43,3 +43,14 @@ bool GlobalXenMounds::Trigger(CBasePlayer *pPlayer, const Vector& position)
 	return false;
 }
 
+
+// For pm_shared.cpp
+bool VRGlobalIsInstantAccelerateOn()
+{
+	return CVAR_GET_FLOAT("vr_move_instant_accelerate") != 0.f;
+}
+
+bool VRGlobalIsInstantDecelerateOn()
+{
+	return CVAR_GET_FLOAT("vr_move_instant_decelerate") != 0.f;
+}
