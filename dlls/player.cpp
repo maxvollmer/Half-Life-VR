@@ -5139,9 +5139,9 @@ void CBasePlayer::StopVRTele()
 
 void CBasePlayer::UpdateVRTele()
 {
-	Vector telePos, teleAngles;
-	GetTeleporterPose(telePos, teleAngles);
-	m_vrControllerTeleporter.UpdateTele(this, telePos, teleAngles);
+	Vector telePos, teleDir;
+	GetTeleporterPose(telePos, teleDir);
+	m_vrControllerTeleporter.UpdateTele(this, telePos, teleDir);
 }
 
 
@@ -5217,22 +5217,22 @@ void CBasePlayer::GetTeleporterPose(Vector& position, Vector& dir)
 	if (m_vrHasTeleporterPose)
 	{
 		position = GetClientOrigin() + m_vrTeleporterOffset;
-		UTIL_MakeVectorsPrivate(m_vrTeleporterAngles, dir, nullptr, nullptr);
+		UTIL_MakeAimVectorsPrivate(m_vrTeleporterAngles, dir, nullptr, nullptr);
 	}
 	else if (m_vrControllers[VRControllerID::HAND].IsValid())
 	{
 		position = m_vrControllers[VRControllerID::HAND].GetPosition();
-		UTIL_MakeVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
+		UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
 	}
 	else if (m_vrControllers[VRControllerID::WEAPON].IsValid())
 	{
 		position = m_vrControllers[VRControllerID::WEAPON].GetPosition();
-		UTIL_MakeVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
+		UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
 	}
 	else
 	{
 		position = EyePosition();
-		UTIL_MakeVectorsPrivate(pev->angles, dir, nullptr, nullptr);
+		UTIL_MakeAimVectorsPrivate(pev->v_angle, dir, nullptr, nullptr);
 	}
 }
 

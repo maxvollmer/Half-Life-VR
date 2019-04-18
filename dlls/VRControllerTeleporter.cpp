@@ -67,7 +67,7 @@ void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 	vr_fTelePointsInWater = false;
 }
 
-void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& telePos, const Vector& teleAngles)
+void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& telePos, const Vector& teleDir)
 {
 	if (!vr_pTeleBeam || !vr_pTeleSprite)
 	{
@@ -78,11 +78,8 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& tele
 		return;
 	}
 
-	Vector forward;
-	UTIL_MakeAimVectorsPrivate(teleAngles, forward, NULL, NULL);
-
 	TraceResult tr;
-	VRPhysicsHelper::Instance().TraceLine(telePos, telePos + forward * GetCurrentTeleLength(pPlayer), pPlayer->edict(), &tr);
+	VRPhysicsHelper::Instance().TraceLine(telePos, telePos + teleDir * GetCurrentTeleLength(pPlayer), pPlayer->edict(), &tr);
 
 	Vector beamEndPos = tr.vecEndPos;
 	Vector teleportDestination = tr.vecEndPos;

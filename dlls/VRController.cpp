@@ -73,6 +73,11 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 		m_isBBoxValid = false;
 	}
 
+	if (m_isDragging && m_weaponId == WEAPON_BAREHAND && pModel->pev->sequence != 1)
+	{
+		PlayWeaponAnimation(1, 0);
+	}
+
 	SendEntityDataToClient(pPlayer, id);
 }
 

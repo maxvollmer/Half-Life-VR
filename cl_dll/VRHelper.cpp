@@ -996,9 +996,7 @@ void VRHelper::ClearPose(VRPoseType poseType)
 	}
 	else if (poseType == VRPoseType::TELEPORTER)
 	{
-		char cmdTeleporter[MAX_COMMAND_SIZE] = { 0 };
-		sprintf_s(cmdTeleporter, "vr_teleporter %i", int(VRControllerID::HAND));
-		gEngfuncs.pfnClientCmd(cmdTeleporter);
+		gEngfuncs.pfnClientCmd("vr_teleporter 0");
 	}
 	else if (poseType == VRPoseType::MOVEMENT)
 	{
