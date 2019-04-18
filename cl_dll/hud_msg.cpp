@@ -126,6 +126,7 @@ int CHud::MsgFunc_VRCtrlEnt(const char *pszName, int iSize, void *pbuf)
 	int entIndex = READ_SHORT();
 	bool isWeapon = READ_BYTE() != 0;
 	auto& data = isWeapon ? m_weaponControllerEntData : m_handControllerEntData;
+	data.entIndex = entIndex;
 	data.origin = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
 	data.angles = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
 	data.isMirrored = READ_BYTE() != 0;
