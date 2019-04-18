@@ -2399,14 +2399,15 @@ void PM_NoClip(bool unstuckMove=false)
 		*/
 		// bruteforce our way out of this!
 		bool foundend = false;
+		vec3_t foundendoffset;
 		for (int i = 0; !foundend && i <= VR_UNSTUCK_DISTANCE; i++)
 		{
-			for (int x = -1; !foundend && x <= 1; x++)
+			for (int x = -1; x <= 1; x++)
 			{
-				for (int y = -1; !foundend && y <= 1; y++)
+				for (int y = -1; y <= 1; y++)
 				{
 					// go positive in z direction first (unstucking upwards is always better than downwards)
-					for (int z = 1; !foundend && z >= -1; z--)
+					for (int z = 1; z >= -1; z--)
 					{
 						vec3_t testend;
 						vec3_t offset;
@@ -2416,14 +2417,21 @@ void PM_NoClip(bool unstuckMove=false)
 						VectorAdd(wishend, offset, testend);
 						if (pmove->PM_TestPlayerPosition(testend, nullptr) == -1)
 						{
-							VectorCopy(testend, wishend);
+							if (!foundend || Length(offset) < Length(foundendoffset))
+							{
+								VectorCopy(offset, foundendoffset);
+							}
 							foundend = true;
 						}
 					}
 				}
 			}
 		}
-		if (!foundend)
+		if (foundend)
+		{
+			VectorAdd(wishend, foundendoffset, wishend);
+		}
+		else
 		{
 			// still stuck, can't unstuck :(
 			return;
