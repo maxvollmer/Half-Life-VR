@@ -20,14 +20,17 @@ extern struct playermove_s *PM_GetPlayerMove(void);
 #include <memory>
 
 #include "VRPhysicsHelper.h"
+#include "VRModelHelper.h"
 #include "util.h"
 #include "cbase.h"
 #include "effects.h"
+#include "game.h"
 
 #include <chrono>
+#include <cstdlib>
 
 constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_MAGIC = 'HLVR';
-constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_VERSION = 102;
+constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_VERSION = 103;
 
 // Stuff needed to extract brush models
 constexpr const unsigned int ENGINE_MODEL_ARRAY_SIZE = 1024;
@@ -147,29 +150,29 @@ bool IsSolidInPhysicsWorld(CBaseEntity *pEntity)
 
 using namespace reactphysics3d;
 
-constexpr float HL_TO_RP3D = 0.01f;
-constexpr float RP3D_TO_HL = 100.f;
+constexpr const float RP3D_TO_HL = 50.f;
+constexpr const float HL_TO_RP3D = 1.f / RP3D_TO_HL;
 
 
-constexpr int PLAYER_WIDTH = DUCK_SIZE;
-constexpr int PLAYER_WIDTH_SQUARED = PLAYER_WIDTH * PLAYER_WIDTH;
-constexpr float MIN_DISTANCE = 240 + PLAYER_WIDTH;
+constexpr const int PLAYER_WIDTH = DUCK_SIZE;
+constexpr const int PLAYER_WIDTH_SQUARED = PLAYER_WIDTH * PLAYER_WIDTH;
+constexpr const float MIN_DISTANCE = 240 + PLAYER_WIDTH;
 
-constexpr int PHYSICS_STEPS = 30;
-constexpr int MAX_PHYSICS_STEPS = PHYSICS_STEPS * 1.5;
-constexpr float PHYSICS_STEP_TIME = 1.f / PHYSICS_STEPS;
+constexpr const int PHYSICS_STEPS = 30;
+constexpr const int MAX_PHYSICS_STEPS = PHYSICS_STEPS * 1.5;
+constexpr const float PHYSICS_STEP_TIME = 1.f / PHYSICS_STEPS;
 
-constexpr double MAX_PHYSICS_TIME_PER_FRAME = 1. / 30.;	// Never drop below 30fps due to physics calculations
+constexpr const double MAX_PHYSICS_TIME_PER_FRAME = 1. / 30.;	// Never drop below 30fps due to physics calculations
 
 
-void TEMPTODO_RemoveInvalidTriangles(std::vector<Vector3> & vertices, std::vector<int32_t>& indices)
+void TEMPTODO_RemoveInvalidTriangles(const std::vector<Vector3> & vertices, std::vector<int32_t>& indices)
 {
 	// remove invalid triangles (TODO: Find out where these come from, this shouldn't be happening anymore!)
 	for (uint32_t i = 0; i < indices.size(); i += 3)
 	{
-		if (vertices[indices[i]] == vertices[indices[i + 1]]
-			|| vertices[indices[i]] == vertices[indices[i + 2]]
-			|| vertices[indices[i + 1]] == vertices[indices[i + 2]])
+		if ((vertices[indices[i]] - vertices[indices[i + 1]]).lengthSquare() < EPSILON
+			|| (vertices[indices[i]] - vertices[indices[i + 2]]).lengthSquare() < EPSILON
+			|| (vertices[indices[i + 1]] - vertices[indices[i + 2]]).lengthSquare() < EPSILON)
 		{
 			ALERT(at_console, "(VRPhysicsHelper)Warning: Found invalid triangle at index %i, removed!\n", i);
 			indices[i] = -1;
@@ -547,7 +550,7 @@ void TriangulateGapsBetweenCoplanarFaces(const TranslatedFace & faceA, const Tra
 	}
 }
 
-void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<int> & indices)
+void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<Vector3>* normals, std::vector<int> & indices, bool triangulateGaps)
 {
 	for (auto pair : planeFaces)
 	{
@@ -583,18 +586,30 @@ void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMa
 			// Add vertices
 			vertices.insert(vertices.end(), faceVertices.begin(), faceVertices.end());
 
-			// Then do triangulation of gaps between faces that are too small for a player to fit through
-			for (size_t faceIndexB = faceIndexA + 1; faceIndexB < faces.size(); ++faceIndexB)
+			if (!triangulateGaps && normals)
 			{
-				const TranslatedFace & faceB = faces[faceIndexB];
-				TriangulateGapsBetweenCoplanarFaces(faceA, faceB, planeVertexMetaData, vertices, indices);
+				// Add normals (only if we don't triangulate gaps)
+				for (size_t i = 0; i < faceVertices.size(); i++)
+				{
+					normals->push_back(HLVecToRP3DVec(-faceA.GetPlane().GetNormal()));
+				}
+			}
+
+			// Then do triangulation of gaps between faces that are too small for a player to fit through
+			if (triangulateGaps)
+			{
+				for (size_t faceIndexB = faceIndexA + 1; faceIndexB < faces.size(); ++faceIndexB)
+				{
+					const TranslatedFace & faceB = faces[faceIndexB];
+					TriangulateGapsBetweenCoplanarFaces(faceA, faceB, planeVertexMetaData, vertices, indices);
+				}
 			}
 		}
 	}
 }
 
 // Get vertices and indices of world (triangulation of bsp data (map and non-moving solid entities))
-void TriangulateBSPModel(const model_t* model, PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<int> & indices)
+void TriangulateBSPModel(const model_t* model, PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<Vector3>* normals, std::vector<int> & indices, bool triangulateGaps)
 {
 	// Collect faces of bsp model
 	CollectFaces(model, Vector{}, planeFaces, planeVertexMetaData);
@@ -610,7 +625,7 @@ void TriangulateBSPModel(const model_t* model, PlaneFacesMap & planeFaces, Plane
 	}
 
 	// Triangulate all faces (also triangulates gaps between faces!)
-	TriangulateBSPFaces(planeFaces, planeVertexMetaData, vertices, indices);
+	TriangulateBSPFaces(planeFaces, planeVertexMetaData, vertices, normals, indices, triangulateGaps);
 }
 
 void RaycastPotentialVerticeGaps(CollisionBody * dynamicMap, const Vector3 & checkVertexInPhysSpace, const Vector3 & checkVertexAfterInPhysSpace, const Vector3 & checkDirInPhysSpace, const Vector3 & correctionalOffsetInPhysSpace, std::vector<Vector3> & vertices, std::vector<int> & indices, const size_t vertexIndexOffset)
@@ -619,8 +634,10 @@ void RaycastPotentialVerticeGaps(CollisionBody * dynamicMap, const Vector3 & che
 	RaycastInfo raycastInfo2{};
 	if (dynamicMap->raycast({ checkVertexInPhysSpace, checkVertexInPhysSpace + checkDirInPhysSpace }, raycastInfo1)
 		&& raycastInfo1.hitFraction > 0.f
+		&& raycastInfo1.hitFraction < 1.f
 		&& dynamicMap->raycast({ checkVertexAfterInPhysSpace, checkVertexAfterInPhysSpace + checkDirInPhysSpace }, raycastInfo2)
-		&& raycastInfo2.hitFraction > 0.f)
+		&& raycastInfo2.hitFraction > 0.f
+		&& raycastInfo2.hitFraction < 1.f)
 	{
 		// Get gap vertices
 		std::vector<Vector3> gapVertices;
@@ -704,7 +721,9 @@ VRPhysicsHelper::VRPhysicsHelper()
 VRPhysicsHelper::~VRPhysicsHelper()
 {
 	m_bspModelData.clear();
+	m_dynamicBSPModelData.clear();
 	m_studioModelBBoxCache.clear();
+
 	if (m_collisionWorld)
 	{
 		if (m_bboxBody)
@@ -733,6 +752,23 @@ VRPhysicsHelper::~VRPhysicsHelper()
 		m_collisionWorld = nullptr;
 	}
 
+	if (m_dynamicsWorld)
+	{
+		if (m_worldsSmallestCupBody)
+		{
+			if (m_worldsSmallestCupProxyShape)
+			{
+				m_worldsSmallestCupBody->removeCollisionShape(m_worldsSmallestCupProxyShape);
+				m_worldsSmallestCupProxyShape = nullptr;
+			}
+			m_dynamicsWorld->destroyRigidBody(m_worldsSmallestCupBody);
+			m_worldsSmallestCupBody = nullptr;
+		}
+
+		delete m_dynamicsWorld;
+		m_dynamicsWorld = nullptr;
+	}
+
 	if (m_bboxShape)
 	{
 		delete m_bboxShape;
@@ -743,6 +779,30 @@ VRPhysicsHelper::~VRPhysicsHelper()
 	{
 		delete m_capsuleShape;
 		m_capsuleShape = nullptr;
+	}
+
+	if (m_worldsSmallestCupShape)
+	{
+		delete m_worldsSmallestCupShape;
+		m_worldsSmallestCupShape = nullptr;
+	}
+
+	if (m_worldsSmallestCupPolyhedronMesh)
+	{
+		delete m_worldsSmallestCupPolyhedronMesh;
+		m_worldsSmallestCupPolyhedronMesh = nullptr;
+	}
+
+	if (m_worldsSmallestCupPolygonVertexArray)
+	{
+		delete m_worldsSmallestCupPolygonVertexArray;
+		m_worldsSmallestCupPolygonVertexArray = nullptr;
+	}
+
+	if (m_worldsSmallestCupPolygonFaces)
+	{
+		delete[] (reactphysics3d::PolygonVertexArray::PolygonFace*)m_worldsSmallestCupPolygonFaces;
+		m_worldsSmallestCupPolygonFaces = nullptr;
 	}
 }
 
@@ -923,7 +983,8 @@ bool VRPhysicsHelper::ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2
 
 	auto& bspModelData1 = m_bspModelData.find(std::string{ STRING(pModel1->pev->model) });
 	auto& bspModelData2 = m_bspModelData.find(std::string{ STRING(pModel2->pev->model) });
-	if (bspModelData1 != m_bspModelData.end() && bspModelData2 != m_bspModelData.end())
+	if (bspModelData1 != m_bspModelData.end() && bspModelData1->second.HasData()
+		&& bspModelData2 != m_bspModelData.end() && bspModelData2->second.HasData())
 	{
 		bspModelData1->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel1->pev->origin), HLAnglesToRP3DTransform(pModel1->pev->angles) });
 		bspModelData2->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel2->pev->origin), HLAnglesToRP3DTransform(pModel2->pev->angles) });
@@ -931,13 +992,13 @@ bool VRPhysicsHelper::ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2
 	}
 	else
 	{
-		if (bspModelData1 != m_bspModelData.end())
+		if (bspModelData1 != m_bspModelData.end() && bspModelData1->second.HasData())
 		{
-			return ModelIntersectsBBox(pModel1, pModel1->pev->origin, pModel1->pev->mins, pModel1->pev->maxs);
+			return ModelIntersectsBBox(pModel1, pModel2->pev->origin, pModel2->pev->mins, pModel2->pev->maxs);
 		}
-		else if (bspModelData1 != m_bspModelData.end())
+		else if (bspModelData2 != m_bspModelData.end() && bspModelData2->second.HasData())
 		{
-			return ModelIntersectsBBox(pModel1, pModel1->pev->origin, pModel1->pev->mins, pModel1->pev->maxs);
+			return ModelIntersectsBBox(pModel2, pModel1->pev->origin, pModel1->pev->mins, pModel1->pev->maxs);
 		}
 		else
 		{
@@ -1026,7 +1087,11 @@ void VRPhysicsHelper::InitPhysicsWorld()
 {
 	if (m_collisionWorld == nullptr)
 	{
-		m_collisionWorld = new DynamicsWorld{ Vector3{ 0, 0, 0 } };
+		m_collisionWorld = new CollisionWorld{};
+	}
+	if (m_dynamicsWorld == nullptr)
+	{
+		m_dynamicsWorld = new DynamicsWorld{ Vector3{ 0, 0, 0 } };
 	}
 }
 
@@ -1041,11 +1106,17 @@ void VRPhysicsHelper::BSPModelData::CreateData(CollisionWorld* collisionWorld)
 {
 	// TODO: Why do we still get invalid triangles?
 	TEMPTODO_RemoveInvalidTriangles(m_vertices, m_indices);
+	if (m_indices.empty())
+	{
+		ALERT(at_console, "Warning(BSPModelData::CreateData): All triangles are invalid, skipping.\n");
+		return;
+	}
 
 	m_triangleVertexArray = new TriangleVertexArray(
-		m_vertices.size(), m_vertices.data(), sizeof(Vector),
+		m_vertices.size(), m_vertices.data(), sizeof(reactphysics3d::Vector3),
 		m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3,
-		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+		TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 	m_triangleMesh = new TriangleMesh;
 	m_triangleMesh->addSubpart(m_triangleVertexArray);
@@ -1095,6 +1166,90 @@ void VRPhysicsHelper::BSPModelData::DeleteData()
 		m_triangleVertexArray = nullptr;
 	}
 }
+
+VRPhysicsHelper::DynamicBSPModelData::~DynamicBSPModelData()
+{
+	m_vertices.clear();
+	m_normals.clear();
+	m_indices.clear();
+	DeleteData();
+}
+
+void VRPhysicsHelper::DynamicBSPModelData::CreateData(DynamicsWorld* dynamicsWorld)
+{
+	// TODO: Why do we still get invalid triangles?
+	TEMPTODO_RemoveInvalidTriangles(m_vertices, m_indices);
+	if (m_indices.empty())
+	{
+		ALERT(at_console, "Warning(DynamicBSPModelData::CreateData): All triangles are invalid, skipping.\n");
+		return;
+	}
+
+	for (auto& normal : m_normals)
+	{
+		normal.normalize();
+		assert(normal.lengthSquare() > decimal(0.8));
+	}
+
+	m_triangleVertexArray = new TriangleVertexArray(
+		m_vertices.size(), m_vertices.data(), sizeof(reactphysics3d::Vector3),
+		m_normals.data(), sizeof(reactphysics3d::Vector3),
+		m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3,
+		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+		TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE,
+		TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+
+	m_triangleMesh = new TriangleMesh;
+	m_triangleMesh->addSubpart(m_triangleVertexArray);
+
+	m_concaveMeshShape = new ConcaveMeshShape(m_triangleMesh);
+
+	m_rigidBody = dynamicsWorld->createRigidBody(rp3d::Transform::identity());
+	m_rigidBody->setType(BodyType::STATIC);
+	m_rigidBody->enableGravity(false);
+
+	m_proxyShape = m_rigidBody->addCollisionShape(m_concaveMeshShape, rp3d::Transform::identity(), 1.f);
+
+	m_dynamicsWorld = dynamicsWorld;
+
+	m_hasData = true;
+}
+
+void VRPhysicsHelper::DynamicBSPModelData::DeleteData()
+{
+	m_hasData = false;
+
+	if (m_rigidBody)
+	{
+		if (m_proxyShape)
+		{
+			m_rigidBody->removeCollisionShape(m_proxyShape);
+		}
+		m_dynamicsWorld->destroyRigidBody(m_rigidBody);
+	}
+
+	m_rigidBody = nullptr;
+	m_proxyShape = nullptr;
+
+	if (m_concaveMeshShape)
+	{
+		delete m_concaveMeshShape;
+		m_concaveMeshShape = nullptr;
+	}
+
+	if (m_triangleMesh)
+	{
+		delete m_triangleMesh;
+		m_triangleMesh = nullptr;
+	}
+
+	if (m_triangleVertexArray)
+	{
+		delete m_triangleVertexArray;
+		m_triangleVertexArray = nullptr;
+	}
+}
+
 
 VRPhysicsHelper::BBoxData::~BBoxData()
 {
@@ -1211,8 +1366,8 @@ std::string ReadString(std::ifstream& in)
 
 void ReadVerticesAndIndices(
 	std::ifstream& physicsMapDataFileStream,
-	uint32_t verticesCount, uint32_t indicesCount,
-	VRPhysicsHelper::BSPModelData& bspModelData)
+	uint32_t verticesCount, uint32_t normalsCount, uint32_t indicesCount,
+	std::vector<Vector3>& vertices, std::vector<Vector3>* normals, std::vector<int32_t>& indices)
 {
 	for (unsigned int i = 0; i < verticesCount; ++i)
 	{
@@ -1220,24 +1375,34 @@ void ReadVerticesAndIndices(
 		ReadBinaryData(physicsMapDataFileStream, vertex.x);
 		ReadBinaryData(physicsMapDataFileStream, vertex.y);
 		ReadBinaryData(physicsMapDataFileStream, vertex.z);
-		bspModelData.m_vertices.push_back(vertex);
+		vertices.push_back(vertex);
+	}
+
+	for (unsigned int i = 0; i < normalsCount; ++i)
+	{
+		reactphysics3d::Vector3 normal;
+		ReadBinaryData(physicsMapDataFileStream, normal.x);
+		ReadBinaryData(physicsMapDataFileStream, normal.y);
+		ReadBinaryData(physicsMapDataFileStream, normal.z);
+		normals->push_back(normal);
 	}
 
 	for (unsigned int i = 0; i < indicesCount; ++i)
 	{
 		int index = 0;
 		ReadBinaryData(physicsMapDataFileStream, index);
-		if (index < 0 || static_cast<unsigned>(index) > bspModelData.m_vertices.size())
+		if (index < 0 || static_cast<unsigned>(index) > vertices.size())
 		{
 			throw std::runtime_error{ "invalid bsp data: index out of bounds!" };
 		}
-		bspModelData.m_indices.push_back(index);
+		indices.push_back(index);
 	}
 }
 
 bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDataFilePath)
 {
 	m_bspModelData.clear();
+	m_dynamicBSPModelData.clear();
 
 	try
 	{
@@ -1276,8 +1441,11 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 								ReadVerticesAndIndices(
 									physicsMapDataFileStream,
 									verticesCount,
+									0,
 									indicesCount,
-									m_bspModelData[modelname]
+									m_bspModelData[modelname].m_vertices,
+									nullptr,
+									m_bspModelData[modelname].m_indices
 								);
 								m_bspModelData[modelname].CreateData(m_collisionWorld);
 							}
@@ -1295,6 +1463,49 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 				else
 				{
 					throw std::runtime_error{ "invalid bsp data size" };
+				}
+
+				uint32_t dynamicBSPDataCount = 0;
+				ReadBinaryData(physicsMapDataFileStream, dynamicBSPDataCount);
+				if (dynamicBSPDataCount > 0)
+				{
+					for (uint32_t bspDataIndex = 0; bspDataIndex < bspDataCount; bspDataIndex++)
+					{
+						uint32_t verticesCount = 0;
+						uint32_t indicesCount = 0;
+						ReadBinaryData(physicsMapDataFileStream, verticesCount);
+						ReadBinaryData(physicsMapDataFileStream, indicesCount);
+
+						if (verticesCount > 0 && indicesCount > 0)
+						{
+							std::string modelname = ReadString(physicsMapDataFileStream);
+							if (!modelname.empty())
+							{
+								ReadVerticesAndIndices(
+									physicsMapDataFileStream,
+									verticesCount,
+									verticesCount,
+									indicesCount,
+									m_dynamicBSPModelData[modelname].m_vertices,
+									&m_dynamicBSPModelData[modelname].m_normals,
+									m_dynamicBSPModelData[modelname].m_indices
+								);
+								m_dynamicBSPModelData[modelname].CreateData(m_dynamicsWorld);
+							}
+							else
+							{
+								throw std::runtime_error{ "invalid bsp data name at index " + std::to_string(bspDataIndex) };
+							}
+						}
+						else
+						{
+							throw std::runtime_error{ "invalid bsp data at index " + std::to_string(bspDataIndex) };
+						}
+					}
+				}
+				else
+				{
+					throw std::runtime_error{ "invalid dynamic bsp data size" };
 				}
 
 				char checkeof;
@@ -1321,6 +1532,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 	{
 		ALERT(at_console, "Game must recalculate physics data due to error while trying to parse %s: %s\n", physicsMapDataFilePath.c_str(), e.what());
 		m_bspModelData.clear();
+		m_dynamicBSPModelData.clear();
 		return false;
 	}
 }
@@ -1335,8 +1547,8 @@ void VRPhysicsHelper::StorePhysicsMapDataToFile(const std::string& physicsMapDat
 		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_MAGIC);
 		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_VERSION);
 		WriteBinaryData(physicsMapDataFileStream, hash);
-		WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(m_bspModelData.size()));	// bspDataCount
 
+		WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(m_bspModelData.size()));	// bspDataCount
 		for (auto& bspModelData : m_bspModelData)
 		{
 			WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(bspModelData.second.m_vertices.size()));
@@ -1357,6 +1569,36 @@ void VRPhysicsHelper::StorePhysicsMapDataToFile(const std::string& physicsMapDat
 				WriteBinaryData(physicsMapDataFileStream, index);
 			}
 		}
+
+		WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(m_dynamicBSPModelData.size()));
+		for (auto& bspModelData : m_dynamicBSPModelData)
+		{
+			WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(bspModelData.second.m_vertices.size()));
+			WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(bspModelData.second.m_indices.size()));
+			WriteString(physicsMapDataFileStream, bspModelData.first);
+
+			for (unsigned int i = 0; i < bspModelData.second.m_vertices.size(); ++i)
+			{
+				const reactphysics3d::Vector3& vertex = bspModelData.second.m_vertices[i];
+				WriteBinaryData(physicsMapDataFileStream, vertex.x);
+				WriteBinaryData(physicsMapDataFileStream, vertex.y);
+				WriteBinaryData(physicsMapDataFileStream, vertex.z);
+			}
+
+			for (unsigned int i = 0; i < bspModelData.second.m_normals.size(); ++i)
+			{
+				const reactphysics3d::Vector3& normal = bspModelData.second.m_normals[i];
+				WriteBinaryData(physicsMapDataFileStream, normal.x);
+				WriteBinaryData(physicsMapDataFileStream, normal.y);
+				WriteBinaryData(physicsMapDataFileStream, normal.z);
+			}
+
+			for (unsigned int i = 0; i < bspModelData.second.m_indices.size(); ++i)
+			{
+				int index = bspModelData.second.m_indices.at(i);
+				WriteBinaryData(physicsMapDataFileStream, index);
+			}
+		}
 		ALERT(at_console, "Successfully stored physics data in file %s!\n", physicsMapDataFilePath.c_str());
 	}
 	else
@@ -1367,8 +1609,12 @@ void VRPhysicsHelper::StorePhysicsMapDataToFile(const std::string& physicsMapDat
 
 void VRPhysicsHelper::GetPhysicsMapDataFromModel()
 {
-	m_bspModelData.clear();
+	const std::string mapModelNameStart{ "maps/" };
 
+	m_bspModelData.clear();
+	m_dynamicBSPModelData.clear();
+
+	// create bsp data for collision world
 	CBaseEntity *pEntity = nullptr;
 	while (UTIL_FindAllEntities(&pEntity))
 	{
@@ -1376,25 +1622,45 @@ void VRPhysicsHelper::GetPhysicsMapDataFromModel()
 		if (!model)
 			continue;
 
-		auto& bspModelData = m_bspModelData[std::string{ model->name }];
+		const std::string modelName{ model->name };
+		bool isMapModel = (modelName.compare(0, mapModelNameStart.length(), mapModelNameStart) == 0);
+
+		auto& bspModelData = m_bspModelData[modelName];
 
 		PlaneFacesMap planeFaces;
 		PlaneVertexMetaDataMap planeVertexMetaData;
 
-		TriangulateBSPModel(model, planeFaces, planeVertexMetaData, bspModelData.m_vertices, bspModelData.m_indices);
-
+		TriangulateBSPModel(model, planeFaces, planeVertexMetaData, bspModelData.m_vertices, nullptr, bspModelData.m_indices, isMapModel);
 		bspModelData.CreateData(m_collisionWorld);
 
-		std::vector<Vector3> additionalVertices;
-		std::vector<int> additionalIndices;
-		FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(bspModelData.m_collisionBody, planeFaces, planeVertexMetaData, additionalVertices, additionalIndices, bspModelData.m_vertices.size());
 
-		bspModelData.DeleteData();
+		if (isMapModel)
+		{
+			// Triangulate gaps for collision world
+			std::vector<Vector3> additionalVertices;
+			std::vector<int> additionalIndices;
+			FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(bspModelData.m_collisionBody, planeFaces, planeVertexMetaData, additionalVertices, additionalIndices, bspModelData.m_vertices.size());
 
-		bspModelData.m_vertices.insert(bspModelData.m_vertices.end(), additionalVertices.begin(), additionalVertices.end());
-		bspModelData.m_indices.insert(bspModelData.m_indices.end(), additionalIndices.begin(), additionalIndices.end());
+			bspModelData.DeleteData();
+
+			bspModelData.m_vertices.insert(bspModelData.m_vertices.end(), additionalVertices.begin(), additionalVertices.end());
+			bspModelData.m_indices.insert(bspModelData.m_indices.end(), additionalIndices.begin(), additionalIndices.end());
+		}
 
 		bspModelData.CreateData(m_collisionWorld);
+	}
+
+
+	// create bsp data for dynamics world (for now only map)
+	const model_t* mapModel = GetWorldBSPModel();
+	if (mapModel)
+	{
+		// Create map model for dynamic world
+		auto& dynamicBSPModelData = m_dynamicBSPModelData[std::string{ mapModel->name }];
+		PlaneFacesMap planeFaces;
+		PlaneVertexMetaDataMap planeVertexMetaData;
+		TriangulateBSPModel(mapModel, planeFaces, planeVertexMetaData, dynamicBSPModelData.m_vertices, &dynamicBSPModelData.m_normals, dynamicBSPModelData.m_indices, false);
+		dynamicBSPModelData.CreateData(m_dynamicsWorld);
 	}
 }
 
@@ -1405,6 +1671,7 @@ bool VRPhysicsHelper::CheckWorld()
 	if (!CompareWorlds(world, m_hlWorldModel))
 	{
 		m_bspModelData.clear();
+		m_dynamicBSPModelData.clear();
 		m_hlWorldModel = nullptr;
 		m_currentMapName = "";
 
@@ -1546,3 +1813,87 @@ VRPhysicsHelper& VRPhysicsHelper::Instance()
 }
 
 VRPhysicsHelper* VRPhysicsHelper::m_instance{ nullptr };
+
+
+void VRPhysicsHelper::EnsureWorldsSmallestCupExists(CBaseEntity *pWorldsSmallestCup)
+{
+	if (!m_worldsSmallestCupBody)
+	{
+		const auto& modelInfo = VRModelHelper::GetInstance().GetModelInfo(pWorldsSmallestCup);
+		Vector mins = modelInfo.m_sequences[0].bboxMins;
+		Vector maxs = modelInfo.m_sequences[0].bboxMaxs;
+		float radius = max(maxs.x - mins.x, maxs.y - mins.y) * HL_TO_RP3D;
+		float height = (maxs.z - mins.z) * HL_TO_RP3D;
+
+		vertices[0] = -radius; vertices[1] = -radius; vertices[2] = height;
+		vertices[3] = radius; vertices[4] = -radius; vertices[5] = height;
+		vertices[6] = radius; vertices[7] = -radius; vertices[8] = 0.f;
+		vertices[9] = -radius; vertices[10] = -radius; vertices[11] = 0.f;
+		vertices[12] = -radius; vertices[13] = radius; vertices[14] = height;
+		vertices[15] = radius; vertices[16] = radius; vertices[17] = height;
+		vertices[18] = radius; vertices[19] = radius; vertices[20] = 0.f;
+		vertices[21] = -radius; vertices[22] = radius; vertices[23] = 0.f;
+
+		indices[0] = 0; indices[1] = 3; indices[2] = 2; indices[3] = 1;
+		indices[4] = 4; indices[5] = 5; indices[6] = 6; indices[7] = 7;
+		indices[8] = 0; indices[9] = 1; indices[10] = 5; indices[11] = 4;
+		indices[12] = 1; indices[13] = 2; indices[14] = 6; indices[15] = 5;
+		indices[16] = 2; indices[17] = 3; indices[18] = 7; indices[19] = 6;
+		indices[20] = 0; indices[21] = 4; indices[22] = 7; indices[23] = 3;
+
+		auto* faces = new rp3d::PolygonVertexArray::PolygonFace[6];
+		for (int f = 0; f < 6; f++)
+		{
+			faces[f].indexBase = f * 4;
+			faces[f].nbVertices = 4;
+		}
+		m_worldsSmallestCupPolygonFaces = faces;
+		m_worldsSmallestCupPolygonVertexArray = new rp3d::PolygonVertexArray{
+			8, vertices, 3 * sizeof(float),
+			indices, sizeof(int),
+			6, faces,
+			rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+			rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE
+		};
+		m_worldsSmallestCupPolyhedronMesh = new PolyhedronMesh{ m_worldsSmallestCupPolygonVertexArray };
+		m_worldsSmallestCupShape = new ConvexMeshShape{ m_worldsSmallestCupPolyhedronMesh };
+		m_worldsSmallestCupBody = m_dynamicsWorld->createRigidBody(rp3d::Transform{ HLVecToRP3DVec(pWorldsSmallestCup->pev->origin), HLAnglesToRP3DTransform(pWorldsSmallestCup->pev->angles) });
+		m_worldsSmallestCupProxyShape = m_worldsSmallestCupBody->addCollisionShape(m_worldsSmallestCupShape, rp3d::Transform::identity(), 0.1f);
+		m_worldsSmallestCupBody->setType(BodyType::DYNAMIC);
+	}
+}
+
+void VRPhysicsHelper::SetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup)
+{
+	EnsureWorldsSmallestCupExists(pWorldsSmallestCup);
+	m_worldsSmallestCupBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pWorldsSmallestCup->pev->origin), HLAnglesToRP3DTransform(pWorldsSmallestCup->pev->angles) });
+	m_worldsSmallestCupBody->setAngularVelocity(rp3d::Vector3::zero());
+	m_worldsSmallestCupBody->setLinearVelocity(HLVecToRP3DVec(pWorldsSmallestCup->pev->velocity));
+}
+
+void VRPhysicsHelper::GetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup)
+{
+	EnsureWorldsSmallestCupExists(pWorldsSmallestCup);
+
+	//m_dynamicsWorld->setGravity(HLVecToRP3DVec(Vector{ 0.f, 0.f, -g_psv_gravity->value }));
+	m_dynamicsWorld->setGravity(HLVecToRP3DVec(Vector{ 0.f, 0.f, -10.f }));
+	//m_dynamicsWorld->update(gpGlobals->frametime);
+	m_dynamicsWorld->update(0.01f);
+
+	const rp3d::Transform& transform = m_worldsSmallestCupBody->getTransform();
+	pWorldsSmallestCup->pev->origin = RP3DVecToHLVec(transform.getPosition());
+	//pWorldsSmallestCup->pev->angles = RP3DVecToHLVec(transform.getPosition());
+	pWorldsSmallestCup->pev->velocity = RP3DVecToHLVec(m_worldsSmallestCupBody->getLinearVelocity());
+	//pWorldsSmallestCup->pev->avelocity = RP3DVecToHLVec(m_worldsSmallestCupBody->getAngularVelocity());
+	//m_worldsSmallestCupBody->
+
+	bool test = m_dynamicsWorld->testOverlap(m_dynamicBSPModelData.begin()->second.m_rigidBody, m_worldsSmallestCupBody);
+	if (test)
+	{
+		ALERT(at_console, "WHY?!\n");
+	}
+	else
+	{
+		ALERT(at_console, "Still why tho\n");
+	}
+}

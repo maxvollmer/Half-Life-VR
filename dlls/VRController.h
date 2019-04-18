@@ -16,6 +16,7 @@ public:
 	void PlayWeaponAnimation(int iAnim, int body);
 	void PlayWeaponMuzzleflash();
 
+	inline VRControllerID GetID() const { return m_id; }
 	inline const Vector& GetOffset() const { return m_offset; }
 	inline const Vector& GetPosition() const { return m_position; }
 	inline const Vector& GetAngles() const { return m_angles; }
@@ -25,7 +26,7 @@ public:
 	inline const float GetRadius() const { return m_radius; }
 	inline const float GetRadiusSquared() const { return m_radiusSquared; }
 	inline bool IsDragging() const { return m_isDragging; }
-	inline bool IsValid() const { return m_isValid; }
+	inline bool IsValid() const { return m_isValid && m_id != VRControllerID::INVALID; }
 	inline bool IsBBoxValid() const { return m_isBBoxValid; }
 	inline bool IsTeleporterBlocked() const { return m_isTeleporterBlocked; }
 	inline int GetWeaponId() const { return m_weaponId; }
@@ -41,6 +42,7 @@ private:
 	void ExtractBBoxIfPossibleAndNecessary();
 	void SendEntityDataToClient(CBasePlayer *pPlayer, VRControllerID id);
 
+	VRControllerID	m_id{ VRControllerID::INVALID };
 	Vector m_offset;
 	Vector m_position;
 	Vector m_angles;

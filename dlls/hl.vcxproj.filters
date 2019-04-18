@@ -360,6 +360,9 @@
     <ClCompile Include="VRControllerModel.cpp">
       <Filter>VR</Filter>
     </ClCompile>
+    <ClCompile Include="CWorldsSmallestCup.cpp">
+      <Filter>VR</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activity.h">
@@ -528,6 +531,9 @@
       <Filter>VR</Filter>
     </ClInclude>
     <ClInclude Include="VRControllerModel.h">
+      <Filter>VR</Filter>
+    </ClInclude>
+    <ClInclude Include="CWorldsSmallestCup.h">
       <Filter>VR</Filter>
     </ClInclude>
   </ItemGroup>

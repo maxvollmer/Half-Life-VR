@@ -50,6 +50,7 @@ CBaseEntity
 #endif
 
 #include <functional>
+#include <unordered_set>
 
 // C functions for external declarations that call the appropriate C++ methods
 
@@ -421,6 +422,18 @@ public:
 
 	// For easy detection of female NPCs to change audio files in sound.cpp - Max Vollmer, 2018-11-23
 	virtual bool		IsFemaleNPC() { return false; }
+
+
+	// This is used by the VR controller touch/interaction code to determine if something is touched directly after mapchange/load,
+	// we want to treat those entities as not touched, because otherwise those levelchanges near the tentacle monster bring the payer
+	// into an infinite mapchange-loop (as the next map has a button to go back in the same place)
+	const float						m_spawnTime{
+#ifdef CLIENT_DLL
+		0
+#else
+		gpGlobals->time
+#endif
+	};
 };
 
 

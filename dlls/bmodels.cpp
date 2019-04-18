@@ -75,7 +75,7 @@ public:
 	// Bmodels don't go across transitions
 	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
-	void EXPORT CheckIsRetinaScanner(void);
+	void EXPORT CheckIsSpecialVREntity(void);
 };
 
 LINK_ENTITY_TO_CLASS( func_wall, CFuncWall );
@@ -95,24 +95,40 @@ void CFuncWall :: Spawn( void )
 	// If it can't move/go away, it's really part of the world
 	pev->flags |= FL_WORLDBRUSH;
 
-	// Detect if I am a retina scanner!
-	SetThink(&CFuncWall::CheckIsRetinaScanner);
+	// Detect if I am a retina scanner or gordon's coffee cup!
+	SetThink(&CFuncWall::CheckIsSpecialVREntity);
 	pev->nextthink = gpGlobals->time + 1.f;
 }
 
-void CFuncWall::CheckIsRetinaScanner()
+void CFuncWall::CheckIsSpecialVREntity()
 {
 	const model_t* model = GetBSPModel(this);
 	if (model == nullptr)
 	{
 		// Repeat Think until GetBSPModel returns a value
-		SetThink(&CFuncWall::CheckIsRetinaScanner);
+		SetThink(&CFuncWall::CheckIsSpecialVREntity);
 		pev->nextthink = gpGlobals->time + 1.f;
 		return;
 	}
 	else
 	{
 		SetThink(NULL);
+
+		// If we are the coffee cup and flask in gordon's locker, replace us with the Worlds Smallest Cup (easter egg)
+		// see https://www.youtube.com/watch?v=M_AnIizeH1Q
+		if (strcmp(STRING(pev->model), "*67") == 0 && strcmp(STRING(INDEXENT(0)->v.model), "maps/c1a0d.bsp") == 0)
+		{
+			edict_t* pentCup = CREATE_NAMED_ENTITY(MAKE_STRING("vr_easteregg"));
+			if (!FNullEnt(pentCup))
+			{
+				pentCup->v.origin = (pev->absmin + pev->absmax) * 0.5f;
+				DispatchSpawn(pentCup);
+			}
+			SetThink(&CFuncWall::SUB_Remove);
+			pev->nextthink = gpGlobals->time;
+			return;
+		}
+
 		for (int i = 0; i < model->nummodelsurfaces; ++i)
 		{
 			const msurface_t& surface = model->surfaces[model->firstmodelsurface + i];

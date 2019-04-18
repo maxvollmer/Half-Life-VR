@@ -176,17 +176,18 @@ void DrawDebugBBox(int which, bool valid, Vector pos, Vector angles, Vector mins
 
 bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& controller)
 {
-	if (hEntity->pev->solid == SOLID_NOT)
-		return false;
-
 	if (!controller.IsValid() || !controller.IsBBoxValid())
 		return false;
 
-	// TODO: Check collisions with actual model data (bsp models and studio models)
+	if (hEntity->pev->solid == SOLID_NOT)
+		return false;
+
+	bool isTouching = false;
+
 	CBaseEntity *pWorld = CBaseEntity::Instance(INDEXENT(0));
 	if (hEntity == pWorld)
 	{
-		return VRPhysicsHelper::Instance().ModelIntersectsWorld(controller.GetModel());
+		isTouching = VRPhysicsHelper::Instance().ModelIntersectsWorld(controller.GetModel());
 	}
 	else
 	{
@@ -194,10 +195,15 @@ bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& contro
 		float distance = (controller.GetPosition() - entityCenter).Length();
 		if (distance > (controller.GetRadius() + (hEntity->pev->size.Length() * 0.5f)))
 		{
-			return false;
+			isTouching = false;
 		}
-		return VRPhysicsHelper::Instance().ModelsIntersect(controller.GetModel(), hEntity);
+		else
+		{
+			isTouching = VRPhysicsHelper::Instance().ModelsIntersect(controller.GetModel(), hEntity);
+		}
 	}
+
+	return isTouching;
 }
 
 void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, const VRController& controller)
@@ -378,25 +384,19 @@ bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE
 		if (g_vrRetinaScannerButtons.count(hEntity) > 0)
 			return true;
 
-		if (didTouchChange)
+		// no activation of any buttons within 3 seconds of it spawning (fixes issues with the airlock levers near the tentacle)
+		if ((gpGlobals->time - hEntity->m_spawnTime) < 3.f)
+			return false;
+
+		if (isTouching)
 		{
-			if (isTouching)
+			if (didTouchChange && FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
 			{
-				if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
-				{
-					hEntity->Touch(pPlayer);
-				}
-				else
-				{
-					hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
-				}
+				hEntity->Touch(pPlayer);
 			}
-			else
+			if (didTouchChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
 			{
-				if (!FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY))
-				{
-					hEntity->Use(pPlayer, pPlayer, USE_SET, 0);
-				}
+				hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
 			}
 		}
 		return true;
@@ -406,10 +406,6 @@ bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE
 		if (isTouching)
 		{
 			hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
-		}
-		else if (didTouchChange)
-		{
-			hEntity->Use(pPlayer, pPlayer, USE_SET, 0);
 		}
 		return true;
 	}
@@ -434,13 +430,6 @@ bool VRControllerInteractionManager::HandleDoors(CBasePlayer *pPlayer, EHANDLE h
 					hEntity->Touch(pPlayer);
 				}
 			}
-			else
-			{
-				if (FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
-				{
-					hEntity->Use(pPlayer, pPlayer, USE_SET, 0);
-				}
-			}
 		}
 		return true;
 	}
@@ -452,16 +441,9 @@ bool VRControllerInteractionManager::HandleRechargers(CBasePlayer *pPlayer, EHAN
 {
 	if (FClassnameIs(hEntity->pev, "func_healthcharger") || FClassnameIs(hEntity->pev, "func_recharge"))
 	{
-		if (didTouchChange)
+		if (isTouching)
 		{
-			if (isTouching)
-			{
-				hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
-			}
-			else
-			{
-				hEntity->Use(pPlayer, pPlayer, USE_SET, 0);
-			}
+			hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
 		}
 		return true;
 	}
@@ -474,16 +456,19 @@ bool VRControllerInteractionManager::HandleTriggers(CBasePlayer *pPlayer, EHANDL
 	if (hEntity->pev->solid != SOLID_TRIGGER)
 		return false;
 
-	if (isTouching && didTouchChange)
+	// Only handle trigger_multiple and trigger_once for now,
+	// all other triggers should only be activated by the actual player "body"
+	if (FClassnameIs(hEntity->pev, "trigger_multiple") || FClassnameIs(hEntity->pev, "trigger_once"))
 	{
-		// Only handle trigger_multiple and trigger_once for now,
-		// all other triggers should only be activated by the actual player "body"
-		if (FClassnameIs(hEntity->pev, "trigger_multiple") || FClassnameIs(hEntity->pev, "trigger_once"))
+		if (isTouching && didTouchChange)
 		{
 			hEntity->Touch(pPlayer);
 		}
-		// Except trigger_hurt: Cause 10% damage when touching with hand
-		else if (FClassnameIs(hEntity->pev, "trigger_hurt"))
+	}
+	// Except trigger_hurt: Cause 10% damage when touching with hand
+	else if (FClassnameIs(hEntity->pev, "trigger_hurt"))
+	{
+		if (isTouching)
 		{
 			float dmgBackup = hEntity->pev->dmg;
 			hEntity->pev->dmg *= 0.1f;

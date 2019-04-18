@@ -9,6 +9,8 @@ public:
 	virtual int Save(CSave &save) override { return 0; }
 	virtual int Restore(CRestore &restore) override { return 0; }
 
+	virtual int ObjectCaps() { return FCAP_DONT_SAVE; }
+
 	void Spawn() override;
 	void EXPORT ControllerModelThink(void);
 	void HandleClientAnimEvent(ClientAnimEvent_t *pEvent) override;

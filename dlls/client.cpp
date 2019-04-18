@@ -868,8 +868,9 @@ void ClientPrecache( void )
 	if (giPrecacheGrunt)
 		UTIL_PrecacheOther("monster_human_grunt");
 
-
 	PRECACHE_MODEL("sprites/black.spr");
+
+	PRECACHE_MODEL("models/cup.mdl");
 
 	// Clear global VR stuff here - Max Vollmer, 2018-04-02
 	extern GlobalXenMounds gGlobalXenMounds;

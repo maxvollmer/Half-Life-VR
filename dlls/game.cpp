@@ -12,6 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#include <time.h>
+
 #include "extdll.h"
 #include "eiface.h"
 #include "util.h"
@@ -944,6 +946,10 @@ void GameDLLInit( void )
 
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
+
+
+	// Seed rand()
+	srand(rand() ^ time(NULL));
 }
 
 

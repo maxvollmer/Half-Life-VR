@@ -17,7 +17,8 @@ class CBasePlayer;
 
 enum class VRControllerID : int32_t {
 	WEAPON = 0,
-	HAND
+	HAND,
+	INVALID
 };
 
 #include "VRStuff.h"

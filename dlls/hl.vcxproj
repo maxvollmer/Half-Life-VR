@@ -240,6 +240,7 @@
     <ClCompile Include="controller.cpp" />
     <ClCompile Include="crossbow.cpp" />
     <ClCompile Include="crowbar.cpp" />
+    <ClCompile Include="CWorldsSmallestCup.cpp" />
     <ClCompile Include="defaultai.cpp" />
     <ClCompile Include="doors.cpp" />
     <ClCompile Include="effects.cpp" />
@@ -345,6 +346,7 @@
     <ClInclude Include="cbase.h" />
     <ClInclude Include="cdll_dll.h" />
     <ClInclude Include="client.h" />
+    <ClInclude Include="CWorldsSmallestCup.h" />
     <ClInclude Include="decals.h" />
     <ClInclude Include="defaultai.h" />
     <ClInclude Include="doors.h" />

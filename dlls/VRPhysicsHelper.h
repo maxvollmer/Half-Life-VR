@@ -10,10 +10,14 @@ namespace reactphysics3d {
 	class BoxShape;
 	class CapsuleShape;
 	class CollisionBody;
+	class RigidBody;
 	class TriangleVertexArray;
 	class TriangleMesh;
 	class ConcaveMeshShape;
+	class ConvexMeshShape;
 	class ProxyShape;
+	class PolygonVertexArray;
+	class PolyhedronMesh;
 	struct Vector3;
 };
 
@@ -53,6 +57,10 @@ public:
 
 	bool GetBSPModelBBox(CBaseEntity *pModel, Vector* bboxMins, Vector* bboxMaxs, Vector* bboxCenter = nullptr);
 
+	// easter egg, see CWorldsSmallestCup
+	void SetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup);
+	void GetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup);
+
 	class BSPModelData
 	{
 	public:
@@ -72,6 +80,30 @@ public:
 		reactphysics3d::CollisionBody*					m_collisionBody{ nullptr };
 
 		reactphysics3d::CollisionWorld*					m_collisionWorld{ nullptr };
+
+		bool											m_hasData{ false };
+	};
+
+	class DynamicBSPModelData
+	{
+	public:
+		~DynamicBSPModelData();
+
+		void CreateData(reactphysics3d::DynamicsWorld* dynamicsWorld);
+		void DeleteData();
+		bool HasData() { return m_hasData; }
+
+		std::vector<struct reactphysics3d::Vector3>		m_vertices;
+		std::vector<struct reactphysics3d::Vector3>		m_normals;
+		std::vector<int32_t>							m_indices;
+
+		reactphysics3d::TriangleVertexArray*			m_triangleVertexArray{ nullptr };
+		reactphysics3d::TriangleMesh*					m_triangleMesh{ nullptr };
+		reactphysics3d::ConcaveMeshShape*				m_concaveMeshShape{ nullptr };
+		reactphysics3d::ProxyShape*						m_proxyShape{ nullptr };
+		reactphysics3d::RigidBody*						m_rigidBody{ nullptr };
+
+		reactphysics3d::DynamicsWorld*					m_dynamicsWorld{ nullptr };
 
 		bool											m_hasData{ false };
 	};
@@ -106,12 +138,16 @@ private:
 	void StorePhysicsMapDataToFile(const std::string& physicsMapDataFilePath);
 	void GetPhysicsMapDataFromModel();
 
+	void EnsureWorldsSmallestCupExists(CBaseEntity *pWorldsSmallestCup);
+
 	std::string												m_currentMapName;
 	std::unordered_map<std::string, BSPModelData>			m_bspModelData;
+	std::unordered_map<std::string, DynamicBSPModelData>	m_dynamicBSPModelData;
 	std::unordered_map<std::string, std::vector<BBoxData>>	m_studioModelBBoxCache;
 
 	const struct model_s*									m_hlWorldModel{ nullptr };
 	reactphysics3d::CollisionWorld*							m_collisionWorld{ nullptr };
+	reactphysics3d::DynamicsWorld*							m_dynamicsWorld{ nullptr };
 
 	reactphysics3d::CollisionBody*							m_bboxBody{ nullptr };
 	reactphysics3d::BoxShape*								m_bboxShape{ nullptr };
@@ -120,6 +156,16 @@ private:
 	reactphysics3d::CollisionBody*							m_capsuleBody{ nullptr };
 	reactphysics3d::CapsuleShape*							m_capsuleShape{ nullptr };
 	reactphysics3d::ProxyShape*								m_capsuleProxyShape{ nullptr };
+
+	// can't forward declare inner type so we use void*
+	void*													m_worldsSmallestCupPolygonFaces{ nullptr };
+	reactphysics3d::PolygonVertexArray*						m_worldsSmallestCupPolygonVertexArray{ nullptr };
+	reactphysics3d::PolyhedronMesh*							m_worldsSmallestCupPolyhedronMesh{ nullptr };
+	reactphysics3d::RigidBody*								m_worldsSmallestCupBody{ nullptr };
+	reactphysics3d::ConvexMeshShape* 						m_worldsSmallestCupShape{ nullptr };
+	reactphysics3d::ProxyShape*								m_worldsSmallestCupProxyShape{ nullptr };
+	float vertices[24];
+	int indices[24];
 
 	static VRPhysicsHelper*		m_instance;
 };
