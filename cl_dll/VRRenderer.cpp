@@ -377,6 +377,37 @@ void VRRenderer::CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s *map)
 		m_hdTexturesEnabled = hdTexturesEnabled;
 		replaceHDTextures = true;
 	}
+	if (m_hdTexturesEnabled && !replaceHDTextures)
+	{
+		if (m_originalTextureIDs.empty())
+		{
+			replaceHDTextures = true;
+		}
+		else
+		{
+			// Check if map uses different textures than it should (can happen after loading the same map again)
+			if (map->model != nullptr)
+			{
+				for (int i = 0; !replaceHDTextures && i < map->model->numtextures; i++)
+				{
+					texture_t *texture = map->model->textures[i];
+					if (texture != nullptr
+						&& texture->name != nullptr
+						&& strcmp("sky", texture->name) != 0
+						&& texture->name[0] != '{'	// skip transparent textures, they are broken
+						)
+					{
+						if (m_originalTextureIDs.count(texture->name) == 0
+							|| m_originalTextureIDs[texture->name] == texture->gl_texturenum)
+						{
+							replaceHDTextures = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
 	if (replaceHDTextures)
 	{
 		ReplaceAllTexturesWithHDVersion(map, m_hdTexturesEnabled);

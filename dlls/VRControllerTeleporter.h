@@ -11,9 +11,9 @@ class CBeam;
 class VRControllerTeleporter
 {
 public:
-	void StartTele(CBasePlayer *pPlayer, const VRController& controller);
-	void StopTele(CBasePlayer *pPlayer, const VRController& controller);
-	void UpdateTele(CBasePlayer *pPlayer, const VRController& controller);
+	void StartTele(CBasePlayer *pPlayer, const Vector& telePos);
+	void StopTele(CBasePlayer *pPlayer);
+	void UpdateTele(CBasePlayer *pPlayer, const Vector& telePos, const Vector& teleDir);
 
 private:
 	void TouchTriggersInTeleportPath(CBasePlayer *pPlayer); // Touches all entities with SOLID_TRIGGER when a player teleports through them

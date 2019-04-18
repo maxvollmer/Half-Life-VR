@@ -38,10 +38,26 @@ void CWorldsSmallestCup::Spawn()
 	VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
 	SetThink(&CWorldsSmallestCup::CupThink);
 	pev->nextthink = gpGlobals->time + 0.1f;
+	if (m_instance && m_instance != this)
+	{
+		m_instance->SetThink(&CBaseEntity::SUB_Remove);
+	}
+	m_instance = this;
 }
 
 void CWorldsSmallestCup::CupThink()
 {
+	pev->nextthink = gpGlobals->time;
+	pev->flags |= FL_ALWAYSTHINK;
+
+	if (m_instance && m_instance != this)
+	{
+		SetThink(&CBaseEntity::SUB_Remove);
+		return;
+	}
+
+	m_instance = this;
+
 	if (m_isBeingDragged)
 	{
 		VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
@@ -50,7 +66,6 @@ void CWorldsSmallestCup::CupThink()
 	{
 		VRPhysicsHelper::Instance().GetWorldsSmallestCupPosition(this);
 	}
-
-	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
+EHANDLE CWorldsSmallestCup::m_instance{};

@@ -461,8 +461,16 @@ void ClientCommand( edict_t *pEntity )
 	else if (FStrEq(pcmd, "vr_teleporter"))
 	{
 		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
-		VRControllerID id = VRControllerID(atoi(CMD_ARGV(1)));
-		pPlayer->SetTeleporterController(id);
+		if (atoi(CMD_ARGV(1)))
+		{
+			Vector offset(atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4)));
+			Vector angles(atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7)));
+			pPlayer->SetTeleporterPose(offset, angles);
+		}
+		else
+		{
+			pPlayer->ClearTeleporterPose();
+		}
 	}
 	else if (FStrEq(pcmd, "vr_anlgfire"))
 	{

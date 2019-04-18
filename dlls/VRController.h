@@ -28,7 +28,6 @@ public:
 	inline bool IsDragging() const { return m_isDragging; }
 	inline bool IsValid() const { return m_isValid && m_id != VRControllerID::INVALID; }
 	inline bool IsBBoxValid() const { return m_isBBoxValid; }
-	inline bool IsTeleporterBlocked() const { return m_isTeleporterBlocked; }
 	inline int GetWeaponId() const { return m_weaponId; }
 	inline bool IsMirrored() const { return m_isMirrored; }
 
@@ -57,7 +56,6 @@ private:
 	bool m_isValid{ false };
 	bool m_isDragging{ false };
 	bool m_isBBoxValid{ false };
-	bool m_isTeleporterBlocked{ true };
 	bool m_isMirrored{ false };
 	string_t m_modelName{ 0 };
 	string_t m_bboxModelName{ 0 };

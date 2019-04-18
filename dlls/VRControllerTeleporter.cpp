@@ -9,18 +9,11 @@
 #include "VRPhysicsHelper.h"
 
 
-void VRControllerTeleporter::StartTele(CBasePlayer *pPlayer, const VRController& controller)
+void VRControllerTeleporter::StartTele(CBasePlayer *pPlayer, const Vector& telePos)
 {
-	if (!controller.IsValid())
-	{
-		vr_fValidTeleDestination = false;
-		StopTele(pPlayer, controller);
-		return;
-	}
-
 	if (!vr_pTeleSprite)
 	{
-		vr_pTeleSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", controller.GetPosition(), FALSE);
+		vr_pTeleSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", telePos, FALSE);
 		vr_pTeleSprite->Spawn();
 		vr_pTeleSprite->SetTransparency(kRenderTransAdd, 255, 255, 255, 255, kRenderFxNone);
 		vr_pTeleSprite->pev->owner = pPlayer->edict();
@@ -32,7 +25,7 @@ void VRControllerTeleporter::StartTele(CBasePlayer *pPlayer, const VRController&
 	{
 		vr_pTeleBeam = CBeam::BeamCreate("sprites/xbeam1.spr", 20);
 		vr_pTeleBeam->Spawn();
-		vr_pTeleBeam->PointsInit(controller.GetPosition(), controller.GetPosition());
+		vr_pTeleBeam->PointsInit(telePos, telePos);
 		vr_pTeleBeam->pev->owner = pPlayer->edict();
 		vr_pTeleBeam->pev->effects &= ~EF_NODRAW;
 	}
@@ -42,9 +35,9 @@ void VRControllerTeleporter::StartTele(CBasePlayer *pPlayer, const VRController&
 	vr_fTelePointsInWater = false;
 }
 
-void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer, const VRController& controller)
+void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 {
-	if (!controller.IsTeleporterBlocked() && vr_fValidTeleDestination)
+	if (vr_fValidTeleDestination)
 	{
 		if (vr_fTelePointsAtXenMound && vr_parabolaBeams[0] != nullptr && gGlobalXenMounds.Has(vr_parabolaBeams[0]->pev->origin))
 		{
@@ -74,34 +67,34 @@ void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer, const VRController& 
 	vr_fTelePointsInWater = false;
 }
 
-void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const VRController& controller)
+void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& telePos, const Vector& teleAngles)
 {
-	if (!controller.IsValid() || !vr_pTeleBeam || !vr_pTeleSprite)
+	if (!vr_pTeleBeam || !vr_pTeleSprite)
 	{
 		vr_fValidTeleDestination = false;
 		vr_fTelePointsAtXenMound = false;
 		vr_fTelePointsInWater = false;
-		StopTele(pPlayer, controller);
+		StopTele(pPlayer);
 		return;
 	}
 
 	Vector forward;
-	UTIL_MakeAimVectorsPrivate(controller.GetAngles(), forward, NULL, NULL);
+	UTIL_MakeAimVectorsPrivate(teleAngles, forward, NULL, NULL);
 
 	TraceResult tr;
-	VRPhysicsHelper::Instance().TraceLine(controller.GetPosition(), controller.GetPosition() + forward * GetCurrentTeleLength(pPlayer), pPlayer->edict(), &tr);
+	VRPhysicsHelper::Instance().TraceLine(telePos, telePos + forward * GetCurrentTeleLength(pPlayer), pPlayer->edict(), &tr);
 
 	Vector beamEndPos = tr.vecEndPos;
 	Vector teleportDestination = tr.vecEndPos;
 
-	vr_fValidTeleDestination = CanTeleportHere(pPlayer, tr, controller.GetPosition(), beamEndPos, teleportDestination);
+	vr_fValidTeleDestination = CanTeleportHere(pPlayer, tr, telePos, beamEndPos, teleportDestination);
 
-	vr_pTeleBeam->SetStartPos(controller.GetPosition());
+	vr_pTeleBeam->SetStartPos(telePos);
 	vr_pTeleBeam->SetEndPos(beamEndPos);
 
 	if (vr_fValidTeleDestination && vr_fTelePointsAtXenMound)
 	{
-		EnableXenMoundParabolaAndUpdateTeleDestination(pPlayer, controller.GetPosition(), beamEndPos, teleportDestination);
+		EnableXenMoundParabolaAndUpdateTeleDestination(pPlayer, telePos, beamEndPos, teleportDestination);
 	}
 	else
 	{
@@ -111,7 +104,11 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const VRController
 	vr_vecTeleDestination = teleportDestination;
 	UTIL_SetOrigin(vr_pTeleSprite->pev, teleportDestination);
 
-	if (controller.IsTeleporterBlocked())
+	bool isTeleporterBlocked =
+		!UTIL_CheckClearSight(pPlayer->EyePosition(), telePos, ignore_monsters, dont_ignore_glass, pPlayer->edict())
+		|| VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->EyePosition(), telePos);
+
+	if (isTeleporterBlocked)
 	{
 		vr_fValidTeleDestination = false;
 	}

@@ -9,7 +9,7 @@ public:
 	virtual int Save(CSave &save) override;
 	virtual int Restore(CRestore &restore) override;
 
-	virtual int ObjectCaps() { return FCAP_ACROSS_TRANSITION | FCAP_MUST_SPAWN; }
+	virtual int ObjectCaps() { return FCAP_ACROSS_TRANSITION; }// | FCAP_MUST_SPAWN; }
 
 	virtual void Spawn() override;
 	virtual void Precache() override;
@@ -17,4 +17,7 @@ public:
 
 	// Must be BOOL not bool for save/restore
 	BOOL		m_isBeingDragged;
+
+private:
+	static	EHANDLE		m_instance;
 };

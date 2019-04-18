@@ -968,10 +968,16 @@ void VRHelper::SetPose(VRPoseType poseType, const vr::TrackedDevicePose_t& pose,
 	}
 	else if (poseType == VRPoseType::TELEPORTER)
 	{
-		VRControllerID id = VRControllerID::HAND;
-		if (role == vr::TrackedControllerRole_RightHand) id = VRControllerID::WEAPON;
+		cl_entity_t *localPlayer = SaveGetLocalPlayer();
+		Matrix4 teleporterAbsoluteTrackingMatrix = GetAbsoluteTransform(pose.mDeviceToAbsoluteTracking);
+		Vector teleporterOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(teleporterAbsoluteTrackingMatrix);
+		if (localPlayer) teleporterOffset.z += localPlayer->curstate.mins.z;
+		Vector teleporterAngles = GetHLAnglesFromVRMatrix(teleporterAbsoluteTrackingMatrix);
 		char cmdTeleporter[MAX_COMMAND_SIZE] = { 0 };
-		sprintf_s(cmdTeleporter, "vr_teleporter %i", int(id));
+		sprintf_s(cmdTeleporter, "vr_teleporter 1 %.2f %.2f %.2f %.2f %.2f %.2f",
+			teleporterOffset.x, teleporterOffset.y, teleporterOffset.z,
+			teleporterAngles.x, teleporterAngles.y, teleporterAngles.z
+		);
 		gEngfuncs.pfnClientCmd(cmdTeleporter);
 	}
 	else if (poseType == VRPoseType::MOVEMENT)

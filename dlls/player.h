@@ -363,11 +363,10 @@ private:
 	VRControllerInteractionManager		m_vrControllerInteractionManager;
 	VRGroundEntityHandler				m_vrGroundEntityHandler{ this };
 
-	VRControllerID						m_teleporterControllerID{ VRControllerID::HAND };
-	VRControllerID GetTeleporterControllerID()
-	{
-		return m_teleporterControllerID;
-	}
+	void GetTeleporterPose(Vector& position, Vector& dir);
+	bool								m_vrHasTeleporterPose{ false };
+	Vector								m_vrTeleporterOffset;
+	Vector								m_vrTeleporterAngles;
 
 	void GetFlashlightPose(Vector& position, Vector& dir);
 	bool								m_vrHasFlashlightPose{ false };
@@ -414,7 +413,8 @@ public:
 	void SetFlashlightPose(const Vector& offset, const Vector& angles);
 	void ClearFlashlightPose();
 
-	void SetTeleporterController(VRControllerID id) { m_teleporterControllerID = id; }
+	void SetTeleporterPose(const Vector& offset, const Vector& angles);
+	void ClearTeleporterPose();
 
 	void DoLongJump();
 	void RestartCurrentMap();

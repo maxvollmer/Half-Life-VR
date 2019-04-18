@@ -5127,17 +5127,21 @@ void CBasePlayer::UpdateFlashlight()
 
 void CBasePlayer::StartVRTele()
 {
-	m_vrControllerTeleporter.StartTele(this, m_vrControllers[GetTeleporterControllerID()]);
+	Vector telePos, dummy;
+	GetTeleporterPose(telePos, dummy);
+	m_vrControllerTeleporter.StartTele(this, telePos);
 }
 
 void CBasePlayer::StopVRTele()
 {
-	m_vrControllerTeleporter.StopTele(this, m_vrControllers[GetTeleporterControllerID()]);
+	m_vrControllerTeleporter.StopTele(this);
 }
 
 void CBasePlayer::UpdateVRTele()
 {
-	m_vrControllerTeleporter.UpdateTele(this, m_vrControllers[GetTeleporterControllerID()]);
+	Vector telePos, teleAngles;
+	GetTeleporterPose(telePos, teleAngles);
+	m_vrControllerTeleporter.UpdateTele(this, telePos, teleAngles);
 }
 
 
@@ -5183,6 +5187,47 @@ void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 	{
 		position = m_vrControllers[VRControllerID::HAND].GetPosition();
 		UTIL_MakeVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
+	}
+	else if (m_vrControllers[VRControllerID::WEAPON].IsValid())
+	{
+		position = m_vrControllers[VRControllerID::WEAPON].GetPosition();
+		UTIL_MakeVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
+	}
+	else
+	{
+		position = EyePosition();
+		UTIL_MakeVectorsPrivate(pev->angles, dir, nullptr, nullptr);
+	}
+}
+
+void CBasePlayer::SetTeleporterPose(const Vector& offset, const Vector& angles)
+{
+	m_vrTeleporterOffset = offset;
+	m_vrTeleporterAngles = angles;
+	m_vrHasTeleporterPose = true;
+}
+
+void CBasePlayer::ClearTeleporterPose()
+{
+	m_vrHasTeleporterPose = false;
+}
+
+void CBasePlayer::GetTeleporterPose(Vector& position, Vector& dir)
+{
+	if (m_vrHasTeleporterPose)
+	{
+		position = GetClientOrigin() + m_vrTeleporterOffset;
+		UTIL_MakeVectorsPrivate(m_vrTeleporterAngles, dir, nullptr, nullptr);
+	}
+	else if (m_vrControllers[VRControllerID::HAND].IsValid())
+	{
+		position = m_vrControllers[VRControllerID::HAND].GetPosition();
+		UTIL_MakeVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
+	}
+	else if (m_vrControllers[VRControllerID::WEAPON].IsValid())
+	{
+		position = m_vrControllers[VRControllerID::WEAPON].GetPosition();
+		UTIL_MakeVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
 	}
 	else
 	{

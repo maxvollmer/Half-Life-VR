@@ -163,9 +163,10 @@ private:
 	reactphysics3d::PolygonVertexArray*						m_worldsSmallestCupPolygonVertexArray{ nullptr };
 	reactphysics3d::PolyhedronMesh*							m_worldsSmallestCupPolyhedronMesh{ nullptr };
 	reactphysics3d::RigidBody*								m_worldsSmallestCupBody{ nullptr };
-	reactphysics3d::ConvexMeshShape* 						m_worldsSmallestCupShape{ nullptr };
-	reactphysics3d::SphereShape* 							m_worldsSmallestCupSphereShape{ nullptr };
-	reactphysics3d::ProxyShape*								m_worldsSmallestCupProxyShape{ nullptr };
+	reactphysics3d::SphereShape* 							m_worldsSmallestCupTopSphereShape{ nullptr };
+	reactphysics3d::SphereShape* 							m_worldsSmallestCupBottomSphereShape{ nullptr };
+	reactphysics3d::ProxyShape*								m_worldsSmallestCupTopProxyShape{ nullptr };
+	reactphysics3d::ProxyShape*								m_worldsSmallestCupBottomProxyShape{ nullptr };
 	float vertices[24];
 	int indices[24];
 

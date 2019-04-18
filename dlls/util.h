@@ -282,6 +282,8 @@ extern bool			UTIL_PointInsideRotatedBBox(const Vector & bboxCenter, const Vecto
 
 extern void UTIL_AngleQuaternion(const Vector& angles, float quaternion[4]);
 
+extern void UTIL_GetAnglesFromVectors(const Vector &forward, const Vector &right, const Vector &up, Vector &angles);
+
 extern bool UTIL_TraceBBox(const Vector & vecStart, const Vector & vecEnd, const Vector & absmin, const Vector & absmax);
 extern CBaseEntity * UTIL_TraceTriggers(CBaseEntity *pStartEntity, const Vector & vecStart, const Vector & vecEnd);
 

@@ -215,6 +215,20 @@ inline rp3d::Matrix3x3 HLAnglesToRP3DTransform(const Vector& angles)
 	};
 }
 
+inline Vector RP3DTransformToHLAngles(const rp3d::Matrix3x3& matrix)
+{
+	Vector forward{ float(matrix.getRow(0).x), float(matrix.getRow(0).y), float(matrix.getRow(0).z) };
+	Vector right{ float(matrix.getRow(1).x), float(matrix.getRow(1).y), float(matrix.getRow(1).z) };
+	Vector up{ float(matrix.getRow(2).x), float(matrix.getRow(2).y), float(matrix.getRow(2).z) };
+
+	Vector angles;
+	UTIL_GetAnglesFromVectors(forward, right, up, angles);
+
+	return Vector{ angles.x, angles.y, angles.z };
+}
+
+
+
 const std::hash<int> intHasher;
 
 class VectorHash
@@ -760,10 +774,15 @@ VRPhysicsHelper::~VRPhysicsHelper()
 	{
 		if (m_worldsSmallestCupBody)
 		{
-			if (m_worldsSmallestCupProxyShape)
+			if (m_worldsSmallestCupTopProxyShape)
 			{
-				m_worldsSmallestCupBody->removeCollisionShape(m_worldsSmallestCupProxyShape);
-				m_worldsSmallestCupProxyShape = nullptr;
+				m_worldsSmallestCupBody->removeCollisionShape(m_worldsSmallestCupTopProxyShape);
+				m_worldsSmallestCupTopProxyShape = nullptr;
+			}
+			if (m_worldsSmallestCupBottomProxyShape)
+			{
+				m_worldsSmallestCupBody->removeCollisionShape(m_worldsSmallestCupBottomProxyShape);
+				m_worldsSmallestCupBottomProxyShape = nullptr;
 			}
 			m_dynamicsWorld->destroyRigidBody(m_worldsSmallestCupBody);
 			m_worldsSmallestCupBody = nullptr;
@@ -785,10 +804,16 @@ VRPhysicsHelper::~VRPhysicsHelper()
 		m_capsuleShape = nullptr;
 	}
 
-	if (m_worldsSmallestCupShape)
+	if (m_worldsSmallestCupTopSphereShape)
 	{
-		delete m_worldsSmallestCupShape;
-		m_worldsSmallestCupShape = nullptr;
+		delete m_worldsSmallestCupTopSphereShape;
+		m_worldsSmallestCupTopSphereShape = nullptr;
+	}
+
+	if (m_worldsSmallestCupBottomSphereShape)
+	{
+		delete m_worldsSmallestCupBottomSphereShape;
+		m_worldsSmallestCupBottomSphereShape = nullptr;
 	}
 
 	if (m_worldsSmallestCupPolyhedronMesh)
@@ -1826,77 +1851,49 @@ void VRPhysicsHelper::EnsureWorldsSmallestCupExists(CBaseEntity *pWorldsSmallest
 		const auto& modelInfo = VRModelHelper::GetInstance().GetModelInfo(pWorldsSmallestCup);
 		Vector mins = modelInfo.m_sequences[0].bboxMins;
 		Vector maxs = modelInfo.m_sequences[0].bboxMaxs;
-		rp3d::decimal radius = max(maxs.x - mins.x, maxs.y - mins.y) * HL_TO_RP3D;
+		rp3d::decimal bottomRadius = max(maxs.x - mins.x, maxs.y - mins.y) * 0.5 * HL_TO_RP3D;
+		rp3d::decimal topRadius = bottomRadius * 1.1;
 		rp3d::decimal height = (maxs.z - mins.z) * HL_TO_RP3D;
 
-		/*
-		vertices[0] = -radius; vertices[1] = -radius; vertices[2] = height;
-		vertices[3] = radius; vertices[4] = -radius; vertices[5] = height;
-		vertices[6] = radius; vertices[7] = -radius; vertices[8] = 0.f;
-		vertices[9] = -radius; vertices[10] = -radius; vertices[11] = 0.f;
-		vertices[12] = -radius; vertices[13] = radius; vertices[14] = height;
-		vertices[15] = radius; vertices[16] = radius; vertices[17] = height;
-		vertices[18] = radius; vertices[19] = radius; vertices[20] = 0.f;
-		vertices[21] = -radius; vertices[22] = radius; vertices[23] = 0.f;
-
-		indices[0] = 0; indices[1] = 3; indices[2] = 2; indices[3] = 1;
-		indices[4] = 4; indices[5] = 5; indices[6] = 6; indices[7] = 7;
-		indices[8] = 0; indices[9] = 1; indices[10] = 5; indices[11] = 4;
-		indices[12] = 1; indices[13] = 2; indices[14] = 6; indices[15] = 5;
-		indices[16] = 2; indices[17] = 3; indices[18] = 7; indices[19] = 6;
-		indices[20] = 0; indices[21] = 4; indices[22] = 7; indices[23] = 3;
-
-		auto* faces = new rp3d::PolygonVertexArray::PolygonFace[6];
-		for (int f = 0; f < 6; f++)
-		{
-			faces[f].indexBase = f * 4;
-			faces[f].nbVertices = 4;
-		}
-		m_worldsSmallestCupPolygonFaces = faces;
-		m_worldsSmallestCupPolygonVertexArray = new rp3d::PolygonVertexArray{
-			8, vertices, 3 * sizeof(float),
-			indices, sizeof(int),
-			6, faces,
-			rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-			rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE
-		};
-		m_worldsSmallestCupPolyhedronMesh = new PolyhedronMesh{ m_worldsSmallestCupPolygonVertexArray };
-		m_worldsSmallestCupShape = new ConvexMeshShape{ m_worldsSmallestCupPolyhedronMesh };
-		*/
-
-		m_worldsSmallestCupSphereShape = new SphereShape{ radius };
+		m_worldsSmallestCupTopSphereShape = new SphereShape{ topRadius };
+		m_worldsSmallestCupBottomSphereShape = new SphereShape{ bottomRadius };
 
 		m_worldsSmallestCupBody = m_dynamicsWorld->createRigidBody(rp3d::Transform{ HLVecToRP3DVec(pWorldsSmallestCup->pev->origin), HLAnglesToRP3DTransform(pWorldsSmallestCup->pev->angles) });
-		m_worldsSmallestCupProxyShape = m_worldsSmallestCupBody->addCollisionShape(m_worldsSmallestCupSphereShape, rp3d::Transform::identity(), 1);
+		m_worldsSmallestCupTopProxyShape = m_worldsSmallestCupBody->addCollisionShape(m_worldsSmallestCupTopSphereShape, rp3d::Transform{ rp3d::Vector3{0.f, 0.f, height - topRadius}, rp3d::Matrix3x3::identity() }, 0.6);
+		m_worldsSmallestCupBottomProxyShape = m_worldsSmallestCupBody->addCollisionShape(m_worldsSmallestCupBottomSphereShape, rp3d::Transform{ rp3d::Vector3{0.f, 0.f, bottomRadius}, rp3d::Matrix3x3::identity() }, 0.5);
 		m_worldsSmallestCupBody->setType(BodyType::DYNAMIC);
-		m_worldsSmallestCupBody->setIsAllowedToSleep(false);
-		m_worldsSmallestCupBody->getMaterial().setBounciness(0.);
-		m_worldsSmallestCupBody->getMaterial().setFrictionCoefficient(0.);
-		m_worldsSmallestCupBody->getMaterial().setRollingResistance(0.);
 	}
 }
 
 void VRPhysicsHelper::SetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup)
 {
+	if (!CheckWorld())
+		return;
+
 	EnsureWorldsSmallestCupExists(pWorldsSmallestCup);
+
+	// set position and orientation
 	m_worldsSmallestCupBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pWorldsSmallestCup->pev->origin), HLAnglesToRP3DTransform(pWorldsSmallestCup->pev->angles) });
 	m_worldsSmallestCupBody->setAngularVelocity(rp3d::Vector3::zero());
 	m_worldsSmallestCupBody->setLinearVelocity(HLVecToRP3DVec(pWorldsSmallestCup->pev->velocity));
+
+	// wake up
+	m_worldsSmallestCupBody->setIsActive(true);
+	m_worldsSmallestCupBody->setIsSleeping(false);
 }
 
 void VRPhysicsHelper::GetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup)
 {
+	if (!CheckWorld())
+		return;
+
 	EnsureWorldsSmallestCupExists(pWorldsSmallestCup);
 
-	//m_dynamicsWorld->setGravity(HLVecToRP3DVec(Vector{ 0., 0., -g_psv_gravity->value }));
-	m_dynamicsWorld->setGravity(HLVecToRP3DVec(Vector{ 10., 0., 0. }));
-	//m_dynamicsWorld->update(gpGlobals->frametime);
-	m_dynamicsWorld->update(0.01);
+	m_dynamicsWorld->setGravity(HLVecToRP3DVec(Vector{ 0., 0., -g_psv_gravity->value }));
+	m_dynamicsWorld->update(1. / 90.);
 
 	const rp3d::Transform& transform = m_worldsSmallestCupBody->getTransform();
 	pWorldsSmallestCup->pev->origin = RP3DVecToHLVec(transform.getPosition());
-	//pWorldsSmallestCup->pev->angles = RP3DVecToHLVec(transform.getPosition());
+	pWorldsSmallestCup->pev->angles = RP3DTransformToHLAngles(transform.getOrientation().getMatrix());
 	pWorldsSmallestCup->pev->velocity = RP3DVecToHLVec(m_worldsSmallestCupBody->getLinearVelocity());
-	//pWorldsSmallestCup->pev->avelocity = RP3DVecToHLVec(m_worldsSmallestCupBody->getAngularVelocity());
-	//m_worldsSmallestCupBody->
 }
