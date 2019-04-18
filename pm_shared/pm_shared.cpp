@@ -2401,12 +2401,12 @@ void PM_NoClip(bool unstuckMove=false)
 		bool foundend = false;
 		for (int i = 0; !foundend && i <= VR_UNSTUCK_DISTANCE; i++)
 		{
-			for (int x = -1; !foundend && x <= 1; x += 2)
+			for (int x = -1; !foundend && x <= 1; x++)
 			{
-				for (int y = -1; !foundend && y <= 1; y += 2)
+				for (int y = -1; !foundend && y <= 1; y++)
 				{
 					// go positive in z direction first (unstucking upwards is always better than downwards)
-					for (int z = 1; !foundend && z >= -1; z -= 2)
+					for (int z = 1; !foundend && z >= -1; z--)
 					{
 						vec3_t testend;
 						vec3_t offset;
