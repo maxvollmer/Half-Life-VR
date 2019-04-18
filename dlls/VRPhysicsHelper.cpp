@@ -5,6 +5,10 @@ Disable warnings for:
 1>..\reactphysics3d\include\collision\shapes\heightfieldshape.h(227): warning C4244: 'return': conversion from 'double' to 'reactphysics3d::decimal', possible loss of data
 1>..\reactphysics3d\include\collision\shapes\heightfieldshape.h(235): warning C4244: 'return': conversion from 'reactphysics3d::decimal' to 'int', possible loss of data
 */
+namespace reactphysics3d
+{
+#define IS_DOUBLE_PRECISION_ENABLED
+}
 #include "reactphysics3d\include\reactphysics3d.h"
 
 #include "extdll.h"
@@ -150,8 +154,8 @@ bool IsSolidInPhysicsWorld(CBaseEntity *pEntity)
 
 using namespace reactphysics3d;
 
-constexpr const float RP3D_TO_HL = 50.f;
-constexpr const float HL_TO_RP3D = 1.f / RP3D_TO_HL;
+constexpr const rp3d::decimal RP3D_TO_HL = 50.;
+constexpr const rp3d::decimal HL_TO_RP3D = 1. / RP3D_TO_HL;
 
 
 constexpr const int PLAYER_WIDTH = DUCK_SIZE;
@@ -191,7 +195,7 @@ inline Vector3 HLVecToRP3DVec(const Vector & hlVec)
 
 inline Vector RP3DVecToHLVec(const Vector3 & rp3dVec)
 {
-	return Vector{ rp3dVec.x * RP3D_TO_HL, rp3dVec.y * RP3D_TO_HL, rp3dVec.z * RP3D_TO_HL };
+	return Vector{ float(rp3dVec.x * RP3D_TO_HL), float(rp3dVec.y * RP3D_TO_HL), float(rp3dVec.z * RP3D_TO_HL) };
 }
 
 inline rp3d::Matrix3x3 HLAnglesToRP3DTransform(const Vector& angles)
@@ -633,11 +637,11 @@ void RaycastPotentialVerticeGaps(CollisionBody * dynamicMap, const Vector3 & che
 	RaycastInfo raycastInfo1{};
 	RaycastInfo raycastInfo2{};
 	if (dynamicMap->raycast({ checkVertexInPhysSpace, checkVertexInPhysSpace + checkDirInPhysSpace }, raycastInfo1)
-		&& raycastInfo1.hitFraction > 0.f
-		&& raycastInfo1.hitFraction < 1.f
+		&& raycastInfo1.hitFraction > 0.
+		&& raycastInfo1.hitFraction < 1.
 		&& dynamicMap->raycast({ checkVertexAfterInPhysSpace, checkVertexAfterInPhysSpace + checkDirInPhysSpace }, raycastInfo2)
-		&& raycastInfo2.hitFraction > 0.f
-		&& raycastInfo2.hitFraction < 1.f)
+		&& raycastInfo2.hitFraction > 0.
+		&& raycastInfo2.hitFraction < 1.)
 	{
 		// Get gap vertices
 		std::vector<Vector3> gapVertices;
@@ -824,10 +828,10 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	Vector3 pos1 = HLVecToRP3DVec(hlPos1);
 	Vector3 pos2 = HLVecToRP3DVec(hlPos2);
 
-	Ray ray{ pos1 , pos2, 1.f };
+	Ray ray{ pos1 , pos2, 1. };
 	RaycastInfo raycastInfo{};
 
-	bool result = m_bspModelData[m_currentMapName].m_collisionBody->raycast(ray, raycastInfo) && raycastInfo.hitFraction < (1.f - EPSILON);
+	bool result = m_bspModelData[m_currentMapName].m_collisionBody->raycast(ray, raycastInfo) && raycastInfo.hitFraction < (1. - EPSILON);
 
 	if (result)
 	{
@@ -870,7 +874,7 @@ bool VRPhysicsHelper::GetBSPModelBBox(CBaseEntity *pModel, Vector* bboxMins, Vec
 	return true;
 }
 
-bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& capsuleCenter, float radius, float height)
+bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& capsuleCenter, double radius, double height)
 {
 	if (!CheckWorld())
 		return false;
@@ -1018,7 +1022,7 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 		Vector3 pos1 = HLVecToRP3DVec(vecStart);
 		Vector3 pos2 = HLVecToRP3DVec(vecEnd);
 
-		Ray ray{ pos1, pos2, 1.f };
+		Ray ray{ pos1, pos2, 1. };
 		RaycastInfo raycastInfo{};
 
 		if (m_bspModelData[m_currentMapName].m_collisionBody->raycast(ray, raycastInfo) && raycastInfo.hitFraction < ptr->flFraction)
@@ -1044,9 +1048,9 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 				Vector3 ladderSize = HLVecToRP3DVec(pEntity->pev->size);
 				Vector3 ladderPosition = HLVecToRP3DVec(pEntity->pev->absmin);
 
-				if (ladderSize.x <= 0.f
-					|| ladderSize.y <= 0.f
-					|| ladderSize.z <= 0.f)
+				if (ladderSize.x <= 0.
+					|| ladderSize.y <= 0.
+					|| ladderSize.z <= 0.)
 				{
 					ALERT(at_console, "Warning, found ladder with invalid size: %s (%f %f %f)\n", STRING(pEntity->pev->targetname), pEntity->pev->size.x, pEntity->pev->size.y, pEntity->pev->size.z);
 					continue;
@@ -1115,7 +1119,7 @@ void VRPhysicsHelper::BSPModelData::CreateData(CollisionWorld* collisionWorld)
 	m_triangleVertexArray = new TriangleVertexArray(
 		m_vertices.size(), m_vertices.data(), sizeof(reactphysics3d::Vector3),
 		m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3,
-		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+		TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE,
 		TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 	m_triangleMesh = new TriangleMesh;
@@ -1188,15 +1192,15 @@ void VRPhysicsHelper::DynamicBSPModelData::CreateData(DynamicsWorld* dynamicsWor
 	for (auto& normal : m_normals)
 	{
 		normal.normalize();
-		assert(normal.lengthSquare() > decimal(0.8));
+		assert(normal.lengthSquare() > rp3d::decimal(0.8));
 	}
 
 	m_triangleVertexArray = new TriangleVertexArray(
 		m_vertices.size(), m_vertices.data(), sizeof(reactphysics3d::Vector3),
 		m_normals.data(), sizeof(reactphysics3d::Vector3),
 		m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3,
-		TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
-		TriangleVertexArray::NormalDataType::NORMAL_FLOAT_TYPE,
+		TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE,
+		TriangleVertexArray::NormalDataType::NORMAL_DOUBLE_TYPE,
 		TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 	m_triangleMesh = new TriangleMesh;
@@ -1208,7 +1212,7 @@ void VRPhysicsHelper::DynamicBSPModelData::CreateData(DynamicsWorld* dynamicsWor
 	m_rigidBody->setType(BodyType::STATIC);
 	m_rigidBody->enableGravity(false);
 
-	m_proxyShape = m_rigidBody->addCollisionShape(m_concaveMeshShape, rp3d::Transform::identity(), 1.f);
+	m_proxyShape = m_rigidBody->addCollisionShape(m_concaveMeshShape, rp3d::Transform::identity(), 1.);
 
 	m_dynamicsWorld = dynamicsWorld;
 
@@ -1822,9 +1826,10 @@ void VRPhysicsHelper::EnsureWorldsSmallestCupExists(CBaseEntity *pWorldsSmallest
 		const auto& modelInfo = VRModelHelper::GetInstance().GetModelInfo(pWorldsSmallestCup);
 		Vector mins = modelInfo.m_sequences[0].bboxMins;
 		Vector maxs = modelInfo.m_sequences[0].bboxMaxs;
-		float radius = max(maxs.x - mins.x, maxs.y - mins.y) * HL_TO_RP3D;
-		float height = (maxs.z - mins.z) * HL_TO_RP3D;
+		rp3d::decimal radius = max(maxs.x - mins.x, maxs.y - mins.y) * HL_TO_RP3D;
+		rp3d::decimal height = (maxs.z - mins.z) * HL_TO_RP3D;
 
+		/*
 		vertices[0] = -radius; vertices[1] = -radius; vertices[2] = height;
 		vertices[3] = radius; vertices[4] = -radius; vertices[5] = height;
 		vertices[6] = radius; vertices[7] = -radius; vertices[8] = 0.f;
@@ -1857,9 +1862,17 @@ void VRPhysicsHelper::EnsureWorldsSmallestCupExists(CBaseEntity *pWorldsSmallest
 		};
 		m_worldsSmallestCupPolyhedronMesh = new PolyhedronMesh{ m_worldsSmallestCupPolygonVertexArray };
 		m_worldsSmallestCupShape = new ConvexMeshShape{ m_worldsSmallestCupPolyhedronMesh };
+		*/
+
+		m_worldsSmallestCupSphereShape = new SphereShape{ radius };
+
 		m_worldsSmallestCupBody = m_dynamicsWorld->createRigidBody(rp3d::Transform{ HLVecToRP3DVec(pWorldsSmallestCup->pev->origin), HLAnglesToRP3DTransform(pWorldsSmallestCup->pev->angles) });
-		m_worldsSmallestCupProxyShape = m_worldsSmallestCupBody->addCollisionShape(m_worldsSmallestCupShape, rp3d::Transform::identity(), 0.1f);
+		m_worldsSmallestCupProxyShape = m_worldsSmallestCupBody->addCollisionShape(m_worldsSmallestCupSphereShape, rp3d::Transform::identity(), 1);
 		m_worldsSmallestCupBody->setType(BodyType::DYNAMIC);
+		m_worldsSmallestCupBody->setIsAllowedToSleep(false);
+		m_worldsSmallestCupBody->getMaterial().setBounciness(0.);
+		m_worldsSmallestCupBody->getMaterial().setFrictionCoefficient(0.);
+		m_worldsSmallestCupBody->getMaterial().setRollingResistance(0.);
 	}
 }
 
@@ -1875,10 +1888,10 @@ void VRPhysicsHelper::GetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestC
 {
 	EnsureWorldsSmallestCupExists(pWorldsSmallestCup);
 
-	//m_dynamicsWorld->setGravity(HLVecToRP3DVec(Vector{ 0.f, 0.f, -g_psv_gravity->value }));
-	m_dynamicsWorld->setGravity(HLVecToRP3DVec(Vector{ 0.f, 0.f, -10.f }));
+	//m_dynamicsWorld->setGravity(HLVecToRP3DVec(Vector{ 0., 0., -g_psv_gravity->value }));
+	m_dynamicsWorld->setGravity(HLVecToRP3DVec(Vector{ 10., 0., 0. }));
 	//m_dynamicsWorld->update(gpGlobals->frametime);
-	m_dynamicsWorld->update(0.01f);
+	m_dynamicsWorld->update(0.01);
 
 	const rp3d::Transform& transform = m_worldsSmallestCupBody->getTransform();
 	pWorldsSmallestCup->pev->origin = RP3DVecToHLVec(transform.getPosition());
@@ -1886,14 +1899,4 @@ void VRPhysicsHelper::GetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestC
 	pWorldsSmallestCup->pev->velocity = RP3DVecToHLVec(m_worldsSmallestCupBody->getLinearVelocity());
 	//pWorldsSmallestCup->pev->avelocity = RP3DVecToHLVec(m_worldsSmallestCupBody->getAngularVelocity());
 	//m_worldsSmallestCupBody->
-
-	bool test = m_dynamicsWorld->testOverlap(m_dynamicBSPModelData.begin()->second.m_rigidBody, m_worldsSmallestCupBody);
-	if (test)
-	{
-		ALERT(at_console, "WHY?!\n");
-	}
-	else
-	{
-		ALERT(at_console, "Still why tho\n");
-	}
 }

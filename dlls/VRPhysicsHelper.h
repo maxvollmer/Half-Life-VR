@@ -18,6 +18,7 @@ namespace reactphysics3d {
 	class ProxyShape;
 	class PolygonVertexArray;
 	class PolyhedronMesh;
+	class SphereShape;
 	struct Vector3;
 };
 
@@ -51,7 +52,7 @@ public:
 	void TraceLine(const Vector &vecStart, const Vector &vecEnd, edict_t* pentIgnore, TraceResult *ptr);
 
 	bool ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs);
-	bool ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& capsuleCenter, float radius, float height);
+	bool ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& capsuleCenter, double radius, double height);
 	bool ModelIntersectsWorld(CBaseEntity *pModel);
 	bool ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2);
 
@@ -163,6 +164,7 @@ private:
 	reactphysics3d::PolyhedronMesh*							m_worldsSmallestCupPolyhedronMesh{ nullptr };
 	reactphysics3d::RigidBody*								m_worldsSmallestCupBody{ nullptr };
 	reactphysics3d::ConvexMeshShape* 						m_worldsSmallestCupShape{ nullptr };
+	reactphysics3d::SphereShape* 							m_worldsSmallestCupSphereShape{ nullptr };
 	reactphysics3d::ProxyShape*								m_worldsSmallestCupProxyShape{ nullptr };
 	float vertices[24];
 	int indices[24];
