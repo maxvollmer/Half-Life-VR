@@ -879,6 +879,7 @@ void ClientPrecache( void )
 	PRECACHE_MODEL("sprites/black.spr");
 
 	PRECACHE_MODEL("models/cup.mdl");
+	PRECACHE_SOUND("easteregg/smallestcup.wav");
 
 	// Clear global VR stuff here - Max Vollmer, 2018-04-02
 	extern GlobalXenMounds gGlobalXenMounds;

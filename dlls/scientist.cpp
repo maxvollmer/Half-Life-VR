@@ -678,7 +678,7 @@ void CScientist :: Spawn( void )
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->health			= gSkillData.scientistHealth;
-	pev->view_ofs		= Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
+	pev->view_ofs		= Vector ( 0, 0, 50 * pev->scale);// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so scientists will notice player and say hello
 	m_MonsterState		= MONSTERSTATE_NONE;
 
@@ -802,7 +802,7 @@ void CScientist :: PainSound ( void )
 {
 	if (gpGlobals->time < m_painTime )
 		return;
-	
+
 	m_painTime = gpGlobals->time + RANDOM_FLOAT(0.5, 0.75);
 
 	switch (RANDOM_LONG(0,4))

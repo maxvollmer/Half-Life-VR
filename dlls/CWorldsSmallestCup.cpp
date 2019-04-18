@@ -8,6 +8,7 @@
 #include "weapons.h"
 #include "animation.h"
 #include "activity.h"
+#include "talkmonster.h"
 #include "VRPhysicsHelper.h"
 #include "VRModelHelper.h"
 #include "CWorldsSmallestCup.h"
@@ -18,6 +19,7 @@ LINK_ENTITY_TO_CLASS(vr_easteregg, CWorldsSmallestCup);
 void CWorldsSmallestCup::Precache()
 {
 	PRECACHE_MODEL("models/cup.mdl");
+	PRECACHE_SOUND("easteregg/smallestcup.wav");
 }
 
 void CWorldsSmallestCup::Spawn()
@@ -46,6 +48,7 @@ void CWorldsSmallestCup::CupThink()
 
 	if (m_instance && m_instance != this)
 	{
+		((CWorldsSmallestCup*)(CBaseEntity*)m_instance)->m_hAlreadySpokenKleiners.insert(m_hAlreadySpokenKleiners.begin(), m_hAlreadySpokenKleiners.end());
 		SetThink(&CBaseEntity::SUB_Remove);
 		return;
 	}
@@ -81,6 +84,64 @@ void CWorldsSmallestCup::CupThink()
 			pev->origin = pPlayer->pev->origin;
 		}
 	}
+
+	// check if we are in front of a kleiner
+	if (!m_isBeingDragged.empty())
+	{
+		if (m_hKleiner && AmIInKleinersFace(m_hKleiner))
+		{
+			if ((gpGlobals->time - m_flKleinerFaceStart) > 0.5f)
+			{
+				CTalkMonster* pKleiner = (CTalkMonster*)(CBaseEntity*)m_hKleiner;
+				if (pKleiner->FOkToSpeak())
+				{
+					CTalkMonster::g_talkWaitTime = gpGlobals->time + 20;
+					pKleiner->Talk(20);
+					pKleiner->m_hTalkTarget = UTIL_PlayerByIndex(0);
+					EMIT_SOUND_DYN(pKleiner->edict(), CHAN_VOICE, "easteregg/smallestcup.wav", 1, ATTN_NORM, 0, pKleiner->GetVoicePitch());
+					SetBits(pKleiner->m_bitsSaid, bit_saidHelloPlayer);
+					m_hAlreadySpokenKleiners.insert(m_hKleiner);
+					m_hKleiner = nullptr;
+					m_flKleinerFaceStart = 0.f;
+				}
+			}
+		}
+		else
+		{
+			m_hKleiner = nullptr;
+			m_flKleinerFaceStart = 0.f;
+			CBaseEntity* pKleiner = nullptr;
+			while (pKleiner = UTIL_FindEntityInSphere(pKleiner, pev->origin, 256.f))
+			{
+				if (FClassnameIs(pKleiner->pev, "monster_scientist")
+					&& !pKleiner->IsFemaleNPC()
+					&& pKleiner->pev->body == 0/*HEAD_GLASSES*/
+					&& m_hAlreadySpokenKleiners.count(EHANDLE{ pKleiner }) == 0
+					&& AmIInKleinersFace(pKleiner))
+				{
+					m_hKleiner = pKleiner;
+					m_flKleinerFaceStart = gpGlobals->time;
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		m_hKleiner = nullptr;
+		m_flKleinerFaceStart = 0.f;
+	}
+}
+
+bool CWorldsSmallestCup::AmIInKleinersFace(CBaseEntity* pKleiner)
+{
+	if (!pKleiner)
+		return false;
+
+	Vector forward;
+	UTIL_MakeAimVectorsPrivate(pKleiner->pev->angles, forward, nullptr, nullptr);
+	Vector pos = pKleiner->EyePosition() + (forward * 16.f);
+	return UTIL_PointInsideBBox(pev->origin, pos - Vector{ 8.f, 8.f, 8.f }, pos + Vector{ 8.f, 8.f, 8.f });
 }
 
 EHANDLE CWorldsSmallestCup::m_instance{};

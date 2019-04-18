@@ -14,5 +14,12 @@ public:
 	std::unordered_set<VRControllerID>		m_isBeingDragged;
 
 private:
-	static	EHANDLE		m_instance;
+	bool AmIInKleinersFace(CBaseEntity* pKleiner);
+
+	EHANDLE							m_hKleiner;
+	float							m_flKleinerFaceStart{ 0.f };
+
+	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal>		m_hAlreadySpokenKleiners;
+
+	static EHANDLE					m_instance;
 };
