@@ -42,12 +42,23 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 {
 	CBaseEntity* pGroundEntity = nullptr;
 
-	float vr_force_introtrainride  = CVAR_GET_FLOAT("vr_force_introtrainride");
+	bool forceIntroTrainRide  = CVAR_GET_FLOAT("vr_force_introtrainride") != 0.f;
 	std::string mapName{ STRING(INDEXENT(0)->v.model) };
 
-	if (vr_force_introtrainride != 0.f && IntroTrainRideMapNames.count(mapName) != 0)
+	if (forceIntroTrainRide && IntroTrainRideMapNames.count(mapName) != 0)
 	{
 		pGroundEntity = UTIL_FindEntityByTargetname(nullptr, "train");
+		if (pGroundEntity)
+		{
+			// if we fell out, teleport us back in
+			if (!UTIL_PointInsideBBox(m_pPlayer->pev->origin, pGroundEntity->pev->absmin, pGroundEntity->pev->absmax)
+				|| m_pPlayer->pev->origin.z < (pGroundEntity->pev->origin.z + pGroundEntity->pev->mins.z))
+			{
+				m_pPlayer->pev->origin = pGroundEntity->pev->origin;
+				m_pPlayer->pev->origin.z += 64.f;
+				m_pPlayer->pev->velocity = Vector{};
+			}
+		}
 	}
 	else
 	{
