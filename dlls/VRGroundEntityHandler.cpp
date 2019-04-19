@@ -40,6 +40,13 @@ void VRGroundEntityHandler::HandleMovingWithSolidGroundEntities()
 
 void VRGroundEntityHandler::DetectAndSetGroundEntity()
 {
+	if (CVAR_GET_FLOAT("vr_noclip") != 0.f)
+	{
+		m_pPlayer->pev->groundentity = nullptr;
+		m_hGroundEntity = nullptr;
+		return;
+	}
+
 	CBaseEntity* pGroundEntity = nullptr;
 
 	bool forceIntroTrainRide  = CVAR_GET_FLOAT("vr_force_introtrainride") != 0.f;

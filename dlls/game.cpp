@@ -481,6 +481,7 @@ cvar_t vr_move_instant_decelerate = { "vr_move_instant_decelerate", "0" };
 cvar_t vr_move_instant_accelerate = { "vr_move_instant_accelerate", "0" };
 cvar_t vr_weapon_grenade_mode = { "vr_weapon_grenade_mode", "0" };
 cvar_t vr_crowbar_vanilla_attack_enabled = { "vr_crowbar_vanilla_attack_enabled", "0" };
+cvar_t vr_noclip = { "vr_noclip", "0" };
 
 
 // Register your console variables here
@@ -946,7 +947,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&vr_move_instant_decelerate);
 	CVAR_REGISTER(&vr_move_instant_accelerate);
 	CVAR_REGISTER(&vr_weapon_grenade_mode);
-	CVAR_REGISTER(&vr_crowbar_vanilla_attack_enabled);
+	CVAR_REGISTER(&vr_noclip);
 
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

@@ -70,8 +70,7 @@ void VRGlobalGetWorldUnstuckDir(const float* pos, const float* velocity, float* 
 
 bool VRGlobalGetNoclipMode()
 {
-	// TODO: Add something to enable noclip in VR
-	return false;
+	return CVAR_GET_FLOAT("vr_noclip") != 0.f;
 }
 
 bool VRGlobalIsPointInsideEnt(const float* point, int ent)

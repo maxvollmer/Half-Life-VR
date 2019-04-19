@@ -286,6 +286,7 @@ void VRHelper::Init()
 
 	CVAR_CREATE("vr_debug_physics", "0", 0);
 	CVAR_CREATE("vr_debug_controllers", "0", 0);
+	CVAR_CREATE("vr_noclip", "0", 0);
 	CVAR_CREATE("vr_movecontrols", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_world_scale", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_world_z_strech", "1", FCVAR_ARCHIVE);
@@ -1407,8 +1408,7 @@ void VRGlobalGetWorldUnstuckDir(const float* pos, const float* velocity, float* 
 
 bool VRGlobalGetNoclipMode()
 {
-	// TODO: Add something to enable noclip in VR
-	return false;
+	return CVAR_GET_FLOAT("vr_noclip") != 0.f;
 }
 
 /// Simply copied from server dll's util.cpp
