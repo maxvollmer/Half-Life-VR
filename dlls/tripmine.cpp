@@ -102,12 +102,11 @@ void CTripmineGrenade :: Spawn( void )
 	SET_MODEL(ENT(pev), "models/v_tripmine.mdl");
 	pev->frame = 0;
 	pev->body = 3;
-	pev->scale = 0.75f; // Scale tripmines down a bit, they are huge in VR
 	pev->sequence = TRIPMINE_WORLD;
 	ResetSequenceInfo( );
 	pev->framerate = 0;
-	
-	UTIL_SetSize(pev, Vector( -8, -8, -8), Vector(8, 8, 8));
+
+	UTIL_SetSize(pev, Vector( -8, -8, 0), Vector(8, 8, 16));
 	UTIL_SetOrigin( pev, pev->origin );
 
 	if (pev->spawnflags & 1)
@@ -245,7 +244,7 @@ void CTripmineGrenade :: MakeBeam( void )
 
 	// ALERT( at_console, "serverflags %f\n", gpGlobals->serverflags );
 
-	UTIL_TraceLine( pev->origin, m_vecEnd, dont_ignore_monsters, ENT( pev ), &tr );
+	UTIL_TraceLine( pev->origin + m_vecDir, m_vecEnd, dont_ignore_monsters, ENT( pev ), &tr );
 
 	m_flBeamLength = tr.flFraction;
 
@@ -271,7 +270,7 @@ void CTripmineGrenade :: BeamBreakThink( void  )
 
 	// HACKHACK Set simple box using this really nice global!
 	gpGlobals->trace_flags = FTRACE_SIMPLEBOX;
-	UTIL_TraceLine( pev->origin, m_vecEnd, dont_ignore_monsters, ENT( pev ), &tr );
+	UTIL_TraceLine( pev->origin + m_vecDir, m_vecEnd, dont_ignore_monsters, ENT( pev ), &tr );
 
 	// ALERT( at_console, "%f : %f\n", tr.flFraction, m_flBeamLength );
 
@@ -470,7 +469,7 @@ void CTripmine::PrimaryAttack( void )
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 		if ( pEntity && !(pEntity->pev->flags & FL_CONVEYOR) )
 		{
-			Vector origin = tr.vecEndPos + tr.vecPlaneNormal * 8.f * 0.75f;
+			Vector origin = tr.vecEndPos;
 			Vector angles = UTIL_VecToAngles( tr.vecPlaneNormal );
 			CBaseEntity *pEnt = CBaseEntity::Create("monster_tripmine", origin, angles, m_pPlayer->edict());
 
@@ -529,7 +528,7 @@ void CTripmine::UpdateGhost()
 		CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
 		if (pEntity && !(pEntity->pev->flags & FL_CONVEYOR))
 		{
-			Vector origin = tr.vecEndPos + tr.vecPlaneNormal * 8.f * 0.75f;
+			Vector origin = tr.vecEndPos;
 			if (!m_hGhost)
 			{
 				m_hGhost = CSprite::SpriteCreate("models/v_tripmine.mdl", origin, FALSE);
@@ -537,7 +536,6 @@ void CTripmine::UpdateGhost()
 				m_hGhost->pev->rendermode = kRenderTransTexture;
 				m_hGhost->pev->renderamt = 50;
 				m_hGhost->pev->body = 3;
-				m_hGhost->pev->scale = 0.75f;
 				m_hGhost->pev->sequence = TRIPMINE_WORLD;
 			}
 			m_hGhost->pev->angles = UTIL_VecToAngles(tr.vecPlaneNormal);
