@@ -533,8 +533,18 @@ void CSqueak::Throw()
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 #ifndef CLIENT_DLL
+			Vector vecThrow;
+			if (CVAR_GET_FLOAT("vr_weapon_grenade_mode") != 0.f)
+			{
+				vecThrow = m_pPlayer->GetAutoaimVector() * 200 + m_pPlayer->pev->velocity;
+			}
+			else
+			{
+				vecThrow = m_pPlayer->GetWeaponVelocity() * 2;
+			}
+
 			CBaseEntity *pSqueak = CBaseEntity::Create( "monster_snark",m_pPlayer->GetGunPosition(), m_pPlayer->GetWeaponAngles(), m_pPlayer->edict() );
-			pSqueak->pev->velocity = m_pPlayer->GetWeaponVelocity() * 2;
+			pSqueak->pev->velocity = vecThrow;
 #endif
 
 			// play hunt sound

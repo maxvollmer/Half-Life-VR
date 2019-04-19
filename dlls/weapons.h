@@ -115,7 +115,7 @@ public:
 #define ROCKET_MAX_CARRY		5
 #define HANDGRENADE_MAX_CARRY	10
 #define SATCHEL_MAX_CARRY		5
-#define TRIPMINE_MAX_CARRY		5
+#define TRIPMINE_MAX_CARRY		10	// tripmines are fun, allow player to carry 10
 #define SNARK_MAX_CARRY			15
 #define HORNET_MAX_CARRY		8
 #define M203_GRENADE_MAX_CARRY	10
@@ -600,13 +600,14 @@ public:
 	void Spawn(void);
 	void Precache(void);
 	int iItemSlot(void) { return 1; }
-	//void EXPORT SwingAgain( void );
+	void EXPORT SwingAgain( void );
 	void EXPORT Smack(void);
 	int GetItemInfo(ItemInfo *p);
 
 	virtual void ItemPostFrame(void);
 
-	//void CheckSmack(float speed);
+	void PrimaryAttack(void);
+	int Swing(int fFirst);
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
 	int m_iSwing;
@@ -1088,6 +1089,11 @@ public:
 private:
 	unsigned short m_usTripFire;
 
+#ifndef CLIENT_DLL
+	// "ghost" tripmine used in VR to show where the mine will be placed
+	void UpdateGhost();
+	EHANDLE m_hGhost;
+#endif
 };
 
 class CSqueak : public CBasePlayerWeapon

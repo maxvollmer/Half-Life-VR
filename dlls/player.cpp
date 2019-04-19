@@ -3577,6 +3577,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem("item_suit");
 		GiveNamedItem("item_battery");
 		GiveNamedItem("item_longjump");
+
 		// all the weapons
 		GiveNamedItem("weapon_crowbar");
 		GiveNamedItem("weapon_9mmhandgun");
@@ -3588,10 +3589,17 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem("weapon_gauss");
 		GiveNamedItem("weapon_rpg");
 		GiveNamedItem("weapon_hornetgun");
-		GiveNamedItem("weapon_satchel");
-		GiveNamedItem("weapon_snark");
-		GiveNamedItem("weapon_handgrenade");
-		GiveNamedItem("weapon_tripmine");
+
+		// all the grenades, and i mean /all/ the grenades
+		for (int i = 0; i < (SATCHEL_MAX_CARRY / SATCHEL_DEFAULT_GIVE); i++)
+			GiveNamedItem("weapon_satchel");
+		for (int i = 0; i < (SNARK_MAX_CARRY / SNARK_DEFAULT_GIVE); i++)
+			GiveNamedItem("weapon_snark");
+		for (int i = 0; i < (HANDGRENADE_MAX_CARRY / HANDGRENADE_DEFAULT_GIVE); i++)
+			GiveNamedItem("weapon_handgrenade");
+		for (int i = 0; i < (TRIPMINE_MAX_CARRY / TRIPMINE_DEFAULT_GIVE); i++)
+			GiveNamedItem("weapon_tripmine");
+
 		// all the ammo, and i mean /all/ the ammo
 		for (int i = 0; i < (URANIUM_MAX_CARRY / AMMO_URANIUMBOX_GIVE); i++)
 			GiveNamedItem("ammo_gaussclip");
@@ -4963,7 +4971,7 @@ const Vector CBasePlayer::GetWeaponAngles()
 	}
 	else
 	{
-		Vector angles = pev->angles;
+		Vector angles = pev->v_angle + pev->punchangle;
 		angles.x = -angles.x;
 		return angles;
 	}
@@ -5183,22 +5191,22 @@ void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 	if (m_vrHasFlashlightPose)
 	{
 		position = GetClientOrigin() + m_vrFlashlightOffset;
-		UTIL_MakeVectorsPrivate(m_vrFlashlightAngles, dir, nullptr, nullptr);
+		UTIL_MakeAimVectorsPrivate(m_vrFlashlightAngles, dir, nullptr, nullptr);
 	}
 	else if (m_vrControllers[VRControllerID::HAND].IsValid())
 	{
 		position = m_vrControllers[VRControllerID::HAND].GetPosition();
-		UTIL_MakeVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
+		UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
 	}
 	else if (m_vrControllers[VRControllerID::WEAPON].IsValid())
 	{
 		position = m_vrControllers[VRControllerID::WEAPON].GetPosition();
-		UTIL_MakeVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
+		UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
 	}
 	else
 	{
 		position = EyePosition();
-		UTIL_MakeVectorsPrivate(pev->angles, dir, nullptr, nullptr);
+		UTIL_MakeAimVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
 	}
 }
 
@@ -5234,7 +5242,7 @@ void CBasePlayer::GetTeleporterPose(Vector& position, Vector& dir)
 	else
 	{
 		position = EyePosition();
-		UTIL_MakeAimVectorsPrivate(pev->v_angle, dir, nullptr, nullptr);
+		UTIL_MakeAimVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
 	}
 }
 

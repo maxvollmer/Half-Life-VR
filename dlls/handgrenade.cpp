@@ -136,52 +136,36 @@ void CHandGrenade::WeaponIdle( void )
 
 	if ( m_flStartThrow )
 	{
-		/*
-		Vector angThrow = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
-
-		if ( angThrow.x < 0 )
-			angThrow.x = -10 + angThrow.x * ( ( 90 - 10 ) / 90.0 );
-		else
-			angThrow.x = -10 + angThrow.x * ( ( 90 + 10 ) / 90.0 );
-
-		float flVel = ( 90 - angThrow.x ) * 4;
-		if ( flVel > 500 )
-			flVel = 500;
-
-		UTIL_MakeVectors( angThrow );
-
-		Vector vecSrc = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16;
-
-		Vector vecThrow = gpGlobals->v_forward * flVel + m_pPlayer->pev->velocity;
-
-		// alway explode 3 seconds after the pin was pulled
-		float time = m_flStartThrow - gpGlobals->time + 3.0;
-		if (time < 0)
-			time = 0;
-
-		CGrenade::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time );
-
-		if ( flVel < 500 )
-		{
-			SendWeaponAnim( HANDGRENADE_THROW1 );
-		}
-		else if ( flVel < 1000 )
-		{
-			SendWeaponAnim( HANDGRENADE_THROW2 );
-		}
-		else
-		{
-			SendWeaponAnim( HANDGRENADE_THROW3 );
-		}
-		*/
-
-		// alway explode 3 seconds after the pin was pulled
-		float time = m_flStartThrow - gpGlobals->time + 3.0;
-		if (time < 0)
-			time = 0;
-
 #ifndef CLIENT_DLL
-		CGrenade *pGrenade = CGrenade::ShootTimed(m_pPlayer->pev, m_pPlayer->GetGunPosition(), m_pPlayer->GetWeaponVelocity() * 2, time);
+		Vector grenadeVelocity;
+		if (CVAR_GET_FLOAT("vr_weapon_grenade_mode") != 0.f)
+		{
+			Vector angThrow = m_pPlayer->GetAimAngles();// m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
+
+			if (angThrow.x < 0)
+				angThrow.x = -10 + angThrow.x * ((90 - 10) / 90.0);
+			else
+				angThrow.x = -10 + angThrow.x * ((90 + 10) / 90.0);
+
+			float flVel = (90 - angThrow.x) * 4;
+			if (flVel > 500)
+				flVel = 500;
+
+			UTIL_MakeVectors(angThrow);
+
+			grenadeVelocity = gpGlobals->v_forward * flVel + m_pPlayer->pev->velocity;
+		}
+		else
+		{
+			grenadeVelocity = m_pPlayer->GetWeaponVelocity() * 2;
+		}
+
+		// always explode 3 seconds after the pin was pulled
+		float time = m_flStartThrow - gpGlobals->time + 3.0;
+		if (time < 0)
+			time = 0;
+
+		CGrenade *pGrenade = CGrenade::ShootTimed(m_pPlayer->pev, m_pPlayer->GetGunPosition(), grenadeVelocity, time);
 		pGrenade->pev->dmg = this->pev->dmg; // Original HL ignored skill setting for grenades...
 #endif
 

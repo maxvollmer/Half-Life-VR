@@ -393,8 +393,17 @@ void CSatchel::Throw( void )
 	if ( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] )
 	{
 #ifndef CLIENT_DLL
+		Vector vecThrow;
+		if (CVAR_GET_FLOAT("vr_weapon_grenade_mode") != 0.f)
+		{
+			vecThrow = m_pPlayer->GetAutoaimVector() * 274 + m_pPlayer->pev->velocity;
+		}
+		else
+		{
+			vecThrow = m_pPlayer->GetWeaponVelocity() * 1.5f;
+		}
+
 		Vector vecSrc = m_pPlayer->GetGunPosition();
-		Vector vecThrow = m_pPlayer->GetWeaponVelocity() * 1.5f;
 
 		CBaseEntity *pSatchel = Create( "monster_satchel", vecSrc, Vector( 0, 0, 0), m_pPlayer->edict() );
 		pSatchel->pev->velocity = vecThrow;
