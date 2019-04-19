@@ -224,6 +224,7 @@ int gmsgVRGroundEntity = 0;
 int gmsgVRSetSpawnYaw = 0;
 int gmsgVRControllerEnt = 0;
 int gmsgVRTrainControls = 0;
+int gmsgVRUpdateEgon = 0;
 
 
 void LinkUserMessages( void )
@@ -276,6 +277,7 @@ void LinkUserMessages( void )
 	gmsgVRSetSpawnYaw = REG_USER_MSG("VRSpawnYaw", 1);
 	gmsgVRControllerEnt = REG_USER_MSG("VRCtrlEnt", 29);
 	gmsgVRTrainControls = REG_USER_MSG("TrainCtrl", 7);
+	gmsgVRUpdateEgon = REG_USER_MSG("VRUpdEgon", -1);
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer );

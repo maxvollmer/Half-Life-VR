@@ -103,13 +103,13 @@ Figure out the height of the gun
 =================
 */
 // Gun position and aim vector in VR is given by special model attachments - Max Vollmer, 2019-03-30 / 2019-04-07
-void EV_GetGunPosition(event_args_t *args, float *pos)
+void EV_GetGunPosition(float *pos)
 {
 	// we are in include hell, so just use an external global function here :/
 	extern Vector VRGlobalGetGunPosition();
 	VRGlobalGetGunPosition().CopyToArray(pos);
 }
-void EV_GetGunAim(struct event_args_s *args, float *forward, float *right, float *up, float *angles)
+void EV_GetGunAim(float *forward, float *right, float *up, float *angles)
 {
 	// we are in include hell, so just use an external global function here :/
 	Vector f, r, u, a;

@@ -1411,11 +1411,30 @@ bool VRGlobalGetNoclipMode()
 	return false;
 }
 
+/// Simply copied from server dll's util.cpp
+// Convenience method to check if a point is inside a bbox - Max Vollmer, 2017-12-27
+bool VRPointInsideBBox(const Vector &vec, const Vector &absmin, const Vector &absmax)
+{
+	return absmin.x < vec.x && absmin.y < vec.y && absmin.z < vec.z && absmax.x > vec.x && absmax.y > vec.y && absmax.z > vec.z;
+}
+
+/// Simply copied from server dll's util.cpp
+// Returns true if the point is inside the rotated bbox - Max Vollmer, 2018-02-11
+bool VRPointInsideRotatedBBox(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs, const Vector & checkVec)
+{
+	extern void RotateVector(Vector &vecToRotate, const Vector &vecAngles, const bool reverse);
+	Vector rotatedLocalCheckVec = checkVec - bboxCenter;
+	RotateVector(rotatedLocalCheckVec, -bboxAngles, true);
+	return VRPointInsideBBox(rotatedLocalCheckVec, bboxMins, bboxMaxs);
+}
+
 bool VRGlobalIsPointInsideEnt(const float* point, int ent)
 {
-	Vector absmin = gEngfuncs.GetEntityByIndex(ent)->curstate.origin + gEngfuncs.GetEntityByIndex(ent)->curstate.mins;
-	Vector absmax = gEngfuncs.GetEntityByIndex(ent)->curstate.origin + gEngfuncs.GetEntityByIndex(ent)->curstate.maxs;
-	return point[0] > absmin.x && point[0] < absmax.x
-		&& point[1] > absmin.y && point[1] < absmax.y
-		&& point[2] > absmin.z && point[2] < absmax.z;
+	return VRPointInsideRotatedBBox(
+		gEngfuncs.GetEntityByIndex(ent)->curstate.origin,
+		gEngfuncs.GetEntityByIndex(ent)->curstate.angles,
+		gEngfuncs.GetEntityByIndex(ent)->curstate.mins,
+		gEngfuncs.GetEntityByIndex(ent)->curstate.maxs,
+		Vector{ point[0] , point[1] , point[2] }
+	);
 }

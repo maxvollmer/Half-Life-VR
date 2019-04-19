@@ -665,6 +665,7 @@ public:
 	int _cdecl MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf);
 	int _cdecl MsgFunc_VRCtrlEnt(const char *pszName, int iSize, void *pbuf);
 	int _cdecl MsgFunc_TrainCtrl(const char *pszName, int iSize, void *pbuf);
+	int _cdecl MsgFunc_VRUpdEgon(const char *pszName, int iSize, void *pbuf);
 
 	// Screen information
 	SCREENINFO	m_scrinfo;

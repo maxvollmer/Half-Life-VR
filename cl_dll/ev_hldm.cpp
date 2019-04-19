@@ -470,8 +470,8 @@ void EV_FireGlock1( event_args_t *args )
 	VectorCopy(viewModel->curstate.origin, origin);
 	VectorCopy(viewModel->curstate.velocity, velocity);
 
-	EV_GetGunPosition(args, vecSrc);
-	EV_GetGunAim(args, forward, right, up, angles);
+	EV_GetGunPosition(vecSrc);
+	EV_GetGunAim(forward, right, up, angles);
 	VectorCopy(forward, vecAiming);
 
 	empty = args->bparam1;
@@ -518,8 +518,8 @@ void EV_FireGlock2( event_args_t *args )
 	VectorCopy(viewModel->curstate.origin, origin);
 	VectorCopy(viewModel->curstate.velocity, velocity);
 
-	EV_GetGunPosition(args, vecSrc);
-	EV_GetGunAim(args, forward, right, up, angles);
+	EV_GetGunPosition(vecSrc);
+	EV_GetGunAim( forward, right, up, angles);
 	VectorCopy(forward, vecAiming);
 
 	shell = gEngfuncs.pEventAPI->EV_FindModelIndex ("models/shell.mdl");// brass shell
@@ -576,8 +576,8 @@ void EV_FireShotGunDouble( event_args_t *args )
 	VectorCopy(viewModel->curstate.origin, origin);
 	VectorCopy(viewModel->curstate.velocity, velocity);
 
-	EV_GetGunPosition(args, vecSrc);
-	EV_GetGunAim(args, forward, right, up, angles);
+	EV_GetGunPosition(vecSrc);
+	EV_GetGunAim( forward, right, up, angles);
 	VectorCopy(forward, vecAiming);
 
 	shell = gEngfuncs.pEventAPI->EV_FindModelIndex ("models/shotgunshell.mdl");// brass shell
@@ -632,8 +632,8 @@ void EV_FireShotGunSingle( event_args_t *args )
 	VectorCopy(viewModel->curstate.origin, origin);
 	VectorCopy(viewModel->curstate.velocity, velocity);
 
-	EV_GetGunPosition(args, vecSrc);
-	EV_GetGunAim(args, forward, right, up, angles);
+	EV_GetGunPosition(vecSrc);
+	EV_GetGunAim( forward, right, up, angles);
 	VectorCopy(forward, vecAiming);
 
 	shell = gEngfuncs.pEventAPI->EV_FindModelIndex ("models/shotgunshell.mdl");// brass shell
@@ -691,8 +691,8 @@ void EV_FireMP5( event_args_t *args )
 	VectorCopy(viewModel->curstate.origin, origin);
 	VectorCopy(viewModel->curstate.velocity, velocity);
 
-	EV_GetGunPosition(args, vecSrc);
-	EV_GetGunAim(args, forward, right, up, angles);
+	EV_GetGunPosition(vecSrc);
+	EV_GetGunAim( forward, right, up, angles);
 	VectorCopy(forward, vecAiming);
 
 	shell = gEngfuncs.pEventAPI->EV_FindModelIndex ("models/shell.mdl");// brass shell
@@ -786,8 +786,8 @@ void EV_FirePython( event_args_t *args )
 	VectorCopy(viewModel->curstate.origin, origin);
 	VectorCopy(viewModel->curstate.velocity, velocity);
 
-	EV_GetGunPosition(args, vecSrc);
-	EV_GetGunAim(args, forward, right, up, angles);
+	EV_GetGunPosition(vecSrc);
+	EV_GetGunAim( forward, right, up, angles);
 	VectorCopy(forward, vecAiming);
 
 	if ( EV_IsLocal( idx ) )
@@ -905,8 +905,8 @@ void EV_FireGauss( event_args_t *args )
 	VectorCopy(viewModel->curstate.origin, origin);
 	VectorCopy(viewModel->curstate.velocity, velocity);
 
-	EV_GetGunPosition(args, vecSrc);
-	EV_GetGunAim(args, forward, right, up, angles);
+	EV_GetGunPosition(vecSrc);
+	EV_GetGunAim( forward, right, up, angles);
 
 	m_iBeam = gEngfuncs.pEventAPI->EV_FindModelIndex( "sprites/smoke.spr" );
 	m_iBalls = m_iGlow = gEngfuncs.pEventAPI->EV_FindModelIndex( "sprites/hotglow.spr" );
@@ -1252,8 +1252,8 @@ void EV_FireCrossbow2( event_args_t *args )
 	VectorCopy(viewModel->curstate.origin, origin);
 	VectorCopy(viewModel->curstate.velocity, velocity);
 
-	EV_GetGunPosition(args, vecSrc);
-	EV_GetGunAim(args, forward, right, up, angles);
+	EV_GetGunPosition(vecSrc);
+	EV_GetGunAim( forward, right, up, angles);
 
 	VectorMA( vecSrc, 8192, forward, vecEnd );
 
@@ -1427,8 +1427,8 @@ enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
 
 #define ARRAYSIZE(p)		(sizeof(p)/sizeof(p[0]))
 
-BEAM *pBeam;
-BEAM *pBeam2;
+BEAM *pBeam{ nullptr };
+BEAM *pBeam2{ nullptr };
 
 void EV_EgonFire( event_args_t *args )
 {
@@ -1437,36 +1437,35 @@ void EV_EgonFire( event_args_t *args )
 
 	idx = args->entindex;
 
-	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
-	if (viewModel == nullptr)
-		return;
-	VectorCopy(viewModel->curstate.origin, origin);
+	EV_GetGunPosition(origin);
 
 	iFireState = args->iparam1;
 	iFireMode = args->iparam2;
 	int iStartup = args->bparam1;
 
-
-	if ( iStartup )
+	if (iStartup)
 	{
-		if ( iFireMode == FIRE_WIDE )
-			gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, EGON_SOUND_STARTUP, 0.98, ATTN_NORM, 0, 125 );
+		if (iFireMode == FIRE_WIDE)
+			gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, EGON_SOUND_STARTUP, 0.98, ATTN_NORM, 0, 125);
 		else
-			gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, EGON_SOUND_STARTUP, 0.9, ATTN_NORM, 0, 100 );
+			gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, EGON_SOUND_STARTUP, 0.9, ATTN_NORM, 0, 100);
 	}
 	else
 	{
-		if ( iFireMode == FIRE_WIDE )
-			gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_STATIC, EGON_SOUND_RUN, 0.98, ATTN_NORM, 0, 125 );
+		gEngfuncs.pEventAPI->EV_StopSound(idx, CHAN_STATIC, EGON_SOUND_RUN);
+
+		if (iFireMode == FIRE_WIDE)
+			gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_STATIC, EGON_SOUND_RUN, 0.98, ATTN_NORM, 0, 125);
 		else
-			gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_STATIC, EGON_SOUND_RUN, 0.9, ATTN_NORM, 0, 100 );
+			gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_STATIC, EGON_SOUND_RUN, 0.9, ATTN_NORM, 0, 100);
 	}
 
 	//Only play the weapon anims if I shot it.
 	if ( EV_IsLocal( idx ) )
 		InterCept_EV_WeaponAnimation ( g_fireAnims1[ gEngfuncs.pfnRandomLong( 0, 3 ) ], 1 );
 
-	if ( iStartup == 1 && EV_IsLocal( idx ) && !pBeam && !pBeam2 && cl_lw->value ) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
+	//if ( iStartup == 1 && EV_IsLocal( idx ) && !pBeam && !pBeam2 && cl_lw->value ) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
+	if (EV_IsLocal(idx))
 	{
 		vec3_t vecSrc, vecEnd, origin, angles, forward, right, up;
 		pmtrace_t tr;
@@ -1475,8 +1474,8 @@ void EV_EgonFire( event_args_t *args )
 
 		if ( pl )
 		{
-			EV_GetGunPosition(args, vecSrc);
-			EV_GetGunAim(args, forward, right, up, angles);
+			EV_GetGunPosition(vecSrc);
+			EV_GetGunAim( forward, right, up, angles);
 
 			VectorMA( vecSrc, 2048, forward, vecEnd );
 
@@ -1504,15 +1503,30 @@ void EV_EgonFire( event_args_t *args )
 				r /= 100.0f;
 				g /= 100.0f;
 			}
-				
-		
-			pBeam = gEngfuncs.pEfxAPI->R_BeamEntPoint ( idx | 0x1000, tr.endpos, iBeamModelIndex, 99999, 3.5, 0.2, 0.7, 55, 0, 0, r, g, b );
+
+			pBeam = gEngfuncs.pEfxAPI->R_BeamPoints(vecSrc, tr.endpos, iBeamModelIndex, 99999, 3.5, 0.2, 0.7, 55, 0, 0, r, g, b);
 
 			if ( pBeam )
 				 pBeam->flags |= ( FBEAM_SINENOISE );
- 
-			pBeam2 = gEngfuncs.pEfxAPI->R_BeamEntPoint ( idx | 0x1000, tr.endpos, iBeamModelIndex, 99999, 5.0, 0.08, 0.7, 25, 0, 0, r, g, b );
+
+			pBeam2 = gEngfuncs.pEfxAPI->R_BeamPoints(vecSrc, tr.endpos, iBeamModelIndex, 99999, 5.0, 0.08, 0.7, 25, 0, 0, r, g, b);
 		}
+	}
+}
+
+void EV_UpdateEgon(const Vector& beamStartPos, const Vector& beamEndPos)
+{
+	if (pBeam)
+	{
+		pBeam->source = beamStartPos;
+		pBeam->target = beamEndPos;
+		pBeam->delta = beamEndPos - beamStartPos;
+	}
+	if (pBeam2)
+	{
+		pBeam2->source = beamStartPos;
+		pBeam2->target = beamEndPos;
+		pBeam2->delta = beamEndPos - beamStartPos;
 	}
 }
 
@@ -1523,13 +1537,10 @@ void EV_EgonStop( event_args_t *args )
 
 	idx = args->entindex;
 
-	cl_entity_s* viewModel = gEngfuncs.GetViewModel();
-	if (viewModel == nullptr)
-		return;
-	VectorCopy(viewModel->curstate.origin, origin);
+	EV_GetGunPosition(origin);
 
 	gEngfuncs.pEventAPI->EV_StopSound( idx, CHAN_STATIC, EGON_SOUND_RUN );
-	
+
 	if ( args->iparam1 )
 		 gEngfuncs.pEventAPI->EV_PlaySound( idx, origin, CHAN_WEAPON, EGON_SOUND_OFF, 0.98, ATTN_NORM, 0, 100 );
 

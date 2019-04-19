@@ -90,7 +90,7 @@ inline void WRITE_FLOAT(float f)
 	WRITE_BYTE(floatbytes[2]);
 	WRITE_BYTE(floatbytes[3]);
 }
-inline void WRITE_PRECISE_VECTOR(float* v)
+inline void WRITE_PRECISE_VECTOR(const float* v)
 {
 	WRITE_FLOAT(v[0]);
 	WRITE_FLOAT(v[1]);

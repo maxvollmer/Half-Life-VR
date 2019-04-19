@@ -243,6 +243,18 @@ int __MsgFunc_TrainCtrl(const char *pszName, int iSize, void *pbuf)
 	return gHUD.MsgFunc_TrainCtrl(pszName, iSize, pbuf);
 }
 
+int __MsgFunc_VRUpdEgon(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	Vector beamStartPos{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
+	Vector beamEndPos{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
+
+	extern void EV_UpdateEgon(const Vector& beamStartPos, const Vector& beamEndPos);
+	EV_UpdateEgon(beamStartPos, beamEndPos);
+
+	return 0;
+}
+
 int __MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
 {
 	if (gViewPort)
@@ -348,6 +360,7 @@ void CHud :: Init( void )
 	HOOK_MESSAGE(VRCtrlEnt);
 	HOOK_MESSAGE(VRSpawnYaw);
 	HOOK_MESSAGE(TrainCtrl);
+	HOOK_MESSAGE(VRUpdEgon);
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round

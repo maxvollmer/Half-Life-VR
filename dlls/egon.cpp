@@ -178,7 +178,6 @@ void CEgon::Attack( void )
 		return;
 	}
 
-	UTIL_MakeVectors( m_pPlayer->GetWeaponViewAngles());
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(); //gpGlobals->v_forward;
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
 
@@ -219,7 +218,7 @@ void CEgon::Attack( void )
 		{
 			Fire( vecSrc, vecAiming );
 			m_pPlayer->m_iWeaponVolume = EGON_PRIMARY_VOLUME;
-		
+
 			if ( pev->fuser1 <= UTIL_WeaponTimeBase() )
 			{
 				PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usEgonFire, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, m_fireState, m_fireMode, 0, 0 );
@@ -244,18 +243,17 @@ void CEgon::PrimaryAttack( void )
 
 }
 
-void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
+void CEgon::Fire( const Vector &vecSrc, const Vector &vecDir )
 {
-	Vector vecDest = vecOrigSrc + vecDir * 2048;
+	Vector vecDest = vecSrc + vecDir * 2048;
 	edict_t		*pentIgnore;
 	TraceResult tr;
 
 	pentIgnore = m_pPlayer->edict();
-	Vector tmpSrc = vecOrigSrc + gpGlobals->v_up * -8 + gpGlobals->v_right * 3;
 
 	// ALERT( at_console, "." );
-	
-	UTIL_TraceLine( vecOrigSrc, vecDest, dont_ignore_monsters, pentIgnore, &tr );
+
+	UTIL_TraceLine(vecSrc, vecDest, dont_ignore_monsters, pentIgnore, &tr );
 
 	if (tr.fAllSolid)
 		return;
@@ -290,12 +288,15 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 		if ( pev->dmgtime < gpGlobals->time )
 		{
 			// Narrow mode only does damage to the entity it hits
-			ClearMultiDamage();
-			if (pEntity->pev->takedamage)
+			if (pEntity)
 			{
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgEgonNarrow, vecDir, &tr, DMG_ENERGYBEAM );
+				ClearMultiDamage();
+				if (pEntity->pev->takedamage)
+				{
+					pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgEgonNarrow, vecDir, &tr, DMG_ENERGYBEAM);
+				}
+				ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 			}
-			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 
 			if ( g_pGameRules->IsMultiplayer() )
 			{
@@ -327,12 +328,15 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 		if ( pev->dmgtime < gpGlobals->time )
 		{
 			// wide mode does damage to the ent, and radius damage
-			ClearMultiDamage();
-			if (pEntity->pev->takedamage)
+			if (pEntity)
 			{
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.plrDmgEgonWide, vecDir, &tr, DMG_ENERGYBEAM | DMG_ALWAYSGIB);
+				ClearMultiDamage();
+				if (pEntity->pev->takedamage)
+				{
+					pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgEgonWide, vecDir, &tr, DMG_ENERGYBEAM | DMG_ALWAYSGIB);
+				}
+				ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 			}
-			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 
 			if ( g_pGameRules->IsMultiplayer() )
 			{
@@ -380,7 +384,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 		timedist = 1;
 	timedist = 1-timedist;
 
-	UpdateEffect( tmpSrc, tr.vecEndPos, timedist );
+	UpdateEffect(vecSrc, tr.vecEndPos, timedist);
 }
 
 
@@ -393,7 +397,7 @@ void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, floa
 	}
 
 	m_pBeam->SetStartPos(endPoint);
-	m_pBeam->SetEndPos(m_pPlayer->GetGunPosition());
+	m_pBeam->SetEndPos(startPoint);
 	m_pBeam->SetBrightness( 255 - (timeBlend*180) );
 	m_pBeam->SetWidth( 40 - (timeBlend*20) );
 
@@ -409,8 +413,13 @@ void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, floa
 		m_pSprite->pev->frame = 0;
 
 	m_pNoise->SetStartPos( endPoint );
-	m_pNoise->SetEndPos(m_pPlayer->GetGunPosition());
+	m_pNoise->SetEndPos(startPoint);
 
+	extern int gmsgVRUpdateEgon;
+	MESSAGE_BEGIN(MSG_ONE, gmsgVRUpdateEgon, NULL, m_pPlayer->pev);
+	WRITE_PRECISE_VECTOR(endPoint);
+	WRITE_PRECISE_VECTOR(startPoint);
+	MESSAGE_END();
 #endif
 
 }
@@ -430,7 +439,7 @@ void CEgon::CreateEffect( void )
 	m_pBeam->pev->owner = m_pPlayer->edict();
 
 	m_pNoise = CBeam::BeamCreate( EGON_BEAM_SPRITE, 55 );
-	m_pNoise->PointsInit( pev->origin, m_pPlayer->GetGunPosition());
+	m_pNoise->PointsInit(m_pPlayer->GetGunPosition(), m_pPlayer->GetGunPosition());
 	m_pNoise->SetScrollRate( 25 );
 	m_pNoise->SetBrightness( 100 );
 	m_pNoise->SetEndAttachment( 1 );
