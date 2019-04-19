@@ -3,9 +3,13 @@ Half-Life: VR
 
 VERSION 0.2
 
-This is a mod for Half-Life adding support for playing the game in VR.
+This is a mod for Half-Life adding support for playing the game in Virtual Reality.
 
 Author: Max Vollmer
+
+VR enabled weapon models by Formic.Sapien and Rorin.
+
+Substantial help provided by Formic.Sapien, Rorin and DoomMarine23.
 
 Third party licenses apply where applicable.
 
@@ -17,7 +21,7 @@ This mod is released as is without any guarantee that it works and without any w
 WARNING: The custom OpenGL32.dll can get you VAC banned.
 
 ===
-NO SUPPORT IS OFFERED WHATSOEVER. BUG REPORTS ARE WELCOME. "it's not working" IS NOT A BUG REPORT! QUESTIONS ASKING FOR HELP GETTING THIS TO RUN ARE IGNORED.
+NO SUPPORT IS OFFERED WHATSOEVER. Bug reports are welcome, but "it's not working" is not a bug report and will be ignored. The best thing is to upload a video of the issue you want to report.
 
 There is a VRLauncher.exe that should make running this mod easy, however it has only been tested on Windows 10 so far.
 
@@ -29,35 +33,29 @@ If you are a coder and want to help, get in touch!
 ====
 List of known bugs and issues:
 
-- HUD text is rendered in the map center instead of somewhere in the player's view
-- Some weapon animations don't play correctly
+- HUD text is rendered in the map center instead of in the player's view
 - Female scientists are missing some animations
-- "Hold" use actions sometimes don't work (e.g. rotating a valve or using a health charger)
-- For some people "Steam VR environment" needs to be disabled for the mod to run
-- func_pushables don't work (on purpose to avoid nausea), making some areas inaccessible and make progress in one level impossible (giant fan that pushes player up)
-- Some fans, elevators and other moving things push the player around even when not really touching them
-- Fast moving platforms catapult the player off
+- Airlock levers near the tentacle silo cause infinite levelchange while "touched" by controller
+- noclip is broken
 
 ====
 List of missing features:
 
 - Controls for func_tank and func_tracktrain
 - Proper teleportation arc that matches path of jumping player
-- Menu in VR
-- Intercept loading (currently the Steam VR environment shows up for a short moment on level changes)
-- VR related options are a mess and only configurable via console
+- Proper implementation of the VR menu
+- Vibrational feedback (recoil etc.) isn't implemented yet
+- Vanilla attack with crowbar via keypress for players who use mouse/keyboard input
 
 ===================
 *******************
 THIRD PARTIES BELOW
 
 ====
-Substantial help provided by DoomMarine23, Formic.Sapien and Rorin.
-
-====
 Female scientist audio files have been generated using MorphVox Pro with the Batch Converter Plugin, postprocessed using Auphonic, and then converted to a Half-Life friendly wav format with GoldWave. They are based on the original scientist audio files for Half-Life by Valve.
 
-UNDER NO CIRCUMSTANCES ARE YOU ALLOWED TO USE THESE FILES IN ANY WAY EXCEPT FOR THE PURPOSE OF PLAYING THIS MOD. DO NOT REDISTRIBUTE OR SHARE THESE FILES WITH ANYONE.
+====
+Smallest cup audio track by Michael Hillard. Permission for use in this mod generously granted.
 
 ====
 Hand model based on high poly hand model by Willdabeast and HEV arms textures by JohnChronic: https://gamebanana.com/skins/157391
@@ -66,26 +64,13 @@ Hand model based on high poly hand model by Willdabeast and HEV arms textures by
 Female scientist model by 23-down. Full info and further credits in models/scientist_fem_readme.txt
 
 ====
-This mod uses the ReactPhysics3D physics library, full license below:
-----
-ReactPhysics3D physics library, http://code.google.com/p/reactphysics3d/
+This mod uses the ReactPhysics3D physics library
+http://code.google.com/p/reactphysics3d/
 Copyright (c) 2010-2016 Daniel Chappuis
 
-This software is provided 'as-is', without any express or implied warranty.
-In no event will the authors be held liable for any damages arising from the
-use of this software.
+===
+This mod uses a modified version of the opengl_proxy.cpp by Guilherme R. Lampert (22/11/15)
 
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
-freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must not claim
-   that you wrote the original software. If you use this software in a
-   product, an acknowledgment in the product documentation would be
-   appreciated but is not required.
-
-2. Altered source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
-
-3. This notice may not be removed or altered from any source distribution.
----
+===
+This mod uses LodePNG version 20190210
+Copyright (c) 2005-2019 Lode Vandevenne
