@@ -185,7 +185,7 @@ const char *CHalfLifeTeamplay::SetDefaultPlayerTeam( CBasePlayer *pPlayer )
 
 	RecountTeams();
 
-	// update the current player of the team he is joining
+	// update the current player of the team they are joining
 	if ( pPlayer->m_szTeamName[0] == '\0' || !IsValidTeam( pPlayer->m_szTeamName ) || defaultteam.value )
 	{
 		const char *pTeamName = NULL;
@@ -227,7 +227,7 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 	RecountTeams();
 
 	char *mdls = g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model" );
-	// update the current player of the team he is joining
+	// update the current player of the team they are joining
 	char text[1024];
 	if ( !strcmp( mdls, pPlayer->m_szTeamName ) )
 	{

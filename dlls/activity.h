@@ -77,7 +77,7 @@ typedef enum {
 	ACT_BITE,				// some large monsters can eat small things in one bite. This plays one time, EAT loops.
 	ACT_THREAT_DISPLAY,		// without attacking, monster demonstrates that it is angry. (Yell, stick out chest, etc )
 	ACT_FEAR_DISPLAY,		// monster just saw something that it is afraid of
-	ACT_EXCITED,			// for some reason, monster is excited. Sees something he really likes to eat, or whatever.
+	ACT_EXCITED,			// for some reason, monster is excited. Sees something it really likes to eat, or whatever.
 	ACT_SPECIAL_ATTACK1,	// very monster specific special attacks.
 	ACT_SPECIAL_ATTACK2,	
 	ACT_COMBAT_IDLE,		// agitated idle.

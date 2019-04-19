@@ -1343,7 +1343,7 @@ void CBasePlayer::PlayerDeathThink(void)
 	}
 
 	// once we're done animating our death and we're on the ground, we want to set movetype to None so our dead body won't do collisions and stuff anymore
-	// this prevents a bug where the dead body would go to a player's head if he walked over it while the dead player was clicking their button to respawn
+	// this prevents a bug where the dead body would go to a player's head if they walked over it while the dead player was clicking their button to respawn
 	if ( pev->movetype != MOVETYPE_NONE && FBitSet(pev->flags, FL_ONGROUND) )
 		pev->movetype = MOVETYPE_NONE;
 
@@ -2111,7 +2111,7 @@ THE POWER SUIT
 The Suit provides 3 main functions: Protection, Notification and Augmentation. 
 Some functions are automatic, some require power. 
 The player gets the suit shortly after getting off the train in C1A0 and it stays
-with him for the entire game.
+with them for the entire game.
 
 Protection
 
@@ -2149,7 +2149,7 @@ x	Poison
 Augmentation 
 
 	Reanimation (w/adrenaline)
-		Causes the player to come back to life after he has been dead for 3 seconds. 
+		Causes the player to come back to life after they have been dead for 3 seconds. 
 		Will not work if player was gibbed. Single use.
 	Long Jump
 		Used by hitting the ??? key(s). Caused the player to further than normal.
@@ -2411,7 +2411,7 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 	pSound->m_iType = bits_SOUND_NONE;
 
 	// now calculate the best target volume for the sound. If the player's weapon
-	// is louder than his body/movement, use the weapon volume, else, use the body volume.
+	// is louder than their body/movement, use the weapon volume, else, use the body volume.
 	
 	if ( FBitSet ( pev->flags, FL_ONGROUND ) )
 	{	
@@ -2550,7 +2550,7 @@ void CBasePlayer::PostThink()
 
 		if (pev->watertype == CONTENT_WATER)
 		{
-			// Did he hit the world or a non-moving entity?
+			// Did they hit the world or a non-moving entity?
 			// BUG - this happens all the time in water, especially when 
 			// BUG - water has current force
 			// if ( !pev->groundentity || VARS(pev->groundentity)->velocity.z == 0 )
@@ -2833,7 +2833,7 @@ void CBasePlayer::Spawn( void )
 	pev->fov = m_iFOV				= 0;// init field of view.
 	m_iClientFOV		= -1; // make sure fov reset is sent
 
-	m_flNextDecalTime	= 0;// let this player decal as soon as he spawns.
+	m_flNextDecalTime	= 0;// let this player decal as soon as they spawn.
 
 	m_flgeigerDelay = gpGlobals->time + 2.0;	// wait a few seconds until user-defined message registrations
 												// are recieved by all clients

@@ -1454,7 +1454,7 @@ void CChangeLevel :: KeyValue( KeyValueData *pkvd )
 
 
 /*QUAKED trigger_changelevel (0.5 0.5 0.5) ? NO_INTERMISSION
-When the player touches this, he gets sent to the map listed in the "map" variable.  Unless the NO_INTERMISSION flag is set, the view will go to the info_intermission spot and display stats.
+When the player touches this, they get sent to the map listed in the "map" variable.  Unless the NO_INTERMISSION flag is set, the view will go to the info_intermission spot and display stats.
 */
 
 void CChangeLevel :: Spawn( void )

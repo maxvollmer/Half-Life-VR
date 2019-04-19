@@ -364,7 +364,7 @@ BOOL CHalfLifeMultiplay :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerI
 			{
 				//ALERT ( at_console, "Considering %s\n", STRING( pCheck->pev->classname ) );
 				// we keep updating the 'best' weapon just in case we can't find a weapon of the same weight
-				// that the player was using. This will end up leaving the player with his heaviest-weighted 
+				// that the player was using. This will end up leaving the player with their heaviest-weighted 
 				// weapon. 
 				if ( pCheck->CanDeploy() )
 				{
@@ -662,7 +662,7 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 			WRITE_SHORT( GetTeamIndex( PK->m_szTeamName) + 1 );
 		MESSAGE_END();
 
-		// let the killer paint another decal as soon as he'd like.
+		// let the killer paint another decal as soon as they'd like.
 		PK->m_flNextDecalTime = gpGlobals->time;
 	}
 #ifndef HLDEMO_BUILD

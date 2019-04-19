@@ -71,7 +71,7 @@ class CTripmineGrenade : public CGrenade
 	CBeam		*m_pBeam;
 	Vector		m_posOwner;
 	Vector		m_angleOwner;
-	edict_t		*m_pRealOwner;// tracelines don't hit PEV->OWNER, which means a player couldn't detonate his own trip mine, so we store the owner here.
+	edict_t		*m_pRealOwner;// tracelines don't hit PEV->OWNER, which means a player couldn't detonate their own trip mine, so we store the owner here.
 };
 
 LINK_ENTITY_TO_CLASS( monster_tripmine, CTripmineGrenade );
@@ -300,7 +300,7 @@ void CTripmineGrenade :: BeamBreakThink( void  )
 	{
 		// a bit of a hack, but all CGrenade code passes pev->owner along to make sure the proper player gets credit for the kill
 		// so we have to restore pev->owner from pRealOwner, because an entity's tracelines don't strike it's pev->owner which meant
-		// that a player couldn't trigger his own tripmine. Now that the mine is exploding, it's safe the restore the owner so the 
+		// that a player couldn't trigger their own tripmine. Now that the mine is exploding, it's safe to restore the owner so the 
 		// CGrenade code knows who the explosive really belongs to.
 		pev->owner = m_pRealOwner;
 		pev->health = 0;
@@ -331,7 +331,7 @@ void CTripmineGrenade::Killed( entvars_t *pevAttacker, int bitsDamageType, int i
 	
 	if ( pevAttacker && ( pevAttacker->flags & FL_CLIENT ) )
 	{
-		// some client has destroyed this mine, he'll get credit for any kills
+		// some client has destroyed this mine, they'll get credit for any kills
 		pev->owner = ENT( pevAttacker );
 	}
 

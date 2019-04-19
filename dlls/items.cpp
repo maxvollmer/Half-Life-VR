@@ -115,7 +115,7 @@ void CItem::ItemTouch( CBaseEntity *pOther )
 
 	CBasePlayer *pPlayer = (CBasePlayer *)pOther;
 
-	// ok, a player is touching this item, but can he have it?
+	// ok, a player is touching this item, but can they have it?
 	if ( !g_pGameRules->CanHaveItem( pPlayer, this ) )
 	{
 		// no? Ignore the touch.

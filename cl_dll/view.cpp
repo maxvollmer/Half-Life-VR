@@ -746,7 +746,7 @@ void V_GetSingleTargetCam(cl_entity_t * ent1, float * angle, float * origin)
 
 	V_SmoothInterpolateAngles( v_lastAngles, newAngle, angle, 120.0f );
 
-	// HACK, if player is dead don't clip against his dead body, can't check this
+	// HACK, if player is dead don't clip against their dead body, can't check this
 	V_GetChaseOrigin( angle, newOrigin, distance, origin );
 }
 

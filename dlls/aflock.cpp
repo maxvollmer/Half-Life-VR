@@ -472,7 +472,7 @@ void CFlockingFlyer :: SpreadFlock( )
 }
 
 //=========================================================
-// Alters the caller's course if he's too close to others 
+// Alters the caller's course if it's too close to others 
 //
 // This function should **ONLY** be called when Caller's velocity is normalized!!
 //=========================================================
@@ -702,7 +702,7 @@ void CFlockingFlyer :: FlockFollowerThink( void )
 	}
 	else
 	{
-		// wait up! the leader isn't out in front, so we slow down to let him pass
+		// wait up! the leader isn't out in front, so we slow down to let it pass
 		m_flGoalSpeed = m_pSquadLeader->pev->velocity.Length() * 0.5;
 	}
 

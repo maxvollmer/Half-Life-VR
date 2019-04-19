@@ -1032,8 +1032,8 @@ void CGargantua::HandleAnimEvent(MonsterEvent_t *pEvent)
 // other stuff to the victim (punchangle, etc)
 // Used for many contact-range melee attacks. Bites, claws, etc.
 
-// Overridden for Gargantua because his swing starts lower as
-// a percentage of his height (otherwise he swings over the
+// Overridden for Gargantua because its swing starts lower as
+// a percentage of its height (otherwise it swings over the
 // players head)
 //=========================================================
 CBaseEntity* CGargantua::GargantuaCheckTraceHullAttack(float flDist, int iDamage, int iDmgType)

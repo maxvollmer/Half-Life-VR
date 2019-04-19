@@ -515,7 +515,7 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				// OK to use gpGlobals without calling MakeVectors, cause CheckTraceHullAttack called it above.
 				if ( pHurt->IsPlayer() )
 				{
-					// this is a player. Knock him around.
+					// this is a player. Knock them around.
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 250;
 				}
 
@@ -545,7 +545,7 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				// OK to use gpGlobals without calling MakeVectors, cause CheckTraceHullAttack called it above.
 				if ( pHurt->IsPlayer() )
 				{
-					// this is a player. Knock him around.
+					// this is a player. Knock them around.
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * -250;
 				}
 
@@ -1169,8 +1169,8 @@ Schedule_t* CAGrunt :: GetScheduleOfType ( int Type )
 			if ( m_hEnemy != NULL )
 			{
 				// I have an enemy
-				// !!!LATER - what if this enemy is really far away and i'm chasing him?
-				// this schedule will make me stop, face his last known position for 2 
+				// !!!LATER - what if this enemy is really far away and i'm chasing it?
+				// this schedule will make me stop, face last known position for 2 
 				// seconds, and then try to move again
 				return &slAGruntCombatFail[ 0 ];
 			}

@@ -315,7 +315,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 		if ( !(client->IsNetClient()) )	// Not a client ? (should never be true)
 			continue;
 
-		// can the receiver hear the sender? or has he muted him?
+		// can the receiver hear the sender? or have they muted them?
 		if ( g_VoiceGameMgr.PlayerHasBlockedPlayer( client, player ) )
 			continue;
 
@@ -1015,7 +1015,7 @@ void SpectatorThink( edict_t *pEntity )
 ================
 SetupVisibility
 
-A client can have a separate "view entity" indicating that his/her view should depend on the origin of that
+A client can have a separate "view entity" indicating that their view should depend on the origin of that
 view entity.  If that's the case, then pViewEntity will be non-NULL and will be used.  Otherwise, the current
 entity's origin is used.  Either is offset by the view_ofs to get the eye position.
 

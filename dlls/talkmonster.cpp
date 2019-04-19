@@ -397,7 +397,7 @@ void CTalkMonster :: StartTask( Task_t *pTask )
 	
 
 	case TASK_TLK_STARE:
-		// let the player know I know he's staring at me.
+		// let the player know I know they're staring at me.
 		FIdleStare();
 		TaskComplete();
 		break;
@@ -630,7 +630,7 @@ void CTalkMonster :: RunTask( Task_t *pTask )
 
 void CTalkMonster :: Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
-	// If a client killed me (unless I was already Barnacle'd), make everyone else mad/afraid of him
+	// If a client killed me (unless I was already Barnacle'd), make everyone else mad/afraid of them
 	if ( (pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE )
 	{
 		AlertFriends();
@@ -751,7 +751,7 @@ void CTalkMonster::LimitFollowers( CBaseEntity *pPlayer, int maxFollowers )
 
 float CTalkMonster::TargetDistance( void )
 {
-	// If we lose the player, or he dies, return a really large distance
+	// If we lose the player, or they die, return a really large distance
 	if ( m_hTargetEnt == NULL || !m_hTargetEnt->IsAlive() )
 		return 1e6;
 
@@ -846,7 +846,7 @@ CBaseEntity *CTalkMonster :: FindNearestFriend(BOOL fPlayer)
 			vecCheck = pFriend->pev->origin;
 			vecCheck.z = pFriend->pev->absmax.z;
 
-			// if closer than previous friend, and in range, see if he's visible
+			// if closer than previous friend, and in range, see if they're visible
 
 			if (range > (vecStart - vecCheck).Length())
 			{
@@ -973,14 +973,14 @@ int CTalkMonster :: FIdleStare( void )
 
 //=========================================================
 // IdleHello
-// Try to greet player first time he's seen
+// Try to greet player first time they're seen
 //=========================================================
 int CTalkMonster :: FIdleHello( void )
 {
 	if (!FOkToSpeak())
 		return FALSE;
 
-	// if this is first time scientist has seen player, greet him
+	// if this is first time scientist has seen player, greet them
 	if (!FBitSet(m_bitsSaid, bit_saidHelloPlayer))
 	{
 		// get a player
@@ -1238,7 +1238,7 @@ Schedule_t* CTalkMonster :: GetScheduleOfType ( int Type )
 		
 	case SCHED_IDLE_STAND:
 		{	
-			// if never seen player, try to greet him
+			// if never seen player, try to greet them
 			if (!FBitSet(m_bitsSaid, bit_saidHelloPlayer))
 			{
 				return slIdleHello;
@@ -1323,7 +1323,7 @@ BOOL CTalkMonster :: IsTalking( void )
 }
 
 //=========================================================
-// If there's a player around, watch him.
+// If there's a player around, watch them.
 //=========================================================
 void CTalkMonster :: PrescheduleThink ( void )
 {
@@ -1376,7 +1376,7 @@ void CTalkMonster::StopFollowing( BOOL clearSchedule )
 		}
 
 		if ( m_movementGoal == MOVEGOAL_TARGETENT )
-			RouteClear(); // Stop him from walking toward the player
+			RouteClear(); // Stop them from walking toward the player
 		m_hTargetEnt = NULL;
 		if ( clearSchedule )
 			ClearSchedule();

@@ -219,7 +219,7 @@ void CHeadCrab :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			ClearBits( pev->flags, FL_ONGROUND );
 
-			UTIL_SetOrigin (pev, pev->origin + Vector ( 0 , 0 , 1) );// take him off ground so engine doesn't instantly reset onground 
+			UTIL_SetOrigin (pev, pev->origin + Vector ( 0 , 0 , 1) );// take it off ground so engine doesn't instantly reset onground 
 			UTIL_MakeVectors ( pev->angles );
 
 			Vector vecJumpDir;

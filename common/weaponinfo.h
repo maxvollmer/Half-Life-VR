@@ -18,7 +18,7 @@
 #pragma once
 #endif
 
-// Info about weapons player might have in his/her possession
+// Info about weapons player might have in their possession
 typedef struct weapon_data_s
 {
 	int			m_iId;

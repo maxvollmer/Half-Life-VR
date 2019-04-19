@@ -225,7 +225,7 @@ void CBaseMonster :: MaintainSchedule ( void )
 			// if the previous schedule was interrupted by a condition, GetIdealState will be 
 			// called. Else, a schedule finished normally.
 
-			// Notify the monster that his schedule is changing
+			// Notify the monster that its schedule is changing
 			ScheduleChange();
 
 			// Call GetIdealState if we're not dead and one or more of the following...

@@ -279,7 +279,7 @@ void CGauss::SecondaryAttack()
 		// m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1;
 		if ( m_pPlayer->m_flStartCharge < gpGlobals->time - 10 )
 		{
-			// Player charged up too long. Zap him.
+			// Player charged up too long. Zap them.
 			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/electro4.wav", 1.0, ATTN_NORM, 0, 80 + RANDOM_LONG(0,0x3f));
 			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM,   "weapons/electro6.wav", 1.0, ATTN_NORM, 0, 75 + RANDOM_LONG(0,0x3f));
 			

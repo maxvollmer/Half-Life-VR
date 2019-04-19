@@ -85,7 +85,7 @@ enum
 	TASK_TLK_HELLO,			// Try to say hello to player
 	TASK_TLK_HEADRESET,		// reset head position
 	TASK_TLK_STOPSHOOTING,	// tell player to stop shooting friend
-	TASK_TLK_STARE,			// let the player know I know he's staring at me.
+	TASK_TLK_STARE,			// let the player know I know they're staring at me.
 	TASK_TLK_LOOK_AT_CLIENT,// faces player if not moving and not talking and in idle.
 	TASK_TLK_CLIENT_STARE,	// same as look at client, but says something if the player stares.
 	TASK_TLK_EYECONTACT,	// maintain eyecontact with person who I'm talking to

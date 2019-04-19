@@ -270,7 +270,7 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 		else if ( rgDeathNoticeList[i].iTeamKill )
 		{
 			ConsolePrint( rgDeathNoticeList[i].szKiller );
-			ConsolePrint( " killed his teammate " );
+			ConsolePrint( " killed a teammate " );
 			ConsolePrint( rgDeathNoticeList[i].szVictim );
 		}
 		else

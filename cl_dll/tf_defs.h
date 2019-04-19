@@ -110,7 +110,7 @@
 #define TFSTATE_HALLUCINATING  16384  // set when player is hallucinating
 #define TFSTATE_TRANQUILISED   32768  // set when player is tranquilised
 #define TFSTATE_CANT_MOVE	   65536  // set when player is setting a detpack
-#define TFSTATE_RESET_FLAMETIME 131072 // set when the player has to have his flames increased in health
+#define TFSTATE_RESET_FLAMETIME 131072 // set when the player has to have their flames increased in health
 
 // Defines used by TF_T_Damage (see combat.qc)
 #define TF_TD_IGNOREARMOUR	1  // Bypasses the armour of the target

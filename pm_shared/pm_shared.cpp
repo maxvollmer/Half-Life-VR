@@ -1285,7 +1285,7 @@ void PM_Friction (void)
 		//  threshhold, bleed the theshold amount.
 		control = (speed < pmove->movevars->stopspeed) ?
 			pmove->movevars->stopspeed : speed;
-		// Add the amount to t'he drop amount.
+		// Add the amount to the drop amount.
 		drop += control * friction*pmove->frametime;
 	}
 

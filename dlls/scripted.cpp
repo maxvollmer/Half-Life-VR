@@ -573,8 +573,8 @@ void CCineMonster :: SequenceDone ( CBaseMonster *pMonster )
 	pMonster->CineCleanup();
 
 	FixScriptMonsterSchedule( pMonster );
-	
-	// This may cause a sequence to attempt to grab this guy NOW, so we have to clear him out
+
+	// This may cause a sequence to attempt to grab this monster NOW, so we have to clear it out
 	// of the existing sequence
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 }
@@ -748,7 +748,7 @@ void CCineMonster :: DelayStart( int state )
 
 
 
-// Find an entity that I'm interested in and precache the sounds he'll need in the sequence.
+// Find an entity that I'm interested in and precache the sounds it'll need in the sequence.
 void CCineMonster :: Activate( void )
 {
 	edict_t			*pentTarget;
@@ -900,7 +900,7 @@ BOOL CBaseMonster :: CineCleanup( )
 		m_IdealMonsterState = MONSTERSTATE_IDLE; // m_previousState;
 	else
 	{
-		// Dropping out because he got killed
+		// Dropping out because it got killed
 		// Can't call killed() no attacker and weirdness (late gibbing) may result
 		m_IdealMonsterState = MONSTERSTATE_DEAD;
 		SetConditions( bits_COND_LIGHT_DAMAGE );

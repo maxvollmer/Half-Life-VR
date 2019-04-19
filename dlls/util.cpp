@@ -1703,7 +1703,7 @@ void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber )
 ==============
 UTIL_PlayerDecalTrace
 
-A player is trying to apply his custom decal for the spray can.
+A player is trying to apply their custom decal for the spray can.
 Tell connected clients to display it, or use the default spray can decal
 if the custom can't be loaded.
 ==============

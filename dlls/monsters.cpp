@@ -2110,7 +2110,7 @@ void CBaseMonster :: StartMonster ( void )
 		}
 		else
 		{
-			// Monster will start turning towards his destination
+			// Monster will start turning towards its destination
 			MakeIdealYaw ( m_pGoalEnt->pev->origin );
 
 			// JAY: How important is this error message?  Big Momma doesn't obey this rule, so I took it out.
@@ -3274,7 +3274,7 @@ void CBaseMonster :: MonsterInitDead( void )
 	InitBoneControllers();
 
 	pev->solid			= SOLID_BBOX;
-	pev->movetype		= MOVETYPE_TOSS;// so he'll fall to ground
+	pev->movetype		= MOVETYPE_TOSS;// so it'll fall to ground
 
 	pev->frame = 0;
 	ResetSequenceInfo( );

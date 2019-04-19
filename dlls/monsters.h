@@ -45,7 +45,7 @@
 #define	SF_MONSTER_GAG					2 // no idle noises from this monster
 #define SF_MONSTER_HITMONSTERCLIP		4
 //										8
-#define SF_MONSTER_PRISONER				16 // monster won't attack anyone, no one will attacke him.
+#define SF_MONSTER_PRISONER				16 // monster won't attack anyone, no one will attack it.
 //										32
 //										64
 #define	SF_MONSTER_WAIT_FOR_SCRIPT		128 //spawnflag that makes monsters wait to check for attacking until the script is done or they've been attacked

@@ -228,7 +228,7 @@ Schedule_t	slHeal[] =
 	{
 		tlHeal,
 		ARRAYSIZE ( tlHeal ),
-		0,	// Don't interrupt or he'll end up running around with a needle all the time
+		0,	// Don't interrupt or they'll end up running around with a needle all the time
 		0,
 		"Heal"
 	},
@@ -1182,7 +1182,7 @@ void CDeadScientist :: Spawn( )
 // Sitting Scientist PROP
 //=========================================================
 
-class CSittingScientist : public CScientist // kdb: changed from public CBaseMonster so he can speak
+class CSittingScientist : public CScientist // kdb: changed from public CBaseMonster so they can speak
 {
 public:
 	void Spawn( void );

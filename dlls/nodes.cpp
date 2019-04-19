@@ -235,7 +235,7 @@ int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, N
 		{// door is use only.
 
 			if  ( ( afCapMask & bits_CAP_OPEN_DOORS ) )
-			{// let monster right through if he can open doors
+			{// let monster right through if it can open doors
 				return TRUE;
 			}
 			else 

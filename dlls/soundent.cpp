@@ -362,7 +362,7 @@ CSound*	CSoundEnt :: SoundPointerForIndex( int iIndex )
 // Clients are numbered from 1 to MAXCLIENTS, but the client
 // reserved sounds in the soundlist are from 0 to MAXCLIENTS - 1,
 // so this function ensures that a client gets the proper index
-// to his reserved sound in the soundlist.
+// to their reserved sound in the soundlist.
 //=========================================================
 int CSoundEnt :: ClientSoundIndex ( edict_t *pClient )
 {

@@ -63,7 +63,7 @@ BOOL CSquadMonster :: OccupySlot( int iDesiredSlots )
 	if ( SquadEnemySplit() )
 	{
 		// if the squad members aren't all fighting the same enemy, slots are disabled
-		// so that a squad member doesn't get stranded unable to engage his enemy because
+		// so that a squad member doesn't get stranded unable to engage its enemy because
 		// all of the attack slots are taken by squad members fighting other enemies.
 		m_iMySlot = bits_SLOT_SQUAD_SPLIT;
 		return TRUE;

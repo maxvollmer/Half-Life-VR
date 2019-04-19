@@ -1354,8 +1354,8 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 	}
 
 // go through my weapons and try to give the usable ones to the player. 
-// it's important the the player be given ammo first, so the weapons code doesn't refuse 
-// to deploy a better weapon that the player may pick up because he has no ammo for it.
+// it's important that the player be given ammo first, so the weapons code doesn't refuse 
+// to deploy a better weapon that the player may pick up because they have no ammo for it.
 	for ( i = 0 ; i < MAX_ITEM_TYPES ; i++ )
 	{
 		if ( m_rgpPlayerItems[ i ] )

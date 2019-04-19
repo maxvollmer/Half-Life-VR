@@ -320,7 +320,7 @@ BOOL CBullsquid :: CheckRangeAttack1 ( float flDot, float flDist )
 {
 	if ( IsMoving() && flDist >= 512 )
 	{
-		// squid will far too far behind if he stops running to spit at this distance from the enemy.
+		// squid will be too far behind if it stops running to spit at this distance from the enemy.
 		return FALSE;
 	}
 
@@ -374,7 +374,7 @@ BOOL CBullsquid :: CheckMeleeAttack1 ( float flDot, float flDist )
 BOOL CBullsquid :: CheckMeleeAttack2 ( float flDot, float flDist )
 {
 	if ( flDist <= 85 && flDot >= 0.7 && !HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )		// The player & bullsquid can be as much as their bboxes 
-	{										// apart (48 * sqrt(3)) and he can still attack (85 is a little more than 48*sqrt(3))
+	{										// apart (48 * sqrt(3)) and it can still attack (85 is a little more than 48*sqrt(3))
 		return TRUE;
 	}
 	return FALSE;
