@@ -507,7 +507,7 @@ void VRRenderer::EnableDepthTest()
 
 cl_entity_t* VRRenderer::SaveGetLocalPlayer()
 {
-	if (m_isInGame)
+	if (m_isInGame && gEngfuncs.pfnGetLevelName()[0] != '\0' && gEngfuncs.GetMaxClients() > 0)
 	{
 		return gEngfuncs.GetLocalPlayer();
 	}
