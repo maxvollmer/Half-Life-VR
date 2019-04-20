@@ -31,6 +31,8 @@
 #include "r_efx.h"
 #include "r_studioint.h"
 
+#include "com_weapons.h"
+
 #include "VRRenderer.h"
 #include "VRHelper.h"
 #include "VRInput.h"
@@ -117,7 +119,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 {
 	m_CalcRefdefWasCalled = true;
 
-	if (m_isInMenu)
+	if (m_isInMenu || !IsInGame())
 	{
 		// Unfortunately the OpenVR overlay menu ignores controller input when we render the game scene.
 		// (in fact controllers themselves aren't rendered at all)
@@ -496,7 +498,11 @@ void VRRenderer::EnableDepthTest()
 
 bool VRRenderer::IsInGame()
 {
-	return m_isInGame && gEngfuncs.pfnGetLevelName()[0] != '\0' && gEngfuncs.GetMaxClients() > 0;
+	return m_isInGame
+		&& gEngfuncs.pfnGetLevelName()[0] != '\0'
+		&& gEngfuncs.GetMaxClients() > 0
+		&& !CL_IsDead()
+		&& !gHUD.m_iIntermission;
 }
 
 cl_entity_t* VRRenderer::SaveGetLocalPlayer()

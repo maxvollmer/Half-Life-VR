@@ -1380,11 +1380,16 @@ void CBasePlayer::PlayerDeathThink(void)
 		// go to dead camera. 
 		StartDeathCam();
 	}
-	
-// wait for any button down,  or mp_forcerespawn is set and the respawn time is up
-	if (!fAnyButtonDown 
-		&& !( g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && (gpGlobals->time > (m_fDeadTime + 5))) )
+
+	// wait for any button down,  or mp_forcerespawn is set and the respawn time is up
+	// if (!fAnyButtonDown && !(g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && (gpGlobals->time > (m_fDeadTime + 5))) )
+	//	return;
+
+	// auto-respawn after 3 seconds in VR (respawn immediately if any button down)
+	if (!fAnyButtonDown && gpGlobals->time < (m_fDeadTime + 3.f))
+	{
 		return;
+	}
 
 	pev->button = 0;
 	m_iRespawnFrames = 0;
