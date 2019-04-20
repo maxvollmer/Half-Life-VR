@@ -2371,33 +2371,10 @@ void PM_NoClip(bool unstuckMove=false)
 	// Trying to determine if a player can move while being stuck (move away from wall) - Max Vollmer, 2018-04-01
 	if (unstuckMove)
 	{
-		/*
-		// check if position is good after moving one frame
-		int stuckent = pmove->PM_TestPlayerPosition(wishend, nullptr);
-		if (stuckent != -1)
-		{
-			// Determine the direction we need to go to get unstuck
-			vec3_t unstuckdir;
+		// Don't unstuck dead players
+		if (pmove->dead || pmove->deadflag != DEAD_NO)
+			return;
 
-			// If we are stuck on a normal entity, get its origin and determine unstuck direction from that
-			if (stuckent > 0)
-			{
-				vec3_t entorigin;
-				VRGlobalGetEntityOrigin(stuckent, entorigin);
-				VectorSubtract(wishend, entorigin, unstuckdir);
-				VectorNormalize(unstuckdir);
-			}
-			// stuck on world, get unstuck direction from physics engine (client can't predict this, and instead just returns wishvel)
-			else
-			{
-				VRGlobalGetWorldUnstuckDir(wishend, wishvel, unstuckdir);
-			}
-
-			float speed = Length(wishvel);
-			VectorScale(unstuckdir, speed, unstuckdir);
-			VectorMA(pmove->origin, pmove->frametime, unstuckdir, wishend);
-		}
-		*/
 		// bruteforce our way out of this!
 		int stuckent = pmove->PM_TestPlayerPosition(wishend, nullptr);
 		bool foundend = false;

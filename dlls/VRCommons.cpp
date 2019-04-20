@@ -75,12 +75,8 @@ bool VRGlobalGetNoclipMode()
 
 bool VRGlobalIsPointInsideEnt(const float* point, int ent)
 {
+	if (FNullEnt(INDEXENT(ent)))
+		return false;
+
 	return UTIL_PointInsideRotatedBBox(INDEXENT(ent)->v.origin, INDEXENT(ent)->v.angles, INDEXENT(ent)->v.mins, INDEXENT(ent)->v.maxs, Vector{ point[0], point[1], point[2] });
-	/*
-	Vector absmin = INDEXENT(ent)->v.absmin;
-	Vector absmax = INDEXENT(ent)->v.absmax;
-	return point[0] > absmin.x && point[0] < absmax.x
-		&& point[1] > absmin.y && point[1] < absmax.y
-		&& point[2] > absmin.z && point[2] < absmax.z;
-	*/
 }
