@@ -107,7 +107,7 @@ void VRInput::LoadCustomActions()
 void VRInput::RegisterActionSets()
 {
 	// TODO: Implement all actions
-	if (RegisterActionSet("input"))
+	if (RegisterActionSet("input", true))
 	{
 		RegisterAction("input", "MoveForward", &VR::Input::Movement::HandleMoveForward);
 		RegisterAction("input", "MoveBackward", &VR::Input::Movement::HandleMoveBackward);
@@ -146,20 +146,20 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "LegacyUse", &VR::Input::Other::HandleLegacyUse);
 
 		// TODO: Add to actions.manifest
-		RegisterAction("input", "QuickSave", &VR::Input::Other::HandleQuickSave);
-		RegisterAction("input", "QuickLoad", &VR::Input::Other::HandleQuickLoad);
-		RegisterAction("input", "RestartCurrentMap", &VR::Input::Other::HandleRestartCurrentMap);
-		RegisterAction("input", "PauseGame", &VR::Input::Other::HandlePauseGame);
-		RegisterAction("input", "ExitGame", &VR::Input::Other::HandleExitGame);
+		RegisterAction("input", "QuickSave", &VR::Input::Other::HandleQuickSave, true);
+		RegisterAction("input", "QuickLoad", &VR::Input::Other::HandleQuickLoad, true);
+		RegisterAction("input", "RestartCurrentMap", &VR::Input::Other::HandleRestartCurrentMap, true);
+		RegisterAction("input", "PauseGame", &VR::Input::Other::HandlePauseGame, true);
+		RegisterAction("input", "ExitGame", &VR::Input::Other::HandleExitGame, true);
 	}
-	if (RegisterActionSet("feedback"))
+	if (RegisterActionSet("feedback", false))
 	{
 		RegisterFeedback("feedback", "Recoil");
 		RegisterFeedback("feedback", "Earthquake");
 		RegisterFeedback("feedback", "TrainShake");
 		RegisterFeedback("feedback", "WaterSplash");
 	}
-	if (RegisterActionSet("damagefeedback"))
+	if (RegisterActionSet("damagefeedback", false))
 	{
 		RegisterFeedback("damagefeedback", "All");
 		RegisterFeedback("damagefeedback", "Bullet");
@@ -183,22 +183,22 @@ void VRInput::RegisterActionSets()
 		RegisterFeedback("damagefeedback", "SlowFreeze");
 		RegisterFeedback("damagefeedback", "Mortar");
 	}
-	if (RegisterActionSet("poses"))
+	if (RegisterActionSet("poses", false))
 	{
 		RegisterAction("poses", "Flashlight", &VR::Input::Poses::HandleFlashlight);
 		RegisterAction("poses", "Movement", &VR::Input::Poses::HandleMovement);
 		RegisterAction("poses", "Teleporter", &VR::Input::Poses::HandleTeleporter);
 	}
-	if (RegisterActionSet("custom"))
+	if (RegisterActionSet("custom", true))
 	{
 		for (const auto& customAction : m_customActions)
 		{
-			RegisterAction("custom", customAction.first, &VR::Input::Other::HandleCustomAction);
+			RegisterAction("custom", customAction.first, &VR::Input::Other::HandleCustomAction, true);
 		}
 	}
 }
 
-bool VRInput::RegisterActionSet(const std::string& actionSet)
+bool VRInput::RegisterActionSet(const std::string& actionSet, bool handleWhenNotInGame)
 {
 	std::string actionSetName = "/actions/" + actionSet;
 	vr::VRActionSetHandle_t handle{ 0 };
@@ -211,11 +211,12 @@ bool VRInput::RegisterActionSet(const std::string& actionSet)
 	else
 	{
 		m_actionSets[actionSet].handle = handle;
+		m_actionSets[actionSet].handleWhenNotInGame = handleWhenNotInGame;
 		return true;
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -227,12 +228,12 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
 		return true;
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -244,12 +245,12 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
 		return true;
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -261,7 +262,7 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
 		return true;
 	}
 }
@@ -397,18 +398,21 @@ void VRInput::FireDamageFeedback(const std::string& action, float durationInSeco
 	vr::VRInput()->TriggerHapticVibrationAction(m_actionSets["damagefeedback"].feedbackActions[action], 0.f, durationInSeconds, frequency, amplitude, vr::k_ulInvalidInputValueHandle);
 }
 
-void VRInput::HandleInput()
+void VRInput::HandleInput(bool isInGame)
 {
 	if (IsLegacyInput())
 		return;
 
 	for (auto &[actionSetName, actionSet] : m_actionSets)
 	{
-		if (UpdateActionStates(actionSetName, actionSet))
+		if (isInGame || actionSet.handleWhenNotInGame)
 		{
-			for (auto &[actionName, action] : actionSet.actions)
+			if (UpdateActionStates(actionSetName, actionSet))
 			{
-				action.HandleInput();
+				for (auto &[actionName, action] : actionSet.actions)
+				{
+					action.HandleInput(isInGame);
+				}
 			}
 		}
 	}

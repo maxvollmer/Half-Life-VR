@@ -455,7 +455,10 @@ Vector VRHelper::GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & 
 void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 {
 	UpdateVRHLConversionVectors();
-	UpdateWorldRotation();
+	if (isInGame)
+	{
+		UpdateWorldRotation();
+	}
 	vr::VREvent_t vrEvent;
 	while (vrSystem != nullptr && vrSystem->PollNextEvent(&vrEvent, sizeof(vr::VREvent_t)))
 	{
@@ -470,7 +473,7 @@ void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 			return;
 		case vr::EVREventType::VREvent_ButtonPress:
 		case vr::EVREventType::VREvent_ButtonUnpress:
-			if (g_vrInput.IsLegacyInput())
+			if (isInGame && g_vrInput.IsLegacyInput())
 			{
 				vr::ETrackedControllerRole controllerRole = vrSystem->GetControllerRoleForTrackedDeviceIndex(vrEvent.trackedDeviceIndex);
 				if (controllerRole != vr::ETrackedControllerRole::TrackedControllerRole_Invalid)
@@ -483,7 +486,7 @@ void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 			break;
 		case vr::EVREventType::VREvent_ButtonTouch:
 		case vr::EVREventType::VREvent_ButtonUntouch:
-			if (g_vrInput.IsLegacyInput())
+			if (isInGame && g_vrInput.IsLegacyInput())
 			{
 				vr::ETrackedControllerRole controllerRole = vrSystem->GetControllerRoleForTrackedDeviceIndex(vrEvent.trackedDeviceIndex);
 				if (controllerRole != vr::ETrackedControllerRole::TrackedControllerRole_Invalid)
@@ -500,7 +503,7 @@ void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 	}
 	if (!g_vrInput.IsLegacyInput())
 	{
-		g_vrInput.HandleInput();
+		g_vrInput.HandleInput(isInGame);
 	}
 }
 

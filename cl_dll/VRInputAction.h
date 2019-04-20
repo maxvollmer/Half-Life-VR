@@ -21,11 +21,11 @@ public:
 	};
 
 	VRInputAction();
-	VRInputAction(const std::string& id, vr::VRActionHandle_t handle, DigitalActionHandler handler);
-	VRInputAction(const std::string& id, vr::VRActionHandle_t handle, AnalogActionHandler handler);
-	VRInputAction(const std::string& id, vr::VRActionHandle_t handle, PoseActionHandler handler);
+	VRInputAction(const std::string& id, vr::VRActionHandle_t handle, DigitalActionHandler handler, bool handleWhenNotInGame);
+	VRInputAction(const std::string& id, vr::VRActionHandle_t handle, AnalogActionHandler handler, bool handleWhenNotInGame);
+	VRInputAction(const std::string& id, vr::VRActionHandle_t handle, PoseActionHandler handler, bool handleWhenNotInGame);
 
-	void HandleInput();
+	void HandleInput(bool isInGame);
 
 private:
 	void HandleDigitalInput();
@@ -35,6 +35,7 @@ private:
 	std::string				m_id;
 	vr::VRActionHandle_t	m_handle{ 0 };
 	ActionType				m_type{ ActionType::INVALID };
+	bool					m_handleWhenNotInGame{ false };
 
 	DigitalActionHandler	m_digitalActionHandler{ nullptr };
 	AnalogActionHandler		m_analogActionHandler{ nullptr };

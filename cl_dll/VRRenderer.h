@@ -68,6 +68,7 @@ public:
 	bool HasValidHandController();
 	bool HasValidWeaponController();
 
+	bool IsInGame();
 	struct cl_entity_s* SaveGetLocalPlayer();
 
 private:

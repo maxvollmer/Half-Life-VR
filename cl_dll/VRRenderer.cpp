@@ -85,28 +85,17 @@ void VRRenderer::Frame(double time)
 
 	//gEngfuncs.Con_DPrintf("Menu: %i, Ingame: %i, time: %f, frametime: %f!\n", m_isInMenu, m_isInGame, float(time), frametime);
 
-	if (m_isInMenu || !m_isInGame)
+	if (m_isInMenu || !IsInGame())
 	{
 		g_vrInput.ShowHLMenu();
 		vrHelper->PollEvents(false, m_isInMenu);
-
-		/*
-		GLint viewport[4];
-		glGetIntegerv(GL_VIEWPORT, viewport);
-		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
-		RenderIntermissionRoom();
-		vrHelper->PrepareVRScene(vr::EVREye::Eye_Right);
-		RenderIntermissionRoom();
-		vrHelper->FinishVRScene(viewport[2], viewport[3]);
-		vrHelper->SubmitImages();
-		*/
 	}
 	else
 	{
 		g_vrInput.HideHLMenu();
 	}
 
-	if (!m_isInGame || (m_isInMenu && m_wasMenuJustRendered))
+	if (!IsInGame() || (m_isInMenu && m_wasMenuJustRendered))
 	{
 		CaptureCurrentScreenToTexture(vrHelper->GetVRGLMenuTexture());
 		m_wasMenuJustRendered = false;
@@ -505,9 +494,14 @@ void VRRenderer::EnableDepthTest()
 	glDepthRange(0, 1);
 }
 
+bool VRRenderer::IsInGame()
+{
+	return m_isInGame && gEngfuncs.pfnGetLevelName()[0] != '\0' && gEngfuncs.GetMaxClients() > 0;
+}
+
 cl_entity_t* VRRenderer::SaveGetLocalPlayer()
 {
-	if (m_isInGame && gEngfuncs.pfnGetLevelName()[0] != '\0' && gEngfuncs.GetMaxClients() > 0)
+	if (IsInGame())
 	{
 		return gEngfuncs.GetLocalPlayer();
 	}

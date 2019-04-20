@@ -18,7 +18,7 @@ public:
 	void LegacyHandleButtonPress(unsigned int button, vr::VRControllerState_t controllerState, bool leftOrRight, bool downOrUp);
 	void LegacyHandleButtonTouch(unsigned int button, vr::VRControllerState_t controllerState, bool leftOrRight, bool downOrUp);
 
-	void HandleInput();
+	void HandleInput(bool isInGame);
 
 	inline bool RotateLeft() const
 	{
@@ -84,6 +84,7 @@ private:
 		vr::VRActionSetHandle_t									handle;
 		std::unordered_map<std::string, VRInputAction>			actions;
 		std::unordered_map<std::string, vr::VRActionHandle_t>	feedbackActions;
+		bool													handleWhenNotInGame;
 	};
 
 	struct CustomAction
@@ -96,10 +97,10 @@ private:
 
 	void LoadCustomActions();
 	void RegisterActionSets();
-	bool RegisterActionSet(const std::string& actionSet);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler);
+	bool RegisterActionSet(const std::string& actionSet, bool handleWhenNotInGame);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame=false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame = false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame = false);
 	bool RegisterFeedback(const std::string& actionSet, const std::string& action);
 
 	vr::VROverlayHandle_t		m_hlMenu{ vr::k_ulOverlayHandleInvalid };

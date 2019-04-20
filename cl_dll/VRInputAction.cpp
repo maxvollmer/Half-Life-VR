@@ -16,27 +16,30 @@ VRInputAction::VRInputAction() :
 {
 }
 
-VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, DigitalActionHandler handler) :
+VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, DigitalActionHandler handler, bool handleWhenNotInGame) :
 	m_id{ id },
 	m_handle{ handle },
 	m_type{ ActionType::DIGITAL },
-	m_digitalActionHandler{ handler }
+	m_digitalActionHandler{ handler },
+	m_handleWhenNotInGame{ handleWhenNotInGame }
 {
 }
 
-VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, AnalogActionHandler handler) :
+VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, AnalogActionHandler handler, bool handleWhenNotInGame) :
 	m_id{ id },
 	m_handle{ handle },
 	m_type{ ActionType::ANALOG },
-	m_analogActionHandler{ handler }
+	m_analogActionHandler{ handler },
+	m_handleWhenNotInGame{ handleWhenNotInGame }
 {
 }
 
-VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, PoseActionHandler handler) :
+VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, PoseActionHandler handler, bool handleWhenNotInGame) :
 	m_id{ id },
 	m_handle{ handle },
 	m_type{ ActionType::POSE },
-	m_poseActionHandler{ handler }
+	m_poseActionHandler{ handler },
+	m_handleWhenNotInGame{ handleWhenNotInGame }
 {
 }
 
@@ -82,8 +85,11 @@ void VRInputAction::HandlePoseInput()
 	}
 }
 
-void VRInputAction::HandleInput()
+void VRInputAction::HandleInput(bool isInGame)
 {
+	if (!isInGame && !m_handleWhenNotInGame)
+		return;
+
 	switch (m_type)
 	{
 	case ActionType::DIGITAL:
