@@ -1114,23 +1114,33 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 			&& gHUD.m_handControllerEntData.isValid
 			&& m_pCurrentEntity->index == gHUD.m_handControllerEntData.entIndex)
 		{
-			m_pCurrentEntity->origin = gHUD.m_handControllerEntData.origin;
-			m_pCurrentEntity->curstate.origin = gHUD.m_handControllerEntData.origin;
-			m_pCurrentEntity->latched.prevorigin = gHUD.m_handControllerEntData.origin;
-			m_pCurrentEntity->angles = gHUD.m_handControllerEntData.angles;
-			m_pCurrentEntity->curstate.angles = gHUD.m_handControllerEntData.angles;
-			m_pCurrentEntity->latched.prevangles = gHUD.m_handControllerEntData.angles;
+			//Vector origin = gHUD.m_handControllerEntData.origin;
+			//Vector angles = gHUD.m_handControllerEntData.angles;
+			Vector origin = gVRRenderer.GetHandPosition();
+			Vector angles = gVRRenderer.GetHandAngles();
+
+			m_pCurrentEntity->origin = origin;
+			m_pCurrentEntity->curstate.origin = origin;
+			m_pCurrentEntity->latched.prevorigin = origin;
+			m_pCurrentEntity->angles = angles;
+			m_pCurrentEntity->curstate.angles = angles;
+			m_pCurrentEntity->latched.prevangles = angles;
 		}
 		else if (gVRRenderer.HasValidWeaponController()
 			&& gHUD.m_weaponControllerEntData.isValid
 			&& m_pCurrentEntity->index == gHUD.m_weaponControllerEntData.entIndex)
 		{
-			m_pCurrentEntity->origin = gHUD.m_weaponControllerEntData.origin;
-			m_pCurrentEntity->curstate.origin = gHUD.m_weaponControllerEntData.origin;
-			m_pCurrentEntity->latched.prevorigin = gHUD.m_weaponControllerEntData.origin;
-			m_pCurrentEntity->angles = gHUD.m_weaponControllerEntData.angles;
-			m_pCurrentEntity->curstate.angles = gHUD.m_weaponControllerEntData.angles;
-			m_pCurrentEntity->latched.prevangles = gHUD.m_weaponControllerEntData.angles;
+			//Vector origin = gHUD.m_weaponControllerEntData.origin;
+			//Vector angles = gHUD.m_weaponControllerEntData.angles;
+			Vector origin = gVRRenderer.GetWeaponPosition();
+			Vector angles = gVRRenderer.GetWeaponAngles();
+
+			m_pCurrentEntity->origin = origin;
+			m_pCurrentEntity->curstate.origin = origin;
+			m_pCurrentEntity->latched.prevorigin = origin;
+			m_pCurrentEntity->angles = angles;
+			m_pCurrentEntity->curstate.angles = angles;
+			m_pCurrentEntity->latched.prevangles = angles;
 		}
 	}
 

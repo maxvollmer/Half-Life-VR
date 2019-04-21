@@ -523,9 +523,26 @@ bool VRRenderer::HasValidHandController()
 {
 	return vrHelper->HasValidHandController();
 }
+Vector VRRenderer::GetHandPosition()
+{
+	return vrHelper->GetHandPosition();
+}
+Vector VRRenderer::GetHandAngles()
+{
+	return vrHelper->GetHandAngles();
+}
+
 bool VRRenderer::HasValidWeaponController()
 {
 	return vrHelper->HasValidWeaponController();
+}
+Vector VRRenderer::GetWeaponPosition()
+{
+	return vrHelper->GetWeaponPosition();
+}
+Vector VRRenderer::GetWeaponAngles()
+{
+	return vrHelper->GetWeaponAngles();
 }
 
 // For extern declarations in cl_util.h

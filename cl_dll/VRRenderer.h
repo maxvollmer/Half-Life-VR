@@ -66,7 +66,12 @@ public:
 	vr::IVRSystem* GetVRSystem();
 
 	bool HasValidHandController();
+	Vector GetHandPosition();
+	Vector GetHandAngles();
+
 	bool HasValidWeaponController();
+	Vector GetWeaponPosition();
+	Vector GetWeaponAngles();
 
 	bool IsInGame();
 	struct cl_entity_s* SaveGetLocalPlayer();
