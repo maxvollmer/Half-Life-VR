@@ -4,6 +4,10 @@
 #include "vector.h"
 #include "eiface.h"
 
+constexpr const int XEN_MOUND_MAX_TRIGGER_DISTANCE = 128;
+constexpr const int XEN_MOUND_PARABOLA_LENGTH = 800;
+constexpr const int VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT = 15;  // Uneven amount makes the vertex look more smooth
+
 class VRController;
 class CSprite;
 class CBeam;

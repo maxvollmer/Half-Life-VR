@@ -5,9 +5,6 @@
 #define VR_DUCK_START_HEIGHT 0
 #define VR_DUCK_STOP_HEIGHT 20
 
-#define XEN_MOUND_MAX_TRIGGER_DISTANCE 128
-#define VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT 15  // Uneven amount makes the vertex look more smooth
-
 #include <map>
 #include "vector.h"
 

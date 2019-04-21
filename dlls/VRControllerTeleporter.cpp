@@ -301,7 +301,6 @@ bool VRControllerTeleporter::TryTeleportInUpwardsTriggerPush(CBasePlayer *pPlaye
 	return false;
 }
 
-#define XEN_MOUND_PARABOLA_LENGTH 800
 void VRControllerTeleporter::EnableXenMoundParabolaAndUpdateTeleDestination(CBasePlayer *pPlayer, const Vector& beamStartPos, const Vector& beamEndPos, Vector & teleportDestination)
 {
 	// Set this to false, in case we won't hit anything in the parabola loop (parabola goes into empty space), thus the teleport destination couldn't be determined and is invalid
