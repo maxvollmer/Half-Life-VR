@@ -499,6 +499,22 @@ BOOL CCineMonster :: StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL comp
 	}
 
 	pTarget->pev->sequence = pTarget->LookupSequence( STRING( iszSeq ) );
+
+	// TODO: FIXME: HACKHACK: The female scientist model currently doesn't have all animations,
+	// check if the animation exists in the male version and if so, make the scientist male.
+	if (pTarget->pev->sequence == -1 && pTarget->IsFemaleNPC() && FClassnameIs(pTarget->pev, "monster_scientist"))
+	{
+		pTarget->pev->model = MAKE_STRING("models/scientist.mdl");
+		SET_MODEL(pTarget->edict(), STRING(pTarget->pev->model));
+		pTarget->pev->sequence = pTarget->LookupSequence(STRING(iszSeq));
+		if (pTarget->pev->sequence == -1)
+		{
+			// if the animation still doesn't exist, switch the model back
+			pTarget->pev->model = MAKE_STRING("models/scientist_fem.mdl");
+			SET_MODEL(pTarget->edict(), STRING(pTarget->pev->model));
+		}
+	}
+
 	if (pTarget->pev->sequence == -1)
 	{
 		ALERT( at_error, "%s: unknown scripted sequence \"%s\"\n", STRING( pTarget->pev->targetname ), STRING( iszSeq) );
@@ -539,9 +555,24 @@ BOOL CCineAI :: StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeO
 
 	pTarget->pev->sequence = pTarget->LookupSequence( STRING( iszSeq ) );
 
+	// TODO: FIXME: HACKHACK: The female scientist model currently doesn't have all animations,
+	// check if the animation exists in the male version and if so, make the scientist male.
+	if (pTarget->pev->sequence == -1 && pTarget->IsFemaleNPC() && FClassnameIs(pTarget->pev, "monster_scientist"))
+	{
+		pTarget->pev->model = MAKE_STRING("models/scientist.mdl");
+		SET_MODEL(pTarget->edict(), STRING(pTarget->pev->model));
+		pTarget->pev->sequence = pTarget->LookupSequence(STRING(iszSeq));
+		if (pTarget->pev->sequence == -1)
+		{
+			// if the animation still doesn't exist, switch the model back
+			pTarget->pev->model = MAKE_STRING("models/scientist_fem.mdl");
+			SET_MODEL(pTarget->edict(), STRING(pTarget->pev->model));
+		}
+	}
+
 	if (pTarget->pev->sequence == -1)
 	{
-		ALERT( at_error, "%s: unknown aiscripted sequence \"%s\"\n", STRING( pTarget->pev->targetname ), STRING( iszSeq) );
+		ALERT(at_error, "%s: unknown aiscripted sequence \"%s\"\n", STRING(pTarget->pev->targetname), STRING(iszSeq));
 		pTarget->pev->sequence = 0;
 		// return FALSE;
 	}
@@ -577,6 +608,15 @@ void CCineMonster :: SequenceDone ( CBaseMonster *pMonster )
 	// This may cause a sequence to attempt to grab this monster NOW, so we have to clear it out
 	// of the existing sequence
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
+
+
+	// TODO: FIXME: HACKHACK: The female scientist model currently doesn't have all animations,
+	// reset model to female version if we set it to male in StartSequence().
+	if (pMonster->IsFemaleNPC() && FClassnameIs(pMonster->pev, "monster_scientist") && strcmp(STRING(pMonster->pev->model), "models/scientist.mdl") == 0)
+	{
+		pMonster->pev->model = MAKE_STRING("models/scientist_fem.mdl");
+		SET_MODEL(pMonster->edict(), STRING(pMonster->pev->model));
+	}
 }
 
 //=========================================================
