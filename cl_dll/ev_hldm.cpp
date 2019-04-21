@@ -1516,16 +1516,21 @@ void EV_EgonFire( event_args_t *args )
 
 void EV_UpdateEgon(const Vector& beamStartPos, const Vector& beamEndPos)
 {
+	// we override the positions sent from the server with the local "live"
+	// position we have from the VR controller (fixes "lag")
+	Vector gunpos;
+	EV_GetGunPosition(gunpos);
+	Vector delta = gunpos - beamStartPos;
 	if (pBeam)
 	{
-		pBeam->source = beamStartPos;
-		pBeam->target = beamEndPos;
+		pBeam->source = beamStartPos + delta;
+		pBeam->target = beamEndPos + delta;
 		pBeam->delta = beamEndPos - beamStartPos;
 	}
 	if (pBeam2)
 	{
-		pBeam2->source = beamStartPos;
-		pBeam2->target = beamEndPos;
+		pBeam2->source = beamStartPos + delta;
+		pBeam2->target = beamEndPos + delta;
 		pBeam2->delta = beamEndPos - beamStartPos;
 	}
 }
