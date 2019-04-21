@@ -1168,9 +1168,20 @@ void CDeadScientist :: Spawn( )
 		pev->skin = 0;
 
 	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
+
+	// TODO: FIXME: HACKHACK: The female scientist model currently doesn't have all animations,
+	// check if the animation exists in the male version and if so, make the scientist male.
+	if (pev->sequence == -1 && m_fIsFemale)
+	{
+		m_fIsFemale = false;
+		PRECACHE_MODEL("models/scientist.mdl");
+		SET_MODEL(ENT(pev), "models/scientist.mdl");
+		pev->sequence = LookupSequence(m_szPoses[m_iPose]);
+	}
+
 	if (pev->sequence == -1)
 	{
-		ALERT ( at_console, "Dead scientist with bad pose\n" );
+		ALERT(at_console, "Dead scientist with bad pose\n");
 	}
 
 	//	pev->skin += 2; // use bloody skin -- UNDONE: Turn this back on when we have a bloody skin again!
