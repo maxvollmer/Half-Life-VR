@@ -57,25 +57,41 @@ extern globalvars_t				*gpGlobals;
 
 
 
+constexpr const int VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE = 4096;
+
 int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if (! pstudiohdr)
+	studiohdr_t* pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
 		return 0;
 
-	mstudioseqdesc_t	*pseqdesc;
+	if (sequence >= pstudiohdr->numseq)
+		return 0;
 
-	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex);
-	
-	mins[0] = pseqdesc[ sequence ].bbmin[0];
-	mins[1] = pseqdesc[ sequence ].bbmin[1];
-	mins[2] = pseqdesc[ sequence ].bbmin[2];
+	mstudioseqdesc_t * pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
 
-	maxs[0] = pseqdesc[ sequence ].bbmax[0];
-	maxs[1] = pseqdesc[ sequence ].bbmax[1];
-	maxs[2] = pseqdesc[ sequence ].bbmax[2];
+	mins[0] = pseqdesc[sequence].bbmin[0];
+	mins[1] = pseqdesc[sequence].bbmin[1];
+	mins[2] = pseqdesc[sequence].bbmin[2];
+
+	maxs[0] = pseqdesc[sequence].bbmax[0];
+	maxs[1] = pseqdesc[sequence].bbmax[1];
+	maxs[2] = pseqdesc[sequence].bbmax[2];
+
+	// Some of our weapons hide parts 9999 units off the model origin (e.g. the RPG rocket when firing)
+	// The bounding boxes then are invalid, which we fix by simply taking the bounding box for the idle animation (index 0)
+	vec3_t size;
+	VectorSubtract(maxs, mins, size);
+	if (VectorLength(size) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE)
+	{
+		mins[0] = pseqdesc[0].bbmin[0];
+		mins[1] = pseqdesc[0].bbmin[1];
+		mins[2] = pseqdesc[0].bbmin[2];
+
+		maxs[0] = pseqdesc[0].bbmax[0];
+		maxs[1] = pseqdesc[0].bbmax[1];
+		maxs[2] = pseqdesc[0].bbmax[2];
+	}
 
 	return 1;
 }

@@ -140,12 +140,11 @@ bool StudioModel::PostLoadModel(const char *modelname)
 	return true;
 }
 
+constexpr const int VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE = 4096;
 
 void StudioModel::ExtractBbox(float *mins, float *maxs)
 {
-	mstudioseqdesc_t	*pseqdesc;
-
-	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pstudiohdr + m_pstudiohdr->seqindex);
+	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex);
 
 	mins[0] = pseqdesc[m_sequence].bbmin[0];
 	mins[1] = pseqdesc[m_sequence].bbmin[1];
@@ -154,6 +153,21 @@ void StudioModel::ExtractBbox(float *mins, float *maxs)
 	maxs[0] = pseqdesc[m_sequence].bbmax[0];
 	maxs[1] = pseqdesc[m_sequence].bbmax[1];
 	maxs[2] = pseqdesc[m_sequence].bbmax[2];
+
+	// Some of our weapons hide parts 9999 units off the model origin (e.g. the RPG rocket when firing)
+	// The bounding boxes then are invalid, which we fix by simply taking the bounding box for the idle animation (index 0)
+	vec3_t size;
+	VectorSubtract(maxs, mins, size);
+	if (VectorLength(size) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE)
+	{
+		mins[0] = pseqdesc[0].bbmin[0];
+		mins[1] = pseqdesc[0].bbmin[1];
+		mins[2] = pseqdesc[0].bbmin[2];
+
+		maxs[0] = pseqdesc[0].bbmax[0];
+		maxs[1] = pseqdesc[0].bbmax[1];
+		maxs[2] = pseqdesc[0].bbmax[2];
+	}
 }
 
 void StudioModel::GetSequenceInfo(float *pflFrameRate, float *pflGroundSpeed)
