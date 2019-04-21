@@ -254,11 +254,11 @@ void CTripmineGrenade :: MakeBeam( void )
 
 	Vector vecTmpEnd = pev->origin + m_vecDir * 2048 * m_flBeamLength;
 
-	m_pBeam = CBeam::BeamCreate( g_pModelNameLaser, 10 );
-	m_pBeam->PointEntInit( vecTmpEnd, entindex() );
-	m_pBeam->SetColor( 0, 214, 198 );
-	m_pBeam->SetScrollRate( 255 );
-	m_pBeam->SetBrightness( 64 );
+	m_pBeam = CBeam::BeamCreate(g_pModelNameLaser, 6);
+	m_pBeam->PointEntInit(vecTmpEnd, entindex());
+	m_pBeam->SetColor(0, 214, 198);
+	m_pBeam->SetScrollRate(255);
+	m_pBeam->SetBrightness(64);
 }
 
 
