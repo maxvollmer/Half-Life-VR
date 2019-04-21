@@ -385,7 +385,18 @@ class CBasePlayerWeapon : public CBasePlayerItem
 public:
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
-	
+
+
+	virtual void KeyValue(KeyValueData *pkvd) override
+	{
+		CBasePlayerItem::KeyValue(pkvd);
+		// Hackhack, set pev->scale here for all world weapons,
+		// as they are way too big in VR.
+		// TODO: Once all weapon models are fixed, remove this code.
+		pev->scale = 0.7f;
+	}
+
+
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	// generic weapon versions of CBasePlayerItem calls

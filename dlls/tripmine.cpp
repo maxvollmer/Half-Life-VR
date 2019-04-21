@@ -365,6 +365,11 @@ void CTripmine::Spawn( )
 	// ResetSequenceInfo( );
 	pev->framerate = 0;
 
+	// CBasePlayerWeapon::KeyValue sets scale for all weapons to 0.7,
+	// but tripmine model was fixed already, so reset to 1 here.
+	// TODO: Once all weapon models are fixed, remove this code.
+	pev->scale = 1.f;
+
 	pev->dmg = gSkillData.plrDmgTripmine;
 
 	FallInit();// get ready to fall down
