@@ -11,6 +11,8 @@
 
 #pragma warning( disable : 4996 ) 
 
+bool g_hadError = false;
+
 void RunCommandAndWait(std::string description, std::wstring command, const wchar_t* directory = nullptr)
 {
 	std::cout << description << std::flush;
@@ -38,8 +40,8 @@ void RunCommandAndWait(std::string description, std::wstring command, const wcha
 	}
 	catch (...)
 	{
-		std::cerr << std::endl << red << "Error: Command failed with error: " << GetLastError() << ". Shutting down." << white << std::endl;
-		std::exit(-1);
+		std::cerr << std::endl << red << "Error: Command failed with error code " << GetLastError() << "." << white << std::endl;
+		g_hadError = true;
 	}
 }
 
@@ -83,6 +85,7 @@ void DeleteDLL(const std::wstring& hlDirectory, const std::wstring& dll, bool cr
 	catch (...)
 	{
 		std::cerr << yellow << "Warning: Failed to delete " << std::string{ dll.begin(), dll.end() } << ".dll. Error: " << GetLastError() << "." << white << std::endl;
+		g_hadError = true;
 	}
 }
 
@@ -102,6 +105,7 @@ void CopyDLL(const std::wstring& hlDirectory, const std::wstring& vrDirectory, c
 	catch (...)
 	{
 		std::cerr << yellow << "Warning: Couldn't copy " << std::string{ dll.begin(), dll.end() } << ".dll. Error: " << GetLastError() << ". If the game doesn't run, you need to copy manually." << white << std::endl;
+		g_hadError = true;
 	}
 }
 
@@ -123,6 +127,7 @@ void RestoreDLL(const std::wstring& hlDirectory, const std::wstring& dll)
 	catch (...)
 	{
 		std::cerr << yellow << "Warning: Failed to restore " << std::string{ dll.begin(), dll.end() } << ".dll. Error: " << GetLastError() << "." << white << std::endl;
+		g_hadError = true;
 	}
 }
 
@@ -133,11 +138,24 @@ void ForceSingleProcess()
 	if (mutex == NULL)
 	{
 		std::cerr << red << "Error: Not enough rights to run HLVRLauncher. Try running as administrator. Shutting down." << white << std::endl;
+		system("pause");
 		std::exit(-1);
 	}
 	else if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
 		std::cerr << red << "Error: Another instance of HLVRLauncher is already running. Shutting down." << white << std::endl;
+		system("pause");
+		std::exit(-1);
+	}
+}
+
+void CheckHalfLifeDirectory(const std::wstring& directory)
+{
+	DWORD dwAttrib = GetFileAttributesW((directory+L"\\hl.exe").data());
+	if ((dwAttrib == INVALID_FILE_ATTRIBUTES || (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)))
+	{
+		std::cerr << red << "Error: Couldn't find hl.exe. Make sure you run HLVRLauncher from the HLVR mod directory in your Half-Life folder." << white << std::endl;
+		system("pause");
 		std::exit(-1);
 	}
 }
@@ -154,6 +172,8 @@ int main(int argc, char *argv[])
 	std::wstring filename = szFileName;
 	std::wstring vrDirectory = filename.substr(0, filename.rfind('\\'));
 	std::wstring hlDirectory = vrDirectory.substr(0, vrDirectory.rfind('\\'));
+
+	CheckHalfLifeDirectory(hlDirectory);
 
 	std::wstring icaclsSetInheritanceCommandLine = L"icacls " + hlDirectory + L" /inheritance:d";
 	std::wstring icaclsDisableDeletionOnFolderCommandLine = L"icacls " + hlDirectory + L" /deny Everyone:(DE,DC)";
@@ -235,7 +255,16 @@ int main(int argc, char *argv[])
 
 	std::cout << std::endl;
 
-	std::cout << "HLVRLauncher finished cleaning up, exiting.";
+	if (g_hadError)
+	{
+		std::cerr << red << "HLVRLauncher encountered errors, please check the messages above." << white << std::endl << std::endl;
+		system("pause");
+		return -1;
+	}
+	else
+	{
+		std::cout << white << "HLVRLauncher finished cleaning up, exiting." << white << std::endl;
+		return 0;
+	}
 
-    return 0;
 }
