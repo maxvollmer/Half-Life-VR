@@ -36,16 +36,16 @@ List of known bugs and issues:
 - HUD text is rendered in the map center instead of in the player's view
 - Female scientists are missing some animations
 - Airlock levers near the tentacle silo cause infinite levelchange while "touched" by controller
-- noclip is broken
+- That one cutscene when Gordon gets arrested is broken
+- Barnacles don't cause damage
 
 ====
 List of missing features:
 
-- Controls for func_tank and func_tracktrain
+- Proper controls for func_tank (those stationary guns, turrets etc.) and func_tracktrain (controllable trains)
 - Proper teleportation arc that matches path of jumping player
 - Proper implementation of the VR menu
 - Vibrational feedback (recoil etc.) isn't implemented yet
-- Vanilla attack with crowbar via keypress for players who use mouse/keyboard input
 
 ===================
 *******************
