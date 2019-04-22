@@ -396,29 +396,29 @@ void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, floa
 		CreateEffect();
 	}
 
-	m_pBeam->SetStartPos(endPoint);
-	m_pBeam->SetEndPos(startPoint);
-	m_pBeam->SetBrightness( 255 - (timeBlend*180) );
-	m_pBeam->SetWidth( 40 - (timeBlend*20) );
+	m_pBeam->SetStartPos(startPoint);
+	m_pBeam->SetEndPos(endPoint);
+	m_pBeam->SetBrightness(255 - (timeBlend * 180));
+	m_pBeam->SetWidth(40 - (timeBlend * 20));
 
-	if ( m_fireMode == FIRE_WIDE )
-		m_pBeam->SetColor( 30 + (25*timeBlend), 30 + (30*timeBlend), 64 + 80*fabs(sin(gpGlobals->time*10)) );
+	if (m_fireMode == FIRE_WIDE)
+		m_pBeam->SetColor(30 + (25 * timeBlend), 30 + (30 * timeBlend), 64 + 80 * fabs(sin(gpGlobals->time * 10)));
 	else
-		m_pBeam->SetColor( 60 + (25*timeBlend), 120 + (30*timeBlend), 64 + 80*fabs(sin(gpGlobals->time*10)) );
+		m_pBeam->SetColor(60 + (25 * timeBlend), 120 + (30 * timeBlend), 64 + 80 * fabs(sin(gpGlobals->time * 10)));
 
 
-	UTIL_SetOrigin( m_pSprite->pev, endPoint );
+	UTIL_SetOrigin(m_pSprite->pev, endPoint);
 	m_pSprite->pev->frame += 8 * gpGlobals->frametime;
-	if ( m_pSprite->pev->frame > m_pSprite->Frames() )
+	if (m_pSprite->pev->frame > m_pSprite->Frames())
 		m_pSprite->pev->frame = 0;
 
-	m_pNoise->SetStartPos( endPoint );
-	m_pNoise->SetEndPos(startPoint);
+	m_pNoise->SetStartPos(startPoint);
+	m_pNoise->SetEndPos(endPoint);
 
 	extern int gmsgVRUpdateEgon;
 	MESSAGE_BEGIN(MSG_ONE, gmsgVRUpdateEgon, NULL, m_pPlayer->pev);
-	WRITE_PRECISE_VECTOR(endPoint);
 	WRITE_PRECISE_VECTOR(startPoint);
+	WRITE_PRECISE_VECTOR(endPoint);
 	MESSAGE_END();
 #endif
 
@@ -430,43 +430,43 @@ void CEgon::CreateEffect( void )
 #ifndef CLIENT_DLL
 	DestroyEffect();
 
-	m_pBeam = CBeam::BeamCreate( EGON_BEAM_SPRITE, 40 );
-	m_pBeam->PointsInit( pev->origin, m_pPlayer->GetGunPosition() );
-	m_pBeam->SetFlags( BEAM_FSINE );
-	m_pBeam->SetEndAttachment( 1 );
+	m_pBeam = CBeam::BeamCreate(EGON_BEAM_SPRITE, 40);
+	m_pBeam->PointsInit(m_pPlayer->GetGunPosition(), m_pPlayer->GetGunPosition());
+	m_pBeam->SetFlags(BEAM_FSINE);
+	m_pBeam->SetEndAttachment(1);
 	m_pBeam->pev->spawnflags |= SF_BEAM_TEMPORARY;	// Flag these to be destroyed on save/restore or level transition
 	m_pBeam->pev->flags |= FL_SKIPLOCALHOST;
 	m_pBeam->pev->owner = m_pPlayer->edict();
 
-	m_pNoise = CBeam::BeamCreate( EGON_BEAM_SPRITE, 55 );
+	m_pNoise = CBeam::BeamCreate(EGON_BEAM_SPRITE, 55);
 	m_pNoise->PointsInit(m_pPlayer->GetGunPosition(), m_pPlayer->GetGunPosition());
-	m_pNoise->SetScrollRate( 25 );
-	m_pNoise->SetBrightness( 100 );
-	m_pNoise->SetEndAttachment( 1 );
+	m_pNoise->SetScrollRate(25);
+	m_pNoise->SetBrightness(100);
+	m_pNoise->SetEndAttachment(1);
 	m_pNoise->pev->spawnflags |= SF_BEAM_TEMPORARY;
 	m_pNoise->pev->flags |= FL_SKIPLOCALHOST;
 	m_pNoise->pev->owner = m_pPlayer->edict();
 
-	m_pSprite = CSprite::SpriteCreate( EGON_FLARE_SPRITE, pev->origin, FALSE );
+	m_pSprite = CSprite::SpriteCreate(EGON_FLARE_SPRITE, m_pPlayer->GetGunPosition(), FALSE);
 	m_pSprite->pev->scale = 1.0;
-	m_pSprite->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation );
+	m_pSprite->SetTransparency(kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation);
 	m_pSprite->pev->spawnflags |= SF_SPRITE_TEMPORARY;
 	m_pSprite->pev->flags |= FL_SKIPLOCALHOST;
 	m_pSprite->pev->owner = m_pPlayer->edict();
 
-	if ( m_fireMode == FIRE_WIDE )
+	if (m_fireMode == FIRE_WIDE)
 	{
-		m_pBeam->SetScrollRate( 50 );
-		m_pBeam->SetNoise( 20 );
-		m_pNoise->SetColor( 50, 50, 255 );
-		m_pNoise->SetNoise( 8 );
+		m_pBeam->SetScrollRate(50);
+		m_pBeam->SetNoise(20);
+		m_pNoise->SetColor(50, 50, 255);
+		m_pNoise->SetNoise(8);
 	}
 	else
 	{
-		m_pBeam->SetScrollRate( 110 );
-		m_pBeam->SetNoise( 5 );
-		m_pNoise->SetColor( 80, 120, 255 );
-		m_pNoise->SetNoise( 2 );
+		m_pBeam->SetScrollRate(110);
+		m_pBeam->SetNoise(5);
+		m_pNoise->SetColor(80, 120, 255);
+		m_pNoise->SetNoise(2);
 	}
 #endif
 
@@ -477,22 +477,22 @@ void CEgon::DestroyEffect( void )
 {
 
 #ifndef CLIENT_DLL
-	if ( m_pBeam )
+	if (m_pBeam)
 	{
-		UTIL_Remove( m_pBeam );
+		UTIL_Remove(m_pBeam);
 		m_pBeam = NULL;
 	}
-	if ( m_pNoise )
+	if (m_pNoise)
 	{
-		UTIL_Remove( m_pNoise );
+		UTIL_Remove(m_pNoise);
 		m_pNoise = NULL;
 	}
-	if ( m_pSprite )
+	if (m_pSprite)
 	{
-		if ( m_fireMode == FIRE_WIDE )
-			m_pSprite->Expand( 10, 500 );
+		if (m_fireMode == FIRE_WIDE)
+			m_pSprite->Expand(10, 500);
 		else
-			UTIL_Remove( m_pSprite );
+			UTIL_Remove(m_pSprite);
 		m_pSprite = NULL;
 	}
 #endif
