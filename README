@@ -3,6 +3,20 @@ Half-Life: VR
 
 VERSION 0.2
 
+Copyright (c) 2017-2019 Max Vollmer
+
+======
+
+YOU RECEIVED THIS MOD AS PART OF AN INTERNAL BETA TEST
+
+DO NOT MAKE THIS MOD PUBLIC
+
+DO NOT GIVE THIS MOD TO ANY THIRD PARTY
+
+THE DLLS IN THIS MOD HAVE BEEN MARKED SO LEAKS CAN BE TRACKED BACK TO YOU
+
+======
+
 This is a mod for Half-Life adding support for playing the game in Virtual Reality.
 
 Author: Max Vollmer
@@ -34,6 +48,7 @@ If you are a coder and want to help, get in touch!
 List of known bugs and issues:
 
 - HUD text is rendered in the map center instead of in the player's view
+- Fade effects don't work
 - Female scientists are missing some animations
 - Airlock levers near the tentacle silo cause infinite levelchange while "touched" by controller
 - That one cutscene when Gordon gets arrested is broken
