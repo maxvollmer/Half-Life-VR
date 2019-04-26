@@ -1,0 +1,91 @@
+====
+Half-Life: VR
+
+VERSION 0.3.0
+
+Copyright (c) 2017-2019 Max Vollmer
+
+======
+
+YOU RECEIVED THIS MOD AS PART OF AN INTERNAL BETA TEST
+
+DO NOT MAKE THIS MOD PUBLIC
+
+DO NOT GIVE THIS MOD TO ANY THIRD PARTY
+
+THE DLLS IN THIS MOD HAVE BEEN MARKED SO LEAKS CAN BE TRACKED BACK TO YOU
+
+======
+
+This is a mod for Half-Life adding support for playing the game in Virtual Reality.
+
+Author: Max Vollmer
+
+VR enabled weapon models by Formic.Sapien and Rorin.
+
+Substantial help provided by Formic.Sapien, Rorin and DoomMarine23.
+
+Third party licenses apply where applicable.
+
+For a list of third parties see bottom of file.
+
+===
+This mod is released as is without any guarantee that it works and without any warranties whatsoever. Use on your own risk. If you don't know what you are doing, don't do it.
+
+WARNING: The custom OpenGL32.dll can get you VAC banned.
+
+===
+NO SUPPORT IS OFFERED WHATSOEVER. Bug reports are welcome, but "it's not working" is not a bug report and will be ignored. The best thing is to upload a video of the issue you want to report.
+
+There is a VRLauncher.exe that should make running this mod easy, however it has only been tested on Windows 10 so far.
+
+Please read this file carefully, especially the third party section, if you plan on using any of the files for anything.
+
+====
+If you are a coder and want to help, get in touch!
+
+====
+List of known bugs and issues:
+
+- HUD text is rendered in the map center instead of in the player's view
+- Fade effects don't work
+- Female scientists are missing some animations
+- Airlock levers near the tentacle silo cause infinite levelchange while "touched" by controller
+- That one cutscene when Gordon gets arrested is broken
+- Barnacles don't cause damage
+
+====
+List of missing features:
+
+- Proper controls for func_tank (those stationary guns, turrets etc.) and func_tracktrain (controllable trains)
+- Proper teleportation arc that matches path of jumping player
+- Proper implementation of the VR menu
+- Vibrational feedback (recoil etc.) isn't implemented yet
+
+===================
+*******************
+THIRD PARTIES BELOW
+
+====
+Female scientist audio files have been generated using MorphVox Pro with the Batch Converter Plugin, postprocessed using Auphonic, and then converted to a Half-Life friendly wav format with GoldWave. They are based on the original scientist audio files for Half-Life by Valve.
+
+====
+Smallest cup audio track by Michael Hillard. Permission for use in this mod generously granted.
+
+====
+Hand model based on high poly hand model by Willdabeast and HEV arms textures by JohnChronic: https://gamebanana.com/skins/157391
+
+====
+Female scientist model by 23-down. Full info and further credits in models/scientist_fem_readme.txt
+
+====
+This mod uses the ReactPhysics3D physics library
+http://code.google.com/p/reactphysics3d/
+Copyright (c) 2010-2016 Daniel Chappuis
+
+===
+This mod uses a modified version of the opengl_proxy.cpp by Guilherme R. Lampert (22/11/15)
+
+===
+This mod uses LodePNG version 20190210
+Copyright (c) 2005-2019 Lode Vandevenne
