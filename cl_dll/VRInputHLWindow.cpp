@@ -130,6 +130,12 @@ namespace
 
 		SetForegroundWindow(hPreviousForegroundWindow);
 	}
+
+	void VRDisplayErrorPopup(const char* errorMessage)
+	{
+		VRFindHLWindow();
+		MessageBoxA(hlWindow, errorMessage, "Error starting Half-Life: VR", MB_OK);
+	}
 }
 
 void VRInput::SendMousePosToHLWindow(float x, float y)
@@ -140,4 +146,9 @@ void VRInput::SendMousePosToHLWindow(float x, float y)
 void VRInput::SendMouseButtonClickToHLWindow(float x, float y)
 {
 	VRSendMouseClickToHLWindow(x, y);
+}
+
+void VRInput::DisplayErrorPopup(const char* errorMessage)
+{
+	VRDisplayErrorPopup(errorMessage);
 }

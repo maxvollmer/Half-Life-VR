@@ -77,6 +77,8 @@ public:
 	void ShowHLMenu();
 	void HideHLMenu();
 
+	void DisplayErrorPopup(const char* errorMessage);
+
 private:
 	struct ActionSet
 	{

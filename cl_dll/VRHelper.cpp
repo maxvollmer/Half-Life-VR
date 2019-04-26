@@ -239,15 +239,15 @@ void VRHelper::Init()
 	}
 	else if (!IEngineStudio.IsHardware())
 	{
-		Exit(TEXT("Software mode not supported. Please start this game with OpenGL renderer. (Start Half-Life, open the Options menu, select Video, chose OpenGL as Renderer, save, quit Half-Life, then start Half-Life: VR)"));
+		Exit("Software mode not supported. Please start this game with OpenGL renderer. (Start Half-Life, open the Options menu, select Video, chose OpenGL as Renderer, save, quit Half-Life, then start Half-Life: VR)");
 	}
 	else if (!InitAdditionalGLFunctions())
 	{
-		Exit(TEXT("Failed to load necessary OpenGL functions. Make sure you have a graphics card that can handle VR and up-to-date drivers, and make sure you are running the game in OpenGL mode."));
+		Exit("Failed to load necessary OpenGL functions. Make sure you have a graphics card that can handle VR and up-to-date drivers, and make sure you are running the game in OpenGL mode.");
 	}
 	else if (!InitGLMatrixOverrideFunctions())
 	{
-		Exit(TEXT("Failed to load custom opengl32.dll. Make sure you launch this game through HLVRLauncher.exe, not the Steam menu. (Tipp: You can add a custom game shortcut to HLVRLauncher.exe in your Steam library.))"));
+		Exit("Failed to load custom opengl32.dll. Make sure you launch this game through HLVRLauncher.exe, not the Steam menu. (Tipp: You can add a custom game shortcut to HLVRLauncher.exe in your Steam library.))");
 	}
 	else
 	{
@@ -256,7 +256,7 @@ void VRHelper::Init()
 		vrCompositor = vr::VRCompositor();
 		if (vrInitError != vr::EVRInitError::VRInitError_None || vrSystem == nullptr || vrCompositor == nullptr)
 		{
-			Exit(TEXT("Failed to initialize VR enviroment. Make sure your headset is properly connected and SteamVR is running."));
+			Exit("Failed to initialize VR enviroment. Make sure your headset is properly connected and SteamVR is running.");
 		}
 		else
 		{
@@ -270,7 +270,7 @@ void VRHelper::Init()
 			CreateGLTexture(&vrGLMenuTexture, viewport[2], viewport[3]);
 			if (vrGLLeftEyeTexture == 0 || vrGLRightEyeTexture == 0 || vrGLMenuTexture == 0)
 			{
-				Exit(TEXT("Failed to initialize OpenGL textures for VR enviroment. Make sure you have a graphics card that can handle VR and up-to-date drivers."));
+				Exit("Failed to initialize OpenGL textures for VR enviroment. Make sure you have a graphics card that can handle VR and up-to-date drivers.");
 			}
 			else
 			{
@@ -278,7 +278,7 @@ void VRHelper::Init()
 				CreateGLFrameBuffer(&vrGLRightEyeFrameBuffer, vrGLRightEyeTexture, vrRenderWidth, vrRenderHeight);
 				if (vrGLLeftEyeFrameBuffer == 0 || vrGLRightEyeFrameBuffer == 0)
 				{
-					Exit(TEXT("Failed to initialize OpenGL framebuffers for VR enviroment. Make sure you have a graphics card that can handle VR and up-to-date drivers."));
+					Exit("Failed to initialize OpenGL framebuffers for VR enviroment. Make sure you have a graphics card that can handle VR and up-to-date drivers.");
 				}
 			}
 		}
@@ -335,6 +335,7 @@ void VRHelper::Exit(const char* lpErrorMessage)
 	{
 		gEngfuncs.Con_DPrintf("Error starting Half-Life: VR: %s\n", lpErrorMessage);
 		std::cerr << "Error starting Half-Life: VR: " << lpErrorMessage << std::endl << std::flush;
+		g_vrInput.DisplayErrorPopup(lpErrorMessage);
 	}
 	vr::VR_Shutdown();
 	gEngfuncs.pfnClientCmd("quit");
