@@ -421,6 +421,10 @@ public:
 
 	float GetAnalogFire();
 	void SetAnalogFire(float analogfire);
+
+	// Used by CChangeLevel::InTransitionVolume
+	// Set by VRControllerTeleporter
+	bool vr_didJustTeleportThroughChangeLevel{ false };
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

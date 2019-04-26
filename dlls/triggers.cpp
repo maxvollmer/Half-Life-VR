@@ -1632,6 +1632,12 @@ int CChangeLevel::InTransitionVolume( CBaseEntity *pEntity, char *pVolumeName )
 	if ( pEntity->ObjectCaps() & FCAP_FORCE_TRANSITION )
 		return 1;
 
+	// TODO: Always return 1 for players?
+	// Can't think of a situation where a player wouldn't be in the transition volume
+	// when touching a trigger_changelevel
+	if (pEntity->IsPlayer() && ((CBasePlayer*)pEntity)->vr_didJustTeleportThroughChangeLevel)
+		return 1;
+
 	// If you're following another entity, follow it through the transition (weapons follow the player)
 	if ( pEntity->pev->movetype == MOVETYPE_FOLLOW )
 	{

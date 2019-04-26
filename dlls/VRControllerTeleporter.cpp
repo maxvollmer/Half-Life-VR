@@ -11,6 +11,9 @@
 
 void VRControllerTeleporter::StartTele(CBasePlayer *pPlayer, const Vector& telePos)
 {
+	// reset
+	pPlayer->vr_didJustTeleportThroughChangeLevel = false;
+
 	if (!vr_pTeleSprite)
 	{
 		vr_pTeleSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", telePos, FALSE);
@@ -37,6 +40,9 @@ void VRControllerTeleporter::StartTele(CBasePlayer *pPlayer, const Vector& teleP
 
 void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 {
+	// reset
+	pPlayer->vr_didJustTeleportThroughChangeLevel = false;
+
 	if (vr_fValidTeleDestination)
 	{
 		if (vr_fTelePointsAtXenMound && vr_parabolaBeams[0] != nullptr && gGlobalXenMounds.Has(vr_parabolaBeams[0]->pev->origin))
@@ -46,6 +52,8 @@ void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 		pPlayer->pev->origin = vr_vecTeleDestination;
 		pPlayer->pev->origin.z -= pPlayer->pev->mins.z;
 		UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
+		extern void SetObjectCollisionBox(entvars_t *pev);
+		SetObjectCollisionBox(pPlayer->pev);
 		TouchTriggersInTeleportPath(pPlayer);
 		// used to disable gravity in water when using VR teleporter
 		extern bool g_vrTeleportInWater;
@@ -69,6 +77,9 @@ void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 
 void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& telePos, const Vector& teleDir)
 {
+	// reset
+	pPlayer->vr_didJustTeleportThroughChangeLevel = false;
+
 	if (!vr_pTeleBeam || !vr_pTeleSprite)
 	{
 		vr_fValidTeleDestination = false;
@@ -150,6 +161,10 @@ void VRControllerTeleporter::TouchTriggersInTeleportPath(CBasePlayer *pPlayer)
 
 		if (fTouched)
 		{
+			if (FClassnameIs(pEntity->pev, "trigger_changelevel"))
+			{
+				pPlayer->vr_didJustTeleportThroughChangeLevel = true;
+			}
 			pEntity->Touch(pPlayer);
 		}
 	}
