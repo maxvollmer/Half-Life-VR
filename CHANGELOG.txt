@@ -1,0 +1,15 @@
+0.0.0 - 2017
+* Inofficial early alpha
+
+0.1.0 - 2017-2019
+* Internal developer version
+
+0.2.0 - 2019-04-22
+* First internal beta release
+
+0.3.0 - 2019-04-26
+* Added error popup message with info why mod can't start
+* Fixed bug where teleporting through changelevel didn't load next map
+* Added world weapon models with highres textures
+* Added hd skyboxes
+* Fixed background texture

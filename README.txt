@@ -1,7 +1,7 @@
 ====
 Half-Life: VR
 
-VERSION 0.2
+VERSION 0.3.0
 
 Copyright (c) 2017-2019 Max Vollmer
 
