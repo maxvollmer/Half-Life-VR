@@ -52,8 +52,8 @@ void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 		pPlayer->pev->origin = vr_vecTeleDestination;
 		pPlayer->pev->origin.z -= pPlayer->pev->mins.z;
 		UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
-		extern void SetObjectCollisionBox(entvars_t *pev);
-		SetObjectCollisionBox(pPlayer->pev);
+		pPlayer->pev->absmin = pPlayer->pev->origin + pPlayer->pev->mins;
+		pPlayer->pev->absmax = pPlayer->pev->origin + pPlayer->pev->maxs;
 		TouchTriggersInTeleportPath(pPlayer);
 		// used to disable gravity in water when using VR teleporter
 		extern bool g_vrTeleportInWater;
