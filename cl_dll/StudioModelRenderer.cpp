@@ -39,18 +39,34 @@ engine_studio_api_t IEngineStudio;
 /////////////////////
 // Implementation of CStudioModelRenderer.h
 
-// Intercepting method for Mod_Extradata to (hopefully) catch "Mod_Extradata: caching failed" errors
-// and display the name of the affected model in the error popup.
-// (see VRMODExtradataErrorIntercepter)
-studiohdr_t* Mod_Extradata(model_s* model)
+// Custom implementation of Mod_Extradata based on WinQuake to prevent the engine from
+// crashing to desktop with "Mod_Extradata: caching failed" errors. Instead we display
+// a warning in the console with the name of the affected model and some more useful info.
+// - Max Vollmer, 2019-04-27
+studiohdr_t* Mod_Extradata(const char* callerInfo, cl_entity_t* ent, model_t* mod)
 {
-	extern std::string g_ModExtradataModelName;
-	g_ModExtradataModelName = model->name;
-	studiohdr_t* result = (studiohdr_t*)IEngineStudio.Mod_Extradata(model);
-	g_ModExtradataModelName = "";
-	return result;
-}
+	if (!mod || mod->type != mod_studio || mod->name[0] == '*')
+	{
+		gEngfuncs.Con_DPrintf("Mod_Extradata: invalid model: %s (caller: %s, entity: %i)\n", mod->name, callerInfo, ent ? ent->index : -1);
+		return nullptr;
+	}
 
+	void* r = IEngineStudio.Cache_Check(&mod->cache);
+	if (r)
+	{
+		return (studiohdr_t*)r;
+	}
+
+	mod = IEngineStudio.Mod_ForName(mod->name, true);
+
+	if (!mod->cache.data)
+	{
+		gEngfuncs.Con_DPrintf("Mod_Extradata: caching failed: %s (caller: %s, entity: %i)\n", mod->name, callerInfo, ent ? ent->index : -1);
+		return nullptr;
+	}
+
+	return (studiohdr_t*)mod->cache.data;
+}
 
 /*
 ====================
@@ -1196,7 +1212,13 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 	}
 
 	m_pRenderModel = m_pCurrentEntity->model;
-	m_pStudioHeader = Mod_Extradata(m_pRenderModel);
+	if (!m_pRenderModel)
+		return 0;
+
+	m_pStudioHeader = Mod_Extradata("StudioDrawModel", m_pCurrentEntity, m_pRenderModel);
+	if (!m_pStudioHeader)
+		return 0;
+
 	IEngineStudio.StudioSetHeader( m_pStudioHeader );
 	IEngineStudio.SetRenderModel( m_pRenderModel );
 
@@ -1480,7 +1502,10 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 	if (m_pRenderModel == NULL)
 		return 0;
 
-	m_pStudioHeader = Mod_Extradata (m_pRenderModel);
+	m_pStudioHeader = Mod_Extradata("StudioDrawPlayer", m_pCurrentEntity, m_pRenderModel);
+	if (!m_pStudioHeader)
+		return 0;
+
 	IEngineStudio.StudioSetHeader( m_pStudioHeader );
 	IEngineStudio.SetRenderModel( m_pRenderModel );
 
@@ -1595,16 +1620,19 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 
 			model_t *pweaponmodel = IEngineStudio.GetModelByIndex( pplayer->weaponmodel );
 
-			m_pStudioHeader = Mod_Extradata (pweaponmodel);
-			IEngineStudio.StudioSetHeader( m_pStudioHeader );
+			m_pStudioHeader = Mod_Extradata("StudioDrawPlayer/pplayer->weaponmodel", m_pCurrentEntity, pweaponmodel);
+			if (m_pStudioHeader)
+			{
+				IEngineStudio.StudioSetHeader(m_pStudioHeader);
 
-			StudioMergeBones( pweaponmodel);
+				StudioMergeBones(pweaponmodel);
 
-			IEngineStudio.StudioSetupLighting (&lighting);
+				IEngineStudio.StudioSetupLighting(&lighting);
 
-			StudioRenderModel( );
+				StudioRenderModel();
 
-			StudioCalcAttachments( );
+				StudioCalcAttachments();
+			}
 
 			*m_pCurrentEntity = saveent;
 		}
@@ -1794,11 +1822,13 @@ void CStudioModelRenderer::StudioRenderFinal(void)
 
 int VRGlobalNumAttachmentsForEntity(cl_entity_t* ent)
 {
-	if (ent && ent->model)
+	if (ent && ent->model && ent->model->type == mod_studio)
 	{
-		studiohdr_t* pstudiohdr = Mod_Extradata(ent->model);
+		studiohdr_t* pstudiohdr = Mod_Extradata("VRGlobalNumAttachmentsForEntity", ent, ent->model);
 		if (pstudiohdr)
+		{
 			return pstudiohdr->numattachments;
+		}
 	}
 	return 0;
 }

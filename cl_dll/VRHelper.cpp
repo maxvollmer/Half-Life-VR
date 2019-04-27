@@ -923,6 +923,10 @@ void VRHelper::UpdateViewEnt(bool isControllerValid, const Vector& controllerPos
 		return;
 	}
 
+	// forces Mod_Extradata: caching failed error
+	//extern studiohdr_t* Mod_Extradata(const char* callerInfo, cl_entity_t* ent, model_s* mod);
+	//Mod_Extradata("DEBUGTEST", nullptr, IEngineStudio.Mod_ForName("models/agrunt01.mdl", 1));
+
 	/*
 	// hackhack testest
 	gEngfuncs.Con_DPrintf("Starting the model thing.\n");

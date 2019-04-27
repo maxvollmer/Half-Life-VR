@@ -1,8 +1,8 @@
 
 #include "VRMODExtradataErrorIntercepter.h"
 
-#include <Windows.h>
 #include <string>
+#include <Windows.h>
 
 std::string g_ModExtradataModelName;
 
