@@ -46,7 +46,9 @@ studiohdr_t* Mod_Extradata(model_s* model)
 {
 	extern std::string g_ModExtradataModelName;
 	g_ModExtradataModelName = model->name;
-	return (studiohdr_t*)IEngineStudio.Mod_Extradata(model);
+	studiohdr_t* result = (studiohdr_t*)IEngineStudio.Mod_Extradata(model);
+	g_ModExtradataModelName = "";
+	return result;
 }
 
 
