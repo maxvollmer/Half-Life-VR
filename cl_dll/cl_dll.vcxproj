@@ -261,6 +261,7 @@
     <ClCompile Include="VRInputPosesHandlers.cpp" />
     <ClCompile Include="VRInputWeaponsHandlers.cpp" />
     <ClCompile Include="VRIntermissionAndMenuRenderer.cpp" />
+    <ClCompile Include="VRMODExtradataErrorIntercepter.cpp" />
     <ClCompile Include="VRTextureHelper.cpp" />
     <ClCompile Include="vr_gl.cpp" />
     <ClCompile Include="VRHelper.cpp" />
@@ -319,6 +320,7 @@
     <ClInclude Include="VRCommon.h" />
     <ClInclude Include="VRInputAction.h" />
     <ClInclude Include="VRInputHandlers.h" />
+    <ClInclude Include="VRMODExtradataErrorIntercepter.h" />
     <ClInclude Include="VRTextureHelper.h" />
     <ClInclude Include="vr_gl.h" />
     <ClInclude Include="VRHelper.h" />

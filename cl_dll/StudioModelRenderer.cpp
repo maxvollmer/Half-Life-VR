@@ -8,6 +8,8 @@
 // studio_model.cpp
 // routines for setting up to draw 3DStudio models
 
+#include <string>
+
 #include "hud.h"
 #include "cl_util.h"
 #include "const.h"
@@ -36,6 +38,17 @@ engine_studio_api_t IEngineStudio;
 
 /////////////////////
 // Implementation of CStudioModelRenderer.h
+
+// Intercepting method for Mod_Extradata to (hopefully) catch "Mod_Extradata: caching failed" errors
+// and display the name of the affected model in the error popup.
+// (see VRMODExtradataErrorIntercepter)
+studiohdr_t* Mod_Extradata(model_s* model)
+{
+	extern std::string g_ModExtradataModelName;
+	g_ModExtradataModelName = model->name;
+	return (studiohdr_t*)IEngineStudio.Mod_Extradata(model);
+}
+
 
 /*
 ====================
@@ -1181,7 +1194,7 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 	}
 
 	m_pRenderModel = m_pCurrentEntity->model;
-	m_pStudioHeader = (studiohdr_t *)IEngineStudio.Mod_Extradata (m_pRenderModel);
+	m_pStudioHeader = Mod_Extradata(m_pRenderModel);
 	IEngineStudio.StudioSetHeader( m_pStudioHeader );
 	IEngineStudio.SetRenderModel( m_pRenderModel );
 
@@ -1465,7 +1478,7 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 	if (m_pRenderModel == NULL)
 		return 0;
 
-	m_pStudioHeader = (studiohdr_t *)IEngineStudio.Mod_Extradata (m_pRenderModel);
+	m_pStudioHeader = Mod_Extradata (m_pRenderModel);
 	IEngineStudio.StudioSetHeader( m_pStudioHeader );
 	IEngineStudio.SetRenderModel( m_pRenderModel );
 
@@ -1580,7 +1593,7 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 
 			model_t *pweaponmodel = IEngineStudio.GetModelByIndex( pplayer->weaponmodel );
 
-			m_pStudioHeader = (studiohdr_t *)IEngineStudio.Mod_Extradata (pweaponmodel);
+			m_pStudioHeader = Mod_Extradata (pweaponmodel);
 			IEngineStudio.StudioSetHeader( m_pStudioHeader );
 
 			StudioMergeBones( pweaponmodel);
@@ -1781,7 +1794,7 @@ int VRGlobalNumAttachmentsForEntity(cl_entity_t* ent)
 {
 	if (ent && ent->model)
 	{
-		studiohdr_t* pstudiohdr = ((studiohdr_t*)IEngineStudio.Mod_Extradata(ent->model));
+		studiohdr_t* pstudiohdr = Mod_Extradata(ent->model);
 		if (pstudiohdr)
 			return pstudiohdr->numattachments;
 	}
