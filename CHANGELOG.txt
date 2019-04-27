@@ -13,3 +13,4 @@
 * Added world weapon models with highres textures
 * Added hd skyboxes
 * Fixed background texture
+* Compiled with static MSVC runtime libraries
