@@ -14,3 +14,6 @@
 * Added hd skyboxes
 * Fixed background texture
 * Compiled with static MSVC runtime libraries
+
+0.4.0 - current dev
+* Added name of faulty model to "Mod_Extradata: caching failed" error popup
