@@ -81,11 +81,12 @@ float GetWeaponScale(const char* weaponModelName)
 		worldScale = 100.f;
 	baseWeaponScale /= worldScale;
 
+	// "models/w_<weapon>.mdl" -> "vr_<weapon>_scale"
 	// "models/v_<weapon>.mdl" -> "vr_<weapon>_scale"
 	std::string cvarWeaponModelScale =
 		std::regex_replace(
 			std::string{ weaponModelName },
-			std::regex{"models/v_([a-zA-Z_-]+)\\.mdl"},
+			std::regex{ "models/[vw]_([a-zA-Z_-]+)\\.mdl" },
 			"vr_$1_scale");
 	float weaponScale = CVAR_GET_FLOAT(cvarWeaponModelScale.data());
 	if (weaponScale < 0.01f)
