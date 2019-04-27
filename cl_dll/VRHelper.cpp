@@ -4,6 +4,8 @@
 #include "cl_util.h"
 #include "r_studioint.h"
 #include "ref_params.h"
+#include "com_model.h"
+#include "studio.h"
 #include "VRHelper.h"
 #include "VRTextureHelper.h"
 #include "vr_gl.h"
@@ -920,6 +922,41 @@ void VRHelper::UpdateViewEnt(bool isControllerValid, const Vector& controllerPos
 		mIsViewEntMirrored = false;
 		return;
 	}
+
+	/*
+	// hackhack testest
+	gEngfuncs.Con_DPrintf("Starting the model thing.\n");
+	for (auto& p : std::filesystem::directory_iterator("E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\valve\\models"))
+	{
+		std::string modelname = "models/" + p.path().filename().string();
+		if (modelname.find(".mdl") != std::string::npos)
+		{
+			gEngfuncs.Con_DPrintf("Trying model: %s\n", modelname.data());
+			model_t* model = IEngineStudio.Mod_ForName(modelname.data(), 1);
+			if (!model)
+			{
+				gEngfuncs.Con_DPrintf("Failed to load: %s\n", modelname.data());
+			}
+			else
+			{
+				if (model->type == mod_brush)
+				{
+					gEngfuncs.Con_DPrintf("Invalid model: %s\n", modelname.data());
+				}
+				extern studiohdr_t* Mod_Extradata(model_s* model);
+				studiohdr_t* modelheader = Mod_Extradata(model);
+				if (!modelheader)
+				{
+					gEngfuncs.Con_DPrintf("Mod_Extradata failed for: %s\n", modelname.data());
+				}
+			}
+		}
+	}
+	gEngfuncs.Con_DPrintf("Done with the model thing.\n");
+	*/
+
+
+
 
 	mIsViewEntMirrored = isMirrored;
 
