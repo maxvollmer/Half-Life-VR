@@ -453,6 +453,8 @@ void VRRenderer::RenderWorldBackfaces()
 
 void VRRenderer::RenderBSPBackfaces(struct model_s* model)
 {
+	// Buggy as heck, also not really needed anymore since we properly prevent players from sticking their heads through walls
+	/*
 	for (int i = 0; i < model->nummodelsurfaces; i++)
 	{
 		int surfaceIndex = model->firstmodelsurface + i;
@@ -485,6 +487,7 @@ void VRRenderer::RenderBSPBackfaces(struct model_s* model)
 			glEnd();
 		}
 	}
+	*/
 }
 
 
