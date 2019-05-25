@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <memory.h>
 
-int CL_ButtonBits( int );
+unsigned short CL_ButtonBits( bool );
 void CL_ResetButtonBits( int bits );
 
 extern float v_idlescale;

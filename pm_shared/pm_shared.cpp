@@ -1993,8 +1993,9 @@ void PM_LadderMove(physent_t *pLadder)
 	pmove->PM_TraceModel(pLadder, pmove->origin, ladderCenter, &trace);
 	if (trace.fraction != 1.0)
 	{
-		float forward = 0, right = 0;
+		float forward = 0, right = 0, up = 0;
 		vec3_t vpn, v_right;
+		vec3_t v_up{ 0.f, 0.f, 1.f };
 
 		AngleVectors(pmove->angles, vpn, v_right, NULL);
 		if (pmove->cmd.buttons & IN_BACK)
@@ -2005,6 +2006,10 @@ void PM_LadderMove(physent_t *pLadder)
 			right -= MAX_CLIMB_SPEED;
 		if (pmove->cmd.buttons & IN_MOVERIGHT)
 			right += MAX_CLIMB_SPEED;
+		if (pmove->cmd.buttons_ex & X_IN_UP)
+			up += MAX_CLIMB_SPEED;
+		if (pmove->cmd.buttons_ex & X_IN_DOWN)
+			up -= MAX_CLIMB_SPEED;
 
 		if (pmove->cmd.buttons & IN_JUMP)
 		{
@@ -2013,7 +2018,7 @@ void PM_LadderMove(physent_t *pLadder)
 		}
 		else
 		{
-			if (forward != 0 || right != 0)
+			if (forward != 0 || right != 0 || up != 0)
 			{
 				vec3_t velocity, perp, cross, lateral, tmp;
 				float normal;
@@ -2024,6 +2029,7 @@ void PM_LadderMove(physent_t *pLadder)
 				//Vector velocity = (forward * gpGlobals->v_forward) + (right * gpGlobals->v_right);
 				VectorScale(vpn, forward, velocity);
 				VectorMA(velocity, right, v_right, velocity);
+				VectorMA(velocity, up, v_up, velocity);
 
 
 				// Perpendicular in the ladder plane

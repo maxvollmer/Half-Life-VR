@@ -53,7 +53,7 @@ void IN_Move ( float frametime, usercmd_t *cmd);
 void IN_Shutdown( void );
 void V_Init( void );
 void VectorAngles( const float *forward, float *angles );
-int CL_ButtonBits( int );
+unsigned short CL_ButtonBits( bool );
 
 // xxx need client dll function to get and clear impuse
 
@@ -647,11 +647,6 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 		if (fabs(g_vrInput.analogsidemove) > EPSILON) cmd->sidemove += g_vrInput.analogsidemove * cl_sidespeed->value;
 		if (fabs(g_vrInput.analogupmove) > EPSILON) cmd->upmove += g_vrInput.analogupmove * cl_upspeed->value;
 
-		// Clear analog VR input data
-		g_vrInput.analogforward = 0.f;
-		g_vrInput.analogsidemove = 0.f;
-		g_vrInput.analogupmove = 0.f;
-
 		// clip to maxspeed
 		spd = gEngfuncs.GetClientMaxspeed();
 		if ( spd != 0.0 )
@@ -679,6 +674,20 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 	//
 	cmd->buttons = CL_ButtonBits( 1 );
 
+	if (g_vrInput.analogforward > EPSILON) cmd->buttons |= IN_FORWARD;
+	if (g_vrInput.analogforward < -EPSILON) cmd->buttons |= IN_BACK;
+	if (g_vrInput.analogsidemove > EPSILON) cmd->buttons |= IN_MOVELEFT;
+	if (g_vrInput.analogsidemove < -EPSILON) cmd->buttons |= IN_MOVELEFT;
+	if (g_vrInput.analogupmove > EPSILON) cmd->buttons_ex |= X_IN_UP;
+	if (g_vrInput.analogupmove < -EPSILON) cmd->buttons_ex |= X_IN_DOWN;
+	if (g_vrInput.analogupmove > EPSILON) cmd->buttons_ex |= X_IN_UP;
+	if (g_vrInput.analogupmove < -EPSILON) cmd->buttons_ex |= X_IN_DOWN;
+
+	if (in_up.state & 3) cmd->buttons_ex |= X_IN_UP;
+	if (in_down.state & 3) cmd->buttons_ex |= X_IN_DOWN;
+	in_up.state &= ~2;
+	in_down.state &= ~2;
+
 	// If they're in a modal dialog, ignore the attack button.
 	if(GetClientVoiceMgr()->IsInSquelchMode())
 		cmd->buttons &= ~IN_ATTACK;
@@ -693,6 +702,12 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 	// (see line 2937 in pm_shared.cpp)
 	// - Max Vollmer, 2019-04-11
 	VectorCopy(gVRRenderer.GetMovementAngles(), cmd->viewangles);
+	cmd->viewangles.x = -cmd->viewangles.x;
+
+	// Clear analog VR input data
+	g_vrInput.analogforward = 0.f;
+	g_vrInput.analogsidemove = 0.f;
+	g_vrInput.analogupmove = 0.f;
 }
 
 /*
@@ -715,9 +730,9 @@ Returns appropriate button info for keyboard and mouse state
 Set bResetState to 1 to clear old state info
 ============
 */
-int CL_ButtonBits( int bResetState )
+unsigned short CL_ButtonBits( bool bResetState )
 {
-	int bits = 0;
+	unsigned short bits = 0;
 
 	if ( in_attack.state & 3 )
 	{

@@ -34,7 +34,8 @@ typedef struct usercmd_s
 	byte	weaponselect;	// Current weapon id
 
 // Experimental player impact stuff.
-	int		impact_index;
+	//int		impact_index;
+	unsigned int buttons_ex; // renamed to "buttons_ex" and used now for adding more buttons in VR mode
 	vec3_t	impact_position;
 } usercmd_t;
 
