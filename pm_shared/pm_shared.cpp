@@ -2465,7 +2465,7 @@ void PM_YesClip(physent_t *pLadder)
 
 	// If we are swimming in the water, see if we are nudging against a place we can jump up out
 	//  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
-	if (pmove->waterlevel >= 1)
+	if (pmove->waterlevel > 1)
 	{
 		if (pmove->waterlevel == 2)
 		{
