@@ -132,7 +132,7 @@ int CHudBattery::Draw(float flTime)
 	if (rc.bottom > rc.top)
 	{
 		SPR_Set(m_hSprite2, r, g, b );
-		SPR_DrawAdditive( 0, x, y - iOffset + (rc.top - m_prc2->top), &rc);
+		SPR_DrawAdditive( 0, x, y - iOffset, &rc);
 	}
 
 	x += (m_prc1->right - m_prc1->left);
