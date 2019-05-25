@@ -68,7 +68,7 @@ class CTripmineGrenade : public CGrenade
 	float		m_flBeamLength;
 
 	EHANDLE		m_hOwner;
-	CBeam		*m_pBeam;
+	EHANDLE		m_hBeam;
 	Vector		m_posOwner;
 	Vector		m_angleOwner;
 	edict_t		*m_pRealOwner;// tracelines don't hit PEV->OWNER, which means a player couldn't detonate their own trip mine, so we store the owner here.
@@ -83,7 +83,7 @@ TYPEDESCRIPTION	CTripmineGrenade::m_SaveData[] =
 	DEFINE_FIELD( CTripmineGrenade, m_vecEnd, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CTripmineGrenade, m_flBeamLength, FIELD_FLOAT ),
 	DEFINE_FIELD( CTripmineGrenade, m_hOwner, FIELD_EHANDLE ),
-	DEFINE_FIELD( CTripmineGrenade, m_pBeam, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CTripmineGrenade, m_hBeam, FIELD_EHANDLE),
 	DEFINE_FIELD( CTripmineGrenade, m_posOwner, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CTripmineGrenade, m_angleOwner, FIELD_VECTOR ),
 	DEFINE_FIELD( CTripmineGrenade, m_pRealOwner, FIELD_EDICT ),
@@ -230,35 +230,32 @@ void CTripmineGrenade :: PowerupThink( void  )
 
 void CTripmineGrenade :: KillBeam( void )
 {
-	if ( m_pBeam )
+	if (m_hBeam)
 	{
-		UTIL_Remove( m_pBeam );
-		m_pBeam = NULL;
+		UTIL_Remove(m_hBeam);
+		m_hBeam = NULL;
 	}
 }
 
 
 void CTripmineGrenade :: MakeBeam( void )
 {
+	Vector vecBeamStart = pev->origin + m_vecDir * 2.f;
+
 	TraceResult tr;
-
-	// ALERT( at_console, "serverflags %f\n", gpGlobals->serverflags );
-
-	UTIL_TraceLine( pev->origin + m_vecDir, m_vecEnd, dont_ignore_monsters, ENT( pev ), &tr );
+	UTIL_TraceLine(vecBeamStart, m_vecEnd, dont_ignore_monsters, ENT( pev ), &tr );
 
 	m_flBeamLength = tr.flFraction;
 
-	// set to follow laser spot
-	SetThink(&CTripmineGrenade:: BeamBreakThink );
+	CBeam* pBeam = CBeam::BeamCreate(g_pModelNameLaser, 6);
+	pBeam->PointsInit(vecBeamStart, tr.vecEndPos);
+	pBeam->SetColor(0, 214, 198);
+	pBeam->SetScrollRate(255);
+	pBeam->SetBrightness(64);
+	m_hBeam = pBeam;
+
+	SetThink(&CTripmineGrenade::BeamBreakThink);
 	pev->nextthink = gpGlobals->time + 0.1;
-
-	Vector vecTmpEnd = pev->origin + m_vecDir * 2048 * m_flBeamLength;
-
-	m_pBeam = CBeam::BeamCreate(g_pModelNameLaser, 6);
-	m_pBeam->PointEntInit(vecTmpEnd, entindex());
-	m_pBeam->SetColor(0, 214, 198);
-	m_pBeam->SetScrollRate(255);
-	m_pBeam->SetBrightness(64);
 }
 
 
@@ -266,16 +263,16 @@ void CTripmineGrenade :: BeamBreakThink( void  )
 {
 	BOOL bBlowup = 0;
 
-	TraceResult tr;
+	Vector vecBeamStart = pev->origin + m_vecDir * 2.f;
 
-	// HACKHACK Set simple box using this really nice global!
+	TraceResult tr;
 	gpGlobals->trace_flags = FTRACE_SIMPLEBOX;
-	UTIL_TraceLine( pev->origin + m_vecDir, m_vecEnd, dont_ignore_monsters, ENT( pev ), &tr );
+	UTIL_TraceLine(vecBeamStart, m_vecEnd, dont_ignore_monsters, ENT( pev ), &tr );
 
 	// ALERT( at_console, "%f : %f\n", tr.flFraction, m_flBeamLength );
 
 	// respawn detect. 
-	if ( !m_pBeam )
+	if ( !m_hBeam )
 	{
 		MakeBeam( );
 		if ( tr.pHit )
