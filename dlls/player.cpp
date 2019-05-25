@@ -4827,20 +4827,29 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 	vr_hmdLastUpdateServertime = gpGlobals->time;
 
 	// Check height of headset and (un)set player in duck mode, depending on height
-	float flDuckHeightDelta = VEC_HULL_MIN.z - VEC_DUCK_HULL_MIN.z;
-	if (!(pev->flags & FL_DUCKING) && hmdOffset.z < VR_DUCK_START_HEIGHT)
+	if (!FBitSet(pev->button, IN_DUCK) && CVAR_GET_FLOAT("vr_rl_ducking_enabled") != 0.f)
 	{
-		// ALERT(at_console, "START DUCKING!\n");
-		pev->flags |= FL_DUCKING;
-		UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-		pev->origin.z = pev->origin.z + flDuckHeightDelta;
-	}
-	else if ((pev->flags & FL_DUCKING) && hmdOffset.z > VR_DUCK_STOP_HEIGHT)
-	{
-		// ALERT(at_console, "STOP DUCKING!\n");
-		pev->flags &= ~FL_DUCKING;
-		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
-		pev->origin.z = pev->origin.z - flDuckHeightDelta;
+		float flDuckHeight = CVAR_GET_FLOAT("vr_rl_duck_height");
+		if (flDuckHeight <= 0.f)
+		{
+			flDuckHeight = VEC_DUCK_HULL_SIZE.z;
+		}
+		float flCurrentHeight = hmdOffset.z + ((pev->mins.z + pev->maxs.z) * 0.5f);
+
+		if (!(pev->flags & FL_DUCKING) && flCurrentHeight <= flDuckHeight)
+		{
+			// ALERT(at_console, "START DUCKING!\n");
+			pev->flags |= FL_DUCKING;
+			UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			pev->origin.z = pev->origin.z + VEC_HULL_MIN.z - VEC_DUCK_HULL_MIN.z;
+		}
+		else if ((pev->flags & FL_DUCKING) && flCurrentHeight > flDuckHeight + 10.f)
+		{
+			// ALERT(at_console, "STOP DUCKING!\n");
+			pev->flags &= ~FL_DUCKING;
+			UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
+			pev->origin.z = pev->origin.z + VEC_DUCK_HULL_MIN.z - VEC_HULL_MIN.z;
+		}
 	}
 
 	// First get origin where the client thinks it is:

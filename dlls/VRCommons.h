@@ -2,9 +2,6 @@
 
 // Common defines and types for VR - Max Vollmer - 2019-04-07
 
-#define VR_DUCK_START_HEIGHT 0
-#define VR_DUCK_STOP_HEIGHT 20
-
 #include <map>
 #include "vector.h"
 
