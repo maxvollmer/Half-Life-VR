@@ -300,6 +300,7 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_hud_ammo", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_health", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_flashlight", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_hud_damage_indicator", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_size", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_textscale", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hd_textures_enabled", "0", FCVAR_ARCHIVE);

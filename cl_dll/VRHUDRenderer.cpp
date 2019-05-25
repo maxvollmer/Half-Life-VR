@@ -172,6 +172,8 @@ bool ShouldRenderHUD(const VRHUDRenderType hudRenderType)
 		return CVAR_GET_FLOAT("vr_hud_health") != 0.f;
 	case VRHUDRenderType::FLASHLIGHT:
 		return CVAR_GET_FLOAT("vr_hud_flashlight") != 0.f;
+	case VRHUDRenderType::DAMAGEDECALS:
+		return CVAR_GET_FLOAT("vr_hud_damage_indicator") != 0.f;
 	case VRHUDRenderType::TRAINCONTROLS:
 		return true;
 	default:
@@ -318,6 +320,7 @@ bool VRRenderer::GetHUDSpriteOriginAndOrientation(const VRHUDRenderType hudRende
 		return GetHUDAmmoOriginAndOrientation(origin, forward, right, up);
 	case VRHUDRenderType::HEALTH:
 	case VRHUDRenderType::BATTERY:
+	case VRHUDRenderType::DAMAGEDECALS:
 		return GetHUDHealthOriginAndOrientation(origin, forward, right, up);
 	case VRHUDRenderType::FLASHLIGHT:
 		return GetHUDFlashlightOriginAndOrientation(origin, forward, right, up);
@@ -508,6 +511,10 @@ void VRRenderer::GetStartingPosForHUDRenderType(const VRHUDRenderType hudRenderT
 	case VRHUDRenderType::BATTERY:
 		hudStartPositionUpOffset = VR_HUD_SPRITE_OFFSET_STEPSIZE;
 		hudStartPositionRightOffset = 2 * VR_HUD_SPRITE_OFFSET_STEPSIZE;
+		break;
+	case VRHUDRenderType::DAMAGEDECALS:
+		hudStartPositionUpOffset = 1.5f * VR_HUD_SPRITE_OFFSET_STEPSIZE;
+		hudStartPositionRightOffset = -1.5f * VR_HUD_SPRITE_OFFSET_STEPSIZE;
 		break;
 	case VRHUDRenderType::FLASHLIGHT:
 		hudStartPositionUpOffset = VR_HUD_SPRITE_OFFSET_STEPSIZE * 2;
