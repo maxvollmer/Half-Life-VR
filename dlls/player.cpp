@@ -4848,7 +4848,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 	Vector newOrigin{ hmdPosition.x, hmdPosition.y, clientOrigin.z };
 
 	// Get delta from last offset
-	const Vector hmdOffsetDelta = vr_lastHMDOffset - hmdOffset;
+	const Vector hmdOffsetDelta = vr_lastHMDOffset + hmdYawOffsetDelta - hmdOffset;
 	const Vector hmdPredictPosition{ hmdPosition + (hmdOffsetDelta.Normalize() * -18.0f) };
 	int hmdPositionContent = UTIL_PointContents(hmdPosition, true);
 	int hmdPredictPositionContent = UTIL_PointContents(hmdPredictPosition, true);
