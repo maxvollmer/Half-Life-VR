@@ -123,6 +123,9 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "Jump", &VR::Input::Movement::HandleJump);
 		RegisterAction("input", "Crouch", &VR::Input::Movement::HandleCrouch);
 		RegisterAction("input", "LongJump", &VR::Input::Movement::HandleLongJump);
+		RegisterAction("input", "AnalogJump", &VR::Input::Movement::HandleAnalogJump);
+		RegisterAction("input", "AnalogCrouch", &VR::Input::Movement::HandleAnalogCrouch);
+		RegisterAction("input", "AnalogLongJump", &VR::Input::Movement::HandleAnalogLongJump);
 		RegisterAction("input", "MoveForwardBackward", &VR::Input::Movement::HandleMoveForwardBackward);
 		RegisterAction("input", "MoveSideways", &VR::Input::Movement::HandleMoveSideways);
 		RegisterAction("input", "MoveUpDown", &VR::Input::Movement::HandleMoveUpDown);

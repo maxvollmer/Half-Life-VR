@@ -146,6 +146,36 @@ namespace VR
 			}
 		}
 
+		void Movement::HandleAnalogJump(const vr::InputAnalogActionData_t& data, const std::string& action)
+		{
+			if (data.bActive && fabs(data.deltaX) > EPSILON)
+			{
+				if (fabs(data.x) > EPSILON)
+					ClientCmd("+jump");
+				else
+					ClientCmd("-jump");
+			}
+		}
+
+		void Movement::HandleAnalogCrouch(const vr::InputAnalogActionData_t& data, const std::string& action)
+		{
+			if (data.bActive && fabs(data.deltaX) > EPSILON)
+			{
+				if (fabs(data.x) > EPSILON)
+					ClientCmd("+duck");
+				else
+					ClientCmd("-duck");
+			}
+		}
+
+		void Movement::HandleAnalogLongJump(const vr::InputAnalogActionData_t& data, const std::string& action)
+		{
+			if (data.bActive && fabs(data.x) > EPSILON)
+			{
+				ClientCmd("vr_lngjump");
+			}
+		}
+
 		void TryAddInAnalogSpeed(float& target, const float& inputValue, const char* cvar_inverted)
 		{
 			if (fabs(inputValue) > EPSILON)

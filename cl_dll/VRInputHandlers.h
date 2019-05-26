@@ -26,6 +26,9 @@ namespace VR
 			static void HandleJump(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleCrouch(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleLongJump(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleAnalogJump(const vr::InputAnalogActionData_t& data, const std::string& action);
+			static void HandleAnalogCrouch(const vr::InputAnalogActionData_t& data, const std::string& action);
+			static void HandleAnalogLongJump(const vr::InputAnalogActionData_t& data, const std::string& action);
 			static void HandleMoveForwardBackward(const vr::InputAnalogActionData_t& data, const std::string& action);
 			static void HandleMoveSideways(const vr::InputAnalogActionData_t& data, const std::string& action);
 			static void HandleMoveUpDown(const vr::InputAnalogActionData_t& data, const std::string& action);
