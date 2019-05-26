@@ -172,6 +172,17 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		pparams->onlyClientDraw = 1;
 		m_fIsOnlyClientDraw = true;
 	}
+
+	// Override vieworg if we have a viewentity (trigger_camera)
+	if (pparams->viewentity > pparams->maxclients)
+	{
+		cl_entity_t *viewentity;
+		viewentity = gEngfuncs.GetEntityByIndex(pparams->viewentity);
+		if (viewentity)
+		{
+			VectorCopy(viewentity->origin, pparams->vieworg);
+		}
+	}
 }
 
 void VRRenderer::DrawNormal()
