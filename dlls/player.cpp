@@ -1349,55 +1349,33 @@ void CBasePlayer::PlayerDeathThink(void)
 
 	if (pev->deadflag == DEAD_DYING)
 		pev->deadflag = DEAD_DEAD;
-	
+
 	StopAnimation();
 
 	pev->effects |= EF_NOINTERP;
 	pev->framerate = 0.0;
 
-	BOOL fAnyButtonDown = (pev->button & ~IN_SCORE );
-	
 	// wait for all buttons released
 	if (pev->deadflag == DEAD_DEAD)
 	{
-		if (fAnyButtonDown)
-			return;
-
-		if ( g_pGameRules->FPlayerCanRespawn( this ) )
-		{
-			m_fDeadTime = gpGlobals->time;
-			pev->deadflag = DEAD_RESPAWNABLE;
-		}
-		
+		pev->button = 0;
+		m_fDeadTime = gpGlobals->time;
+		pev->deadflag = DEAD_RESPAWNABLE;
 		return;
 	}
-
-// if the player has been dead for one second longer than allowed by forcerespawn, 
-// forcerespawn isn't on. Send the player off to an intermission camera until they 
-// choose to respawn.
-	if ( g_pGameRules->IsMultiplayer() && ( gpGlobals->time > (m_fDeadTime + 6) ) && !(m_afPhysicsFlags & PFLAG_OBSERVER) )
-	{
-		// go to dead camera. 
-		StartDeathCam();
-	}
-
-	// wait for any button down,  or mp_forcerespawn is set and the respawn time is up
-	// if (!fAnyButtonDown && !(g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && (gpGlobals->time > (m_fDeadTime + 5))) )
-	//	return;
 
 	// auto-respawn after 3 seconds in VR (respawn immediately if any button down)
-	if (!fAnyButtonDown && gpGlobals->time < (m_fDeadTime + 3.f))
+	BOOL fAnyButtonDown = (pev->button & ~IN_SCORE);
+	if (fAnyButtonDown || gpGlobals->time > (m_fDeadTime + 3.f))
 	{
-		return;
+		pev->button = 0;
+		m_iRespawnFrames = 0;
+
+		//ALERT(at_console, "Respawn\n");
+
+		respawn(pev, !(m_afPhysicsFlags & PFLAG_OBSERVER));// don't copy a corpse if we're in deathcam.
+		pev->nextthink = -1;
 	}
-
-	pev->button = 0;
-	m_iRespawnFrames = 0;
-
-	//ALERT(at_console, "Respawn\n");
-
-	respawn(pev, !(m_afPhysicsFlags & PFLAG_OBSERVER) );// don't copy a corpse if we're in deathcam.
-	pev->nextthink = -1;
 }
 
 //=========================================================

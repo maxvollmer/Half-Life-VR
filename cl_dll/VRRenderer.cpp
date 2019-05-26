@@ -102,6 +102,11 @@ void VRRenderer::Frame(double time)
 		CaptureCurrentScreenToTexture(vrHelper->GetVRGLMenuTexture());
 		m_wasMenuJustRendered = false;
 	}
+
+	if (IsDeadInGame())
+	{
+
+	}
 }
 
 void VRRenderer::UpdateGameRenderState()
@@ -501,9 +506,18 @@ void VRRenderer::EnableDepthTest()
 	glDepthRange(0, 1);
 }
 
+bool VRRenderer::IsDeadInGame()
+{
+	return gEngfuncs.pfnGetLevelName() != 0
+		&& gEngfuncs.pfnGetLevelName()[0] != '\0'
+		&& gEngfuncs.GetMaxClients() > 0
+		&& CL_IsDead();
+}
+
 bool VRRenderer::IsInGame()
 {
 	return m_isInGame
+		&& gEngfuncs.pfnGetLevelName() != 0
 		&& gEngfuncs.pfnGetLevelName()[0] != '\0'
 		&& gEngfuncs.GetMaxClients() > 0
 		&& !CL_IsDead()

@@ -73,6 +73,7 @@ public:
 	Vector GetWeaponPosition();
 	Vector GetWeaponAngles();
 
+	bool IsDeadInGame();
 	bool IsInGame();
 	struct cl_entity_s* SaveGetLocalPlayer();
 
