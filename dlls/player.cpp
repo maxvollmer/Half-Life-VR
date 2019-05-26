@@ -899,6 +899,9 @@ entvars_t *g_pevLastInflictor;  // Set in combat.cpp.  Used to pass the damage i
 
 void CBasePlayer::Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
+	m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
+	pev->flags &= ~FL_BARNACLED;
+
 	// Debug death console message - Max Vollmer, 2019-04-13
 	if (pevAttacker)
 	{
@@ -2794,8 +2797,9 @@ void CBasePlayer::Spawn( void )
 	//pev->movetype		= MOVETYPE_WALK;
 	pev->movetype		= MOVETYPE_NOCLIP;
 	pev->max_health		= pev->health;
-	pev->flags		   &= FL_PROXY;	// keep proxy flag sey by engine
-	pev->flags		   |= FL_CLIENT;
+	pev->flags			&= FL_PROXY;	// keep proxy flag sey by engine
+	pev->flags			|= FL_CLIENT;
+	pev->flags			&= ~FL_BARNACLED;
 	pev->air_finished	= gpGlobals->time + 12;
 	pev->dmg			= 2;				// initial water damage
 	pev->effects		= 0;
@@ -4239,6 +4243,7 @@ void CBasePlayer :: UpdateClientData( void )
 BOOL CBasePlayer :: FBecomeProne ( void )
 {
 	m_afPhysicsFlags |= PFLAG_ONBARNACLE;
+	pev->flags |= FL_BARNACLED;
 	return TRUE;
 }
 
@@ -4249,7 +4254,7 @@ BOOL CBasePlayer :: FBecomeProne ( void )
 //=========================================================
 void CBasePlayer :: BarnacleVictimBitten ( entvars_t *pevBarnacle )
 {
-	TakeDamage ( pevBarnacle, pevBarnacle, pev->health + pev->armorvalue, DMG_SLASH | DMG_ALWAYSGIB );
+	TakeDamage(pevBarnacle, pevBarnacle, pev->health + pev->armorvalue, DMG_SLASH | DMG_ALWAYSGIB);
 }
 
 //=========================================================
@@ -4259,6 +4264,7 @@ void CBasePlayer :: BarnacleVictimBitten ( entvars_t *pevBarnacle )
 void CBasePlayer :: BarnacleVictimReleased ( void )
 {
 	m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
+	pev->flags &= ~FL_BARNACLED;
 }
 
 

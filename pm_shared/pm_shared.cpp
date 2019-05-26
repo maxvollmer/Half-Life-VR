@@ -1360,14 +1360,14 @@ void PM_WaterMove (void)
 
 	float speed, newspeed, addspeed, accelspeed;
 
-//
-// user intentions
-//
-	for (i=0 ; i<3 ; i++)
-		wishvel[i] = pmove->forward[i]*pmove->cmd.forwardmove + pmove->right[i]*pmove->cmd.sidemove;
+	// user intentions
+	for (i = 0; i < 3; i++)
+	{
+		wishvel[i] = pmove->forward[i] * pmove->cmd.forwardmove + pmove->right[i] * pmove->cmd.sidemove;
+	}
 
 	// Sinking after no other movement occurs
-	if (!pmove->cmd.forwardmove && !pmove->cmd.sidemove && !pmove->cmd.upmove)
+	if (!pmove->cmd.forwardmove && !pmove->cmd.sidemove && !pmove->cmd.upmove && !(pmove->oldbuttons & (IN_JUMP|IN_DUCK)))
 	{
 		if (IsInWaterAndIsGravityDisabled())
 		{
@@ -1378,9 +1378,18 @@ void PM_WaterMove (void)
 			wishvel[2] -= 60;	// drift towards bottom
 		}
 	}
-	else  
+	else
 	{
-		wishvel[2] += pmove->cmd.upmove;	// Go straight up by upmove amount.
+		// Go straight up by upmove amount.
+		wishvel[2] += pmove->cmd.upmove;
+		if (pmove->oldbuttons & IN_JUMP)
+		{
+			wishvel[2] += 320.f;
+		}
+		if (pmove->oldbuttons & IN_DUCK)
+		{
+			wishvel[2] -= 320.f;
+		}
 	}
 
 	// Copy it over and determine speed
@@ -2252,7 +2261,8 @@ void PM_Physics_Toss()
 // add gravity
 	if ( pmove->movetype != MOVETYPE_FLY &&
 		 pmove->movetype != MOVETYPE_BOUNCEMISSILE &&
-		 pmove->movetype != MOVETYPE_FLYMISSILE )
+		 pmove->movetype != MOVETYPE_FLYMISSILE &&
+		 !(pmove->flags & FL_BARNACLED))
 		PM_AddGravity ();
 
 // move origin
@@ -2439,12 +2449,12 @@ Moved from PM_Move() switch statement for MOVETYPE_WALK - Max Vollmer, 2018-04-0
 void PM_YesClip(physent_t *pLadder)
 {
 	// No gravity in water - Max Vollmer, 2018-02-11
-	if (IsInWaterAndIsGravityDisabled())
+	if (IsInWaterAndIsGravityDisabled() || (pmove->flags & FL_BARNACLED))
 	{
 		pmove->velocity[2] = max(0, pmove->velocity[2]);
 	}
 
-	if (!PM_InWater())
+	if (!PM_InWater() && !(pmove->flags & FL_BARNACLED))
 	{
 		PM_AddCorrectGravity();
 	}
@@ -2549,7 +2559,7 @@ void PM_YesClip(physent_t *pLadder)
 		PM_CheckFalling();
 	}
 
-	if (IsInWaterAndIsGravityDisabled())
+	if (IsInWaterAndIsGravityDisabled() || (pmove->flags & FL_BARNACLED))
 	{
 		pmove->velocity[2] = max(0, pmove->velocity[2]);
 	}

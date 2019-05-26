@@ -184,9 +184,21 @@ void CBarnacle :: BarnacleThink ( void )
 			m_flAltitude -= BARNACLE_PULL_SPEED;
 			vecNewEnemyOrigin.z += BARNACLE_PULL_SPEED;
 
-			if ( fabs( pev->origin.z - ( vecNewEnemyOrigin.z + m_hEnemy->pev->view_ofs.z - 8 ) ) < BARNACLE_BODY_HEIGHT )
+			float eyeHeightOffset;
+			if (m_hEnemy->IsPlayer())
 			{
-		// prey has just been lifted into position ( if the victim origin + eye height + 8 is higher than the bottom of the barnacle, it is assumed that the head is within barnacle's body )
+				// RL crouching/ducking/lying down can put view offset so far down that barnacle doesn't detect the player correctly.
+				// So instead we simply use the player's bbox values, as they are aligned with the VR headset. - Max Vollmer, 2019-05-26
+				eyeHeightOffset = m_hEnemy->pev->maxs.z;
+			}
+			else
+			{
+				eyeHeightOffset = m_hEnemy->pev->view_ofs.z - 8;
+			}
+
+			if ( fabs( pev->origin.z - ( vecNewEnemyOrigin.z + eyeHeightOffset) ) < BARNACLE_BODY_HEIGHT )
+			{
+				// prey has just been lifted into position ( if the victim origin + eye height + 8 is higher than the bottom of the barnacle, it is assumed that the head is within barnacle's body )
 				m_fLiftingPrey = FALSE;
 
 				EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_bite3.wav", 1, ATTN_NORM );	
