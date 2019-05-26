@@ -34,6 +34,9 @@ public:
 	bool AddTouchedEntity(EHANDLE hEntity) const;
 	bool RemoveTouchedEntity(EHANDLE hEntity) const;
 
+	bool AddDraggedEntity(EHANDLE hEntity) const;
+	bool RemoveDraggedEntity(EHANDLE hEntity) const;
+
 	bool AddHitEntity(EHANDLE hEntity) const;
 	bool RemoveHitEntity(EHANDLE hEntity) const;
 
@@ -62,6 +65,7 @@ private:
 	int m_bboxModelSequence{ 0 };
 	mutable EHANDLE m_hModel;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_touchedEntities;
+	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_draggedEntities;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_hitEntities;
 };
 

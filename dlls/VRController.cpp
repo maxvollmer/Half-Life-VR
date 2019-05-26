@@ -180,6 +180,24 @@ bool VRController::RemoveTouchedEntity(EHANDLE hEntity) const
 	return true;
 }
 
+bool VRController::AddDraggedEntity(EHANDLE hEntity) const
+{
+	if (m_draggedEntities.count(hEntity) != 0)
+		return false;
+
+	m_draggedEntities.insert(hEntity);
+	return true;
+}
+
+bool VRController::RemoveDraggedEntity(EHANDLE hEntity) const
+{
+	if (m_draggedEntities.count(hEntity) == 0)
+		return false;
+
+	m_draggedEntities.erase(hEntity);
+	return true;
+}
+
 bool VRController::AddHitEntity(EHANDLE hEntity) const
 {
 	if (m_hitEntities.count(hEntity) != 0)

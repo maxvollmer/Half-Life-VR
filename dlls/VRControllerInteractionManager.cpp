@@ -228,6 +228,9 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		const bool isTouching = CheckIfEntityAndControllerTouch(hEntity, controller);
 		const bool didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
 
+		const bool isDragging = isTouching && controller.IsDragging();
+		const bool didDragChange = isDragging ? controller.AddDraggedEntity(hEntity) : controller.RemoveDraggedEntity(hEntity);
+
 		const bool isHitting = isTouching && controller.GetVelocity().Length() > GetMeleeSwingSpeed();
 		const bool didHitChange = isHitting ? controller.AddHitEntity(hEntity) : controller.RemoveHitEntity(hEntity);
 
@@ -239,7 +242,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 
 		if (HandleEasterEgg(pPlayer, hEntity, controller, isTouching, didTouchChange));	// easter egg first, obviously the most important
 		else if (HandleRetinaScanners(pPlayer, hEntity, controller, isTouching, didTouchChange));
-		else if (HandleButtons(pPlayer, hEntity, controller, isTouching, didTouchChange));
+		else if (HandleButtons(pPlayer, hEntity, controller, isTouching, didTouchChange, isDragging, didDragChange));
 		else if (HandleDoors(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleRechargers(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleTriggers(pPlayer, hEntity, controller, isTouching, didTouchChange));
@@ -399,34 +402,51 @@ bool VRControllerInteractionManager::HandleRetinaScanners(CBasePlayer *pPlayer, 
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isDragging, bool didDragChange)
 {
-	if (FClassnameIs(hEntity->pev, "func_button") || FClassnameIs(hEntity->pev, "func_rot_button"))
+	// Don't touch activate retina scanners
+	if (g_vrRetinaScannerButtons.count(hEntity) > 0)
+		return true;
+
+	if (FClassnameIs(hEntity->pev, "func_button"))
 	{
-		// Don't touch activate retina scanners
-		if (g_vrRetinaScannerButtons.count(hEntity) > 0)
-			return true;
-
-		// no activation of any buttons within 3 seconds of it spawning (fixes issues with the airlock levers near the tentacle)
-		if ((gpGlobals->time - hEntity->m_spawnTime) < 3.f)
-			return false;
-
 		if (isTouching)
 		{
-			if (didTouchChange && FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
-			{
-				hEntity->Touch(pPlayer);
-			}
 			if (didTouchChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
 			{
-				hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
+				if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
+				{
+					hEntity->Touch(pPlayer);
+				}
+				else
+				{
+					hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
+				}
+			}
+		}
+		return true;
+	}
+	else if (FClassnameIs(hEntity->pev, "func_rot_button"))
+	{
+		if (isDragging)
+		{
+			if (didDragChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
+			{
+				if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
+				{
+					hEntity->Touch(pPlayer);
+				}
+				else
+				{
+					hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
+				}
 			}
 		}
 		return true;
 	}
 	else if (FClassnameIs(hEntity->pev, "momentary_rot_button"))
 	{
-		if (isTouching)
+		if (isDragging)
 		{
 			hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
 		}
