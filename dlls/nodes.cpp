@@ -439,7 +439,7 @@ int	CGraph::HullIndex( const CBaseEntity *pEntity )
 
 	if ( pEntity->pev->mins == Vector( -12, -12, 0 ) )
 		return NODE_SMALL_HULL;
-	else if ( pEntity->pev->mins == VEC_HUMAN_HULL_MIN )
+	else if ( pEntity->pev->mins == VEC_HUMAN_NPC_HULL_MIN )
 		return NODE_HUMAN_HULL;
 	else if ( pEntity->pev->mins == Vector ( -32, -32, 0 ) )
 		return NODE_LARGE_HULL;
@@ -1448,7 +1448,7 @@ LINK_ENTITY_TO_CLASS( testhull, CTestHull );
 void CTestHull :: Spawn( entvars_t *pevMasterNode )
 {
 	SET_MODEL(ENT(pev), "models/player.mdl");
-	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	UTIL_SetSize(pev, VEC_HUMAN_NPC_HULL_MIN, VEC_HUMAN_NPC_HULL_MAX);
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
@@ -1794,7 +1794,7 @@ void CTestHull :: BuildNodeGraph( void )
 					UTIL_SetSize(pev, Vector(-12, -12, 0), Vector(12, 12, 24));
 					break;
 				case NODE_HUMAN_HULL:
-					UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
+					UTIL_SetSize(pev, VEC_HUMAN_NPC_HULL_MIN, VEC_HUMAN_NPC_HULL_MAX );
 					break;
 				case NODE_LARGE_HULL:
 					UTIL_SetSize(pev, Vector(-32, -32, 0), Vector(32, 32, 64));

@@ -101,7 +101,7 @@ void CGenericMonster :: Spawn()
 
 /*
 	if ( FStrEq( STRING(pev->model), "models/player.mdl" ) )
-		UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+		UTIL_SetSize(pev, VEC_HUMAN_NPC_HULL_MIN, VEC_HUMAN_NPC_HULL_MAX);
 	else
 		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
 */
@@ -109,7 +109,7 @@ void CGenericMonster :: Spawn()
 	if ( FStrEq( STRING(pev->model), "models/player.mdl" ) || FStrEq( STRING(pev->model), "models/holo.mdl" ) )
 		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
 	else
-		UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+		UTIL_SetSize(pev, VEC_HUMAN_NPC_HULL_MIN, VEC_HUMAN_NPC_HULL_MAX);
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;

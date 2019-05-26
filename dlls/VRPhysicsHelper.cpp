@@ -158,9 +158,9 @@ constexpr const rp3d::decimal RP3D_TO_HL = 50.;
 constexpr const rp3d::decimal HL_TO_RP3D = 1. / RP3D_TO_HL;
 
 
-constexpr const int PLAYER_WIDTH = DUCK_SIZE;
-constexpr const int PLAYER_WIDTH_SQUARED = PLAYER_WIDTH * PLAYER_WIDTH;
-constexpr const float MIN_DISTANCE = 240 + PLAYER_WIDTH;
+constexpr const int MAX_GAP_WIDTH = VEC_DUCK_HEIGHT;
+constexpr const int MAX_GAP_WIDTH_SQUARED = MAX_GAP_WIDTH * MAX_GAP_WIDTH;
+constexpr const float MIN_DISTANCE = 240 + MAX_GAP_WIDTH;
 
 constexpr const int PHYSICS_STEPS = 30;
 constexpr const int MAX_PHYSICS_STEPS = PHYSICS_STEPS * 1.5;
@@ -468,7 +468,7 @@ private:
 					// if there aren't also 2 other faces that do not touch each other (and those 2 will then produce the desired vertices for our gap triangles)
 					return false;
 				}
-				if (distanceSquared <= PLAYER_WIDTH_SQUARED)
+				if (distanceSquared <= MAX_GAP_WIDTH_SQUARED)
 				{
 					// Only take other point if it's not on the far side of the other face
 					if (DotProduct((vecOther - other.vecAnyPointInside).Normalize(), faceDir) < 0)
@@ -709,8 +709,8 @@ void FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(CollisionBody 
 						Vector checkVertex{ vertex - dir };
 						Vector checkVertexAfter{ vertexAfter + dir };
 
-						const Vector checkDir1 = CrossProduct(dir, plane.GetNormal()) * DUCK_SIZE;
-						const Vector checkDir2 = plane.GetNormal() * DUCK_SIZE;
+						const Vector checkDir1 = CrossProduct(dir, plane.GetNormal()) * MAX_GAP_WIDTH;
+						const Vector checkDir2 = plane.GetNormal() * MAX_GAP_WIDTH;
 
 						const Vector3 checkVertexInPhysSpace = HLVecToRP3DVec(checkVertex);
 						const Vector3 checkVertexAfterInPhysSpace = HLVecToRP3DVec(checkVertexAfter);

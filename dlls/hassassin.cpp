@@ -282,7 +282,7 @@ void CHAssassin :: Spawn()
 	Precache( );
 
 	SET_MODEL(ENT(pev), "models/hassassin.mdl");
-	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	UTIL_SetSize(pev, VEC_HUMAN_NPC_HULL_MIN, VEC_HUMAN_NPC_HULL_MAX);
 
 	pev->scale = CVAR_GET_FLOAT("vr_npcscale");
 	if (pev->scale <= 0.f)

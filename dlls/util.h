@@ -456,20 +456,18 @@ extern DLL_GLOBAL int			g_Language;
 #define PUSH_BLOCK_ONLY_X	1
 #define PUSH_BLOCK_ONLY_Y	2
 
-#define VEC_HULL_MIN		Vector(-16, -16, -36)
-#define VEC_HULL_MAX		Vector( 16,  16,  36)
-#define VEC_HUMAN_HULL_MIN	Vector( -16, -16, 0 )
-#define VEC_HUMAN_HULL_MAX	Vector( 16, 16, 72 )
+#define VEC_HUMAN_NPC_HULL_MIN	Vector( -16, -16, 0 )
+#define VEC_HUMAN_NPC_HULL_MAX	Vector( 16, 16, 72 )
 
+#define VEC_HULL_MIN		Vector(-10, -10, -36)
+#define VEC_HULL_MAX		Vector( 10,  10,  36)
 #define VEC_VIEW			Vector( 0, 0, 28 )
 
-#define VEC_DUCK_HULL_MIN	Vector(-16, -16, -18 )
-#define VEC_DUCK_HULL_MAX	Vector( 16,  16,  18)
-#define VEC_DUCK_HULL_SIZE	Vector( 32, 32, 36 )
-#define DUCK_SIZE			36
-#define DUCK_RADIUS			20
-#define VEC_DUCK_RADIUS		Vector(DUCK_RADIUS+MACHINE_EPSILON, DUCK_RADIUS+MACHINE_EPSILON, DUCK_RADIUS+MACHINE_EPSILON)
+#define VEC_DUCK_HULL_MIN	Vector(-10, -10, -18 )
+#define VEC_DUCK_HULL_MAX	Vector( 10,  10,  18)
 #define VEC_DUCK_VIEW		Vector( 0, 0, 12 )
+#define VEC_DUCK_HULL_SIZE	Vector( 20, 20, 36 )
+#define VEC_DUCK_HEIGHT		36;
 
 #define SVC_TEMPENTITY		23
 #define SVC_INTERMISSION	30
