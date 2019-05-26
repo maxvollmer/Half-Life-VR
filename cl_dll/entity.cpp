@@ -7,6 +7,8 @@
 
 // Client side entity management functions
 
+#include <set>
+
 #include <memory.h>
 
 #include "hud.h"
@@ -599,6 +601,10 @@ void DLLEXPORT HUD_TempEntUpdate (
 	TEMPENTITY	*pTemp, *pnext, *pprev;
 	float		freq, gravity, gravitySlow, life, fastFreq;
 
+	// USed by StudioModelRenderer to filter out temp ents when applying scale (as scale is used as a timer here) - Max Vollmer, 2019-05-26
+	extern std::set<cl_entity_t*> g_curFrameTempEnts;
+	g_curFrameTempEnts.clear();
+
 	// Nothing to simulate
 	if ( !*ppTempEntActive )		
 		return;
@@ -627,7 +633,8 @@ void DLLEXPORT HUD_TempEntUpdate (
 		{
 			if ( !(pTemp->flags & FTENT_NOMODEL ) )
 			{
-				Callback_AddVisibleEntity( &pTemp->entity );
+				g_curFrameTempEnts.insert(&pTemp->entity);
+				Callback_AddVisibleEntity(&pTemp->entity);
 			}
 			pTemp = pTemp->next;
 		}

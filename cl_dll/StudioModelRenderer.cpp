@@ -9,6 +9,7 @@
 // routines for setting up to draw 3DStudio models
 
 #include <string>
+#include <set>
 
 #include "hud.h"
 #include "cl_util.h"
@@ -35,6 +36,11 @@
 
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;
+
+
+// Set by HUD_TempEntUpdate, used here to filter out temp ents when applying scale (as scale is used as a timer in HUD_TempEntUpdate) - Max Vollmer, 2019-05-26
+std::set<cl_entity_t*> g_curFrameTempEnts;
+
 
 /////////////////////
 // Implementation of CStudioModelRenderer.h
@@ -938,7 +944,7 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 	}
 
 	// Added studio model scaling - Max Vollmer, 2017-08-26
-	if (m_pCurrentEntity->curstate.scale > 0)
+	if (g_curFrameTempEnts.count(m_pCurrentEntity) == 0 && m_pCurrentEntity->curstate.scale > 0)
 	{
 		for (int j = 0; j < 3; j++)
 		{
