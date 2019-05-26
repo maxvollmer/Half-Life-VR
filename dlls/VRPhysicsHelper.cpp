@@ -930,9 +930,9 @@ bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& 
 		m_capsuleShape = nullptr;
 	}
 
-	m_capsuleShape = new CapsuleShape{ (radius + 2) * HL_TO_RP3D, (height + 2) * HL_TO_RP3D };
+	m_capsuleShape = new CapsuleShape{ (radius) * HL_TO_RP3D, (height) * HL_TO_RP3D };
 	m_capsuleProxyShape = m_capsuleBody->addCollisionShape(m_capsuleShape, rp3d::Transform::identity());
-	m_capsuleBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(capsuleCenter), rp3d::Matrix3x3::identity() });
+	m_capsuleBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(capsuleCenter), HLAnglesToRP3DTransform(Vector{ 90.f, 0.f, 0.f }) });
 
 	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DTransform(pModel->pev->angles) });
 

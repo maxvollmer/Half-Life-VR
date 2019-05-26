@@ -164,7 +164,7 @@ bool VRGroundEntityHandler::CheckIfPotentialGroundEntityForPlayer(CBaseEntity *p
 	return VRPhysicsHelper::Instance().ModelIntersectsCapsule(
 		pEntity,
 		m_pPlayer->pev->origin - Vector{ 0.f, 0.f, 8.f },
-		/*radius*/m_pPlayer->pev->size.x * 0.5f,
+		/*radius*/m_pPlayer->pev->size.x,
 		/*height*/m_pPlayer->pev->size.z + 8.f);
 }
 
