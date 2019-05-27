@@ -42,9 +42,6 @@ extern bool VRGlobalIsPointInsideEnt(const float* point, int ent);
 void PM_CheckWaterJump(void);
 void PM_CheckFalling(void);
 void PM_PlayWaterSounds(void);
-void PM_CheckWaterJump(void);
-void PM_CheckFalling(void);
-void PM_PlayWaterSounds(void);
 void PM_Jump(void);
 
 
