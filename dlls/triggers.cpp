@@ -1862,8 +1862,10 @@ public:
 	void Spawn( void );
 	void KeyValue( KeyValueData *pkvd );
 	void Touch( CBaseEntity *pOther );
+	void EXPORT DetectXenJumpPadThink(void);
 private:
-	bool IsXenJumpPad(const Vector &spawnAngles);
+	bool IsXenJumpPad();
+	Vector	m_spawnAngles;
 };
 LINK_ENTITY_TO_CLASS( trigger_push, CTriggerPush );
 
@@ -1879,12 +1881,12 @@ Pushes the player
 */
 
 // Detect xen jump pads and enable special VR controls - Max Vollmer, 2017-09-10
-bool CTriggerPush::IsXenJumpPad(const Vector &spawnAngles)
+bool CTriggerPush::IsXenJumpPad()
 {
 	if (pev->spawnflags == 0 &&
-		(spawnAngles.x == -90 || spawnAngles.x == 270) &&
-		spawnAngles.y == 0 &&
-		spawnAngles.z == 0 &&
+		(m_spawnAngles.x == -90 || m_spawnAngles.x == 270) &&
+		m_spawnAngles.y == 0 &&
+		m_spawnAngles.z == 0 &&
 		pev->speed > 1000)
 	{
 		Vector center = (pev->absmin + pev->absmax) * 0.5f;
@@ -1905,13 +1907,36 @@ bool CTriggerPush::IsXenJumpPad(const Vector &spawnAngles)
 	return false;
 }
 
+void CTriggerPush::DetectXenJumpPadThink()
+{
+	if (IsXenJumpPad())
+	{
+		// Find trigger_multiple
+		CBaseEntity *pTriggerMultiple = nullptr;
+		while ((pTriggerMultiple = UTIL_FindEntityByClassname(pTriggerMultiple, "trigger_multiple")) != nullptr)
+		{
+			if (UTIL_BBoxIntersectsBBox(pev->absmin, pev->absmax, pTriggerMultiple->pev->absmin, pTriggerMultiple->pev->absmax))
+			{
+				// Register the multi_manager for this xen mound at this position
+				gGlobalXenMounds.Add((pev->absmin + pev->absmax) * 0.5f, pTriggerMultiple->pev->target);
+
+				// Flag trigger_multiple and this trigger_push,
+				// so players can disable xen jump push in VR (then only controller beam will activate the mound)
+				m_isXenJumpTrigger = true;
+				((CBaseTrigger*)pTriggerMultiple)->m_isXenJumpTrigger = true;
+				return;
+			}
+		}
+	}
+	SetThink(NULL);
+}
 
 void CTriggerPush :: Spawn( )
 {
 	if (pev->angles == g_vecZero)
 		pev->angles.y = 360;
 
-	const Vector spawnAngles = pev->angles;
+	m_spawnAngles = pev->angles;
 
 	InitTrigger();
 
@@ -1925,25 +1950,9 @@ void CTriggerPush :: Spawn( )
 
 	UTIL_SetOrigin(pev, pev->origin);		// Link into the list
 
-	if (IsXenJumpPad(spawnAngles))
-	{
-		// Find trigger_multiple
-		CBaseEntity *pTriggerMultiple = nullptr;
-		while ((pTriggerMultiple = UTIL_FindEntityByClassname(pTriggerMultiple, "trigger_multiple")) != nullptr)
-		{
-			if (pTriggerMultiple->pev->size == pev->size && pTriggerMultiple->pev->absmin == pev->absmin && pTriggerMultiple->pev->absmax == pev->absmax)
-			{
-				// Register the multi_manager for this xen mound at this position
-				gGlobalXenMounds.Add((pev->absmin + pev->absmax) * 0.5f, pTriggerMultiple->pev->target);
-
-				// Flag trigger_multiple and this trigger_push,
-				// so players can disable xen jump push in VR (then only controller beam will activate the mound)
-				m_isXenJumpTrigger = true;
-				((CBaseTrigger*)pTriggerMultiple)->m_isXenJumpTrigger = true;
-				return;
-			}
-		}
-	}
+	// need to do this detection in a delayed think method, so that trigger_multiple is spawned
+	SetThink(&CTriggerPush::DetectXenJumpPadThink);
+	pev->nextthink = gpGlobals->time + 0.1;
 }
 
 
