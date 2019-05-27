@@ -4870,6 +4870,13 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 		//ALERT(at_console, "CONTENTS_EMPTY\n");
 	}
 
+	// push origin back so that view position is on border of player's bounding box
+	Vector viewDir2D;
+	UTIL_MakeVectorsPrivate(Vector{ 0.f, pev->angles.y, 0.f }, viewDir2D, nullptr, nullptr);
+	viewDir2D.z = 0.f;
+	viewDir2D = viewDir2D.Normalize();
+	newOrigin = newOrigin - viewDir2D * VEC_HULL_MAX.x;
+
 	// Check if groundPosition is in wall, if so: check if this is something we can step on
 	Vector groundPosition = newOrigin;
 	groundPosition.z += pev->mins.z;
