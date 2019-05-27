@@ -571,7 +571,7 @@ void CGamePlayerZone::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 			int			hullNumber;
 
 			hullNumber = human_hull;
-			if ( pPlayer->pev->flags & FL_DUCKING )
+			if ( pPlayer->pev->flags & (FL_DUCKING | FL_VR_DUCKING))
 			{
 				hullNumber = head_hull;
 			}

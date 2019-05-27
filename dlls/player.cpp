@@ -1081,7 +1081,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		return;
 
 	case ACT_RANGE_ATTACK1:
-		if ( FBitSet( pev->flags, FL_DUCKING ) )	// crouching
+		if ( FBitSet( pev->flags, (FL_DUCKING | FL_VR_DUCKING)) )	// crouching
 			strcpy( szAnim, "crouch_shoot_" );
 		else
 			strcpy( szAnim, "ref_shoot_" );
@@ -1109,7 +1109,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 	case ACT_WALK:
 		if (m_Activity != ACT_RANGE_ATTACK1 || m_fSequenceFinished)
 		{
-			if ( FBitSet( pev->flags, FL_DUCKING ) )	// crouching
+			if ( FBitSet( pev->flags, (FL_DUCKING | FL_VR_DUCKING)) )	// crouching
 				strcpy( szAnim, "crouch_aim_" );
 			else
 				strcpy( szAnim, "ref_aim_" );
@@ -1589,7 +1589,7 @@ void CBasePlayer::Jump()
 	SetAnimation(PLAYER_JUMP);
 
 	if (m_fLongJump &&
-		FBitSet(pev->flags, FL_DUCKING) && //		(pev->button & IN_DUCK) &&
+		FBitSet(pev->flags, (FL_DUCKING | FL_VR_DUCKING)) && //		(pev->button & IN_DUCK) &&
 		(pev->flDuckTime > 0) &&
 		pev->velocity.Length() > 50)
 	{
@@ -2846,7 +2846,7 @@ void CBasePlayer::Spawn( void )
     g_ulModelIndexPlayer = pev->modelindex;
 	pev->sequence		= LookupActivity( ACT_IDLE );
 
-	if ( FBitSet(pev->flags, FL_DUCKING) ) 
+	if ( FBitSet(pev->flags, (FL_DUCKING | FL_VR_DUCKING)) )
 		UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 	else
 		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
@@ -2998,7 +2998,7 @@ int CBasePlayer::Restore( CRestore &restore )
 
     g_ulModelIndexPlayer = pev->modelindex;
 
-	if ( FBitSet(pev->flags, FL_DUCKING) ) 
+	if ( FBitSet(pev->flags, (FL_DUCKING | FL_VR_DUCKING)) )
 	{
 		// Use the crouch HACK
 		//FixPlayerCrouchStuck( edict() );
@@ -4810,15 +4810,15 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 	vr_hmdLastUpdateServertime = gpGlobals->time;
 
 	// Check height of headset and (un)set player in duck mode, depending on height
-	if (!FBitSet(pev->button, IN_DUCK) && CVAR_GET_FLOAT("vr_rl_ducking_enabled") != 0.f)
+	if (!FBitSet(pev->button, IN_DUCK) && !FBitSet(pev->flags, FL_DUCKING) && CVAR_GET_FLOAT("vr_rl_ducking_enabled") != 0.f)
 	{
 		float flDuckHeightOffset = CVAR_GET_FLOAT("vr_rl_duck_height_offset");
-		if (FBitSet(pev->flags, FL_DUCKING))
+		if (FBitSet(pev->flags, FL_VR_DUCKING))
 		{
 			if (hmdOffset.z > (20.f + flDuckHeightOffset))
 			{
 				// ALERT(at_console, "STOP DUCKING!\n");
-				pev->flags &= ~FL_DUCKING;
+				pev->flags &= ~FL_VR_DUCKING;
 				UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
 				pev->origin.z = pev->origin.z + VEC_DUCK_HULL_MIN.z - VEC_HULL_MIN.z;
 			}
@@ -4828,7 +4828,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 			if (hmdOffset.z <= (0.f + flDuckHeightOffset))
 			{
 				// ALERT(at_console, "START DUCKING!\n");
-				pev->flags |= FL_DUCKING;
+				pev->flags |= FL_VR_DUCKING;
 				UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 				pev->origin.z = pev->origin.z + VEC_HULL_MIN.z - VEC_DUCK_HULL_MIN.z;
 			}
@@ -4923,8 +4923,9 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 	pev->view_ofs = hmdPosition - pev->origin;
 
 	// Update bounding box
+	/*
 	pev->maxs.z = max(0, pev->view_ofs.z) + 20;
-	if (pev->flags & FL_DUCKING)
+	if (pev->flags & (FL_DUCKING | FL_VR_DUCKING))
 	{
 		//pev->maxs.z = max(VEC_DUCK_HULL_MAX.z, pev->view_ofs.z + 20);
 		extern float *g_pEnginePlayerDuckMaxs;
@@ -4939,6 +4940,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 		if (pmove != nullptr) Vector(pev->maxs).CopyToArray(pmove->player_maxs[0]);
 	}
 	UTIL_SetSize(pev, pev->mins, pev->maxs);
+	*/
 }
 
 void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging)

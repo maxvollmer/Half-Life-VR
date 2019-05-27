@@ -62,6 +62,17 @@ playermove_t *pmove = NULL;
 
 #define MAX_CLIMB_SPEED	200
 
+#define TIME_TO_DUCK	0.4
+#define VEC_DUCK_HULL_MIN	-18
+#define VEC_DUCK_HULL_MAX	18
+#define VEC_DUCK_VIEW		12
+#define PM_DEAD_VIEWHEIGHT	-8
+#define MAX_CLIMB_SPEED	200
+#define STUCK_MOVEUP 1
+#define STUCK_MOVEDOWN -1
+#define VEC_HULL_MIN		-36
+#define VEC_HULL_MAX		36
+#define VEC_VIEW			28
 #define	STOP_EPSILON	0.1
 
 #define CTEXTURESMAX		512			// max number of textures loaded
@@ -499,7 +510,7 @@ void PM_UpdateStepSound( void )
 	fLadder = (pmove->movetype == MOVETYPE_FLY);// IsOnLadder();
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!	
-	if ( ( pmove->flags & FL_DUCKING) || fLadder )
+	if ( ( pmove->flags & (FL_DUCKING | FL_VR_DUCKING)) || fLadder )
 	{
 		velwalk = 60;		// These constants should be based on cl_movespeedkey * cl_forwardspeed somehow
 		velrun = 80;		// UNDONE: Move walking to server
@@ -599,7 +610,7 @@ void PM_UpdateStepSound( void )
 
 		// play the sound
 		// 35% volume if ducking
-		if ( pmove->flags & FL_DUCKING )
+		if ( pmove->flags & (FL_DUCKING | FL_VR_DUCKING))
 		{
 			fvol *= 0.35;
 		}
@@ -1928,17 +1939,80 @@ void PM_SpectatorMove (void)
 	}
 }
 
-/*
-int IsPlayerDucking()
+void PM_UnDuck(void)
 {
-	return pmove->view_ofs[2] < 0.f;
-}
-#define VEC_HULL_MIN_Z		-36
-#define VEC_DUCK_HULL_MIN_Z	-18
-*/
+	int i;
+	pmtrace_t trace;
+	vec3_t newOrigin;
 
-void PM_Duck( void )
+	VectorCopy(pmove->origin, newOrigin);
+
+	if (pmove->onground != -1)
+	{
+		for (i = 0; i < 3; i++)
+		{
+			newOrigin[i] += (pmove->player_mins[1][i] - pmove->player_mins[0][i]);
+		}
+	}
+
+	trace = pmove->PM_PlayerTrace(newOrigin, newOrigin, PM_NORMAL, -1);
+
+	if (!trace.startsolid)
+	{
+		pmove->usehull = 0;
+
+		// Oh, no, changing hulls stuck us into something, try unsticking downward first.
+		trace = pmove->PM_PlayerTrace(newOrigin, newOrigin, PM_NORMAL, -1);
+		if (trace.startsolid)
+		{
+			// See if we are stuck?  If so, stay ducked with the duck hull until we have a clear spot
+			//Con_Printf( "unstick got stuck\n" );
+			pmove->usehull = 1;
+			return;
+		}
+
+		pmove->flags &= ~FL_DUCKING;
+		pmove->bInDuck = false;
+		pmove->view_ofs[2] = VEC_VIEW;
+		pmove->flDuckTime = 0;
+
+		VectorCopy(newOrigin, pmove->origin);
+
+		// Recategorize position since ducking can change origin
+		PM_CategorizePosition();
+	}
+}
+
+void PM_FixPlayerCrouchStuck(int direction)
 {
+	int     hitent;
+	int i;
+	vec3_t test;
+
+	hitent = pmove->PM_TestPlayerPosition(pmove->origin, NULL);
+	if (hitent == -1)
+		return;
+
+	VectorCopy(pmove->origin, test);
+	for (i = 0; i < 36; i++)
+	{
+		pmove->origin[2] += direction;
+		hitent = pmove->PM_TestPlayerPosition(pmove->origin, NULL);
+		if (hitent == -1)
+			return;
+	}
+
+	VectorCopy(test, pmove->origin); // Failed
+}
+
+void PM_Duck(void)
+{
+	int buttonsChanged = (pmove->oldbuttons ^ pmove->cmd.buttons);	// These buttons have changed this frame
+	int nButtonPressed = buttonsChanged & pmove->cmd.buttons;		// The changed ones still down are "pressed"
+
+	int duckchange = buttonsChanged & IN_DUCK ? 1 : 0;
+	int duckpressed = nButtonPressed & IN_DUCK ? 1 : 0;
+
 	if (pmove->cmd.buttons & IN_DUCK)
 	{
 		pmove->oldbuttons |= IN_DUCK;
@@ -1948,21 +2022,72 @@ void PM_Duck( void )
 		pmove->oldbuttons &= ~IN_DUCK;
 	}
 
-	if (pmove->flags & FL_DUCKING)
+	// Prevent ducking if the iuser3 variable is set
+	if (pmove->iuser3 || pmove->dead)
 	{
-		pmove->cmd.forwardmove *= 0.333;
-		pmove->cmd.sidemove *= 0.333;
-		pmove->cmd.upmove *= 0.333;
+		// Try to unduck
+		if (pmove->flags & FL_DUCKING)
+		{
+			PM_UnDuck();
+		}
+		return;
 	}
 
 	if ((pmove->cmd.buttons & IN_DUCK) || (pmove->bInDuck) || (pmove->flags & FL_DUCKING))
 	{
-		if (!(pmove->flags & FL_DUCKING))
+		if (pmove->cmd.buttons & IN_DUCK)
 		{
-			// Use 1 second so super long jump will work
-			pmove->flDuckTime = 1000;
-			pmove->bInDuck = true;
+			if ((nButtonPressed & IN_DUCK) && !(pmove->flags & FL_DUCKING))
+			{
+				// Use 1 second so super long jump will work
+				pmove->flDuckTime = 1000;
+				pmove->bInDuck = true;
+			}
+
+			float time = max(0.0, (1.0 - (float)pmove->flDuckTime / 1000.0));
+
+			if (pmove->bInDuck)
+			{
+				// Finish ducking immediately if duck time is over or not on ground
+				if (((float)pmove->flDuckTime / 1000.0 <= (1.0 - TIME_TO_DUCK)) || (pmove->onground == -1))
+				{
+					pmove->usehull = 1;
+					pmove->flags |= FL_DUCKING;
+					pmove->bInDuck = false;
+
+					// HACKHACK - Fudge for collision bug - no time to fix this properly
+					if (pmove->onground != -1)
+					{
+						for (int i = 0; i < 3; i++)
+						{
+							pmove->origin[i] -= (pmove->player_mins[1][i] - pmove->player_mins[0][i]);
+						}
+						// See if we are stuck?
+						PM_FixPlayerCrouchStuck(STUCK_MOVEUP);
+
+						// Recatagorize position since ducking can change origin
+						PM_CategorizePosition();
+					}
+				}
+			}
 		}
+		else
+		{
+			// Try to unduck
+			PM_UnDuck();
+		}
+	}
+
+	if (pmove->flags & (FL_DUCKING | FL_VR_DUCKING))
+	{
+		pmove->cmd.forwardmove *= 0.333;
+		pmove->cmd.sidemove *= 0.333;
+		pmove->cmd.upmove *= 0.333;
+		pmove->usehull = 1;
+	}
+	else
+	{
+		pmove->usehull = 0;
 	}
 }
 
@@ -1974,9 +2099,8 @@ void PM_LadderMove(physent_t *pLadder)
 	vec3_t		floor;
 	vec3_t		modelmins, modelmaxs;
 
-	// In VR we are always in NOCLIP mode, so we must not return here
-	//if (pmove->movetype == MOVETYPE_NOCLIP)
-	//	return;
+	if (VRGlobalGetNoclipMode())
+		return;
 
 	pmove->PM_GetModelBounds(pLadder->model, modelmins, modelmaxs);
 
@@ -2709,12 +2833,12 @@ void PM_Jump(void)
 
 	// Acclerate upward
 	// If we are ducking...
-	if ((pmove->bInDuck) || (pmove->flags & FL_DUCKING))
+	if ((pmove->bInDuck) || (pmove->flags & (FL_DUCKING | FL_VR_DUCKING)))
 	{
 		// Adjust for super long jump module
 		// UNDONE -- note this should be based on forward angles, not current velocity.
 		if (cansuperjump &&
-			(pmove->flags & FL_DUCKING) && //(pmove->cmd.buttons & IN_DUCK) &&
+			(pmove->flags & (FL_DUCKING | FL_VR_DUCKING)) && //(pmove->cmd.buttons & IN_DUCK) &&
 			(pmove->flDuckTime > 0) &&
 			Length(pmove->velocity) > 50)
 		{
@@ -3078,7 +3202,7 @@ void PM_PlayerMove ( qboolean server )
 	}
 
 	// Always try and unstick us unless we are in NOCLIP mode
-	if ( /*pmove->movetype != MOVETYPE_NOCLIP &&*/ pmove->movetype != MOVETYPE_NONE )
+	if ( !VRGlobalGetNoclipMode() && pmove->movetype != MOVETYPE_NONE )
 	{
 		if (PM_CheckStuck() || pmove->PM_TestPlayerPosition(pmove->origin, nullptr) != -1)
 		{
@@ -3122,11 +3246,8 @@ void PM_PlayerMove ( qboolean server )
 		{
 			PM_LadderMove( pLadder );
 		}
-		else /*if ( pmove->movetype != MOVETYPE_WALK &&
-			      pmove->movetype != MOVETYPE_NOCLIP )*/ // Restore to MOVETYPE_NOCLIP for VR movement
+		else 
 		{
-			// Clear ladder stuff unless player is noclipping
-			//  it will be set immediately again next frame if necessary
 			pmove->movetype = MOVETYPE_NOCLIP;
 		}
 	}

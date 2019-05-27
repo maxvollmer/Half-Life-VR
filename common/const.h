@@ -44,6 +44,7 @@
 #define FL_IMMUNE_LAVA			(1<<19)
 
 #define FL_BARNACLED			FL_IMMUNE_WATER	// we just use this flag as it isn't used elsewhere - Max Vollmer, 2019-05-26
+#define FL_VR_DUCKING			FL_IMMUNE_SLIME	// we just use this flag as it isn't used elsewhere - Max Vollmer, 2019-05-26
 
 #define FL_PROXY				(1<<20)	// This is a spectator proxy
 #define FL_ALWAYSTHINK			(1<<21)	// Brush model flag -- call think every frame regardless of nextthink - ltime (for constantly changing velocity/path)
