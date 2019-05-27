@@ -219,7 +219,7 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceRe
 				teleportDestination.z = tr.pHit->v.absmax.z;
 
 				// Make sure we don't teleport the player into a ceiling
-				float flPlayerHeight = FBitSet(pPlayer->pev->flags, FL_DUCKING) ? (VEC_DUCK_HULL_MAX.z - VEC_DUCK_HULL_MIN.z) : (VEC_HULL_MAX.z - VEC_HULL_MIN.z);
+				float flPlayerHeight = FBitSet(pPlayer->pev->flags, (FL_DUCKING | FL_VR_DUCKING)) ? (VEC_DUCK_HULL_MAX.z - VEC_DUCK_HULL_MIN.z) : (VEC_HULL_MAX.z - VEC_HULL_MIN.z);
 				TraceResult tr2;
 				VRPhysicsHelper::Instance().TraceLine(teleportDestination, teleportDestination + Vector{ 0, 0, flPlayerHeight }, tr.pHit, &tr2);
 				if (tr2.flFraction < 1.f)
