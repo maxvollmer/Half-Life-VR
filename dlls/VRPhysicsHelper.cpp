@@ -1451,90 +1451,94 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 				&& version == HLVR_MAP_PHYSDATA_FILE_VERSION
 				/*&& hash == TODO*/)
 			{
-				uint32_t bspDataCount = 0;
-				ReadBinaryData(physicsMapDataFileStream, bspDataCount);
-				if (bspDataCount > 0)
 				{
-					for (uint32_t bspDataIndex = 0; bspDataIndex < bspDataCount; bspDataIndex++)
+					uint32_t bspDataCount = 0;
+					ReadBinaryData(physicsMapDataFileStream, bspDataCount);
+					if (bspDataCount > 0)
 					{
-						uint32_t verticesCount = 0;
-						uint32_t indicesCount = 0;
-						ReadBinaryData(physicsMapDataFileStream, verticesCount);
-						ReadBinaryData(physicsMapDataFileStream, indicesCount);
-
-						if (verticesCount > 0 && indicesCount > 0)
+						for (uint32_t bspDataIndex = 0; bspDataIndex < bspDataCount; bspDataIndex++)
 						{
-							std::string modelname = ReadString(physicsMapDataFileStream);
-							if (!modelname.empty())
+							uint32_t verticesCount = 0;
+							uint32_t indicesCount = 0;
+							ReadBinaryData(physicsMapDataFileStream, verticesCount);
+							ReadBinaryData(physicsMapDataFileStream, indicesCount);
+
+							if (verticesCount > 0 && indicesCount > 0)
 							{
-								ReadVerticesAndIndices(
-									physicsMapDataFileStream,
-									verticesCount,
-									0,
-									indicesCount,
-									m_bspModelData[modelname].m_vertices,
-									nullptr,
-									m_bspModelData[modelname].m_indices
-								);
-								m_bspModelData[modelname].CreateData(m_collisionWorld);
+								std::string modelname = ReadString(physicsMapDataFileStream);
+								if (!modelname.empty())
+								{
+									ReadVerticesAndIndices(
+										physicsMapDataFileStream,
+										verticesCount,
+										0,
+										indicesCount,
+										m_bspModelData[modelname].m_vertices,
+										nullptr,
+										m_bspModelData[modelname].m_indices
+									);
+									m_bspModelData[modelname].CreateData(m_collisionWorld);
+								}
+								else
+								{
+									throw std::runtime_error{ "invalid bsp data name at index " + std::to_string(bspDataIndex) };
+								}
 							}
 							else
 							{
-								throw std::runtime_error{ "invalid bsp data name at index " + std::to_string(bspDataIndex) };
+								throw std::runtime_error{ "invalid bsp data at index " + std::to_string(bspDataIndex) };
 							}
 						}
-						else
-						{
-							throw std::runtime_error{ "invalid bsp data at index " + std::to_string(bspDataIndex) };
-						}
+					}
+					else
+					{
+						throw std::runtime_error{ "invalid bsp data size" };
 					}
 				}
-				else
-				{
-					throw std::runtime_error{ "invalid bsp data size" };
-				}
 
-				uint32_t dynamicBSPDataCount = 0;
-				ReadBinaryData(physicsMapDataFileStream, dynamicBSPDataCount);
-				if (dynamicBSPDataCount > 0)
 				{
-					for (uint32_t bspDataIndex = 0; bspDataIndex < bspDataCount; bspDataIndex++)
+					uint32_t dynamicBSPDataCount = 0;
+					ReadBinaryData(physicsMapDataFileStream, dynamicBSPDataCount);
+					if (dynamicBSPDataCount > 0)
 					{
-						uint32_t verticesCount = 0;
-						uint32_t indicesCount = 0;
-						ReadBinaryData(physicsMapDataFileStream, verticesCount);
-						ReadBinaryData(physicsMapDataFileStream, indicesCount);
-
-						if (verticesCount > 0 && indicesCount > 0)
+						for (uint32_t dynamicBSPDataIndex = 0; dynamicBSPDataIndex < dynamicBSPDataCount; dynamicBSPDataIndex++)
 						{
-							std::string modelname = ReadString(physicsMapDataFileStream);
-							if (!modelname.empty())
+							uint32_t verticesCount = 0;
+							uint32_t indicesCount = 0;
+							ReadBinaryData(physicsMapDataFileStream, verticesCount);
+							ReadBinaryData(physicsMapDataFileStream, indicesCount);
+
+							if (verticesCount > 0 && indicesCount > 0)
 							{
-								ReadVerticesAndIndices(
-									physicsMapDataFileStream,
-									verticesCount,
-									verticesCount,
-									indicesCount,
-									m_dynamicBSPModelData[modelname].m_vertices,
-									&m_dynamicBSPModelData[modelname].m_normals,
-									m_dynamicBSPModelData[modelname].m_indices
-								);
-								m_dynamicBSPModelData[modelname].CreateData(m_dynamicsWorld);
+								std::string modelname = ReadString(physicsMapDataFileStream);
+								if (!modelname.empty())
+								{
+									ReadVerticesAndIndices(
+										physicsMapDataFileStream,
+										verticesCount,
+										verticesCount,
+										indicesCount,
+										m_dynamicBSPModelData[modelname].m_vertices,
+										&m_dynamicBSPModelData[modelname].m_normals,
+										m_dynamicBSPModelData[modelname].m_indices
+									);
+									m_dynamicBSPModelData[modelname].CreateData(m_dynamicsWorld);
+								}
+								else
+								{
+									throw std::runtime_error{ "invalid dynamic bsp data name at index " + std::to_string(dynamicBSPDataIndex) };
+								}
 							}
 							else
 							{
-								throw std::runtime_error{ "invalid bsp data name at index " + std::to_string(bspDataIndex) };
+								throw std::runtime_error{ "invalid dynamic bsp data at index " + std::to_string(dynamicBSPDataIndex) };
 							}
 						}
-						else
-						{
-							throw std::runtime_error{ "invalid bsp data at index " + std::to_string(bspDataIndex) };
-						}
 					}
-				}
-				else
-				{
-					throw std::runtime_error{ "invalid dynamic bsp data size" };
+					else
+					{
+						throw std::runtime_error{ "invalid dynamic dynamic bsp data size" };
+					}
 				}
 
 				char checkeof;
