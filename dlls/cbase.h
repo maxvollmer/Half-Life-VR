@@ -164,6 +164,10 @@ public:
 };
 
 
+// For real rotation of rotating buttons in VR - Max Vollmer, 2019-05-26
+class VRRotatableEnt;
+
+
 //
 // Base Entity.  All entity types derive from this
 //
@@ -434,6 +438,9 @@ public:
 		gpGlobals->time
 #endif
 	};
+
+	// For real rotation of rotating buttons in VR - Max Vollmer, 2019-05-26
+	virtual VRRotatableEnt*			MyRotatableEntPtr() { return nullptr; }
 };
 
 

@@ -15,6 +15,8 @@ enum class VRControllerID : int32_t {
 	INVALID
 };
 
+#define VR_MUZZLE_ATTACHMENT 0
+
 #include "VRStuff.h"
 
 extern GlobalXenMounds gGlobalXenMounds;

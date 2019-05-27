@@ -4317,7 +4317,6 @@ void CBasePlayer::ResetAutoaim()
 }
 
 
-#define VR_MUZZLE_ATTACHMENT 0
 Vector CBasePlayer::GetGunPosition()
 {
 	// Gun position and angles determined by attachments on weapon model - Max Vollmer, 2019-03-30

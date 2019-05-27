@@ -36,6 +36,7 @@ public:
 
 	bool AddDraggedEntity(EHANDLE hEntity) const;
 	bool RemoveDraggedEntity(EHANDLE hEntity) const;
+	bool IsDraggedEntity(EHANDLE hEntity) const;
 
 	bool AddHitEntity(EHANDLE hEntity) const;
 	bool RemoveHitEntity(EHANDLE hEntity) const;

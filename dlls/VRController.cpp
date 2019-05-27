@@ -198,6 +198,11 @@ bool VRController::RemoveDraggedEntity(EHANDLE hEntity) const
 	return true;
 }
 
+bool VRController::IsDraggedEntity(EHANDLE hEntity) const
+{
+	return m_draggedEntities.count(hEntity) != 0;
+}
+
 bool VRController::AddHitEntity(EHANDLE hEntity) const
 {
 	if (m_hitEntities.count(hEntity) != 0)

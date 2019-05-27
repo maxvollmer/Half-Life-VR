@@ -16,6 +16,9 @@
 #include "VRControllerInteractionManager.h"
 #include "VRPhysicsHelper.h"
 #include "CWorldsSmallestCup.h"
+#include "VRModelHelper.h"
+
+#include "VRRotatableEnt.h"
 
 
 #define SF_BUTTON_TOUCH_ONLY	256	// button only fires as a result of USE key.
@@ -180,7 +183,10 @@ bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& contro
 	if (!controller.IsValid() || !controller.IsBBoxValid())
 		return false;
 
-	if (hEntity->pev->solid == SOLID_NOT && !FClassnameIs(hEntity->pev, "vr_easteregg"))
+	if (hEntity->pev->solid == SOLID_NOT
+		&& !FClassnameIs(hEntity->pev, "vr_easteregg")
+		&& !FClassnameIs(hEntity->pev, "func_rot_button")
+		&& !FClassnameIs(hEntity->pev, "momentary_rot_button"))
 		return false;
 
 	bool isTouching = false;
@@ -207,6 +213,13 @@ bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& contro
 	return isTouching;
 }
 
+bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE hEntity)
+{
+	return FClassnameIs(hEntity->pev, "func_rot_button")
+		|| FClassnameIs(hEntity->pev, "momentary_rot_button")
+		|| FClassnameIs(hEntity->pev, "func_pushable");
+}
+
 void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, const VRController& controller)
 {
 	CBaseEntity *pEntity = nullptr;
@@ -225,14 +238,34 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 
 		EHANDLE hEntity = pEntity;
 
-		const bool isTouching = CheckIfEntityAndControllerTouch(hEntity, controller);
-		const bool didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
+		bool isTouching;
+		bool didTouchChange;
+		bool isDragging;
+		bool didDragChange;
+		bool isHitting;
+		bool didHitChange;
 
-		const bool isDragging = isTouching && controller.IsDragging();
-		const bool didDragChange = isDragging ? controller.AddDraggedEntity(hEntity) : controller.RemoveDraggedEntity(hEntity);
+		// If we are dragging something draggable, we override all the booleans to avoid "losing" the entity due to fast movements
+		if (controller.IsDragging() && controller.GetWeaponId() == WEAPON_BAREHAND && controller.IsDraggedEntity(hEntity) && IsDraggableEntity(hEntity))
+		{
+			isTouching = true;
+			didTouchChange = false;
+			isDragging = true;
+			didDragChange = false;
+			isHitting = false;
+			didHitChange = controller.RemoveHitEntity(hEntity);
+		}
+		else
+		{
+			isTouching = CheckIfEntityAndControllerTouch(hEntity, controller);
+			didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
 
-		const bool isHitting = isTouching && controller.GetVelocity().Length() > GetMeleeSwingSpeed();
-		const bool didHitChange = isHitting ? controller.AddHitEntity(hEntity) : controller.RemoveHitEntity(hEntity);
+			isDragging = isTouching && controller.GetWeaponId() == WEAPON_BAREHAND && controller.IsDragging();
+			didDragChange = isDragging ? controller.AddDraggedEntity(hEntity) : controller.RemoveDraggedEntity(hEntity);
+
+			isHitting = isTouching && controller.GetVelocity().Length() > GetMeleeSwingSpeed();
+			didHitChange = isHitting ? controller.AddHitEntity(hEntity) : controller.RemoveHitEntity(hEntity);
+		}
 
 		float flHitDamage = 0.f;
 		if (pPlayer->HasWeapons() && isHitting && didHitChange)
@@ -426,6 +459,7 @@ bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE
 		}
 		return true;
 	}
+	/*
 	else if (FClassnameIs(hEntity->pev, "func_rot_button"))
 	{
 		if (isDragging)
@@ -449,6 +483,45 @@ bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE
 		if (isDragging)
 		{
 			hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
+		}
+		return true;
+	}
+	*/
+	else if (FClassnameIs(hEntity->pev, "func_rot_button") || FClassnameIs(hEntity->pev, "momentary_rot_button"))
+	{
+		VRRotatableEnt* pRotatableEnt = hEntity->MyRotatableEntPtr();
+		if (pRotatableEnt)
+		{
+			if (isDragging)
+			{
+				if (didDragChange)
+				{
+					pRotatableEnt->ClearDraggingCancelled();
+				}
+				if (!pRotatableEnt->IsDraggingCancelled())
+				{
+					Vector pos;
+					if (VRModelHelper::GetInstance().GetAttachment(controller.GetModel(), VR_MUZZLE_ATTACHMENT, pos))
+					{
+						pRotatableEnt->VRRotate(pPlayer, pos, didDragChange);
+					}
+					else
+					{
+						pRotatableEnt->VRRotate(pPlayer, controller.GetPosition(), didDragChange);
+					}
+				}
+			}
+			else if (didDragChange)
+			{
+				pRotatableEnt->VRStopRotate();
+			}
+		}
+		else
+		{
+			if (isDragging && didDragChange)
+			{
+				ALERT(at_console, "Error: Found rotating button not of type VRRotatableEnt: %s %s\n", STRING(hEntity->pev->classname), STRING(hEntity->pev->targetname));
+			}
 		}
 		return true;
 	}

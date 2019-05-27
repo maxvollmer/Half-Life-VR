@@ -363,6 +363,9 @@
     <ClCompile Include="CWorldsSmallestCup.cpp">
       <Filter>VR</Filter>
     </ClCompile>
+    <ClCompile Include="VRRotatableEnt.cpp">
+      <Filter>VR\stuff</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activity.h">
@@ -535,6 +538,9 @@
     </ClInclude>
     <ClInclude Include="CWorldsSmallestCup.h">
       <Filter>VR</Filter>
+    </ClInclude>
+    <ClInclude Include="VRRotatableEnt.h">
+      <Filter>VR\stuff</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

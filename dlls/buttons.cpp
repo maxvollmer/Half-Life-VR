@@ -26,6 +26,9 @@
 #include "saverestore.h"
 #include "doors.h"
 
+// for func_rot_button and momentary_rot_button in VR
+#include "VRRotatableEnt.h"
+
 
 #define SF_BUTTON_DONTMOVE		1
 #define SF_ROTBUTTON_NOTSOLID	1
@@ -799,10 +802,16 @@ void CBaseButton::ButtonBackHome( void )
 //
 // Rotating button (aka "lever")
 //
-class CRotButton : public CBaseButton
+class CRotButton : public CBaseButton, VRRotatableEnt
 {
 public:
 	void Spawn( void );
+
+	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed) override;
+	virtual bool SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta) override;
+	virtual void StopVRDragRotation() override;
+	virtual CBaseEntity* MyEntityPointer() override { return this; }
+	virtual VRRotatableEnt* MyRotatableEntPtr() override { return this; }
 };
 
 LINK_ENTITY_TO_CLASS( func_rot_button, CRotButton );
@@ -865,6 +874,93 @@ void CRotButton::Spawn( void )
 	//SetTouch( ButtonTouch );
 }
 
+bool CRotButton::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed)
+{
+	if (!UTIL_IsMasterTriggered(m_sMaster, pPlayer))
+	{
+		PlayLockSounds(pev, &m_ls, TRUE, TRUE);
+		return false;
+	}
+
+	if ((m_toggle_state != TS_AT_TOP) || (!m_fStayPushed && FBitSet(pev->spawnflags, SF_BUTTON_TOGGLE)))
+	{
+		PlayLockSounds(pev, &m_ls, FALSE, TRUE);
+		angleStart = m_vecAngle1;
+		angleEnd = m_vecAngle2;
+		maxRotSpeed = pev->speed;
+		m_hActivator = (CBaseEntity*)pPlayer;
+		SetThink(NULL);
+		SetTouch(NULL);
+		SetUse(NULL);
+		return true;
+	}
+
+	return false;
+}
+
+bool CRotButton::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta)
+{
+	if (m_toggle_state == TS_AT_TOP)
+	{
+		m_toggle_state = TS_GOING_DOWN;
+	}
+	else if (m_toggle_state == TS_AT_BOTTOM)
+	{
+		m_toggle_state = TS_GOING_UP;
+	}
+
+	if (m_toggle_state == TS_GOING_UP && delta >= 1.f)
+	{
+		pev->angles = m_vecAngle2;
+		m_vecFinalAngle = m_vecAngle2;
+		SetMoveDone(&CBaseButton::TriggerAndWait);
+		AngularMoveDone();
+		return false;
+	}
+	else if (m_toggle_state == TS_GOING_DOWN && delta <= 0.f)
+	{
+		pev->angles = m_vecAngle1;
+		m_vecFinalAngle = m_vecAngle1;
+		SetMoveDone(&CBaseButton::ButtonBackHome);
+		AngularMoveDone();
+		return false;
+	}
+	else
+	{
+		SetThink(NULL);
+		SetTouch(NULL);
+		SetUse(NULL);
+		pev->angles = angles;
+		return true;
+	}
+}
+
+void CRotButton::StopVRDragRotation()
+{
+	if (m_toggle_state == TS_GOING_DOWN)
+	{
+		m_toggle_state = TS_AT_TOP;
+	}
+	else if (m_toggle_state == TS_GOING_UP)
+	{
+		m_toggle_state = TS_AT_BOTTOM;
+	}
+
+	if (FBitSet(pev->spawnflags, SF_BUTTON_TOUCH_ONLY))
+		SetTouch(&CBaseButton::ButtonTouch);
+	else
+		SetUse(&CBaseButton::ButtonUse);
+
+	if (m_toggle_state != TS_AT_BOTTOM && !m_fStayPushed && !FBitSet(pev->spawnflags, SF_BUTTON_TOGGLE))
+	{
+		SetThink(&CBaseButton::ButtonReturn);
+		if (m_toggle_state == TS_AT_TOP)
+			pev->nextthink = pev->ltime + m_flWait;
+		else
+			pev->nextthink = pev->ltime;
+	}
+}
+
 
 // Make this button behave like a door (HACKHACK)
 // This will disable use and make the button solid
@@ -872,7 +968,7 @@ void CRotButton::Spawn( void )
 // collision problems with them...
 #define SF_MOMENTARY_DOOR		0x0001
 
-class CMomentaryRotButton : public CBaseToggle
+class CMomentaryRotButton : public CBaseToggle, VRRotatableEnt
 {
 public:
 	void	Spawn ( void );
@@ -887,6 +983,7 @@ public:
 	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void	EXPORT Off( void );
 	void	EXPORT Return( void );
+	void	VRUpdateSelf(const Vector& angles, float value);	// For direct rotation with  VR controller
 	void	UpdateSelf( float value );
 	void	UpdateSelfReturn( float value );
 	void	UpdateAllButtons( float value, int start );
@@ -906,6 +1003,12 @@ public:
 	vec3_t	m_start;
 	vec3_t	m_end;
 	int		m_sounds;
+
+	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed) override;
+	virtual bool SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta) override;
+	virtual void StopVRDragRotation() override;
+	virtual CBaseEntity* MyEntityPointer() override { return this; }
+	virtual VRRotatableEnt* MyRotatableEntPtr() override { return this; }
 };
 TYPEDESCRIPTION CMomentaryRotButton::m_SaveData[] =
 {
@@ -989,6 +1092,33 @@ void CMomentaryRotButton::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 	UpdateTarget( pev->ideal_yaw );
 }
 
+bool CMomentaryRotButton::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed)
+{
+	m_hActivator = pPlayer;
+	angleStart = m_start;
+	angleEnd = m_end;
+	maxRotSpeed = pev->speed;
+	SetThink(NULL);
+	return true;
+}
+
+bool CMomentaryRotButton::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta)
+{
+	pev->ideal_yaw = delta;
+	UpdateAllButtons(pev->ideal_yaw, 2);
+	UpdateTarget(pev->ideal_yaw);
+	pev->angles = angles;
+	SetThink(NULL);
+	return true;
+}
+
+void CMomentaryRotButton::StopVRDragRotation()
+{
+	pev->nextthink = pev->ltime + 0.1;
+	SetThink(&CMomentaryRotButton::Off);
+}
+
+
 void CMomentaryRotButton::UpdateAllButtons( float value, int start )
 {
 	// Update all rot buttons attached to the same target
@@ -1005,12 +1135,50 @@ void CMomentaryRotButton::UpdateAllButtons( float value, int start )
 			CMomentaryRotButton *pEntity = CMomentaryRotButton::Instance(pentTarget);
 			if ( pEntity )
 			{
-				if ( start )
+				if (start == 2)
+					pEntity->VRUpdateSelf(pev->angles, value);
+				else if ( start == 1 )
 					pEntity->UpdateSelf( value );
 				else
 					pEntity->UpdateSelfReturn( value );
 			}
 		}
+	}
+}
+
+void CMomentaryRotButton::VRUpdateSelf(const Vector& angles, float value)
+{
+	bool playsound = false;
+	if (!m_lastUsed)
+	{
+		playsound = true;
+		m_lastUsed = 1;
+	}
+
+	if (value >= 1.f)
+	{
+		pev->avelocity = g_vecZero;
+		pev->angles = m_end;
+		return;
+	}
+	else if (value <= 0.f)
+	{
+		pev->avelocity = g_vecZero;
+		pev->angles = m_start;
+		return;
+	}
+	else
+	{
+		// pev->angles = angles;
+		pev->angles = (m_start * (1.f - value)) + (m_end * value);
+		pev->angles.x = fmodf(pev->angles.x, 360.f);
+		pev->angles.y = fmodf(pev->angles.y, 360.f);
+		pev->angles.z = fmodf(pev->angles.z, 360.f);
+	}
+
+	if (playsound)
+	{
+		PlaySound();
 	}
 }
 
