@@ -96,10 +96,6 @@ void CHornet :: Spawn( void )
 	SetTouch(&CHornet:: DieTouch );
 	SetThink(&CHornet:: StartTrack );
 
-	edict_t *pSoundEnt = pev->owner;
-	if ( !pSoundEnt )
-		pSoundEnt = edict();
-
 	if ( !FNullEnt(pev->owner) && (pev->owner->v.flags & FL_CLIENT) )
 	{
 		pev->dmg = gSkillData.plrDmgHornet;
@@ -367,7 +363,8 @@ void CHornet :: TrackTarget ( void )
 void CHornet :: TrackTouch ( CBaseEntity *pOther )
 {
 	if ( pOther->edict() == pev->owner || pOther->pev->modelindex == pev->modelindex )
-	{// bumped into the guy that shot it.
+	{
+		// bumped into the one that shot it.
 		pev->solid = SOLID_NOT;
 		return;
 	}
@@ -375,7 +372,6 @@ void CHornet :: TrackTouch ( CBaseEntity *pOther )
 	if ( IRelationship( pOther ) <= R_NO )
 	{
 		// hit something we don't want to hurt, so turn around.
-
 		pev->velocity = pev->velocity.Normalize();
 
 		pev->velocity.x *= -1;
@@ -397,11 +393,12 @@ void CHornet::DartTouch( CBaseEntity *pOther )
 
 void CHornet::DieTouch ( CBaseEntity *pOther )
 {
-	if ( pOther && pOther->pev->takedamage )
-	{// do the damage
-
+	if ( pOther && pOther->pev->takedamage && !(pOther->IsPlayer() && pOther->edict() == pev->owner))
+	{
+		// do the damage
 		switch (RANDOM_LONG(0,2))
-		{// buzz when you plug someone
+		{
+			// buzz when you plug someone
 			case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit1.wav", 1, ATTN_NORM);	break;
 			case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit2.wav", 1, ATTN_NORM);	break;
 			case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit3.wav", 1, ATTN_NORM);	break;
