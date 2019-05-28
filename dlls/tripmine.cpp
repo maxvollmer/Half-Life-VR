@@ -418,6 +418,13 @@ BOOL CTripmine::Deploy( )
 
 void CTripmine::Holster( int skiplocal /* = 0 */ )
 {
+#ifndef CLIENT_DLL
+	if (m_hGhost)
+	{
+		m_hGhost->pev->effects |= EF_NODRAW;
+	}
+#endif
+
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
 	if (!m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType])
