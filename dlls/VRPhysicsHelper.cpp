@@ -932,7 +932,7 @@ bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& 
 
 	m_capsuleShape = new CapsuleShape{ (radius) * HL_TO_RP3D, (height) * HL_TO_RP3D };
 	m_capsuleProxyShape = m_capsuleBody->addCollisionShape(m_capsuleShape, rp3d::Transform::identity());
-	m_capsuleBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(capsuleCenter), HLAnglesToRP3DTransform(Vector{ 90.f, 0.f, 0.f }) });
+	m_capsuleBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(capsuleCenter), HLAnglesToRP3DTransform(Vector{ 0.f, 0.f, 90.f }) });
 
 	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DTransform(pModel->pev->angles) });
 
@@ -1463,30 +1463,23 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 							ReadBinaryData(physicsMapDataFileStream, verticesCount);
 							ReadBinaryData(physicsMapDataFileStream, indicesCount);
 
-							if (verticesCount > 0 && indicesCount > 0)
+							std::string modelname = ReadString(physicsMapDataFileStream);
+							if (!modelname.empty())
 							{
-								std::string modelname = ReadString(physicsMapDataFileStream);
-								if (!modelname.empty())
-								{
-									ReadVerticesAndIndices(
-										physicsMapDataFileStream,
-										verticesCount,
-										0,
-										indicesCount,
-										m_bspModelData[modelname].m_vertices,
-										nullptr,
-										m_bspModelData[modelname].m_indices
-									);
-									m_bspModelData[modelname].CreateData(m_collisionWorld);
-								}
-								else
-								{
-									throw std::runtime_error{ "invalid bsp data name at index " + std::to_string(bspDataIndex) };
-								}
+								ReadVerticesAndIndices(
+									physicsMapDataFileStream,
+									verticesCount,
+									0,
+									indicesCount,
+									m_bspModelData[modelname].m_vertices,
+									nullptr,
+									m_bspModelData[modelname].m_indices
+								);
+								m_bspModelData[modelname].CreateData(m_collisionWorld);
 							}
 							else
 							{
-								throw std::runtime_error{ "invalid bsp data at index " + std::to_string(bspDataIndex) };
+								throw std::runtime_error{ "invalid bsp data name at index " + std::to_string(bspDataIndex) };
 							}
 						}
 					}
@@ -1508,30 +1501,23 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 							ReadBinaryData(physicsMapDataFileStream, verticesCount);
 							ReadBinaryData(physicsMapDataFileStream, indicesCount);
 
-							if (verticesCount > 0 && indicesCount > 0)
+							std::string modelname = ReadString(physicsMapDataFileStream);
+							if (!modelname.empty())
 							{
-								std::string modelname = ReadString(physicsMapDataFileStream);
-								if (!modelname.empty())
-								{
-									ReadVerticesAndIndices(
-										physicsMapDataFileStream,
-										verticesCount,
-										verticesCount,
-										indicesCount,
-										m_dynamicBSPModelData[modelname].m_vertices,
-										&m_dynamicBSPModelData[modelname].m_normals,
-										m_dynamicBSPModelData[modelname].m_indices
-									);
-									m_dynamicBSPModelData[modelname].CreateData(m_dynamicsWorld);
-								}
-								else
-								{
-									throw std::runtime_error{ "invalid dynamic bsp data name at index " + std::to_string(dynamicBSPDataIndex) };
-								}
+								ReadVerticesAndIndices(
+									physicsMapDataFileStream,
+									verticesCount,
+									verticesCount,
+									indicesCount,
+									m_dynamicBSPModelData[modelname].m_vertices,
+									&m_dynamicBSPModelData[modelname].m_normals,
+									m_dynamicBSPModelData[modelname].m_indices
+								);
+								m_dynamicBSPModelData[modelname].CreateData(m_dynamicsWorld);
 							}
 							else
 							{
-								throw std::runtime_error{ "invalid dynamic bsp data at index " + std::to_string(dynamicBSPDataIndex) };
+								throw std::runtime_error{ "invalid dynamic bsp data name at index " + std::to_string(dynamicBSPDataIndex) };
 							}
 						}
 					}
@@ -1666,7 +1652,6 @@ void VRPhysicsHelper::GetPhysicsMapDataFromModel()
 		TriangulateBSPModel(model, planeFaces, planeVertexMetaData, bspModelData.m_vertices, nullptr, bspModelData.m_indices, isMapModel);
 		bspModelData.CreateData(m_collisionWorld);
 
-
 		if (isMapModel)
 		{
 			// Triangulate gaps for collision world
@@ -1678,9 +1663,8 @@ void VRPhysicsHelper::GetPhysicsMapDataFromModel()
 
 			bspModelData.m_vertices.insert(bspModelData.m_vertices.end(), additionalVertices.begin(), additionalVertices.end());
 			bspModelData.m_indices.insert(bspModelData.m_indices.end(), additionalIndices.begin(), additionalIndices.end());
+			bspModelData.CreateData(m_collisionWorld);
 		}
-
-		bspModelData.CreateData(m_collisionWorld);
 	}
 
 
