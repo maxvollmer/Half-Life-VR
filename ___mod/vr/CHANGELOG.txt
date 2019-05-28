@@ -14,3 +14,30 @@
 * Added hd skyboxes
 * Fixed background texture
 * Compiled with static MSVC runtime libraries
+
+0.4.0 - 2019-05-26
+* Fixed crouching between level changes not being detected
+* Fixed RL crouching and ingame crouching interfering
+* Fixed bug where weapon could be fired while using stationary gun
+* Fixed several collision bugs
+* Fixed bug where game wouldn't reload after dying
+* Fixed player's bounding box preventing the player to get close to things
+* Fixed 90° and 180° turn actions causing player to warp through walls
+* Fixed bug that prevented loading of physics data cache
+* Fixed rare freeze bug when climbing a ladder on a narrow angle due to bug in engine
+* Fixed bug where gibs (e.g. wood from broken crates) are dramatically oversized
+* Fixed bug where the tripmine laser would randomly attach to other entities after levelchange
+* Fixed visual issues due to backface rendering
+* Fixed movement vector being upside down (fixes issues in water and on ladders)
+* Fixed analog movement not working on ladders
+* Fixed several bugs when teleporting on ladders
+* Fixed some xen jump thingies not being detected by the teleporter beam
+* Fixed ingame cameras not working (that scene where Gordon gets captured)
+* Fixed barnacles not causing damage
+* Fixed jumping in shallow water not possible
+* Fixed upward/downward movement not working in water and on ladders
+* Made rotating buttons (valves, levers) actually rotatable (drag and rotate)
+* Improved drag behavior of pushables
+* Added analog jump, crouch and longjump actions
+* Added environmental damage feedback to VR HUD
+* Added cvar to control height of RL crouch

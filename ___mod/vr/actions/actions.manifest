@@ -93,6 +93,21 @@
          "type" : "boolean"
       },
       {
+         "name" : "/actions/input/in/AnalogJump",
+         "requirement" : "suggested",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/input/in/AnalogCrouch",
+         "requirement" : "suggested",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/input/in/AnalogLongJump",
+         "requirement" : "optional",
+         "type" : "boolean"
+      },
+      {
          "name" : "/actions/input/in/MoveForwardBackward",
          "requirement" : "optional",
          "type" : "vector1"
@@ -401,6 +416,9 @@
          "/actions/input/in/Jump" : "Jump",
          "/actions/input/in/LegacyUse" : "Legacy Use (This triggers the default ingame use action, which 'uses' objects that you look at.)",
          "/actions/input/in/LongJump" : "Long Jump",
+         "/actions/input/in/AnalogJump" : "Analog Jump",
+         "/actions/input/in/AnalogCrouch" : "Analog Crouch",
+         "/actions/input/in/AnalogLongJump" : "Analog Long Jump",
          "/actions/input/in/MoveBackward" : "Move backward",
          "/actions/input/in/MoveDown" : "Move down (ladder/water)",
          "/actions/input/in/MoveForward" : "Move forward",
