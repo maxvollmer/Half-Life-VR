@@ -2120,8 +2120,12 @@ void PM_LadderMove(physent_t *pLadder)
 		onFloor = false;
 
 	pmove->gravity = 0;
-	pmove->PM_TraceModel(pLadder, pmove->origin, ladderCenter, &trace);
-	if (trace.fraction != 1.0)
+	float result = pmove->PM_TraceModel(pLadder, pmove->origin, ladderCenter, &trace);
+	if (result >= 0.f && result < 1.f
+		&& trace.fraction >= 0.f && trace.fraction < 1.f
+		&& trace.plane.normal[0] == trace.plane.normal[0]
+		&& trace.plane.normal[1] == trace.plane.normal[1]
+		&& trace.plane.normal[2] == trace.plane.normal[2])
 	{
 		float forward = 0, right = 0, up = 0;
 		vec3_t vpn, v_right;
@@ -2190,6 +2194,13 @@ void PM_LadderMove(physent_t *pLadder)
 				if (onFloor && normal > 0)	// On ground moving away from the ladder
 				{
 					VectorMA(pmove->velocity, MAX_CLIMB_SPEED, trace.plane.normal, pmove->velocity);
+				}
+				if ((pmove->velocity[0] == pmove->velocity[0]) && (pmove->velocity[1] == pmove->velocity[1]) && (pmove->velocity[2] == pmove->velocity[2]))
+				{
+				}
+				else
+				{
+					VectorClear(pmove->velocity);
 				}
 				//pev->velocity = lateral - (CrossProduct( trace.vecPlaneNormal, perp ) * normal);
 			}
