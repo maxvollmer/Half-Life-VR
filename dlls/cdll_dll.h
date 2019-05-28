@@ -31,7 +31,7 @@
 #define	HIDEHUD_FLASHLIGHT		( 1<<1 )
 #define	HIDEHUD_ALL				( 1<<2 )
 #define HIDEHUD_HEALTH			( 1<<3 )
-#define HIDEHUD_WEAPONBLOCKED	( 1<<4 )	// Hack hack, I am too lazy to define a new key or whatever, so I just store this boolean as a bit in m_iHideHUD ¯\_("/)_/¯ - Max Vollmer, 2018-02-04
+#define HIDEHUD_WEAPONBLOCKED	( 1<<4 )	// Just store this boolean as a bit in m_iHideHUD ¯\_("/)_/¯ - Max Vollmer, 2018-02-04
 
 #define	MAX_AMMO_TYPES	32		// ???
 #define MAX_AMMO_SLOTS  32		// not really slots

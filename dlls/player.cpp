@@ -1463,6 +1463,7 @@ void CBasePlayer::PlayerUse ( void )
 			// TODO: Send HUD Update
 			m_pTank->Use( this, this, USE_OFF, 0 );
 			m_pTank = NULL;
+			SelectLastItem();
 			return;
 		}
 		else
@@ -1800,6 +1801,11 @@ void CBasePlayer::PreThink(void)
 		m_iHideHUD &= ~HIDEHUD_FLASHLIGHT;
 	else
 		m_iHideHUD |= HIDEHUD_FLASHLIGHT;
+
+	if (m_pTank)
+		m_iHideHUD |= HIDEHUD_WEAPONBLOCKED;
+	else
+		m_iHideHUD &= ~HIDEHUD_WEAPONBLOCKED;
 
 	// JOHN: checks if new client data (for HUD and view control) needs to be sent to the client
 	UpdateClientData();
@@ -2509,15 +2515,28 @@ void CBasePlayer::PostThink()
 
 	// Handle Tank controlling
 	if ( m_pTank != NULL )
-	{ // if they've moved too far from the gun,  or selected a weapon, unuse the gun
-		if ( m_pTank->OnControls( pev ) && !pev->weaponmodel )
-		{  
-			m_pTank->Use( this, this, USE_SET, 2 );	// try fire the gun
+	{
+		if (!m_pTank->OnControls(pev))
+		{
+			// player moved too far from the gun, unuse the gun
+			m_pTank->Use(this, this, USE_OFF, 0);
+			m_pTank = NULL;
+			SelectLastItem();
+		}
+		else if (m_pActiveItem != nullptr || pev->weaponmodel || m_vrControllers[VRControllerID::WEAPON].GetWeaponId() != WEAPON_BAREHAND)
+		{
+			// player selected a weapon, unuse the gun
+			m_pTank->Use(this, this, USE_OFF, 0);
+			m_pTank = NULL;
+			if (m_pActiveItem == nullptr)
+			{
+				SelectLastItem();
+			}
 		}
 		else
-		{  // they've moved off the platform
-			m_pTank->Use( this, this, USE_OFF, 0 );
-			m_pTank = NULL;
+		{
+			// fire the gun
+			m_pTank->Use(this, this, USE_SET, 2);
 		}
 	}
 
@@ -3905,8 +3924,15 @@ void CBasePlayer::ItemPostFrame()
 	static int fInSelect = FALSE;
 
 	// check if the player is using a tank
-	if ( m_pTank != NULL )
+	if (m_pTank != NULL)
+	{
 		return;
+	}
+
+	if (m_iHideHUD & HIDEHUD_WEAPONBLOCKED)
+	{
+		return;
+	}
 
 #if defined( CLIENT_WEAPONS )
     if ( m_flNextAttack > 0 )
@@ -4956,7 +4982,6 @@ void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const 
 			weaponId = itemInfo.iId;
 		}
 	}
-
 	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging, vrControllerID, weaponId);
 }
 
@@ -5366,3 +5391,9 @@ void CBasePlayer::DoLongJump()
 	if (pev->velocity.y < -pmove->movevars->maxvelocity) pev->velocity.y = -pmove->movevars->maxvelocity;
 	if (pev->velocity.z < -pmove->movevars->maxvelocity) pev->velocity.z = -pmove->movevars->maxvelocity;
 }
+
+void CBasePlayer::HolsterWeapon()
+{
+	SelectItem("weapon_barehand");
+}
+

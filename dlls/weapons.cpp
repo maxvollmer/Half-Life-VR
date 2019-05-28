@@ -728,7 +728,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		// reload when reload is pressed, or if no buttons are down and weapon is empty.
 		Reload();
 	}
-	else if ( !(m_pPlayer->pev->button & (IN_ATTACK|IN_ATTACK2) ) )
+	else if ( !(m_pPlayer->pev->button & (IN_ATTACK|IN_ATTACK2) ) && m_pPlayer->GetAnalogFire() == 0.f )
 	{
 		// no fire buttons down
 
@@ -800,6 +800,7 @@ void CBasePlayerItem::Holster( int skiplocal /* = 0 */ )
 { 
 	m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
 	m_pPlayer->pev->weaponmodel = 0;
+	m_pPlayer->HolsterWeapon();
 }
 
 void CBasePlayerItem::AttachToPlayer ( CBasePlayer *pPlayer )

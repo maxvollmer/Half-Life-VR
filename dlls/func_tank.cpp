@@ -363,14 +363,13 @@ BOOL CFuncTank :: StartControl( CBasePlayer *pController )
 		m_pController->m_pActiveItem->Holster();
 		m_pController->pev->weaponmodel = 0;
 		m_pController->pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
-
 	}
 
 	m_pController->m_iHideHUD |= HIDEHUD_WEAPONS;
 	m_vecControllerUsePos = m_pController->pev->origin;
-	
+
 	pev->nextthink = pev->ltime + 0.1;
-	
+
 	return TRUE;
 }
 

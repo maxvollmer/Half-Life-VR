@@ -376,7 +376,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		// reload when reload is pressed, or if no buttons are down and weapon is empty.
 		Reload();
 	}
-	else if ( !(m_pPlayer->pev->button & (IN_ATTACK|IN_ATTACK2) ) )
+	else if ( !(m_pPlayer->pev->button & (IN_ATTACK|IN_ATTACK2) ) && m_pPlayer->GetAnalogFire() == 0.f )
 	{
 		// no fire buttons down
 
@@ -843,11 +843,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		 ( ( CRpg * )player.m_pActiveItem)->m_fSpotActive = (int)from->client.vuser2[ 1 ];
 		 ( ( CRpg * )player.m_pActiveItem)->m_cActiveRockets = (int)from->client.vuser2[ 2 ];
 	}
-	
+
 	// Don't go firing anything if we have died.
 	// Or if we don't have a weapon model deployed
-	if ( ( player.pev->deadflag != ( DEAD_DISCARDBODY + 1 ) ) && 
-		 !CL_IsDead() && player.pev->viewmodel && !g_iUser1 )
+	extern bool GetHUDWeaponBlocked();
+	if ((player.pev->deadflag != (DEAD_DISCARDBODY + 1)) && !CL_IsDead() && player.pev->viewmodel && !g_iUser1 && !GetHUDWeaponBlocked())
 	{
 		if ( player.m_flNextAttack <= 0 )
 		{

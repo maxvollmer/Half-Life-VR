@@ -419,6 +419,8 @@ public:
 	void DoLongJump();
 	void RestartCurrentMap();
 
+	void HolsterWeapon();
+
 	float GetAnalogFire();
 	void SetAnalogFire(float analogfire);
 
