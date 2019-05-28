@@ -1,7 +1,7 @@
 ====
 Half-Life: VR
 
-VERSION 0.3.0
+VERSION 0.4.0
 
 Copyright (c) 2017-2019 Max Vollmer
 
@@ -12,8 +12,6 @@ YOU RECEIVED THIS MOD AS PART OF AN INTERNAL BETA TEST
 DO NOT MAKE THIS MOD PUBLIC
 
 DO NOT GIVE THIS MOD TO ANY THIRD PARTY
-
-THE DLLS IN THIS MOD HAVE BEEN MARKED SO LEAKS CAN BE TRACKED BACK TO YOU
 
 ======
 
@@ -50,17 +48,21 @@ List of known bugs and issues:
 - HUD text is rendered in the map center instead of in the player's view
 - Fade effects don't work
 - Female scientists are missing some animations
-- Airlock levers near the tentacle silo cause infinite levelchange while "touched" by controller
-- That one cutscene when Gordon gets arrested is broken
-- Barnacles don't cause damage
+- Pushable boxes and such behave blegh
+- Glitches in hand and weapon animations
+- HL VR menu blocks/overlays SteamVR menus
+- If there was an easter egg, which there isn't, it would have a bug
+- Skybox images in VR menu are mixed up
 
 ====
-List of missing features:
+Unfinished/planned features:
 
 - Proper controls for func_tank (those stationary guns, turrets etc.) and func_tracktrain (controllable trains)
 - Proper teleportation arc that matches path of jumping player
-- Proper implementation of the VR menu
 - Vibrational feedback (recoil etc.) isn't implemented yet
+- Smooth out stairs
+- SD weapons
+- HD skyboxes
 
 ===================
 *******************
