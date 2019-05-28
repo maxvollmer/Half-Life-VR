@@ -2044,8 +2044,6 @@ void PM_Duck(void)
 				pmove->bInDuck = true;
 			}
 
-			float time = max(0.0, (1.0 - (float)pmove->flDuckTime / 1000.0));
-
 			if (pmove->bInDuck)
 			{
 				// Finish ducking immediately if duck time is over or not on ground
@@ -3159,6 +3157,14 @@ void PM_ReduceTimers( void )
 		if ( pmove->flTimeStepSound < 0 )
 		{
 			pmove->flTimeStepSound = 0;
+		}
+	}
+	if (pmove->flDuckTime > 0)
+	{
+		pmove->flDuckTime -= pmove->cmd.msec;
+		if (pmove->flDuckTime < 0)
+		{
+			pmove->flDuckTime = 0;
 		}
 	}
 	if ( pmove->flSwimTime > 0 )
