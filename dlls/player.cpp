@@ -4819,8 +4819,8 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 			{
 				// ALERT(at_console, "STOP DUCKING!\n");
 				pev->flags &= ~FL_VR_DUCKING;
+				pev->origin.z = pev->origin.z + pev->mins.z - VEC_HULL_MIN.z;
 				UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
-				pev->origin.z = pev->origin.z + VEC_DUCK_HULL_MIN.z - VEC_HULL_MIN.z;
 			}
 		}
 		else
@@ -4829,8 +4829,8 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 			{
 				// ALERT(at_console, "START DUCKING!\n");
 				pev->flags |= FL_VR_DUCKING;
+				pev->origin.z = pev->origin.z + pev->mins.z - VEC_DUCK_HULL_MIN.z;
 				UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-				pev->origin.z = pev->origin.z + VEC_HULL_MIN.z - VEC_DUCK_HULL_MIN.z;
 			}
 		}
 	}
