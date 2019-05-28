@@ -1939,6 +1939,50 @@ void PM_SpectatorMove (void)
 	}
 }
 
+void PM_UnDuck(void)
+{
+	int i;
+	pmtrace_t trace;
+	vec3_t newOrigin;
+
+	VectorCopy(pmove->origin, newOrigin);
+
+	if (pmove->onground != -1)
+	{
+		for (i = 0; i < 3; i++)
+		{
+			newOrigin[i] += (pmove->player_mins[1][i] - pmove->player_mins[0][i]);
+		}
+	}
+
+	trace = pmove->PM_PlayerTrace(newOrigin, newOrigin, PM_NORMAL, -1);
+
+	if (!trace.startsolid)
+	{
+		pmove->usehull = 0;
+
+		// Oh, no, changing hulls stuck us into something, try unsticking downward first.
+		trace = pmove->PM_PlayerTrace(newOrigin, newOrigin, PM_NORMAL, -1);
+		if (trace.startsolid)
+		{
+			// See if we are stuck?  If so, stay ducked with the duck hull until we have a clear spot
+			//Con_Printf( "unstick got stuck\n" );
+			pmove->usehull = 1;
+			return;
+		}
+
+		pmove->flags &= ~FL_DUCKING;
+		pmove->bInDuck = false;
+		pmove->view_ofs[2] = VEC_VIEW;
+		pmove->flDuckTime = 0;
+
+		VectorCopy(newOrigin, pmove->origin);
+
+		// Recategorize position since ducking can change origin
+		PM_CategorizePosition();
+	}
+}
+
 void PM_FixPlayerCrouchStuck(int direction)
 {
 	int     hitent;
@@ -1959,44 +2003,6 @@ void PM_FixPlayerCrouchStuck(int direction)
 	}
 
 	VectorCopy(test, pmove->origin); // Failed
-}
-
-void PM_UnDuck(void)
-{
-	vec3_t newOrigin;
-	VectorCopy(pmove->origin, newOrigin);
-
-	if (pmove->onground != -1)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			newOrigin[i] += (pmove->player_mins[1][i] - pmove->player_mins[0][i]);
-		}
-	}
-
-	pmtrace_t trace = pmove->PM_PlayerTrace(newOrigin, newOrigin, PM_NORMAL, -1);
-
-	if (!trace.startsolid)
-	{
-		// Oh, no, changing hulls stuck us into something, try unsticking downward first.
-		trace = pmove->PM_PlayerTrace(newOrigin, newOrigin, PM_NORMAL, -1);
-		if (trace.startsolid)
-		{
-			// See if we are stuck?  If so, stay ducked with the duck hull until we have a clear spot
-			//Con_Printf( "unstick got stuck\n" );
-			return;
-		}
-
-		pmove->flags &= ~FL_DUCKING;
-		pmove->bInDuck = false;
-		pmove->flDuckTime = 0;
-
-		if (!(pmove->flags & (FL_DUCKING | FL_VR_DUCKING)))
-		{
-			VectorCopy(newOrigin, pmove->origin);
-			PM_CategorizePosition();
-		}
-	}
 }
 
 void PM_Duck(void)
@@ -2038,27 +2044,30 @@ void PM_Duck(void)
 				pmove->bInDuck = true;
 			}
 
+			float time = max(0.0, (1.0 - (float)pmove->flDuckTime / 1000.0));
+
 			if (pmove->bInDuck)
 			{
-				float time = max(0.0, (1.0 - (float)pmove->flDuckTime / 1000.0));
-
 				// Finish ducking immediately if duck time is over or not on ground
-				if ((pmove->flDuckTime / 1000.f <= (1.f - TIME_TO_DUCK)) || (pmove->onground == -1))
+				if (((float)pmove->flDuckTime / 1000.0 <= (1.0 - TIME_TO_DUCK)) || (pmove->onground == -1))
 				{
+					pmove->usehull = 1;
+					pmove->flags |= FL_DUCKING;
+					pmove->bInDuck = false;
+
 					// HACKHACK - Fudge for collision bug - no time to fix this properly
 					if (pmove->onground != -1)
 					{
-						pmove->origin[2] = pmove->origin[2] + pmove->player_mins[pmove->usehull][2] - pmove->player_mins[1][2];
-
+						for (int i = 0; i < 3; i++)
+						{
+							pmove->origin[i] -= (pmove->player_mins[1][i] - pmove->player_mins[0][i]);
+						}
 						// See if we are stuck?
 						PM_FixPlayerCrouchStuck(STUCK_MOVEUP);
 
 						// Recatagorize position since ducking can change origin
 						PM_CategorizePosition();
 					}
-
-					pmove->flags |= FL_DUCKING;
-					pmove->bInDuck = false;
 				}
 			}
 		}

@@ -481,8 +481,6 @@ cvar_t vr_move_instant_decelerate = { "vr_move_instant_decelerate", "0" };
 cvar_t vr_move_instant_accelerate = { "vr_move_instant_accelerate", "0" };
 cvar_t vr_weapon_grenade_mode = { "vr_weapon_grenade_mode", "0" };
 cvar_t vr_crowbar_vanilla_attack_enabled = { "vr_crowbar_vanilla_attack_enabled", "0" };
-cvar_t vr_rl_ducking_enabled = { "vr_rl_ducking_enabled", "1" };
-cvar_t vr_rl_duck_height_offset = { "vr_rl_duck_height_offset", "0" };
 cvar_t vr_noclip = { "vr_noclip", "0" };
 
 
@@ -950,8 +948,6 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&vr_move_instant_accelerate);
 	CVAR_REGISTER(&vr_weapon_grenade_mode);
 	CVAR_REGISTER(&vr_crowbar_vanilla_attack_enabled);
-	CVAR_REGISTER(&vr_rl_ducking_enabled);
-	CVAR_REGISTER(&vr_rl_duck_height_offset);
 	CVAR_REGISTER(&vr_noclip);
 
 

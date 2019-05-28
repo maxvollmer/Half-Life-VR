@@ -4779,7 +4779,7 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 
 // VR methods:
 
-void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta, float prevYaw, float currentYaw)
+void CBasePlayer::UpdateVRHeadset(const int timestamp, float hmdHeightInRL, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta, float prevYaw, float currentYaw)
 {
 	// Filter out outdated updates
 	if (timestamp <= vr_hmdLastUpdateClienttime && vr_hmdLastUpdateServertime >= gpGlobals->time)
@@ -4809,6 +4809,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 	vr_hmdLastUpdateClienttime = timestamp;
 	vr_hmdLastUpdateServertime = gpGlobals->time;
 
+	/*
 	// Check height of headset and (un)set player in duck mode, depending on height
 	if (!FBitSet(pev->button, IN_DUCK) && !FBitSet(pev->flags, FL_DUCKING) && CVAR_GET_FLOAT("vr_rl_ducking_enabled") != 0.f)
 	{
@@ -4834,6 +4835,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector & hmdOffset,
 			}
 		}
 	}
+	*/
 
 	// First get origin where the client thinks it is:
 	Vector clientOrigin = GetClientOrigin();

@@ -10,6 +10,7 @@
 #include "VRTextureHelper.h"
 #include "vr_gl.h"
 #include "VRInput.h"
+#include "pm_defs.h"
 #include <string>
 #include <algorithm>
 
@@ -316,6 +317,8 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_hud_health_offset_y", "-3", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_flashlight_offset_x", "-5", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_flashlight_offset_y", "2", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_rl_ducking_enabled", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_rl_duck_height", "100", FCVAR_ARCHIVE);
 
 	g_vrInput.Init();
 
@@ -670,12 +673,20 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	auto vrTransform = positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
 
-	if (g_vrInput.IsDucking())
+	m_hmdDuckHeightDelta = 0.f;
+	float hmdHeight = hlTransform.get()[13];
+	float rlDuckHeightInVR = CVAR_GET_FLOAT("vr_rl_duck_height");
+	g_vrInput.SetVRDucking(CVAR_GET_FLOAT("vr_rl_ducking_enabled") != 0.f && (hmdHeight < rlDuckHeightInVR));
+
+	extern playermove_t *pmove;
+	if (pmove != nullptr && (pmove->flags & (FL_DUCKING | FL_VR_DUCKING)))//(g_vrInput.IsDucking())
 	{
-		float duckHeightInVR = (DUCK_SIZE - 1.f) * GetHLToVR().y * hlTransform.get()[15];
-		float hmdHeight = hlTransform.get()[13];
-		const_cast<float*>(hlTransform.get())[13] = (std::min)(hmdHeight, duckHeightInVR);
-		m_hmdDuckHeightDelta = hmdHeight - hlTransform.get()[13];
+		if (!CVAR_GET_FLOAT("vr_rl_ducking_enabled") || hmdHeight > rlDuckHeightInVR)
+		{
+			float ingameDuckHeightInVR = (DUCK_SIZE - 1.f) * GetHLToVR().y * hlTransform.get()[15];
+			const_cast<float*>(hlTransform.get())[13] = (std::min)(hmdHeight, ingameDuckHeightInVR);
+			m_hmdDuckHeightDelta = hmdHeight - hlTransform.get()[13];
+		}
 	}
 
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
@@ -709,7 +720,7 @@ Matrix4 VRHelper::GetAbsoluteTransform(const vr::HmdMatrix34_t& vrTransform)
 {
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
 
-	if (g_vrInput.IsDucking())
+	if (m_hmdDuckHeightDelta != 0.f)
 	{
 		float controllerHeight = hlTransform.get()[13];
 		const_cast<float*>(hlTransform.get())[13] = controllerHeight - m_hmdDuckHeightDelta;
@@ -856,12 +867,16 @@ void VRHelper::SendPositionUpdateToServer()
 	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform());
 	if (localPlayer) hmdOffset.z += localPlayer->curstate.mins.z;
 
+	auto hlTransform = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
+	float hmdHeightInRL = hlTransform.get()[13];
+
 	char cmdHMD[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
+	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
 		m_vrUpdateTimestamp,
 		hmdOffset.x, hmdOffset.y, hmdOffset.z,
 		m_currentYawOffsetDelta.x, m_currentYawOffsetDelta.y, m_currentYawOffsetDelta.z,
-		m_prevYaw, m_currentYaw	// for save/restore
+		m_prevYaw, m_currentYaw,	// for save/restore
+		hmdHeightInRL
 	);
 	m_currentYawOffsetDelta = Vector{}; // reset after sending
 

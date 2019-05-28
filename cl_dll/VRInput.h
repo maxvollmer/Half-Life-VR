@@ -30,11 +30,6 @@ public:
 		extern kbutton_t in_right;
 		return m_rotateRight || (in_right.state & 3);
 	}
-	inline bool IsDucking() const
-	{
-		extern kbutton_t in_duck;
-		return m_isDucking || (in_duck.state & 3);
-	}
 	inline bool IsDragOn(vr::ETrackedControllerRole controllerRole) const
 	{
 		const auto& state = m_dragStates.find(controllerRole);
@@ -50,6 +45,14 @@ public:
 	inline bool IsLegacyInput() const
 	{
 		return m_isLegacyInput;
+	}
+	inline bool IsVRDucking()
+	{
+		return m_isVRDucking;
+	}
+	inline void SetVRDucking(bool isVRDucking)
+	{
+		m_isVRDucking = isVRDucking;
 	}
 
 	enum class FeedbackType
@@ -120,6 +123,7 @@ private:
 
 	bool m_isDucking{ false };	// TODO: Controller support for ducking
 	bool m_isLegacyInput{ false };
+	bool m_isVRDucking{ false };
 
 	std::unordered_map<std::string, ActionSet>				m_actionSets;
 	std::unordered_map<std::string, CustomAction>			m_customActions;
