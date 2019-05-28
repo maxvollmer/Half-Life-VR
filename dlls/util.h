@@ -467,7 +467,7 @@ extern DLL_GLOBAL int			g_Language;
 #define VEC_DUCK_HULL_MAX	Vector( 10,  10,  18)
 #define VEC_DUCK_VIEW		Vector( 0, 0, 12 )
 #define VEC_DUCK_HULL_SIZE	Vector( 20, 20, 36 )
-#define VEC_DUCK_HEIGHT		36;
+#define VEC_DUCK_HEIGHT		36
 
 #define SVC_TEMPENTITY		23
 #define SVC_INTERMISSION	30
