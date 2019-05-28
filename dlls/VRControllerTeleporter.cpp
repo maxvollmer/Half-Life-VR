@@ -4,6 +4,7 @@
 #include "vector.h"
 #include "cbase.h"
 #include "player.h"
+#include "pm_defs.h"
 
 #include "VRControllerTeleporter.h"
 #include "VRPhysicsHelper.h"
@@ -36,6 +37,7 @@ void VRControllerTeleporter::StartTele(CBasePlayer *pPlayer, const Vector& teleP
 	vr_fValidTeleDestination = false;
 	vr_fTelePointsAtXenMound = false;
 	vr_fTelePointsInWater = false;
+	vr_needsToDuckAfterTeleport = false;
 }
 
 void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
@@ -45,6 +47,22 @@ void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 
 	if (vr_fValidTeleDestination)
 	{
+		if (vr_needsToDuckAfterTeleport)
+		{
+			// we need to duck now!
+			extern playermove_t* pmove;
+			if (pmove != nullptr)
+			{
+				pmove->usehull = 1;
+				pmove->flags |= FL_DUCKING;
+				pmove->bInDuck = true;
+				pmove->oldbuttons |= IN_DUCK;
+				pmove->cmd.buttons |= IN_DUCK;
+			}
+			pPlayer->pev->flags |= FL_DUCKING;
+			UTIL_SetSize(pPlayer->pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+		}
+
 		if (vr_fTelePointsAtXenMound && vr_parabolaBeams[0] != nullptr && gGlobalXenMounds.Has(vr_parabolaBeams[0]->pev->origin))
 		{
 			gGlobalXenMounds.Trigger(pPlayer, vr_parabolaBeams[0]->pev->origin);
@@ -73,6 +91,7 @@ void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 	vr_fValidTeleDestination = false;
 	vr_fTelePointsAtXenMound = false;
 	vr_fTelePointsInWater = false;
+	vr_needsToDuckAfterTeleport = false;
 }
 
 void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& telePos, const Vector& teleDir)
@@ -85,6 +104,7 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& tele
 		vr_fValidTeleDestination = false;
 		vr_fTelePointsAtXenMound = false;
 		vr_fTelePointsInWater = false;
+		vr_needsToDuckAfterTeleport = false;
 		StopTele(pPlayer);
 		return;
 	}
@@ -94,15 +114,16 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& tele
 
 	Vector beamEndPos = tr.vecEndPos;
 	Vector teleportDestination = tr.vecEndPos;
+	bool needsToDuck = false;
 
-	vr_fValidTeleDestination = CanTeleportHere(pPlayer, tr, telePos, beamEndPos, teleportDestination);
+	vr_fValidTeleDestination = CanTeleportHere(pPlayer, tr, telePos, beamEndPos, teleportDestination, needsToDuck);
 
 	vr_pTeleBeam->SetStartPos(telePos);
 	vr_pTeleBeam->SetEndPos(beamEndPos);
 
 	if (vr_fValidTeleDestination && vr_fTelePointsAtXenMound)
 	{
-		EnableXenMoundParabolaAndUpdateTeleDestination(pPlayer, telePos, beamEndPos, teleportDestination);
+		EnableXenMoundParabolaAndUpdateTeleDestination(pPlayer, telePos, beamEndPos, teleportDestination, needsToDuck);
 	}
 	else
 	{
@@ -119,6 +140,7 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& tele
 	if (isTeleporterBlocked)
 	{
 		vr_fValidTeleDestination = false;
+		vr_needsToDuckAfterTeleport = false;
 	}
 
 	if (vr_fValidTeleDestination)
@@ -130,6 +152,8 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& tele
 		TraceResult tr;
 		UTIL_TraceLine(vr_vecTeleDestination, vr_vecTeleDestination + Vector(0, 0, pPlayer->pev->size.z), ignore_monsters, pPlayer->edict(), &tr);
 		vr_vecTeleDestination.z -= pPlayer->pev->size.z * (1.0f - tr.flFraction);
+
+		vr_needsToDuckAfterTeleport = needsToDuck;
 	}
 	else
 	{
@@ -186,7 +210,9 @@ float VRControllerTeleporter::GetCurrentTeleLength(CBasePlayer *pPlayer)
 	}
 }
 
-bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination)
+constexpr const int VR_MAX_LADDER_TOUCH_DEPTH = 4;
+
+bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination, bool& needsToDuck)
 {
 	vr_fTelePointsAtXenMound = false;	// reset every frame
 	vr_fTelePointsInWater = false;		// reset every frame
@@ -217,51 +243,68 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceRe
 		// Detect ladders
 		else if (tr.pHit != nullptr && FClassnameIs(tr.pHit, "func_ladder"))
 		{
-			if (beamStartPos.z < tr.vecEndPos.z)
+			Vector ladderHit = VecBModelOrigin(&tr.pHit->v);
+			ladderHit.z = tr.vecEndPos.z;
+
+			int ladderTouchDepth = VR_MAX_LADDER_TOUCH_DEPTH;
+			while (ladderTouchDepth >= 0)
 			{
-				// climb up
-				teleportDestination.z = tr.pHit->v.absmax.z;
-
-				// Make sure we don't teleport the player into a ceiling
-				float flPlayerHeight = FBitSet(pPlayer->pev->flags, (FL_DUCKING | FL_VR_DUCKING)) ? (VEC_DUCK_HULL_MAX.z - VEC_DUCK_HULL_MIN.z) : (VEC_HULL_MAX.z - VEC_HULL_MIN.z);
-				TraceResult tr2;
-				VRPhysicsHelper::Instance().TraceLine(teleportDestination, teleportDestination + Vector{ 0, 0, flPlayerHeight }, tr.pHit, &tr2);
-				if (tr2.flFraction < 1.f)
+				if (tr.pHit->v.size.x < tr.pHit->v.size.y)
 				{
-					teleportDestination.z -= flPlayerHeight * (1.f - tr2.flFraction);
-				}
-			}
-			else
-			{
-				// climb down
-				teleportDestination.z = tr.pHit->v.absmin.z;
-
-				Vector delta = beamEndPos - beamStartPos;
-
-				if (tr.pHit->v.size.x > tr.pHit->v.size.y)
-				{
-					if (delta.y < 0)
-					{
-						teleportDestination.y += 32.0f;
-					}
+					if (beamEndPos.x < ladderHit.x)
+						ladderHit.x = tr.pHit->v.absmin.x + ladderTouchDepth + pPlayer->pev->mins.x;
 					else
-					{
-						teleportDestination.y -= 32.0f;
-					}
+						ladderHit.x = tr.pHit->v.absmax.x - ladderTouchDepth + pPlayer->pev->maxs.x;
 				}
 				else
 				{
-					if (delta.x < 0)
-					{
-						teleportDestination.x += 32.0f;
-					}
+					if (beamEndPos.y < ladderHit.y)
+						ladderHit.y = tr.pHit->v.absmin.y + ladderTouchDepth + pPlayer->pev->mins.y;
 					else
+						ladderHit.y = tr.pHit->v.absmax.y - ladderTouchDepth + pPlayer->pev->maxs.y;
+				}
+				teleportDestination = beamEndPos = ladderHit;
+
+				extern playermove_t* pmove;
+				if (pmove != nullptr)
+				{
+					while (ladderHit.z > tr.pHit->v.absmin.z)
 					{
-						teleportDestination.x -= 32.0f;
+						bool isBlocked = pmove->PM_TestPlayerPosition(ladderHit, NULL) >= 0;
+						bool isBlockedDucking = isBlocked;
+						if (isBlocked && pmove->usehull == 0)
+						{
+							// check ducking
+							pmove->usehull = 1;
+							isBlockedDucking = pmove->PM_TestPlayerPosition(ladderHit, NULL) >= 0;
+							pmove->usehull = 0;
+						}
+						if (isBlockedDucking)
+						{
+							if (ladderHit.z == tr.vecEndPos.z && (ladderHit.z > (tr.pHit->v.absmax.z - VEC_DUCK_HEIGHT)))
+							{
+								ladderHit.z = tr.pHit->v.absmax.z - VEC_DUCK_HEIGHT;
+							}
+							else
+							{
+								ladderHit.z -= 8.f;
+							}
+						}
+						else
+						{
+							if (isBlocked)
+							{
+								needsToDuck = true;
+							}
+							teleportDestination = beamEndPos = ladderHit;
+							return true;
+						}
 					}
 				}
+				ladderTouchDepth--;
 			}
-			return true;// !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+
+			return false;
 		}
 		else if (tr.flFraction < 1.0f)
 		{
@@ -320,10 +363,11 @@ bool VRControllerTeleporter::TryTeleportInUpwardsTriggerPush(CBasePlayer *pPlaye
 	return false;
 }
 
-void VRControllerTeleporter::EnableXenMoundParabolaAndUpdateTeleDestination(CBasePlayer *pPlayer, const Vector& beamStartPos, const Vector& beamEndPos, Vector & teleportDestination)
+void VRControllerTeleporter::EnableXenMoundParabolaAndUpdateTeleDestination(CBasePlayer *pPlayer, const Vector& beamStartPos, const Vector& beamEndPos, Vector & teleportDestination, bool& needsToDuck)
 {
 	// Set this to false, in case we won't hit anything in the parabola loop (parabola goes into empty space), thus the teleport destination couldn't be determined and is invalid
 	vr_fValidTeleDestination = false;
+	needsToDuck = false;
 
 	// Get direction of beam and clamp at -0.1f z direction
 	Vector beamDir = (beamEndPos - beamStartPos).Normalize();
@@ -419,7 +463,7 @@ void VRControllerTeleporter::EnableXenMoundParabolaAndUpdateTeleDestination(CBas
 			teleportDestination = beamSegmentPos2 = tr.vecEndPos;
 
 			// Determine if this is a valid position
-			vr_fValidTeleDestination = CanTeleportHere(pPlayer, tr, beamSegmentPos1, beamSegmentPos2, teleportDestination);
+			vr_fValidTeleDestination = CanTeleportHere(pPlayer, tr, beamSegmentPos1, beamSegmentPos2, teleportDestination, needsToDuck);
 
 			// Hide all further beams (and increment i, so this loop exits)
 			for (i++; i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
