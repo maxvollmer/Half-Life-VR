@@ -144,6 +144,10 @@ void VRControllerTeleporter::TouchTriggersInTeleportPath(CBasePlayer *pPlayer)
 	CBaseEntity *pEntity = nullptr;
 	while (UTIL_FindEntityByFilter(&pEntity, [](CBaseEntity *pEnt) {return pEnt->pev->solid == SOLID_TRIGGER; }))
 	{
+		// Don't touch xen jump triggers with the teleporter
+		if (pEntity->IsXenJumpTrigger())
+			continue;
+
 		bool fTouched = vr_pTeleBeam && UTIL_TraceBBox(vr_pTeleBeam->pev->origin, vr_pTeleBeam->pev->angles, pEntity->pev->absmin, pEntity->pev->absmax);
 
 		if (!fTouched && vr_pTeleBeam && vr_pTeleSprite && (vr_pTeleSprite->pev->origin - vr_pTeleBeam->pev->angles).Length() > 0.1f)

@@ -441,6 +441,9 @@ public:
 
 	// For real rotation of rotating buttons in VR - Max Vollmer, 2019-05-26
 	virtual VRRotatableEnt*			MyRotatableEntPtr() { return nullptr; }
+
+	// Prevents being pushed up by xen jumps when using the teleporter on them
+	virtual bool IsXenJumpTrigger() { return false; }
 };
 
 
