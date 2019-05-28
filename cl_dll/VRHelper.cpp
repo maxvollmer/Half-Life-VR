@@ -1499,3 +1499,9 @@ bool VRGlobalIsPointInsideEnt(const float* point, int ent)
 		Vector{ point[0] , point[1] , point[2] }
 	);
 }
+
+// for pm_shared.cpp, only implemented on server side
+void VRNotifyStuckEnt(int player, int ent)
+{
+	/*noop*/
+}

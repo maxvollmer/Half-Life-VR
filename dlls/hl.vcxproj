@@ -322,6 +322,7 @@
     <ClCompile Include="VRControllerInteractionManager.cpp" />
     <ClCompile Include="VRControllerModel.cpp" />
     <ClCompile Include="VRControllerTeleporter.cpp" />
+    <ClCompile Include="VRCrushEntityHandler.cpp" />
     <ClCompile Include="VRGroundEntityHandler.cpp" />
     <ClCompile Include="VRModelHelper.cpp" />
     <ClCompile Include="VRPhysicsHelper.cpp" />

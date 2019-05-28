@@ -366,6 +366,9 @@
     <ClCompile Include="VRRotatableEnt.cpp">
       <Filter>VR\stuff</Filter>
     </ClCompile>
+    <ClCompile Include="VRCrushEntityHandler.cpp">
+      <Filter>VR</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activity.h">

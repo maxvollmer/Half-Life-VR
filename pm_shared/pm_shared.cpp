@@ -3215,10 +3215,14 @@ void PM_PlayerMove ( qboolean server )
 	// Always try and unstick us unless we are in NOCLIP mode
 	if ( !VRGlobalGetNoclipMode() && pmove->movetype != MOVETYPE_NONE )
 	{
-		if (PM_CheckStuck() || pmove->PM_TestPlayerPosition(pmove->origin, nullptr) != -1)
+		int stuckent = pmove->PM_TestPlayerPosition(pmove->origin, nullptr);
+		if (PM_CheckStuck() || stuckent != -1)
 		{
 			// When we're stuck, noclip away if our move direction is going away from whatever we're stuck on
 			PM_NoClip(true);
+			// Tell server dll that we got stuck in an entity - server dll can then determine if this entity should kill us or not
+			extern void VRNotifyStuckEnt(int player, int ent);
+			VRNotifyStuckEnt(pmove->player_index, stuckent);
 			return;
 		}
 	}
