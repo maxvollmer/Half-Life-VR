@@ -95,17 +95,17 @@
       {
          "name" : "/actions/input/in/AnalogJump",
          "requirement" : "suggested",
-         "type" : "boolean"
+         "type" : "vector1"
       },
       {
          "name" : "/actions/input/in/AnalogCrouch",
          "requirement" : "suggested",
-         "type" : "boolean"
+         "type" : "vector1"
       },
       {
          "name" : "/actions/input/in/AnalogLongJump",
          "requirement" : "optional",
-         "type" : "boolean"
+         "type" : "vector1"
       },
       {
          "name" : "/actions/input/in/MoveForwardBackward",
