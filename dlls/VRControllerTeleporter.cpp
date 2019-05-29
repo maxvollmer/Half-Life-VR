@@ -210,6 +210,7 @@ float VRControllerTeleporter::GetCurrentTeleLength(CBasePlayer *pPlayer)
 	}
 }
 
+constexpr const int VR_MIN_LADDER_TOUCH_DEPTH = -16;
 constexpr const int VR_MAX_LADDER_TOUCH_DEPTH = 4;
 
 bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination, bool& needsToDuck)
@@ -243,12 +244,11 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceRe
 		// Detect ladders
 		else if (tr.pHit != nullptr && FClassnameIs(tr.pHit, "func_ladder"))
 		{
-			Vector ladderHit = VecBModelOrigin(&tr.pHit->v);
-			ladderHit.z = tr.vecEndPos.z;
-
-			int ladderTouchDepth = VR_MAX_LADDER_TOUCH_DEPTH;
-			while (ladderTouchDepth >= 0)
+			for (int ladderTouchDepth = VR_MAX_LADDER_TOUCH_DEPTH; ladderTouchDepth >= VR_MIN_LADDER_TOUCH_DEPTH; ladderTouchDepth--)
 			{
+				Vector ladderHit = VecBModelOrigin(&tr.pHit->v);
+				ladderHit.z = tr.vecEndPos.z;
+
 				if (tr.pHit->v.size.x < tr.pHit->v.size.y)
 				{
 					if (beamEndPos.x < ladderHit.x)
@@ -270,7 +270,8 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceRe
 				{
 					while (ladderHit.z > tr.pHit->v.absmin.z)
 					{
-						bool isBlocked = pmove->PM_TestPlayerPosition(ladderHit, NULL) >= 0;
+						int blockingEnt = pmove->PM_TestPlayerPosition(ladderHit, NULL);
+						bool isBlocked = blockingEnt >= 0;
 						bool isBlockedDucking = isBlocked;
 						if (isBlocked && pmove->usehull == 0)
 						{
@@ -301,7 +302,6 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceRe
 						}
 					}
 				}
-				ladderTouchDepth--;
 			}
 
 			return false;

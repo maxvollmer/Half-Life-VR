@@ -80,30 +80,39 @@ HUD_GetHullBounds
   Engine calls this to enumerate player collision hulls, for prediction.  Return 0 if the hullnumber doesn't exist.
 ================================
 */
-int DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs )
-{
-	int iret = 0;
+float* g_pEngineHullMins[4]{ nullptr };
+float* g_pEngineHullMaxs[4]{ nullptr };
 
-	switch ( hullnumber )
+int InternalGetHullBounds(int hullnumber, float *mins, float *maxs, bool calledFromPMInit)
+{
+	if (!calledFromPMInit)
 	{
-	case 0:				// Normal player
-		mins = VEC_HULL_MIN;
-		maxs = VEC_HULL_MAX;
-		iret = 1;
-		break;
-	case 1:				// Crouched player
-		mins = VEC_DUCK_HULL_MIN;
-		maxs = VEC_DUCK_HULL_MAX;
-		iret = 1;
-		break;
-	case 2:				// Point based hull
-		mins = Vector( 0, 0, 0 );
-		maxs = Vector( 0, 0, 0 );
-		iret = 1;
-		break;
+		g_pEngineHullMins[hullnumber] = mins;
+		g_pEngineHullMaxs[hullnumber] = maxs;
 	}
 
-	return iret;
+	switch (hullnumber)
+	{
+	case 0: // Normal player
+		VEC_HULL_MIN.CopyToArray(mins);
+		VEC_HULL_MAX.CopyToArray(maxs);
+		return 1;
+	case 1: // Crouched player
+		VEC_DUCK_HULL_MIN.CopyToArray(mins);
+		VEC_DUCK_HULL_MAX.CopyToArray(maxs);
+		return 1;
+	case 2: // Point based hull
+		Vector{}.CopyToArray(mins);
+		Vector{}.CopyToArray(maxs);
+		return 1;
+	}
+
+	return 0;
+}
+
+int DLLEXPORT HUD_GetHullBounds(int hullnumber, float *mins, float *maxs)
+{
+	return InternalGetHullBounds(hullnumber, mins, maxs, false);
 }
 
 /*

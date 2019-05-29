@@ -35,6 +35,7 @@ extern bool VRGlobalIsInstantDecelerateOn();
 extern void VRGlobalGetEntityOrigin(int ent, float* entorigin);
 extern void VRGlobalGetWorldUnstuckDir(const float* pos, const float* velocity, float* unstuckdir);
 extern bool VRGlobalGetNoclipMode();
+extern void VRNotifyStuckEnt(int player, int ent);
 extern bool VRGlobalIsPointInsideEnt(const float* point, int ent);
 
 
@@ -2538,7 +2539,7 @@ void PM_NoClip(bool unstuckMove=false)
 							VectorAdd(wishend, offset, testend);
 							if (pmove->PM_TestPlayerPosition(testend, nullptr) == -1)
 							{
-								if (stuckent > 0 && VRGlobalIsPointInsideEnt(testend, stuckent)
+								if (stuckent > 0 && VRGlobalIsPointInsideEnt(testend, pmove->physents[stuckent].info)
 									&& (!foundendinsideent || Length(offset) < Length(foundendoffset)))
 								{
 									VectorCopy(offset, foundendoffset);
@@ -3218,13 +3219,15 @@ void PM_PlayerMove ( qboolean server )
 	if ( !VRGlobalGetNoclipMode() && pmove->movetype != MOVETYPE_NONE )
 	{
 		int stuckent = pmove->PM_TestPlayerPosition(pmove->origin, nullptr);
-		if (PM_CheckStuck() || stuckent != -1)
+		if (stuckent > 0)
+		{
+			// Tell server dll that we got stuck in an entity - server dll can then determine if this entity should kill us or not
+			VRNotifyStuckEnt(pmove->player_index, pmove->physents[stuckent].info);
+		}
+		if (PM_CheckStuck() || stuckent >= 0)
 		{
 			// When we're stuck, noclip away if our move direction is going away from whatever we're stuck on
 			PM_NoClip(true);
-			// Tell server dll that we got stuck in an entity - server dll can then determine if this entity should kill us or not
-			extern void VRNotifyStuckEnt(int player, int ent);
-			VRNotifyStuckEnt(pmove->player_index, stuckent);
 			return;
 		}
 	}
@@ -3493,6 +3496,12 @@ void PM_Init( struct playermove_s *ppmove )
 	assert( !pm_shared_initialized );
 
 	pmove = ppmove;
+
+	extern int InternalGetHullBounds(int hullnumber, float *mins, float *maxs, bool calledFromPMInit);
+	for (int i = 0; i < 4; i++)
+	{
+		InternalGetHullBounds(i, pmove->player_mins[i], pmove->player_maxs[i], true);
+	}
 
 	PM_CreateStuckTable();
 	PM_InitTextureTypes();

@@ -1797,37 +1797,40 @@ GetHullBounds
   Engine calls this to enumerate player collision hulls, for prediction.  Return 0 if the hullnumber doesn't exist.
 ================================
 */
-float *g_pEnginePlayerMaxs = nullptr;
-float *g_pEnginePlayerDuckMaxs = nullptr;
 
-int GetHullBounds( int hullnumber, float *mins, float *maxs )
+float* g_pEngineHullMins[4]{ nullptr };
+float* g_pEngineHullMaxs[4]{ nullptr };
+
+int InternalGetHullBounds(int hullnumber, float *mins, float *maxs, bool calledFromPMInit)
 {
-	int iret = 0;
-
-	switch ( hullnumber )
+	if (!calledFromPMInit)
 	{
-	case 0:				// Normal player
-		VEC_HULL_MIN.CopyToArray(mins);
-		VEC_HULL_MAX.CopyToArray(maxs);
-		//g_pEnginePlayerMins = mins;
-		g_pEnginePlayerMaxs = maxs;
-		iret = 1;
-		break;
-	case 1:				// Crouched player
-		VEC_DUCK_HULL_MIN.CopyToArray(mins);
-		VEC_DUCK_HULL_MAX.CopyToArray(maxs);
-		//g_pEnginePlayerDuckMins = mins;
-		g_pEnginePlayerDuckMaxs = maxs;
-		iret = 1;
-		break;
-	case 2:				// Point based hull
-		mins = Vector( 0, 0, 0 );
-		maxs = Vector( 0, 0, 0 );
-		iret = 1;
-		break;
+		g_pEngineHullMins[hullnumber] = mins;
+		g_pEngineHullMaxs[hullnumber] = maxs;
 	}
 
-	return iret;
+	switch (hullnumber)
+	{
+	case 0: // Normal player
+		VEC_HULL_MIN.CopyToArray(mins);
+		VEC_HULL_MAX.CopyToArray(maxs);
+		return 1;
+	case 1: // Crouched player
+		VEC_DUCK_HULL_MIN.CopyToArray(mins);
+		VEC_DUCK_HULL_MAX.CopyToArray(maxs);
+		return 1;
+	case 2: // Point based hull
+		Vector{}.CopyToArray(mins);
+		Vector{}.CopyToArray(maxs);
+		return 1;
+	}
+
+	return 0;
+}
+
+int GetHullBounds(int hullnumber, float *mins, float *maxs)
+{
+	return InternalGetHullBounds(hullnumber, mins, maxs, false);
 }
 
 /*
