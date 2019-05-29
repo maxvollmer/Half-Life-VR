@@ -120,7 +120,7 @@ private:
 	float m_prevYaw = 0.f;
 	float m_currentYaw = 0.f;
 	float m_instantRotateYawValue = 0.f;
-	Vector m_currentYawOffsetDelta;
+	Vector2D m_currentYawOffsetDelta;
 	float m_hmdDuckHeightDelta = 0.f;
 
 	bool m_hasGroundEntityYaw{ false };

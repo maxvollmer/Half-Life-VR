@@ -185,7 +185,7 @@ typedef struct playermove_s
 	// Common functions
 	const char		*(*PM_Info_ValueForKey) ( const char *s, const char *key );
 	void			(*PM_Particle)( float *origin, int color, float life, int zpos, int zvel);
-	int				(*PM_TestPlayerPosition) (float *pos, pmtrace_t *ptrace );
+	int				(*PM_TestPlayerPosition) (const float *pos, pmtrace_t *ptrace );
 	void			(*Con_NPrintf)( int idx, char *fmt, ... );
 	void			(*Con_DPrintf)( char *fmt, ... );
 	void			(*Con_Printf)( char *fmt, ... );

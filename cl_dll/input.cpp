@@ -674,11 +674,7 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 	//
 	cmd->buttons = CL_ButtonBits( 1 );
 
-	if (g_vrInput.IsVRDucking())
-	{
-		cmd->buttons |= IN_DUCK;
-	}
-
+	cmd->buttons_ex = 0;
 	if (g_vrInput.analogforward > EPSILON) cmd->buttons |= IN_FORWARD;
 	if (g_vrInput.analogforward < -EPSILON) cmd->buttons |= IN_BACK;
 	if (g_vrInput.analogsidemove > EPSILON) cmd->buttons |= IN_MOVELEFT;
@@ -687,6 +683,7 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 	if (g_vrInput.analogupmove < -EPSILON) cmd->buttons_ex |= X_IN_DOWN;
 	if (g_vrInput.analogupmove > EPSILON) cmd->buttons_ex |= X_IN_UP;
 	if (g_vrInput.analogupmove < -EPSILON) cmd->buttons_ex |= X_IN_DOWN;
+	if (g_vrInput.IsVRDucking()) cmd->buttons_ex |= X_IN_VRDUCK;
 
 	if (in_up.state & 3) cmd->buttons_ex |= X_IN_UP;
 	if (in_down.state & 3) cmd->buttons_ex |= X_IN_DOWN;

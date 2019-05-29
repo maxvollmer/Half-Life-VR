@@ -95,7 +95,7 @@ void VRHelper::UpdateWorldRotation()
 		m_prevYaw = 0.f;
 		m_currentYaw = 0.f;
 		m_instantRotateYawValue = 0.f;
-		m_currentYawOffsetDelta = Vector{};
+		m_currentYawOffsetDelta = Vector2D{};
 		return;
 	}
 
@@ -112,7 +112,7 @@ void VRHelper::UpdateWorldRotation()
 		m_prevYaw = 0.f;
 		m_currentYaw = 0.f;
 		m_instantRotateYawValue = 0.f;
-		m_currentYawOffsetDelta = Vector{};
+		m_currentYawOffsetDelta = Vector2D{};
 		return;
 	}
 
@@ -702,15 +702,14 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 
 		Vector3 yawOffsetDelta = newOffset - previousOffset;
 
-		m_currentYawOffsetDelta = Vector{
+		m_currentYawOffsetDelta = Vector2D{
 			yawOffsetDelta.x * GetVRToHL().x,
-			-yawOffsetDelta.z * GetVRToHL().z,
-			yawOffsetDelta.y * GetVRToHL().y
+			-yawOffsetDelta.z * GetVRToHL().z
 		};
 	}
 	else
 	{
-		m_currentYawOffsetDelta = Vector{};
+		m_currentYawOffsetDelta = Vector2D{};
 	}
 
 	return Matrix4{}.rotateY(m_currentYaw) * hlTransform;
@@ -865,20 +864,19 @@ void VRHelper::SendPositionUpdateToServer()
 {
 	cl_entity_t *localPlayer = SaveGetLocalPlayer();
 	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform());
-	if (localPlayer) hmdOffset.z += localPlayer->curstate.mins.z;
+	hmdOffset.z = 0.f;
 
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
 	float hmdHeightInRL = hlTransform.get()[13];
 
 	char cmdHMD[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
+	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f",
 		m_vrUpdateTimestamp,
-		hmdOffset.x, hmdOffset.y, hmdOffset.z,
-		m_currentYawOffsetDelta.x, m_currentYawOffsetDelta.y, m_currentYawOffsetDelta.z,
-		m_prevYaw, m_currentYaw,	// for save/restore
-		hmdHeightInRL
+		hmdOffset.x, hmdOffset.y,
+		m_currentYawOffsetDelta.x, m_currentYawOffsetDelta.y,
+		m_prevYaw, m_currentYaw	// for save/restore
 	);
-	m_currentYawOffsetDelta = Vector{}; // reset after sending
+	m_currentYawOffsetDelta = Vector2D{}; // reset after sending
 
 	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
 	bool leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);

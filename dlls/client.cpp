@@ -502,16 +502,15 @@ void ClientCommand( edict_t *pEntity )
 	else if (FStrEq(pcmd, "vrupd_hmd"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
-		if (size == 11)
+		if (size == 8)
 		{
 			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
 			int timestamp = atoi(CMD_ARGV(1));
-			Vector offset( atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4)) );
-			Vector yawOffsetDelta( atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7)) );
-			float prevYaw = atof(CMD_ARGV(8));
-			float currentYaw = atof(CMD_ARGV(9));
-			float hmdHeightInRL = atof(CMD_ARGV(10));
-			pPlayer->UpdateVRHeadset(timestamp, hmdHeightInRL, offset, yawOffsetDelta, prevYaw, currentYaw);
+			Vector2D offset( atof(CMD_ARGV(2)), atof(CMD_ARGV(3)) );
+			Vector2D yawOffsetDelta(atof(CMD_ARGV(4)), atof(CMD_ARGV(5)) );
+			float prevYaw = atof(CMD_ARGV(6));
+			float currentYaw = atof(CMD_ARGV(7));
+			pPlayer->UpdateVRHeadset(timestamp, offset, yawOffsetDelta, prevYaw, currentYaw);
 		}
 		else
 		{

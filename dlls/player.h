@@ -397,7 +397,7 @@ public:
 	bool IsWeaponUnderWater();
 	bool IsWeaponPositionValid();
 
-	void UpdateVRHeadset(const int timestamp, float hmdHeightInRL, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta, float prevYaw, float currentYaw);
+	void UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw);
 	void UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn);
 
 	void StoreVROffsetsForLevelchange();

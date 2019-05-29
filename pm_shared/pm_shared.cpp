@@ -2010,17 +2010,10 @@ void PM_Duck(void)
 	int buttonsChanged = (pmove->oldbuttons ^ pmove->cmd.buttons);	// These buttons have changed this frame
 	int nButtonPressed = buttonsChanged & pmove->cmd.buttons;		// The changed ones still down are "pressed"
 
-	int duckchange = buttonsChanged & IN_DUCK ? 1 : 0;
-	int duckpressed = nButtonPressed & IN_DUCK ? 1 : 0;
-
 	if (pmove->cmd.buttons & IN_DUCK)
-	{
 		pmove->oldbuttons |= IN_DUCK;
-	}
 	else
-	{
 		pmove->oldbuttons &= ~IN_DUCK;
-	}
 
 	// Prevent ducking if the iuser3 variable is set
 	if (pmove->iuser3 || pmove->dead)
@@ -2033,9 +2026,9 @@ void PM_Duck(void)
 		return;
 	}
 
-	if ((pmove->cmd.buttons & IN_DUCK) || (pmove->bInDuck) || (pmove->flags & FL_DUCKING))
+	if ((pmove->cmd.buttons & IN_DUCK || pmove->cmd.buttons_ex & X_IN_VRDUCK) || (pmove->bInDuck) || (pmove->flags & FL_DUCKING))
 	{
-		if (pmove->cmd.buttons & IN_DUCK)
+		if (pmove->cmd.buttons & IN_DUCK || pmove->cmd.buttons_ex & X_IN_VRDUCK)
 		{
 			if ((nButtonPressed & IN_DUCK) && !(pmove->flags & FL_DUCKING))
 			{
@@ -2044,28 +2037,25 @@ void PM_Duck(void)
 				pmove->bInDuck = true;
 			}
 
-			if (pmove->bInDuck)
+			if ((pmove->bInDuck && ((float)pmove->flDuckTime / 1000.0 <= (1.0 - TIME_TO_DUCK)) || (pmove->onground == -1))
+				|| (pmove->cmd.buttons_ex & X_IN_VRDUCK && !(pmove->flags & FL_DUCKING)))
 			{
-				// Finish ducking immediately if duck time is over or not on ground
-				if (((float)pmove->flDuckTime / 1000.0 <= (1.0 - TIME_TO_DUCK)) || (pmove->onground == -1))
+				pmove->usehull = 1;
+				pmove->flags |= FL_DUCKING;
+				pmove->bInDuck = false;
+
+				// HACKHACK - Fudge for collision bug - no time to fix this properly
+				if (pmove->onground != -1)
 				{
-					pmove->usehull = 1;
-					pmove->flags |= FL_DUCKING;
-					pmove->bInDuck = false;
-
-					// HACKHACK - Fudge for collision bug - no time to fix this properly
-					if (pmove->onground != -1)
+					for (int i = 0; i < 3; i++)
 					{
-						for (int i = 0; i < 3; i++)
-						{
-							pmove->origin[i] -= (pmove->player_mins[1][i] - pmove->player_mins[0][i]);
-						}
-						// See if we are stuck?
-						PM_FixPlayerCrouchStuck(STUCK_MOVEUP);
-
-						// Recatagorize position since ducking can change origin
-						PM_CategorizePosition();
+						pmove->origin[i] -= (pmove->player_mins[1][i] - pmove->player_mins[0][i]);
 					}
+					// See if we are stuck?
+					PM_FixPlayerCrouchStuck(STUCK_MOVEUP);
+
+					// Recatagorize position since ducking can change origin
+					PM_CategorizePosition();
 				}
 			}
 		}
@@ -2521,52 +2511,58 @@ void PM_NoClip(bool unstuckMove=false)
 		if (pmove->dead || pmove->deadflag != DEAD_NO)
 			return;
 
-		// bruteforce our way out of this!
-		int stuckent = pmove->PM_TestPlayerPosition(wishend, nullptr);
-		bool foundend = false;
-		bool foundendinsideent = false;
-		vec3_t foundendoffset;
-		for (int i = 0; !foundend && i <= VR_UNSTUCK_DISTANCE; i++)
+		// check if it's just a step
+		wishend[2] += pmove->movevars->stepsize;
+		if (pmove->PM_TestPlayerPosition(wishend, nullptr) >= 0)
 		{
-			for (int x = -1; x <= 1; x++)
+			// bruteforce our way out of this!
+			wishend[2] -= pmove->movevars->stepsize;
+			int stuckent = pmove->PM_TestPlayerPosition(wishend, nullptr);
+			bool foundend = false;
+			bool foundendinsideent = false;
+			vec3_t foundendoffset;
+			for (int i = 0; !foundend && i <= VR_UNSTUCK_DISTANCE; i++)
 			{
-				for (int y = -1; y <= 1; y++)
+				for (int x = -1; x <= 1; x++)
 				{
-					// go positive in z direction first (unstucking upwards is always better than downwards)
-					for (int z = 1; z >= -1; z--)
+					for (int y = -1; y <= 1; y++)
 					{
-						vec3_t testend;
-						vec3_t offset;
-						offset[0] = x * i;
-						offset[1] = y * i;
-						offset[2] = z * i;
-						VectorAdd(wishend, offset, testend);
-						if (pmove->PM_TestPlayerPosition(testend, nullptr) == -1)
+						// go positive in z direction first (unstucking upwards is always better than downwards)
+						for (int z = 1; z >= -1; z--)
 						{
-							if (stuckent > 0 && VRGlobalIsPointInsideEnt(testend, stuckent)
-								&& (!foundendinsideent || Length(offset) < Length(foundendoffset)))
+							vec3_t testend;
+							vec3_t offset;
+							offset[0] = x * i;
+							offset[1] = y * i;
+							offset[2] = z * i;
+							VectorAdd(wishend, offset, testend);
+							if (pmove->PM_TestPlayerPosition(testend, nullptr) == -1)
 							{
-								VectorCopy(offset, foundendoffset);
-								foundendinsideent = true;
+								if (stuckent > 0 && VRGlobalIsPointInsideEnt(testend, stuckent)
+									&& (!foundendinsideent || Length(offset) < Length(foundendoffset)))
+								{
+									VectorCopy(offset, foundendoffset);
+									foundendinsideent = true;
+								}
+								else if (!foundendinsideent && (!foundend || Length(offset) < Length(foundendoffset)))
+								{
+									VectorCopy(offset, foundendoffset);
+								}
+								foundend = true;
 							}
-							else if (!foundendinsideent && (!foundend || Length(offset) < Length(foundendoffset)))
-							{
-								VectorCopy(offset, foundendoffset);
-							}
-							foundend = true;
 						}
 					}
 				}
 			}
-		}
-		if (foundend)
-		{
-			VectorAdd(wishend, foundendoffset, wishend);
-		}
-		else
-		{
-			// still stuck, can't unstuck :(
-			return;
+			if (foundend)
+			{
+				VectorAdd(wishend, foundendoffset, wishend);
+			}
+			else
+			{
+				// still stuck, can't unstuck :(
+				return;
+			}
 		}
 	}
 
@@ -2847,7 +2843,7 @@ void PM_Jump(void)
 		// Adjust for super long jump module
 		// UNDONE -- note this should be based on forward angles, not current velocity.
 		if (cansuperjump &&
-			(pmove->flags & (FL_DUCKING | FL_VR_DUCKING)) && //(pmove->cmd.buttons & IN_DUCK) &&
+			(pmove->cmd.buttons & IN_DUCK | X_IN_VRDUCK) &&
 			(pmove->flDuckTime > 0) &&
 			Length(pmove->velocity) > 50)
 		{

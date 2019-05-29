@@ -20,6 +20,8 @@
 
 */
 
+#include <algorithm>
+
 #include "extdll.h"
 #include "util.h"
 
@@ -42,7 +44,7 @@
 #include "VRPhysicsHelper.h"
 #include "VRGroundEntityHandler.h"
 #include "VRModelHelper.h"
-#include <algorithm>
+#include "VRMovementHandler.h"
 
 
 // #define DUCKFIX
@@ -4805,7 +4807,7 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 
 // VR methods:
 
-void CBasePlayer::UpdateVRHeadset(const int timestamp, float hmdHeightInRL, const Vector & hmdOffset, const Vector& hmdYawOffsetDelta, float prevYaw, float currentYaw)
+void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw)
 {
 	// Filter out outdated updates
 	if (timestamp <= vr_hmdLastUpdateClienttime && vr_hmdLastUpdateServertime >= gpGlobals->time)
@@ -4820,7 +4822,8 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, float hmdHeightInRL, cons
 	// - Max Vollmer, 2019-04-13
 	if (vr_IsJustSpawned)
 	{
-		vr_lastHMDOffset = hmdOffset;
+		vr_lastHMDOffset.x = hmdOffset.x;
+		vr_lastHMDOffset.y = hmdOffset.y;
 		vr_ClientOriginOffset.x = -hmdOffset.x;
 		vr_ClientOriginOffset.y = -hmdOffset.y;
 		MESSAGE_BEGIN(MSG_ONE, gmsgVRSetSpawnYaw, NULL, pev);
@@ -4835,34 +4838,6 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, float hmdHeightInRL, cons
 	vr_hmdLastUpdateClienttime = timestamp;
 	vr_hmdLastUpdateServertime = gpGlobals->time;
 
-	/*
-	// Check height of headset and (un)set player in duck mode, depending on height
-	if (!FBitSet(pev->button, IN_DUCK) && !FBitSet(pev->flags, FL_DUCKING) && CVAR_GET_FLOAT("vr_rl_ducking_enabled") != 0.f)
-	{
-		float flDuckHeightOffset = CVAR_GET_FLOAT("vr_rl_duck_height_offset");
-		if (FBitSet(pev->flags, FL_VR_DUCKING))
-		{
-			if (hmdOffset.z > (20.f + flDuckHeightOffset))
-			{
-				// ALERT(at_console, "STOP DUCKING!\n");
-				pev->flags &= ~FL_VR_DUCKING;
-				pev->origin.z = pev->origin.z + pev->mins.z - VEC_HULL_MIN.z;
-				UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
-			}
-		}
-		else
-		{
-			if (hmdOffset.z <= (0.f + flDuckHeightOffset))
-			{
-				// ALERT(at_console, "START DUCKING!\n");
-				pev->flags |= FL_VR_DUCKING;
-				pev->origin.z = pev->origin.z + pev->mins.z - VEC_DUCK_HULL_MIN.z;
-				UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-			}
-		}
-	}
-	*/
-
 	// First get origin where the client thinks it is:
 	Vector clientOrigin = GetClientOrigin();
 
@@ -4870,33 +4845,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, float hmdHeightInRL, cons
 	clientOrigin = clientOrigin - hmdYawOffsetDelta;
 
 	// Then get headset position:
-	Vector hmdPosition = clientOrigin + hmdOffset;
-
-	// Get new server origin from headset x/y coordinates
-	Vector newOrigin{ hmdPosition.x, hmdPosition.y, clientOrigin.z };
-
-	// Get delta from last offset
-	const Vector hmdOffsetDelta = vr_lastHMDOffset + hmdYawOffsetDelta - hmdOffset;
-	const Vector hmdPredictPosition{ hmdPosition + (hmdOffsetDelta.Normalize() * -18.0f) };
-	int hmdPositionContent = UTIL_PointContents(hmdPosition, true);
-	int hmdPredictPositionContent = UTIL_PointContents(hmdPredictPosition, true);
-
-	if (hmdPositionContent == CONTENTS_SOLID || hmdPositionContent == CONTENTS_SKY
-		|| hmdPredictPositionContent == CONTENTS_SOLID || hmdPredictPositionContent == CONTENTS_SKY
-		|| VRPhysicsHelper::Instance().CheckIfLineIsBlocked(hmdPosition + hmdOffsetDelta, hmdPredictPosition))
-	{
-		//ALERT(at_console, "CONTENTS_SOLID\n");
-		// player put their head into a wall... we need to counteract
-		// take previous position (from the player's perspective, this will feel like pushing the level away when they run into a wall)
-		clientOrigin = clientOrigin + hmdOffsetDelta;
-		pev->origin = pev->origin + hmdOffsetDelta;
-		hmdPosition = hmdPosition + hmdOffsetDelta;
-		newOrigin = Vector{ hmdPosition.x, hmdPosition.y, clientOrigin.z };
-	}
-	else
-	{
-		//ALERT(at_console, "CONTENTS_EMPTY\n");
-	}
+	Vector newOrigin = clientOrigin + hmdOffset;
 
 	// push origin back so that view position is on border of player's bounding box
 	Vector viewDir2D;
@@ -4905,70 +4854,17 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, float hmdHeightInRL, cons
 	viewDir2D = viewDir2D.Normalize();
 	newOrigin = newOrigin - viewDir2D * VEC_HULL_MAX.x;
 
-	// Check if groundPosition is in wall, if so: check if this is something we can step on
-	Vector groundPosition = newOrigin;
-	groundPosition.z += pev->mins.z;
-	edict_t *pGroundEnt = nullptr;
-	int groundPositionContent = UTIL_PointContents(groundPosition, true, &pGroundEnt);
-	if (groundPositionContent == CONTENTS_SOLID || groundPositionContent == CONTENTS_SKY)
-	{
-		if (pGroundEnt)
-		{
-			ALERT(at_console, "pGroundEnt->v.targetname: %s\n", STRING(pGroundEnt->v.targetname));
-		}
-		// Don't move upwards in intro train
-		if (pGroundEnt != nullptr && FStrEq(STRING(pGroundEnt->v.targetname), "train"))
-		{
-			// TODO: Will we fall out now?
-		}
-		else
-		{
-			TraceResult tr;
-			UTIL_TraceLine(groundPosition + Vector(0, 0, 18), groundPosition, ignore_monsters, edict(), &tr);
-			if (!tr.fAllSolid && !tr.fStartSolid)
-			{
-				//get delta between groundPosition.z and floor level
-				float delta = tr.vecEndPos.z - groundPosition.z;
-				// check that head won't get pushed into ceiling (better having feet in floor, than head in ceiling)
-				int newHMDPositionContent = UTIL_PointContents(hmdPosition + Vector(0, 0, delta), true);
-				if (newHMDPositionContent != CONTENTS_SOLID && groundPositionContent != CONTENTS_SKY)
-				{
-					newOrigin.z += delta;
-					hmdPosition.z += delta;
-				}
-			}
-		}
-	}
-	pev->origin = newOrigin;
+	// Use movement handler to move to new position (instead of simply teleporting)
+	// Uses pm_shared code. Allows for climbing up stairs and handling all kinds of collisions with level geometry.
+	pev->origin = VRMovementHandler::DoMovement(pev->origin, newOrigin);
 
-	vr_ClientOriginOffset.x = clientOrigin.x - pev->origin.x;
-	vr_ClientOriginOffset.y = clientOrigin.y - pev->origin.y;
+	// Always add in newOrigin instead of pev->origin, creates much better and smoother results
+	vr_ClientOriginOffset.x = clientOrigin.x - newOrigin.x;
+	vr_ClientOriginOffset.y = clientOrigin.y - newOrigin.y;
 
 	// Remember offset for wallcheck next call
-	vr_lastHMDOffset = hmdOffset;
-
-	// Set view_ofs
-	pev->view_ofs = hmdPosition - pev->origin;
-
-	// Update bounding box
-	/*
-	pev->maxs.z = max(0, pev->view_ofs.z) + 20;
-	if (pev->flags & (FL_DUCKING | FL_VR_DUCKING))
-	{
-		//pev->maxs.z = max(VEC_DUCK_HULL_MAX.z, pev->view_ofs.z + 20);
-		extern float *g_pEnginePlayerDuckMaxs;
-		if (g_pEnginePlayerDuckMaxs != nullptr) Vector(pev->maxs).CopyToArray(g_pEnginePlayerDuckMaxs);
-		if (pmove != nullptr) Vector(pev->maxs).CopyToArray(pmove->player_maxs[1]);
-	}
-	else
-	{
-		//pev->maxs.z = max(VEC_HULL_MAX.z, pev->view_ofs.z + 20);
-		extern float *g_pEnginePlayerMaxs;
-		if (g_pEnginePlayerMaxs != nullptr) Vector(pev->maxs).CopyToArray(g_pEnginePlayerMaxs);
-		if (pmove != nullptr) Vector(pev->maxs).CopyToArray(pmove->player_maxs[0]);
-	}
-	UTIL_SetSize(pev, pev->mins, pev->maxs);
-	*/
+	vr_lastHMDOffset.x = hmdOffset.x;
+	vr_lastHMDOffset.y = hmdOffset.y;
 }
 
 void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging)

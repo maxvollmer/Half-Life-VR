@@ -325,6 +325,7 @@
     <ClCompile Include="VRCrushEntityHandler.cpp" />
     <ClCompile Include="VRGroundEntityHandler.cpp" />
     <ClCompile Include="VRModelHelper.cpp" />
+    <ClCompile Include="VRMovementHandler.cpp" />
     <ClCompile Include="VRPhysicsHelper.cpp" />
     <ClCompile Include="VRRotatableEnt.cpp" />
     <ClCompile Include="weapons.cpp" />
@@ -362,6 +363,7 @@
     <ClInclude Include="hlmv_mathlib.h" />
     <ClInclude Include="hornet.h" />
     <ClInclude Include="items.h" />
+    <ClInclude Include="VRMovementHandler.h" />
     <ClInclude Include="VRRotatableEnt.h" />
     <ClInclude Include="monsterevent.h" />
     <ClInclude Include="monsters.h" />
