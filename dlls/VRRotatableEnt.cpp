@@ -23,7 +23,7 @@ Vector VRRotatableEnt::GetWishAngles(float wishDeltaAngle)
 	{
 		wishAngles.y += wishDeltaAngle;
 	}
-	ALERT(at_console, "GetWishAngles: %f; m_vrRotateStartAngles: %f, %f, %f; wishAngles: %f, %f, %f\n", wishDeltaAngle, m_vrRotateStartAngles.x, m_vrRotateStartAngles.y, m_vrRotateStartAngles.z, wishAngles.x, wishAngles.y, wishAngles.z);
+	//ALERT(at_console, "GetWishAngles: %f; m_vrRotateStartAngles: %f, %f, %f; wishAngles: %f, %f, %f\n", wishDeltaAngle, m_vrRotateStartAngles.x, m_vrRotateStartAngles.y, m_vrRotateStartAngles.z, wishAngles.x, wishAngles.y, wishAngles.z);
 	return wishAngles;
 }
 
@@ -49,7 +49,7 @@ float VRRotatableEnt::CalculateDeltaAngle(const Vector& currentRotatePos)
 	Vector2D currentPos2D = CalculateDeltaPos2D(currentRotatePos).Normalize();
 	float startAngle = std::atan2(startPos2D.y, startPos2D.x) * 180.f / M_PI;
 	float currentAngle = std::atan2(currentPos2D.y, currentPos2D.x) * 180.f / M_PI;
-	ALERT(at_console, "CalculateDeltaAngle: startPos2D: %f, %f; currentPos2D: %f, %f; startAngle: %f; currentAngle: %f; deltaAngle: %f\n", startPos2D.x, startPos2D.y, currentPos2D.x, currentPos2D.y, startAngle, currentAngle, (currentAngle - startAngle));
+	//ALERT(at_console, "CalculateDeltaAngle: startPos2D: %f, %f; currentPos2D: %f, %f; startAngle: %f; currentAngle: %f; deltaAngle: %f\n", startPos2D.x, startPos2D.y, currentPos2D.x, currentPos2D.y, startAngle, currentAngle, (currentAngle - startAngle));
 	return currentAngle - startAngle;
 }
 
@@ -108,7 +108,7 @@ void VRRotatableEnt::VRRotate(CBaseEntity *pPlayer, const Vector& pos, bool fSta
 			float wishDeltaAngle = CalculateDeltaAngle(pos - MyEntityPointer()->pev->origin);
 			if (fabs(wishDeltaAngle) > 45)
 			{
-				ALERT(at_console, "!!!!!! fabs(wishDeltaAngle) > 45 !!!!!!!!!!!\n");
+				//ALERT(at_console, "!!!!!! fabs(wishDeltaAngle) > 45 !!!!!!!!!!!\n");
 				m_vrRotateStartPos = pos - MyEntityPointer()->pev->origin;
 				m_vrWishDeltaAngle += wishDeltaAngle;
 				wishDeltaAngle = 0.f;
@@ -122,7 +122,7 @@ void VRRotatableEnt::FollowWishDeltaAngle(CBaseEntity *pPlayer, const Vector& wi
 {
 	Vector actualAngles = CalculateAnglesFromWishAngles(wishAngles, maxRotSpeed);
 	float delta = CalculateAngleDelta(actualAngles, angleStart, angleEnd);
-	ALERT(at_console, "CalculateAngleDelta: %f; actualAngles: %f, %f, %f; angleStart: %f, %f, %f; angleEnd: %f, %f, %f\n", delta, actualAngles.x, actualAngles.y, actualAngles.z, angleStart.x, angleStart.y, angleStart.z, angleEnd.x, angleEnd.y, angleEnd.z);
+	//ALERT(at_console, "CalculateAngleDelta: %f; actualAngles: %f, %f, %f; angleStart: %f, %f, %f; angleEnd: %f, %f, %f\n", delta, actualAngles.x, actualAngles.y, actualAngles.z, angleStart.x, angleStart.y, angleStart.z, angleEnd.x, angleEnd.y, angleEnd.z);
 	if (delta <= 0.f)
 	{
 		MyEntityPointer()->pev->angles = angleStart;
