@@ -4,3 +4,4 @@ Release/
 !reactphysics3d/lib/Debug/
 !reactphysics3d/lib/Release/
 *.sdf
+/___mod/*.7z
