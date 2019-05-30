@@ -572,24 +572,51 @@ bool VRControllerInteractionManager::HandleTriggers(CBasePlayer *pPlayer, EHANDL
 	if (hEntity->pev->solid != SOLID_TRIGGER)
 		return false;
 
-	// Only handle trigger_multiple and trigger_once for now,
-	// all other triggers should only be activated by the actual player "body"
-	if (FClassnameIs(hEntity->pev, "trigger_multiple") || FClassnameIs(hEntity->pev, "trigger_once"))
+	if (std::string{ STRING(hEntity->pev->classname) }.find("trigger_") == 0)
 	{
-		if (isTouching && didTouchChange)
+		// Only handle trigger_multiple and trigger_once, other triggers should only be activated by the actual player "body"
+		if (FClassnameIs(hEntity->pev, "trigger_multiple") || FClassnameIs(hEntity->pev, "trigger_once"))
+		{
+			if (isTouching)
+			{
+				hEntity->Touch(pPlayer);
+			}
+		}
+		// Except trigger_hurt: Cause 10% damage when touching with hand
+		else if (FClassnameIs(hEntity->pev, "trigger_hurt"))
+		{
+			if (isTouching)
+			{
+				float dmgBackup = hEntity->pev->dmg;
+				hEntity->pev->dmg *= 0.1f;
+				hEntity->Touch(pPlayer);
+				hEntity->pev->dmg = dmgBackup;
+			}
+		}
+	}
+	else if (FClassnameIs(hEntity->pev, "item_sodacan"))
+	{
+		// TODO: pick up soda cans!
+		if (isTouching)
 		{
 			hEntity->Touch(pPlayer);
 		}
 	}
-	// Except trigger_hurt: Cause 10% damage when touching with hand
-	else if (FClassnameIs(hEntity->pev, "trigger_hurt"))
+	else if (std::string{ STRING(hEntity->pev->classname) }.find("item_") == 0
+		|| std::string{ STRING(hEntity->pev->classname) }.find("weapon_") == 0
+		|| std::string{ STRING(hEntity->pev->classname) }.find("ammo_") == 0
+		|| FClassnameIs(hEntity->pev, "weaponbox"))
 	{
 		if (isTouching)
 		{
-			float dmgBackup = hEntity->pev->dmg;
-			hEntity->pev->dmg *= 0.1f;
 			hEntity->Touch(pPlayer);
-			hEntity->pev->dmg = dmgBackup;
+		}
+	}
+	else if (FClassnameIs(hEntity->pev, "xen_plantlight"))
+	{
+		if (isTouching)
+		{
+			hEntity->Touch(pPlayer);
 		}
 	}
 
