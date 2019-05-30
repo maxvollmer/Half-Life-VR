@@ -43,3 +43,9 @@
 * Added cvar to control height of RL crouch
 * Massive improvements to weapon models
 * ESRGAN improved textures on all models
+
+0.4.1 - 2019-05-30
+* Fixed a bug where teleporting on some ladders wasn't possible
+* Fixed player hull sizes not being properly updated in movement code
+* Improved detection of groundentities (e.g. moving platforms in lambda core)
+* Corrected type of new analog jump, crouch and longjump actions
