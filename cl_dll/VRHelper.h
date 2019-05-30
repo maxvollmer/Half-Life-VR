@@ -156,6 +156,8 @@ private:
 
 	bool mIsViewEntMirrored{ false };
 
+	float m_hmdHeightOffset{ 0.f };
+
 public:
 	const Vector3& GetVRToHL();
 	const Vector3& GetHLToVR();

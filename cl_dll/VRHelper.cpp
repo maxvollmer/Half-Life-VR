@@ -699,7 +699,14 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 		{
 			playerViewPosHeight = m_viewOfs.z - VEC_HULL_MIN.z;
 		}
-		hlTransform[13] = (std::min)(hlTransform[13] * GetVRToHL().y, playerViewPosHeight) / GetVRToHL().y;
+		float originalHeight = hlTransform[13];
+		float newHeight = (std::min)(hlTransform[13] * GetVRToHL().y, playerViewPosHeight) / GetVRToHL().y;
+		hlTransform[13] = newHeight;
+		m_hmdHeightOffset = newHeight - originalHeight;
+	}
+	else
+	{
+		m_hmdHeightOffset = 0.f;
 	}
 
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
@@ -731,6 +738,7 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 Matrix4 VRHelper::GetAbsoluteTransform(const vr::HmdMatrix34_t& vrTransform)
 {
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
+	hlTransform[13] += m_hmdHeightOffset;
 
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
 		return hlTransform;
@@ -739,10 +747,10 @@ Matrix4 VRHelper::GetAbsoluteTransform(const vr::HmdMatrix34_t& vrTransform)
 	auto hlRawHMDTransform = ConvertSteamVRMatrixToMatrix4(vrRawHMDTransform);
 	auto hlCurrentYawHMDTransform = GetAbsoluteHMDTransform();
 
-	Vector3 rawHMDPos{ hlRawHMDTransform.get()[12], hlRawHMDTransform.get()[13], hlRawHMDTransform.get()[14] };
-	Vector3 currentYawHMDPos{ hlCurrentYawHMDTransform.get()[12], hlCurrentYawHMDTransform.get()[13], hlCurrentYawHMDTransform.get()[14] };
+	Vector3 rawHMDPos{ hlRawHMDTransform[12], hlRawHMDTransform[13], hlRawHMDTransform[14] };
+	Vector3 currentYawHMDPos{ hlCurrentYawHMDTransform[12], hlCurrentYawHMDTransform[13], hlCurrentYawHMDTransform[14] };
 
-	Vector4 controllerPos{ hlTransform.get()[12], hlTransform.get()[13], hlTransform.get()[14], 1.f };
+	Vector4 controllerPos{ hlTransform[12], hlTransform[13], hlTransform[14], 1.f };
 	controllerPos.x -= rawHMDPos.x;
 	controllerPos.z -= rawHMDPos.z;
 	Vector4 rotatedControllerPos = Matrix4{}.rotateY(m_currentYaw) * controllerPos;
