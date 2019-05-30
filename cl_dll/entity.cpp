@@ -22,6 +22,8 @@
 #include "pmtrace.h"	
 #include "pm_shared.h"
 
+#include "VRRenderer.h"
+
 #define DLLEXPORT __declspec( dllexport )
 
 void Game_AddObjects( void );
@@ -90,6 +92,9 @@ structure, we need to copy them into the state structure at this point.
 void DLLEXPORT HUD_TxferLocalOverrides( struct entity_state_s *state, const struct clientdata_s *client )
 {
 	VectorCopy( client->origin, state->origin );
+
+	// set current view_ofs to adjust ingame headset height (for ducking and to avoid big players looking through ceilings)
+	gVRRenderer.SetViewOfs(client->view_ofs);
 
 	// Spectator
 	state->iuser1 = client->iuser1;

@@ -68,11 +68,6 @@ void	DLLEXPORT HUD_VoiceStatus(int entindex, qboolean bTalking);
 void	DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf );
 }
 
-#define VEC_HULL_MIN		Vector(-10, -10, -36)
-#define VEC_HULL_MAX		Vector( 10,  10,  36)
-#define VEC_DUCK_HULL_MIN	Vector(-10, -10, -18 )
-#define VEC_DUCK_HULL_MAX	Vector( 10,  10,  18)
-
 /*
 ================================
 HUD_GetHullBounds

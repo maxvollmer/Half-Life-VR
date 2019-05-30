@@ -121,7 +121,6 @@ private:
 	float m_currentYaw = 0.f;
 	float m_instantRotateYawValue = 0.f;
 	Vector2D m_currentYawOffsetDelta;
-	float m_hmdDuckHeightDelta = 0.f;
 
 	bool m_hasGroundEntityYaw{ false };
 	float m_groundEntityYaw{ 0.f };
@@ -153,7 +152,9 @@ private:
 	Vector m_rightControllerUp;
 	Vector m_rightControllerVelocity;
 
-	bool		mIsViewEntMirrored{ false };
+	Vector m_viewOfs;
+
+	bool mIsViewEntMirrored{ false };
 
 public:
 	const Vector3& GetVRToHL();
@@ -186,4 +187,6 @@ public:
 	Vector GetLocalPlayerAngles();
 
 	bool IsViewEntMirrored() { return mIsViewEntMirrored; }
+
+	void SetViewOfs(const Vector& viewOfs) { m_viewOfs = viewOfs; }
 };

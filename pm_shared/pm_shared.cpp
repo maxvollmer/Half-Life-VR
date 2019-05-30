@@ -2031,19 +2031,27 @@ void PM_Duck(void)
 	{
 		if (pmove->cmd.buttons & IN_DUCK || pmove->cmd.buttons_ex & X_IN_VRDUCK)
 		{
+			bool switchToDuck = false;
+
 			if ((nButtonPressed & IN_DUCK) && !(pmove->flags & FL_DUCKING))
 			{
 				// Use 1 second so super long jump will work
 				pmove->flDuckTime = 1000;
 				pmove->bInDuck = true;
+				switchToDuck = true;
 			}
 
 			if ((pmove->bInDuck && ((float)pmove->flDuckTime / 1000.0 <= (1.0 - TIME_TO_DUCK)) || (pmove->onground == -1))
 				|| (pmove->cmd.buttons_ex & X_IN_VRDUCK && !(pmove->flags & FL_DUCKING)))
 			{
+				pmove->bInDuck = false;
+				switchToDuck = true;
+			}
+
+			if (switchToDuck)
+			{
 				pmove->usehull = 1;
 				pmove->flags |= FL_DUCKING;
-				pmove->bInDuck = false;
 
 				// HACKHACK - Fudge for collision bug - no time to fix this properly
 				if (pmove->onground != -1)

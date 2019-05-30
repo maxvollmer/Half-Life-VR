@@ -557,6 +557,11 @@ vr::IVRSystem* VRRenderer::GetVRSystem()
 	return vrHelper->GetVRSystem();
 }
 
+void VRRenderer::SetViewOfs(const Vector& viewOfs)
+{
+	vrHelper->SetViewOfs(viewOfs);
+}
+
 
 
 // For ev_common.cpp
@@ -568,3 +573,4 @@ void VRGlobalGetGunAim(Vector& forward, Vector& right, Vector& up, Vector& angle
 {
 	gVRRenderer.GetHelper()->GetGunAim(forward, right, up, angles);
 }
+

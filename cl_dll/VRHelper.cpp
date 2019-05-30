@@ -8,6 +8,7 @@
 #include "studio.h"
 #include "VRHelper.h"
 #include "VRTextureHelper.h"
+#include "VRRenderer.h"
 #include "vr_gl.h"
 #include "VRInput.h"
 #include "pm_defs.h"
@@ -673,20 +674,32 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	auto vrTransform = positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
 
-	m_hmdDuckHeightDelta = 0.f;
-	float hmdHeight = hlTransform.get()[13];
-	float rlDuckHeightInVR = CVAR_GET_FLOAT("vr_rl_duck_height");
-	g_vrInput.SetVRDucking(CVAR_GET_FLOAT("vr_rl_ducking_enabled") != 0.f && (hmdHeight < rlDuckHeightInVR));
-
-	extern playermove_t *pmove;
-	if (pmove != nullptr && (pmove->flags & (FL_DUCKING | FL_VR_DUCKING)))//(g_vrInput.IsDucking())
+	if (CVAR_GET_FLOAT("vr_rl_ducking_enabled") != 0.f)
 	{
-		if (!CVAR_GET_FLOAT("vr_rl_ducking_enabled") || hmdHeight > rlDuckHeightInVR)
+		float rlDuckHeightInVR_cm = CVAR_GET_FLOAT("vr_rl_duck_height");
+		float hmdHeight_m = hlTransform[13];
+		float hmdHeight_cm = hmdHeight_m * 100.f;
+		g_vrInput.SetVRDucking(hmdHeight_cm < rlDuckHeightInVR_cm);
+	}
+	else
+	{
+		g_vrInput.SetVRDucking(false);
+	}
+
+	// correct height (fixes ducking and prevents big players from looking through ceilings)
+	extern playermove_t* pmove;
+	if (pmove)
+	{
+		float playerViewPosHeight;
+		if (pmove->flags & (FL_DUCKING | FL_VR_DUCKING))
 		{
-			float ingameDuckHeightInVR = (DUCK_SIZE - 1.f) * GetHLToVR().y * hlTransform.get()[15];
-			const_cast<float*>(hlTransform.get())[13] = (std::min)(hmdHeight, ingameDuckHeightInVR);
-			m_hmdDuckHeightDelta = hmdHeight - hlTransform.get()[13];
+			playerViewPosHeight = m_viewOfs.z - VEC_DUCK_HULL_MIN.z;
 		}
+		else
+		{
+			playerViewPosHeight = m_viewOfs.z - VEC_HULL_MIN.z;
+		}
+		hlTransform[13] = (std::min)(hlTransform[13] * GetVRToHL().y, playerViewPosHeight) / GetVRToHL().y;
 	}
 
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
@@ -718,12 +731,6 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 Matrix4 VRHelper::GetAbsoluteTransform(const vr::HmdMatrix34_t& vrTransform)
 {
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
-
-	if (m_hmdDuckHeightDelta != 0.f)
-	{
-		float controllerHeight = hlTransform.get()[13];
-		const_cast<float*>(hlTransform.get())[13] = controllerHeight - m_hmdDuckHeightDelta;
-	}
 
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
 		return hlTransform;
@@ -773,7 +780,13 @@ Matrix4 VRHelper::GetAbsoluteControllerTransform(vr::TrackedDeviceIndex_t contro
 
 void VRHelper::GetViewOrg(float * origin)
 {
-	GetPositionInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform()).CopyToArray(origin);
+	Vector viewOrg = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform());
+	cl_entity_t *localPlayer = SaveGetLocalPlayer();
+	if (localPlayer)
+	{
+		viewOrg.z = (std::min)(viewOrg.z, localPlayer->curstate.origin.z + m_viewOfs.z);
+	}
+	viewOrg.CopyToArray(origin);
 }
 
 bool VRHelper::UpdateController(
