@@ -28,16 +28,7 @@ private:
 
 	CBasePlayer*		m_pPlayer{ nullptr };
 	EHANDLE				m_hGroundEntity;
-	bool				m_isTouchingGroundEntityFloor{ false };
-
-	/*
-	Vector m_initialPlayerOffsetToGroundEntity;
-	Vector m_lastPlayerOrigin;
-	Vector m_initialGroundEntityAngles;
-	Vector m_initialGroundEntityOrigin;
-	*/
 
 	Vector m_lastGroundEntityOrigin;
 	Vector m_lastGroundEntityAngles;
-	//Vector m_lastGroundEntityOffset;
 };

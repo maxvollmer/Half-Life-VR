@@ -3,9 +3,9 @@
 
 #include "extdll.h"
 #include "util.h"
-
 #include "cbase.h"
 #include "player.h"
+#include "pm_defs.h"
 
 #include "VRGroundEntityHandler.h"
 #include "VRPhysicsHelper.h"
@@ -49,9 +49,9 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 
 	CBaseEntity* pGroundEntity = nullptr;
 
-	bool forceIntroTrainRide  = CVAR_GET_FLOAT("vr_force_introtrainride") != 0.f;
+	// Take train if conditions are met
+	bool forceIntroTrainRide = CVAR_GET_FLOAT("vr_force_introtrainride") != 0.f;
 	std::string mapName{ STRING(INDEXENT(0)->v.model) };
-
 	if (forceIntroTrainRide && IntroTrainRideMapNames.count(mapName) != 0)
 	{
 		pGroundEntity = UTIL_FindEntityByTargetname(nullptr, "train");
@@ -67,8 +67,30 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 			}
 		}
 	}
-	else
+
+	if (!pGroundEntity)
 	{
+		// If engine has found a groundentity, take it
+		if (m_pPlayer->pev->groundentity && !m_pPlayer->pev->groundentity->free && !FNullEnt(m_pPlayer->pev->groundentity))
+		{
+			pGroundEntity = CBaseEntity::Instance(m_pPlayer->pev->groundentity);
+		}
+
+		// Try to find a ground entity using PM code
+		if (!pGroundEntity)
+		{
+			extern playermove_t* pmove;
+			if (pmove)
+			{
+				int entindex = pmove->PM_TestPlayerPosition(m_pPlayer->pev->origin, nullptr);
+				if (entindex > 0)
+				{
+					pGroundEntity = CBaseEntity::Instance(INDEXENT(pmove->physents[entindex].info));
+				}
+			}
+		}
+
+		// Use physics engine to find potentially better ground entity
 		CBaseEntity* pEntity = nullptr;
 		while (UTIL_FindAllEntities(&pEntity))
 		{
@@ -88,7 +110,6 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 	if (pGroundEntity)
 	{
 		m_pPlayer->pev->groundentity = pGroundEntity->edict();
-		m_isTouchingGroundEntityFloor = false; // TODO: Check if player absmin.z is inside groundentity's bsp model
 	}
 	else
 	{
@@ -96,22 +117,7 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 		{
 			m_pPlayer->pev->groundentity = nullptr;
 		}
-		m_isTouchingGroundEntityFloor = false;
 	}
-
-	/*
-	if (m_hGroundEntity != pGroundEntity)
-	{
-		if (pGroundEntity)
-		{
-			ALERT(at_console, "GROUNDENTITY: %s\n", STRING(pGroundEntity->pev->targetname));
-		}
-		else
-		{
-			ALERT(at_console, "NO GROUNDENTITY\n");
-		}
-	}
-	*/
 
 	m_hGroundEntity = pGroundEntity;
 }
@@ -124,14 +130,14 @@ CBaseEntity* VRGroundEntityHandler::ChoseBetterGroundEntityForPlayer(CBaseEntity
 	if (!pEntity2)
 		return pEntity1;
 
-	// Check with one moves faster
+	// Check which one moves faster
 	if (pEntity1->pev->velocity.LengthSquared() > pEntity2->pev->velocity.LengthSquared())
 		return pEntity1;
 
 	if (pEntity2->pev->velocity.LengthSquared() > pEntity1->pev->velocity.LengthSquared())
 		return pEntity2;
 
-	// Check with one rotates faster
+	// Check which one rotates faster
 	if (pEntity1->pev->avelocity.LengthSquared() > pEntity2->pev->avelocity.LengthSquared())
 		return pEntity1;
 
@@ -253,87 +259,3 @@ void VRGroundEntityHandler::MoveWithGroundEntity()
 		}
 	}
 }
-
-#if 0
-void VRGroundEntityHandler::MoveWithGroundEntity()
-{
-	if (!m_hGroundEntity)
-	{
-		return;
-	}
-
-	/*
-	// Take distance player has moved through input or other means
-	//Vector playerMoved = m_pPlayer->pev->origin - m_lastPlayerOrigin;
-
-	// Reset player origin
-	//m_pPlayer->pev->origin = m_lastPlayerOrigin;
-
-	// Calculate the rotated offset
-	Vector angleDifference = m_hGroundEntity->pev->angles - m_initialGroundEntityAngles;
-	Vector rotatedOffset = VRPhysicsHelper::Instance().RotateVectorInline(m_initialPlayerOffsetToGroundEntity, angleDifference);
-
-	// Calculate new player origin as moving with ground entity
-	m_pPlayer->pev->origin = m_hGroundEntity->pev->origin + rotatedOffset;
-	*/
-
-	/*
-	// Add player movement back in
-	m_pPlayer->pev->origin = m_pPlayer->pev->origin + playerMoved;
-
-	// Never move into or fall through ground entities
-	if (m_isTouchingGroundEntityFloor || m_pPlayer->pev->absmin.z < m_hGroundEntity->pev->absmin.z)
-	{
-		m_pPlayer->pev->origin.z = m_hGroundEntity->pev->absmin.z - m_pPlayer->pev->mins.z;
-		m_pPlayer->pev->velocity.z = (std::max)(m_pPlayer->pev->velocity.z, 0.f);
-	}
-
-	// Remember last player origin to account for actual player movement
-	m_lastPlayerOrigin = m_pPlayer->pev->origin;
-	*/
-
-	/*
-	// Make sure new origin is valid (don't get moved through walls/into void etc)
-	Vector dir = (newOrigin - m_pPlayer->pev->origin).Normalize();
-	Vector newEyePosition = newOrigin + m_pPlayer->pev->view_ofs;
-	Vector predictedEyePosition = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + (dir * 16.f);
-	int newEyeContents = UTIL_PointContents(newEyePosition);
-	int predictedEyeContents = UTIL_PointContents(predictedEyePosition);
-	if (newEyeContents != CONTENTS_SKY && newEyeContents != CONTENTS_SOLID
-		&& predictedEyeContents != CONTENTS_SKY && predictedEyeContents != CONTENTS_SOLID)
-	{
-		// Apply new origin
-		m_pPlayer->pev->origin = newOrigin;
-	}
-	else
-	{
-		// When we're moving up- or downwards, and the groundentity's center is valid,
-		// "slide" on x/y towards the center of the groundentity origin to avoid ceilings/corners/walls
-		Vector groundEntityCenter = (m_hGroundEntity->pev->absmin + m_hGroundEntity->pev->absmax) / 2;
-		int groundEntityCenterContents = UTIL_PointContents(groundEntityCenter);
-		if (groundEntityCenterContents != CONTENTS_SKY && groundEntityCenterContents != CONTENTS_SOLID)
-		{
-			Vector dirToCenter2D = groundEntityCenter - m_pPlayer->pev->origin;
-			dirToCenter2D.z = 0.f;
-			float distanceToCenter2D = dirToCenter2D.Length();
-			if (distanceToCenter2D > 8.f)
-			{
-				dirToCenter2D = dirToCenter2D.Normalize();
-				float moveDistance = (std::min)((std::max)(groundVelocity.Length() * gpGlobals->frametime, 1.f), distanceToCenter2D);
-				m_pPlayer->pev->origin.x += dirToCenter2D.x * moveDistance;
-				m_pPlayer->pev->origin.y += dirToCenter2D.y * moveDistance;
-				m_pPlayer->pev->origin.z = newOrigin.z;
-			}
-			else
-			{
-				ALERT(at_console, "distanceToCenter2D <= 8! pev->origin.z: %f\n", m_pPlayer->pev->origin.z);
-			}
-		}
-		else
-		{
-			ALERT(at_console, "groundEntityCenterContents are solid! pev->origin.z: %f\n", m_pPlayer->pev->origin.z);
-		}
-	}
-	*/
-}
-#endif
