@@ -53,6 +53,7 @@ List of known bugs and issues:
 - HL VR menu blocks/overlays SteamVR menus
 - If there was an easter egg, which there isn't, it would have a bug
 - Skybox images in VR menu are mixed up
+- Entities that are supposed to crush the player, don't crush the player (traps and such) (they just push you out of the way)
 
 ====
 Unfinished/planned features:
