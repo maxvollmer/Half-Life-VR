@@ -58,4 +58,4 @@
 * Capped view height at ingame height to avoid clipping issues
 * Made xen_plantlight react to touch by controllers
 * Added new cvar "vr_use_sd_models"
-* Removed "-dev" from launcher to prevent crashbug in engine (see https://github.com/ValveSoftware/halflife/issues/2492)
+* Removed "-condebug" from launcher to prevent crashbug in engine (see https://github.com/ValveSoftware/halflife/issues/2492)

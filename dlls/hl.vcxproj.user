@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommand>E:\Spiele\Steam\steamapps\common\Half-Life\hl.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-game vr -console -condebug -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 +sv_lan 1 +cl_mousegrab 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-game vr -console -dev 2 -condebug -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 +sv_lan 1 +cl_mousegrab 0</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>E:\Spiele\Steam\steamapps\common\Half-Life\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
@@ -10,14 +10,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerCommand>E:\Spiele\Steam\steamapps\common\Half-Life\hl.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-game vr -console -condebug -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 +sv_lan 1 +cl_mousegrab 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-game vr -console -dev 2 -condebug -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 +sv_lan 1 +cl_mousegrab 0</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>E:\Spiele\Steam\steamapps\common\Half-Life\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
     <LocalDebuggerCommand>E:\Spiele\Steam\steamapps\common\Half-Life\hl.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-game vr -console -condebug -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 +sv_lan 1 +cl_mousegrab 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-game vr -console -dev 2 -condebug -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 +sv_lan 1 +cl_mousegrab 0</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>E:\Spiele\Steam\steamapps\common\Half-Life\</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
   </PropertyGroup>
