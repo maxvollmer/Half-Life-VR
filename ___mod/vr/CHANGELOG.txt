@@ -49,3 +49,13 @@
 * Fixed player hull sizes not being properly updated in movement code
 * Improved detection of groundentities (e.g. moving platforms in lambda core)
 * Corrected type of new analog jump, crouch and longjump actions
+
+0.4.2 - 
+* Fixed items not being picked up by controllers
+* Fixed cvar vr_rl_duck_height being interpreted as m instead of cm
+* Fixed view height when ducking
+* Fixed several cvars not keeping their value between game sessions
+* Capped view height at ingame height to avoid clipping issues
+* Made xen_plantlight react to touch by controllers
+* Added new cvar "vr_use_sd_models"
+* Removed "-dev" from launcher to prevent crashbug in engine (see https://github.com/ValveSoftware/halflife/issues/2492)

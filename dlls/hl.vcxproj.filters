@@ -372,6 +372,9 @@
     <ClCompile Include="VRMovementHandler.cpp">
       <Filter>VR</Filter>
     </ClCompile>
+    <ClCompile Include="VRSDModelHelper.cpp">
+      <Filter>VR</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activity.h">

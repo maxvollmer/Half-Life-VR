@@ -328,6 +328,7 @@
     <ClCompile Include="VRMovementHandler.cpp" />
     <ClCompile Include="VRPhysicsHelper.cpp" />
     <ClCompile Include="VRRotatableEnt.cpp" />
+    <ClCompile Include="VRSDModelHelper.cpp" />
     <ClCompile Include="weapons.cpp" />
     <ClCompile Include="world.cpp" />
     <ClCompile Include="wpn_shared\hl_wpn_glock.cpp" />

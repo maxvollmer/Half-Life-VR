@@ -749,6 +749,8 @@ void ParmsChangeLevel( void )
 //
 void StartFrame( void )
 {
+	UTIL_UpdateSDModels();
+
 	VRPhysicsHelper::Instance().StartFrame();
 
 	if ( g_pGameRules )

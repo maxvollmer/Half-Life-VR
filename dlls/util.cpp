@@ -3155,3 +3155,4 @@ int	CRestore::BufferCheckZString( const char *string )
 	}
 	return 0;
 }
+

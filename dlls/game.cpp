@@ -452,36 +452,37 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
 
 // VR stuff
-cvar_t vr_npcscale = { "vr_npcscale", "1" };
-cvar_t vr_weaponscale = { "vr_weaponscale", "1" };
-cvar_t vr_shotgun_scale = { "vr_shotgun_scale", "1" };
-cvar_t vr_9mmar_scale = { "vr_9mmar_scale", "1" };
-cvar_t vr_9mmhandgun_scale = { "vr_9mmhandgun_scale", "1" };
-cvar_t vr_357_scale = { "vr_357_scale", "1" };
-cvar_t vr_egon_scale = { "vr_egon_scale", "1" };
-cvar_t vr_grenade_scale = { "vr_grenade_scale", "1" };
-cvar_t vr_satchel_scale = { "vr_satchel_scale", "1" };
-cvar_t vr_tripmine_scale = { "vr_tripmine_scale", "1" };
-cvar_t vr_gordon_hand_scale = { "vr_gordon_hand_scale", "1" };
-cvar_t vr_crossbow_scale = { "vr_crossbow_scale", "1" };
-cvar_t vr_gauss_scale = { "vr_gauss_scale", "1" };
-cvar_t vr_hgun_scale = { "vr_hgun_scale", "1" };
-cvar_t vr_satchel_radio_scale = { "vr_satchel_radio_scale", "1" };
-cvar_t vr_squeak_scale = { "vr_squeak_scale", "1" };
-cvar_t vr_crowbar_scale = { "vr_crowbar_scale", "1" };
-cvar_t vr_rpg_scale = { "vr_rpg_scale", "1" };
-cvar_t vr_melee_swing_speed = { "vr_melee_swing_speed", "150" };
-cvar_t vr_no_gauss_recoil = { "vr_no_gauss_recoil", "1" };
-cvar_t vr_force_introtrainride = { "vr_force_introtrainride", "1" };
-cvar_t vr_semicheat_spinthingyspeed = { "vr_semicheat_spinthingyspeed", "0" };
-cvar_t vr_disable_func_friction = { "vr_disable_func_friction", "0" };
-cvar_t vr_disable_triggerpush = { "vr_disable_triggerpush", "0" };
-cvar_t vr_xenjumpthingies_teleporteronly = { "vr_xenjumpthingies_teleporteronly", "0" };
-cvar_t vr_move_instant_decelerate = { "vr_move_instant_decelerate", "0" };
-cvar_t vr_move_instant_accelerate = { "vr_move_instant_accelerate", "0" };
-cvar_t vr_weapon_grenade_mode = { "vr_weapon_grenade_mode", "0" };
-cvar_t vr_crowbar_vanilla_attack_enabled = { "vr_crowbar_vanilla_attack_enabled", "0" };
+cvar_t vr_npcscale = { "vr_npcscale", "1", FCVAR_ARCHIVE };
+cvar_t vr_weaponscale = { "vr_weaponscale", "1", FCVAR_ARCHIVE };
+cvar_t vr_shotgun_scale = { "vr_shotgun_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_9mmar_scale = { "vr_9mmar_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_9mmhandgun_scale = { "vr_9mmhandgun_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_357_scale = { "vr_357_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_egon_scale = { "vr_egon_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_grenade_scale = { "vr_grenade_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_satchel_scale = { "vr_satchel_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_tripmine_scale = { "vr_tripmine_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_gordon_hand_scale = { "vr_gordon_hand_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_crossbow_scale = { "vr_crossbow_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_gauss_scale = { "vr_gauss_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_hgun_scale = { "vr_hgun_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_satchel_radio_scale = { "vr_satchel_radio_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_squeak_scale = { "vr_squeak_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_crowbar_scale = { "vr_crowbar_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_rpg_scale = { "vr_rpg_scale", "1", FCVAR_ARCHIVE };
+cvar_t vr_melee_swing_speed = { "vr_melee_swing_speed", "150", FCVAR_ARCHIVE };
+cvar_t vr_no_gauss_recoil = { "vr_no_gauss_recoil", "1", FCVAR_ARCHIVE };
+cvar_t vr_force_introtrainride = { "vr_force_introtrainride", "1", FCVAR_ARCHIVE };
+cvar_t vr_semicheat_spinthingyspeed = { "vr_semicheat_spinthingyspeed", "0", FCVAR_ARCHIVE };
+cvar_t vr_disable_func_friction = { "vr_disable_func_friction", "0", FCVAR_ARCHIVE };
+cvar_t vr_disable_triggerpush = { "vr_disable_triggerpush", "0", FCVAR_ARCHIVE };
+cvar_t vr_xenjumpthingies_teleporteronly = { "vr_xenjumpthingies_teleporteronly", "0", FCVAR_ARCHIVE };
+cvar_t vr_move_instant_decelerate = { "vr_move_instant_decelerate", "0", FCVAR_ARCHIVE };
+cvar_t vr_move_instant_accelerate = { "vr_move_instant_accelerate", "0", FCVAR_ARCHIVE };
+cvar_t vr_weapon_grenade_mode = { "vr_weapon_grenade_mode", "0", FCVAR_ARCHIVE };
+cvar_t vr_crowbar_vanilla_attack_enabled = { "vr_crowbar_vanilla_attack_enabled", "0", FCVAR_ARCHIVE };
 cvar_t vr_noclip = { "vr_noclip", "0" };
+cvar_t vr_use_sd_models = { "vr_use_sd_models", "0", FCVAR_ARCHIVE };
 
 
 // Register your console variables here
@@ -949,6 +950,9 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&vr_weapon_grenade_mode);
 	CVAR_REGISTER(&vr_crowbar_vanilla_attack_enabled);
 	CVAR_REGISTER(&vr_noclip);
+	CVAR_REGISTER(&vr_use_sd_models);
+
+	gSDModelsEnabled = CVAR_GET_FLOAT("vr_use_sd_models") != 0.f;
 
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 	std::wstring icaclsReenableDeletionOnFolderCommandLine = L"icacls " + hlDirectory + L" /remove:d Everyone";
 	std::wstring icaclsReenableDeletionOnFileCommandLine = L"icacls " + hlDirectory + L"\\opengl32.dll /remove:d Everyone";
 
-	std::wstring hlExeCommandLine = hlDirectory + L"\\hl.exe -game vr -dev 2 -console -condebug -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 800 -height 600 +sv_lan 1 +cl_mousegrab 0";
+	std::wstring hlExeCommandLine = hlDirectory + L"\\hl.exe -game vr -console -condebug -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0";
 
 	std::cout << "Finished initializing!" << std::endl;
 

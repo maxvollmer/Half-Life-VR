@@ -543,14 +543,23 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 void EMIT_AMBIENT_SOUND(edict_t *entity, float *pos, const char *sample, float volume, float attenuation, int flags, int pitch);
 
 #ifdef CLIENT_DLL
-inline int PRECACHE_SOUND(char* s)
-{
-	return PRECACHE_SOUND2(s);
-}
+inline int PRECACHE_SOUND(char* s) { return PRECACHE_SOUND2(s); }
+inline int PRECACHE_MODEL(char* s) { return PRECACHE_MODEL2(s); }
+inline int PRECACHE_GENERIC(char* s) { return PRECACHE_GENERIC2(s); }
+inline void SET_MODEL(edict_t *e, const char *m) { SET_MODEL2(e, m); }
+inline void MODEL_INDEX(const char *m) { MODEL_INDEX2(m); }
 #else
 int PRECACHE_SOUND(char* s);
-#endif
 
+// Intercept model functions to allow usage of SD versions
+// Implemented in VRSDModelHelper.cpp
+int PRECACHE_MODEL(char* s);
+int PRECACHE_GENERIC(char* s);
+void SET_MODEL(edict_t *e, const char *m);
+int MODEL_INDEX(const char *m);
+extern bool gSDModelsEnabled;
+void UTIL_UpdateSDModels();
+#endif
 
 inline void EMIT_SOUND(edict_t *entity, int channel, const char *sample, float volume, float attenuation)
 {
