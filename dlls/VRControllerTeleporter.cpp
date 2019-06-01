@@ -267,7 +267,7 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceRe
 				teleportDestination = beamEndPos = ladderHit;
 
 				extern playermove_t* pmove;
-				if (pmove && pmove->numphysent > 1 && !pmove->physents[0].model->needload == 0)
+				if (pmove && pmove->numphysent > 1 && pmove->physents[0].model->needload == 0)
 				{
 					while (ladderHit.z > tr.pHit->v.absmin.z)
 					{

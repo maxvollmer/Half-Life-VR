@@ -22,7 +22,7 @@ Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to)
 		return from;
 
 	// we can't move if map isn't loaded yet
-	if (!pmove->physents[0].model->needload == 0)
+	if (pmove->physents[0].model->needload != 0)
 		return from;
 
 	// we can't move if we are dead

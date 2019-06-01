@@ -81,7 +81,7 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 		if (!pGroundEntity)
 		{
 			extern playermove_t* pmove;
-			if (pmove && pmove->numphysent > 1 && !pmove->physents[0].model->needload == 0)
+			if (pmove && pmove->numphysent > 1 && pmove->physents[0].model->needload == 0)
 			{
 				int entindex = pmove->PM_TestPlayerPosition(m_pPlayer->pev->origin, nullptr);
 				if (entindex > 0)
