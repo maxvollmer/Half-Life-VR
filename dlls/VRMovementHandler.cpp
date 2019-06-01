@@ -5,6 +5,7 @@
 #include "player.h"
 #include "pm_defs.h"
 #include "pm_shared.h"
+#include "com_model.h"
 
 #include "VRMovementHandler.h"
 
@@ -18,6 +19,10 @@ Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to)
 
 	// we can't move if pmove is nullptr (should never happen)
 	if (!pmove)
+		return from;
+
+	// we can't move if map isn't loaded yet
+	if (!pmove->physents[0].model->needload == 0)
 		return from;
 
 	// we can't move if we are dead

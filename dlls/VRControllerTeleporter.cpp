@@ -5,6 +5,7 @@
 #include "cbase.h"
 #include "player.h"
 #include "pm_defs.h"
+#include "com_model.h"
 
 #include "VRControllerTeleporter.h"
 #include "VRPhysicsHelper.h"
@@ -266,7 +267,7 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer *pPlayer, const TraceRe
 				teleportDestination = beamEndPos = ladderHit;
 
 				extern playermove_t* pmove;
-				if (pmove != nullptr)
+				if (pmove && pmove->numphysent > 1 && !pmove->physents[0].model->needload == 0)
 				{
 					while (ladderHit.z > tr.pHit->v.absmin.z)
 					{
