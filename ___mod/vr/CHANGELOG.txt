@@ -50,12 +50,15 @@
 * Improved detection of groundentities (e.g. moving platforms in lambda core)
 * Corrected type of new analog jump, crouch and longjump actions
 
-0.4.2 - 
+0.4.2 - 2019-06-01
 * Fixed items not being picked up by controllers
 * Fixed cvar vr_rl_duck_height being interpreted as m instead of cm
 * Fixed view height when ducking
 * Fixed several cvars not keeping their value between game sessions
+* Fixed HLVRLauncher not working in directories with spaces
+* Fixed HLVRLauncher not removing inherited ACLs from Opengl32.dll
+* Fixed HLVRLauncher not properly deleting/backuping/restoring dll files
 * Capped view height at ingame height to avoid clipping issues
 * Made xen_plantlight react to touch by controllers
 * Added new cvar "vr_use_sd_models"
-* Removed "-condebug" from launcher to prevent crashbug in engine (see https://github.com/ValveSoftware/halflife/issues/2492)
+* Removed "-condebug" and "-dev" from launcher to prevent crashbug in engine (see https://github.com/ValveSoftware/halflife/issues/2492)
