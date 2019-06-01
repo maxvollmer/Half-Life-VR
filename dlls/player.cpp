@@ -1369,9 +1369,9 @@ void CBasePlayer::PlayerDeathThink(void)
 		return;
 	}
 
-	// auto-respawn after 3 seconds in VR (respawn immediately if any button down)
+	// auto-respawn after 1 second in VR (respawn immediately if any button down)
 	BOOL fAnyButtonDown = (pev->button & ~IN_SCORE);
-	if (fAnyButtonDown || gpGlobals->time > (m_fDeadTime + 3.f))
+	if (fAnyButtonDown || gpGlobals->time > (m_fDeadTime + 1.f))
 	{
 		pev->button = 0;
 		m_iRespawnFrames = 0;
@@ -1793,6 +1793,11 @@ void CBasePlayer::PreThink(void)
 
 	if ( g_fGameOver )
 		return;         // intermission or finale
+
+	// VR: We are MOVETYPE_NOCLIP, so the engine doesn't handle collisions with solid entities for various reasons (getting stuck, pushables not working nicely in VR etc.)
+	// This also means that trains and elevators just move through us. To avoid this, we do appropriate movement handling here.
+	// P.S. In pm_shared.cpp we do some modified normal movement as if we were MOVETYPE_WALK
+	m_vrGroundEntityHandler.HandleMovingWithSolidGroundEntities();
 
 	UTIL_MakeVectors(pev->v_angle);             // is this still used?
 
@@ -2506,11 +2511,6 @@ void CBasePlayer::PostThink()
 
 	if (!IsAlive())
 		goto pt_end;
-
-	// VR: We are MOVETYPE_NOCLIP, so the engine doesn't handle collisions with solid entities for various reasons (getting stuck, pushables not working nicely in VR etc.)
-	// This also means that trains and elevators just move through us. To avoid this, we do appropriate movement handling here.
-	// P.S. In pm_shared.cpp we do some modified normal movement as if we were MOVETYPE_WALK
-	m_vrGroundEntityHandler.HandleMovingWithSolidGroundEntities();
 
 	UpdateFlashlight();
 	UpdateVRTele();
