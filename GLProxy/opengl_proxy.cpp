@@ -43,6 +43,7 @@ void logCall(const char* funcName);
 #include <algorithm>
 #include <fstream>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include <cstdint>
 #include <cstdlib>
@@ -754,6 +755,32 @@ GLFUNC_5_WRET(int,   wglSetLayerPaletteEntries, HDC, hdc, int, b, int, c, int, d
 GLFUNC_8_WRET(BOOL,  wglUseFontOutlinesA, HDC, hdc, DWORD, b, DWORD, c, DWORD, d, float, e, float, f, int, g, GLYPHMETRICSFLOAT *, gmf);
 GLFUNC_8_WRET(BOOL,  wglUseFontOutlinesW, HDC, hdc, DWORD, b, DWORD, c, DWORD, d, float, e, float, f, int, g, GLYPHMETRICSFLOAT *, gmf);
 
+// Used to make wglGetProcAddress return nullptr for these functions, as we want hl.exe to use GetProcAddress instead, so it will use our intercepting functions.
+std::unordered_set<std::string> g_interceptedFunctionNames = {
+	{
+		"glEnable",
+		"glDisable",
+		"glViewport",
+		"glPushMatrix",
+		"glPopMatrix",
+		"glLoadIdentity",
+		"glMatrixMode",
+		"glLoadMatrixd",
+		"glLoadMatrixf",
+		"glMultMatrixd",
+		"glMultMatrixf",
+		"glScaled",
+		"glScalef",
+		"glTranslated",
+		"glTranslatef",
+		"glRotated",
+		"glRotatef",
+		"glFrustum",
+		"glGenTextures",
+		"glDeleteTextures"
+	}
+};
+
 //
 // wglGetProcAddress is a special case. We also want to log
 // which extensions got dynamically loaded by the application.
@@ -762,7 +789,15 @@ GLPROXY_EXTERN PROC GLPROXY_DECL wglGetProcAddress(LPCSTR funcName)
 {
     static GLProxy::TGLFunc<PROC, LPCSTR> TGLFUNC_DECL(wglGetProcAddress);
     GLPROXY_LOG("wglGetProcAddress('" << funcName << "')");
-    return TGLFUNC_CALL(wglGetProcAddress, funcName);
+	if (g_interceptedFunctionNames.count(std::string{ funcName }) != 0)
+	{
+		return nullptr;
+	}
+	else
+	{
+		auto result = TGLFUNC_CALL(wglGetProcAddress, funcName);
+		return result;
+	}
 }
 
 // This is an undocummented function, it seems. So it is probably not called by most applications...
@@ -917,7 +952,6 @@ GLFUNC_2(glClipPlane, GLenum, plane, const GLdouble *, equation);
 GLFUNC_3(glColor3b, GLbyte, red, GLbyte, green, GLbyte, blue);
 GLFUNC_2(glColorMaterial, GLenum, face, GLenum, mode);
 GLFUNC_2(glDeleteLists, GLuint, list, GLsizei, range);
-GLFUNC_2(glDeleteTextures, GLsizei, n, const GLuint *, textures);
 GLFUNC_2(glDepthRange, GLclampd, zNear, GLclampd, zFar);
 GLFUNC_2(glEdgeFlagPointer, GLsizei, stride, const void *, pointer);
 GLFUNC_2(glEvalCoord2d, GLdouble, u, GLdouble, v);
@@ -927,7 +961,6 @@ GLFUNC_2(glFogf, GLenum, pname, GLfloat, param);
 GLFUNC_2(glFogfv, GLenum, pname, const GLfloat *, params);
 GLFUNC_2(glFogi, GLenum, pname, GLint, param);
 GLFUNC_2(glFogiv, GLenum, pname, const GLint *, params);
-GLFUNC_2(glGenTextures, GLsizei, n, GLuint *, textures);
 GLFUNC_2(glGetBooleanv, GLenum, pname, GLboolean *, params);
 GLFUNC_2(glGetClipPlane, GLenum, plane, GLdouble *, equation);
 GLFUNC_2(glGetDoublev, GLenum, pname, GLdouble *, params);
@@ -1116,8 +1149,14 @@ GLFUNC_10(glMap2f, GLenum, target, GLfloat, u1, GLfloat, u2, GLint, ustride, GLi
 bool hlvr_GLMatricesLocked = false;
 int hlvr_PushCount = 0;
 
-typedef void (__stdcall * HLVR_CONSOLE_CALLBACK) (char * msg);
+typedef void(__stdcall * HLVR_CONSOLE_CALLBACK) (char*);
 HLVR_CONSOLE_CALLBACK hlvr_Console = nullptr;
+
+typedef void(__stdcall * HLVR_GLGENTEXTURES_CALLBACK) (GLsizei, GLuint*);
+HLVR_GLGENTEXTURES_CALLBACK hlvr_GenTexturesCallback = nullptr;
+
+typedef void(__stdcall * HLVR_GLDELETETEXTURES_CALLBACK) (GLsizei, const GLuint*);
+HLVR_GLDELETETEXTURES_CALLBACK hlvr_DeleteTexturesCallback = nullptr;
 
 void logCall(const char* funcName)
 {
@@ -1141,13 +1180,24 @@ GLPROXY_EXTERN void GLPROXY_DECL hlvrUnlockGLMatrices(void)
 	hlvr_PushCount = 0;
 }
 
-GLPROXY_EXTERN void GLPROXY_DECL hlvrSetConsoleCallback(void * consoleCallback)
+GLPROXY_EXTERN void GLPROXY_DECL hlvrSetConsoleCallback(void* consoleCallback)
 {
 	GLPROXY_LOG("hlvrSetConsoleCallback();");
 	hlvr_Console = reinterpret_cast<HLVR_CONSOLE_CALLBACK>(consoleCallback);
 	if (hlvr_Console != nullptr)
 	{
 		hlvr_Console("hlvrOpengl32HookDLL successfully received console callback.\n");
+	}
+}
+
+GLPROXY_EXTERN void GLPROXY_DECL hlvrSetGenAndDeleteTexturesCallback(void* genTexturesCallback, void* deleteTexturesCallback)
+{
+	GLPROXY_LOG("hlvrSetGenAndDeleteTexturesCallback();");
+	hlvr_GenTexturesCallback = reinterpret_cast<HLVR_GLGENTEXTURES_CALLBACK>(genTexturesCallback);
+	hlvr_DeleteTexturesCallback = reinterpret_cast<HLVR_GLDELETETEXTURES_CALLBACK>(deleteTexturesCallback);
+	if (hlvr_GenTexturesCallback != nullptr && hlvr_DeleteTexturesCallback != nullptr && hlvr_Console != nullptr)
+	{
+		hlvr_Console("hlvrOpengl32HookDLL successfully received glGenTextures and glDeleteTextures callback.\n");
 	}
 }
 
@@ -1324,5 +1374,27 @@ GLPROXY_EXTERN void GLPROXY_DECL glFrustum(GLdouble left, GLdouble right, GLdoub
 	{
 		static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glFrustum);
 		TGLFUNC_CALL(glFrustum, left, right, bottom, top, zNear, zFar);
+	}
+}
+
+GLPROXY_EXTERN void GLPROXY_DECL glGenTextures(GLsizei n, GLuint* textures)
+{
+	GLPROXY_LOG_CALL("glGenTextures");
+	static GLProxy::TGLFunc<void, GLsizei, GLuint*> TGLFUNC_DECL(glGenTextures);
+	TGLFUNC_CALL(glGenTextures, n, textures);
+	if (hlvr_GenTexturesCallback)
+	{
+		hlvr_GenTexturesCallback(n, textures);
+	}
+}
+
+GLPROXY_EXTERN void GLPROXY_DECL glDeleteTextures(GLsizei n, const GLuint* textures)
+{
+	GLPROXY_LOG_CALL("glDeleteTextures");
+	static GLProxy::TGLFunc<void, GLsizei, const GLuint*> TGLFUNC_DECL(glDeleteTextures);
+	TGLFUNC_CALL(glDeleteTextures, n, textures);
+	if (hlvr_DeleteTexturesCallback)
+	{
+		hlvr_DeleteTexturesCallback(n, textures);
 	}
 }

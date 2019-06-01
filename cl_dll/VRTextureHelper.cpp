@@ -79,7 +79,10 @@ unsigned int VRTextureHelper::GetTexture(const std::string& name)
 
 			// Now load it into OpenGL
 			glActiveTexture(GL_TEXTURE0);
+			extern bool gIsOwnCallToGenTextures;
+			gIsOwnCallToGenTextures = true;
 			glGenTextures(1, &texture);
+			gIsOwnCallToGenTextures = false;
 			glBindTexture(GL_TEXTURE_2D, texture);
 			glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

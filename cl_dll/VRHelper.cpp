@@ -1,4 +1,8 @@
 
+#include <string>
+#include <algorithm>
+#include <unordered_set>
+
 #include "Matrices.h"
 #include "hud.h"
 #include "cl_util.h"
@@ -12,8 +16,6 @@
 #include "vr_gl.h"
 #include "VRInput.h"
 #include "pm_defs.h"
-#include <string>
-#include <algorithm>
 
 #ifndef DUCK_SIZE
 #define DUCK_SIZE 36
@@ -257,6 +259,10 @@ void VRHelper::Init()
 	}
 	else
 	{
+		if (!InitGLCallbackFunctions())
+		{
+			gEngfuncs.Con_DPrintf("Failed to load callbacks from opengl32.dll. No opengl debug info will be printed, and HD skyboxes are unavailable.\n");
+		}
 		vr::EVRInitError vrInitError;
 		vrSystem = vr::VR_Init(&vrInitError, vr::EVRApplicationType::VRApplication_Scene);
 		vrCompositor = vr::VRCompositor();
@@ -1527,4 +1533,42 @@ bool VRGlobalIsPointInsideEnt(const float* point, int ent)
 void VRNotifyStuckEnt(int player, int ent)
 {
 	/*noop*/
+}
+
+void __stdcall HLVRConsoleCallback(char* msg)
+{
+	gEngfuncs.Con_DPrintf("%s\n", msg);
+}
+
+bool gIsOwnCallToGenTextures = false;
+std::vector<GLuint> gTextures;
+
+void __stdcall HLVRGenTexturesCallback(GLsizei n, GLuint* textures)
+{
+/*
+	cl_entity_s* map = gEngfuncs.GetEntityByIndex(0);
+	if (map == nullptr || map->model == nullptr)
+	{
+		gEngfuncs.Con_DPrintf("HLVRGenTexturesCallback NO MAP: %i\n", textures[0]);
+		return;
+	}
+
+	if (n == 1 && !gIsOwnCallToGenTextures && map->model->needload)
+	{
+		gTextures.push_back(textures[0]);
+		gEngfuncs.Con_DPrintf("HLVRGenTexturesCallback: %i\n", textures[0]);
+	}
+	else
+	{
+		gEngfuncs.Con_DPrintf("HLVRGenTexturesCallback BLOCKED: %i\n", textures[0]);
+	}
+*/
+}
+
+void __stdcall HLVRDeleteTexturesCallback(GLsizei n, const GLuint* textures)
+{
+/*
+	gTextures.erase(std::remove(gTextures.begin(), gTextures.end(), textures[0]), gTextures.end());
+	gEngfuncs.Con_DPrintf("HLVRDeleteTexturesCallback: %i\n", textures[0]);
+*/
 }

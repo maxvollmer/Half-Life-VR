@@ -363,4 +363,6 @@ EXPORTS
     wglUseFontOutlinesA
     hlvrLockGLMatrices
     hlvrUnlockGLMatrices
+    hlvrSetConsoleCallback
+    hlvrSetGenAndDeleteTexturesCallback
 

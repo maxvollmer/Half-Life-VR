@@ -14,6 +14,9 @@ PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer = nullptr;
 PFNHLVRLOCKGLMATRICESPROC hlvrLockGLMatrices = nullptr;
 PFNHLVRUNLOCKGLMATRICESPROC hlvrUnlockGLMatrices = nullptr;
 
+PFNHLVRSETCONSOLECALLBACKPROC hlvrSetConsoleCallback = nullptr;
+PFNHLVRSETGENANDDELETETEXTURESCALLBACKPROC hlvrSetGenAndDeleteTexturesCallback = nullptr;
+
 PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
 PFNGLGENERATEMIPMAPPROC glGenerateMipmap = nullptr;
 
@@ -36,6 +39,8 @@ void* GetOpenGLFuncAddress(const char *name)
 
 bool CreateGLTexture(unsigned int* texture, int width, int height)
 {
+	extern bool gIsOwnCallToGenTextures;
+	gIsOwnCallToGenTextures = true;
 	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
 	if (*texture)
@@ -48,6 +53,7 @@ bool CreateGLTexture(unsigned int* texture, int width, int height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	gIsOwnCallToGenTextures = false;
 	return *texture != 0; // TODO: Proper error handling
 }
 
@@ -107,6 +113,21 @@ bool InitGLMatrixOverrideFunctions()
 		hlvrLockGLMatrices != nullptr &&
 		hlvrUnlockGLMatrices != nullptr;
 
+}
+
+bool InitGLCallbackFunctions()
+{
+	hlvrSetConsoleCallback = (PFNHLVRSETCONSOLECALLBACKPROC)GetOpenGLFuncAddress("hlvrSetConsoleCallback");
+	hlvrSetGenAndDeleteTexturesCallback = (PFNHLVRSETGENANDDELETETEXTURESCALLBACKPROC)GetOpenGLFuncAddress("hlvrSetGenAndDeleteTexturesCallback");
+
+	if (hlvrSetConsoleCallback != nullptr && hlvrSetGenAndDeleteTexturesCallback != nullptr)
+	{
+		hlvrSetConsoleCallback(&HLVRConsoleCallback);
+		hlvrSetGenAndDeleteTexturesCallback(&HLVRGenTexturesCallback, &HLVRDeleteTexturesCallback);
+		return true;
+	}
+
+	return false;
 }
 
 void CaptureCurrentScreenToTexture(GLuint texture)
