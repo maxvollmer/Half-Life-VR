@@ -62,3 +62,7 @@
 * Made xen_plantlight react to touch by controllers
 * Added new cvar "vr_use_sd_models"
 * Removed "-condebug" and "-dev" from launcher to prevent crashbug in engine (see https://github.com/ValveSoftware/halflife/issues/2492)
+
+0.4.3 - 
+* Fixed violent up/down jittering when on platforms that move vertically
+* Reduced time till auto-reload after death to 1 second (from 3 seconds)
