@@ -29,6 +29,7 @@ typedef void (APIENTRY * PFNHLVRLOCKGLMATRICESPROC) (void);
 typedef void (APIENTRY * PFNHLVRUNLOCKGLMATRICESPROC) (void);
 typedef void (APIENTRY * PFNHLVRSETCONSOLECALLBACKPROC) (void*);
 typedef void (APIENTRY * PFNHLVRSETGENANDDELETETEXTURESCALLBACKPROC) (void*, void*);
+typedef void (APIENTRY * PFNHLVRSETGLBEGINCALLBACKPROC) (void*, void*);
 
 extern PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
 extern PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers;
@@ -49,6 +50,8 @@ extern PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
 extern void __stdcall HLVRConsoleCallback(char* msg);
 extern void __stdcall HLVRGenTexturesCallback(GLsizei, GLuint*);
 extern void __stdcall HLVRDeleteTexturesCallback(GLsizei, const GLuint*);
+extern void __stdcall HLVRGLBeginCallback(GLenum);
+extern void __stdcall HLVRGLEndCallback();
 
 bool CreateGLTexture(unsigned int* texture, int width, int height);
 bool CreateGLFrameBuffer(unsigned int* framebuffer, unsigned int texture, int width, int height);

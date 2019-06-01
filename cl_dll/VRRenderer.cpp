@@ -183,6 +183,16 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 			VectorCopy(viewentity->origin, pparams->vieworg);
 		}
 	}
+
+	extern int gAfterRefdefQuadsCounter;
+	if (!m_fIsOnlyClientDraw)
+	{
+		gAfterRefdefQuadsCounter = 0;
+	}
+	else
+	{
+		gAfterRefdefQuadsCounter = -1;
+	}
 }
 
 void VRRenderer::DrawNormal()
@@ -419,6 +429,7 @@ void VRRenderer::CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s *map)
 	}
 	if (replaceHDTextures)
 	{
+		vrHelper->SetSkyboxFromMap(map->model->name);
 		ReplaceAllTexturesWithHDVersion(map, m_hdTexturesEnabled);
 	}
 }

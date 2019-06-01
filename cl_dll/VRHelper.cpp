@@ -54,6 +54,10 @@ VRHelper::~VRHelper()
 {
 }
 
+// TODO: Make member
+vr::Texture_t m_skyboxTextures[6]{ 0 };
+vr::Texture_t m_skyboxHDTextures[6]{ 0 };
+
 #define MAGIC_HL_TO_VR_FACTOR 3.75f
 #define MAGIC_VR_TO_HL_FACTOR 10.f
 
@@ -1455,14 +1459,25 @@ void VRHelper::SetSkybox(const char* name)
 	if (!vrCompositor)
 		return;
 
-	vr::Texture_t skyboxTextures[6];
 	for (int i = 0; i < 6; i++)
 	{
-		skyboxTextures[i].eType = vr::TextureType_OpenGL;
-		skyboxTextures[i].eColorSpace = vr::ColorSpace_Auto;
-		skyboxTextures[i].handle = reinterpret_cast<void*>(VRTextureHelper::Instance().GetSkyboxTexture(name, i));
+		m_skyboxTextures[i].eType = vr::TextureType_OpenGL;
+		m_skyboxTextures[i].eColorSpace = vr::ColorSpace_Auto;
+		m_skyboxTextures[i].handle = reinterpret_cast<void*>(VRTextureHelper::Instance().GetSkyboxTexture(name, i));
+
+		m_skyboxHDTextures[i].eType = vr::TextureType_OpenGL;
+		m_skyboxHDTextures[i].eColorSpace = vr::ColorSpace_Auto;
+		m_skyboxHDTextures[i].handle = reinterpret_cast<void*>(VRTextureHelper::Instance().GetHDSkyboxTexture(name, i));
 	}
-	vrCompositor->SetSkyboxOverride(skyboxTextures, 6);
+
+	if (CVAR_GET_FLOAT("vr_hd_textures_enabled") != 0.f)
+	{
+		vrCompositor->SetSkyboxOverride(m_skyboxHDTextures, 6);
+	}
+	else
+	{
+		vrCompositor->SetSkyboxOverride(m_skyboxTextures, 6);
+	}
 }
 
 void VRHelper::SetSkyboxFromMap(const char* mapName)
@@ -1545,30 +1560,51 @@ std::vector<GLuint> gTextures;
 
 void __stdcall HLVRGenTexturesCallback(GLsizei n, GLuint* textures)
 {
-/*
-	cl_entity_s* map = gEngfuncs.GetEntityByIndex(0);
-	if (map == nullptr || map->model == nullptr)
-	{
-		gEngfuncs.Con_DPrintf("HLVRGenTexturesCallback NO MAP: %i\n", textures[0]);
-		return;
-	}
-
-	if (n == 1 && !gIsOwnCallToGenTextures && map->model->needload)
-	{
-		gTextures.push_back(textures[0]);
-		gEngfuncs.Con_DPrintf("HLVRGenTexturesCallback: %i\n", textures[0]);
-	}
-	else
-	{
-		gEngfuncs.Con_DPrintf("HLVRGenTexturesCallback BLOCKED: %i\n", textures[0]);
-	}
-*/
 }
 
 void __stdcall HLVRDeleteTexturesCallback(GLsizei n, const GLuint* textures)
 {
+}
+
+int gAfterRefdefQuadsCounter = -1;
+bool gPreventInfiniteRecursionMarker = false;
+
+// This method will replace the skybox textures rendered by Half-Life with HD versions (if vr_hd_textures_enabled is set)
+// We don't have direct access to the skybox textures used by Half-Life or any of the methods responsible for rendering it.
+// But Half-Life renders the skybox using glBegin with GL_QUADS, and it does it right after the call to CalcRefdef (see VRRenderer).
+// Thus we can simply take the first 6 calls to glBegin with GL_QUADS after CalcRefDef was called, and replace the textures with HD versions.
+// - Max Vollmer, 2019-06-01
+void __stdcall HLVRGLBeginCallback(GLenum mode)
+{
+	if (gPreventInfiniteRecursionMarker)
+		return;
+
+	if (CVAR_GET_FLOAT("vr_hd_textures_enabled") == 0.f)
+		return;
+
+	// TODO: Order of QUADS isn't consistent - possibly the engine also doesn't call these if sky isn't visible
+	// Needs more checks:
+	// - Actual size and position of quads (intercept glVertex)
+	// - Size of textures?
 /*
-	gTextures.erase(std::remove(gTextures.begin(), gTextures.end(), textures[0]), gTextures.end());
-	gEngfuncs.Con_DPrintf("HLVRDeleteTexturesCallback: %i\n", textures[0]);
+	if (mode == GL_QUADS && gAfterRefdefQuadsCounter >= 0 && gAfterRefdefQuadsCounter < 6)
+	{
+		// Cancel previous call to glBegin
+		glEnd();
+
+		// Set HD texture
+		glBindTexture(GL_TEXTURE_2D, reinterpret_cast<unsigned int>(m_skyboxHDTextures[gAfterRefdefQuadsCounter].handle));
+
+		// Call glBegin again with HD texture
+		gPreventInfiniteRecursionMarker = true;
+		glBegin(GL_QUADS);
+		gPreventInfiniteRecursionMarker = false;
+
+		gAfterRefdefQuadsCounter++;
+	}
 */
+}
+
+void __stdcall HLVRGLEndCallback()
+{
 }

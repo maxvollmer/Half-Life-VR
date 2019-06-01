@@ -16,6 +16,7 @@ PFNHLVRUNLOCKGLMATRICESPROC hlvrUnlockGLMatrices = nullptr;
 
 PFNHLVRSETCONSOLECALLBACKPROC hlvrSetConsoleCallback = nullptr;
 PFNHLVRSETGENANDDELETETEXTURESCALLBACKPROC hlvrSetGenAndDeleteTexturesCallback = nullptr;
+PFNHLVRSETGLBEGINCALLBACKPROC hlvrSetGLBeginCallback = nullptr;
 
 PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
 PFNGLGENERATEMIPMAPPROC glGenerateMipmap = nullptr;
@@ -119,11 +120,13 @@ bool InitGLCallbackFunctions()
 {
 	hlvrSetConsoleCallback = (PFNHLVRSETCONSOLECALLBACKPROC)GetOpenGLFuncAddress("hlvrSetConsoleCallback");
 	hlvrSetGenAndDeleteTexturesCallback = (PFNHLVRSETGENANDDELETETEXTURESCALLBACKPROC)GetOpenGLFuncAddress("hlvrSetGenAndDeleteTexturesCallback");
+	hlvrSetGLBeginCallback = (PFNHLVRSETGLBEGINCALLBACKPROC)GetOpenGLFuncAddress("hlvrSetGLBeginCallback");
 
-	if (hlvrSetConsoleCallback != nullptr && hlvrSetGenAndDeleteTexturesCallback != nullptr)
+	if (hlvrSetConsoleCallback != nullptr && hlvrSetGenAndDeleteTexturesCallback != nullptr && hlvrSetGLBeginCallback != nullptr)
 	{
 		hlvrSetConsoleCallback(&HLVRConsoleCallback);
 		hlvrSetGenAndDeleteTexturesCallback(&HLVRGenTexturesCallback, &HLVRDeleteTexturesCallback);
+		hlvrSetGLBeginCallback(&HLVRGLBeginCallback, &HLVRGLEndCallback);
 		return true;
 	}
 

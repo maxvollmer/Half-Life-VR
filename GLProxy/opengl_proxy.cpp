@@ -777,7 +777,9 @@ std::unordered_set<std::string> g_interceptedFunctionNames = {
 		"glRotatef",
 		"glFrustum",
 		"glGenTextures",
-		"glDeleteTextures"
+		"glDeleteTextures",
+		"glBegin",
+		"glEnd"
 	}
 };
 
@@ -823,7 +825,6 @@ GLFUNC_3_WRET(GLboolean, glAreTexturesResident, GLsizei, n, const GLuint *, text
 //
 // GL Functions returning void:
 //
-GLFUNC_0(glEnd);
 GLFUNC_0(glEndList);
 GLFUNC_0(glFinish);
 GLFUNC_0(glFlush);
@@ -832,7 +833,6 @@ GLFUNC_0(glPopAttrib);
 GLFUNC_0(glPopClientAttrib);
 GLFUNC_0(glPopName);
 GLFUNC_1(glArrayElement, GLint, i);
-GLFUNC_1(glBegin, GLenum, mode);
 GLFUNC_1(glCallList, GLuint, list);
 GLFUNC_1(glClear, GLbitfield, mask);
 GLFUNC_1(glClearDepth, GLclampd, depth);
@@ -1158,6 +1158,12 @@ HLVR_GLGENTEXTURES_CALLBACK hlvr_GenTexturesCallback = nullptr;
 typedef void(__stdcall * HLVR_GLDELETETEXTURES_CALLBACK) (GLsizei, const GLuint*);
 HLVR_GLDELETETEXTURES_CALLBACK hlvr_DeleteTexturesCallback = nullptr;
 
+typedef void(__stdcall * HLVR_GLBEGIN_CALLBACK) (GLenum);
+HLVR_GLBEGIN_CALLBACK hlvr_GLBeginCallback = nullptr;
+
+typedef void(__stdcall * HLVR_GLEND_CALLBACK) ();
+HLVR_GLEND_CALLBACK hlvr_GLEndCallback = nullptr;
+
 void logCall(const char* funcName)
 {
 	if (hlvr_GLMatricesLocked)
@@ -1197,7 +1203,18 @@ GLPROXY_EXTERN void GLPROXY_DECL hlvrSetGenAndDeleteTexturesCallback(void* genTe
 	hlvr_DeleteTexturesCallback = reinterpret_cast<HLVR_GLDELETETEXTURES_CALLBACK>(deleteTexturesCallback);
 	if (hlvr_GenTexturesCallback != nullptr && hlvr_DeleteTexturesCallback != nullptr && hlvr_Console != nullptr)
 	{
-		hlvr_Console("hlvrOpengl32HookDLL successfully received glGenTextures and glDeleteTextures callback.\n");
+		hlvr_Console("hlvrOpengl32HookDLL successfully received glGenTextures and glDeleteTextures callbacks.\n");
+	}
+}
+
+GLPROXY_EXTERN void GLPROXY_DECL hlvrSetGLBeginCallback(void* glBeginCallback, void* glEndCallback)
+{
+	GLPROXY_LOG("hlvrSetGLBeginCallback();");
+	hlvr_GLBeginCallback = reinterpret_cast<HLVR_GLBEGIN_CALLBACK>(glBeginCallback);
+	hlvr_GLEndCallback = reinterpret_cast<HLVR_GLEND_CALLBACK>(glEndCallback);
+	if (hlvr_GLBeginCallback != nullptr && hlvr_GLEndCallback != nullptr && hlvr_Console != nullptr)
+	{
+		hlvr_Console("hlvrOpengl32HookDLL successfully received glBegin and glEnd callbacks.\n");
 	}
 }
 
@@ -1398,3 +1415,26 @@ GLPROXY_EXTERN void GLPROXY_DECL glDeleteTextures(GLsizei n, const GLuint* textu
 		hlvr_DeleteTexturesCallback(n, textures);
 	}
 }
+
+GLPROXY_EXTERN void GLPROXY_DECL glBegin(GLenum mode)
+{
+	GLPROXY_LOG_CALL("glBegin");
+	static GLProxy::TGLFunc<void, GLenum> TGLFUNC_DECL(glBegin);
+	TGLFUNC_CALL(glBegin, mode);
+	if (hlvr_GLBeginCallback)
+	{
+		hlvr_GLBeginCallback(mode);
+	}
+}
+
+GLPROXY_EXTERN void GLPROXY_DECL glEnd()
+{
+	GLPROXY_LOG_CALL("glEnd");
+	static GLProxy::TGLFunc<void> TGLFUNC_DECL(glEnd);
+	TGLFUNC_CALL(glEnd);
+	if (hlvr_GLEndCallback)
+	{
+		hlvr_GLEndCallback();
+	}
+}
+

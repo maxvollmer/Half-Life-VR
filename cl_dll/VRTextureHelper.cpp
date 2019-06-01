@@ -28,6 +28,17 @@ unsigned int VRTextureHelper::GetSkyboxTexture(const std::string& name, int inde
 	return texture;
 }
 
+unsigned int VRTextureHelper::GetHDSkyboxTexture(const std::string& name, int index)
+{
+	unsigned int texture = GetTexture("skybox/hd/" + name + m_mapSkyboxIndices[index] + ".png");
+	if (!texture)
+	{
+		gEngfuncs.Con_DPrintf("HD skybox texture %s not found, falling back to SD.\n", (name + m_mapSkyboxIndices[index]).data());
+		texture = GetSkyboxTexture(name, index);
+	}
+	return texture;
+}
+
 const char* VRTextureHelper::GetSkyboxNameFromMapName(const std::string& mapName)
 {
 	auto& skyboxName = m_mapSkyboxNames.find(mapName);
