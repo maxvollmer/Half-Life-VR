@@ -9,6 +9,7 @@
 #include "util.h"
 #include "cbase.h"
 
+
 // Intercept model functions to allow usage of SD versions
 
 inline std::filesystem::path GetPathFor(const std::string& file)
@@ -36,7 +37,7 @@ char *GetSafeModelCharPtr(const std::string& model)
 
 char* GetSDModel(const std::string& model)
 {
-	if (model.find("models/") != 0)
+	if (model.find("models/") == std::string::npos)
 		return nullptr;
 
 	std::string sdModel = std::regex_replace(model, std::regex{"models/"}, "models/SD/");
@@ -56,7 +57,7 @@ const char* GetHDModel(const char* model)
 {
 	std::string sdModel{ model };
 
-	if (sdModel.find("models/SD/") != 0)
+	if (sdModel.find("models/SD/") == std::string::npos)
 		return model;
 
 	std::string hdModel = std::regex_replace(sdModel, std::regex{ "models/SD/" }, "models/");
@@ -147,7 +148,7 @@ void UTIL_UpdateSDModels()
 						SET_MODEL2(pEntity->edict(), sdModel);
 					}
 				}
-				else if (!gSDModelsEnabled && std::string{ modelName }.find("models/SD/") != 0)
+				else if (!gSDModelsEnabled && std::string{ modelName }.find("models/SD/") != std::string::npos)
 				{
 					SET_MODEL2(pEntity->edict(), GetHDModel(modelName));
 				}
