@@ -61,22 +61,22 @@ void DeleteDLL(const std::wstring& hlDirectory, const std::wstring& dll, bool cr
 
 	try
 	{
-		auto pathDLL = (hlDirectory + L"\\" + dll + L".dll").data();
+		std::wstring pathDLL = (hlDirectory + L"\\" + dll + L".dll");
 		if (createBackup)
 		{
-			auto pathBAK = (hlDirectory + L"\\" + dll + L".dll.bak").data();
-			if (FileExistsW(pathBAK) && !DeleteFileW(pathBAK))
+			std::wstring pathBAK = (hlDirectory + L"\\" + dll + L".dll.bak");
+			if (FileExistsW(pathBAK.data()) && !DeleteFileW(pathBAK.data()))
 			{
 				throw 0;
 			}
-			if (FileExistsW(pathDLL) && !MoveFileW(pathDLL, pathBAK))
+			if (FileExistsW(pathDLL.data()) && !MoveFileW(pathDLL.data(), pathBAK.data()))
 			{
 				throw 0;
 			}
 		}
 		else
 		{
-			if (FileExistsW(pathDLL) && !DeleteFileW(pathDLL))
+			if (FileExistsW(pathDLL.data()) && !DeleteFileW(pathDLL.data()))
 			{
 				throw 0;
 			}
@@ -97,7 +97,9 @@ void CopyDLL(const std::wstring& hlDirectory, const std::wstring& vrDirectory, c
 
 	try
 	{
-		if (!CopyFileW((vrDirectory + L"\\" + dll + L".dll").data(), (hlDirectory + L"\\" + dll + L".dll").data(), FALSE))
+		std::wstring from = (vrDirectory + L"\\" + dll + L".dll");
+		std::wstring to = (hlDirectory + L"\\" + dll + L".dll");
+		if (!CopyFileW(from.data(), to.data(), FALSE))
 		{
 			throw 0;
 		}
@@ -117,9 +119,9 @@ void RestoreDLL(const std::wstring& hlDirectory, const std::wstring& dll)
 
 	try
 	{
-		auto pathBAK = (hlDirectory + L"\\" + dll + L".dll.bak").data();
-		auto pathDLL = (hlDirectory + L"\\" + dll + L".dll").data();
-		if (FileExistsW(pathBAK) && !MoveFileW(pathBAK, pathDLL))
+		std::wstring pathBAK = (hlDirectory + L"\\" + dll + L".dll.bak");
+		std::wstring pathDLL = (hlDirectory + L"\\" + dll + L".dll");
+		if (FileExistsW(pathBAK.data()) && !MoveFileW(pathBAK.data(), pathDLL.data()))
 		{
 			throw 0;
 		}
@@ -151,7 +153,8 @@ void ForceSingleProcess()
 
 void CheckHalfLifeDirectory(const std::wstring& directory)
 {
-	DWORD dwAttrib = GetFileAttributesW((directory+L"\\hl.exe").data());
+	std::wstring hlexe = (directory + L"\\hl.exe");
+	DWORD dwAttrib = GetFileAttributesW(hlexe.data());
 	if ((dwAttrib == INVALID_FILE_ATTRIBUTES || (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)))
 	{
 		std::cerr << red << "Error: Couldn't find hl.exe. Make sure you run HLVRLauncher from the HLVR mod directory in your Half-Life folder." << white << std::endl;
@@ -175,13 +178,15 @@ int main(int argc, char *argv[])
 
 	CheckHalfLifeDirectory(hlDirectory);
 
-	std::wstring icaclsSetInheritanceCommandLine = L"icacls " + hlDirectory + L" /inheritance:d";
-	std::wstring icaclsDisableDeletionOnFolderCommandLine = L"icacls " + hlDirectory + L" /deny Everyone:(DE,DC)";
-	std::wstring icaclsDisableDeletionOnFileCommandLine = L"icacls " + hlDirectory + L"\\opengl32.dll /deny Everyone:(DE,DC)";
-	std::wstring icaclsReenableDeletionOnFolderCommandLine = L"icacls " + hlDirectory + L" /remove:d Everyone";
-	std::wstring icaclsReenableDeletionOnFileCommandLine = L"icacls " + hlDirectory + L"\\opengl32.dll /remove:d Everyone";
+	std::wstring icaclsSetInheritanceOnFolderCommandLine = L"icacls \"" + hlDirectory + L"\" /inheritance:d";
+	std::wstring icaclsSetInheritanceOnFileCommandLine = L"icacls \"" + hlDirectory + L"\\opengl32.dll\" /inheritance:d";
+	std::wstring icaclsDisableDeletionOnFolderCommandLine = L"icacls \"" + hlDirectory + L"\" /deny Everyone:(DE,DC)";
+	std::wstring icaclsDisableDeletionOnFileCommandLine = L"icacls \"" + hlDirectory + L"\\opengl32.dll\" /deny Everyone:(DE,DC)";
+	std::wstring icaclsEnableReadingOnFileCommandLine = L"icacls \"" + hlDirectory + L"\\opengl32.dll\" /grant Everyone:(R)";
+	std::wstring icaclsReenableDeletionOnFolderCommandLine = L"icacls \"" + hlDirectory + L"\" /remove:d Everyone";
+	std::wstring icaclsReenableDeletionOnFileCommandLine = L"icacls \"" + hlDirectory + L"\\opengl32.dll\" /remove:d Everyone";
 
-	std::wstring hlExeCommandLine = hlDirectory + L"\\hl.exe -game vr -console -dev 2 -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0";
+	std::wstring hlExeCommandLine = L"\"" + hlDirectory + L"\\hl.exe\" -game vr -console -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0";
 
 	std::cout << "Finished initializing!" << std::endl;
 
@@ -203,7 +208,7 @@ int main(int argc, char *argv[])
 
 	std::cout << std::endl;
 
-	RunCommandAndWait("Disabling Access Control List inheritance on the Half-Life folder...", icaclsSetInheritanceCommandLine);
+	RunCommandAndWait("Disabling Access Control List inheritance on the Half-Life folder...", icaclsSetInheritanceOnFolderCommandLine);
 	RunCommandAndWait("Enabling deletion of files in the Half-Life folder...", icaclsReenableDeletionOnFolderCommandLine);
 	RunCommandAndWait("Enabling deletion of OpenGL32.dll in the Half-Life folder...", icaclsReenableDeletionOnFileCommandLine);
 
@@ -218,7 +223,9 @@ int main(int argc, char *argv[])
 
 	std::cout << std::endl;
 
+	RunCommandAndWait("Disabling Access Control List inheritance on OpenGL32.dll in the Half-Life folder...", icaclsSetInheritanceOnFileCommandLine);
 	RunCommandAndWait("Disabling deletion of OpenGL32.dll in the Half-Life folder...", icaclsDisableDeletionOnFileCommandLine);
+	RunCommandAndWait("Enable read-only access to OpenGL32.dll in the Half-Life folder...", icaclsEnableReadingOnFileCommandLine);
 
 	std::cout << std::endl;
 
