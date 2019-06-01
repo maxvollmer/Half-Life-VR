@@ -132,6 +132,8 @@ void VRHelper::UpdateWorldRotation()
 		if (m_prevYaw < 0.f) m_prevYaw += 360.f;
 		m_currentYaw = std::fmodf(m_currentYaw, 360.f);
 		if (m_currentYaw < 0.f) m_currentYaw += 360.f;
+
+		m_hasReceivedYawUpdate = true;
 	}
 	else
 	{
@@ -891,13 +893,15 @@ void VRHelper::SendPositionUpdateToServer()
 	float hmdHeightInRL = hlTransform.get()[13];
 
 	char cmdHMD[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f",
+	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %i",
 		m_vrUpdateTimestamp,
 		hmdOffset.x, hmdOffset.y,
 		m_currentYawOffsetDelta.x, m_currentYawOffsetDelta.y,
-		m_prevYaw, m_currentYaw	// for save/restore
+		m_prevYaw, m_currentYaw,	// for save/restore
+		m_hasReceivedYawUpdate ? 1 : 0
 	);
 	m_currentYawOffsetDelta = Vector2D{}; // reset after sending
+	m_hasReceivedYawUpdate = false;
 
 	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
 	bool leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);

@@ -2902,6 +2902,8 @@ void CBasePlayer::Spawn( void )
 	m_flNextChatTime = gpGlobals->time;
 
 	g_pGameRules->PlayerSpawn( this );
+
+	vr_IsJustSpawned = true;
 }
 
 
@@ -3057,6 +3059,8 @@ int CBasePlayer::Restore( CRestore &restore )
 		pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
 		pev->weaponmodel = iStringNull;
 	}
+
+	vr_IsJustRestored = true;
 
 	return status;
 }
@@ -4045,15 +4049,6 @@ void CBasePlayer :: UpdateClientData( void )
 
 	}
 
-	if (vr_needsToSendRestoreYawMsgToClient)
-	{
-		MESSAGE_BEGIN(MSG_ONE, gmsgVRRestoreYaw, NULL, pev);
-		WRITE_ANGLE(this->vr_prevYaw);
-		WRITE_ANGLE(this->vr_currentYaw);
-		MESSAGE_END();
-		vr_needsToSendRestoreYawMsgToClient = false;
-	}
-
 	if ( m_iHideHUD != m_iClientHideHUD )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgHideWeapon, NULL, pev );
@@ -4260,6 +4255,16 @@ void CBasePlayer :: UpdateClientData( void )
 	{
 		UpdateStatusBar();
 		m_flNextSBarUpdateTime = gpGlobals->time + 0.2;
+	}
+
+	if (vr_needsToSendRestoreYawMsgToClient)
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgVRRestoreYaw, NULL, pev);
+		WRITE_ANGLE(this->vr_prevYaw);
+		WRITE_ANGLE(this->vr_currentYaw);
+		MESSAGE_END();
+		vr_hasSentRestoreYawMsgToClient = true;
+		vr_needsToSendRestoreYawMsgToClient = false;
 	}
 }
 
@@ -4807,13 +4812,30 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 
 // VR methods:
 
-void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw)
+void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg)
 {
 	// Filter out outdated updates
 	if (timestamp <= vr_hmdLastUpdateClienttime && vr_hmdLastUpdateServertime >= gpGlobals->time)
 	{
 		return;
 	}
+
+	// Ignore all updates until client has processed yaw update (fixes timing issues)
+	if (vr_needsToSendRestoreYawMsgToClient)
+	{
+		return;
+	}
+	if (vr_hasSentRestoreYawMsgToClient && !hasReceivedRestoreYawMsg)
+	{
+		return;
+	}
+	vr_hasSentRestoreYawMsgToClient = false;
+
+	// Calculate view dir for view position offset
+	Vector viewDir2D;
+	UTIL_MakeVectorsPrivate(Vector{ 0.f, pev->angles.y, 0.f }, viewDir2D, nullptr, nullptr);
+	viewDir2D.z = 0.f;
+	viewDir2D = viewDir2D.Normalize();
 
 	// If we just spawned we need to make sure that the HMD offset gets moved into the spawn position
 	// Thus we set vr_lastHMDOffset to the current HMD offset,
@@ -4822,14 +4844,18 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	// - Max Vollmer, 2019-04-13
 	if (vr_IsJustSpawned)
 	{
-		vr_lastHMDOffset.x = hmdOffset.x;
-		vr_lastHMDOffset.y = hmdOffset.y;
-		vr_ClientOriginOffset.x = -hmdOffset.x;
-		vr_ClientOriginOffset.y = -hmdOffset.y;
+		vr_lastHMDOffset = Vector{ hmdOffset.x, hmdOffset.y, 0.f };
+		vr_ClientOriginOffset = Vector{ -hmdOffset.x, -hmdOffset.y, 0.f };
 		MESSAGE_BEGIN(MSG_ONE, gmsgVRSetSpawnYaw, NULL, pev);
 		WRITE_ANGLE(vr_spawnYaw);
 		MESSAGE_END();
+		vr_spawnYaw = 0.f;
 		vr_IsJustSpawned = false;
+	}
+	else if (vr_IsJustRestored)
+	{
+		//vr_ClientOriginOffset = vr_ClientOriginOffset + viewDir2D * VEC_HULL_MAX.x;
+		vr_IsJustRestored = false;
 	}
 
 	vr_prevYaw = prevYaw;
@@ -4848,10 +4874,6 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	Vector newOrigin = clientOrigin + hmdOffset;
 
 	// push origin back so that view position is on border of player's bounding box
-	Vector viewDir2D;
-	UTIL_MakeVectorsPrivate(Vector{ 0.f, pev->angles.y, 0.f }, viewDir2D, nullptr, nullptr);
-	viewDir2D.z = 0.f;
-	viewDir2D = viewDir2D.Normalize();
 	newOrigin = newOrigin - viewDir2D * VEC_HULL_MAX.x;
 
 	// Use movement handler to move to new position (instead of simply teleporting)
