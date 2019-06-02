@@ -67,7 +67,8 @@
 * Fixed violent up/down jittering when on platforms that move vertically
 * Reduced time till auto-reload after death to 1 second (from 3 seconds)
 
-0.4.4 - 
+0.4.4 - 2019-06-02
 * Fixed player position after levelchange and save/reload
 * Fixed player orientation after levelchange and save/reload
 * Fixed crash bug when accessing engine pmove code before map has finished loading
+* Fixed issues with opengl32.dll with some drivers
