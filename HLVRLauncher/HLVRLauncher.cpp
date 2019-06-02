@@ -133,6 +133,27 @@ void RestoreDLL(const std::wstring& hlDirectory, const std::wstring& dll)
 	}
 }
 
+void ModifyDLLReadOnly(const std::wstring& hlDirectory, const std::wstring& dll, bool setOrRemove)
+{
+	std::cout << (setOrRemove ? "Setting" : "Removing") << " read-only attribute on " << std::string{ dll.begin(), dll.end() } << ".dll." << std::endl;
+
+	SetLastError(0);
+
+	try
+	{
+		std::wstring pathDLL = (hlDirectory + L"\\" + dll + L".dll");
+		if (!SetFileAttributesW(pathDLL.data(), setOrRemove ? FILE_ATTRIBUTE_READONLY : FILE_ATTRIBUTE_NORMAL))
+		{
+			throw 0;
+		}
+	}
+	catch (...)
+	{
+		std::cerr << yellow << "Warning: Couldn't modify read-only attribute on " << std::string{ dll.begin(), dll.end() } << ".dll. Error: " << GetLastError() << ". If the game doesn't run, you need to set the attribute manually." << white << std::endl;
+		g_hadError = true;
+	}
+}
+
 void ForceSingleProcess()
 {
 	SetLastError(0);
@@ -231,6 +252,8 @@ int main(int argc, char *argv[])
 	RunCommandAndWait("Disabling deletion of OpenGL32.dll in the Half-Life folder...", icaclsDisableDeletionOnFileCommandLine);
 	RunCommandAndWait("Enable read-only access to OpenGL32.dll in the Half-Life folder...", icaclsEnableReadingOnFileCommandLine);
 
+	ModifyDLLReadOnly(hlDirectory, L"OpenGL32", true);
+
 	std::cout << std::endl;
 
 	DeleteDLL(hlDirectory, L"openvr_api", true);
@@ -249,6 +272,8 @@ int main(int argc, char *argv[])
 	std::cout << "Game shut down, cleaning up." << std::endl;
 
 	std::cout << std::endl;
+
+	ModifyDLLReadOnly(hlDirectory, L"OpenGL32", false);
 
 	RunCommandAndWait("Enabling deletion of files in the Half-Life folder...", icaclsReenableDeletionOnFolderCommandLine);
 	RunCommandAndWait("Enabling deletion of OpenGL32.dll in the Half-Life folder...", icaclsReenableDeletionOnFileCommandLine);
