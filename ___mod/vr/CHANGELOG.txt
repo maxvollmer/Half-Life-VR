@@ -72,3 +72,9 @@
 * Fixed player orientation after levelchange and save/reload
 * Fixed crash bug when accessing engine pmove code before map has finished loading
 * Fixed issues with opengl32.dll with some drivers
+
+0.4.5 - 
+* Fixed some breakables breaking immediately when touched
+* Added cvars vr_ladder_movement_only_updown and vr_ladder_movement_speed for improved ladder movement
+* Made HLVRLauncher set opengl32.dll to read-only (additionally to the ACL settings)
+
