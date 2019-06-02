@@ -37,6 +37,8 @@ extern void VRGlobalGetWorldUnstuckDir(const float* pos, const float* velocity, 
 extern bool VRGlobalGetNoclipMode();
 extern void VRNotifyStuckEnt(int player, int ent);
 extern bool VRGlobalIsPointInsideEnt(const float* point, int ent);
+extern float VRGetMaxClimbSpeed();
+extern bool VRGetMoveOnlyUpDownOnLadder();
 
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
@@ -61,14 +63,13 @@ static int pm_shared_initialized = 0;
 
 playermove_t *pmove = NULL;
 
-#define MAX_CLIMB_SPEED	200
+#define DEFAULT_MAX_CLIMB_SPEED 100
 
 #define TIME_TO_DUCK	0.4
 #define VEC_DUCK_HULL_MIN	-18
 #define VEC_DUCK_HULL_MAX	18
 #define VEC_DUCK_VIEW		12
 #define PM_DEAD_VIEWHEIGHT	-8
-#define MAX_CLIMB_SPEED	200
 #define STUCK_MOVEUP 1
 #define STUCK_MOVEDOWN -1
 #define VEC_HULL_MIN		-36
@@ -2090,58 +2091,34 @@ void PM_Duck(void)
 
 void PM_LadderMove(physent_t *pLadder)
 {
-	vec3_t		ladderCenter;
-	trace_t		trace;
-	qboolean	onFloor;
-	vec3_t		floor;
-	vec3_t		modelmins, modelmaxs;
-
 	if (VRGlobalGetNoclipMode())
 		return;
 
+	pmove->gravity = 0;
+	pmove->movetype = MOVETYPE_FLY;
+
+	vec3_t modelmins{ 0.f, 0.f, 0.f };
+	vec3_t modelmaxs{ 0.f, 0.f, 0.f };
 	pmove->PM_GetModelBounds(pLadder->model, modelmins, modelmaxs);
 
+	vec3_t ladderCenter{ 0.f, 0.f, 0.f };
 	VectorAdd(modelmins, modelmaxs, ladderCenter);
 	VectorScale(ladderCenter, 0.5, ladderCenter);
 
-	pmove->movetype = MOVETYPE_FLY;
-
-	// On ladder, convert movement to be relative to the ladder
-
+	vec3_t floor{ 0.f, 0.f, 0.f };
 	VectorCopy(pmove->origin, floor);
 	floor[2] += pmove->player_mins[pmove->usehull][2] - 1;
 
-	if (pmove->PM_PointContents(floor, NULL) == CONTENTS_SOLID)
-		onFloor = true;
-	else
-		onFloor = false;
+	bool onFloor = pmove->PM_PointContents(floor, NULL) == CONTENTS_SOLID;
 
-	pmove->gravity = 0;
+	trace_t trace{ 0 };
 	float result = pmove->PM_TraceModel(pLadder, pmove->origin, ladderCenter, &trace);
 	if (result >= 0.f && result < 1.f
 		&& trace.fraction >= 0.f && trace.fraction < 1.f
-		&& trace.plane.normal[0] == trace.plane.normal[0]
-		&& trace.plane.normal[1] == trace.plane.normal[1]
-		&& trace.plane.normal[2] == trace.plane.normal[2])
+		&& !IS_NAN(trace.plane.normal[0])
+		&& !IS_NAN(trace.plane.normal[1])
+		&& !IS_NAN(trace.plane.normal[2]))
 	{
-		float forward = 0, right = 0, up = 0;
-		vec3_t vpn, v_right;
-		vec3_t v_up{ 0.f, 0.f, 1.f };
-
-		AngleVectors(pmove->angles, vpn, v_right, NULL);
-		if (pmove->cmd.buttons & IN_BACK)
-			forward -= MAX_CLIMB_SPEED;
-		if (pmove->cmd.buttons & IN_FORWARD)
-			forward += MAX_CLIMB_SPEED;
-		if (pmove->cmd.buttons & IN_MOVELEFT)
-			right -= MAX_CLIMB_SPEED;
-		if (pmove->cmd.buttons & IN_MOVERIGHT)
-			right += MAX_CLIMB_SPEED;
-		if (pmove->cmd.buttons_ex & X_IN_UP)
-			up += MAX_CLIMB_SPEED;
-		if (pmove->cmd.buttons_ex & X_IN_DOWN)
-			up -= MAX_CLIMB_SPEED;
-
 		if (pmove->cmd.buttons & IN_JUMP)
 		{
 			pmove->movetype = MOVETYPE_NOCLIP; // pmove->movetype = MOVETYPE_WALK; Restore to MOVETYPE_NOCLIP in VR
@@ -2149,34 +2126,53 @@ void PM_LadderMove(physent_t *pLadder)
 		}
 		else
 		{
-			if (forward != 0 || right != 0 || up != 0)
+			float maxClimbSpeed = VRGetMaxClimbSpeed();
+			if (maxClimbSpeed <= 1.f)
+			{
+				maxClimbSpeed = DEFAULT_MAX_CLIMB_SPEED;
+			}
+
+			vec3_t v_forward{ 1.f, 0.f, 0.f };
+			vec3_t v_right{ 0.f, 1.f, 0.f };
+			AngleVectors(pmove->angles, v_forward, v_right, NULL);
+
+			vec3_t v_up{ 0.f, 0.f, 1.f };
+
+			float forward = 0.f;
+			if (pmove->cmd.buttons & IN_BACK)
+				forward -= maxClimbSpeed;
+			if (pmove->cmd.buttons & IN_FORWARD)
+				forward += maxClimbSpeed;
+
+			float right = 0.f;
+			if (pmove->cmd.buttons & IN_MOVELEFT)
+				right -= maxClimbSpeed;
+			if (pmove->cmd.buttons & IN_MOVERIGHT)
+				right += maxClimbSpeed;
+
+			float up = 0.f;
+			if (pmove->cmd.buttons_ex & X_IN_UP)
+				up += maxClimbSpeed;
+			if (pmove->cmd.buttons_ex & X_IN_DOWN)
+				up -= maxClimbSpeed;
+
+			if (forward != 0.f || right != 0.f || up != 0.f)
 			{
 				vec3_t velocity, perp, cross, lateral, tmp;
-				float normal;
 
-				//ALERT(at_console, "pev %.2f %.2f %.2f - ",
-				//	pev->velocity.x, pev->velocity.y, pev->velocity.z);
-				// Calculate player's intended velocity
-				//Vector velocity = (forward * gpGlobals->v_forward) + (right * gpGlobals->v_right);
-				VectorScale(vpn, forward, velocity);
+				VectorScale(v_up, up, velocity);
+				VectorMA(velocity, forward, v_forward, velocity);
 				VectorMA(velocity, right, v_right, velocity);
-				VectorMA(velocity, up, v_up, velocity);
 
-
-				// Perpendicular in the ladder plane
-				//					Vector perp = CrossProduct( Vector(0,0,1), trace.vecPlaneNormal );
-				//					perp = perp.Normalize();
 				VectorClear(tmp);
 				tmp[2] = 1;
 				CrossProduct(tmp, trace.plane.normal, perp);
 				VectorNormalize(perp);
 
-
 				// decompose velocity into ladder plane
-				normal = DotProduct(velocity, trace.plane.normal);
+				float normal = DotProduct(velocity, trace.plane.normal);
 				// This is the velocity into the face of the ladder
 				VectorScale(trace.plane.normal, normal, cross);
-
 
 				// This is the player's additional velocity
 				VectorSubtract(velocity, cross, lateral);
@@ -2190,16 +2186,13 @@ void PM_LadderMove(physent_t *pLadder)
 				VectorMA(lateral, -normal, tmp, pmove->velocity);
 				if (onFloor && normal > 0)	// On ground moving away from the ladder
 				{
-					VectorMA(pmove->velocity, MAX_CLIMB_SPEED, trace.plane.normal, pmove->velocity);
+					VectorMA(pmove->velocity, maxClimbSpeed, trace.plane.normal, pmove->velocity);
 				}
-				if ((pmove->velocity[0] == pmove->velocity[0]) && (pmove->velocity[1] == pmove->velocity[1]) && (pmove->velocity[2] == pmove->velocity[2]))
+				else if (VRGetMoveOnlyUpDownOnLadder())
 				{
+					pmove->velocity[0] = 0.f;
+					pmove->velocity[1] = 0.f;
 				}
-				else
-				{
-					VectorClear(pmove->velocity);
-				}
-				//pev->velocity = lateral - (CrossProduct( trace.vecPlaneNormal, perp ) * normal);
 			}
 			else
 			{
@@ -2207,6 +2200,8 @@ void PM_LadderMove(physent_t *pLadder)
 			}
 		}
 	}
+
+	PM_CheckVelocity();
 }
 
 physent_t *g_pLastLadder = nullptr;

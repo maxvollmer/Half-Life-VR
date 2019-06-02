@@ -1772,14 +1772,6 @@ void CBasePlayer::UpdateStatusBar()
 
 
 
-
-
-#define CLIMB_SHAKE_FREQUENCY	22	// how many frames in between screen shakes when climbing
-#define	MAX_CLIMB_SPEED			200	// fastest vertical climbing speed possible
-#define	CLIMB_SPEED_DEC			15	// climbing deceleration rate
-#define	CLIMB_PUNCH_X			-7  // how far to 'punch' client X axis when climbing
-#define CLIMB_PUNCH_Z			7	// how far to 'punch' client Z axis when climbing
-
 void CBasePlayer::PreThink(void)
 {
 	int buttonsChanged = (m_afButtonLast ^ pev->button);	// These buttons have changed this frame

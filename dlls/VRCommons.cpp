@@ -80,3 +80,13 @@ bool VRGlobalIsPointInsideEnt(const float* point, int ent)
 
 	return UTIL_PointInsideRotatedBBox(INDEXENT(ent)->v.origin, INDEXENT(ent)->v.angles, INDEXENT(ent)->v.mins, INDEXENT(ent)->v.maxs, Vector{ point[0], point[1], point[2] });
 }
+
+float VRGetMaxClimbSpeed()
+{
+	return CVAR_GET_FLOAT("vr_ladder_movement_speed");
+}
+
+bool VRGetMoveOnlyUpDownOnLadder()
+{
+	return CVAR_GET_FLOAT("vr_ladder_movement_only_updown") != 0.f;
+}

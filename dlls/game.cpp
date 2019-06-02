@@ -483,6 +483,8 @@ cvar_t vr_weapon_grenade_mode = { "vr_weapon_grenade_mode", "0", FCVAR_ARCHIVE }
 cvar_t vr_crowbar_vanilla_attack_enabled = { "vr_crowbar_vanilla_attack_enabled", "0", FCVAR_ARCHIVE };
 cvar_t vr_noclip = { "vr_noclip", "0" };
 cvar_t vr_use_sd_models = { "vr_use_sd_models", "0", FCVAR_ARCHIVE };
+cvar_t vr_ladder_movement_speed = { "vr_ladder_movement_speed", "100", FCVAR_ARCHIVE };
+cvar_t vr_ladder_movement_only_updown = { "vr_ladder_movement_only_updown", "1", FCVAR_ARCHIVE };
 
 
 // Register your console variables here
@@ -951,6 +953,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&vr_crowbar_vanilla_attack_enabled);
 	CVAR_REGISTER(&vr_noclip);
 	CVAR_REGISTER(&vr_use_sd_models);
+	CVAR_REGISTER(&vr_ladder_movement_speed);
+	CVAR_REGISTER(&vr_ladder_movement_only_updown);
 
 	gSDModelsEnabled = CVAR_GET_FLOAT("vr_use_sd_models") != 0.f;
 
