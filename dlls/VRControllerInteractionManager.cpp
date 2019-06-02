@@ -279,7 +279,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		else if (HandleDoors(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleRechargers(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleTriggers(pPlayer, hEntity, controller, isTouching, didTouchChange));
-		else if (HandleBreakables(pPlayer, hEntity, controller, isTouching, didTouchChange));
+		else if (HandleBreakables(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
 		else if (HandlePushables(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleAlliedMonsters(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
 		else if (isTouching && didTouchChange)
@@ -623,41 +623,25 @@ bool VRControllerInteractionManager::HandleTriggers(CBasePlayer *pPlayer, EHANDL
 	return true;
 }
 
-bool VRControllerInteractionManager::HandleBreakables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleBreakables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
 {
 	if (!FClassnameIs(hEntity->pev, "func_breakable"))
 		return false;
 
-	if (isTouching && didTouchChange)
+	CBreakable *pBreakable = dynamic_cast<CBreakable*>((CBaseEntity*)hEntity);
+
+	// Make sure breakables that are supposed to immediately break on melee attacks, do break.
+	if (pPlayer->HasWeapons()
+		&& pBreakable != nullptr
+		&& pBreakable->IsBreakable()
+		&& pBreakable->pev->takedamage != DAMAGE_NO
+		&& !FBitSet(pBreakable->pev->spawnflags, SF_BREAK_TRIGGER_ONLY)
+		&& FBitSet(pBreakable->pev->spawnflags, SF_BREAK_CROWBAR)
+		&& isHitting && didHitChange)
 	{
-		CBreakable *pBreakable = dynamic_cast<CBreakable*>((CBaseEntity*)hEntity);
-		// Only cause damage when we have weapons and is actually breakable
-		if (pPlayer->HasWeapons() && pBreakable->IsBreakable())
-		{
-			if (pBreakable != nullptr && !FBitSet(pBreakable->pev->spawnflags, SF_BREAK_TRIGGER_ONLY))
-			{
-				if (FBitSet(pBreakable->pev->spawnflags, SF_BREAK_CROWBAR))
-				{
-					pBreakable->TakeDamage(pPlayer->pev, pPlayer->pev, pBreakable->pev->health, DMG_CLUB);
-				}
-				else if (FBitSet(pBreakable->pev->spawnflags, SF_BREAK_PRESSURE) || FBitSet(pBreakable->pev->spawnflags, SF_BREAK_TOUCH))
-				{
-					// Hack
-					// Backup breakable spawnflags and our velocity
-					int backupSpawnflags = pBreakable->pev->spawnflags;
-					Vector backupVelocity = pPlayer->pev->velocity;
-					// Override breakable spawnflags with break_touch and set our velocity to touch velocity
-					pBreakable->pev->spawnflags = SF_BREAK_TOUCH;
-					pPlayer->pev->velocity = controller.GetVelocity();
-					// Make breakable handle the touch with our velocity
-					pBreakable->BreakTouch(pPlayer);
-					// Reset spawnflags and velocity
-					pBreakable->pev->spawnflags = backupSpawnflags;
-					pPlayer->pev->velocity = backupVelocity;
-				}
-			}
-		}
+		pBreakable->TakeDamage(pPlayer->pev, pPlayer->pev, pBreakable->pev->health, DMG_CLUB);
 	}
+
 	return true;
 }
 
