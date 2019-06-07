@@ -360,9 +360,6 @@
     <ClCompile Include="VRControllerModel.cpp">
       <Filter>VR</Filter>
     </ClCompile>
-    <ClCompile Include="CWorldsSmallestCup.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
     <ClCompile Include="VRRotatableEnt.cpp">
       <Filter>VR\stuff</Filter>
     </ClCompile>
@@ -374,6 +371,9 @@
     </ClCompile>
     <ClCompile Include="VRSDModelHelper.cpp">
       <Filter>VR</Filter>
+    </ClCompile>
+    <ClCompile Include="CWorldsSmallestCup.cpp">
+      <Filter>VR\stuff</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -545,14 +545,14 @@
     <ClInclude Include="VRControllerModel.h">
       <Filter>VR</Filter>
     </ClInclude>
-    <ClInclude Include="CWorldsSmallestCup.h">
-      <Filter>VR</Filter>
-    </ClInclude>
     <ClInclude Include="VRRotatableEnt.h">
       <Filter>VR\stuff</Filter>
     </ClInclude>
     <ClInclude Include="VRMovementHandler.h">
       <Filter>VR</Filter>
+    </ClInclude>
+    <ClInclude Include="CWorldsSmallestCup.h">
+      <Filter>VR\stuff</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

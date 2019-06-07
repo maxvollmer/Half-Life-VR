@@ -251,6 +251,11 @@ inline bool IsExplosiveWeapon(int iId)
 		|| iId == WEAPON_SATCHEL;
 }
 
+inline bool IsWeaponWithVRLaserSpot(int iId)
+{
+	return IsWeaponWithRange(iId) && iId != WEAPON_RPG && iId != WEAPON_HORNETGUN;
+}
+
 // Items that the player has in their inventory that they can use
 class CBasePlayerItem : public CBaseAnimating
 {

@@ -4866,7 +4866,8 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	Vector newOrigin = clientOrigin + hmdOffset;
 
 	// push origin back so that view position is on border of player's bounding box
-	newOrigin = newOrigin - viewDir2D * VEC_HULL_MAX.x;
+	float vrViewOffsetDistToHullBounds = CVAR_GET_FLOAT("vr_view_dist_to_walls");
+	newOrigin = newOrigin - viewDir2D * (VEC_HULL_MAX.x - vrViewOffsetDistToHullBounds);
 
 	// Use movement handler to move to new position (instead of simply teleporting)
 	// Uses pm_shared code. Allows for climbing up stairs and handling all kinds of collisions with level geometry.

@@ -34,7 +34,7 @@ extern struct playermove_s *PM_GetPlayerMove(void);
 #include <cstdlib>
 
 constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_MAGIC = 'HLVR';
-constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_VERSION = 103;
+constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_VERSION = 104;
 
 // Stuff needed to extract brush models
 constexpr const unsigned int ENGINE_MODEL_ARRAY_SIZE = 1024;
@@ -160,13 +160,13 @@ constexpr const rp3d::decimal HL_TO_RP3D = 1. / RP3D_TO_HL;
 
 constexpr const int MAX_GAP_WIDTH = VEC_DUCK_HEIGHT;
 constexpr const int MAX_GAP_WIDTH_SQUARED = MAX_GAP_WIDTH * MAX_GAP_WIDTH;
-constexpr const float MIN_DISTANCE = 240 + MAX_GAP_WIDTH;
+constexpr const int MIN_DISTANCE = 240 + MAX_GAP_WIDTH;
 
 constexpr const int PHYSICS_STEPS = 30;
 constexpr const int MAX_PHYSICS_STEPS = PHYSICS_STEPS * 1.5;
-constexpr const float PHYSICS_STEP_TIME = 1.f / PHYSICS_STEPS;
+constexpr const rp3d::decimal PHYSICS_STEP_TIME = 1. / PHYSICS_STEPS;
 
-constexpr const double MAX_PHYSICS_TIME_PER_FRAME = 1. / 30.;	// Never drop below 30fps due to physics calculations
+constexpr const rp3d::decimal MAX_PHYSICS_TIME_PER_FRAME = 1. / 30.;	// Never drop below 30fps due to physics calculations
 
 
 void TEMPTODO_RemoveInvalidTriangles(const std::vector<Vector3> & vertices, std::vector<int32_t>& indices)
@@ -178,7 +178,9 @@ void TEMPTODO_RemoveInvalidTriangles(const std::vector<Vector3> & vertices, std:
 			|| (vertices[indices[i]] - vertices[indices[i + 2]]).lengthSquare() < EPSILON
 			|| (vertices[indices[i + 1]] - vertices[indices[i + 2]]).lengthSquare() < EPSILON)
 		{
+#ifdef _DEBUG
 			ALERT(at_console, "(VRPhysicsHelper)Warning: Found invalid triangle at index %i, removed!\n", i);
+#endif
 			indices[i] = -1;
 			indices[i + 1] = -1;
 			indices[i + 2] = -1;
@@ -425,9 +427,9 @@ private:
 		// Since faces in a HL BSP are always maximum 240 units wide,
 		// if any vertex from this face is further than MIN_DISTANCE (240 + player width) units
 		// away from any vertex in the other face, these faces can't have a gap too narrow for a player
-		return fabs(vertices[0].x - other.vertices[0].x) < MIN_DISTANCE
-			&& fabs(vertices[0].y - other.vertices[0].y) < MIN_DISTANCE
-			&& fabs(vertices[0].z - other.vertices[0].z) < MIN_DISTANCE;
+		return fabs(vertices[0].x - other.vertices[0].x) < float(MIN_DISTANCE)
+			&& fabs(vertices[0].y - other.vertices[0].y) < float(MIN_DISTANCE)
+			&& fabs(vertices[0].z - other.vertices[0].z) < float(MIN_DISTANCE);
 	}
 
 	bool GetGapVerticesInPlane(const TranslatedFace & other, std::vector<Vector> & mergedVertices, PlaneVertexMetaDataMap & planeVertexMetaData, const size_t a, const size_t b) const
@@ -1206,14 +1208,6 @@ VRPhysicsHelper::DynamicBSPModelData::~DynamicBSPModelData()
 
 void VRPhysicsHelper::DynamicBSPModelData::CreateData(DynamicsWorld* dynamicsWorld)
 {
-	// TODO: Why do we still get invalid triangles?
-	TEMPTODO_RemoveInvalidTriangles(m_vertices, m_indices);
-	if (m_indices.empty())
-	{
-		ALERT(at_console, "Warning(DynamicBSPModelData::CreateData): All triangles are invalid, skipping.\n");
-		return;
-	}
-
 	for (auto& normal : m_normals)
 	{
 		normal.normalize();
@@ -1884,10 +1878,4 @@ void VRPhysicsHelper::GetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestC
 	pWorldsSmallestCup->pev->origin = RP3DVecToHLVec(transform.getPosition());
 	pWorldsSmallestCup->pev->angles = RP3DTransformToHLAngles(transform.getOrientation().getMatrix());
 	pWorldsSmallestCup->pev->velocity = RP3DVecToHLVec(m_worldsSmallestCupBody->getLinearVelocity());
-}
-
-void VRPhysicsHelper::GetWorldUnstuckDir(const Vector& pos, const Vector& velocity, Vector& unstuckdir)
-{
-	// TODO!
-	unstuckdir = velocity.Normalize();
 }

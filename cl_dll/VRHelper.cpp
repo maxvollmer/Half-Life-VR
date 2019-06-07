@@ -1506,13 +1506,6 @@ void VRGlobalGetEntityOrigin(int ent, float* entorigin)
 	((absmin + absmax) * 0.5f).CopyToArray(entorigin);
 }
 
-void VRGlobalGetWorldUnstuckDir(const float* pos, const float* velocity, float* unstuckdir)
-{
-	// We cannot predict this and simply return velocity, server code will correct for this
-	// (If anyone ever tries to make this mod work in multiplayer, this is a place you want to tackle)
-	VectorCopy(velocity, unstuckdir);
-}
-
 bool VRGlobalGetNoclipMode()
 {
 	return CVAR_GET_FLOAT("vr_noclip") != 0.f;

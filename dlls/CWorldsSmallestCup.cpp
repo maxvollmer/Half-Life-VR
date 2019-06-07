@@ -72,18 +72,19 @@ void CWorldsSmallestCup::CupThink()
 		VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
 	}
 
-	pev->absmin = pev->origin + pev->mins;
-	pev->absmax = pev->origin + pev->maxs;
-
 	// if we fall out of the world, respawn where the player is
-	if (!IsInWorld())
+	if (!IsInWorld() || IsFallingOutOfWorld())
 	{
-		auto* pPlayer = UTIL_PlayerByIndex(0);
-		if (pPlayer != nullptr)
+		CBaseEntity* pPlayer = UTIL_PlayerByIndex(0);
+		if (pPlayer)
 		{
 			pev->origin = pPlayer->pev->origin;
+			VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
 		}
 	}
+
+	pev->absmin = pev->origin + pev->mins;
+	pev->absmax = pev->origin + pev->maxs;
 
 	// check if we are in front of a kleiner
 	if (!m_isBeingDragged.empty())
@@ -131,6 +132,13 @@ void CWorldsSmallestCup::CupThink()
 		m_hKleiner = nullptr;
 		m_flKleinerFaceStart = 0.f;
 	}
+}
+
+bool CWorldsSmallestCup::IsFallingOutOfWorld()
+{
+	TraceResult tr;
+	UTIL_TraceLine(pev->origin, pev->origin + Vector{ 0.f, 0.f, -2048.f }, ignore_monsters, nullptr, &tr);
+	return tr.flFraction == 1.f;
 }
 
 bool CWorldsSmallestCup::AmIInKleinersFace(CBaseEntity* pKleiner)

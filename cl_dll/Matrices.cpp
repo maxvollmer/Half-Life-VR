@@ -20,8 +20,8 @@
 #include <algorithm>
 #include "Matrices.h"
 
-const float DEG2RAD = 3.141593f / 180;
-const float EPSILON = 0.00001f;
+constexpr const float DEG2RAD = 3.141593f / 180;
+constexpr const float EPSILON = 0.00001f;
 
 
 

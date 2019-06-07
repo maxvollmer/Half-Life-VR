@@ -25,9 +25,13 @@
 
 #include <string>
 
+// The amount of units to keep between player view position and walls in VR - Max Vollmer, 2019-06-02
+constexpr const int VR_DEFAULT_VIEW_DIST_TO_WALLS = 5;
+constexpr const char* VR_DEFAULT_VIEW_DIST_TO_WALLS_AS_STRING = "5";	// for cvar
+
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
-#define EPSILON 0.001f
+constexpr const float EPSILON = 0.000001f;
 
 extern globalvars_t				*gpGlobals;
 
@@ -459,14 +463,14 @@ extern DLL_GLOBAL int			g_Language;
 #define VEC_HUMAN_NPC_HULL_MIN	Vector( -16, -16, 0 )
 #define VEC_HUMAN_NPC_HULL_MAX	Vector( 16, 16, 72 )
 
-#define VEC_HULL_MIN		Vector(-10, -10, -36)
-#define VEC_HULL_MAX		Vector( 10,  10,  36)
+#define VEC_HULL_MIN		Vector(-16, -16, -36)
+#define VEC_HULL_MAX		Vector( 16,  16,  36)
 #define VEC_VIEW			Vector( 0, 0, 28 )
 
-#define VEC_DUCK_HULL_MIN	Vector(-10, -10, -18 )
-#define VEC_DUCK_HULL_MAX	Vector( 10,  10,  18)
+#define VEC_DUCK_HULL_MIN	Vector(-16, -16, -18 )
+#define VEC_DUCK_HULL_MAX	Vector( 16,  16,  18)
 #define VEC_DUCK_VIEW		Vector( 0, 0, 12 )
-#define VEC_DUCK_HULL_SIZE	Vector( 20, 20, 36 )
+#define VEC_DUCK_HULL_SIZE	Vector( 32, 32, 36 )
 #define VEC_DUCK_HEIGHT		36
 
 #define SVC_TEMPENTITY		23

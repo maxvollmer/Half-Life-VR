@@ -11,10 +11,9 @@ public:
 	virtual void Precache() override;
 	void EXPORT CupThink(void);
 
-	std::unordered_set<VRControllerID>		m_isBeingDragged;
-
 private:
 	bool AmIInKleinersFace(CBaseEntity* pKleiner);
+	bool IsFallingOutOfWorld();
 
 	EHANDLE							m_hKleiner;
 	float							m_flKleinerFaceStart{ 0.f };

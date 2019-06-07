@@ -62,8 +62,6 @@ public:
 	void SetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup);
 	void GetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup);
 
-	void GetWorldUnstuckDir(const Vector& pos, const Vector& velocity, Vector& unstuckdir);
-
 	class BSPModelData
 	{
 	public:

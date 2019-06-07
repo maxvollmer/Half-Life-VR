@@ -1,9 +1,9 @@
 #pragma once
 
-#define VEC_HULL_MIN		Vector(-10, -10, -36)
-#define VEC_HULL_MAX		Vector( 10,  10,  36)
-#define VEC_DUCK_HULL_MIN	Vector(-10, -10, -18 )
-#define VEC_DUCK_HULL_MAX	Vector( 10,  10,  18)
+#define VEC_HULL_MIN		Vector(-16, -16, -36)
+#define VEC_HULL_MAX		Vector( 16,  16,  36)
+#define VEC_DUCK_HULL_MIN	Vector(-16, -16, -18 )
+#define VEC_DUCK_HULL_MAX	Vector( 16,  16,  18)
 
 class VRHelper;
 

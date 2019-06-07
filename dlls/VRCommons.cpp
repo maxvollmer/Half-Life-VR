@@ -61,13 +61,6 @@ void VRGlobalGetEntityOrigin(int ent, float* entorigin)
 	((INDEXENT(ent)->v.absmin + INDEXENT(ent)->v.absmax) * 0.5f).CopyToArray(entorigin);
 }
 
-void VRGlobalGetWorldUnstuckDir(const float* pos, const float* velocity, float* unstuckdir)
-{
-	Vector vunstuckdir;
-	VRPhysicsHelper::Instance().GetWorldUnstuckDir(Vector{ pos[0], pos[1], pos[2] }, Vector{ velocity[0], velocity[1], velocity[2] }, vunstuckdir);
-	vunstuckdir.CopyToArray(unstuckdir);
-}
-
 bool VRGlobalGetNoclipMode()
 {
 	return CVAR_GET_FLOAT("vr_noclip") != 0.f;

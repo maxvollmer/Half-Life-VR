@@ -31,6 +31,9 @@ public:
 	inline int GetWeaponId() const { return m_weaponId; }
 	inline bool IsMirrored() const { return m_isMirrored; }
 
+	const Vector GetGunPosition() const;
+	const Vector GetAim() const;
+
 	bool AddTouchedEntity(EHANDLE hEntity) const;
 	bool RemoveTouchedEntity(EHANDLE hEntity) const;
 
@@ -42,6 +45,8 @@ public:
 	bool RemoveHitEntity(EHANDLE hEntity) const;
 
 private:
+	void UpdateModel(CBasePlayer* pPlayer);
+	void UpdateLaserSpot();
 	void ExtractBBoxIfPossibleAndNecessary();
 	void SendEntityDataToClient(CBasePlayer *pPlayer, VRControllerID id);
 
@@ -65,6 +70,7 @@ private:
 	string_t m_bboxModelName{ 0 };
 	int m_bboxModelSequence{ 0 };
 	mutable EHANDLE m_hModel;
+	mutable EHANDLE m_hLaserSpot;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_touchedEntities;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_draggedEntities;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_hitEntities;

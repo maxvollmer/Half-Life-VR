@@ -33,7 +33,6 @@
 extern bool VRGlobalIsInstantAccelerateOn();
 extern bool VRGlobalIsInstantDecelerateOn();
 extern void VRGlobalGetEntityOrigin(int ent, float* entorigin);
-extern void VRGlobalGetWorldUnstuckDir(const float* pos, const float* velocity, float* unstuckdir);
 extern bool VRGlobalGetNoclipMode();
 extern void VRNotifyStuckEnt(int player, int ent);
 extern bool VRGlobalIsPointInsideEnt(const float* point, int ent);

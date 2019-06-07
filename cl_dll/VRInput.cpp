@@ -423,6 +423,10 @@ void VRInput::HandleInput(bool isInGame)
 
 bool VRInput::UpdateActionStates(const std::string& actionSetName, const ActionSet& actionSet)
 {
+#ifdef _DEBUG
+	return false;
+#endif
+
 	vr::VRActiveActionSet_t activeActionSet{ 0 };
 	activeActionSet.ulActionSet = actionSet.handle;
 	vr::EVRInputError result = vr::VRInput()->UpdateActionState(&activeActionSet, sizeof(vr::VRActiveActionSet_t), 1);

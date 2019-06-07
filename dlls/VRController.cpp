@@ -33,6 +33,42 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	m_isMirrored = isMirrored;
 	m_weaponId = weaponId;
 
+	UpdateModel(pPlayer);
+
+	ExtractBBoxIfPossibleAndNecessary();
+
+	UpdateLaserSpot();
+
+	SendEntityDataToClient(pPlayer, id);
+}
+
+void VRController::UpdateLaserSpot()
+{
+	if (IsWeaponWithVRLaserSpot(m_weaponId) && CVAR_GET_FLOAT("vr_enable_aim_laser") != 0.f)
+	{
+		if (!m_hLaserSpot)
+		{
+			CLaserSpot *pLaserSpot = CLaserSpot::CreateSpot();
+			pLaserSpot->Revive();
+			m_hLaserSpot = pLaserSpot;
+		}
+
+		TraceResult tr;
+		UTIL_TraceLine(GetPosition(), GetPosition() + (GetAim() * 8192.f), dont_ignore_monsters, GetModel()->edict(), &tr);
+		UTIL_SetOrigin(m_hLaserSpot->pev, tr.vecEndPos);
+	}
+	else
+	{
+		if (m_hLaserSpot)
+		{
+			UTIL_Remove(m_hLaserSpot);
+			m_hLaserSpot = nullptr;
+		}
+	}
+}
+
+void VRController::UpdateModel(CBasePlayer* pPlayer)
+{
 	if (m_weaponId == WEAPON_BAREHAND)
 	{
 		m_modelName = MAKE_STRING("models/v_gordon_hand.mdl");
@@ -52,8 +88,6 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	{
 		pModel->SetModel(m_modelName);
 	}
-
-	ExtractBBoxIfPossibleAndNecessary();
 
 	if (m_isValid)
 	{
@@ -77,8 +111,6 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	{
 		PlayWeaponAnimation(1, 0);
 	}
-
-	SendEntityDataToClient(pPlayer, id);
 }
 
 void VRController::SendEntityDataToClient(CBasePlayer *pPlayer, VRControllerID id)
@@ -219,4 +251,31 @@ bool VRController::RemoveHitEntity(EHANDLE hEntity) const
 
 	m_hitEntities.erase(hEntity);
 	return true;
+}
+
+const Vector VRController::GetGunPosition() const
+{
+	Vector pos;
+	if (VRModelHelper::GetInstance().GetAttachment(GetModel(), VR_MUZZLE_ATTACHMENT, pos))
+	{
+		return pos;
+	}
+	else
+	{
+		return GetPosition();
+	}
+}
+
+const Vector VRController::GetAim() const
+{
+	Vector pos1;
+	Vector pos2;
+	bool result1 = VRModelHelper::GetInstance().GetAttachment(GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
+	bool result2 = VRModelHelper::GetInstance().GetAttachment(GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+	if (result1 && result2 && pos2 != pos1)
+	{
+		return (pos2 - pos1).Normalize();
+	}
+	UTIL_MakeAimVectors(GetAngles());
+	return gpGlobals->v_forward;
 }
