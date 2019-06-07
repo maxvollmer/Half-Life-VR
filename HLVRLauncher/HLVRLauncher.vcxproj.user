@@ -10,14 +10,4 @@
     <LocalDebuggerWorkingDirectory>E:\Spiele\Steam\steamapps\common\Half-Life\vr\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommand>E:\Spiele\Steam\steamapps\common\Half-Life\vr\HLVRLauncher.exe</LocalDebuggerCommand>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>E:\Spiele\Steam\steamapps\common\Half-Life\vr\</LocalDebuggerWorkingDirectory>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommand>E:\Spiele\Steam\steamapps\common\Half-Life\vr\HLVRLauncher.exe</LocalDebuggerCommand>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>E:\Spiele\Steam\steamapps\common\Half-Life\vr\</LocalDebuggerWorkingDirectory>
-  </PropertyGroup>
 </Project>
