@@ -273,6 +273,11 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 			flHitDamage = DoDamage(pPlayer, hEntity, controller);
 		}
 
+		Interaction::InteractionInfo touching{ isTouching, didTouchChange };
+		Interaction::InteractionInfo dragging{ isDragging, didDragChange };
+		Interaction::InteractionInfo hitting{ isHitting, didHitChange };
+		Interaction interaction{ touching, dragging, hitting, flHitDamage };
+
 		if (HandleEasterEgg(pPlayer, hEntity, controller, isTouching, didTouchChange));	// easter egg first, obviously the most important
 		else if (HandleRetinaScanners(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleButtons(pPlayer, hEntity, controller, isTouching, didTouchChange, isDragging, didDragChange));
@@ -281,10 +286,15 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		else if (HandleTriggers(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleBreakables(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
 		else if (HandlePushables(pPlayer, hEntity, controller, isTouching, didTouchChange));
+		else if (HandleGrabbables(pPlayer, hEntity, controller, interaction));
 		else if (HandleAlliedMonsters(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
 		else if (isTouching && didTouchChange)
 		{
+			// Touch any entity not handled yet and set player velocity temporarily to controller velocity, as some entities (e.g. cockroaches) use the velocity in their touch logic
+			Vector backupVel = pPlayer->pev->velocity;
+			pPlayer->pev->velocity = controller.GetVelocity();
 			hEntity->Touch(pPlayer);
+			pPlayer->pev->velocity = backupVel;
 		}
 	}
 }
@@ -377,7 +387,7 @@ bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer *pPlayer, EHAND
 		if (isTouching && controller.IsDragging())
 		{
 			pWorldsSmallestCup->m_isBeingDragged.insert(controller.GetID());
-			pWorldsSmallestCup->pev->origin = pPlayer->GetGunPosition();
+			pWorldsSmallestCup->pev->origin = controller.GetGunPosition();
 			pWorldsSmallestCup->pev->angles = controller.GetAngles();
 			pWorldsSmallestCup->pev->velocity = controller.GetVelocity();
 		}
@@ -707,6 +717,35 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 	}
 
 	return true;
+}
+
+bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
+{
+	if (hEntity->IsDraggable())
+	{
+		if (interaction.dragging.isSet)
+		{
+			if (interaction.dragging.didChange)
+			{
+				hEntity->m_isBeingDragged.insert(controller.GetID());
+				hEntity->SetThink(&CBaseEntity::DragStartThink);
+			}
+			hEntity->pev->origin = controller.GetGunPosition();
+			hEntity->pev->angles = controller.GetAngles();
+			hEntity->pev->velocity = controller.GetVelocity();
+		}
+		else
+		{
+			if (interaction.dragging.didChange)
+			{
+				hEntity->m_isBeingDragged.erase(controller.GetID());
+				hEntity->SetThink(&CBaseEntity::DragStopThink);
+			}
+		}
+		return true;
+	}
+
+	return false;
 }
 
 bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)

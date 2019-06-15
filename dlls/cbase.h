@@ -52,6 +52,8 @@ CBaseEntity
 #include <functional>
 #include <unordered_set>
 
+#include "VRCommons.h"
+
 // C functions for external declarations that call the appropriate C++ methods
 
 #ifdef _WIN32
@@ -444,6 +446,14 @@ public:
 
 	// Prevents being pushed up by xen jumps when using the teleporter on them
 	virtual bool IsXenJumpTrigger() { return false; }
+
+	// For draggable entities
+	virtual bool IsDraggable() { return false; }
+	virtual void HandleDragStart() {}
+	virtual void HandleDragStop() {}
+	void EXPORT DragStartThink(void) { m_pfnThink = nullptr; HandleDragStart(); }
+	void EXPORT DragStopThink(void) { m_pfnThink = nullptr; HandleDragStop(); }
+	std::unordered_set<VRControllerID> m_isBeingDragged;
 };
 
 
