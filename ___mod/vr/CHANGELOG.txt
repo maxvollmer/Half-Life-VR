@@ -75,12 +75,12 @@
 
 0.4.5 - 
 * Fixed some breakables breaking immediately when touched
+* Fixed player not ducking after teleporting into ducts and other areas that require ducking
 * If there was an easter egg, which there definitely isn't, a bug related to that easter egg would have been fixed. But since there is no easter egg, there was no bug and there is no fix, obviously.
 * Made HLVRLauncher set opengl32.dll to read-only (in addition to the ACL settings)
 * Restored original player hullsize (unfortunately hullsizes are compiled into bsp files, and thus changing them in code causes bugs)
 * Added cvars vr_ladder_movement_only_updown and vr_ladder_movement_speed for improved ladder movement
 * Added cvar vr_view_dist_to_walls
 * Added laser spot to range weapons (except hornet gun) and corresponding cvar vr_enable_aim_laser
-
 
 

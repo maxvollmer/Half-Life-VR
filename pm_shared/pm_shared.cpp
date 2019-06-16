@@ -511,7 +511,7 @@ void PM_UpdateStepSound( void )
 	fLadder = (pmove->movetype == MOVETYPE_FLY);// IsOnLadder();
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!	
-	if ( ( pmove->flags & (FL_DUCKING | FL_VR_DUCKING)) || fLadder )
+	if ( ( pmove->flags & FL_DUCKING) || fLadder )
 	{
 		velwalk = 60;		// These constants should be based on cl_movespeedkey * cl_forwardspeed somehow
 		velrun = 80;		// UNDONE: Move walking to server
@@ -611,7 +611,7 @@ void PM_UpdateStepSound( void )
 
 		// play the sound
 		// 35% volume if ducking
-		if ( pmove->flags & (FL_DUCKING | FL_VR_DUCKING))
+		if ( pmove->flags & FL_DUCKING)
 		{
 			fvol *= 0.35;
 		}
@@ -2075,7 +2075,7 @@ void PM_Duck(void)
 		}
 	}
 
-	if (pmove->flags & (FL_DUCKING | FL_VR_DUCKING))
+	if (pmove->flags & FL_DUCKING)
 	{
 		pmove->cmd.forwardmove *= 0.333;
 		pmove->cmd.sidemove *= 0.333;
@@ -2563,13 +2563,26 @@ void PM_NoClip(bool unstuckMove=false)
 			}
 			else
 			{
-				// still stuck, can't unstuck :(
+				// still stuc and already ducking, can't unstuck :(
+				if ((pmove->flags & FL_DUCKING) || pmove->usehull == 1)
+				{
+					return;
+				}
+				// try ducking
+				pmove->flags |= FL_DUCKING;
+				pmove->usehull = 1;
+				for (int i = 0; i < 3; i++)
+				{
+					pmove->origin[i] -= (pmove->player_mins[1][i] - pmove->player_mins[0][i]);
+				}
+				PM_NoClip(true);
 				return;
 			}
 		}
 	}
 
 	VectorCopy(wishend, pmove->origin);
+	PM_CategorizePosition();
 }
 
 /*
@@ -2841,7 +2854,7 @@ void PM_Jump(void)
 
 	// Acclerate upward
 	// If we are ducking...
-	if ((pmove->bInDuck) || (pmove->flags & (FL_DUCKING | FL_VR_DUCKING)))
+	if ((pmove->bInDuck) || (pmove->flags & FL_DUCKING))
 	{
 		// Adjust for super long jump module
 		// UNDONE -- note this should be based on forward angles, not current velocity.

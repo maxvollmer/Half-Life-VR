@@ -1083,7 +1083,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		return;
 
 	case ACT_RANGE_ATTACK1:
-		if ( FBitSet( pev->flags, (FL_DUCKING | FL_VR_DUCKING)) )	// crouching
+		if ( FBitSet( pev->flags, FL_DUCKING) )	// crouching
 			strcpy( szAnim, "crouch_shoot_" );
 		else
 			strcpy( szAnim, "ref_shoot_" );
@@ -1111,7 +1111,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 	case ACT_WALK:
 		if (m_Activity != ACT_RANGE_ATTACK1 || m_fSequenceFinished)
 		{
-			if ( FBitSet( pev->flags, (FL_DUCKING | FL_VR_DUCKING)) )	// crouching
+			if ( FBitSet( pev->flags, FL_DUCKING) )	// crouching
 				strcpy( szAnim, "crouch_aim_" );
 			else
 				strcpy( szAnim, "ref_aim_" );
@@ -1592,7 +1592,7 @@ void CBasePlayer::Jump()
 	SetAnimation(PLAYER_JUMP);
 
 	if (m_fLongJump &&
-		FBitSet(pev->flags, (FL_DUCKING | FL_VR_DUCKING)) && //		(pev->button & IN_DUCK) &&
+		FBitSet(pev->flags, FL_DUCKING) && //		(pev->button & IN_DUCK) &&
 		(pev->flDuckTime > 0) &&
 		pev->velocity.Length() > 50)
 	{
@@ -2859,7 +2859,7 @@ void CBasePlayer::Spawn( void )
     g_ulModelIndexPlayer = pev->modelindex;
 	pev->sequence		= LookupActivity( ACT_IDLE );
 
-	if ( FBitSet(pev->flags, (FL_DUCKING | FL_VR_DUCKING)) )
+	if ( FBitSet(pev->flags, FL_DUCKING) )
 		UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 	else
 		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
@@ -3013,7 +3013,7 @@ int CBasePlayer::Restore( CRestore &restore )
 
     g_ulModelIndexPlayer = pev->modelindex;
 
-	if ( FBitSet(pev->flags, (FL_DUCKING | FL_VR_DUCKING)) )
+	if ( FBitSet(pev->flags, FL_DUCKING) )
 	{
 		// Use the crouch HACK
 		//FixPlayerCrouchStuck( edict() );
