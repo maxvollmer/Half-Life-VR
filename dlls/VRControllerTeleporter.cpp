@@ -149,12 +149,25 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& tele
 		vr_pTeleSprite->pev->rendercolor = Vector(0, 255, 0);
 		vr_pTeleBeam->pev->rendercolor = Vector(0, 255, 0);
 
-		// Move destination down when head would be in ceiling (e.g. teleporting inside a duct)
-		TraceResult tr;
-		UTIL_TraceLine(vr_vecTeleDestination, vr_vecTeleDestination + Vector(0, 0, pPlayer->pev->size.z), ignore_monsters, pPlayer->edict(), &tr);
-		vr_vecTeleDestination.z -= pPlayer->pev->size.z * (1.0f - tr.flFraction);
-
-		vr_needsToDuckAfterTeleport = needsToDuck;
+		// Check if we need to duck for this destination (e.g. teleporting inside a duct)
+		TraceResult trStanding;
+		UTIL_TraceLine(vr_vecTeleDestination, vr_vecTeleDestination + VEC_HULL_MAX - VEC_HULL_MIN, ignore_monsters, pPlayer->edict(), &trStanding);
+		if (tr.flFraction < 1.f)
+		{
+			vr_needsToDuckAfterTeleport = true;
+			// Check if head would be in ceiling even when ducking and move destination down
+			TraceResult trDucking;
+			UTIL_TraceLine(vr_vecTeleDestination, vr_vecTeleDestination + VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN, ignore_monsters, pPlayer->edict(), &trDucking);
+			if (tr.flFraction < 1.f)
+			{
+				// TODO: This will essentially make the player stuck - decide if we simply disallow teleporting here, this is probably an invalid destination!
+				vr_vecTeleDestination.z -= (VEC_DUCK_HULL_MAX.z - VEC_DUCK_HULL_MIN.z) * (1.f - tr.flFraction);
+			}
+		}
+		else
+		{
+			vr_needsToDuckAfterTeleport = needsToDuck;
+		}
 	}
 	else
 	{
