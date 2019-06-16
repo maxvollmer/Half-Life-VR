@@ -83,4 +83,6 @@
 * Added cvar vr_view_dist_to_walls
 * Added laser spot to range weapons (except hornet gun) and corresponding cvar vr_enable_aim_laser
 
+0.4.6 - 2019-06-16
+* Fixed bug that disabled SteamVR input
 
