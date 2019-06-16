@@ -50,6 +50,7 @@ void VRController::UpdateLaserSpot()
 		{
 			CLaserSpot *pLaserSpot = CLaserSpot::CreateSpot();
 			pLaserSpot->Revive();
+			pLaserSpot->pev->scale = 0.1f;
 			m_hLaserSpot = pLaserSpot;
 		}
 
