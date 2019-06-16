@@ -55,6 +55,7 @@ private:
 	void GetAngryIfAtGunpoint(CBasePlayer *pPlayer, CBaseMonster *pMonster, const VRController& controller);
 	float DoDamage(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller);
 
+	bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& controller);
 	bool IsDraggableEntity(EHANDLE hEntity);
 };
 

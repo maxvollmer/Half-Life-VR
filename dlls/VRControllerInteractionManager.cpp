@@ -178,15 +178,12 @@ void DrawDebugBBox(int which, bool valid, Vector pos, Vector angles, Vector mins
 }
 */
 
-bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& controller)
+bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& controller)
 {
 	if (!controller.IsValid() || !controller.IsBBoxValid())
 		return false;
 
-	if (hEntity->pev->solid == SOLID_NOT
-		&& !FClassnameIs(hEntity->pev, "vr_easteregg")
-		&& !FClassnameIs(hEntity->pev, "func_rot_button")
-		&& !FClassnameIs(hEntity->pev, "momentary_rot_button"))
+	if (hEntity->pev->solid == SOLID_NOT && !IsDraggableEntity(hEntity))
 		return false;
 
 	bool isTouching = false;
@@ -215,9 +212,11 @@ bool CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& contro
 
 bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE hEntity)
 {
-	return FClassnameIs(hEntity->pev, "func_rot_button")
+	return FClassnameIs(hEntity->pev, "vr_easteregg")
+		|| FClassnameIs(hEntity->pev, "func_rot_button")
 		|| FClassnameIs(hEntity->pev, "momentary_rot_button")
-		|| FClassnameIs(hEntity->pev, "func_pushable");
+		|| FClassnameIs(hEntity->pev, "func_pushable")
+		|| hEntity->IsDraggable();
 }
 
 void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, const VRController& controller)
