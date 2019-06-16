@@ -73,7 +73,7 @@
 * Fixed crash bug when accessing engine pmove code before map has finished loading
 * Fixed issues with opengl32.dll with some drivers
 
-0.4.5 - 
+0.4.5 - 2019-06-16
 * Fixed some breakables breaking immediately when touched
 * Fixed player not ducking after teleporting into ducts and other areas that require ducking
 * If there was an easter egg, which there definitely isn't, a bug related to that easter egg would have been fixed. But since there is no easter egg, there was no bug and there is no fix, obviously.
