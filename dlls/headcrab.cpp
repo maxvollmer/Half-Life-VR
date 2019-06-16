@@ -105,6 +105,12 @@ public:
 	static const char *pAttackSounds[];
 	static const char *pDeathSounds[];
 	static const char *pBiteSounds[];
+
+	// Headcrabs are draggable!
+	virtual bool IsDraggable() override { return false; /*TODO: Super buggy, disabled for now.*/ }
+	virtual void HandleDragStart() override;
+	virtual void HandleDragStop() override;
+	void EXPORT DragThink();
 };
 LINK_ENTITY_TO_CLASS( monster_headcrab, CHeadCrab );
 
@@ -552,4 +558,47 @@ Schedule_t* CBabyCrab :: GetScheduleOfType ( int Type )
 	}
 
 	return CHeadCrab::GetScheduleOfType( Type );
+}
+
+void CHeadCrab::HandleDragStart()
+{
+	Stop();
+	pev->sequence = LookupActivity(ACT_WALK);
+	ResetSequenceInfo();
+	SetThink(&CHeadCrab::DragThink);
+	pev->nextthink = gpGlobals->time + 0.1f;
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+}
+
+void CHeadCrab::HandleDragStop()
+{
+	Stop();
+	SetThink(&CHeadCrab::CallMonsterThink);
+	pev->nextthink = gpGlobals->time + 0.1f;
+	pev->solid = SOLID_SLIDEBOX;
+	pev->movetype = MOVETYPE_STEP;
+	pev->angles.x = 0.f;
+	pev->angles.z = 0.f;
+}
+
+void CHeadCrab::DragThink()
+{
+	if (m_fSequenceFinished)
+	{
+		pev->sequence = LookupActivity(ACT_WALK);
+		ResetSequenceInfo();
+	}
+	StudioFrameAdvance();
+	pev->nextthink = gpGlobals->time + 0.1f;
+
+	// Check if player smashes us into a wall
+	if (CONTENTS_SOLID == UTIL_PointContents(pev->origin, true, nullptr))
+	{
+		extern float GetMeleeSwingSpeed();
+		if (pev->velocity.Length() > GetMeleeSwingSpeed())
+		{
+			this->TakeDamage(pev, pev, pev->health + 1000.f, DMG_CRUSH | DMG_ALWAYSGIB);
+		}
+	}
 }
