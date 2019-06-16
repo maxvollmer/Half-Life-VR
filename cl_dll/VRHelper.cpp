@@ -705,7 +705,7 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	if (pmove)
 	{
 		float playerViewPosHeight;
-		if (pmove->flags & (FL_DUCKING | FL_VR_DUCKING))
+		if (pmove->flags & FL_DUCKING)
 		{
 			playerViewPosHeight = m_viewOfs.z - VEC_DUCK_HULL_MIN.z;
 		}
