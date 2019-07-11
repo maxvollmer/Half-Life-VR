@@ -8,6 +8,25 @@
 
 #include "VRRotatableEnt.h"
 
+constexpr const inline void NormalizeAngle(float& angle)
+{
+	while (angle > 360.f) angle -= 360.f;
+	while (angle < 0.f) angle += 360.f;
+}
+
+constexpr const inline void NormalizeAngles(Vector& angles)
+{
+	NormalizeAngle(angles.x);
+	NormalizeAngle(angles.y);
+	NormalizeAngle(angles.z);
+}
+
+constexpr const inline void ClampDeltaAngle(float& angle)
+{
+	while (angle > 180.f) angle -= 360.f;
+	while (angle < -180.f) angle += 360.f;
+}
+
 Vector VRRotatableEnt::GetWishAngles(float wishDeltaAngle)
 {
 	Vector wishAngles = m_vrRotateStartAngles;
@@ -98,6 +117,7 @@ void VRRotatableEnt::VRRotate(CBaseEntity *pPlayer, const Vector& pos, bool fSta
 	{
 		if (fStart)
 		{
+			NormalizeAngles(MyEntityPointer()->pev->angles);
 			m_vrRotateStartPos = pos - MyEntityPointer()->pev->origin;
 			m_vrRotateStartAngles = MyEntityPointer()->pev->angles;
 			m_vrWishDeltaAngle = 0.f;
@@ -106,9 +126,11 @@ void VRRotatableEnt::VRRotate(CBaseEntity *pPlayer, const Vector& pos, bool fSta
 		else
 		{
 			float wishDeltaAngle = CalculateDeltaAngle(pos - MyEntityPointer()->pev->origin);
+			ClampDeltaAngle(wishDeltaAngle);
+			ALERT(at_console, "wishDeltaAngle: %f\n", wishDeltaAngle);
 			if (fabs(wishDeltaAngle) > 45)
 			{
-				//ALERT(at_console, "!!!!!! fabs(wishDeltaAngle) > 45 !!!!!!!!!!!\n");
+				ALERT(at_console, "!!!!!! fabs(wishDeltaAngle) > 45 !!!!!!!!!!!\n");
 				m_vrRotateStartPos = pos - MyEntityPointer()->pev->origin;
 				m_vrWishDeltaAngle += wishDeltaAngle;
 				wishDeltaAngle = 0.f;
@@ -144,4 +166,3 @@ void VRRotatableEnt::VRStopRotate()
 {
 	StopVRDragRotation();
 }
-
