@@ -1,3 +1,6 @@
+femalesci.mdl based on model by 23-down (we added all missing animations). Original readme below:
+======================
+
 Hi people and thanks for downloading the female Scientist model pack.											December, 1st, 2017
 
 

@@ -86,3 +86,15 @@
 0.4.6 - 2019-06-16
 * Fixed bug that disabled SteamVR input
 
+0.4.7 - 2019-07-11
+* Fixed players falling through floor after using VR teleport
+* Fixed rotatable buttons (levers, valves etc.) from losing grip or rotating back too early
+* Fixed thrown items (grenades, satchels, snarks) being "hit" by melee attack right after they spawn from the player's controller
+* Fixed rotating doors pulling the player due to false positive in ground entity detection
+* Added relative speed check to prevent objects being "hit" by melee attack when speed of controller and object are relatively the same
+* Melee attack damage is now calculated with relative speed between controller and object (more damage when hitting objects flying towards the controller)
+* Hitting headcrabs with melee attack pushes them (headcrab baseball anyone?)
+* Added missing animations to female scientist model
+* HUD damage feedback is now red and a bit further up
+
+

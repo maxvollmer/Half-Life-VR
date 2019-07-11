@@ -1,7 +1,7 @@
 ====
 Half-Life: VR
 
-VERSION 0.4.6
+VERSION 0.4.7
 
 Copyright (c) 2017-2019 Max Vollmer
 
@@ -79,7 +79,7 @@ Smallest cup audio track by Michael Hillard. Permission for use in this mod gene
 Hand model based on high poly hand model by Willdabeast and HEV arms textures by JohnChronic: https://gamebanana.com/skins/157391
 
 ====
-Female scientist model by 23-down. Full info and further credits in models/scientist_fem_readme.txt
+Female scientist model based on model by 23-down. Modified to add missing animations. Full info and further credits in models/femalesci_readme.txt
 
 ====
 This mod uses the ReactPhysics3D physics library
