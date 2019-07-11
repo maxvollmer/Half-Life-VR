@@ -178,12 +178,29 @@ void DrawDebugBBox(int which, bool valid, Vector pos, Vector angles, Vector mins
 }
 */
 
-bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(EHANDLE hEntity, const VRController& controller)
+bool WasJustThrownByPlayer(CBasePlayer* pPlayer, EHANDLE hEntity)
+{
+	if (hEntity->pev->owner != pPlayer->edict())
+		return false;
+
+	if (!FClassnameIs(hEntity->pev, "monster_satchel")
+		&& !FClassnameIs(hEntity->pev, "grenade")
+		&& !FClassnameIs(hEntity->pev, "monster_snark"))
+		return false;
+
+	return (gpGlobals->time - hEntity->m_spawnTime) < 2.f;
+}
+
+bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller)
 {
 	if (!controller.IsValid() || !controller.IsBBoxValid())
 		return false;
 
 	if (hEntity->pev->solid == SOLID_NOT && !IsDraggableEntity(hEntity))
+		return false;
+
+	// Don't hit stuff we just threw ourselfes
+	if (WasJustThrownByPlayer(pPlayer, hEntity))
 		return false;
 
 	bool isTouching = false;
@@ -256,14 +273,20 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		}
 		else
 		{
-			isTouching = CheckIfEntityAndControllerTouch(hEntity, controller);
+			isTouching = CheckIfEntityAndControllerTouch(pPlayer, hEntity, controller);
 			didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
 
 			isDragging = isTouching && controller.GetWeaponId() == WEAPON_BAREHAND && controller.IsDragging();
 			didDragChange = isDragging ? controller.AddDraggedEntity(hEntity) : controller.RemoveDraggedEntity(hEntity);
 
-			isHitting = isTouching && controller.GetVelocity().Length() > GetMeleeSwingSpeed();
+			Vector relativeVelocity = pPlayer->pev->velocity + controller.GetVelocity() - hEntity->pev->velocity;
+			isHitting = isTouching && controller.GetVelocity().Length() > GetMeleeSwingSpeed() && relativeVelocity.Length() > GetMeleeSwingSpeed();
 			didHitChange = isHitting ? controller.AddHitEntity(hEntity) : controller.RemoveHitEntity(hEntity);
+		}
+
+		if (!isDragging && didDragChange)
+		{
+			int i = 0;
 		}
 
 		float flHitDamage = 0.f;
