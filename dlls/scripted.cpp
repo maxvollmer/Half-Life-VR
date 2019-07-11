@@ -510,7 +510,7 @@ BOOL CCineMonster :: StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL comp
 		if (pTarget->pev->sequence == -1)
 		{
 			// if the animation still doesn't exist, switch the model back
-			pTarget->pev->model = MAKE_STRING("models/scientist_fem.mdl");
+			pTarget->pev->model = MAKE_STRING("models/femalesci.mdl");
 			SET_MODEL(pTarget->edict(), STRING(pTarget->pev->model));
 		}
 	}
@@ -565,7 +565,7 @@ BOOL CCineAI :: StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeO
 		if (pTarget->pev->sequence == -1)
 		{
 			// if the animation still doesn't exist, switch the model back
-			pTarget->pev->model = MAKE_STRING("models/scientist_fem.mdl");
+			pTarget->pev->model = MAKE_STRING("models/femalesci.mdl");
 			SET_MODEL(pTarget->edict(), STRING(pTarget->pev->model));
 		}
 	}
@@ -614,7 +614,7 @@ void CCineMonster :: SequenceDone ( CBaseMonster *pMonster )
 	// reset model to female version if we set it to male in StartSequence().
 	if (pMonster->IsFemaleNPC() && FClassnameIs(pMonster->pev, "monster_scientist") && strcmp(STRING(pMonster->pev->model), "models/scientist.mdl") == 0)
 	{
-		pMonster->pev->model = MAKE_STRING("models/scientist_fem.mdl");
+		pMonster->pev->model = MAKE_STRING("models/femalesci.mdl");
 		SET_MODEL(pMonster->edict(), STRING(pMonster->pev->model));
 	}
 }

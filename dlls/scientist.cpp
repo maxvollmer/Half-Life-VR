@@ -665,7 +665,7 @@ void CScientist :: Spawn( void )
 	m_fIsFemale = rand() % 2 == 1;
 	Precache( );
 
-	SET_MODEL(ENT(pev), m_fIsFemale ? "models/scientist_fem.mdl" : "models/scientist.mdl");
+	SET_MODEL(ENT(pev), m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
 	UTIL_SetSize(pev, VEC_HUMAN_NPC_HULL_MIN, VEC_HUMAN_NPC_HULL_MAX);
 
 	pev->scale = CVAR_GET_FLOAT("vr_npcscale");
@@ -707,7 +707,7 @@ void CScientist :: Spawn( void )
 //=========================================================
 void CScientist :: Precache( void )
 {
-	PRECACHE_MODEL(m_fIsFemale ? "models/scientist_fem.mdl" : "models/scientist.mdl");
+	PRECACHE_MODEL(m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
 	PRECACHE_SOUND("scientist/sci_pain1.wav");
 	PRECACHE_SOUND("scientist/sci_pain2.wav");
 	PRECACHE_SOUND("scientist/sci_pain3.wav");
@@ -1147,8 +1147,8 @@ LINK_ENTITY_TO_CLASS( monster_scientist_dead, CDeadScientist );
 void CDeadScientist :: Spawn( )
 {
 	m_fIsFemale = rand() % 2 == 1;
-	PRECACHE_MODEL(m_fIsFemale ? "models/scientist_fem.mdl" : "models/scientist.mdl");
-	SET_MODEL(ENT(pev), m_fIsFemale ? "models/scientist_fem.mdl" : "models/scientist.mdl");
+	PRECACHE_MODEL(m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
+	SET_MODEL(ENT(pev), m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
 	
 	pev->effects		= 0;
 	pev->sequence		= 0;
@@ -1241,8 +1241,8 @@ SITTING_ANIM_sitting3
 void CSittingScientist :: Spawn( )
 {
 	m_fIsFemale = rand() % 2 == 1;
-	PRECACHE_MODEL(m_fIsFemale ? "models/scientist_fem.mdl" : "models/scientist.mdl");
-	SET_MODEL(ENT(pev), m_fIsFemale ? "models/scientist_fem.mdl" : "models/scientist.mdl");
+	PRECACHE_MODEL(m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
+	SET_MODEL(ENT(pev), m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
 	Precache();
 	InitBoneControllers();
 
