@@ -5130,28 +5130,88 @@ void CBasePlayer::ClearFlashlightPose()
 	m_vrHasFlashlightPose = false;
 }
 
+constexpr const int VR_FLASHLIGHT_ATTACHMENT_HAND = 0;
+constexpr const int VR_FLASHLIGHT_ATTACHMENT_WEAPON = 1;
+constexpr const int VR_FLASHLIGHT_ATTACHMENT_HEAD = 2;
+constexpr const int VR_FLASHLIGHT_ATTACHMENT_POSE = 3;
+
+// TODO: Merge with GetTeleporterPose, super redundant code
 void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 {
-	if (m_vrHasFlashlightPose)
+	int attachment = int(CVAR_GET_FLOAT("vr_flashlight_attachment"));
+
+	if (attachment == VR_FLASHLIGHT_ATTACHMENT_POSE)
 	{
-		position = GetClientOrigin() + m_vrFlashlightOffset;
-		UTIL_MakeAimVectorsPrivate(m_vrFlashlightAngles, dir, nullptr, nullptr);
+		if (m_vrHasFlashlightPose)
+		{
+			position = GetClientOrigin() + m_vrFlashlightOffset;
+			UTIL_MakeAimVectorsPrivate(m_vrFlashlightAngles, dir, nullptr, nullptr);
+			return;
+		}
+		else
+		{
+			// fallback to hand
+			attachment = VR_FLASHLIGHT_ATTACHMENT_HAND;
+		}
 	}
-	else if (m_vrControllers[VRControllerID::HAND].IsValid())
+
+	if (attachment == VR_FLASHLIGHT_ATTACHMENT_HAND)
 	{
-		position = m_vrControllers[VRControllerID::HAND].GetPosition();
-		UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
+		if (m_vrControllers[VRControllerID::HAND].IsValid())
+		{
+			Vector pos1;
+			Vector pos2;
+			bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::HAND].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
+			bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::HAND].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+			if (result1 && result2 && pos2 != pos1)
+			{
+				position = pos1;
+				dir = (pos2 - pos1).Normalize();
+			}
+			else
+			{
+				position = m_vrControllers[VRControllerID::HAND].GetPosition();
+				UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
+			}
+			return;
+		}
+		else
+		{
+			// fallback to weapon
+			attachment = VR_FLASHLIGHT_ATTACHMENT_WEAPON;
+		}
 	}
-	else if (m_vrControllers[VRControllerID::WEAPON].IsValid())
+
+	if (attachment == VR_FLASHLIGHT_ATTACHMENT_WEAPON)
 	{
-		position = m_vrControllers[VRControllerID::WEAPON].GetPosition();
-		UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
+		if (m_vrControllers[VRControllerID::WEAPON].IsValid())
+		{
+			Vector pos1;
+			Vector pos2;
+			bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
+			bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+			if (result1 && result2 && pos2 != pos1)
+			{
+				position = pos1;
+				dir = (pos2 - pos1).Normalize();
+			}
+			else
+			{
+				position = m_vrControllers[VRControllerID::WEAPON].GetPosition();
+				UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
+			}
+			return;
+		}
+		else
+		{
+			// fallback to pose
+			attachment = VR_FLASHLIGHT_ATTACHMENT_WEAPON;
+		}
 	}
-	else
-	{
-		position = EyePosition();
-		UTIL_MakeAimVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
-	}
+
+	// either attachment is pose or we fallback to pose because no other attachment was available
+	position = EyePosition();
+	UTIL_MakeAimVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
 }
 
 void CBasePlayer::SetTeleporterPose(const Vector& offset, const Vector& angles)
@@ -5166,28 +5226,88 @@ void CBasePlayer::ClearTeleporterPose()
 	m_vrHasTeleporterPose = false;
 }
 
+constexpr const int VR_TELEPORT_ATTACHMENT_HAND = 0;
+constexpr const int VR_TELEPORT_ATTACHMENT_WEAPON = 1;
+constexpr const int VR_TELEPORT_ATTACHMENT_HEAD = 2;
+constexpr const int VR_TELEPORT_ATTACHMENT_POSE = 3;
+
+// TODO: Merge with GetFlashlightPose, super redundant code
 void CBasePlayer::GetTeleporterPose(Vector& position, Vector& dir)
 {
-	if (m_vrHasTeleporterPose)
+	int attachment = int(CVAR_GET_FLOAT("vr_teleport_attachment"));
+
+	if (attachment == VR_FLASHLIGHT_ATTACHMENT_POSE)
 	{
-		position = GetClientOrigin() + m_vrTeleporterOffset;
-		UTIL_MakeAimVectorsPrivate(m_vrTeleporterAngles, dir, nullptr, nullptr);
+		if (m_vrHasTeleporterPose)
+		{
+			position = GetClientOrigin() + m_vrTeleporterOffset;
+			UTIL_MakeAimVectorsPrivate(m_vrTeleporterAngles, dir, nullptr, nullptr);
+			return;
+		}
+		else
+		{
+			// fallback to hand
+			attachment = VR_FLASHLIGHT_ATTACHMENT_HAND;
+		}
 	}
-	else if (m_vrControllers[VRControllerID::HAND].IsValid())
+
+	if (attachment == VR_FLASHLIGHT_ATTACHMENT_HAND)
 	{
-		position = m_vrControllers[VRControllerID::HAND].GetPosition();
-		UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
+		if (m_vrControllers[VRControllerID::HAND].IsValid())
+		{
+			Vector pos1;
+			Vector pos2;
+			bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::HAND].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
+			bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::HAND].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+			if (result1 && result2 && pos2 != pos1)
+			{
+				position = pos1;
+				dir = (pos2 - pos1).Normalize();
+			}
+			else
+			{
+				position = m_vrControllers[VRControllerID::HAND].GetPosition();
+				UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
+			}
+			return;
+		}
+		else
+		{
+			// fallback to weapon
+			attachment = VR_FLASHLIGHT_ATTACHMENT_WEAPON;
+		}
 	}
-	else if (m_vrControllers[VRControllerID::WEAPON].IsValid())
+
+	if (attachment == VR_FLASHLIGHT_ATTACHMENT_WEAPON)
 	{
-		position = m_vrControllers[VRControllerID::WEAPON].GetPosition();
-		UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
+		if (m_vrControllers[VRControllerID::WEAPON].IsValid())
+		{
+			Vector pos1;
+			Vector pos2;
+			bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
+			bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+			if (result1 && result2 && pos2 != pos1)
+			{
+				position = pos1;
+				dir = (pos2 - pos1).Normalize();
+			}
+			else
+			{
+				position = m_vrControllers[VRControllerID::WEAPON].GetPosition();
+				UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
+			}
+			return;
+		}
+		else
+		{
+			// fallback to pose
+			attachment = VR_FLASHLIGHT_ATTACHMENT_WEAPON;
+		}
 	}
-	else
-	{
-		position = EyePosition();
-		UTIL_MakeAimVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
-	}
+
+	// either attachment is pose or we fallback to pose because no other attachment was available
+	position = EyePosition();
+	UTIL_MakeAimVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
 }
 
 

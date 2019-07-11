@@ -310,6 +310,8 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_playerturn_enabled", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_rotate_with_trains", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_flashlight_toggle", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_flashlight_attachment", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_teleport_attachment", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_mode", "2", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_ammo", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_health", "1", FCVAR_ARCHIVE);
