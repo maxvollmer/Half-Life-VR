@@ -65,7 +65,10 @@ int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
 	if (!pstudiohdr)
 		return 0;
 
-	if (sequence >= pstudiohdr->numseq)
+	if (sequence < 0 || sequence >= pstudiohdr->numseq)
+		return 0;
+
+	if (pstudiohdr->numseq <= 0)
 		return 0;
 
 	mstudioseqdesc_t * pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);

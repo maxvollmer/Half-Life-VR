@@ -62,8 +62,9 @@ MULTIDAMAGE gMultiDamage;
 // Returns the minimum speed required to do melee damage with a VR controller - Max Vollmer, 2019-04-07
 float GetMeleeSwingSpeed()
 {
+	float speed = CVAR_GET_FLOAT("vr_melee_swing_speed");
 	// Don't allow negative or 0 values
-	return max(1.f, CVAR_GET_FLOAT("vr_melee_swing_speed"));
+	return max(1.f, speed);
 }
 
 float GetWeaponScale(const char* weaponModelName)

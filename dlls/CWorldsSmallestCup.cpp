@@ -66,21 +66,21 @@ void CWorldsSmallestCup::CupThink()
 	if (m_isBeingDragged.empty())
 	{
 		VRPhysicsHelper::Instance().GetWorldsSmallestCupPosition(this);
+
+		// if we fall out of the world, respawn where the player is
+		if (!IsInWorld() || IsFallingOutOfWorld())
+		{
+			CBaseEntity* pPlayer = UTIL_PlayerByIndex(0);
+			if (pPlayer)
+			{
+				pev->origin = pPlayer->pev->origin;
+				VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
+			}
+		}
 	}
 	else
 	{
 		VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
-	}
-
-	// if we fall out of the world, respawn where the player is
-	if (!IsInWorld() || IsFallingOutOfWorld())
-	{
-		CBaseEntity* pPlayer = UTIL_PlayerByIndex(0);
-		if (pPlayer)
-		{
-			pev->origin = pPlayer->pev->origin;
-			VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
-		}
 	}
 
 	pev->absmin = pev->origin + pev->mins;
@@ -136,6 +136,9 @@ void CWorldsSmallestCup::CupThink()
 
 bool CWorldsSmallestCup::IsFallingOutOfWorld()
 {
+	if (!m_isBeingDragged.empty())
+		return false;
+
 	TraceResult tr;
 	UTIL_TraceLine(pev->origin, pev->origin + Vector{ 0.f, 0.f, -2048.f }, ignore_monsters, nullptr, &tr);
 	return tr.flFraction == 1.f;
