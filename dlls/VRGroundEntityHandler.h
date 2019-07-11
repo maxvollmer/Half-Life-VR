@@ -20,6 +20,7 @@ private:
 
 	void DetectAndSetGroundEntity();
 	bool CheckIfPotentialGroundEntityForPlayer(CBaseEntity *pEntity);
+	bool IsExcludedAsGroundEntity(CBaseEntity *pEntity);
 	CBaseEntity* ChoseBetterGroundEntityForPlayer(CBaseEntity *pEntity1, CBaseEntity *pEntity2);
 	void SendGroundEntityToClient();
 	void MoveWithGroundEntity();

@@ -87,6 +87,10 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 				if (entindex > 0)
 				{
 					pGroundEntity = CBaseEntity::Instance(INDEXENT(pmove->physents[entindex].info));
+					if (IsExcludedAsGroundEntity(pGroundEntity))
+					{
+						pGroundEntity = nullptr;
+					}
 				}
 			}
 		}
@@ -95,7 +99,7 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 		CBaseEntity* pEntity = nullptr;
 		while (UTIL_FindAllEntities(&pEntity))
 		{
-			if (CheckIfPotentialGroundEntityForPlayer(pEntity))
+			if (CheckIfPotentialGroundEntityForPlayer(pEntity) && !IsExcludedAsGroundEntity(pGroundEntity))
 			{
 				pGroundEntity = ChoseBetterGroundEntityForPlayer(pGroundEntity, pEntity);
 			}
@@ -173,6 +177,25 @@ bool VRGroundEntityHandler::CheckIfPotentialGroundEntityForPlayer(CBaseEntity *p
 		m_pPlayer->pev->origin - Vector{ 0.f, 0.f, 8.f },
 		/*radius*/m_pPlayer->pev->size.x,
 		/*height*/m_pPlayer->pev->size.z + 8.f);
+}
+
+bool VRGroundEntityHandler::IsExcludedAsGroundEntity(CBaseEntity *pEntity)
+{
+	if (pEntity->pev->size.x < EPSILON || pEntity->pev->size.y < EPSILON || pEntity->pev->size.z < EPSILON)
+		return true;
+
+	if (FClassnameIs(pEntity->pev, "func_door_rotating"))
+	{
+		if (pEntity->pev->size.z > pEntity->pev->size.y && pEntity->pev->size.z > pEntity->pev->size.x)
+		{
+			constexpr const float DoorRatio = 4.f;
+			float ratio = pEntity->pev->size.x / pEntity->pev->size.y;
+			if (ratio > DoorRatio || ratio < (1.f / DoorRatio))
+				return true;
+		}
+	}
+
+	return false;
 }
 
 void VRGroundEntityHandler::SendGroundEntityToClient()
