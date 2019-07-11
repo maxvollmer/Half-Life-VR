@@ -96,5 +96,6 @@
 * Hitting headcrabs with melee attack pushes them (headcrab baseball anyone?)
 * Added missing animations to female scientist model
 * HUD damage feedback is now red and a bit further up
-
+* Added cvars vr_flashlight_attachment and vr_teleport_attachment (modes are: use hand, use weapon, use head, use pose)
+* Made flashlight and teleporter use hand and weapon model attachments for position and direction
 
