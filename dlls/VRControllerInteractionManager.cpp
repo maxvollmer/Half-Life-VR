@@ -340,7 +340,7 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEn
 	if (hEntity->pev->solid == SOLID_NOT || hEntity->pev->solid == SOLID_TRIGGER)
 		return 0.f;
 
-	float speed = controller.GetVelocity().Length();
+	float speed = (controller.GetVelocity() - hEntity->pev->velocity).Length();
 	float damage = UTIL_CalculateMeleeDamage(controller.GetWeaponId(), speed);
 	if (damage > 0.f)
 	{
