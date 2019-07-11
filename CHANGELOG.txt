@@ -15,5 +15,87 @@
 * Fixed background texture
 * Compiled with static MSVC runtime libraries
 
-0.4.0 - current dev
-* Added name of faulty model to "Mod_Extradata: caching failed" error popup
+0.4.0 - 2019-05-26
+* Fixed crouching between level changes not being detected
+* Fixed RL crouching and ingame crouching interfering
+* Fixed bug where weapon could be fired while using stationary gun
+* Fixed several collision bugs
+* Fixed bug where game wouldn't reload after dying
+* Fixed player's bounding box preventing the player to get close to things
+* Fixed 90° and 180° turn actions causing player to warp through walls
+* Fixed bug that prevented loading of physics data cache
+* Fixed rare freeze bug when climbing a ladder on a narrow angle due to bug in engine
+* Fixed bug where gibs (e.g. wood from broken crates) are dramatically oversized
+* Fixed bug where the tripmine laser would randomly attach to other entities after levelchange
+* Fixed visual issues due to backface rendering
+* Fixed movement vector being upside down (fixes issues in water and on ladders)
+* Fixed analog movement not working on ladders
+* Fixed several bugs when teleporting on ladders
+* Fixed some xen jump thingies not being detected by the teleporter beam
+* Fixed ingame cameras not working (that scene where Gordon gets captured)
+* Fixed barnacles not causing damage
+* Fixed jumping in shallow water not possible
+* Fixed upward/downward movement not working in water and on ladders
+* Made rotating buttons (valves, levers) actually rotatable (drag and rotate)
+* Improved drag behavior of pushables
+* Added analog jump, crouch and longjump actions
+* Added environmental damage feedback to VR HUD
+* Added cvar to control height of RL crouch
+* Massive improvements to weapon models
+* ESRGAN improved textures on all models
+
+0.4.1 - 2019-05-30
+* Fixed a bug where teleporting on some ladders wasn't possible
+* Fixed player hull sizes not being properly updated in movement code
+* Improved detection of groundentities (e.g. moving platforms in lambda core)
+* Corrected type of new analog jump, crouch and longjump actions
+
+0.4.2 - 2019-06-01
+* Fixed items not being picked up by controllers
+* Fixed cvar vr_rl_duck_height being interpreted as m instead of cm
+* Fixed view height when ducking
+* Fixed several cvars not keeping their value between game sessions
+* Fixed HLVRLauncher not working in directories with spaces
+* Fixed HLVRLauncher not removing inherited ACLs from Opengl32.dll
+* Fixed HLVRLauncher not properly deleting/backuping/restoring dll files
+* Capped view height at ingame height to avoid clipping issues
+* Made xen_plantlight react to touch by controllers
+* Added new cvar "vr_use_sd_models"
+* Removed "-condebug" and "-dev" from launcher to prevent crashbug in engine (see https://github.com/ValveSoftware/halflife/issues/2492)
+
+0.4.3 - 2019-06-01
+* Fixed violent up/down jittering when on platforms that move vertically
+* Reduced time till auto-reload after death to 1 second (from 3 seconds)
+
+0.4.4 - 2019-06-02
+* Fixed player position after levelchange and save/reload
+* Fixed player orientation after levelchange and save/reload
+* Fixed crash bug when accessing engine pmove code before map has finished loading
+* Fixed issues with opengl32.dll with some drivers
+
+0.4.5 - 2019-06-16
+* Fixed some breakables breaking immediately when touched
+* Fixed player not ducking after teleporting into ducts and other areas that require ducking
+* If there was an easter egg, which there definitely isn't, a bug related to that easter egg would have been fixed. But since there is no easter egg, there was no bug and there is no fix, obviously.
+* Made HLVRLauncher set opengl32.dll to read-only (in addition to the ACL settings)
+* Restored original player hullsize (unfortunately hullsizes are compiled into bsp files, and thus changing them in code causes bugs)
+* Added cvars vr_ladder_movement_only_updown and vr_ladder_movement_speed for improved ladder movement
+* Added cvar vr_view_dist_to_walls
+* Added laser spot to range weapons (except hornet gun) and corresponding cvar vr_enable_aim_laser
+
+0.4.6 - 2019-06-16
+* Fixed bug that disabled SteamVR input
+
+0.4.7 - 2019-07-11
+* Fixed players falling through floor after using VR teleport
+* Fixed rotatable buttons (levers, valves etc.) from losing grip or rotating back too early
+* Fixed thrown items (grenades, satchels, snarks) being "hit" by melee attack right after they spawn from the player's controller
+* Fixed rotating doors pulling the player due to false positive in ground entity detection
+* Added relative speed check to prevent objects being "hit" by melee attack when speed of controller and object are relatively the same
+* Melee attack damage is now calculated with relative speed between controller and object (more damage when hitting objects flying towards the controller)
+* Hitting headcrabs with melee attack pushes them (headcrab baseball anyone?)
+* Added missing animations to female scientist model
+* HUD damage feedback is now red and a bit further up
+* Added cvars vr_flashlight_attachment and vr_teleport_attachment (modes are: use hand, use weapon, use head, use pose)
+* Made flashlight and teleporter use hand and weapon model attachments for position and direction
+
