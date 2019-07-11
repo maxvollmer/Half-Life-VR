@@ -70,6 +70,7 @@ void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 		}
 		pPlayer->pev->origin = vr_vecTeleDestination;
 		pPlayer->pev->origin.z -= pPlayer->pev->mins.z;
+		pPlayer->pev->origin.z += 1.f;
 		UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
 		pPlayer->pev->absmin = pPlayer->pev->origin + pPlayer->pev->mins;
 		pPlayer->pev->absmax = pPlayer->pev->origin + pPlayer->pev->maxs;
