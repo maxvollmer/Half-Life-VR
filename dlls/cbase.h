@@ -451,6 +451,7 @@ public:
 	virtual bool IsDraggable() { return false; }
 	virtual void HandleDragStart() {}
 	virtual void HandleDragStop() {}
+	virtual void BaseBalled(CBaseEntity* pPlayer, const Vector& velocity) {}
 	void EXPORT DragStartThink(void) { m_pfnThink = nullptr; HandleDragStart(); }
 	void EXPORT DragStopThink(void) { m_pfnThink = nullptr; HandleDragStop(); }
 	std::unordered_set<VRControllerID> m_isBeingDragged;

@@ -110,6 +110,7 @@ public:
 	virtual bool IsDraggable() override { return false; /*TODO: Super buggy, disabled for now.*/ }
 	virtual void HandleDragStart() override;
 	virtual void HandleDragStop() override;
+	virtual void BaseBalled(CBaseEntity* pPlayer, const Vector& velocity) override;
 	void EXPORT DragThink();
 };
 LINK_ENTITY_TO_CLASS( monster_headcrab, CHeadCrab );
@@ -601,4 +602,24 @@ void CHeadCrab::DragThink()
 			this->TakeDamage(pev, pev, pev->health + 1000.f, DMG_CRUSH | DMG_ALWAYSGIB);
 		}
 	}
+}
+
+void CHeadCrab::BaseBalled(CBaseEntity* pPlayer, const Vector& velocity)
+{
+	// scream if alive (we might have been killed by the melee attack)
+	if (IsAlive())
+	{
+		PainSound();
+	}
+
+	// take off ground
+	ClearBits(pev->flags, FL_ONGROUND);
+	pev->origin.z += 1.f;
+	UTIL_SetOrigin(pev, pev->origin);
+
+	// set velocity
+	pev->velocity = velocity;
+
+	// prevent attack for 2 seconds
+	m_flNextAttack = gpGlobals->time + 2.f;
 }

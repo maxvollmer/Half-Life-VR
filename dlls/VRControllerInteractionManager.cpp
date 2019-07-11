@@ -361,6 +361,9 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEn
 		ApplyMultiDamage(pPlayer->pev, pPlayer->pev);
 		hEntity->m_bloodColor = backupBlood;
 
+		// Entities that support being "baseballed" overwrite this method
+		hEntity->BaseBalled(pPlayer, controller.GetVelocity());
+
 		// If you smack something with an explosive, it might just explode...
 		// 25% chance that charged satchels go off when you smack something with the remote
 		if (controller.GetWeaponId() == WEAPON_SATCHEL && pPlayer->m_pActiveItem->m_chargeReady && RANDOM_LONG(0, 4) == 0)
