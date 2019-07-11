@@ -387,7 +387,7 @@ int CHudHealth::DrawDamage(float flTime)
 	if (!m_bitsDamage)
 		return 1;
 
-	UnpackRGB(r,g,b, RGB_YELLOWISH);
+	UnpackRGB(r,g,b, RGB_REDISH);
 	
 	a = (int)( fabs(sin(flTime*2)) * 256.0);
 
@@ -464,7 +464,7 @@ void CHudHealth::UpdateTiles(float flTime, long bitsDamage)
 		{
 			// put this one at the bottom
 			pdmg->x = giDmgWidth/8;
-			pdmg->y = ScreenHeight - giDmgHeight * 2;
+			pdmg->y = ScreenHeight - giDmgHeight * 3;
 			pdmg->fExpire=flTime + DMG_IMAGE_LIFE;
 			
 			// move everyone else up
