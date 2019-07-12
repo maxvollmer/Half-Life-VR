@@ -788,3 +788,10 @@ cl_entity_t* CHud::GetHandControllerEntity()
 		return nullptr;
 	}
 }
+
+
+// Used by hl_weapons.cpp and view.cpp when switching to hand model
+bool PlayerHasSuit()
+{
+	return gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT));
+}

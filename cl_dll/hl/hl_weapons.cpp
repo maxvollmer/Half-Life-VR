@@ -262,7 +262,16 @@ void CBasePlayerWeapon::Holster( int skiplocal /* = 0 */ )
 { 
 	m_fInReload = FALSE; // cancel any reload in progress.
 	g_irunninggausspred = false;
-	gEngfuncs.CL_LoadModel("models/v_gordon_hand.mdl", &m_pPlayer->pev->viewmodel);
+
+	extern bool PlayerHasSuit();
+	if (PlayerHasSuit())
+	{
+		gEngfuncs.CL_LoadModel("models/v_hand_hevsuit.mdl", &m_pPlayer->pev->viewmodel);
+	}
+	else
+	{
+		gEngfuncs.CL_LoadModel("models/v_hand_labcoat.mdl", &m_pPlayer->pev->viewmodel);
+	}
 }
 
 /*

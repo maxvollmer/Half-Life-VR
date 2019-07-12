@@ -461,11 +461,12 @@ void W_Precache(void)
 	PRECACHE_SOUND ("items/weapondrop1.wav");// weapon falls to the ground
 
 	// VR hand model
-	PRECACHE_MODEL("models/v_gordon_hand.mdl");
+	PRECACHE_MODEL("models/v_hand_labcoat.mdl");
+	PRECACHE_MODEL("models/v_hand_hevsuit.mdl");
 }
 
 
- 
+
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] = 
 {
@@ -798,8 +799,15 @@ void CBasePlayerItem::Kill( void )
 }
 
 void CBasePlayerItem::Holster( int skiplocal /* = 0 */ )
-{ 
-	m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
+{
+	if (m_pPlayer->HasSuit())
+	{
+		m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_hand_hevsuit.mdl");
+	}
+	else
+	{
+		m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_hand_labcoat.mdl");
+	}
 	m_pPlayer->pev->weaponmodel = 0;
 	m_pPlayer->HolsterWeapon();
 }
@@ -1103,7 +1111,14 @@ int CBasePlayerWeapon::SecondaryAmmoIndex( void )
 void CBasePlayerWeapon::Holster( int skiplocal /* = 0 */ )
 { 
 	m_fInReload = FALSE; // cancel any reload in progress.
-	m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
+	if (m_pPlayer->HasSuit())
+	{
+		m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_hand_hevsuit.mdl");
+	}
+	else
+	{
+		m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_hand_labcoat.mdl");
+	}
 	m_pPlayer->pev->weaponmodel = 0;
 }
 
@@ -1225,7 +1240,14 @@ int CBasePlayerWeapon::ExtractClipAmmo( CBasePlayerWeapon *pWeapon )
 void CBasePlayerWeapon::RetireWeapon( void )
 {
 	// first, no viewmodel at all.
-	m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
+	if (m_pPlayer->HasSuit())
+	{
+		m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_hand_hevsuit.mdl");
+	}
+	else
+	{
+		m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_hand_labcoat.mdl");
+	}
 	m_pPlayer->pev->weaponmodel = iStringNull;
 	//m_pPlayer->pev->viewmodelindex = NULL;
 

@@ -1094,8 +1094,8 @@ int V_FindViewModelByWeaponModel(int weaponindex)
 		{ "models/p_squeak.mdl",		"models/v_squeak.mdl"		},
 		{ "models/p_tripmine.mdl",		"models/v_tripmine.mdl"		},
 		{ "models/p_satchel_radio.mdl",	"models/v_satchel_radio.mdl"},
-		{ "models/p_satchel.mdl",		"models/v_satchel.mdl"		},
-		{ NULL, "models/v_gordon_hand.mdl" } };
+		{ "models/p_satchel.mdl",		"models/v_satchel.mdl"		}
+	};
 
 	struct model_s * weaponModel = IEngineStudio.GetModelByIndex( weaponindex );
 
@@ -1114,7 +1114,15 @@ int V_FindViewModelByWeaponModel(int weaponindex)
 		}
 	}
 
-	return gEngfuncs.pEventAPI->EV_FindModelIndex("models/v_gordon_hand.mdl");
+	extern bool PlayerHasSuit();
+	if (PlayerHasSuit())
+	{
+		return gEngfuncs.pEventAPI->EV_FindModelIndex("models/v_hand_hevsuit.mdl");
+	}
+	else
+	{
+		return gEngfuncs.pEventAPI->EV_FindModelIndex("models/v_hand_labcoat.mdl");
+	}
 }
 
 

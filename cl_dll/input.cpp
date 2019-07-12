@@ -970,3 +970,50 @@ void DLLEXPORT HUD_Shutdown( void )
 {
 	ShutdownInput();
 }
+
+
+// Called when player is dead ingame (fixes weapons firing after respawn due to button states not being properly reset)
+void ClearInputForDeath()
+{
+	in_attack.down[0] = in_attack.down[1] = 0;
+	in_attack.state = 4;
+
+	in_duck.down[0] = in_duck.down[1] = 0;
+	in_duck.state = 4;
+
+	in_jump.down[0] = in_jump.down[1] = 0;
+	in_jump.state = 4;
+
+	in_forward.down[0] = in_forward.down[1] = 0;
+	in_forward.state = 4;
+
+	in_back.down[0] = in_back.down[1] = 0;
+	in_back.state = 4;
+
+	in_use.down[0] = in_use.down[1] = 0;
+	in_use.state = 4;
+
+	in_left.down[0] = in_left.down[1] = 0;
+	in_left.state = 4;
+
+	in_right.down[0] = in_right.down[1] = 0;
+	in_right.state = 4;
+
+	in_moveleft.down[0] = in_moveleft.down[1] = 0;
+	in_moveleft.state = 4;
+
+	in_moveright.down[0] = in_moveright.down[1] = 0;
+	in_moveright.state = 4;
+
+	in_attack2.down[0] = in_attack2.down[1] = 0;
+	in_attack2.state = 4;
+
+	in_reload.down[0] = in_reload.down[1] = 0;
+	in_reload.state = 4;
+
+	in_alt1.down[0] = in_alt1.down[1] = 0;
+	in_alt1.state = 4;
+
+	in_score.down[0] = in_score.down[1] = 0;
+	in_score.state = 4;
+}

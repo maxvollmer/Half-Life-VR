@@ -362,7 +362,14 @@ BOOL CFuncTank :: StartControl( CBasePlayer *pController )
 	{
 		m_pController->m_pActiveItem->Holster();
 		m_pController->pev->weaponmodel = 0;
-		m_pController->pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
+		if (m_pController->HasSuit())
+		{
+			m_pController->pev->viewmodel = MAKE_STRING("models/v_hand_hevsuit.mdl");
+		}
+		else
+		{
+			m_pController->pev->viewmodel = MAKE_STRING("models/v_hand_labcoat.mdl");
+		}
 	}
 
 	m_pController->m_iHideHUD |= HIDEHUD_WEAPONS;

@@ -575,6 +575,11 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
 		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
 	}
+
+	// clear attack/use commands from player
+	pPlayer->m_afButtonPressed = 0;
+	pPlayer->pev->button = 0;
+	pPlayer->m_afButtonReleased = 0;
 }
 
 //=========================================================
@@ -671,6 +676,11 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 		DeactivateSatchels( pVictim );
 	}
 #endif
+
+	// clear attack/use commands from player
+	pVictim->m_afButtonPressed = 0;
+	pVictim->pev->button = 0;
+	pVictim->m_afButtonReleased = 0;
 }
 
 //=========================================================

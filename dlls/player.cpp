@@ -1363,9 +1363,15 @@ void CBasePlayer::PlayerDeathThink(void)
 	// wait for all buttons released
 	if (pev->deadflag == DEAD_DEAD)
 	{
+		// clear attack/use commands
+		m_afButtonPressed = 0;
 		pev->button = 0;
+		m_afButtonReleased = 0;
 		m_fDeadTime = gpGlobals->time;
 		pev->deadflag = DEAD_RESPAWNABLE;
+		pmove->oldbuttons = 0;
+		pmove->cmd.buttons = 0;
+		pmove->cmd.buttons_ex = 0;
 		return;
 	}
 
@@ -1373,8 +1379,14 @@ void CBasePlayer::PlayerDeathThink(void)
 	BOOL fAnyButtonDown = (pev->button & ~IN_SCORE);
 	if (fAnyButtonDown || gpGlobals->time > (m_fDeadTime + 1.f))
 	{
+		// clear attack/use commands
+		m_afButtonPressed = 0;
 		pev->button = 0;
+		m_afButtonReleased = 0;
 		m_iRespawnFrames = 0;
+		pmove->oldbuttons = 0;
+		pmove->cmd.buttons = 0;
+		pmove->cmd.buttons_ex = 0;
 
 		//ALERT(at_console, "Respawn\n");
 
@@ -1774,6 +1786,16 @@ void CBasePlayer::UpdateStatusBar()
 
 void CBasePlayer::PreThink(void)
 {
+	// Make sure we always have the right hand model
+	if (HasSuit() && FStrEq(STRING(pev->viewmodel), "models/v_hand_labcoat.mdl"))
+	{
+		pev->viewmodel = MAKE_STRING("models/v_hand_hevsuit.mdl");
+	}
+	else if (!HasSuit() && FStrEq(STRING(pev->viewmodel), "models/v_hand_hevsuit.mdl"))
+	{
+		pev->viewmodel = MAKE_STRING("models/v_hand_labcoat.mdl");
+	}
+
 	int buttonsChanged = (m_afButtonLast ^ pev->button);	// These buttons have changed this frame
 	
 	// Debounced button codes for pressed/released
@@ -2821,7 +2843,14 @@ void CBasePlayer::Spawn( void )
 	pev->dmg_save		= 0;
 	pev->friction		= 1.0;
 	pev->gravity		= 0.0;
-	pev->viewmodel		= MAKE_STRING("models/v_gordon_hand.mdl");
+	if (HasSuit())
+	{
+		pev->viewmodel = MAKE_STRING("models/v_hand_hevsuit.mdl");
+	}
+	else
+	{
+		pev->viewmodel = MAKE_STRING("models/v_hand_labcoat.mdl");
+	}
 	m_bitsHUDDamage		= -1;
 	m_bitsDamageType	= 0;
 	m_afPhysicsFlags	= 0;
@@ -3048,7 +3077,14 @@ int CBasePlayer::Restore( CRestore &restore )
 	// Make sure old predisaster savegames start up with hand model
 	if (m_pActiveItem == nullptr)
 	{
-		pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
+		if (HasSuit())
+		{
+			pev->viewmodel = MAKE_STRING("models/v_hand_hevsuit.mdl");
+		}
+		else
+		{
+			pev->viewmodel = MAKE_STRING("models/v_hand_labcoat.mdl");
+		}
 		pev->weaponmodel = iStringNull;
 	}
 
@@ -3166,7 +3202,14 @@ void CBasePlayer::SelectItem(const char *pstr)
 	}
 	else
 	{
-		pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
+		if (HasSuit())
+		{
+			pev->viewmodel = MAKE_STRING("models/v_hand_hevsuit.mdl");
+		}
+		else
+		{
+			pev->viewmodel = MAKE_STRING("models/v_hand_labcoat.mdl");
+		}
 		pev->weaponmodel = iStringNull;
 	}
 }
@@ -3191,7 +3234,14 @@ void CBasePlayer::SelectLastItem(void)
 	{
 		m_pLastItem = m_pActiveItem;
 		m_pActiveItem = nullptr;
-		pev->viewmodel = MAKE_STRING("models/v_gordon_hand.mdl");
+		if (HasSuit())
+		{
+			pev->viewmodel = MAKE_STRING("models/v_hand_hevsuit.mdl");
+		}
+		else
+		{
+			pev->viewmodel = MAKE_STRING("models/v_hand_labcoat.mdl");
+		}
 		pev->weaponmodel = iStringNull;
 	}
 	else
@@ -5428,3 +5478,7 @@ void CBasePlayer::HolsterWeapon()
 	SelectItem("weapon_barehand");
 }
 
+bool CBasePlayer::HasSuit()
+{
+	return FBitSet(pev->weapons, (1 << WEAPON_SUIT));
+}

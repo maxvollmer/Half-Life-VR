@@ -105,7 +105,16 @@ void VRRenderer::Frame(double time)
 
 	if (IsDeadInGame())
 	{
+		extern void ClearInputForDeath();
+		ClearInputForDeath();
 
+		extern playermove_t* pmove;
+		if (pmove != nullptr)
+		{
+			pmove->oldbuttons = 0;
+			pmove->cmd.buttons = 0;
+			pmove->cmd.buttons_ex = 0;
+		}
 	}
 }
 
