@@ -1,7 +1,7 @@
 ====
 Half-Life: VR
 
-VERSION 0.4.7
+VERSION 0.4.8
 
 Copyright (c) 2017-2019 Max Vollmer
 
@@ -51,6 +51,7 @@ List of known bugs and issues:
 - Pushable boxes and such behave blegh
 - Glitches in hand and weapon animations
 - HL VR menu blocks/overlays SteamVR menus
+- If there was an easter egg, which there isn't, it would have a bug
 - Skybox images in VR menu are mixed up
 - Entities that are supposed to crush the player, don't crush the player (traps and such) (they just push you out of the way)
 
@@ -61,6 +62,7 @@ Unfinished/planned features:
 - Proper teleportation arc that matches path of jumping player
 - Vibrational feedback (recoil etc.) isn't implemented yet
 - Smooth out stairs
+- SD weapons
 - HD skyboxes
 
 ===================
