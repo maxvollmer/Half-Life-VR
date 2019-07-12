@@ -99,7 +99,7 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 		CBaseEntity* pEntity = nullptr;
 		while (UTIL_FindAllEntities(&pEntity))
 		{
-			if (CheckIfPotentialGroundEntityForPlayer(pEntity) && !IsExcludedAsGroundEntity(pGroundEntity))
+			if (CheckIfPotentialGroundEntityForPlayer(pEntity) && !IsExcludedAsGroundEntity(pEntity))
 			{
 				pGroundEntity = ChoseBetterGroundEntityForPlayer(pGroundEntity, pEntity);
 			}
