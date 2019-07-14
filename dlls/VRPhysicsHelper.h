@@ -51,10 +51,14 @@ public:
 
 	void TraceLine(const Vector &vecStart, const Vector &vecEnd, edict_t* pentIgnore, TraceResult *ptr);
 
-	bool ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs);
+	bool ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles = Vector{});
 	bool ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& capsuleCenter, double radius, double height);
 	bool ModelIntersectsWorld(CBaseEntity *pModel);
 	bool ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2);
+
+	bool ModelBBoxIntersectsBBox(
+		const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1,
+		const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2 = Vector{});
 
 	bool GetBSPModelBBox(CBaseEntity *pModel, Vector* bboxMins, Vector* bboxMaxs, Vector* bboxCenter = nullptr);
 
@@ -150,9 +154,13 @@ private:
 	reactphysics3d::CollisionWorld*							m_collisionWorld{ nullptr };
 	reactphysics3d::DynamicsWorld*							m_dynamicsWorld{ nullptr };
 
-	reactphysics3d::CollisionBody*							m_bboxBody{ nullptr };
-	reactphysics3d::BoxShape*								m_bboxShape{ nullptr };
-	reactphysics3d::ProxyShape*								m_bboxProxyShape{ nullptr };
+	reactphysics3d::CollisionBody*							m_bboxBody1{ nullptr };
+	reactphysics3d::BoxShape*								m_bboxShape1{ nullptr };
+	reactphysics3d::ProxyShape*								m_bboxProxyShape1{ nullptr };
+
+	reactphysics3d::CollisionBody*							m_bboxBody2{ nullptr };
+	reactphysics3d::BoxShape*								m_bboxShape2{ nullptr };
+	reactphysics3d::ProxyShape*								m_bboxProxyShape2{ nullptr };
 
 	reactphysics3d::CollisionBody*							m_capsuleBody{ nullptr };
 	reactphysics3d::CapsuleShape*							m_capsuleShape{ nullptr };

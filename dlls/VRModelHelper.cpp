@@ -103,6 +103,7 @@ const VRModelInfo& VRModelHelper::GetModelInfo(CBaseEntity *pEntity)
 	}
 }
 
+/*
 std::vector<TransformedBBox> VRModelHelper::GetTransformedBBoxesForModel(CBaseEntity* pModel)
 {
 	std::vector<TransformedBBox> result;
@@ -145,6 +146,7 @@ std::vector<TransformedBBox> VRModelHelper::GetTransformedBBoxesForModel(CBaseEn
 
 	return result;
 }
+*/
 
 bool VRModelHelper::GetAttachment(CBaseEntity *pModel, int attachmentIndex, Vector& attachment)
 {

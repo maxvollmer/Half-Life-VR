@@ -42,6 +42,17 @@ int GetBodygroup( void *pmodel, entvars_t *pev, int iGroup );
 int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEvent, float flStart, float flEnd, int index, ClientAnimEvent_t *pClientAnimEvent=nullptr);
 int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs );
 
+
+struct StudioHitBox
+{
+	vec3_t origin;
+	vec3_t angles;
+	vec3_t mins;
+	vec3_t maxs;
+};
+int GetNumHitboxes(void *pmodel);
+int GetHitboxes(entvars_t *pev, void *pmodel, int sequence, float frame, StudioHitBox* hitboxes, bool mirrored = false);
+
 // From /engine/studio.h
 #define STUDIO_LOOPING		0x0001
 

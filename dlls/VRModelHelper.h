@@ -40,7 +40,7 @@ class VRModelHelper
 {
 public:
 	const VRModelInfo& GetModelInfo(CBaseEntity *pModel);
-	std::vector<TransformedBBox> GetTransformedBBoxesForModel(CBaseEntity* pModel);
+	//std::vector<TransformedBBox> GetTransformedBBoxesForModel(CBaseEntity* pModel);
 	bool GetAttachment(CBaseEntity *pModel, int attachmentIndex, Vector& attachment);
 
 	static VRModelHelper& GetInstance() { return m_instance; }

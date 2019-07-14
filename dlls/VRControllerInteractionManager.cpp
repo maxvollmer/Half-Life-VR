@@ -193,7 +193,10 @@ bool WasJustThrownByPlayer(CBasePlayer* pPlayer, EHANDLE hEntity)
 
 bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller)
 {
-	if (!controller.IsValid() || !controller.IsBBoxValid())
+	if (!controller.IsValid())
+		return false;
+
+	if (controller.GetRadius() <= 0.f)
 		return false;
 
 	if (hEntity->pev->solid == SOLID_NOT && !IsDraggableEntity(hEntity))
@@ -203,8 +206,32 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 	if (WasJustThrownByPlayer(pPlayer, hEntity))
 		return false;
 
-	bool isTouching = false;
+	// Rule out entities too far away
+	CBaseEntity *pWorld = CBaseEntity::Instance(INDEXENT(0));
+	if (hEntity != pWorld)
+	{
+		Vector entityCenter = (hEntity->pev->absmax + hEntity->pev->absmin) * 0.5f;
+		float distance = (controller.GetPosition() - entityCenter).Length();
+		float entityRadius = (std::max)(hEntity->pev->mins.Length(), hEntity->pev->maxs.Length());
+		if (distance > (controller.GetRadius() + entityRadius))
+		{
+			return false;
+		}
+	}
 
+	// New code using hitboxes instead of sequence bounding box
+	for (auto hitbox : controller.GetHitBoxes())
+	{
+		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles))
+		{
+			return true;
+		}
+	}
+	return false;
+
+	// Old code using sequence bounding box instead of model hitboxes
+	/*
+	bool isTouching = false;
 	CBaseEntity *pWorld = CBaseEntity::Instance(INDEXENT(0));
 	if (hEntity == pWorld)
 	{
@@ -225,6 +252,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 	}
 
 	return isTouching;
+	*/
 }
 
 bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE hEntity)

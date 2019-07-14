@@ -111,6 +111,7 @@ public:
 	inline void	SetFlags( int flags ) { pev->rendermode = (pev->rendermode & 0x0F) | (flags&0xF0); }
 	inline void SetStartPos( const Vector& pos ) { pev->origin = pos; }
 	inline void SetEndPos( const Vector& pos ) { pev->angles = pos; }
+	inline void SetStartAndEndPos(const Vector& start, const Vector& end) { SetStartPos(start); SetEndPos(end); }
 	void SetStartEntity( int entityIndex );
 	void SetEndEntity( int entityIndex );
 

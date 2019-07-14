@@ -200,22 +200,27 @@ inline Vector RP3DVecToHLVec(const Vector3 & rp3dVec)
 	return Vector{ float(rp3dVec.x * RP3D_TO_HL), float(rp3dVec.y * RP3D_TO_HL), float(rp3dVec.z * RP3D_TO_HL) };
 }
 
-inline rp3d::Matrix3x3 HLAnglesToRP3DTransform(const Vector& angles)
+inline rp3d::Quaternion HLAnglesToRP3DQuaternion(const Vector& angles)
 {
-	// TODO: Test if we need to invert yaw only or entire angles
-	// Vector modifiedAngles = Vector{ angles.x, -angles.y, angles.z };
-	Vector modifiedAngles = -angles;
+// up / down
+#define	PITCH	0
+// left / right
+#define	YAW		1
+// fall over
+#define	ROLL	2 
 
-	Vector forward = VRPhysicsHelper::Instance().RotateVectorInline(Vector{ 1.f, 0.f, 0.f }, modifiedAngles, Vector{}, true);
-	Vector right = VRPhysicsHelper::Instance().RotateVectorInline(Vector{ 0.f, 1.f, 0.f }, modifiedAngles, Vector{}, true);
-	Vector up = VRPhysicsHelper::Instance().RotateVectorInline(Vector{ 0.f, 0.f, 1.f }, modifiedAngles, Vector{}, true);
+	rp3d::Quaternion rollQuaternion;
+	rollQuaternion.setAllValues(sin(angles[ROLL] * M_PI / 360.), 0.f, 0.f, cos(angles[ROLL] * M_PI / 360.));
 
-	return rp3d::Matrix3x3{
-		forward.x, forward.y, forward.z,
-		right.x, right.y, right.z,
-		up.x, up.y, up.z
-	};
+	rp3d::Quaternion pitchQuaternion;
+	pitchQuaternion.setAllValues(0.f, sin(angles[PITCH] * M_PI / 360.), 0.f, cos(angles[PITCH] * M_PI / 360.));
+
+	rp3d::Quaternion yawQuaternion;
+	yawQuaternion.setAllValues(0.f, 0.f, sin(angles[YAW] * M_PI / 360.), cos(angles[YAW] * M_PI / 360.));
+
+	return yawQuaternion * pitchQuaternion * rollQuaternion;
 }
+
 
 inline Vector RP3DTransformToHLAngles(const rp3d::Matrix3x3& matrix)
 {
@@ -746,15 +751,26 @@ VRPhysicsHelper::~VRPhysicsHelper()
 
 	if (m_collisionWorld)
 	{
-		if (m_bboxBody)
+		if (m_bboxBody1)
 		{
-			if (m_bboxProxyShape)
+			if (m_bboxProxyShape1)
 			{
-				m_bboxBody->removeCollisionShape(m_bboxProxyShape);
-				m_bboxProxyShape = nullptr;
+				m_bboxBody1->removeCollisionShape(m_bboxProxyShape1);
+				m_bboxProxyShape1 = nullptr;
 			}
-			m_collisionWorld->destroyCollisionBody(m_bboxBody);
-			m_bboxBody = nullptr;
+			m_collisionWorld->destroyCollisionBody(m_bboxBody1);
+			m_bboxBody1 = nullptr;
+		}
+
+		if (m_bboxBody2)
+		{
+			if (m_bboxProxyShape2)
+			{
+				m_bboxBody2->removeCollisionShape(m_bboxProxyShape2);
+				m_bboxProxyShape2 = nullptr;
+			}
+			m_collisionWorld->destroyCollisionBody(m_bboxBody2);
+			m_bboxBody2 = nullptr;
 		}
 
 		if (m_capsuleBody)
@@ -794,10 +810,16 @@ VRPhysicsHelper::~VRPhysicsHelper()
 		m_dynamicsWorld = nullptr;
 	}
 
-	if (m_bboxShape)
+	if (m_bboxShape1)
 	{
-		delete m_bboxShape;
-		m_bboxShape = nullptr;
+		delete m_bboxShape1;
+		m_bboxShape1 = nullptr;
+	}
+
+	if (m_bboxShape2)
+	{
+		delete m_bboxShape2;
+		m_bboxShape2 = nullptr;
 	}
 
 	if (m_capsuleShape)
@@ -934,54 +956,109 @@ bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& 
 
 	m_capsuleShape = new CapsuleShape{ (radius) * HL_TO_RP3D, (height) * HL_TO_RP3D };
 	m_capsuleProxyShape = m_capsuleBody->addCollisionShape(m_capsuleShape, rp3d::Transform::identity());
-	m_capsuleBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(capsuleCenter), HLAnglesToRP3DTransform(Vector{ 0.f, 0.f, 90.f }) });
+	m_capsuleBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(capsuleCenter), HLAnglesToRP3DQuaternion(Vector{ 0.f, 0.f, 90.f }) });
 
-	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DTransform(pModel->pev->angles) });
+	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DQuaternion(pModel->pev->angles) });
 
 	return m_collisionWorld->testOverlap(bspModelData->second.m_collisionBody, m_capsuleBody);
 }
 
-bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs)
+bool VRPhysicsHelper::ModelBBoxIntersectsBBox(
+	const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1,
+	const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2)
+{
+	if (!CheckWorld())
+		return false;
+
+	if (!m_bboxBody1)
+	{
+		m_bboxBody1 = m_collisionWorld->createCollisionBody(rp3d::Transform::identity());
+	}
+	if (m_bboxProxyShape1)
+	{
+		m_bboxBody1->removeCollisionShape(m_bboxProxyShape1);
+		m_bboxProxyShape1 = nullptr;
+	}
+	if (m_bboxShape1)
+	{
+		delete m_bboxShape1;
+		m_bboxShape1 = nullptr;
+	}
+
+	if (!m_bboxBody2)
+	{
+		m_bboxBody2 = m_collisionWorld->createCollisionBody(rp3d::Transform::identity());
+	}
+	if (m_bboxProxyShape2)
+	{
+		m_bboxBody2->removeCollisionShape(m_bboxProxyShape2);
+		m_bboxProxyShape2 = nullptr;
+	}
+	if (m_bboxShape2)
+	{
+		delete m_bboxShape2;
+		m_bboxShape2 = nullptr;
+	}
+
+	Vector3 bboxSize1 = HLVecToRP3DVec(bboxMaxs1 - bboxMins1);
+	Vector3 bboxPosition1 = HLVecToRP3DVec(bboxCenter1 + ((bboxMaxs1 + bboxMins1) * 0.5f));
+
+	m_bboxShape1 = new BoxShape{ bboxSize1 + HLVecToRP3DVec(Vector{ 1, 1, 1 }) };
+	m_bboxProxyShape1 = m_bboxBody1->addCollisionShape(m_bboxShape1, rp3d::Transform::identity());
+	m_bboxBody1->setTransform(rp3d::Transform{ bboxPosition1, rp3d::Matrix3x3::identity() });
+
+	Vector3 bboxSize2 = HLVecToRP3DVec(bboxMaxs2 - bboxMins2);
+	Vector3 bboxPosition2 = HLVecToRP3DVec(bboxCenter2 + ((bboxMaxs2+ bboxMins2) * 0.5f));
+
+	m_bboxShape2 = new BoxShape{ bboxSize2 + HLVecToRP3DVec(Vector{ 1, 1, 1 }) };
+	m_bboxProxyShape2 = m_bboxBody2->addCollisionShape(m_bboxShape2, rp3d::Transform::identity());
+	m_bboxBody2->setTransform(rp3d::Transform{ bboxPosition2,  HLAnglesToRP3DQuaternion(bboxAngles2) });
+
+	return m_collisionWorld->testOverlap(m_bboxBody1, m_bboxBody2);
+}
+
+bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles)
 {
 	if (!CheckWorld())
 		return false;
 
 	if (!pModel->pev->model)
-		return false;
+	{
+		return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+	}
 
 	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
-	if (bspModelData == m_bspModelData.end())
-		return false;
-
-	if (!bspModelData->second.HasData())
-		return false;
-
-	if (!m_bboxBody)
+	if (bspModelData == m_bspModelData.end() || !bspModelData->second.HasData())
 	{
-		m_bboxBody = m_collisionWorld->createCollisionBody(rp3d::Transform::identity());
+		return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
 	}
 
-	if (m_bboxProxyShape)
+	if (!m_bboxBody1)
 	{
-		m_bboxBody->removeCollisionShape(m_bboxProxyShape);
-		m_bboxProxyShape = nullptr;
+		m_bboxBody1 = m_collisionWorld->createCollisionBody(rp3d::Transform::identity());
 	}
-	if (m_bboxShape)
+
+	if (m_bboxProxyShape1)
 	{
-		delete m_bboxShape;
-		m_bboxShape = nullptr;
+		m_bboxBody1->removeCollisionShape(m_bboxProxyShape1);
+		m_bboxProxyShape1 = nullptr;
+	}
+	if (m_bboxShape1)
+	{
+		delete m_bboxShape1;
+		m_bboxShape1 = nullptr;
 	}
 
 	Vector3 bboxSize = HLVecToRP3DVec(bboxMaxs - bboxMins);
 	Vector3 bboxPosition = HLVecToRP3DVec(bboxCenter + ((bboxMaxs + bboxMins) * 0.5f));
 
-	m_bboxShape = new BoxShape{ bboxSize + HLVecToRP3DVec(Vector{ 1, 1, 1 }) };
-	m_bboxProxyShape = m_bboxBody->addCollisionShape(m_bboxShape, rp3d::Transform::identity());
-	m_bboxBody->setTransform(rp3d::Transform{ bboxPosition, rp3d::Matrix3x3::identity() });
+	m_bboxShape1 = new BoxShape{ bboxSize + HLVecToRP3DVec(Vector{ 1, 1, 1 }) };
+	m_bboxProxyShape1 = m_bboxBody1->addCollisionShape(m_bboxShape1, rp3d::Transform::identity());
+	m_bboxBody1->setTransform(rp3d::Transform{ bboxPosition,  HLAnglesToRP3DQuaternion(bboxAngles) });
 
-	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DTransform(pModel->pev->angles) });
+	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DQuaternion(pModel->pev->angles) });
 
-	return m_collisionWorld->testOverlap(bspModelData->second.m_collisionBody, m_bboxBody);
+	return m_collisionWorld->testOverlap(bspModelData->second.m_collisionBody, m_bboxBody1);
 }
 
 bool VRPhysicsHelper::ModelIntersectsWorld(CBaseEntity *pModel)
@@ -995,7 +1072,7 @@ bool VRPhysicsHelper::ModelIntersectsWorld(CBaseEntity *pModel)
 	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
 	if (bspModelData != m_bspModelData.end() && bspModelData->second.HasData())
 	{
-		bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DTransform(pModel->pev->angles) });
+		bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DQuaternion(pModel->pev->angles) });
 		return m_collisionWorld->testOverlap(m_bspModelData[m_currentMapName].m_collisionBody, bspModelData->second.m_collisionBody);
 	}
 	else
@@ -1017,8 +1094,8 @@ bool VRPhysicsHelper::ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2
 	if (bspModelData1 != m_bspModelData.end() && bspModelData1->second.HasData()
 		&& bspModelData2 != m_bspModelData.end() && bspModelData2->second.HasData())
 	{
-		bspModelData1->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel1->pev->origin), HLAnglesToRP3DTransform(pModel1->pev->angles) });
-		bspModelData2->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel2->pev->origin), HLAnglesToRP3DTransform(pModel2->pev->angles) });
+		bspModelData1->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel1->pev->origin), HLAnglesToRP3DQuaternion(pModel1->pev->angles) });
+		bspModelData2->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel2->pev->origin), HLAnglesToRP3DQuaternion(pModel2->pev->angles) });
 		return m_collisionWorld->testOverlap(bspModelData1->second.m_collisionBody, bspModelData2->second.m_collisionBody);
 	}
 	else
@@ -1840,7 +1917,7 @@ void VRPhysicsHelper::EnsureWorldsSmallestCupExists(CBaseEntity *pWorldsSmallest
 		m_worldsSmallestCupTopSphereShape = new SphereShape{ topRadius };
 		m_worldsSmallestCupBottomSphereShape = new SphereShape{ bottomRadius };
 
-		m_worldsSmallestCupBody = m_dynamicsWorld->createRigidBody(rp3d::Transform{ HLVecToRP3DVec(pWorldsSmallestCup->pev->origin), HLAnglesToRP3DTransform(pWorldsSmallestCup->pev->angles) });
+		m_worldsSmallestCupBody = m_dynamicsWorld->createRigidBody(rp3d::Transform{ HLVecToRP3DVec(pWorldsSmallestCup->pev->origin), HLAnglesToRP3DQuaternion(pWorldsSmallestCup->pev->angles) });
 		m_worldsSmallestCupTopProxyShape = m_worldsSmallestCupBody->addCollisionShape(m_worldsSmallestCupTopSphereShape, rp3d::Transform{ rp3d::Vector3{0.f, 0.f, height - topRadius}, rp3d::Matrix3x3::identity() }, 0.6);
 		m_worldsSmallestCupBottomProxyShape = m_worldsSmallestCupBody->addCollisionShape(m_worldsSmallestCupBottomSphereShape, rp3d::Transform{ rp3d::Vector3{0.f, 0.f, bottomRadius}, rp3d::Matrix3x3::identity() }, 0.5);
 		m_worldsSmallestCupBody->setType(BodyType::DYNAMIC);
@@ -1855,7 +1932,7 @@ void VRPhysicsHelper::SetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestC
 	EnsureWorldsSmallestCupExists(pWorldsSmallestCup);
 
 	// set position and orientation
-	m_worldsSmallestCupBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pWorldsSmallestCup->pev->origin), HLAnglesToRP3DTransform(pWorldsSmallestCup->pev->angles) });
+	m_worldsSmallestCupBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pWorldsSmallestCup->pev->origin), HLAnglesToRP3DQuaternion(pWorldsSmallestCup->pev->angles) });
 	m_worldsSmallestCupBody->setAngularVelocity(rp3d::Vector3::zero());
 	m_worldsSmallestCupBody->setLinearVelocity(HLVecToRP3DVec(pWorldsSmallestCup->pev->velocity));
 
