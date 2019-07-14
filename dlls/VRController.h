@@ -7,6 +7,8 @@ typedef int string_t;
 
 #include "weapons.h"
 
+// #define RENDER_DEBUG_HITBOXES
+
 class VRController
 {
 public:
@@ -55,11 +57,19 @@ public:
 	bool AddHitEntity(EHANDLE hEntity) const;
 	bool RemoveHitEntity(EHANDLE hEntity) const;
 
+	bool GetDraggedEntityStartPositions(EHANDLE hEntity, Vector& controllerStartPos, Vector& entityStartOrigin) const;
+
 private:
 	void UpdateModel(CBasePlayer* pPlayer);
 	void UpdateLaserSpot();
 	void UpdateHitBoxes();
 	void SendEntityDataToClient(CBasePlayer *pPlayer, VRControllerID id);
+
+	struct DraggedEntityData
+	{
+		Vector controllerStartPos;
+		Vector entityStartOrigin;
+	};
 
 	VRControllerID	m_id{ VRControllerID::INVALID };
 	Vector m_offset;
@@ -79,7 +89,7 @@ private:
 	mutable EHANDLE m_hModel;
 	mutable EHANDLE m_hLaserSpot;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_touchedEntities;
-	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_draggedEntities;
+	mutable std::unordered_map<EHANDLE, DraggedEntityData, EHANDLE::Hash, EHANDLE::Equal> m_draggedEntities;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_hitEntities;
 
 	std::vector<HitBox> m_hitboxes;
@@ -98,8 +108,9 @@ private:
 		m_radius = 0.f;
 	}
 
-	// TODO TEMP
+#ifdef RENDER_DEBUG_HITBOXES
 	void DebugDrawHitBoxes(CBasePlayer *pPlayer);
 	mutable std::vector<EHANDLE>		m_hDebugBBoxes;
+#endif
 };
 

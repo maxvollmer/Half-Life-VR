@@ -21,11 +21,13 @@ VRController::~VRController()
 		m_hLaserSpot = nullptr;
 	}
 
+#ifdef RENDER_DEBUG_HITBOXES
 	for (auto beam : m_hDebugBBoxes)
 	{
 		UTIL_Remove(beam);
 	}
 	m_hDebugBBoxes.clear();
+#endif
 }
 
 
@@ -64,72 +66,13 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 
 	UpdateHitBoxes();
 
-	// TODO TEMP
+#ifdef RENDER_DEBUG_HITBOXES
 	DebugDrawHitBoxes(pPlayer);
+#endif
 
 	UpdateLaserSpot();
 
 	SendEntityDataToClient(pPlayer, id);
-}
-
-void VRController::DebugDrawHitBoxes(CBasePlayer *pPlayer)
-{
-	constexpr const int numlinesperbox = 6;
-
-	size_t numlasers = m_hitboxes.size() * numlinesperbox;
-
-	// Remove any "dead" lasers (levelchange etc.)
-	m_hDebugBBoxes.erase(std::remove_if(m_hDebugBBoxes.begin(), m_hDebugBBoxes.end(), [](EHANDLE& e) { return e.Get() == nullptr; }), m_hDebugBBoxes.end());
-
-	// Remove lasers that are "too much" (happens when switching from model with more hitboxes to model with less hitboxes)
-	while (m_hDebugBBoxes.size() > numlasers)
-	{
-		UTIL_Remove(m_hDebugBBoxes.back());
-		m_hDebugBBoxes.pop_back();
-	}
-
-	// Create any missing lasers (happens when starting new game or when switching from model with less hitboxes to model with more hitboxes)
-	while (m_hDebugBBoxes.size() < numlasers)
-	{
-		CBeam* pBeam = CBeam::BeamCreate("sprites/xbeam1.spr", 1);
-		pBeam->pev->spawnflags |= SF_BEAM_TEMPORARY;
-		pBeam->Spawn();
-		pBeam->PointsInit(GetPosition(), GetPosition());
-		pBeam->pev->owner = pPlayer->edict();
-		pBeam->SetColor(255, 0, 0);
-		pBeam->SetBrightness(255);
-		m_hDebugBBoxes.push_back(EHANDLE{ pBeam });
-	}
-
-	// Update laser positions for each hitbox (8 lasers coming from the origin and going to each of the current bbox's corners
-	int i = 0;
-	for (const HitBox& hitbox : m_hitboxes)
-	{
-		Vector points[8];
-		points[0] = Vector{ hitbox.mins[0], hitbox.mins[1], hitbox.mins[2] };
-		points[1] = Vector{ hitbox.mins[0], hitbox.mins[1], hitbox.maxs[2] };
-		points[2] = Vector{ hitbox.mins[0], hitbox.maxs[1], hitbox.mins[2] };
-		points[3] = Vector{ hitbox.mins[0], hitbox.maxs[1], hitbox.maxs[2] };
-		points[4] = Vector{ hitbox.maxs[0], hitbox.mins[1], hitbox.mins[2] };
-		points[5] = Vector{ hitbox.maxs[0], hitbox.mins[1], hitbox.maxs[2] };
-		points[6] = Vector{ hitbox.maxs[0], hitbox.maxs[1], hitbox.mins[2] };
-		points[7] = Vector{ hitbox.maxs[0], hitbox.maxs[1], hitbox.maxs[2] };
-
-		for (int j = 0; j < 8; j++)
-		{
-			VRPhysicsHelper::Instance().RotateVector(points[j], hitbox.angles);
-		}
-
-		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 0])->SetStartAndEndPos(hitbox.origin + points[0], hitbox.origin + points[1]);
-		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 1])->SetStartAndEndPos(hitbox.origin + points[0], hitbox.origin + points[2]);
-		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 2])->SetStartAndEndPos(hitbox.origin + points[0], hitbox.origin + points[3]);
-
-		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 3])->SetStartAndEndPos(hitbox.origin + points[7], hitbox.origin + points[6]);
-		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 4])->SetStartAndEndPos(hitbox.origin + points[7], hitbox.origin + points[5]);
-		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 5])->SetStartAndEndPos(hitbox.origin + points[7], hitbox.origin + points[4]);
-
-		i++;
-	}
 }
 
 void VRController::UpdateLaserSpot()
@@ -339,7 +282,7 @@ bool VRController::AddDraggedEntity(EHANDLE hEntity) const
 	if (m_draggedEntities.count(hEntity) != 0)
 		return false;
 
-	m_draggedEntities.insert(hEntity);
+	m_draggedEntities[hEntity] = DraggedEntityData{ GetPosition(), hEntity->pev->origin };
 	return true;
 }
 
@@ -355,6 +298,18 @@ bool VRController::RemoveDraggedEntity(EHANDLE hEntity) const
 bool VRController::IsDraggedEntity(EHANDLE hEntity) const
 {
 	return m_draggedEntities.count(hEntity) != 0;
+}
+
+bool VRController::GetDraggedEntityStartPositions(EHANDLE hEntity, Vector& controllerStartPos, Vector& entityStartOrigin) const
+{
+	auto draggedEntityData = m_draggedEntities.find(hEntity);
+	if (draggedEntityData != m_draggedEntities.end())
+	{
+		controllerStartPos = draggedEntityData->second.controllerStartPos;
+		entityStartOrigin = draggedEntityData->second.entityStartOrigin;
+		return true;
+	}
+	return false;
 }
 
 bool VRController::AddHitEntity(EHANDLE hEntity) const
@@ -401,3 +356,68 @@ const Vector VRController::GetAim() const
 	UTIL_MakeAimVectors(GetAngles());
 	return gpGlobals->v_forward;
 }
+
+
+
+
+#ifdef RENDER_DEBUG_HITBOXES
+void VRController::DebugDrawHitBoxes(CBasePlayer *pPlayer)
+{
+	constexpr const int numlinesperbox = 6;
+
+	size_t numlasers = m_hitboxes.size() * numlinesperbox;
+
+	// Remove any "dead" lasers (levelchange etc.)
+	m_hDebugBBoxes.erase(std::remove_if(m_hDebugBBoxes.begin(), m_hDebugBBoxes.end(), [](EHANDLE& e) { return e.Get() == nullptr; }), m_hDebugBBoxes.end());
+
+	// Remove lasers that are "too much" (happens when switching from model with more hitboxes to model with less hitboxes)
+	while (m_hDebugBBoxes.size() > numlasers)
+	{
+		UTIL_Remove(m_hDebugBBoxes.back());
+		m_hDebugBBoxes.pop_back();
+	}
+
+	// Create any missing lasers (happens when starting new game or when switching from model with less hitboxes to model with more hitboxes)
+	while (m_hDebugBBoxes.size() < numlasers)
+	{
+		CBeam* pBeam = CBeam::BeamCreate("sprites/xbeam1.spr", 1);
+		pBeam->pev->spawnflags |= SF_BEAM_TEMPORARY;
+		pBeam->Spawn();
+		pBeam->PointsInit(GetPosition(), GetPosition());
+		pBeam->pev->owner = pPlayer->edict();
+		pBeam->SetColor(255, 0, 0);
+		pBeam->SetBrightness(255);
+		m_hDebugBBoxes.push_back(EHANDLE{ pBeam });
+	}
+
+	// Update laser positions for each hitbox (8 lasers coming from the origin and going to each of the current bbox's corners
+	int i = 0;
+	for (const HitBox& hitbox : m_hitboxes)
+	{
+		Vector points[8];
+		points[0] = Vector{ hitbox.mins[0], hitbox.mins[1], hitbox.mins[2] };
+		points[1] = Vector{ hitbox.mins[0], hitbox.mins[1], hitbox.maxs[2] };
+		points[2] = Vector{ hitbox.mins[0], hitbox.maxs[1], hitbox.mins[2] };
+		points[3] = Vector{ hitbox.mins[0], hitbox.maxs[1], hitbox.maxs[2] };
+		points[4] = Vector{ hitbox.maxs[0], hitbox.mins[1], hitbox.mins[2] };
+		points[5] = Vector{ hitbox.maxs[0], hitbox.mins[1], hitbox.maxs[2] };
+		points[6] = Vector{ hitbox.maxs[0], hitbox.maxs[1], hitbox.mins[2] };
+		points[7] = Vector{ hitbox.maxs[0], hitbox.maxs[1], hitbox.maxs[2] };
+
+		for (int j = 0; j < 8; j++)
+		{
+			VRPhysicsHelper::Instance().RotateVector(points[j], hitbox.angles);
+		}
+
+		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 0])->SetStartAndEndPos(hitbox.origin + points[0], hitbox.origin + points[1]);
+		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 1])->SetStartAndEndPos(hitbox.origin + points[0], hitbox.origin + points[2]);
+		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 2])->SetStartAndEndPos(hitbox.origin + points[0], hitbox.origin + points[3]);
+
+		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 3])->SetStartAndEndPos(hitbox.origin + points[7], hitbox.origin + points[6]);
+		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 4])->SetStartAndEndPos(hitbox.origin + points[7], hitbox.origin + points[5]);
+		dynamic_cast<CBeam*>((CBaseEntity*)m_hDebugBBoxes[i * numlinesperbox + 5])->SetStartAndEndPos(hitbox.origin + points[7], hitbox.origin + points[4]);
+
+		i++;
+	}
+}
+#endif
