@@ -66,6 +66,10 @@
 #include "constraint/FixedJoint.h"
 #include "containers/List.h"
 
+// Added missing imports needed for HL:VR - Max Vollmer, 2019-07-14
+#include "collision/ContactManifold.h"
+#include "constraint/ContactPoint.h"
+
 /// Alias to the ReactPhysics3D namespace
 namespace rp3d = reactphysics3d;
 
