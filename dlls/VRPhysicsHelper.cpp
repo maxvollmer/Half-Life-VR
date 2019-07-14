@@ -9,7 +9,7 @@ namespace reactphysics3d
 {
 #define IS_DOUBLE_PRECISION_ENABLED
 }
-#include "reactphysics3d\include\reactphysics3d.h"
+#include "reactphysics3d/include/reactphysics3d.h"
 
 #include "extdll.h"
 
@@ -46,6 +46,23 @@ enum NeedLoadFlag {
 	IS_LOADED = 0,		// If set, this brush model is valid and loaded
 	NEEDS_LOADING = 1,	// If set, this brush model still needs to be loaded
 	UNREFERENCED = 2	// If set, this brush model isn't used by the current map
+};
+
+class MyCollisionCallback : public reactphysics3d::CollisionCallback
+{
+public:
+
+	MyCollisionCallback(std::function<void(const CollisionCallbackInfo&)> callback) :
+		m_callback{ callback }
+	{}
+
+	virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) override
+	{
+		m_callback(collisionCallbackInfo);
+	}
+
+private:
+	const std::function<void(const CollisionCallbackInfo&)> m_callback;
 };
 
 // Returns a pointer to a model_t instance holding BSP data for the current map - Max Vollmer, 2018-01-21
@@ -942,6 +959,48 @@ inline void CreateHitBoxVertices(const Vector& bboxMins, const Vector& bboxMaxs,
 }
 */
 
+bool VRPhysicsHelper::TestCollision(reactphysics3d::CollisionBody* body1, reactphysics3d::CollisionBody* body2, VRPhysicsHelperModelBBoxIntersectResult* result)
+{
+	if (m_collisionWorld->testAABBOverlap(body1, body2) && m_collisionWorld->testOverlap(body1, body2))
+	{
+		if (result)
+		{
+			std::vector<reactphysics3d::Vector3> manifoldPoints;
+			MyCollisionCallback callback{ [&manifoldPoints](const reactphysics3d::CollisionCallback::CollisionCallbackInfo& collisionCallbackInfo) {
+				auto contactManifoldElement = collisionCallbackInfo.contactManifoldElements;
+				while (contactManifoldElement)
+				{
+					auto contactManifold = contactManifoldElement->getContactManifold();
+					while (contactManifold)
+					{
+						auto localToBodyTransform = contactManifold->getShape1()->getLocalToBodyTransform();
+						auto contactPoint = contactManifold->getContactPoints();
+						while (contactPoint)
+						{
+							manifoldPoints.push_back(localToBodyTransform * contactPoint->getLocalPointOnShape1());
+							contactPoint = contactPoint->getNext();
+						}
+						contactManifold = contactManifold->getNext();
+					}
+					contactManifoldElement = contactManifoldElement->getNext();
+				}
+			} };
+			m_collisionWorld->testCollision(body1, body2, &callback);
+			if (!manifoldPoints.empty())
+			{
+				reactphysics3d::Vector3 averagePoint;
+				for (auto& point : manifoldPoints)
+					averagePoint += point;
+				averagePoint /= manifoldPoints.size();
+				result->hitpoint = RP3DVecToHLVec(body1->getWorldPoint(averagePoint));
+				result->hasresult = true;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 reactphysics3d::CollisionBody* VRPhysicsHelper::GetHitBoxBody(size_t cacheIndex, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles)
 {
 	if (fabs(bboxMaxs.x - bboxMins.x) < EPSILON
@@ -1011,12 +1070,13 @@ bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& 
 
 	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DQuaternion(pModel->pev->angles) });
 
-	return m_collisionWorld->testOverlap(bspModelData->second.m_collisionBody, m_capsuleBody);
+	return TestCollision(bspModelData->second.m_collisionBody, m_capsuleBody);
 }
 
 bool VRPhysicsHelper::ModelBBoxIntersectsBBox(
 	const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1, const Vector& bboxAngles1,
-	const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2)
+	const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2,
+	VRPhysicsHelperModelBBoxIntersectResult* result)
 {
 	if (!CheckWorld())
 		return false;
@@ -1029,7 +1089,7 @@ bool VRPhysicsHelper::ModelBBoxIntersectsBBox(
 	if (!bboxBody2)
 		return false;
 
-	return m_collisionWorld->testOverlap(bboxBody1, bboxBody2);
+	return TestCollision(bboxBody1, bboxBody2, result);
 }
 
 bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles, VRPhysicsHelperModelBBoxIntersectResult* result)
@@ -1040,7 +1100,7 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bbo
 	if (!pModel->pev->model)
 	{
 		// No model, use bounding box
-		return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+		return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles, result);
 	}
 
 	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
@@ -1052,7 +1112,7 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bbo
 			return false;
 
 		bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DQuaternion(pModel->pev->angles) });
-		return m_collisionWorld->testOverlap(bspModelData->second.m_collisionBody, bboxBody);
+		return TestCollision(bspModelData->second.m_collisionBody, bboxBody, result);
 	}
 	else
 	{
@@ -1061,14 +1121,14 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bbo
 		if (!pmodel)
 		{
 			// Invalid studio model, use bounding box
-			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles, result);
 		}
 
 		int numhitboxes = GetNumHitboxes(pmodel);
 		if (numhitboxes <= 0)
 		{
 			// No hitboxes, use bounding box
-			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles, result);
 		}
 
 		std::vector<StudioHitBox> studiohitboxes;
@@ -1077,13 +1137,16 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bbo
 		{
 			for (const auto& studiohitbox : studiohitboxes)
 			{
-				if (ModelBBoxIntersectsBBox(studiohitbox.origin, studiohitbox.mins, studiohitbox.maxs, studiohitbox.angles, bboxCenter, bboxMins, bboxMaxs, bboxAngles))
+				if (ModelBBoxIntersectsBBox(studiohitbox.origin, studiohitbox.mins, studiohitbox.maxs, studiohitbox.angles, bboxCenter, bboxMins, bboxMaxs, bboxAngles, result))
 				{
 					if (result)
 					{
-						result->hitpoint = (studiohitbox.origin + bboxCenter) * 0.5f;
+						if (!result->hasresult)
+						{
+							result->hitpoint = (studiohitbox.origin + bboxCenter) * 0.5f;
+							result->hasresult = true;
+						}
 						result->hitgroup = studiohitbox.hitgroup;
-						result->hasresult = true;
 					}
 					return true;
 				}
@@ -1093,64 +1156,10 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bbo
 		else
 		{
 			// Failed to get hitboxes, use bounding box
-			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles, result);
 		}
 	}
 
-}
-
-bool VRPhysicsHelper::ModelIntersectsWorld(CBaseEntity *pModel)
-{
-	if (!CheckWorld())
-		return false;
-
-	if (!pModel || !pModel->pev->model)
-		return false;
-
-	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
-	if (bspModelData != m_bspModelData.end() && bspModelData->second.HasData())
-	{
-		bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DQuaternion(pModel->pev->angles) });
-		return m_collisionWorld->testOverlap(m_bspModelData[m_currentMapName].m_collisionBody, bspModelData->second.m_collisionBody);
-	}
-	else
-	{
-		return ModelIntersectsBBox(CBaseEntity::Instance(INDEXENT(0)), pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs);
-	}
-}
-
-bool VRPhysicsHelper::ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2)
-{
-	if (!CheckWorld())
-		return false;
-
-	if (!pModel1 || !pModel1->pev->model || !pModel2 || !pModel2->pev->model)
-		return false;
-
-	auto& bspModelData1 = m_bspModelData.find(std::string{ STRING(pModel1->pev->model) });
-	auto& bspModelData2 = m_bspModelData.find(std::string{ STRING(pModel2->pev->model) });
-	if (bspModelData1 != m_bspModelData.end() && bspModelData1->second.HasData()
-		&& bspModelData2 != m_bspModelData.end() && bspModelData2->second.HasData())
-	{
-		bspModelData1->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel1->pev->origin), HLAnglesToRP3DQuaternion(pModel1->pev->angles) });
-		bspModelData2->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel2->pev->origin), HLAnglesToRP3DQuaternion(pModel2->pev->angles) });
-		return m_collisionWorld->testOverlap(bspModelData1->second.m_collisionBody, bspModelData2->second.m_collisionBody);
-	}
-	else
-	{
-		if (bspModelData1 != m_bspModelData.end() && bspModelData1->second.HasData())
-		{
-			return ModelIntersectsBBox(pModel1, pModel2->pev->origin, pModel2->pev->mins, pModel2->pev->maxs);
-		}
-		else if (bspModelData2 != m_bspModelData.end() && bspModelData2->second.HasData())
-		{
-			return ModelIntersectsBBox(pModel2, pModel1->pev->origin, pModel1->pev->mins, pModel1->pev->maxs);
-		}
-		else
-		{
-			return UTIL_BBoxIntersectsBBox(pModel1->pev->absmin, pModel1->pev->absmax, pModel2->pev->absmin, pModel2->pev->absmax);
-		}
-	}
 }
 
 constexpr const float LADDER_EPSILON = 4.f;

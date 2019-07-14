@@ -60,12 +60,11 @@ public:
 
 	bool ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles = Vector{}, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
 	bool ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& capsuleCenter, double radius, double height);
-	bool ModelIntersectsWorld(CBaseEntity *pModel);
-	bool ModelsIntersect(CBaseEntity *pModel1, CBaseEntity *pModel2);
 
 	bool ModelBBoxIntersectsBBox(
 		const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1, const Vector& bboxAngles1,
-		const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2);
+		const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2,
+		VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
 
 	bool GetBSPModelBBox(CBaseEntity *pModel, Vector* bboxMins, Vector* bboxMaxs, Vector* bboxCenter = nullptr);
 
@@ -190,6 +189,8 @@ private:
 	void EnsureWorldsSmallestCupExists(CBaseEntity *pWorldsSmallestCup);
 
 	reactphysics3d::CollisionBody* GetHitBoxBody(size_t cacheIndex, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles = Vector{});
+
+	bool TestCollision(reactphysics3d::CollisionBody* body1, reactphysics3d::CollisionBody* body2, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
 
 	std::string												m_currentMapName;
 	std::unordered_map<std::string, BSPModelData>			m_bspModelData;
