@@ -987,7 +987,7 @@ void CBaseTurret ::	TurretDeath( void )
 
 void CBaseTurret :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
-	if ( ptr->iHitgroup == 10 )
+	if ( ptr->iHitgroup == HITGROUP_ARMOR)
 	{
 		// hit armor
 		if ( pev->dmgtime != gpGlobals->time || (RANDOM_LONG(0,10) < 1) )

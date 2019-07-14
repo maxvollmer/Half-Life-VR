@@ -3,6 +3,7 @@
 class CBasePlayer;
 class CBaseMonster;
 class VRController;
+struct VRPhysicsHelperModelBBoxIntersectResult;
 
 class VRControllerInteractionManager
 {
@@ -53,9 +54,9 @@ private:
 
 	void DoFollowUnfollowCommands(CBasePlayer *pPlayer, CBaseMonster *pMonster, const VRController& controller, bool isTouching);
 	void GetAngryIfAtGunpoint(CBasePlayer *pPlayer, CBaseMonster *pMonster, const VRController& controller);
-	float DoDamage(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller);
+	float DoDamage(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult);
 
-	bool CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller);
+	bool CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult);
 	bool IsDraggableEntity(EHANDLE hEntity);
 };
 

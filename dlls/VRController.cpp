@@ -38,6 +38,15 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 		return;
 	}
 
+	if (m_isValid)
+	{
+		m_previousAngles = m_angles;
+	}
+	else
+	{
+		m_previousAngles = angles;
+	}
+
 	// Store data
 	m_id = id;
 	m_isValid = isValid;

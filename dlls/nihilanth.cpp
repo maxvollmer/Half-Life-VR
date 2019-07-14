@@ -1241,7 +1241,7 @@ void CNihilanth::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 	if (m_irritation == 3)
 		m_irritation = 2;
 
-	if (m_irritation == 2 && ptr->iHitgroup == 2 && flDamage > 2)
+	if (m_irritation == 2 && ptr->iHitgroup == HITGROUP_CHEST && flDamage > 2)
 		m_irritation = 3;
 
 	if (m_irritation != 3)

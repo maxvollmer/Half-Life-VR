@@ -769,7 +769,7 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	// ALERT( at_console, "%d %.0f\n", ptr->iHitgroup, flDamage );
 
 	// only so much per engine
-	if (ptr->iHitgroup == 3)
+	if (ptr->iHitgroup == HITGROUP_STOMACH)
 	{
 		if (m_flRightHealth < 0)
 			return;
@@ -778,7 +778,7 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		m_iDoLeftSmokePuff = 3 + (flDamage / 5.0);
 	}
 
-	if (ptr->iHitgroup == 2)
+	if (ptr->iHitgroup == HITGROUP_CHEST)
 	{
 		if (m_flLeftHealth < 0)
 			return;
@@ -788,7 +788,7 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	}
 
 	// hit hard, hits cockpit, hits engines
-	if (flDamage > 50 || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3)
+	if (flDamage > 50 || ptr->iHitgroup == HITGROUP_HEAD || ptr->iHitgroup == HITGROUP_CHEST || ptr->iHitgroup == HITGROUP_STOMACH)
 	{
 		// ALERT( at_console, "%.0f\n", flDamage );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );

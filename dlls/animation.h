@@ -45,10 +45,11 @@ int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs );
 
 struct StudioHitBox
 {
-	vec3_t origin;
-	vec3_t angles;
-	vec3_t mins;
-	vec3_t maxs;
+	vec3_t	origin;
+	vec3_t	angles;
+	vec3_t	mins;
+	vec3_t	maxs;
+	int		hitgroup;
 };
 int GetNumHitboxes(void *pmodel);
 int GetHitboxes(entvars_t *pev, void *pmodel, int sequence, float frame, StudioHitBox* hitboxes, bool mirrored = false);

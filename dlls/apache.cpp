@@ -908,18 +908,18 @@ int CApache :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	return CBaseEntity::TakeDamage(  pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
-
+#define HITGROUP_BLADES HITGROUP_LEFTLEG
 
 void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
 	// ALERT( at_console, "%d %.0f\n", ptr->iHitgroup, flDamage );
 
 	// ignore blades
-	if (ptr->iHitgroup == 6 && (bitsDamageType & (DMG_ENERGYBEAM|DMG_BULLET|DMG_CLUB)))
+	if (ptr->iHitgroup == HITGROUP_BLADES && (bitsDamageType & (DMG_ENERGYBEAM|DMG_BULLET|DMG_CLUB)))
 		return;
 
 	// hit hard, hits cockpit, hits engines
-	if (flDamage > 50 || ptr->iHitgroup == 1 || ptr->iHitgroup == 2)
+	if (flDamage > 50 || ptr->iHitgroup == HITGROUP_HEAD || ptr->iHitgroup == HITGROUP_CHEST)
 	{
 		// ALERT( at_console, "%.0f\n", flDamage );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );

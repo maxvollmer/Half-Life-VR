@@ -194,10 +194,11 @@ bool WasJustThrownByPlayer(CBasePlayer* pPlayer, EHANDLE hEntity)
 bool IsNonInteractingEntity(EHANDLE hEntity)
 {
 	return FClassnameIs(hEntity->pev, "func_wall")
-		|| FClassnameIs(hEntity->pev, "func_illusionary");
+		|| FClassnameIs(hEntity->pev, "func_illusionary")
+		|| FClassnameIs(hEntity->pev, "vr_controllermodel");	// TODO/NOTE: If this mod gets ever patched up for multiplayer, and you want players to be able to crowbar-fight, this should probably be changed
 }
 
-bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller)
+bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
 {
 	if (!controller.IsValid())
 		return false;
@@ -224,42 +225,27 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 			return false;
 		}
 	}
+	else
+	{
+		int kfjskgj = 0;
+	}
 
-	// New code using hitboxes instead of sequence bounding box
+	// Check each hitbox of current weapon
 	for (auto hitbox : controller.GetHitBoxes())
 	{
-		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles))
+		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult))
 		{
+			if (!intersectResult->hasresult)
+			{
+				intersectResult->hitpoint = hitbox.origin;
+				intersectResult->hitgroup = 0;
+				intersectResult->hasresult = true;
+			}
 			return true;
 		}
 	}
 
 	return false;
-
-	// Old code using sequence bounding box instead of model hitboxes
-	/*
-	bool isTouching = false;
-	CBaseEntity *pWorld = CBaseEntity::Instance(INDEXENT(0));
-	if (hEntity == pWorld)
-	{
-		isTouching = VRPhysicsHelper::Instance().ModelIntersectsWorld(controller.GetModel());
-	}
-	else
-	{
-		Vector entityCenter = (hEntity->pev->absmax + hEntity->pev->absmin) * 0.5f;
-		float distance = (controller.GetPosition() - entityCenter).Length();
-		if (distance > (controller.GetRadius() + (hEntity->pev->size.Length() * 0.5f)))
-		{
-			isTouching = false;
-		}
-		else
-		{
-			isTouching = VRPhysicsHelper::Instance().ModelsIntersect(controller.GetModel(), hEntity);
-		}
-	}
-
-	return isTouching;
-	*/
 }
 
 bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE hEntity)
@@ -281,14 +267,20 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 			continue;
 		}
 
+		if (pEntity == controller.GetModel())
+		{
+			continue;
+		}
+
 		// skip point entities (no model and/or no size)
-		if (FStringNull(pEntity->pev->model) || pEntity->pev->size.LengthSquared() < EPSILON)
+		if (FStringNull(pEntity->pev->model) && pEntity->pev->size.LengthSquared() < EPSILON)
 		{
 			continue;
 		}
 
 		EHANDLE hEntity = pEntity;
 
+		VRPhysicsHelperModelBBoxIntersectResult intersectResult;
 		bool isTouching;
 		bool didTouchChange;
 		bool isDragging;
@@ -308,14 +300,29 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		}
 		else
 		{
-			isTouching = CheckIfEntityAndControllerTouch(pPlayer, hEntity, controller);
+			isTouching = CheckIfEntityAndControllerTouch(pPlayer, hEntity, controller, &intersectResult);
 			didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
 
 			isDragging = isTouching && controller.GetWeaponId() == WEAPON_BAREHAND && controller.IsDragging();
 			didDragChange = isDragging ? controller.AddDraggedEntity(hEntity) : controller.RemoveDraggedEntity(hEntity);
 
-			Vector relativeVelocity = pPlayer->pev->velocity + controller.GetVelocity() - hEntity->pev->velocity;
-			isHitting = isTouching && controller.GetVelocity().Length() > GetMeleeSwingSpeed() && relativeVelocity.Length() > GetMeleeSwingSpeed();
+			if (isTouching)
+			{
+				Vector controllerSwingVelocity = controller.GetVelocity();
+				if (intersectResult.hasresult)
+				{
+					Vector relativeHitPos = intersectResult.hitpoint - controller.GetPosition();
+					Vector previousRotatedRelativeHitPos = VRPhysicsHelper::Instance().RotateVectorInline(relativeHitPos, controller.GetPreviousAngles());
+					Vector rotatedRelativeHitPos = VRPhysicsHelper::Instance().RotateVectorInline(relativeHitPos, controller.GetAngles());
+					controllerSwingVelocity = controllerSwingVelocity + rotatedRelativeHitPos - previousRotatedRelativeHitPos;
+				}
+				Vector relativeVelocity = pPlayer->pev->velocity + controllerSwingVelocity - hEntity->pev->velocity;
+				isHitting = controllerSwingVelocity.Length() > GetMeleeSwingSpeed() && relativeVelocity.Length() > GetMeleeSwingSpeed();
+			}
+			else
+			{
+				isHitting = false;
+			}
 			didHitChange = isHitting ? controller.AddHitEntity(hEntity) : controller.RemoveHitEntity(hEntity);
 		}
 
@@ -327,7 +334,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		float flHitDamage = 0.f;
 		if (pPlayer->HasWeapons() && isHitting && didHitChange)
 		{
-			flHitDamage = DoDamage(pPlayer, hEntity, controller);
+			flHitDamage = DoDamage(pPlayer, hEntity, controller, intersectResult);
 		}
 
 		Interaction::InteractionInfo touching{ isTouching, didTouchChange };
@@ -370,16 +377,27 @@ bool IsSoftWeapon(int weaponId)
 	}
 }
 
-float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller)
+float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult)
 {
 	if (hEntity->pev->solid == SOLID_NOT || hEntity->pev->solid == SOLID_TRIGGER)
 		return 0.f;
 
-	float speed = (pPlayer->pev->velocity + controller.GetVelocity() - hEntity->pev->velocity).Length();
+	Vector controllerSwingVelocity = controller.GetVelocity();
+	if (intersectResult.hasresult)
+	{
+		Vector relativeHitPos = intersectResult.hitpoint - controller.GetPosition();
+		Vector previousRotatedRelativeHitPos = VRPhysicsHelper::Instance().RotateVectorInline(relativeHitPos, controller.GetPreviousAngles());
+		Vector rotatedRelativeHitPos = VRPhysicsHelper::Instance().RotateVectorInline(relativeHitPos, controller.GetAngles());
+		controllerSwingVelocity = controllerSwingVelocity + rotatedRelativeHitPos - previousRotatedRelativeHitPos;
+	}
+
+	float speed = (pPlayer->pev->velocity + controllerSwingVelocity - hEntity->pev->velocity).Length();
 	float damage = UTIL_CalculateMeleeDamage(controller.GetWeaponId(), speed);
 	if (damage > 0.f)
 	{
-		pPlayer->PlayMeleeSmackSound(hEntity, controller.GetWeaponId(), controller.GetPosition(), controller.GetVelocity());
+		Vector impactPosition = intersectResult.hasresult ? intersectResult.hitpoint : controller.GetPosition();
+
+		pPlayer->PlayMeleeSmackSound(hEntity, controller.GetWeaponId(), impactPosition, controllerSwingVelocity);
 
 		int backupBlood = hEntity->m_bloodColor;
 		if (IsSoftWeapon(controller.GetWeaponId()))
@@ -389,15 +407,19 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEn
 		}
 		TraceResult fakeTrace = { 0 };
 		fakeTrace.pHit = hEntity->edict();
-		fakeTrace.vecEndPos = controller.GetPosition();
+		fakeTrace.vecEndPos = impactPosition;
 		fakeTrace.flFraction = 0.5f;
+		if (intersectResult.hasresult)
+		{
+			fakeTrace.iHitgroup = intersectResult.hitgroup;
+		}
 		ClearMultiDamage();
-		hEntity->TraceAttack(pPlayer->pev, damage, controller.GetVelocity().Normalize(), &fakeTrace, UTIL_DamageTypeFromWeapon(controller.GetWeaponId()));
+		hEntity->TraceAttack(pPlayer->pev, damage, controllerSwingVelocity.Normalize(), &fakeTrace, UTIL_DamageTypeFromWeapon(controller.GetWeaponId()));
 		ApplyMultiDamage(pPlayer->pev, pPlayer->pev);
 		hEntity->m_bloodColor = backupBlood;
 
 		// Entities that support being "baseballed" overwrite this method
-		hEntity->BaseBalled(pPlayer, controller.GetVelocity());
+		hEntity->BaseBalled(pPlayer, controllerSwingVelocity);
 
 		// If you smack something with an explosive, it might just explode...
 		// 25% chance that charged satchels go off when you smack something with the remote

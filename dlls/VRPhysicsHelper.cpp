@@ -30,6 +30,8 @@ extern struct playermove_s *PM_GetPlayerMove(void);
 #include "effects.h"
 #include "game.h"
 
+#include "animation.h"
+
 #include <chrono>
 #include <cstdlib>
 
@@ -747,7 +749,7 @@ VRPhysicsHelper::~VRPhysicsHelper()
 {
 	m_bspModelData.clear();
 	m_dynamicBSPModelData.clear();
-	m_hitboxCache.clear();
+	m_hitboxCaches.clear();
 
 	if (m_collisionWorld)
 	{
@@ -940,22 +942,31 @@ inline void CreateHitBoxVertices(const Vector& bboxMins, const Vector& bboxMaxs,
 }
 */
 
-reactphysics3d::CollisionBody* VRPhysicsHelper::GetHitBoxBody(const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles)
+reactphysics3d::CollisionBody* VRPhysicsHelper::GetHitBoxBody(size_t cacheIndex, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles)
 {
-	HitBox hitbox{ bboxMins, bboxMaxs };
+	if (fabs(bboxMaxs.x - bboxMins.x) < EPSILON
+		|| fabs(bboxMaxs.y - bboxMins.y) < EPSILON
+		|| fabs(bboxMaxs.z - bboxMins.z) < EPSILON)
+		return nullptr;
 
+	if (cacheIndex >= m_hitboxCaches.size())
+		m_hitboxCaches.resize(cacheIndex+1);
+
+	auto& hitboxCache = m_hitboxCaches[cacheIndex];
+
+	HitBox hitbox{ bboxMins, bboxMaxs };
 	std::shared_ptr<HitBoxModelData> data;
 
-	if (m_hitboxCache.count(hitbox) == 0)
+	if (hitboxCache.count(hitbox) == 0)
 	{
 		data = std::make_shared<HitBoxModelData>();
 		//CreateHitBoxVertices(bboxMins, bboxMaxs, data->m_vertices, data->m_indices);
 		data->CreateData(m_collisionWorld, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
-		m_hitboxCache[hitbox] = data;
+		hitboxCache[hitbox] = data;
 	}
 	else
 	{
-		data = m_hitboxCache[hitbox];
+		data = hitboxCache[hitbox];
 		data->UpdateTransform(bboxCenter, bboxAngles);
 	}
 
@@ -1004,39 +1015,88 @@ bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& 
 }
 
 bool VRPhysicsHelper::ModelBBoxIntersectsBBox(
-	const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1,
+	const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1, const Vector& bboxAngles1,
 	const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2)
 {
 	if (!CheckWorld())
 		return false;
 
-	auto bboxBody1 = GetHitBoxBody(bboxCenter1, bboxMins1, bboxMaxs1);
-	auto bboxBody2 = GetHitBoxBody(bboxCenter2, bboxMins2, bboxMaxs2, bboxAngles2);
+	auto bboxBody1 = GetHitBoxBody(0, bboxCenter1, bboxMins1, bboxMaxs1, bboxAngles1);
+	if (!bboxBody1)
+		return false;
+
+	auto bboxBody2 = GetHitBoxBody(1, bboxCenter2, bboxMins2, bboxMaxs2, bboxAngles2);
+	if (!bboxBody2)
+		return false;
 
 	return m_collisionWorld->testOverlap(bboxBody1, bboxBody2);
 }
 
-bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles)
+bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles, VRPhysicsHelperModelBBoxIntersectResult* result)
 {
 	if (!CheckWorld())
 		return false;
 
 	if (!pModel->pev->model)
 	{
-		return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+		// No model, use bounding box
+		return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
 	}
 
 	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
-	if (bspModelData == m_bspModelData.end() || !bspModelData->second.HasData())
+	if (bspModelData != m_bspModelData.end() && bspModelData->second.HasData())
 	{
-		return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+		// BSP model
+		auto bboxBody = GetHitBoxBody(0, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+		if (!bboxBody)
+			return false;
+
+		bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DQuaternion(pModel->pev->angles) });
+		return m_collisionWorld->testOverlap(bspModelData->second.m_collisionBody, bboxBody);
+	}
+	else
+	{
+		// Studio model
+		void *pmodel = GET_MODEL_PTR(pModel->edict());
+		if (!pmodel)
+		{
+			// Invalid studio model, use bounding box
+			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+		}
+
+		int numhitboxes = GetNumHitboxes(pmodel);
+		if (numhitboxes <= 0)
+		{
+			// No hitboxes, use bounding box
+			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+		}
+
+		std::vector<StudioHitBox> studiohitboxes;
+		studiohitboxes.resize(numhitboxes);
+		if (GetHitboxes(pModel->pev, pmodel, pModel->pev->sequence, pModel->pev->frame, studiohitboxes.data(), false))
+		{
+			for (const auto& studiohitbox : studiohitboxes)
+			{
+				if (ModelBBoxIntersectsBBox(studiohitbox.origin, studiohitbox.mins, studiohitbox.maxs, studiohitbox.angles, bboxCenter, bboxMins, bboxMaxs, bboxAngles))
+				{
+					if (result)
+					{
+						result->hitpoint = (studiohitbox.origin + bboxCenter) * 0.5f;
+						result->hitgroup = studiohitbox.hitgroup;
+						result->hasresult = true;
+					}
+					return true;
+				}
+			}
+			return false;
+		}
+		else
+		{
+			// Failed to get hitboxes, use bounding box
+			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+		}
 	}
 
-	auto bboxBody = GetHitBoxBody(bboxCenter, bboxMins, bboxMaxs, bboxAngles);
-
-	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DQuaternion(pModel->pev->angles) });
-
-	return m_collisionWorld->testOverlap(bspModelData->second.m_collisionBody, bboxBody);
 }
 
 bool VRPhysicsHelper::ModelIntersectsWorld(CBaseEntity *pModel)
@@ -1197,6 +1257,8 @@ void VRPhysicsHelper::HitBoxModelData::CreateData(CollisionWorld* collisionWorld
 	m_collisionBody = collisionWorld->createCollisionBody(rp3d::Transform::identity());
 	m_bboxShape = new BoxShape{ size * 0.5 };
 	m_proxyShape = m_collisionBody->addCollisionShape(m_bboxShape, rp3d::Transform::identity());
+
+	m_collisionWorld = collisionWorld;
 
 	m_hasData = true;
 	UpdateTransform(origin, angles);

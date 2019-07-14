@@ -579,7 +579,7 @@ void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 			flDamage = flDamage / 2;
 		}
 		break;
-	case 10:
+	case HITGROUP_ARMOR:
 		if (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_CLUB))
 		{
 			flDamage -= 20;

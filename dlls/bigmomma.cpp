@@ -557,7 +557,7 @@ void CBigMomma :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void CBigMomma :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
 {
-	if ( ptr->iHitgroup != 1 )
+	if ( ptr->iHitgroup != HITGROUP_HEAD )
 	{
 		// didn't hit the sack?
 		
@@ -574,7 +574,6 @@ void CBigMomma :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 		m_painSoundTime = gpGlobals->time + RANDOM_LONG(1, 3);
 		EMIT_SOUND_ARRAY_DYN( CHAN_VOICE, pPainSounds );
 	}
-
 
 	CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }

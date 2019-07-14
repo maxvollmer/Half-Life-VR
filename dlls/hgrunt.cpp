@@ -604,7 +604,7 @@ BOOL CHGrunt :: CheckRangeAttack2 ( float flDot, float flDist )
 void CHGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
 	// check for helmet shot
-	if (ptr->iHitgroup == 11)
+	if (ptr->iHitgroup == HITGROUP_HGRUNT_HELMET)
 	{
 		// make sure we're wearing one
 		if (GetBodygroup( 1 ) == HEAD_GRUNT && (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB)))

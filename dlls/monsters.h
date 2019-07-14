@@ -38,6 +38,8 @@
 #define HITGROUP_RIGHTARM	5
 #define HITGROUP_LEFTLEG	6
 #define HITGROUP_RIGHTLEG	7
+#define HITGROUP_ARMOR		10
+#define HITGROUP_HGRUNT_HELMET		11
 
 
 // Monster Spawnflags

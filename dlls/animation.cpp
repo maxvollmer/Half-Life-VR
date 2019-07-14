@@ -1196,6 +1196,19 @@ int GetHitboxes(entvars_t *pev, void *pmodel, int sequence, float frame, StudioH
 		VectorScale(pbbox[i].bbmax, pev->scale, hitboxes[i].maxs);
 		VectorCopy(bonetransforms[pbbox[i].bone].origin, hitboxes[i].origin);
 		VectorCopy(bonetransforms[pbbox[i].bone].angles, hitboxes[i].angles);
+		hitboxes[i].hitgroup = pbbox[i].group;
+
+		// Some models have hitboxes with size 0. Fix that here
+		vec3_t size;
+		VectorSubtract(hitboxes[i].maxs, hitboxes[i].mins, size);
+		for (int j = 0; j < 3; j++)
+		{
+			if (fabs(size[0]) < 0.1f)
+			{
+				pbbox[i].bbmin[j] = -4.f;
+				pbbox[i].bbmax[j] = 4.f;
+			}
+		}
 	}
 
 	return 1;
