@@ -266,6 +266,7 @@
     <ClCompile Include="VRInputPosesHandlers.cpp" />
     <ClCompile Include="VRInputWeaponsHandlers.cpp" />
     <ClCompile Include="VRIntermissionAndMenuRenderer.cpp" />
+    <ClCompile Include="VRModExtraDataCacheHook.cpp" />
     <ClCompile Include="VRMODExtradataErrorIntercepter.cpp" />
     <ClCompile Include="VRTextureHelper.cpp" />
     <ClCompile Include="vr_gl.cpp" />
@@ -333,7 +334,21 @@
     <ClInclude Include="VRRenderer.h" />
     <ClInclude Include="wrect.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\EasyHookNativePackage.redist.2.7.7097\build\native\EasyHookNativePackage.redist.targets" Condition="Exists('..\packages\EasyHookNativePackage.redist.2.7.7097\build\native\EasyHookNativePackage.redist.targets')" />
+    <Import Project="..\packages\EasyHookNativePackage.2.7.7097\build\native\EasyHookNativePackage.targets" Condition="Exists('..\packages\EasyHookNativePackage.2.7.7097\build\native\EasyHookNativePackage.targets')" />
+    <Import Project="..\packages\EasyHookNativePackage.symbols.2.7.7097\build\native\EasyHookNativePackage.symbols.targets" Condition="Exists('..\packages\EasyHookNativePackage.symbols.2.7.7097\build\native\EasyHookNativePackage.symbols.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\EasyHookNativePackage.redist.2.7.7097\build\native\EasyHookNativePackage.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EasyHookNativePackage.redist.2.7.7097\build\native\EasyHookNativePackage.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\EasyHookNativePackage.2.7.7097\build\native\EasyHookNativePackage.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EasyHookNativePackage.2.7.7097\build\native\EasyHookNativePackage.targets'))" />
+    <Error Condition="!Exists('..\packages\EasyHookNativePackage.symbols.2.7.7097\build\native\EasyHookNativePackage.symbols.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EasyHookNativePackage.symbols.2.7.7097\build\native\EasyHookNativePackage.symbols.targets'))" />
+  </Target>
 </Project>

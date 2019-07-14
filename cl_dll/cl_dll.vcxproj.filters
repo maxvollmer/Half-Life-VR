@@ -346,6 +346,9 @@
     <ClCompile Include="VRMODExtradataErrorIntercepter.cpp">
       <Filter>VR\helpers</Filter>
     </ClCompile>
+    <ClCompile Include="VRModExtraDataCacheHook.cpp">
+      <Filter>VR\helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parsemsg.h">
@@ -516,5 +519,8 @@
     <ClInclude Include="VRMODExtradataErrorIntercepter.h">
       <Filter>VR\helpers</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

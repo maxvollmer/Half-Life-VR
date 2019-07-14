@@ -62,6 +62,9 @@ VRRenderer::~VRRenderer()
 void VRRenderer::Init()
 {
 	vrHelper->Init();
+
+	extern void InstallModExtraDataCacheHook();
+	InstallModExtraDataCacheHook();
 }
 
 void VRRenderer::VidInit()
