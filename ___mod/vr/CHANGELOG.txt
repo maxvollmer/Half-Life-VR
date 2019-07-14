@@ -102,6 +102,10 @@
 0.4.8 - 
 * Fixed a crashbug that came with the rotating door fix in 0.4.7
 * Fixed key states not being reset when dying (caused weapons to fire after respawn)
+* Fixed map-spawned tripmines floating 8 units away from walls
+* Fixed and improved collision/overlap detection between hands/weapons and world/objects
 * Added labcoat hand model for predisaster maps
+* Finished all SD models except female scientist
+* Updated reactphysics3d to 0.7.1
 * 
 
