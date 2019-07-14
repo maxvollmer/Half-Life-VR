@@ -104,8 +104,12 @@
 * Fixed key states not being reset when dying (caused weapons to fire after respawn)
 * Fixed map-spawned tripmines floating 8 units away from walls
 * Fixed and improved collision/overlap detection between hands/weapons and world/objects
+* Fixed "Mod_Extradata: caching failed" crashes
+* Cleaned up and improved hit boxes on hand and weapon models
 * Added labcoat hand model for predisaster maps
 * Finished all SD models except female scientist
+* Improved pushable boxes behavior
 * Updated reactphysics3d to 0.7.1
+* Added EasyHook32 library for fixing "Mod_Extradata: caching failed" crashes
 * 
 
