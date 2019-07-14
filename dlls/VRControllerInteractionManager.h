@@ -28,17 +28,19 @@ private:
 			const bool didChange;
 		};
 
-		Interaction(InteractionInfo touching, InteractionInfo dragging, InteractionInfo hitting, float hitDamage) :
+		Interaction(InteractionInfo touching, InteractionInfo dragging, InteractionInfo hitting, float hitDamage, const Vector& intersectPoint) :
 			touching{ touching },
 			dragging{ dragging },
 			hitting{ hitting },
-			hitDamage{ hitDamage }
+			hitDamage{ hitDamage },
+			intersectPoint{ intersectPoint }
 		{}
 
 		const InteractionInfo touching;
 		const InteractionInfo dragging;
 		const InteractionInfo hitting;
 		const float hitDamage;
+		const Vector intersectPoint;
 	};
 
 	bool HandleEasterEgg(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange);
@@ -48,7 +50,7 @@ private:
 	bool HandleRechargers(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange);
 	bool HandleTriggers(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange);
 	bool HandleBreakables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage);
-	bool HandlePushables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange);
+	bool HandlePushables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction);
 	bool HandleAlliedMonsters(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage);
 	bool HandleGrabbables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction);
 

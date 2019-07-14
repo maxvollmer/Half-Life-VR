@@ -17,6 +17,7 @@
 #include "VRPhysicsHelper.h"
 #include "CWorldsSmallestCup.h"
 #include "VRModelHelper.h"
+#include "VRMovementHandler.h"
 
 #include "VRRotatableEnt.h"
 
@@ -26,27 +27,27 @@
 
 #define	bits_COND_CLIENT_PUSH (bits_COND_SPECIAL1)
 
-#define VR_MAX_ANGRY_GUNPOINT_DIST 256
-#define VR_INITIAL_ANGRY_GUNPOINT_TIME 2
-#define VR_MIN_ANGRY_GUNPOINT_TIME 3
-#define VR_MAX_ANGRY_GUNPOINT_TIME 7
+constexpr const int VR_MAX_ANGRY_GUNPOINT_DIST = 256;
+constexpr const int VR_INITIAL_ANGRY_GUNPOINT_TIME = 2;
+constexpr const int VR_MIN_ANGRY_GUNPOINT_TIME = 3;
+constexpr const int VR_MAX_ANGRY_GUNPOINT_TIME = 7;
 
-#define VR_SHOULDER_TOUCH_TIME 1.5f
-#define VR_STOP_SIGNAL_TIME 1
+constexpr const int VR_SHOULDER_TOUCH_TIME = 1.5f;
+constexpr const int VR_STOP_SIGNAL_TIME = 1;
 
-#define VR_SHOULDER_TOUCH_MIN_Z 56
-#define VR_SHOULDER_TOUCH_MAX_Z 62
-#define VR_SHOULDER_TOUCH_MIN_Y 4
-#define VR_SHOULDER_TOUCH_MAX_Y 12
+constexpr const int VR_SHOULDER_TOUCH_MIN_Z = 56;
+constexpr const int VR_SHOULDER_TOUCH_MAX_Z = 62;
+constexpr const int VR_SHOULDER_TOUCH_MIN_Y = 4;
+constexpr const int VR_SHOULDER_TOUCH_MAX_Y = 12;
 
-#define VR_STOP_SIGNAL_MIN_Z 56
-#define VR_STOP_SIGNAL_MAX_Z 72
-#define VR_STOP_SIGNAL_MIN_X 8
-#define VR_STOP_SIGNAL_MAX_X 36
-#define VR_STOP_SIGNAL_MIN_Y -12
-#define VR_STOP_SIGNAL_MAX_Y 12
+constexpr const int VR_STOP_SIGNAL_MIN_Z = 56;
+constexpr const int VR_STOP_SIGNAL_MAX_Z = 72;
+constexpr const int VR_STOP_SIGNAL_MIN_X = 8;
+constexpr const int VR_STOP_SIGNAL_MAX_X = 36;
+constexpr const int VR_STOP_SIGNAL_MIN_Y = -12;
+constexpr const int VR_STOP_SIGNAL_MAX_Y = 12;
 
-#define VR_RETINASCANNER_ACTIVATE_LOOK_TIME 1.5f
+constexpr const float VR_RETINASCANNER_ACTIVATE_LOOK_TIME = 1.5f;
 
 // Global VR related stuffs - Max Vollmer, 2018-04-02
 #include <vector>
@@ -101,82 +102,6 @@ bool CheckStopSignal(CBaseMonster *pMonster, const Vector & pos, const Vector & 
 	}
 	return false;
 }
-
-// TODO TEMP
-/*
-std::unordered_map<int, std::vector<CBeam*>> debugbboxes;
-void DrawDebugBBox(int which, bool valid, Vector pos, Vector angles, Vector mins, Vector maxs)
-{
-	if (!valid)
-	{
-		for (CBeam* pBeam : debugbboxes[which])
-		{
-			UTIL_Remove(pBeam);
-		}
-		debugbboxes[which].clear();
-		return;
-	}
-
-	while (debugbboxes[which].size() < 8)
-	{
-		CBeam *pBeam = CBeam::BeamCreate("sprites/laserbeam.spr", 5);
-		pBeam->PointsInit(mins, maxs);
-		pBeam->SetBrightness(128);
-		pBeam->SetWidth(1);
-		pBeam->SetColor(255, 0, 0);
-		pBeam->SetFlags(0x20);
-		// pBeam->SetEndAttachment(1);
-		pBeam->pev->spawnflags |= SF_BEAM_TEMPORARY;
-		debugbboxes[which].push_back(pBeam);
-	}
-
-	Vector minsmaxs[2] = { mins, maxs };
-
-
-
-	debugbboxes[which][0]->PointsInit(
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[0].y, minsmaxs[0].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[0].y, minsmaxs[0].z }, angles)
-	);
-
-	debugbboxes[which][1]->PointsInit(
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[0].y, minsmaxs[0].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[1].y, minsmaxs[0].z }, angles));
-
-	debugbboxes[which][2]->PointsInit(pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[0].y, minsmaxs[0].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[0].y, minsmaxs[1].z }, angles));
-
-
-	debugbboxes[which][3]->PointsInit(pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[1].y, minsmaxs[0].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[0].y, minsmaxs[0].z }, angles));
-
-	debugbboxes[which][3]->PointsInit(pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[1].y, minsmaxs[0].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[1].y, minsmaxs[0].z }, angles));
-
-	debugbboxes[which][3]->PointsInit(pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[1].y, minsmaxs[0].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[1].y, minsmaxs[1].z }, angles));
-
-
-	debugbboxes[which][0]->PointsInit(pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[1].y, minsmaxs[1].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[1].y, minsmaxs[0].z }, angles));
-
-	debugbboxes[which][0]->PointsInit(pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[1].y, minsmaxs[1].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[0].y, minsmaxs[1].z }, angles));
-
-	debugbboxes[which][0]->PointsInit(pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[1].y, minsmaxs[1].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[1].y, minsmaxs[1].z }, angles));
-
-
-	debugbboxes[which][0]->PointsInit(pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[0].y, minsmaxs[1].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[0].y, minsmaxs[0].z }, angles));
-
-	debugbboxes[which][0]->PointsInit(pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[0].y, minsmaxs[1].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[0].x, minsmaxs[0].y, minsmaxs[1].z }, angles));
-
-	debugbboxes[which][0]->PointsInit(pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[0].y, minsmaxs[1].z }, angles),
-		pos + VRPhysicsHelper::Instance().RotateVectorInline(Vector{ minsmaxs[1].x, minsmaxs[1].y, minsmaxs[1].z }, angles));
-}
-*/
 
 bool WasJustThrownByPlayer(CBasePlayer* pPlayer, EHANDLE hEntity)
 {
@@ -233,7 +158,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 	// Check each hitbox of current weapon
 	for (auto hitbox : controller.GetHitBoxes())
 	{
-		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult))
+		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult) || UTIL_IsPointInEntity(hEntity, hitbox.origin))
 		{
 			if (!intersectResult->hasresult)
 			{
@@ -340,7 +265,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		Interaction::InteractionInfo touching{ isTouching, didTouchChange };
 		Interaction::InteractionInfo dragging{ isDragging, didDragChange };
 		Interaction::InteractionInfo hitting{ isHitting, didHitChange };
-		Interaction interaction{ touching, dragging, hitting, flHitDamage };
+		Interaction interaction{ touching, dragging, hitting, flHitDamage, intersectResult.hasresult ? intersectResult.hitpoint : controller.GetPosition() };
 
 		if (HandleEasterEgg(pPlayer, hEntity, controller, isTouching, didTouchChange));	// easter egg first, obviously the most important
 		else if (HandleRetinaScanners(pPlayer, hEntity, controller, isTouching, didTouchChange));
@@ -349,7 +274,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		else if (HandleRechargers(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleTriggers(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleBreakables(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
-		else if (HandlePushables(pPlayer, hEntity, controller, isTouching, didTouchChange));
+		else if (HandlePushables(pPlayer, hEntity, controller, interaction));
 		else if (HandleGrabbables(pPlayer, hEntity, controller, interaction));
 		else if (HandleAlliedMonsters(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
 		else if (isTouching && didTouchChange)
@@ -551,34 +476,6 @@ bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE
 		}
 		return true;
 	}
-	/*
-	else if (FClassnameIs(hEntity->pev, "func_rot_button"))
-	{
-		if (isDragging)
-		{
-			if (didDragChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
-			{
-				if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
-				{
-					hEntity->Touch(pPlayer);
-				}
-				else
-				{
-					hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
-				}
-			}
-		}
-		return true;
-	}
-	else if (FClassnameIs(hEntity->pev, "momentary_rot_button"))
-	{
-		if (isDragging)
-		{
-			hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
-		}
-		return true;
-	}
-	*/
 	else if (FClassnameIs(hEntity->pev, "func_rot_button") || FClassnameIs(hEntity->pev, "momentary_rot_button"))
 	{
 		VRRotatableEnt* pRotatableEnt = hEntity->MyRotatableEntPtr();
@@ -613,6 +510,32 @@ bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE
 			if (isDragging && didDragChange)
 			{
 				ALERT(at_console, "Error: Found rotating button not of type VRRotatableEnt: %s %s\n", STRING(hEntity->pev->classname), STRING(hEntity->pev->targetname));
+			}
+			if (FClassnameIs(hEntity->pev, "func_rot_button"))
+			{
+				if (isDragging)
+				{
+					if (didDragChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
+					{
+						if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
+						{
+							hEntity->Touch(pPlayer);
+						}
+						else
+						{
+							hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
+						}
+					}
+				}
+				return true;
+			}
+			else if (FClassnameIs(hEntity->pev, "momentary_rot_button"))
+			{
+				if (isDragging)
+				{
+					hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
+				}
+				return true;
 			}
 		}
 		return true;
@@ -737,64 +660,102 @@ bool VRControllerInteractionManager::HandleBreakables(CBasePlayer *pPlayer, EHAN
 	return true;
 }
 
-bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
 {
 	if (!FClassnameIs(hEntity->pev, "func_pushable"))
 		return false;
 
-	if (isTouching)
+	CPushable *pPushable = dynamic_cast<CPushable*>((CBaseEntity*)hEntity);
+	if (pPushable != nullptr)
 	{
-		CPushable *pPushable = dynamic_cast<CPushable*>((CBaseEntity*)hEntity);
-		if (pPushable != nullptr)
+		if (interaction.touching.isSet)
 		{
-			if (controller.IsDragging())
+			// backup origins and move entities temporarily out of world, so box won't collide with itself when moving
+			Vector playerOrigin = pPlayer->pev->origin;
+			pPlayer->pev->origin = Vector{ 999,999,999 };
+			UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
+
+			Vector pushableOrigin = pPushable->pev->origin;
+			pPushable->pev->origin = Vector{ 999,999,999 };
+			UTIL_SetOrigin(pPushable->pev, pPushable->pev->origin);
+
+			Vector targetPos;
+			bool isDragging = false;
+
+			Vector controllerDragStartPos;
+			Vector entityDragStartOrigin;
+			if (interaction.dragging.isSet && controller.GetDraggedEntityStartPositions(hEntity, controllerDragStartPos, entityDragStartOrigin))
 			{
-				pPushable->pev->velocity = controller.GetVelocity();
+				pPushable->pev->gravity = 0;
+				targetPos = entityDragStartOrigin + controller.GetPosition() - controllerDragStartPos;
+				targetPos.z = pushableOrigin.z;	// prevent lifting up, is buggy and allows for ugly cheating and exploits
+				isDragging = true;
 			}
 			else
 			{
-				// Get push velocity, but remove z (no up/down movement unless "grab" is on)
-				Vector velocity = controller.GetVelocity();
-				velocity.z = 0.f;
+				Vector relativePos = interaction.intersectPoint - pushableOrigin;
 
-				// Don't pull a pushable unless "grab" is on
-				// (we simply check if the angle between push velocity and pushable offset is less than 90°)
-				Vector dir = (pPushable->pev->origin - controller.GetPosition()).Normalize();
-				float dot = DotProduct(dir, velocity.Normalize()) > 0.f;
-				if (dot > 0.f)
+				// Decide axis to push on:
+				Vector pushDelta;
+
+				// TODO: Use proper dotproduct to determine only x, only y or both!
+				bool useAxis[3];
+				useAxis[0] = fabs(relativePos.x) > fabs(relativePos.y);
+				useAxis[1] = !useAxis[0];
+				// Only push up or down if floating in water
+				useAxis[2] = (pPushable->pev->waterlevel > 0 && !FBitSet(pPushable->pev->flags, FL_ONGROUND));
+				
+				for (int i = 0; i < 3; i++)
 				{
-					auto lambda = [](float pushVel, float pushableVel) -> float
+					if (useAxis[i])
 					{
-						if (pushVel*pushableVel >= 0.0f)
+						if (relativePos[i] < 0.f)
 						{
-							// same sign, use bigger absolute value
-							// (this will push it faster if player hits faster than it already moves,
-							//  or leaves speed as is, if player pushes slower in the direction it already moves)
-							return (std::abs(pushVel) > std::abs(pushableVel)) ? pushVel : pushableVel;
+							pushDelta[i] = relativePos[i] - pPushable->pev->mins[i];
+							if (pushDelta[i] < 0.f)
+								pushDelta[i] = 1.f;
 						}
 						else
 						{
-							// different sign, use pushVel
-							// (this will stop a pushable from moving towards the player, and push it in opposite direction)
-							return pushVel;
+							pushDelta[i] = relativePos[i] - pPushable->pev->maxs[i];
+							if (pushDelta[i] > 0.f)
+								pushDelta[i] = -1.f;
 						}
-					};
-
-					pPushable->pev->velocity.x = lambda(velocity.x, pPushable->pev->velocity.x);
-					pPushable->pev->velocity.y = lambda(velocity.y, pPushable->pev->velocity.y);
+					}
 				}
+
+				targetPos = pushableOrigin + pushDelta;
 			}
 
-			if (pPushable->pev->velocity.Length() > pPushable->MaxSpeed())
+			if (targetPos != pushableOrigin)
 			{
-				float zSpeed = pPushable->pev->velocity.z;
-				pPushable->pev->velocity = pPushable->pev->velocity.Normalize() * pPushable->MaxSpeed();
-				if (zSpeed < 0.f && !controller.IsDragging())
+				Vector moveDir = (targetPos - pushableOrigin);
+
+				float wishspeed;
+				if (isDragging)
 				{
-					// restore falling speed
-					pPushable->pev->velocity.z = max(zSpeed, -g_psv_gravity->value);
+					wishspeed = moveDir.Length() / gpGlobals->frametime;		// when dragging, wishspeed is simply set to get there immediately this frame
 				}
+				else
+				{
+					constexpr const float Minspeed = 20.f;							// never go below this, or boxes won't move at all
+					float targetspeed = moveDir.Length() * 10.f;					// 0.1 seconds to reach target
+					float controllerspeed = controller.GetVelocity().Length();		// use controller speed, so smacking boxes with force pushes them faster
+
+					wishspeed = (std::max)(controllerspeed, (std::max)(targetspeed, Minspeed));	// take the highest speed value
+				}
+
+				float speed = (std::min)(wishspeed, pPushable->MaxSpeed());		// cap at pushable's maxspeed
+
+				pPushable->EmitPushSound(speed);
+				pPushable->pev->velocity = moveDir.Normalize() * speed;
 			}
+
+			pPushable->pev->origin = pushableOrigin;
+			UTIL_SetOrigin(pPushable->pev, pPushable->pev->origin);
+
+			pPlayer->pev->origin = playerOrigin;
+			UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
 		}
 	}
 
