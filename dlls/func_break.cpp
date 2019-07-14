@@ -837,19 +837,23 @@ void CPushable :: KeyValue( KeyValueData *pkvd )
 		{
 		case 0:	// Point
 			UTIL_SetSize(pev, Vector(-8, -8, -8), Vector(8, 8, 8));
+			m_usehull = 2;
 			break;
 
 		case 2: // Big Hull!?!?	!!!BUGBUG Figure out what this hull really is
 			UTIL_SetSize(pev, VEC_DUCK_HULL_MIN*2, VEC_DUCK_HULL_MAX*2);
+			m_usehull = 3;
 			break;
 
 		case 3: // Player duck
 			UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			m_usehull = 1;
 			break;
 
 		default:
 		case 1: // Player
 			UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
+			m_usehull = 0;
 			break;
 		}
 
@@ -903,7 +907,6 @@ void CPushable :: Move( CBaseEntity *pOther, int push )
 		return;
 	}
 
-
 	if ( pOther->IsPlayer() )
 	{
 		if ( push && !(pevToucher->button & (IN_FORWARD|IN_USE)) )	// Don't push unless the player is pushing forward and NOT use (pull)
@@ -941,17 +944,22 @@ void CPushable :: Move( CBaseEntity *pOther, int push )
 	{
 		pevToucher->velocity.x = pev->velocity.x;
 		pevToucher->velocity.y = pev->velocity.y;
-		if ( (gpGlobals->time - m_soundTime) > 0.7 )
+		EmitPushSound(length);
+	}
+}
+
+void CPushable::EmitPushSound(float length)
+{
+	if ((gpGlobals->time - m_soundTime) > 0.7)
+	{
+		m_soundTime = gpGlobals->time;
+		if (length > 0 && FBitSet(pev->flags, FL_ONGROUND))
 		{
-			m_soundTime = gpGlobals->time;
-			if ( length > 0 && FBitSet(pev->flags,FL_ONGROUND) )
-			{
-				m_lastSound = RANDOM_LONG(0,2);
-				EMIT_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5, ATTN_NORM);
-			}
-			else
-				STOP_SOUND( ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound] );
+			m_lastSound = RANDOM_LONG(0, 2);
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5, ATTN_NORM);
 		}
+		else
+			STOP_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound]);
 	}
 }
 

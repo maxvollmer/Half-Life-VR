@@ -90,12 +90,16 @@ public:
 	// breakables use an overridden takedamage
 	virtual int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 
+	void EmitPushSound(float length);
+
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	static char *m_soundNames[3];
 	int		m_lastSound;	// no need to save/restore, just keeps the same sound from playing twice in a row
 	float	m_maxSpeed;
 	float	m_soundTime;
+
+	int		m_usehull{ 0 };
 };
 
 #endif	// FUNC_BREAK_H
