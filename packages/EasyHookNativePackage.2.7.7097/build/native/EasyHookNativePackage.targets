@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="EasyHookNativePackage_init">
+  <PropertyGroup Label="Default initializers for properties">
+    <Linkage-EasyHookNativePackage Condition="'$(Linkage-EasyHookNativePackage)' == ''">dynamic</Linkage-EasyHookNativePackage>
+    <CallingConvention-EasyHookNativePackage Condition="'$(CallingConvention-EasyHookNativePackage)' == ''">cdecl</CallingConvention-EasyHookNativePackage>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../..//build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../..//build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and v110 and Release" Condition="'$(Platform.ToLower())' == 'win32' And ( $(PlatformToolset.ToLower().IndexOf('v110')) &gt; -1 Or '$(PlatformToolset.ToLower())' == 'windowskernelmodedriver8.0' Or '$(PlatformToolset.ToLower())' == 'windowsapplicationfordrivers8.0' Or '$(PlatformToolset.ToLower())' == 'windowsusermodedriver8.0' ) And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/Win32\v110\Release\EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and v110 and Debug" Condition="'$(Platform.ToLower())' == 'win32' And ( $(PlatformToolset.ToLower().IndexOf('v110')) &gt; -1 Or '$(PlatformToolset.ToLower())' == 'windowskernelmodedriver8.0' Or '$(PlatformToolset.ToLower())' == 'windowsapplicationfordrivers8.0' Or '$(PlatformToolset.ToLower())' == 'windowsusermodedriver8.0' ) And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/Win32\v110\Debug\EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and v110 and Release" Condition="'$(Platform.ToLower())' == 'x64' And ( $(PlatformToolset.ToLower().IndexOf('v110')) &gt; -1 Or '$(PlatformToolset.ToLower())' == 'windowskernelmodedriver8.0' Or '$(PlatformToolset.ToLower())' == 'windowsapplicationfordrivers8.0' Or '$(PlatformToolset.ToLower())' == 'windowsusermodedriver8.0' ) And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/x64\v110\Release\EasyHook64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and v110 and Debug" Condition="'$(Platform.ToLower())' == 'x64' And ( $(PlatformToolset.ToLower().IndexOf('v110')) &gt; -1 Or '$(PlatformToolset.ToLower())' == 'windowskernelmodedriver8.0' Or '$(PlatformToolset.ToLower())' == 'windowsapplicationfordrivers8.0' Or '$(PlatformToolset.ToLower())' == 'windowsusermodedriver8.0' ) And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/x64\v110\Debug\EasyHook64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and v120 and Release" Condition="'$(Platform.ToLower())' == 'win32' And ( $(PlatformToolset.ToLower().IndexOf('v120')) &gt; -1 Or '$(PlatformToolset.ToLower())' == 'windowskernelmodedriver8.0' Or '$(PlatformToolset.ToLower())' == 'windowsapplicationfordrivers8.0' Or '$(PlatformToolset.ToLower())' == 'windowsusermodedriver8.0' ) And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/Win32\v120\Release\EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and v120 and Debug" Condition="'$(Platform.ToLower())' == 'win32' And ( $(PlatformToolset.ToLower().IndexOf('v120')) &gt; -1 Or '$(PlatformToolset.ToLower())' == 'windowskernelmodedriver8.0' Or '$(PlatformToolset.ToLower())' == 'windowsapplicationfordrivers8.0' Or '$(PlatformToolset.ToLower())' == 'windowsusermodedriver8.0' ) And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/Win32\v120\Debug\EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and v120 and Release" Condition="'$(Platform.ToLower())' == 'x64' And ( $(PlatformToolset.ToLower().IndexOf('v120')) &gt; -1 Or '$(PlatformToolset.ToLower())' == 'windowskernelmodedriver8.0' Or '$(PlatformToolset.ToLower())' == 'windowsapplicationfordrivers8.0' Or '$(PlatformToolset.ToLower())' == 'windowsusermodedriver8.0' ) And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/x64\v120\Release\EasyHook64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and v120 and Debug" Condition="'$(Platform.ToLower())' == 'x64' And ( $(PlatformToolset.ToLower().IndexOf('v120')) &gt; -1 Or '$(PlatformToolset.ToLower())' == 'windowskernelmodedriver8.0' Or '$(PlatformToolset.ToLower())' == 'windowsapplicationfordrivers8.0' Or '$(PlatformToolset.ToLower())' == 'windowsusermodedriver8.0' ) And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/x64\v120\Debug\EasyHook64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and v140 and Release" Condition="'$(Platform.ToLower())' == 'win32' And '$(PlatformToolset.ToLower())' == 'v140' And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/Win32\v140\Release\EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and v140 and Debug" Condition="'$(Platform.ToLower())' == 'win32' And '$(PlatformToolset.ToLower())' == 'v140' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/Win32\v140\Debug\EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and v140 and Release" Condition="'$(Platform.ToLower())' == 'x64' And '$(PlatformToolset.ToLower())' == 'v140' And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/x64\v140\Release\EasyHook64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and v140 and Debug" Condition="'$(Platform.ToLower())' == 'x64' And '$(PlatformToolset.ToLower())' == 'v140' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/x64\v140\Debug\EasyHook64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and v141 and Release" Condition="'$(Platform.ToLower())' == 'win32' And '$(PlatformToolset.ToLower())' == 'v141' And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/Win32\v141\Release\EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and v141 and Debug" Condition="'$(Platform.ToLower())' == 'win32' And '$(PlatformToolset.ToLower())' == 'v141' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/Win32\v141\Debug\EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and v141 and Release" Condition="'$(Platform.ToLower())' == 'x64' And '$(PlatformToolset.ToLower())' == 'v141' And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/x64\v141\Release\EasyHook64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and v141 and Debug" Condition="'$(Platform.ToLower())' == 'x64' And '$(PlatformToolset.ToLower())' == 'v141' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/x64\v141\Debug\EasyHook64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)\default-propertiesui.xml" />
+  </ItemGroup>
+  <UsingTask TaskName="EasyHookNativePackage_Contains" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" TaskFactory="CodeTaskFactory">
+    <ParameterGroup>
+      <Text Output="false" ParameterType="System.String" />
+      <Library Output="false" Required="true" ParameterType="System.String" />
+      <Value Output="false" Required="true" ParameterType="System.String" />
+      <Result Output="true" ParameterType="System.String" />
+    </ParameterGroup>
+    <Task>
+      <Code>Result = ((Text ?? "").Split(';').Contains(Library) ) ? Value : String.Empty;</Code>
+    </Task>
+  </UsingTask>
+  <Target Name="EasyHookNativePackage_init">
+    <EasyHookNativePackage_Contains Text="Linkage-dynamic" Library="EasyHookNativePackage" Value="dynamic" Condition="'$(Linkage-EasyHookNativePackage)'==''">
+      <Output TaskParameter="Result" PropertyName="Linkage-EasyHookNativePackage" />
+    </EasyHookNativePackage_Contains>
+    <EasyHookNativePackage_Contains Text="Linkage-static" Library="EasyHookNativePackage" Value="static" Condition="'$(Linkage-EasyHookNativePackage)'==''">
+      <Output TaskParameter="Result" PropertyName="Linkage-EasyHookNativePackage" />
+    </EasyHookNativePackage_Contains>
+    <EasyHookNativePackage_Contains Text="Linkage-ltcg" Library="EasyHookNativePackage" Value="ltcg" Condition="'$(Linkage-EasyHookNativePackage)'==''">
+      <Output TaskParameter="Result" PropertyName="Linkage-EasyHookNativePackage" />
+    </EasyHookNativePackage_Contains>
+    <EasyHookNativePackage_Contains Text="Linkage-sxs" Library="EasyHookNativePackage" Value="sxs" Condition="'$(Linkage-EasyHookNativePackage)'==''">
+      <Output TaskParameter="Result" PropertyName="Linkage-EasyHookNativePackage" />
+    </EasyHookNativePackage_Contains>
+    <EasyHookNativePackage_Contains Text="CallingConvention-cdecl" Library="EasyHookNativePackage" Value="cdecl" Condition="'$(CallingConvention-EasyHookNativePackage)'==''">
+      <Output TaskParameter="Result" PropertyName="CallingConvention-EasyHookNativePackage" />
+    </EasyHookNativePackage_Contains>
+    <EasyHookNativePackage_Contains Text="CallingConvention-stdcall" Library="EasyHookNativePackage" Value="stdcall" Condition="'$(CallingConvention-EasyHookNativePackage)'==''">
+      <Output TaskParameter="Result" PropertyName="CallingConvention-EasyHookNativePackage" />
+    </EasyHookNativePackage_Contains>
+    <EasyHookNativePackage_Contains Text="CallingConvention-fastcall" Library="EasyHookNativePackage" Value="fastcall" Condition="'$(CallingConvention-EasyHookNativePackage)'==''">
+      <Output TaskParameter="Result" PropertyName="CallingConvention-EasyHookNativePackage" />
+    </EasyHookNativePackage_Contains>
+    <EasyHookNativePackage_Contains Text="CallingConvention-thiscall" Library="EasyHookNativePackage" Value="thiscall" Condition="'$(CallingConvention-EasyHookNativePackage)'==''">
+      <Output TaskParameter="Result" PropertyName="CallingConvention-EasyHookNativePackage" />
+    </EasyHookNativePackage_Contains>
+    <EasyHookNativePackage_Contains Text="CallingConvention-clrcall" Library="EasyHookNativePackage" Value="clrcall" Condition="'$(CallingConvention-EasyHookNativePackage)'==''">
+      <Output TaskParameter="Result" PropertyName="CallingConvention-EasyHookNativePackage" />
+    </EasyHookNativePackage_Contains>
+  </Target>
+</Project>
