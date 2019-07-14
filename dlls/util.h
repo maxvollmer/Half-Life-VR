@@ -289,6 +289,7 @@ extern void UTIL_AngleQuaternion(const Vector& angles, float quaternion[4]);
 extern void UTIL_GetAnglesFromVectors(const Vector &forward, const Vector &right, const Vector &up, Vector &angles);
 
 extern bool UTIL_TraceBBox(const Vector & vecStart, const Vector & vecEnd, const Vector & absmin, const Vector & absmax);
+extern bool UTIL_IsPointInEntity(CBaseEntity* pStartEntity, const Vector& p);
 extern CBaseEntity * UTIL_TraceTriggers(CBaseEntity *pStartEntity, const Vector & vecStart, const Vector & vecEnd);
 
 extern bool			UTIL_CheckClearSight(const Vector & pos1, const Vector & pos2, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t * pentIgnore = nullptr);

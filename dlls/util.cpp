@@ -1061,6 +1061,25 @@ bool UTIL_TraceBBox(const Vector & vecStart, const Vector & vecEnd, const Vector
 	return true;
 }
 
+bool UTIL_IsPointInEntity(CBaseEntity* pEntity, const Vector& p)
+{
+	if (!pEntity)
+		return false;
+
+	if (pEntity->pev->solid == SOLID_TRIGGER || pEntity->pev->movetype == MOVETYPE_STEP)
+	{
+		return UTIL_PointInsideBBox(p, pEntity->pev->origin + pEntity->pev->mins, pEntity->pev->origin + pEntity->pev->maxs);
+	}
+
+	edict_t* pent = nullptr;
+	UTIL_PointContents(p, true, &pent);
+
+	if (pent && pEntity->edict() == pent)
+		return true;
+
+	return false;
+}
+
 // For finding triggers that are intercepted by a line between two points (used to trigger stuff when teleporting in VR) - Max Vollmer, 2018-01-10
 // WARNING: DOES NOT RETURN ENTITIES IN ORDER OF TRACE LINE!
 CBaseEntity * UTIL_TraceTriggers(CBaseEntity *pStartEntity, const Vector & vecStart, const Vector & vecEnd)
