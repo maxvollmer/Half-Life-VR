@@ -261,6 +261,11 @@ int main(int argc, char *argv[])
 
 	std::cout << std::endl;
 
+	DeleteDLL(hlDirectory, L"EasyHook32", true);
+	CopyDLL(hlDirectory, vrDirectory, L"EasyHook32");
+
+	std::cout << std::endl;
+
 	RunCommandAndWait("Disabling deletion of files in the Half-Life folder...", icaclsDisableDeletionOnFolderCommandLine);
 
 	std::cout << std::endl;
@@ -282,7 +287,9 @@ int main(int argc, char *argv[])
 
 	DeleteDLL(hlDirectory, L"OpenGL32", false);
 	DeleteDLL(hlDirectory, L"openvr_api", false);
+	DeleteDLL(hlDirectory, L"EasyHook32", false);
 	RestoreDLL(hlDirectory, L"openvr_api");
+	RestoreDLL(hlDirectory, L"EasyHook32");
 
 	std::cout << std::endl;
 
