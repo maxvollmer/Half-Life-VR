@@ -747,32 +747,10 @@ VRPhysicsHelper::~VRPhysicsHelper()
 {
 	m_bspModelData.clear();
 	m_dynamicBSPModelData.clear();
-	m_studioModelBBoxCache.clear();
+	m_hitboxCache.clear();
 
 	if (m_collisionWorld)
 	{
-		if (m_bboxBody1)
-		{
-			if (m_bboxProxyShape1)
-			{
-				m_bboxBody1->removeCollisionShape(m_bboxProxyShape1);
-				m_bboxProxyShape1 = nullptr;
-			}
-			m_collisionWorld->destroyCollisionBody(m_bboxBody1);
-			m_bboxBody1 = nullptr;
-		}
-
-		if (m_bboxBody2)
-		{
-			if (m_bboxProxyShape2)
-			{
-				m_bboxBody2->removeCollisionShape(m_bboxProxyShape2);
-				m_bboxProxyShape2 = nullptr;
-			}
-			m_collisionWorld->destroyCollisionBody(m_bboxBody2);
-			m_bboxBody2 = nullptr;
-		}
-
 		if (m_capsuleBody)
 		{
 			if (m_capsuleProxyShape)
@@ -808,18 +786,6 @@ VRPhysicsHelper::~VRPhysicsHelper()
 
 		delete m_dynamicsWorld;
 		m_dynamicsWorld = nullptr;
-	}
-
-	if (m_bboxShape1)
-	{
-		delete m_bboxShape1;
-		m_bboxShape1 = nullptr;
-	}
-
-	if (m_bboxShape2)
-	{
-		delete m_bboxShape2;
-		m_bboxShape2 = nullptr;
 	}
 
 	if (m_capsuleShape)
@@ -923,6 +889,80 @@ bool VRPhysicsHelper::GetBSPModelBBox(CBaseEntity *pModel, Vector* bboxMins, Vec
 	return true;
 }
 
+/*
+inline void CreateHitBoxVertices(const Vector& bboxMins, const Vector& bboxMaxs, std::vector<reactphysics3d::Vector3>& vertices, std::vector<int32_t>& indices)
+{
+	static constexpr const int32_t indexarray[] =
+	{
+		2, 1, 0,		3, 2, 0,		// front
+		6, 5, 4,		7, 6, 4,		// back
+		10, 9, 8,		11, 10, 8,		// top
+		14, 13, 12,		15, 14, 12,		// bottom
+		18, 17, 16,		19, 18, 16,		// right
+		22, 21, 20,		23, 22, 20,		// left
+	};
+
+	const reactphysics3d::Vector3 vertexarray[] =
+	{
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMins.y, bboxMaxs.z }),
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMins.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMaxs.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMaxs.y, bboxMaxs.z }),
+
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMins.y, bboxMaxs.z }),
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMins.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMins.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMins.y, bboxMaxs.z }),
+
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMaxs.y, bboxMaxs.z }),
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMaxs.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMaxs.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMaxs.y, bboxMaxs.z }),
+
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMins.y, bboxMaxs.z }),
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMins.y, bboxMaxs.z }),
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMaxs.y, bboxMaxs.z }),
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMaxs.y, bboxMaxs.z }),
+
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMaxs.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMaxs.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMins.x, bboxMins.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMins.y, bboxMins.z }),
+
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMaxs.y, bboxMaxs.z }),
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMaxs.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMins.y, bboxMins.z }),
+		HLVecToRP3DVec(Vector{ bboxMaxs.x, bboxMins.y, bboxMaxs.z }),
+	};
+
+	vertices.assign(vertexarray, vertexarray + sizeof(vertexarray) / sizeof(vertexarray[0]));
+	indices.assign(indexarray, indexarray + sizeof(indexarray) / sizeof(indexarray[0]));
+}
+*/
+
+reactphysics3d::CollisionBody* VRPhysicsHelper::GetHitBoxBody(const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles)
+{
+	HitBox hitbox{ bboxMins, bboxMaxs };
+
+	std::shared_ptr<HitBoxModelData> data;
+
+	if (m_hitboxCache.count(hitbox) == 0)
+	{
+		data = std::make_shared<HitBoxModelData>();
+		//CreateHitBoxVertices(bboxMins, bboxMaxs, data->m_vertices, data->m_indices);
+		data->CreateData(m_collisionWorld, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+		m_hitboxCache[hitbox] = data;
+	}
+	else
+	{
+		data = m_hitboxCache[hitbox];
+		data->UpdateTransform(bboxCenter, bboxAngles);
+	}
+
+	return data->m_collisionBody;
+}
+
+
 bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& capsuleCenter, double radius, double height)
 {
 	if (!CheckWorld())
@@ -970,51 +1010,10 @@ bool VRPhysicsHelper::ModelBBoxIntersectsBBox(
 	if (!CheckWorld())
 		return false;
 
-	if (!m_bboxBody1)
-	{
-		m_bboxBody1 = m_collisionWorld->createCollisionBody(rp3d::Transform::identity());
-	}
-	if (m_bboxProxyShape1)
-	{
-		m_bboxBody1->removeCollisionShape(m_bboxProxyShape1);
-		m_bboxProxyShape1 = nullptr;
-	}
-	if (m_bboxShape1)
-	{
-		delete m_bboxShape1;
-		m_bboxShape1 = nullptr;
-	}
+	auto bboxBody1 = GetHitBoxBody(bboxCenter1, bboxMins1, bboxMaxs1);
+	auto bboxBody2 = GetHitBoxBody(bboxCenter2, bboxMins2, bboxMaxs2, bboxAngles2);
 
-	if (!m_bboxBody2)
-	{
-		m_bboxBody2 = m_collisionWorld->createCollisionBody(rp3d::Transform::identity());
-	}
-	if (m_bboxProxyShape2)
-	{
-		m_bboxBody2->removeCollisionShape(m_bboxProxyShape2);
-		m_bboxProxyShape2 = nullptr;
-	}
-	if (m_bboxShape2)
-	{
-		delete m_bboxShape2;
-		m_bboxShape2 = nullptr;
-	}
-
-	Vector3 bboxSize1 = HLVecToRP3DVec(bboxMaxs1 - bboxMins1);
-	Vector3 bboxPosition1 = HLVecToRP3DVec(bboxCenter1 + ((bboxMaxs1 + bboxMins1) * 0.5f));
-
-	m_bboxShape1 = new BoxShape{ bboxSize1 + HLVecToRP3DVec(Vector{ 1, 1, 1 }) };
-	m_bboxProxyShape1 = m_bboxBody1->addCollisionShape(m_bboxShape1, rp3d::Transform::identity());
-	m_bboxBody1->setTransform(rp3d::Transform{ bboxPosition1, rp3d::Matrix3x3::identity() });
-
-	Vector3 bboxSize2 = HLVecToRP3DVec(bboxMaxs2 - bboxMins2);
-	Vector3 bboxPosition2 = HLVecToRP3DVec(bboxCenter2 + ((bboxMaxs2+ bboxMins2) * 0.5f));
-
-	m_bboxShape2 = new BoxShape{ bboxSize2 + HLVecToRP3DVec(Vector{ 1, 1, 1 }) };
-	m_bboxProxyShape2 = m_bboxBody2->addCollisionShape(m_bboxShape2, rp3d::Transform::identity());
-	m_bboxBody2->setTransform(rp3d::Transform{ bboxPosition2,  HLAnglesToRP3DQuaternion(bboxAngles2) });
-
-	return m_collisionWorld->testOverlap(m_bboxBody1, m_bboxBody2);
+	return m_collisionWorld->testOverlap(bboxBody1, bboxBody2);
 }
 
 bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles)
@@ -1033,32 +1032,11 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bbo
 		return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
 	}
 
-	if (!m_bboxBody1)
-	{
-		m_bboxBody1 = m_collisionWorld->createCollisionBody(rp3d::Transform::identity());
-	}
-
-	if (m_bboxProxyShape1)
-	{
-		m_bboxBody1->removeCollisionShape(m_bboxProxyShape1);
-		m_bboxProxyShape1 = nullptr;
-	}
-	if (m_bboxShape1)
-	{
-		delete m_bboxShape1;
-		m_bboxShape1 = nullptr;
-	}
-
-	Vector3 bboxSize = HLVecToRP3DVec(bboxMaxs - bboxMins);
-	Vector3 bboxPosition = HLVecToRP3DVec(bboxCenter + ((bboxMaxs + bboxMins) * 0.5f));
-
-	m_bboxShape1 = new BoxShape{ bboxSize + HLVecToRP3DVec(Vector{ 1, 1, 1 }) };
-	m_bboxProxyShape1 = m_bboxBody1->addCollisionShape(m_bboxShape1, rp3d::Transform::identity());
-	m_bboxBody1->setTransform(rp3d::Transform{ bboxPosition,  HLAnglesToRP3DQuaternion(bboxAngles) });
+	auto bboxBody = GetHitBoxBody(bboxCenter, bboxMins, bboxMaxs, bboxAngles);
 
 	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DQuaternion(pModel->pev->angles) });
 
-	return m_collisionWorld->testOverlap(bspModelData->second.m_collisionBody, m_bboxBody1);
+	return m_collisionWorld->testOverlap(bspModelData->second.m_collisionBody, bboxBody);
 }
 
 bool VRPhysicsHelper::ModelIntersectsWorld(CBaseEntity *pModel)
@@ -1202,6 +1180,61 @@ void VRPhysicsHelper::InitPhysicsWorld()
 		m_dynamicsWorld = new DynamicsWorld{ Vector3{ 0, 0, 0 } };
 	}
 }
+
+VRPhysicsHelper::HitBoxModelData::~HitBoxModelData()
+{
+	DeleteData();
+}
+
+void VRPhysicsHelper::HitBoxModelData::CreateData(CollisionWorld* collisionWorld, const Vector& origin, const Vector& mins, const Vector& maxs, const Vector& angles)
+{
+	m_mins = mins;
+	m_maxs = maxs;
+	m_center = (m_mins + m_maxs) * 0.5f;
+
+	Vector3 size = HLVecToRP3DVec(maxs - mins);
+
+	m_collisionBody = collisionWorld->createCollisionBody(rp3d::Transform::identity());
+	m_bboxShape = new BoxShape{ size * 0.5 };
+	m_proxyShape = m_collisionBody->addCollisionShape(m_bboxShape, rp3d::Transform::identity());
+
+	m_hasData = true;
+	UpdateTransform(origin, angles);
+}
+
+void VRPhysicsHelper::HitBoxModelData::UpdateTransform(const Vector& origin, const Vector&angles)
+{
+	if (!m_hasData)
+		return;
+
+	Vector3 rotatedCenter = HLVecToRP3DVec(VRPhysicsHelper::Instance().RotateVectorInline(m_center, angles));
+
+	m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(origin) + rotatedCenter, HLAnglesToRP3DQuaternion(angles) });
+}
+
+void VRPhysicsHelper::HitBoxModelData::DeleteData()
+{
+	m_hasData = false;
+
+	if (m_collisionBody)
+	{
+		if (m_proxyShape)
+		{
+			m_collisionBody->removeCollisionShape(m_proxyShape);
+		}
+		m_collisionWorld->destroyCollisionBody(m_collisionBody);
+	}
+
+	m_collisionBody = nullptr;
+	m_proxyShape = nullptr;
+
+	if (m_bboxShape)
+	{
+		delete m_bboxShape;
+		m_bboxShape = nullptr;
+	}
+}
+
 
 VRPhysicsHelper::BSPModelData::~BSPModelData()
 {
@@ -1350,46 +1383,6 @@ void VRPhysicsHelper::DynamicBSPModelData::DeleteData()
 	}
 }
 
-
-VRPhysicsHelper::BBoxData::~BBoxData()
-{
-	DeleteData();
-}
-
-void VRPhysicsHelper::BBoxData::CreateData(CollisionWorld* collisionWorld, const Vector& boxMins, const Vector& boxMaxs)
-{
-	m_boxMins = boxMins;
-	m_boxMaxs = boxMaxs;
-
-	m_boxShape = new BoxShape{ HLVecToRP3DVec(m_boxMaxs - m_boxMins) };
-	m_collisionBody = collisionWorld->createCollisionBody(rp3d::Transform::identity());
-	m_proxyShape = m_collisionBody->addCollisionShape(m_boxShape, rp3d::Transform::identity());
-
-	m_collisionWorld = collisionWorld;
-
-	m_hasData = true;
-}
-
-void VRPhysicsHelper::BBoxData::DeleteData()
-{
-	m_hasData = false;
-
-	if (m_collisionBody)
-	{
-		if (m_proxyShape)
-		{
-			m_collisionBody->removeCollisionShape(m_proxyShape);
-		}
-		m_collisionWorld->destroyCollisionBody(m_collisionBody);
-	}
-	if (m_boxShape)
-	{
-		delete m_boxShape;
-		m_boxShape = nullptr;
-	}
-	m_collisionBody = nullptr;
-	m_proxyShape = nullptr;
-}
 
 bool DoesAnyBrushModelNeedLoading(const model_t *const models)
 {

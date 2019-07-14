@@ -66,6 +66,30 @@ public:
 	void SetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup);
 	void GetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup);
 
+
+	class HitBoxModelData
+	{
+	public:
+		~HitBoxModelData();
+
+		void CreateData(reactphysics3d::CollisionWorld* collisionWorld, const Vector& origin, const Vector& mins, const Vector& maxs, const Vector& angles);
+		void DeleteData();
+		void UpdateTransform(const Vector& origin, const Vector&angles);
+		bool HasData() { return m_hasData; }
+
+		Vector								m_mins;
+		Vector								m_maxs;
+		Vector								m_center;
+
+		reactphysics3d::BoxShape*			m_bboxShape{ nullptr };
+		reactphysics3d::ProxyShape*			m_proxyShape{ nullptr };
+		reactphysics3d::CollisionBody*		m_collisionBody{ nullptr };
+
+		reactphysics3d::CollisionWorld*		m_collisionWorld{ nullptr };
+
+		bool								m_hasData{ false };
+	};
+
 	class BSPModelData
 	{
 	public:
@@ -113,28 +137,41 @@ public:
 		bool											m_hasData{ false };
 	};
 
-	class BBoxData
+private:
+	struct HitBox
 	{
-	public:
-		~BBoxData();
-
-		void CreateData(reactphysics3d::CollisionWorld* collisionWorld, const Vector& boxMins, const Vector& boxMaxs);
-		void DeleteData();
-		bool HasData() { return m_hasData; }
-
-		Vector											m_boxMins;
-		Vector											m_boxMaxs;
-
-		reactphysics3d::BoxShape*						m_boxShape{ nullptr };
-		reactphysics3d::ProxyShape*						m_proxyShape{ nullptr };
-		reactphysics3d::CollisionBody*					m_collisionBody{ nullptr };
-
-		reactphysics3d::CollisionWorld*					m_collisionWorld{ nullptr };
-
-		bool											m_hasData{ false };
+		//Vector origin;
+		//Vector angles;
+		Vector mins;
+		Vector maxs;
+		class Hash
+		{
+		public:
+			std::size_t operator()(const HitBox& hitbox) const
+			{
+				std::hash<float> floatHasher;
+				return
+					//floatHasher(hitbox.origin.x) ^ floatHasher(hitbox.origin.y) ^ floatHasher(hitbox.origin.z)
+					//^ floatHasher(hitbox.angles.x) ^ floatHasher(hitbox.angles.y) ^ floatHasher(hitbox.angles.z)
+					//^
+					floatHasher(hitbox.mins.x) ^ floatHasher(hitbox.mins.y) ^ floatHasher(hitbox.mins.z)
+					^ floatHasher(hitbox.maxs.x) ^ floatHasher(hitbox.maxs.y) ^ floatHasher(hitbox.maxs.z);
+			}
+		};
+		class Equal
+		{
+		public:
+			bool operator()(const HitBox& hitbox1, const HitBox& hitbox2) const
+			{
+				return //hitbox1.origin == hitbox2.origin
+					//&& hitbox1.angles == hitbox2.angles
+					//&& 
+					hitbox1.mins == hitbox2.mins
+					&& hitbox1.maxs == hitbox2.maxs;
+			}
+		};
 	};
 
-private:
 	bool CheckWorld();
 
 	void InitPhysicsWorld();
@@ -145,15 +182,18 @@ private:
 
 	void EnsureWorldsSmallestCupExists(CBaseEntity *pWorldsSmallestCup);
 
+	reactphysics3d::CollisionBody* GetHitBoxBody(const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles = Vector{});
+
 	std::string												m_currentMapName;
 	std::unordered_map<std::string, BSPModelData>			m_bspModelData;
 	std::unordered_map<std::string, DynamicBSPModelData>	m_dynamicBSPModelData;
-	std::unordered_map<std::string, std::vector<BBoxData>>	m_studioModelBBoxCache;
+	std::unordered_map<HitBox, std::shared_ptr<HitBoxModelData>, HitBox::Hash, HitBox::Equal>		m_hitboxCache;
 
 	const struct model_s*									m_hlWorldModel{ nullptr };
 	reactphysics3d::CollisionWorld*							m_collisionWorld{ nullptr };
 	reactphysics3d::DynamicsWorld*							m_dynamicsWorld{ nullptr };
 
+	/*
 	reactphysics3d::CollisionBody*							m_bboxBody1{ nullptr };
 	reactphysics3d::BoxShape*								m_bboxShape1{ nullptr };
 	reactphysics3d::ProxyShape*								m_bboxProxyShape1{ nullptr };
@@ -161,6 +201,7 @@ private:
 	reactphysics3d::CollisionBody*							m_bboxBody2{ nullptr };
 	reactphysics3d::BoxShape*								m_bboxShape2{ nullptr };
 	reactphysics3d::ProxyShape*								m_bboxProxyShape2{ nullptr };
+	*/
 
 	reactphysics3d::CollisionBody*							m_capsuleBody{ nullptr };
 	reactphysics3d::CapsuleShape*							m_capsuleShape{ nullptr };

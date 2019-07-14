@@ -1192,8 +1192,8 @@ int GetHitboxes(entvars_t *pev, void *pmodel, int sequence, float frame, StudioH
 
 	for (int i = 0; i < pstudiohdr->numhitboxes; i++)
 	{
-		VectorCopy(pbbox[i].bbmin, hitboxes[i].mins);
-		VectorCopy(pbbox[i].bbmax, hitboxes[i].maxs);
+		VectorScale(pbbox[i].bbmin, pev->scale, hitboxes[i].mins);
+		VectorScale(pbbox[i].bbmax, pev->scale, hitboxes[i].maxs);
 		VectorCopy(bonetransforms[pbbox[i].bone].origin, hitboxes[i].origin);
 		VectorCopy(bonetransforms[pbbox[i].bone].angles, hitboxes[i].angles);
 	}

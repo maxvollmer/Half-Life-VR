@@ -191,6 +191,12 @@ bool WasJustThrownByPlayer(CBasePlayer* pPlayer, EHANDLE hEntity)
 	return (gpGlobals->time - hEntity->m_spawnTime) < 2.f;
 }
 
+bool IsNonInteractingEntity(EHANDLE hEntity)
+{
+	return FClassnameIs(hEntity->pev, "func_wall")
+		|| FClassnameIs(hEntity->pev, "func_illusionary");
+}
+
 bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller)
 {
 	if (!controller.IsValid())
@@ -199,7 +205,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 	if (controller.GetRadius() <= 0.f)
 		return false;
 
-	if (hEntity->pev->solid == SOLID_NOT && !IsDraggableEntity(hEntity))
+	if ((hEntity->pev->solid == SOLID_NOT || IsNonInteractingEntity(hEntity)) && !IsDraggableEntity(hEntity))
 		return false;
 
 	// Don't hit stuff we just threw ourselfes
@@ -227,6 +233,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 			return true;
 		}
 	}
+
 	return false;
 
 	// Old code using sequence bounding box instead of model hitboxes
