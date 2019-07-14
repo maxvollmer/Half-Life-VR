@@ -106,7 +106,24 @@ void CTripmineGrenade :: Spawn( void )
 	ResetSequenceInfo( );
 	pev->framerate = 0;
 
+	UTIL_MakeAimVectors(pev->angles);
+
+	m_vecDir = gpGlobals->v_forward;
+	m_vecEnd = pev->origin + m_vecDir * 2048;
+
 	UTIL_SetSize(pev, Vector( -8, -8, 0), Vector(8, 8, 16));
+
+	// Spawned by map, "fall" onto wall
+	if (!pev->owner)
+	{
+		TraceResult tr;
+		UTIL_TraceLine(pev->origin, pev->origin - m_vecDir * 64.f, dont_ignore_monsters, edict(), &tr);
+		if (!tr.fAllSolid && tr.flFraction > 0.f && !tr.fStartSolid && FNullEnt(tr.pHit))
+		{
+			pev->origin = tr.vecEndPos;
+		}
+	}
+
 	UTIL_SetOrigin( pev, pev->origin );
 
 	if (pev->spawnflags & 1)
@@ -135,11 +152,6 @@ void CTripmineGrenade :: Spawn( void )
 
 		m_pRealOwner = pev->owner;// see CTripmineGrenade for why.
 	}
-
-	UTIL_MakeAimVectors( pev->angles );
-
-	m_vecDir = gpGlobals->v_forward;
-	m_vecEnd = pev->origin + m_vecDir * 2048;
 }
 
 
