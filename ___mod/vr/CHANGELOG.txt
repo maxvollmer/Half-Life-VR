@@ -99,7 +99,7 @@
 * Added cvars vr_flashlight_attachment and vr_teleport_attachment (modes are: use hand, use weapon, use head, use pose)
 * Made flashlight and teleporter use hand and weapon model attachments for position and direction
 
-0.4.8 - 
+0.4.8 - 2019-07-15
 * Fixed a crashbug that came with the rotating door fix in 0.4.7
 * Fixed key states not being reset when dying (caused weapons to fire after respawn)
 * Fixed map-spawned tripmines floating 8 units away from walls
@@ -111,5 +111,3 @@
 * Improved pushable boxes behavior
 * Updated reactphysics3d to 0.7.1
 * Added EasyHook32 library for fixing "Mod_Extradata: caching failed" crashes
-* 
-
