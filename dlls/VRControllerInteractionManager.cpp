@@ -698,13 +698,20 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 				// Decide axis to push on:
 				Vector pushDelta;
 
-				// TODO: Use proper dotproduct to determine only x, only y or both!
+				float normalizedX = relativePos.x;
+				float normalizedY = relativePos.y;
+				if (normalizedX < 0.f) normalizedX /= fabs(pPushable->pev->mins.x);
+				if (normalizedX > 0.f) normalizedX /= fabs(pPushable->pev->maxs.x);
+				if (normalizedY < 0.f) normalizedY /= fabs(pPushable->pev->mins.y);
+				if (normalizedY > 0.f) normalizedY /= fabs(pPushable->pev->maxs.y);
+
 				bool useAxis[3];
-				useAxis[0] = fabs(relativePos.x) > fabs(relativePos.y);
-				useAxis[1] = !useAxis[0];
+				useAxis[0] = fabs(normalizedX) >= 0.5f || fabs(normalizedY) <= 0.5f;
+				useAxis[1] = fabs(normalizedY) >= 0.5f || fabs(normalizedX) <= 0.5f;
+
 				// Only push up or down if floating in water
 				useAxis[2] = (pPushable->pev->waterlevel > 0 && !FBitSet(pPushable->pev->flags, FL_ONGROUND));
-				
+
 				for (int i = 0; i < 3; i++)
 				{
 					if (useAxis[i])
