@@ -44,6 +44,8 @@ public:
 
 	inline const std::vector<HitBox>& GetHitBoxes() const { return m_hitboxes; }
 
+	bool GetAttachment(size_t index, Vector& attachment) const;
+
 	const Vector GetGunPosition() const;
 	const Vector GetAim() const;
 
@@ -93,6 +95,7 @@ private:
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_hitEntities;
 
 	std::vector<HitBox> m_hitboxes;
+	std::vector<Vector> m_attachments;
 	string_t m_hitboxModelName{ 0 };
 	int m_hitboxSequence{ 0 };
 	float m_hitboxFrame{ 0.f };
@@ -106,6 +109,7 @@ private:
 		m_hitboxFrame = 0.f;
 		m_hitboxLastUpdateTime = 0.f;
 		m_radius = 0.f;
+		m_attachments.clear();
 	}
 
 #ifdef RENDER_DEBUG_HITBOXES

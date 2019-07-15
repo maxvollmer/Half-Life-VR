@@ -1019,12 +1019,18 @@ namespace
 		out[2][3] = in1[2][0] * in2[0][3] + in1[2][1] * in2[1][3] +
 			in1[2][2] * in2[2][3] + in1[2][3];
 	}
+	void VectorTransform(const vec3_t in1, float in2[3][4], vec3_t out)
+	{
+		out[0] = DotProduct(in1, in2[0]) + in2[0][3];
+		out[1] = DotProduct(in1, in2[1]) + in2[1][3];
+		out[2] = DotProduct(in1, in2[2]) + in2[2][3];
+	}
 	struct BoneTransform
 	{
 		vec3_t origin;
 		vec3_t angles;
 	};
-	int GetBoneTransforms(entvars_t *pev, studiohdr_t *pstudiohdr, int sequence, float frame, BoneTransform* bonetransforms, bool mirrored)
+	int GetBoneTransforms(entvars_t *pev, studiohdr_t *pstudiohdr, int sequence, float frame, BoneTransform* bonetransforms, StudioAttachment* attachments, bool mirrored)
 	{
 		if (pstudiohdr->numbones <= 0)
 			return 0;
@@ -1160,6 +1166,20 @@ namespace
 			bonetransforms[i].origin[1] = bonetransform[i][1][3];
 			bonetransforms[i].origin[2] = bonetransform[i][2][3];
 			MatrixAngles(bonetransform[i], bonetransforms[i].angles);
+			if (mirrored)
+			{
+				bonetransforms[i].angles[ROLL] = -bonetransforms[i].angles[ROLL];
+			}
+		}
+
+		// calculate attachment points
+		if (attachments)
+		{
+			mstudioattachment_t* pattachment = (mstudioattachment_t *)((byte *)pstudiohdr + pstudiohdr->attachmentindex);
+			for (int i = 0; i < pstudiohdr->numattachments; i++)
+			{
+				VectorTransform(pattachment[i].org, bonetransform[pattachment[i].bone], attachments[i].pos);
+			}
 		}
 
 		return 1;
@@ -1176,7 +1196,17 @@ int GetNumHitboxes(void *pmodel)
 
 	return pstudiohdr->numhitboxes;
 }
-int GetHitboxes(entvars_t *pev, void *pmodel, int sequence, float frame, StudioHitBox* hitboxes, bool mirrored)
+int GetNumAttachments(void *pmodel)
+{
+	studiohdr_t *pstudiohdr;
+
+	pstudiohdr = (studiohdr_t *)pmodel;
+	if (!pstudiohdr)
+		return 0;
+
+	return pstudiohdr->numattachments;
+}
+int GetHitboxesAndAttachments(entvars_t *pev, void *pmodel, int sequence, float frame, StudioHitBox* hitboxes, StudioAttachment* attachments, bool mirrored)
 {
 	studiohdr_t *pstudiohdr;
 
@@ -1185,7 +1215,7 @@ int GetHitboxes(entvars_t *pev, void *pmodel, int sequence, float frame, StudioH
 		return 0;
 
 	BoneTransform bonetransforms[MAXSTUDIOBONES];
-	if (!GetBoneTransforms(pev, pstudiohdr, sequence, frame, bonetransforms, mirrored))
+	if (!GetBoneTransforms(pev, pstudiohdr, sequence, frame, bonetransforms, attachments, mirrored))
 		return 0;
 
 	mstudiobbox_t* pbbox = (mstudiobbox_t *)((byte *)pstudiohdr + pstudiohdr->hitboxindex);

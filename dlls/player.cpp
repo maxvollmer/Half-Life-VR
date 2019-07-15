@@ -4404,7 +4404,7 @@ Vector CBasePlayer::GetGunPosition()
 	if (m_vrControllers[VRControllerID::WEAPON].IsValid())
 	{
 		Vector pos;
-		bool result = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT, pos);
+		bool result = m_vrControllers[VRControllerID::WEAPON].GetAttachment(VR_MUZZLE_ATTACHMENT, pos);
 		if (result)
 		{
 			return pos;
@@ -4426,8 +4426,8 @@ Vector CBasePlayer::GetAutoaimVector(float flDelta)
 	{
 		Vector pos1;
 		Vector pos2;
-		bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
-		bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+		bool result1 = m_vrControllers[VRControllerID::WEAPON].GetAttachment(VR_MUZZLE_ATTACHMENT, pos1);
+		bool result2 = m_vrControllers[VRControllerID::WEAPON].GetAttachment(VR_MUZZLE_ATTACHMENT + 1, pos2);
 		if (result1 && result2 && pos2 != pos1)
 		{
 			return (pos2 - pos1).Normalize();
@@ -5211,8 +5211,8 @@ void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 		{
 			Vector pos1;
 			Vector pos2;
-			bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::HAND].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
-			bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::HAND].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+			bool result1 = m_vrControllers[VRControllerID::HAND].GetAttachment(VR_MUZZLE_ATTACHMENT, pos1);
+			bool result2 = m_vrControllers[VRControllerID::HAND].GetAttachment(VR_MUZZLE_ATTACHMENT + 1, pos2);
 			if (result1 && result2 && pos2 != pos1)
 			{
 				position = pos1;
@@ -5238,8 +5238,8 @@ void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 		{
 			Vector pos1;
 			Vector pos2;
-			bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
-			bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+			bool result1 = m_vrControllers[VRControllerID::WEAPON].GetAttachment(VR_MUZZLE_ATTACHMENT, pos1);
+			bool result2 = m_vrControllers[VRControllerID::WEAPON].GetAttachment(VR_MUZZLE_ATTACHMENT + 1, pos2);
 			if (result1 && result2 && pos2 != pos1)
 			{
 				position = pos1;
@@ -5307,8 +5307,8 @@ void CBasePlayer::GetTeleporterPose(Vector& position, Vector& dir)
 		{
 			Vector pos1;
 			Vector pos2;
-			bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::HAND].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
-			bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::HAND].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+			bool result1 = m_vrControllers[VRControllerID::HAND].GetAttachment(VR_MUZZLE_ATTACHMENT, pos1);
+			bool result2 = m_vrControllers[VRControllerID::HAND].GetAttachment(VR_MUZZLE_ATTACHMENT + 1, pos2);
 			if (result1 && result2 && pos2 != pos1)
 			{
 				position = pos1;
@@ -5334,8 +5334,8 @@ void CBasePlayer::GetTeleporterPose(Vector& position, Vector& dir)
 		{
 			Vector pos1;
 			Vector pos2;
-			bool result1 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
-			bool result2 = VRModelHelper::GetInstance().GetAttachment(m_vrControllers[VRControllerID::WEAPON].GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+			bool result1 = m_vrControllers[VRControllerID::WEAPON].GetAttachment(VR_MUZZLE_ATTACHMENT, pos1);
+			bool result2 = m_vrControllers[VRControllerID::WEAPON].GetAttachment(VR_MUZZLE_ATTACHMENT + 1, pos2);
 			if (result1 && result2 && pos2 != pos1)
 			{
 				position = pos1;

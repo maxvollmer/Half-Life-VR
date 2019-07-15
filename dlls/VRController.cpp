@@ -189,11 +189,18 @@ void VRController::UpdateHitBoxes()
 	if (m_hitboxes.size() == numhitboxes && FStrEq(STRING(m_hitboxModelName), STRING(pModel->pev->model)) && gpGlobals->time < (m_hitboxLastUpdateTime + (1.f/25.f)))
 		return;
 
+	int numattachments = GetNumAttachments(pmodel);
+
 	m_hitboxes.clear();
+	m_attachments.clear();
+
 	m_radius = 0.f;
+
 	std::vector<StudioHitBox> studiohitboxes;
 	studiohitboxes.resize(numhitboxes);
-	if (GetHitboxes(pModel->pev, pmodel, pModel->pev->sequence, pModel->pev->frame, studiohitboxes.data(), IsMirrored()))
+	std::vector<StudioAttachment> studioattachments;
+	studioattachments.resize(numattachments);
+	if (GetHitboxesAndAttachments(pModel->pev, pmodel, pModel->pev->sequence, pModel->pev->frame, studiohitboxes.data(), studioattachments.data(), IsMirrored()))
 	{
 		for (const auto& studiohitbox : studiohitboxes)
 		{
@@ -210,6 +217,10 @@ void VRController::UpdateHitBoxes()
 			m_hitboxes.push_back(HitBox{ studiohitbox.origin, studiohitbox.angles, studiohitbox.mins, studiohitbox.maxs });
 			m_radius = max(m_radius, l1);
 			m_radius = max(m_radius, l2);
+		}
+		for (const auto& studioattachment : studioattachments)
+		{
+			m_attachments.push_back(studioattachment.pos);
 		}
 	}
 	m_hitboxFrame = pModel->pev->frame;
@@ -333,7 +344,8 @@ bool VRController::RemoveHitEntity(EHANDLE hEntity) const
 const Vector VRController::GetGunPosition() const
 {
 	Vector pos;
-	if (VRModelHelper::GetInstance().GetAttachment(GetModel(), VR_MUZZLE_ATTACHMENT, pos))
+	bool result = GetAttachment(VR_MUZZLE_ATTACHMENT, pos);
+	if (result)
 	{
 		return pos;
 	}
@@ -347,14 +359,24 @@ const Vector VRController::GetAim() const
 {
 	Vector pos1;
 	Vector pos2;
-	bool result1 = VRModelHelper::GetInstance().GetAttachment(GetModel(), VR_MUZZLE_ATTACHMENT, pos1);
-	bool result2 = VRModelHelper::GetInstance().GetAttachment(GetModel(), VR_MUZZLE_ATTACHMENT + 1, pos2);
+	bool result1 = GetAttachment(VR_MUZZLE_ATTACHMENT, pos1);
+	bool result2 = GetAttachment(VR_MUZZLE_ATTACHMENT + 1, pos2);
 	if (result1 && result2 && pos2 != pos1)
 	{
 		return (pos2 - pos1).Normalize();
 	}
 	UTIL_MakeAimVectors(GetAngles());
 	return gpGlobals->v_forward;
+}
+
+bool VRController::GetAttachment(size_t index, Vector& attachment) const
+{
+	if (index >= 0 && index <= m_attachments.size())
+	{
+		attachment = m_attachments[index];
+		return true;
+	}
+	return false;
 }
 
 

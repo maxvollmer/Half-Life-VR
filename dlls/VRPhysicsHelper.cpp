@@ -1133,7 +1133,7 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bbo
 
 		std::vector<StudioHitBox> studiohitboxes;
 		studiohitboxes.resize(numhitboxes);
-		if (GetHitboxes(pModel->pev, pmodel, pModel->pev->sequence, pModel->pev->frame, studiohitboxes.data(), false))
+		if (GetHitboxesAndAttachments(pModel->pev, pmodel, pModel->pev->sequence, pModel->pev->frame, studiohitboxes.data(), nullptr, false))
 		{
 			for (const auto& studiohitbox : studiohitboxes)
 			{

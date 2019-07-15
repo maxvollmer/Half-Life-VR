@@ -51,8 +51,13 @@ struct StudioHitBox
 	vec3_t	maxs;
 	int		hitgroup;
 };
+struct StudioAttachment
+{
+	vec3_t pos;
+};
 int GetNumHitboxes(void *pmodel);
-int GetHitboxes(entvars_t *pev, void *pmodel, int sequence, float frame, StudioHitBox* hitboxes, bool mirrored = false);
+int GetNumAttachments(void *pmodel);
+int GetHitboxesAndAttachments(entvars_t *pev, void *pmodel, int sequence, float frame, StudioHitBox* hitboxes, StudioAttachment* attachments, bool mirrored = false);
 
 // From /engine/studio.h
 #define STUDIO_LOOPING		0x0001

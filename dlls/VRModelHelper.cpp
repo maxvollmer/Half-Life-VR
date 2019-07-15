@@ -148,7 +148,8 @@ std::vector<TransformedBBox> VRModelHelper::GetTransformedBBoxesForModel(CBaseEn
 }
 */
 
-bool VRModelHelper::GetAttachment(CBaseEntity *pModel, int attachmentIndex, Vector& attachment)
+/*
+bool VRModelHelper::GetAttachment(CBaseEntity *pModel, int attachmentIndex, bool mirrored, Vector& attachment)
 {
 	const VRModelInfo& modelInfo = GetModelInfo(pModel);
 
@@ -173,6 +174,7 @@ bool VRModelHelper::GetAttachment(CBaseEntity *pModel, int attachmentIndex, Vect
 		return false;
 	}
 }
+*/
 
 VRModelHelper VRModelHelper::m_instance{};
 const VRModelInfo VRModelInfo::INVALID{};

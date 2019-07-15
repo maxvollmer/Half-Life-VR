@@ -490,7 +490,7 @@ bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE
 				if (!pRotatableEnt->IsDraggingCancelled())
 				{
 					Vector pos;
-					if (VRModelHelper::GetInstance().GetAttachment(controller.GetModel(), VR_MUZZLE_ATTACHMENT, pos))
+					if (controller.GetAttachment(VR_MUZZLE_ATTACHMENT, pos))
 					{
 						pRotatableEnt->VRRotate(pPlayer, pos, didDragChange);
 					}
