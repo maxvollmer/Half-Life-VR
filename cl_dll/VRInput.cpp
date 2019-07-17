@@ -145,7 +145,8 @@ void VRInput::RegisterActionSets()
 
 		RegisterAction("input", "Teleport", &VR::Input::Other::HandleTeleport);
 		RegisterAction("input", "ToggleFlashlight", &VR::Input::Other::HandleFlashlight);
-		RegisterAction("input", "Grab", &VR::Input::Other::HandleGrab);
+		RegisterAction("input", "LeftGrab", &VR::Input::Other::HandleLeftGrab);
+		RegisterAction("input", "RightGrab", &VR::Input::Other::HandleRightGrab);
 		RegisterAction("input", "LegacyUse", &VR::Input::Other::HandleLegacyUse);
 
 		// TODO: Add to actions.manifest

@@ -59,20 +59,27 @@ public:
 	bool AddHitEntity(EHANDLE hEntity) const;
 	bool RemoveHitEntity(EHANDLE hEntity) const;
 
-	bool GetDraggedEntityStartPositions(EHANDLE hEntity, Vector& controllerStartPos, Vector& entityStartOrigin, Vector& playerStartOrigin) const;
+	struct DraggedEntityPositions
+	{
+		const Vector controllerStartOffset;
+		const Vector controllerStartPos;
+		const Vector entityStartOrigin;
+		const Vector playerStartOrigin;
+		Vector controllerLastOffset;
+		Vector controllerLastPos;
+		Vector entityLastOrigin;
+		Vector playerLastOrigin;
+	};
+
+	bool GetDraggedEntityPositions(EHANDLE hEntity,
+		Vector& controllerStartOffset, Vector& controllerStartPos, Vector& entityStartOrigin, Vector& playerStartOrigin,
+		Vector& controllerLastOffset, Vector& controllerLastPos, Vector& entityLastOrigin, Vector& playerLastOrigin) const;
 
 private:
 	void UpdateModel(CBasePlayer* pPlayer);
 	void UpdateLaserSpot();
 	void UpdateHitBoxes();
 	void SendEntityDataToClient(CBasePlayer *pPlayer, VRControllerID id);
-
-	struct DraggedEntityData
-	{
-		Vector controllerStartPos;
-		Vector entityStartOrigin;
-		Vector playerStartOrigin;
-	};
 
 	EHANDLE m_hPlayer;
 
@@ -94,7 +101,7 @@ private:
 	mutable EHANDLE m_hModel;
 	mutable EHANDLE m_hLaserSpot;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_touchedEntities;
-	mutable std::unordered_map<EHANDLE, DraggedEntityData, EHANDLE::Hash, EHANDLE::Equal> m_draggedEntities;
+	mutable std::unordered_map<EHANDLE, DraggedEntityPositions, EHANDLE::Hash, EHANDLE::Equal> m_draggedEntities;
 	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_hitEntities;
 
 	std::vector<HitBox> m_hitboxes;

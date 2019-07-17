@@ -193,7 +193,12 @@
          "type" : "boolean"
       },
       {
-         "name" : "/actions/input/in/Grab",
+         "name" : "/actions/input/in/LeftGrab",
+         "requirement" : "suggested",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/input/in/RightGrab",
          "requirement" : "suggested",
          "type" : "boolean"
       },
@@ -411,7 +416,8 @@
          "/actions/input/in/Crouch" : "Crouch",
          "/actions/input/in/ExitGame" : "Exit Game",
          "/actions/input/in/FireWeapon" : "Fire weapon",
-         "/actions/input/in/Grab" : "Grab/Interact (This is for rotating valves, pulling/lifting crates, interacting with NPCs etc. using a VR controller.)",
+         "/actions/input/in/LeftGrab" : "Grab/Interact (This is for rotating valves, pulling/lifting crates, interacting with NPCs etc. using a VR controller.)",
+         "/actions/input/in/RightGrab" : "Grab/Interact (This is for rotating valves, pulling/lifting crates, interacting with NPCs etc. using a VR controller.)",
          "/actions/input/in/HolsterWeapon" : "Holster weapon / Select last weapon",
          "/actions/input/in/Jump" : "Jump",
          "/actions/input/in/LegacyUse" : "Legacy Use (This triggers the default ingame use action, which 'uses' objects that you look at.)",

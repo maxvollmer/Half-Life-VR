@@ -93,7 +93,7 @@ int VRGetGrabbedLadder(int player)
 {
 	if (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f)
 	{
-		CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(UTIL_PlayerByIndex(player));
+		CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(UTIL_PlayerByIndex(player + 1));
 		if (pPlayer == nullptr)
 			return -1;
 

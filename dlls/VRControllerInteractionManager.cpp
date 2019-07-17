@@ -179,6 +179,7 @@ bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE hEntity)
 		|| FClassnameIs(hEntity->pev, "func_rot_button")
 		|| FClassnameIs(hEntity->pev, "momentary_rot_button")
 		|| FClassnameIs(hEntity->pev, "func_pushable")
+		|| (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f && FClassnameIs(hEntity->pev, "func_ladder"))
 		|| hEntity->IsDraggable();
 }
 
@@ -228,7 +229,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 			isTouching = CheckIfEntityAndControllerTouch(pPlayer, hEntity, controller, &intersectResult);
 			didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
 
-			isDragging = isTouching && controller.GetWeaponId() == WEAPON_BAREHAND && controller.IsDragging();
+			isDragging = isTouching /*&& controller.GetWeaponId() == WEAPON_BAREHAND*/ && controller.IsDragging();
 			didDragChange = isDragging ? controller.AddDraggedEntity(hEntity) : controller.RemoveDraggedEntity(hEntity);
 
 			if (isTouching)
@@ -685,8 +686,10 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 
 			Vector controllerDragStartPos;
 			Vector entityDragStartOrigin;
-			Vector playerDragStartOrigin;
-			if (interaction.dragging.isSet && controller.GetDraggedEntityStartPositions(hEntity, controllerDragStartPos, entityDragStartOrigin, playerDragStartOrigin))
+			Vector dummy;
+			if (interaction.dragging.isSet && controller.GetDraggedEntityPositions(hEntity,
+				dummy, controllerDragStartPos, entityDragStartOrigin, dummy,
+				dummy, dummy, dummy, dummy))
 			{
 				pPushable->pev->gravity = 0;
 				targetPos = entityDragStartOrigin + controller.GetPosition() - controllerDragStartPos;
@@ -819,17 +822,29 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer *pPlayer, EHANDLE
 		{
 			if (interaction.dragging.isSet && pPlayer->IsLadderGrabbingController(controller.GetID(), hEntity))
 			{
-				Vector controllerDragStartPos;
-				Vector entityDragStartOrigin;
+				Vector controllerDragStartOffset;
 				Vector playerDragStartOrigin;
-				if (controller.GetDraggedEntityStartPositions(hEntity, controllerDragStartPos, entityDragStartOrigin, playerDragStartOrigin))
+				Vector dummy;
+				if (controller.GetDraggedEntityPositions(hEntity,
+					controllerDragStartOffset, dummy, dummy, playerDragStartOrigin,
+					dummy, dummy, dummy, dummy))
 				{
-					Vector targetPos = playerDragStartOrigin + controllerDragStartPos - controller.GetPosition();
+					// get new position from controller movement
+					Vector targetPos = playerDragStartOrigin + controllerDragStartOffset - controller.GetOffset();
+
+					// prevent moving into or away from ladder (nausea!)
+					if (fabs(hEntity->pev->size.x) > fabs(hEntity->pev->size.y))
+						targetPos.y = pPlayer->pev->origin.y;
+					else
+						targetPos.x = pPlayer->pev->origin.x;
+
+					// move!
 					pPlayer->pev->origin = VRMovementHandler::DoMovement(pPlayer->pev->origin, targetPos);
 					UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
 				}
 			}
 		}
+		return true;
 	}
 
 	return false;

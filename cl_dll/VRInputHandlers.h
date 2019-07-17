@@ -56,7 +56,8 @@ namespace VR
 		public:
 			static void HandleTeleport(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleFlashlight(const vr::InputDigitalActionData_t& data, const std::string& action);
-			static void HandleGrab(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleLeftGrab(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleRightGrab(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleLegacyUse(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleQuickSave(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleQuickLoad(const vr::InputDigitalActionData_t& data, const std::string& action);

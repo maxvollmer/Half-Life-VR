@@ -297,7 +297,7 @@ bool VRController::AddDraggedEntity(EHANDLE hEntity) const
 
 	EHANDLE hPlayer = m_hPlayer;	// need copy due to const
 
-	m_draggedEntities[hEntity] = DraggedEntityData{ GetPosition(), hEntity->pev->origin, hPlayer->pev->origin };
+	m_draggedEntities.insert(std::pair<EHANDLE, DraggedEntityPositions>(hEntity, DraggedEntityPositions{ GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin, GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin }));
 	return true;
 }
 
@@ -315,14 +315,25 @@ bool VRController::IsDraggedEntity(EHANDLE hEntity) const
 	return m_draggedEntities.count(hEntity) != 0;
 }
 
-bool VRController::GetDraggedEntityStartPositions(EHANDLE hEntity, Vector& controllerStartPos, Vector& entityStartOrigin, Vector& playerStartOrigin) const
+bool VRController::GetDraggedEntityPositions(EHANDLE hEntity,
+	Vector& controllerStartOffset, Vector& controllerStartPos, Vector& entityStartOrigin, Vector& playerStartOrigin,
+	Vector& controllerLastOffset, Vector& controllerLastPos, Vector& entityLastOrigin, Vector& playerLastOrigin) const
 {
 	auto draggedEntityData = m_draggedEntities.find(hEntity);
 	if (draggedEntityData != m_draggedEntities.end())
 	{
+		controllerStartOffset = draggedEntityData->second.controllerStartOffset;
 		controllerStartPos = draggedEntityData->second.controllerStartPos;
 		entityStartOrigin = draggedEntityData->second.entityStartOrigin;
 		playerStartOrigin = draggedEntityData->second.playerStartOrigin;
+		controllerLastOffset = draggedEntityData->second.controllerLastOffset;
+		controllerLastPos = draggedEntityData->second.controllerLastPos;
+		entityLastOrigin = draggedEntityData->second.entityLastOrigin;
+		playerLastOrigin = draggedEntityData->second.playerLastOrigin;
+		draggedEntityData->second.controllerLastOffset = GetOffset();
+		draggedEntityData->second.controllerLastPos = GetPosition();
+		draggedEntityData->second.entityLastOrigin = hEntity->pev->origin;
+		draggedEntityData->second.playerLastOrigin = EHANDLE{ m_hPlayer }->pev->origin;
 		return true;
 	}
 	return false;

@@ -117,6 +117,6 @@
 * Renamed cvars "vr_ladder_movement_speed" and "vr_ladder_movement_only_updown" to "vr_ladder_legacy_movement_speed" and "vr_ladder_legacy_movement_only_updown" respectively
 * Added cvars "vr_ladder_legacy_movement_enabled" and "vr_ladder_immersive_movement_enabled"
 * Implemented immersive ladder climbing: Grab ladders with controllers and pull up or down to move
-* 
+* Removed "Grab" action and added "LeftGrab" and "RightGrab"
 
 

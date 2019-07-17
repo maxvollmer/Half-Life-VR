@@ -334,6 +334,7 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_hud_flashlight_offset_y", "2", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_rl_ducking_enabled", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_rl_duck_height", "100", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_ladder_immersive_movement_enabled", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_ladder_legacy_movement_enabled", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_ladder_legacy_movement_speed", "100", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_ladder_legacy_movement_only_updown", "1", FCVAR_ARCHIVE);

@@ -43,28 +43,16 @@ namespace VR
 			}
 		}
 
-		void Other::HandleGrab(const vr::InputDigitalActionData_t& data, const std::string& action)
+		void Other::HandleLeftGrab(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
 			bool on = data.bActive && data.bState;
-			vr::InputOriginInfo_t originInfo;
-			vr::ETrackedControllerRole role{ vr::TrackedControllerRole_Invalid };
-			if (vr::VRInputError_None == vr::VRInput()->GetOriginTrackedDeviceInfo(data.activeOrigin, &originInfo, sizeof(vr::InputOriginInfo_t)))
-			{
-				role = gVRRenderer.GetVRSystem()->GetControllerRoleForTrackedDeviceIndex(originInfo.trackedDeviceIndex);
-			}
-			switch (role)
-			{
-			case vr::TrackedControllerRole_LeftHand:
-				g_vrInput.SetDrag(vr::TrackedControllerRole_LeftHand, on);
-				break;
-			case vr::TrackedControllerRole_RightHand:
-				g_vrInput.SetDrag(vr::TrackedControllerRole_RightHand, on);
-				break;
-			default:
-				g_vrInput.SetDrag(vr::TrackedControllerRole_LeftHand, on);
-				g_vrInput.SetDrag(vr::TrackedControllerRole_RightHand, on);
-				break;
-			}
+			g_vrInput.SetDrag(vr::TrackedControllerRole_LeftHand, on);
+		}
+
+		void Other::HandleRightGrab(const vr::InputDigitalActionData_t& data, const std::string& action)
+		{
+			bool on = data.bActive && data.bState;
+			g_vrInput.SetDrag(vr::TrackedControllerRole_RightHand, on);
 		}
 
 		void Other::HandleLegacyUse(const vr::InputDigitalActionData_t& data, const std::string& action)
