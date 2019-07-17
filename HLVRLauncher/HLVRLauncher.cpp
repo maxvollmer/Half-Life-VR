@@ -208,9 +208,9 @@ int main(int argc, char *argv[])
 	std::wstring icaclsReenableDeletionOnFileCommandLine = L"icacls \"" + hlDirectory + L"\\opengl32.dll\" /remove:d Everyone";
 
 #ifdef _DEBUG
-	std::wstring hlExeCommandLine = L"\"" + hlDirectory + L"\\hl.exe\" -game vr -console -dev 2 -condebug -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0";
+	std::wstring hlExeCommandLine = L"\"" + hlDirectory + L"\\hl.exe\" -game vr -console -dev 2 -condebug -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0 +gl_vsync 0 +fps_max 90 +fps_override 1";
 #else
-	std::wstring hlExeCommandLine = L"\"" + hlDirectory + L"\\hl.exe\" -game vr -console -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0";
+	std::wstring hlExeCommandLine = L"\"" + hlDirectory + L"\\hl.exe\" -game vr -console -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0 +gl_vsync 0 +fps_max 90 +fps_override 1";
 #endif
 
 	std::cout << "Finished initializing!" << std::endl;

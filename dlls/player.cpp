@@ -226,6 +226,7 @@ int gmsgVRGroundEntity = 0;
 int gmsgVRSetSpawnYaw = 0;
 int gmsgVRControllerEnt = 0;
 int gmsgVRTrainControls = 0;
+int gmsgVRGrabbedLadder = 0;
 int gmsgVRUpdateEgon = 0;
 
 
@@ -279,6 +280,7 @@ void LinkUserMessages( void )
 	gmsgVRSetSpawnYaw = REG_USER_MSG("VRSpawnYaw", 1);
 	gmsgVRControllerEnt = REG_USER_MSG("VRCtrlEnt", 29);
 	gmsgVRTrainControls = REG_USER_MSG("TrainCtrl", 7);
+	gmsgVRGrabbedLadder = REG_USER_MSG("GrbdLddr", 2);
 	gmsgVRUpdateEgon = REG_USER_MSG("VRUpdEgon", -1);
 }
 
@@ -901,6 +903,8 @@ entvars_t *g_pevLastInflictor;  // Set in combat.cpp.  Used to pass the damage i
 
 void CBasePlayer::Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
+	ClearLadderGrabbingControllers();
+
 	m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
 	pev->flags &= ~FL_BARNACLED;
 
@@ -1317,6 +1321,8 @@ BOOL CBasePlayer::IsOnLadder( void )
 
 void CBasePlayer::PlayerDeathThink(void)
 {
+	ClearLadderGrabbingControllers();
+
 	float flForward;
 
 	if (FBitSet(pev->flags, FL_ONGROUND))
@@ -2823,6 +2829,8 @@ ReturnSpot:
 
 void CBasePlayer::Spawn( void )
 {
+	ClearLadderGrabbingControllers();
+
 	pev->classname		= MAKE_STRING("player");
 	pev->health			= 100;
 	pev->armorvalue		= 0;
@@ -3004,6 +3012,8 @@ void CBasePlayer::StoreVROffsetsForLevelchange()
 
 int CBasePlayer::Restore( CRestore &restore )
 {
+	ClearLadderGrabbingControllers();
+
 	if ( !CBaseMonster::Restore(restore) )
 		return 0;
 
@@ -3517,7 +3527,7 @@ void CBasePlayer :: ForceClientDllUpdate( void )
 ImpulseCommands
 ============
 */
-extern float g_flWeaponCheat;
+extern bool AreCheatsEnabled();
 
 void CBasePlayer::ImpulseCommands( )
 {
@@ -3599,7 +3609,7 @@ void CBasePlayer::ImpulseCommands( )
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
 {
 #if !defined( HLDEMO_BUILD )
-	if ( g_flWeaponCheat == 0.0 )
+	if (!AreCheatsEnabled())
 	{
 		return;
 	}
@@ -5481,4 +5491,61 @@ void CBasePlayer::HolsterWeapon()
 bool CBasePlayer::HasSuit()
 {
 	return FBitSet(pev->weapons, (1 << WEAPON_SUIT));
+}
+
+void CBasePlayer::SetLadderGrabbingController(VRControllerID controller, CBaseEntity* pLadder)
+{
+	m_ladderGrabbingControllers.push_back(VRLadderGrabbingController{ controller, pLadder });
+
+	MESSAGE_BEGIN(MSG_ONE, gmsgVRGrabbedLadder, NULL, pev);
+	WRITE_SHORT(ENTINDEX(pLadder->edict()));
+	MESSAGE_END();
+}
+
+void CBasePlayer::ClearLadderGrabbingControllers()
+{
+	if (m_ladderGrabbingControllers.empty())
+		return;
+
+	m_ladderGrabbingControllers.clear();
+	MESSAGE_BEGIN(MSG_ONE, gmsgVRGrabbedLadder, NULL, pev);
+	WRITE_SHORT(0);
+	MESSAGE_END();
+}
+
+void CBasePlayer::ClearLadderGrabbingController(VRControllerID controller)
+{
+	if (m_ladderGrabbingControllers.empty())
+		return;
+
+	m_ladderGrabbingControllers.erase(
+		std::remove_if(
+			m_ladderGrabbingControllers.begin(),
+			m_ladderGrabbingControllers.end(),
+			[controller](const VRLadderGrabbingController& v) { return v.controller == controller; }),
+		m_ladderGrabbingControllers.end()
+	);
+
+	if (m_ladderGrabbingControllers.empty())
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgVRGrabbedLadder, NULL, pev);
+		WRITE_SHORT(0);
+		MESSAGE_END();
+	}
+}
+
+bool CBasePlayer::IsLadderGrabbingController(VRControllerID controller, CBaseEntity* pLadder)
+{
+	if (m_ladderGrabbingControllers.empty())
+		return false;
+
+	return m_ladderGrabbingControllers.back().controller == controller && m_ladderGrabbingControllers.back().ladder == pLadder;
+}
+
+int CBasePlayer::GetGrabbedLadderEntIndex()
+{
+	if (m_ladderGrabbingControllers.empty() || CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") == 0.f)
+		return 0;
+
+	return ENTINDEX(m_ladderGrabbingControllers.back().ladder.Get());
 }

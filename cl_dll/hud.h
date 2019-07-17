@@ -585,6 +585,8 @@ public:
 	ControllerEntData	m_handControllerEntData{ 0 };
 	ControllerEntData	m_weaponControllerEntData{ 0 };
 
+	int					m_vrGrabbedLadderEntIndex{ -1 };
+
 	HSPRITE_VALVE						m_hsprCursor;
 	float m_flTime;	   // the current client time
 	float m_fOldTime;  // the time at which the HUD was last redrawn
@@ -665,6 +667,7 @@ public:
 	int _cdecl MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf);
 	int _cdecl MsgFunc_VRCtrlEnt(const char *pszName, int iSize, void *pbuf);
 	int _cdecl MsgFunc_TrainCtrl(const char *pszName, int iSize, void *pbuf);
+	int _cdecl MsgFunc_GrbdLddr(const char *pszName, int iSize, void *pbuf);
 	int _cdecl MsgFunc_VRUpdEgon(const char *pszName, int iSize, void *pbuf);
 
 	// Screen information

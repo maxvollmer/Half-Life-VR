@@ -34,6 +34,8 @@ VRController::~VRController()
 
 void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, VRControllerID id, int weaponId)
 {
+	m_hPlayer = pPlayer;
+
 	// Filter out outdated updates
 	if (timestamp <= m_lastUpdateClienttime && m_lastUpdateServertime >= gpGlobals->time)
 	{
@@ -293,7 +295,9 @@ bool VRController::AddDraggedEntity(EHANDLE hEntity) const
 	if (m_draggedEntities.count(hEntity) != 0)
 		return false;
 
-	m_draggedEntities[hEntity] = DraggedEntityData{ GetPosition(), hEntity->pev->origin };
+	EHANDLE hPlayer = m_hPlayer;	// need copy due to const
+
+	m_draggedEntities[hEntity] = DraggedEntityData{ GetPosition(), hEntity->pev->origin, hPlayer->pev->origin };
 	return true;
 }
 
@@ -311,13 +315,14 @@ bool VRController::IsDraggedEntity(EHANDLE hEntity) const
 	return m_draggedEntities.count(hEntity) != 0;
 }
 
-bool VRController::GetDraggedEntityStartPositions(EHANDLE hEntity, Vector& controllerStartPos, Vector& entityStartOrigin) const
+bool VRController::GetDraggedEntityStartPositions(EHANDLE hEntity, Vector& controllerStartPos, Vector& entityStartOrigin, Vector& playerStartOrigin) const
 {
 	auto draggedEntityData = m_draggedEntities.find(hEntity);
 	if (draggedEntityData != m_draggedEntities.end())
 	{
 		controllerStartPos = draggedEntityData->second.controllerStartPos;
 		entityStartOrigin = draggedEntityData->second.entityStartOrigin;
+		playerStartOrigin = draggedEntityData->second.playerStartOrigin;
 		return true;
 	}
 	return false;

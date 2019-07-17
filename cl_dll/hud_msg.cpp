@@ -143,3 +143,10 @@ int CHud::MsgFunc_TrainCtrl(const char *pszName, int iSize, void *pbuf)
 	m_trainControlYaw = READ_ANGLE();
 	return 1;
 }
+
+int CHud::MsgFunc_GrbdLddr(const char *pszName, int iSize, void *pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	m_vrGrabbedLadderEntIndex = READ_SHORT();
+	return 1;
+}

@@ -111,3 +111,12 @@
 * Improved pushable boxes behavior
 * Updated reactphysics3d to 0.7.1
 * Added EasyHook32 library for fixing "Mod_Extradata: caching failed" crashes
+
+0.4.9
+* Fixed bug where gibs (e.g. wood from broken crates) are dramatically oversized (was supposed to be fixed in 0.4.0, but the fix had a bug)
+* Renamed cvars "vr_ladder_movement_speed" and "vr_ladder_movement_only_updown" to "vr_ladder_legacy_movement_speed" and "vr_ladder_legacy_movement_only_updown" respectively
+* Added cvars "vr_ladder_legacy_movement_enabled" and "vr_ladder_immersive_movement_enabled"
+* Implemented immersive ladder climbing: Grab ladders with controllers and pull up or down to move
+* 
+
+

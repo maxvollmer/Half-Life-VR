@@ -276,6 +276,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		else if (HandleBreakables(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
 		else if (HandlePushables(pPlayer, hEntity, controller, interaction));
 		else if (HandleGrabbables(pPlayer, hEntity, controller, interaction));
+		else if (HandleLadders(pPlayer, hEntity, controller, interaction));
 		else if (HandleAlliedMonsters(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
 		else if (isTouching && didTouchChange)
 		{
@@ -684,7 +685,8 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 
 			Vector controllerDragStartPos;
 			Vector entityDragStartOrigin;
-			if (interaction.dragging.isSet && controller.GetDraggedEntityStartPositions(hEntity, controllerDragStartPos, entityDragStartOrigin))
+			Vector playerDragStartOrigin;
+			if (interaction.dragging.isSet && controller.GetDraggedEntityStartPositions(hEntity, controllerDragStartPos, entityDragStartOrigin, playerDragStartOrigin))
 			{
 				pPushable->pev->gravity = 0;
 				targetPos = entityDragStartOrigin + controller.GetPosition() - controllerDragStartPos;
@@ -793,6 +795,41 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer *pPlayer, EHAN
 			}
 		}
 		return true;
+	}
+
+	return false;
+}
+
+bool VRControllerInteractionManager::HandleLadders(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
+{
+	if (FClassnameIs(hEntity->pev, "func_ladder") && CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f)
+	{
+		if (interaction.dragging.didChange)
+		{
+			if (interaction.dragging.isSet)
+			{
+				pPlayer->SetLadderGrabbingController(controller.GetID(), hEntity);
+			}
+			else
+			{
+				pPlayer->ClearLadderGrabbingController(controller.GetID());
+			}
+		}
+		else
+		{
+			if (interaction.dragging.isSet && pPlayer->IsLadderGrabbingController(controller.GetID(), hEntity))
+			{
+				Vector controllerDragStartPos;
+				Vector entityDragStartOrigin;
+				Vector playerDragStartOrigin;
+				if (controller.GetDraggedEntityStartPositions(hEntity, controllerDragStartPos, entityDragStartOrigin, playerDragStartOrigin))
+				{
+					Vector targetPos = playerDragStartOrigin + controllerDragStartPos - controller.GetPosition();
+					pPlayer->pev->origin = VRMovementHandler::DoMovement(pPlayer->pev->origin, targetPos);
+					UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
+				}
+			}
+		}
 	}
 
 	return false;

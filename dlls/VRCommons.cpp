@@ -76,10 +76,31 @@ bool VRGlobalIsPointInsideEnt(const float* point, int ent)
 
 float VRGetMaxClimbSpeed()
 {
-	return CVAR_GET_FLOAT("vr_ladder_movement_speed");
+	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_speed");
+}
+
+bool VRIsLegacyLadderMoveEnabled()
+{
+	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_enabled") != 0.f;
 }
 
 bool VRGetMoveOnlyUpDownOnLadder()
 {
-	return CVAR_GET_FLOAT("vr_ladder_movement_only_updown") != 0.f;
+	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_only_updown") != 0.f;
+}
+
+int VRGetGrabbedLadder(int player)
+{
+	if (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f)
+	{
+		CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(UTIL_PlayerByIndex(player));
+		if (pPlayer == nullptr)
+			return -1;
+
+		return pPlayer->GetGrabbedLadderEntIndex();
+	}
+	else
+	{
+		return -1;
+	}
 }

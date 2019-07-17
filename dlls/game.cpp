@@ -483,13 +483,13 @@ cvar_t vr_weapon_grenade_mode = { "vr_weapon_grenade_mode", "0", FCVAR_ARCHIVE }
 cvar_t vr_crowbar_vanilla_attack_enabled = { "vr_crowbar_vanilla_attack_enabled", "0", FCVAR_ARCHIVE };
 cvar_t vr_noclip = { "vr_noclip", "0" };
 cvar_t vr_use_sd_models = { "vr_use_sd_models", "0", FCVAR_ARCHIVE };
-cvar_t vr_ladder_movement_speed = { "vr_ladder_movement_speed", "100", FCVAR_ARCHIVE };
-cvar_t vr_ladder_movement_only_updown = { "vr_ladder_movement_only_updown", "1", FCVAR_ARCHIVE };
+cvar_t vr_ladder_legacy_movement_enabled = { "vr_ladder_legacy_movement_enabled", "0", FCVAR_ARCHIVE };
+cvar_t vr_ladder_legacy_movement_speed = { "vr_ladder_legacy_movement_speed", "100", FCVAR_ARCHIVE };
+cvar_t vr_ladder_legacy_movement_only_updown = { "vr_ladder_legacy_movement_only_updown", "1", FCVAR_ARCHIVE };
 cvar_t vr_view_dist_to_walls = { "vr_view_dist_to_walls", (char*)VR_DEFAULT_VIEW_DIST_TO_WALLS_AS_STRING, FCVAR_ARCHIVE };
 cvar_t vr_enable_aim_laser = { "vr_enable_aim_laser", "0", FCVAR_ARCHIVE };
 cvar_t vr_flashlight_attachment = { "vr_flashlight_attachment", "0", FCVAR_ARCHIVE };
 cvar_t vr_teleport_attachment = { "vr_teleport_attachment", "0", FCVAR_ARCHIVE };
-
 
 // Register your console variables here
 // This gets called one time when the game is initialied
@@ -956,9 +956,10 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&vr_weapon_grenade_mode);
 	CVAR_REGISTER(&vr_crowbar_vanilla_attack_enabled);
 	CVAR_REGISTER(&vr_noclip);
-	CVAR_REGISTER(&vr_use_sd_models);
-	CVAR_REGISTER(&vr_ladder_movement_speed);
-	CVAR_REGISTER(&vr_ladder_movement_only_updown);
+	CVAR_REGISTER(&vr_use_sd_models); 
+	CVAR_REGISTER(&vr_ladder_legacy_movement_enabled);
+	CVAR_REGISTER(&vr_ladder_legacy_movement_speed);
+	CVAR_REGISTER(&vr_ladder_legacy_movement_only_updown);
 	CVAR_REGISTER(&vr_view_dist_to_walls);
 	CVAR_REGISTER(&vr_enable_aim_laser);
 	CVAR_REGISTER(&vr_flashlight_attachment);

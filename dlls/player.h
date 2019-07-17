@@ -386,6 +386,15 @@ private:
 	Vector								vr_trainControlPosition;
 	float								vr_trainControlYaw;
 
+	// for immersive ladder climbing
+	struct VRLadderGrabbingController
+	{
+		VRControllerID controller;
+		EHANDLE ladder;
+	};
+	std::vector<VRLadderGrabbingController>		m_ladderGrabbingControllers;
+	void ClearLadderGrabbingControllers();
+
 public:
 	void StartVRTele();
 	void StopVRTele();
@@ -431,6 +440,12 @@ public:
 	bool vr_didJustTeleportThroughChangeLevel{ false };
 
 	bool HasSuit();
+
+	// for immersive ladder climbing
+	void SetLadderGrabbingController(VRControllerID controller, CBaseEntity* pLadder);
+	void ClearLadderGrabbingController(VRControllerID controller);
+	bool IsLadderGrabbingController(VRControllerID controller, CBaseEntity* pLadder);
+	int GetGrabbedLadderEntIndex();
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

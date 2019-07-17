@@ -118,6 +118,13 @@ void VRRenderer::Frame(double time)
 			pmove->cmd.buttons = 0;
 			pmove->cmd.buttons_ex = 0;
 		}
+
+		gHUD.m_vrGrabbedLadderEntIndex = 0;
+	}
+
+	if (!IsInGame())
+	{
+		gHUD.m_vrGrabbedLadderEntIndex = 0;
 	}
 }
 

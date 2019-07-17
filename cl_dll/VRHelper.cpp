@@ -334,9 +334,10 @@ void VRHelper::Init()
 	CVAR_CREATE("vr_hud_flashlight_offset_y", "2", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_rl_ducking_enabled", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_rl_duck_height", "100", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_ladder_movement_only_updown", "1", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_ladder_movement_speed", "100", FCVAR_ARCHIVE);
-
+	CVAR_CREATE("vr_ladder_legacy_movement_enabled", "0", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_ladder_legacy_movement_speed", "100", FCVAR_ARCHIVE);
+	CVAR_CREATE("vr_ladder_legacy_movement_only_updown", "1", FCVAR_ARCHIVE);
+	
 	g_vrInput.Init();
 
 	UpdateVRHLConversionVectors();
@@ -1550,13 +1551,32 @@ void VRNotifyStuckEnt(int player, int ent)
 // for pm_shared.cpp
 float VRGetMaxClimbSpeed()
 {
-	return CVAR_GET_FLOAT("vr_ladder_movement_speed");
+	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_speed");
+}
+
+// for pm_shared.cpp
+bool VRIsLegacyLadderMoveEnabled()
+{
+	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_enabled") != 0.f;
 }
 
 // for pm_shared.cpp
 bool VRGetMoveOnlyUpDownOnLadder()
 {
-	return CVAR_GET_FLOAT("vr_ladder_movement_only_updown") != 0.f;
+	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_only_updown") != 0.f;
+}
+
+// for pm_shared.cpp
+int VRGetGrabbedLadder(int player)
+{
+	if (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f)
+	{
+		return gHUD.m_vrGrabbedLadderEntIndex;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 

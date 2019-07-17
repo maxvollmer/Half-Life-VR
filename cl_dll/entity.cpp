@@ -636,9 +636,10 @@ void DLLEXPORT HUD_TempEntUpdate (
 	{
 		while ( pTemp )
 		{
+			g_curFrameTempEnts.insert(&pTemp->entity);
+
 			if ( !(pTemp->flags & FTENT_NOMODEL ) )
 			{
-				g_curFrameTempEnts.insert(&pTemp->entity);
 				Callback_AddVisibleEntity(&pTemp->entity);
 			}
 			pTemp = pTemp->next;
@@ -654,6 +655,8 @@ void DLLEXPORT HUD_TempEntUpdate (
 
 	while ( pTemp )
 	{
+		g_curFrameTempEnts.insert(&pTemp->entity);
+
 		int active;
 
 		active = 1;

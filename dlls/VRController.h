@@ -59,7 +59,7 @@ public:
 	bool AddHitEntity(EHANDLE hEntity) const;
 	bool RemoveHitEntity(EHANDLE hEntity) const;
 
-	bool GetDraggedEntityStartPositions(EHANDLE hEntity, Vector& controllerStartPos, Vector& entityStartOrigin) const;
+	bool GetDraggedEntityStartPositions(EHANDLE hEntity, Vector& controllerStartPos, Vector& entityStartOrigin, Vector& playerStartOrigin) const;
 
 private:
 	void UpdateModel(CBasePlayer* pPlayer);
@@ -71,7 +71,10 @@ private:
 	{
 		Vector controllerStartPos;
 		Vector entityStartOrigin;
+		Vector playerStartOrigin;
 	};
+
+	EHANDLE m_hPlayer;
 
 	VRControllerID	m_id{ VRControllerID::INVALID };
 	Vector m_offset;

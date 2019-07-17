@@ -28,6 +28,9 @@
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
 
+playermove_t *pmove = nullptr;
+static int pm_shared_initialized = 0;
+
 
 // and again we are in include hell and use an extern declaration to escape :S
 extern bool VRGlobalIsInstantAccelerateOn();
@@ -37,7 +40,10 @@ extern bool VRGlobalGetNoclipMode();
 extern void VRNotifyStuckEnt(int player, int ent);
 extern bool VRGlobalIsPointInsideEnt(const float* point, int ent);
 extern float VRGetMaxClimbSpeed();
+extern bool VRIsLegacyLadderMoveEnabled();
 extern bool VRGetMoveOnlyUpDownOnLadder();
+extern int VRGetGrabbedLadder(int player);   // For client or server to use to identify (index into edicts or cl_entities)
+inline bool VRIsGrabbingLadder() { return VRGetGrabbedLadder(pmove->player_index) > 0; }
 
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
@@ -54,13 +60,9 @@ void PM_Jump(void);
 	float	vJumpAngles[3];
 #endif
 
-static int pm_shared_initialized = 0;
-
 #pragma warning( disable : 4305 )
 
 //typedef enum {mod_brush, mod_sprite, mod_alias, mod_studio} modtype_t;
-
-playermove_t *pmove = NULL;
 
 #define DEFAULT_MAX_CLIMB_SPEED 100
 
@@ -2090,8 +2092,16 @@ void PM_Duck(void)
 
 void PM_LadderMove(physent_t *pLadder)
 {
-	if (VRGlobalGetNoclipMode())
+	if (VRGlobalGetNoclipMode() || VRIsGrabbingLadder() || !VRIsLegacyLadderMoveEnabled())
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			pmove->velocity[i] = pmove->forward[i] * pmove->cmd.forwardmove + pmove->right[i] * pmove->cmd.sidemove;
+		}
+		pmove->velocity[2] += pmove->cmd.upmove;
+		PM_CheckVelocity();
 		return;
+	}
 
 	pmove->gravity = 0;
 	pmove->movetype = MOVETYPE_FLY;
@@ -2216,11 +2226,16 @@ inline bool BBoxIntersectsBBox(vec3_t absmins1, vec3_t absmaxs1, vec3_t absmins2
 
 physent_t *PM_Ladder(void)
 {
+	if (VRGlobalGetNoclipMode())
+		return nullptr;
+
 	int			i;
 	physent_t	*pe;
 	hull_t		*hull;
 	int			num;
 	vec3_t		test;
+
+	int grabbedLaderIndex = VRGetGrabbedLadder(pmove->player_index);
 
 	for (i = 0; i < pmove->nummoveent; i++)
 	{
@@ -2228,6 +2243,10 @@ physent_t *PM_Ladder(void)
 
 		if (pe->model && (modtype_t)pmove->PM_GetModelType(pe->model) == mod_brush && pe->skin == CONTENTS_LADDER)
 		{
+			if (grabbedLaderIndex >= 0 && grabbedLaderIndex == pe->info)
+			{
+				return pe;
+			}
 
 			hull = (hull_t *)pmove->PM_HullForBsp(pe, test);
 			num = hull->firstclipnode;
@@ -3277,8 +3296,10 @@ void PM_PlayerMove ( qboolean server )
 	// Don't run ladder code if dead or on a train
 	if ( !pmove->dead && !(pmove->flags & FL_ONTRAIN) )
 	{
-		if ( pLadder )
+		if (pLadder && !VRGlobalGetNoclipMode())
 		{
+			pmove->gravity = 0;
+			pmove->movetype = MOVETYPE_FLY;
 			PM_LadderMove( pLadder );
 		}
 		else 
