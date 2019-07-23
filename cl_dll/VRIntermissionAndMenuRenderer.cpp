@@ -65,31 +65,6 @@ void VRRenderer::DrawScreenFade()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	byte fadealpha;
-	if (screenfade.fadeFlags & FFADE_STAYOUT)
-	{
-		fadealpha = screenfade.fadealpha;
-	}
-	else
-	{
-		fadealpha = screenfade.fadeSpeed * (screenfade.fadeEnd - m_hudRedrawTime);
-		if (screenfade.fadeFlags & FFADE_OUT)
-		{
-			fadealpha += screenfade.fadealpha;
-		}
-		fadealpha = std::clamp(fadealpha, byte(0), screenfade.fadealpha);
-	}
-
-	glColor4ub(screenfade.fader, screenfade.fadeg, screenfade.fadeb, fadealpha);
-
 	if (screenfade.fadeFlags & FFADE_MODULATE)
 	{
 		IEngineStudio.GL_SetRenderMode(kRenderTransAdd);
@@ -99,11 +74,39 @@ void VRRenderer::DrawScreenFade()
 		IEngineStudio.GL_SetRenderMode(kRenderTransTexture);
 	}
 
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	float fadealpha;
+	if (screenfade.fadeFlags & FFADE_STAYOUT)
+	{
+		fadealpha = screenfade.fadealpha;
+	}
+	else
+	{
+		if (screenfade.fadeFlags & FFADE_OUT)
+		{
+			fadealpha = screenfade.fadealpha - fabs(screenfade.fadeSpeed * (screenfade.fadeEnd - m_hudRedrawTime));
+		}
+		else
+		{
+			fadealpha = fabs(screenfade.fadeSpeed * (screenfade.fadeEnd - m_hudRedrawTime));
+		}
+		fadealpha = std::clamp(fadealpha, 0.f, float(screenfade.fadealpha));
+	}
+
+	glColor4f(screenfade.fader / 255.f, screenfade.fadeg / 255.f, screenfade.fadeb / 255.f, fadealpha / 255.f);
+
 	glBegin(GL_QUADS);
-	glVertex2f(0.f, 0.f);
-	glVertex2f(ScreenWidth, 0.f);
-	glVertex2f(ScreenWidth, ScreenHeight);
-	glVertex2f(0.f, ScreenHeight);
+	glVertex2f(-1.f, -1.f);
+	glVertex2f(1.f, -1.f);
+	glVertex2f(1.f, 1.f);
+	glVertex2f(-1.f, 1.f);
 	glEnd();
 
 	glColor4f(0.f, 0.f, 0.f, 0.f);
