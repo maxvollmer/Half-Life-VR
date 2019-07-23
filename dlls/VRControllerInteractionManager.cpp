@@ -698,7 +698,8 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 			}
 			else
 			{
-				Vector relativePos = interaction.intersectPoint - pushableOrigin;
+				Vector pushableCenter = pPushable->pev->origin + (pPushable->pev->mins + pPushable->pev->maxs) * 0.5f;
+				Vector relativePos = interaction.intersectPoint - pushableCenter;
 
 				// Decide axis to push on:
 				Vector pushDelta;
