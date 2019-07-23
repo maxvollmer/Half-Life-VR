@@ -16,6 +16,7 @@
 #include "vr_gl.h"
 #include "VRInput.h"
 #include "pm_defs.h"
+#include "VRSpeechListener.h"
 
 #ifndef DUCK_SIZE
 #define DUCK_SIZE 36
@@ -484,6 +485,11 @@ void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 	if (isInGame)
 	{
 		UpdateWorldRotation();
+	}
+	if (isInGame && !isInMenu)
+	{
+		// TODO:
+		// VRSpeechListener::Instance().GetCommand();
 	}
 	vr::VREvent_t vrEvent;
 	while (vrSystem != nullptr && vrSystem->PollNextEvent(&vrEvent, sizeof(vr::VREvent_t)))
@@ -1526,9 +1532,8 @@ bool VRPointInsideBBox(const Vector &vec, const Vector &absmin, const Vector &ab
 // Returns true if the point is inside the rotated bbox - Max Vollmer, 2018-02-11
 bool VRPointInsideRotatedBBox(const Vector & bboxCenter, const Vector & bboxAngles, const Vector & bboxMins, const Vector & bboxMaxs, const Vector & checkVec)
 {
-	extern void RotateVector(Vector &vecToRotate, const Vector &vecAngles, const bool reverse);
 	Vector rotatedLocalCheckVec = checkVec - bboxCenter;
-	RotateVector(rotatedLocalCheckVec, -bboxAngles, true);
+	gVRRenderer.RotateVector(rotatedLocalCheckVec, -bboxAngles, true);
 	return VRPointInsideBBox(rotatedLocalCheckVec, bboxMins, bboxMaxs);
 }
 
