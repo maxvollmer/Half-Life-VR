@@ -1466,7 +1466,7 @@ int PRECACHE_SOUND(char* s)
 	std::string ssoundFilePath{ s };
 	if (ssoundFilePath.find("scientist/") == 0)
 	{
-		ssoundFilePath = std::regex_replace(ssoundFilePath, std::regex{ "scientist/" }, "fsci/");
+		ssoundFilePath = std::regex_replace(ssoundFilePath, std::regex{ "scientist/", std::regex_constants::icase }, "fsci/");
 		ALERT(at_console, "Precaching sound %s\n", ssoundFilePath.data());
 		PRECACHE_SOUND2(soundFilePathHolder.GetSoundFilePathPointer(ssoundFilePath));
 	}
@@ -1484,7 +1484,7 @@ void EMIT_AMBIENT_SOUND(edict_t *entity, float *pos, const char *sample, float v
 		{
 			if (ssample.find("!SC_") == 0)
 			{
-				ssample = std::regex_replace(ssample, std::regex{ "SC_" }, "FS_");
+				ssample = std::regex_replace(ssample, std::regex{ "SC_", std::regex_constants::icase }, "FS_");
 			}
 		}
 
@@ -1505,7 +1505,7 @@ void EMIT_AMBIENT_SOUND(edict_t *entity, float *pos, const char *sample, float v
 		{
 			if (ssample.find("scientist/") == 0)
 			{
-				ssample = std::regex_replace(ssample, std::regex{ "scientist/" }, "fsci/");
+				ssample = std::regex_replace(ssample, std::regex{ "scientist/", std::regex_constants::icase }, "fsci/");
 			}
 		}
 
@@ -1521,7 +1521,7 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		std::string ssample{ sample };
 		if (CBaseEntity::Instance(entity)->IsFemaleNPC())
 		{
- 			ssample = std::regex_replace(ssample, std::regex{"SC_"}, "FS_");
+ 			ssample = std::regex_replace(ssample, std::regex{ "SC_", std::regex_constants::icase }, "FS_");
 		}
 
 		char name[32];
@@ -1539,7 +1539,7 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		std::string ssample{ sample };
 		if (CBaseEntity::Instance(entity)->IsFemaleNPC() && ssample.find("scientist/") == 0)
 		{
-			ssample = std::regex_replace(ssample, std::regex{ "scientist/" }, "fsci/");
+			ssample = std::regex_replace(ssample, std::regex{ "scientist/", std::regex_constants::icase }, "fsci/");
 		}
 
 		EMIT_SOUND_DYN2(entity, channel, ssample.data(), volume, attenuation, flags, pitch);

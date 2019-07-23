@@ -129,6 +129,7 @@
 * Fixed some rotating levers not working with grab input
 * Fixed some buttons not working with touch input
 * Fixed screen fade effects rendering
+* Fixed some scripts using male voice for female scientists
 * Implemented proper grab animation for hands
 * (WIP) Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello")
 * 
