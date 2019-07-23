@@ -122,6 +122,7 @@ void VRRotatableEnt::VRRotate(CBaseEntity *pPlayer, const Vector& pos, bool fSta
 			m_vrRotateStartAngles = MyEntityPointer()->pev->angles;
 			m_vrWishDeltaAngle = 0.f;
 			m_vrLastWishAngleTime = gpGlobals->time;
+			StartVRDragRotation();
 		}
 		else
 		{

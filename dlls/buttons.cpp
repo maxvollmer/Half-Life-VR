@@ -808,6 +808,7 @@ public:
 	void Spawn( void );
 
 	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed) override;
+	virtual void StartVRDragRotation() override;
 	virtual bool SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta) override;
 	virtual void StopVRDragRotation() override;
 	virtual CBaseEntity* MyEntityPointer() override { return this; }
@@ -896,6 +897,10 @@ bool CRotButton::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, V
 	}
 
 	return false;
+}
+
+void CRotButton::StartVRDragRotation()
+{
 }
 
 bool CRotButton::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta)
@@ -1005,6 +1010,7 @@ public:
 	int		m_sounds;
 
 	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed) override;
+	virtual void StartVRDragRotation() override;
 	virtual bool SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta) override;
 	virtual void StopVRDragRotation() override;
 	virtual CBaseEntity* MyEntityPointer() override { return this; }
@@ -1100,6 +1106,10 @@ bool CMomentaryRotButton::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angl
 	maxRotSpeed = pev->speed;
 	SetThink(NULL);
 	return true;
+}
+
+void CMomentaryRotButton::StartVRDragRotation()
+{
 }
 
 bool CMomentaryRotButton::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta)

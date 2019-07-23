@@ -12,6 +12,7 @@ public:
 
 protected:
 	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed) = 0;
+	virtual void StartVRDragRotation() = 0;
 	virtual bool SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta) = 0;
 	virtual void StopVRDragRotation() = 0;
 	virtual CBaseEntity* MyEntityPointer() = 0;

@@ -30,7 +30,7 @@ public:
 	void PlayWeaponAnimation(int iAnim, int body);
 	void PlayWeaponMuzzleflash();
 
-	void SetHasFlashlight(bool hasFlashlight) { m_hasFlashlight = hasFlashlight; }
+	inline void SetHasFlashlight(bool hasFlashlight) { m_hasFlashlight = hasFlashlight; }
 
 	inline VRControllerID GetID() const { return m_id; }
 	inline const Vector& GetOffset() const { return m_offset; }

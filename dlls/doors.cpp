@@ -23,6 +23,8 @@
 #include "cbase.h"
 #include "doors.h"
 
+#include "VRRotatableEnt.h"
+
 
 extern void SetMovedir(entvars_t* ev);
 
@@ -804,12 +806,19 @@ button or trigger field activates the door.
 3)	stone chain
 4)	screechy metal
 */
-class CRotDoor : public CBaseDoor
+class CRotDoor : public CBaseDoor, VRRotatableEnt
 {
 public:
 	void Spawn( void );
 	virtual void SetToggleState( int state );
 	virtual int Restore(CRestore &restore);
+
+protected:
+	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed) override;
+	virtual void StartVRDragRotation() override;
+	virtual bool SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta) override;
+	virtual void StopVRDragRotation() override;
+	virtual CBaseEntity* MyEntityPointer() override { return this; }
 };
 
 LINK_ENTITY_TO_CLASS( func_door_rotating, CRotDoor );
@@ -911,6 +920,86 @@ void CRotDoor :: SetToggleState( int state )
 		pev->angles = m_vecAngle1;
 
 	UTIL_SetOrigin( pev, pev->origin );
+}
+
+
+bool CRotDoor::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed)
+{
+	if (!UTIL_IsMasterTriggered(m_sMaster, pPlayer))
+		return false;
+
+	m_hActivator = pPlayer;
+	angleStart = m_vecAngle1;
+	angleEnd = m_vecAngle2;
+	maxRotSpeed = pev->speed;
+
+	SetThink(NULL);
+	SetTouch(NULL);
+	SetUse(NULL);
+
+	return true;
+}
+
+void CRotDoor::StartVRDragRotation()
+{
+	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_NORM);
+}
+
+bool CRotDoor::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta)
+{
+	if (m_toggle_state == TS_AT_TOP)
+	{
+		m_toggle_state = TS_GOING_DOWN;
+	}
+	else if (m_toggle_state == TS_AT_BOTTOM)
+	{
+		m_toggle_state = TS_GOING_UP;
+	}
+
+	if (m_toggle_state == TS_GOING_UP && delta >= 1.f)
+	{
+		pev->angles = m_vecAngle2;
+		m_vecFinalAngle = m_vecAngle2;
+		SetMoveDone(&CBaseDoor::DoorHitTop);
+		AngularMoveDone();
+		return false;
+	}
+	else if (m_toggle_state == TS_GOING_DOWN && delta <= 0.f)
+	{
+		pev->angles = m_vecAngle1;
+		m_vecFinalAngle = m_vecAngle1;
+		SetMoveDone(&CBaseDoor::DoorHitBottom);
+		AngularMoveDone();
+		return false;
+	}
+	else
+	{
+		SetThink(NULL);
+		SetTouch(NULL);
+		SetUse(NULL);
+		pev->angles = angles;
+		return true;
+	}
+}
+
+void CRotDoor::StopVRDragRotation()
+{
+	SetUse(&CRotDoor::Use);
+
+	if (FBitSet(pev->spawnflags, SF_DOOR_USE_ONLY))
+		SetTouch(&CBaseDoor::DoorTouch);
+
+	if (m_toggle_state == TS_GOING_DOWN)
+	{
+		m_toggle_state = TS_AT_TOP;
+		SetMoveDone(&CBaseDoor::DoorHitBottom);
+	}
+	else if (m_toggle_state == TS_GOING_UP)
+	{
+		m_toggle_state = TS_AT_BOTTOM;
+		SetMoveDone(&CBaseDoor::DoorHitTop);
+	}
 }
 
 

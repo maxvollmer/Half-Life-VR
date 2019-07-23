@@ -22,8 +22,9 @@
 #include "VRRotatableEnt.h"
 
 
-#define SF_BUTTON_TOUCH_ONLY	256	// button only fires as a result of USE key.
-#define SF_DOOR_USE_ONLY		256	// door must be opened by player's use button.
+#define SF_BUTTON_TOUCH_ONLY	256		// button only fires as a result of USE key.
+#define SF_DOOR_PASSABLE		8
+#define SF_DOOR_USE_ONLY		256		// door must be opened by player's use button.
 
 #define	bits_COND_CLIENT_PUSH (bits_COND_SPECIAL1)
 
@@ -116,9 +117,15 @@ bool WasJustThrownByPlayer(CBasePlayer* pPlayer, EHANDLE hEntity)
 	return (gpGlobals->time - hEntity->m_spawnTime) < 2.f;
 }
 
+bool IsUsableDoor(EHANDLE hEntity)
+{
+	return (FClassnameIs(hEntity->pev, "func_door") || FClassnameIs(hEntity->pev, "func_door_rotating")) && FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY);
+}
+
 bool IsNonInteractingEntity(EHANDLE hEntity)
 {
-	return FClassnameIs(hEntity->pev, "func_wall")
+	return (hEntity->pev->solid == SOLID_NOT && !IsUsableDoor(hEntity))
+		|| FClassnameIs(hEntity->pev, "func_wall")
 		|| FClassnameIs(hEntity->pev, "func_illusionary")
 		|| FClassnameIs(hEntity->pev, "vr_controllermodel");	// TODO/NOTE: If this mod gets ever patched up for multiplayer, and you want players to be able to crowbar-fight, this should probably be changed
 }
@@ -131,7 +138,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 	if (controller.GetRadius() <= 0.f)
 		return false;
 
-	if ((hEntity->pev->solid == SOLID_NOT || IsNonInteractingEntity(hEntity)) && !IsDraggableEntity(hEntity))
+	if (IsNonInteractingEntity(hEntity) && !IsDraggableEntity(hEntity))
 		return false;
 
 	// Don't hit stuff we just threw ourselfes
@@ -178,6 +185,7 @@ bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE hEntity)
 	return FClassnameIs(hEntity->pev, "vr_easteregg")
 		|| FClassnameIs(hEntity->pev, "func_rot_button")
 		|| FClassnameIs(hEntity->pev, "momentary_rot_button")
+		|| (FClassnameIs(hEntity->pev, "func_door_rotating") && FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
 		|| FClassnameIs(hEntity->pev, "func_pushable")
 		|| (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f && FClassnameIs(hEntity->pev, "func_ladder"))
 		|| hEntity->IsDraggable();
@@ -270,8 +278,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 
 		if (HandleEasterEgg(pPlayer, hEntity, controller, isTouching, didTouchChange));	// easter egg first, obviously the most important
 		else if (HandleRetinaScanners(pPlayer, hEntity, controller, isTouching, didTouchChange));
-		else if (HandleButtons(pPlayer, hEntity, controller, isTouching, didTouchChange, isDragging, didDragChange));
-		else if (HandleDoors(pPlayer, hEntity, controller, isTouching, didTouchChange));
+		else if (HandleButtonsAndDoors(pPlayer, hEntity, controller, interaction));
 		else if (HandleRechargers(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleTriggers(pPlayer, hEntity, controller, isTouching, didTouchChange));
 		else if (HandleBreakables(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
@@ -454,17 +461,35 @@ bool VRControllerInteractionManager::HandleRetinaScanners(CBasePlayer *pPlayer, 
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isDragging, bool didDragChange)
+bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
 {
 	// Don't touch activate retina scanners
 	if (g_vrRetinaScannerButtons.count(hEntity) > 0)
 		return true;
 
-	if (FClassnameIs(hEntity->pev, "func_button"))
+	if (FClassnameIs(hEntity->pev, "func_door") || (FClassnameIs(hEntity->pev, "func_door_rotating") && !FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY)))
 	{
-		if (isTouching)
+		if (interaction.touching.didChange)
 		{
-			if (didTouchChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
+			if (interaction.touching.isSet)
+			{
+				if (FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
+				{
+					hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
+				}
+				else
+				{
+					hEntity->Touch(pPlayer);
+				}
+			}
+		}
+		return true;
+	}
+	else if (FClassnameIs(hEntity->pev, "func_button"))
+	{
+		if (interaction.touching.isSet)
+		{
+			if (interaction.touching.didChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
 			{
 				if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
 				{
@@ -478,14 +503,14 @@ bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE
 		}
 		return true;
 	}
-	else if (FClassnameIs(hEntity->pev, "func_rot_button") || FClassnameIs(hEntity->pev, "momentary_rot_button"))
+	else if (FClassnameIs(hEntity->pev, "func_rot_button") || FClassnameIs(hEntity->pev, "momentary_rot_button") || (FClassnameIs(hEntity->pev, "func_door_rotating") && FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY)))
 	{
 		VRRotatableEnt* pRotatableEnt = hEntity->MyRotatableEntPtr();
 		if (pRotatableEnt)
 		{
-			if (isDragging)
+			if (interaction.dragging.isSet)
 			{
-				if (didDragChange)
+				if (interaction.dragging.didChange)
 				{
 					pRotatableEnt->ClearDraggingCancelled();
 				}
@@ -494,30 +519,30 @@ bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE
 					Vector pos;
 					if (controller.GetAttachment(VR_MUZZLE_ATTACHMENT, pos))
 					{
-						pRotatableEnt->VRRotate(pPlayer, pos, didDragChange);
+						pRotatableEnt->VRRotate(pPlayer, pos, interaction.dragging.didChange);
 					}
 					else
 					{
-						pRotatableEnt->VRRotate(pPlayer, controller.GetPosition(), didDragChange);
+						pRotatableEnt->VRRotate(pPlayer, controller.GetPosition(), interaction.dragging.didChange);
 					}
 				}
 			}
-			else if (didDragChange)
+			else if (interaction.dragging.didChange)
 			{
 				pRotatableEnt->VRStopRotate();
 			}
 		}
 		else
 		{
-			if (isDragging && didDragChange)
+			if (interaction.dragging.isSet && interaction.dragging.didChange)
 			{
 				ALERT(at_console, "Error: Found rotating button not of type VRRotatableEnt: %s %s\n", STRING(hEntity->pev->classname), STRING(hEntity->pev->targetname));
 			}
 			if (FClassnameIs(hEntity->pev, "func_rot_button"))
 			{
-				if (isDragging)
+				if (interaction.dragging.isSet)
 				{
-					if (didDragChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
+					if (interaction.dragging.didChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
 					{
 						if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
 						{
@@ -533,35 +558,26 @@ bool VRControllerInteractionManager::HandleButtons(CBasePlayer *pPlayer, EHANDLE
 			}
 			else if (FClassnameIs(hEntity->pev, "momentary_rot_button"))
 			{
-				if (isDragging)
+				if (interaction.dragging.isSet)
 				{
 					hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
 				}
 				return true;
 			}
-		}
-		return true;
-	}
-
-	return false;
-}
-
-bool VRControllerInteractionManager::HandleDoors(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
-{
-	if (FClassnameIs(hEntity->pev, "func_door") || FClassnameIs(hEntity->pev, "func_door_rotating"))
-	{
-		if (didTouchChange)
-		{
-			if (isTouching)
+			else if (FClassnameIs(hEntity->pev, "func_door_rotating"))
 			{
-				if (FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
+				if (interaction.dragging.isSet && interaction.dragging.didChange)
 				{
-					hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
+					if (FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
+					{
+						hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
+					}
+					else
+					{
+						hEntity->Touch(pPlayer);
+					}
 				}
-				else
-				{
-					hEntity->Touch(pPlayer);
-				}
+				return true;
 			}
 		}
 		return true;
