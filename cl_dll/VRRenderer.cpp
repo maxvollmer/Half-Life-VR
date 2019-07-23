@@ -291,7 +291,7 @@ void VRRenderer::DrawTransparent()
 
 		RenderHUDSprites();
 
-		RenderScreenFade();
+		RenderScreenOverlays();
 
 		m_wasMenuJustRendered = false;
 	}

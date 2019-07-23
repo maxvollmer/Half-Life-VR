@@ -59,7 +59,8 @@ public:
 
 	// Called in DrawTransparent()
 	void RenderHUDSprites();
-	void RenderScreenFade();
+	void RenderScreenOverlays();
+	void DrawScreenFade();
 
 	// Called by HUD draw code
 	void VRHUDDrawBegin(const VRHUDRenderType renderType);

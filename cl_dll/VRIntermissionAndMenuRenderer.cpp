@@ -1,6 +1,7 @@
 
 #include <chrono>
 #include <unordered_set>
+#include <algorithm>
 
 #include "VRTextureHelper.h"
 
@@ -41,10 +42,19 @@
 
 
 extern globalvars_t *gpGlobals;
+extern engine_studio_api_t IEngineStudio;
 
-void VRRenderer::RenderScreenFade()
+
+void VRRenderer::DrawScreenFade()
 {
-	hlvrUnlockGLMatrices();
+	screenfade_t screenfade{ 0 };
+	gEngfuncs.pfnGetScreenFade(&screenfade);
+
+	if (screenfade.fadeReset == 0.f && screenfade.fadeEnd == 0.f)
+		return;
+
+	if ((m_hudRedrawTime > screenfade.fadeReset) && (m_hudRedrawTime > screenfade.fadeEnd))
+		return;
 
 	glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_TEXTURE_BIT);
 
@@ -55,7 +65,6 @@ void VRRenderer::RenderScreenFade()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -64,16 +73,64 @@ void VRRenderer::RenderScreenFade()
 	glPushMatrix();
 	glLoadIdentity();
 
-	// TODO: draw screen fade effect
-	screenfade_t screenfade;
-	gEngfuncs.pfnGetScreenFade(&screenfade);
-	//screenfade.fadealpha
+	byte fadealpha;
+	if (screenfade.fadeFlags & FFADE_STAYOUT)
+	{
+		fadealpha = screenfade.fadealpha;
+	}
+	else
+	{
+		fadealpha = screenfade.fadeSpeed * (screenfade.fadeEnd - m_hudRedrawTime);
+		if (screenfade.fadeFlags & FFADE_OUT)
+		{
+			fadealpha += screenfade.fadealpha;
+		}
+		fadealpha = std::clamp(fadealpha, byte(0), screenfade.fadealpha);
+	}
+
+	glColor4ub(screenfade.fader, screenfade.fadeg, screenfade.fadeb, fadealpha);
+
+	if (screenfade.fadeFlags & FFADE_MODULATE)
+	{
+		IEngineStudio.GL_SetRenderMode(kRenderTransAdd);
+	}
+	else
+	{
+		IEngineStudio.GL_SetRenderMode(kRenderTransTexture);
+	}
+
+	glBegin(GL_QUADS);
+	glVertex2f(0.f, 0.f);
+	glVertex2f(ScreenWidth, 0.f);
+	glVertex2f(ScreenWidth, ScreenHeight);
+	glVertex2f(0.f, ScreenHeight);
+	glEnd();
+
+	glColor4f(0.f, 0.f, 0.f, 0.f);
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+
+	glPopAttrib();
+}
+
+void VRRenderer::RenderScreenOverlays()
+{
+	hlvrUnlockGLMatrices();
+
+	DrawScreenFade();
+
+	glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_TEXTURE_BIT);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glShadeModel(GL_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// draw damage unless when being healed
 	// damage is drawn as pulsating red gradient overlay using a sine wave (well actually negative cosine so we start at 0, but who cares)
@@ -167,19 +224,19 @@ void VRRenderer::RenderScreenFade()
 			glBegin(GL_TRIANGLES);
 			glColor4fv(color);					glVertex3fv(viewOrg + topleftfront);
 			glColor4fv(color);					glVertex3fv(viewOrg + toprightfront);
-			glColor4f(0.0, 0.0, 0.0, 0.0);		glVertex3fv(viewOrg + centerfront);
+			glColor4f(0.f, 0.f, 0.f, 0.f);		glVertex3fv(viewOrg + centerfront);
 
 			glColor4fv(color);					glVertex3fv(viewOrg + bottomleftfront);
 			glColor4fv(color);					glVertex3fv(viewOrg + topleftfront);
-			glColor4f(0.0, 0.0, 0.0, 0.0);		glVertex3fv(viewOrg + centerfront);
+			glColor4f(0.f, 0.f, 0.f, 0.f);		glVertex3fv(viewOrg + centerfront);
 
 			glColor4fv(color);					glVertex3fv(viewOrg + bottomrightfront);
 			glColor4fv(color);					glVertex3fv(viewOrg + bottomleftfront);
-			glColor4f(0.0, 0.0, 0.0, 0.0);		glVertex3fv(viewOrg + centerfront);
+			glColor4f(0.f, 0.f, 0.f, 0.f);		glVertex3fv(viewOrg + centerfront);
 
 			glColor4fv(color);					glVertex3fv(viewOrg + toprightfront);
 			glColor4fv(color);					glVertex3fv(viewOrg + bottomrightfront);
-			glColor4f(0.0, 0.0, 0.0, 0.0);		glVertex3fv(viewOrg + centerfront);
+			glColor4f(0.f, 0.f, 0.f, 0.f);		glVertex3fv(viewOrg + centerfront);
 			glEnd();
 
 			// solid quads that go behind the vieworg to "close" any holes in ultra-wide fov headsets of the future or whatever
