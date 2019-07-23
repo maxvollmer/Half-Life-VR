@@ -112,11 +112,19 @@
 * Updated reactphysics3d to 0.7.1
 * Added EasyHook32 library for fixing "Mod_Extradata: caching failed" crashes
 
-0.4.9
+0.4.9 - 2019-07-23
 * Fixed bug where gibs (e.g. wood from broken crates) are dramatically oversized (was supposed to be fixed in 0.4.0, but the fix had a bug)
+* Fixed players falling through floor after using VR teleport (was supposed to be fixed in 0.4.7, but the fix only addressed half of the problem)
+* Fixed issues with pushable boxes that don't have a proper origin
 * Renamed cvars "vr_ladder_movement_speed" and "vr_ladder_movement_only_updown" to "vr_ladder_legacy_movement_speed" and "vr_ladder_legacy_movement_only_updown" respectively
 * Added cvars "vr_ladder_legacy_movement_enabled" and "vr_ladder_immersive_movement_enabled"
-* Implemented immersive ladder climbing: Grab ladders with controllers and pull up or down to move
+* Added cvar "vr_legacy_train_controls_enabled"
 * Removed "Grab" action and added "LeftGrab" and "RightGrab"
+* Removed outdated code that supports HUD sprites for resolutions below 640x480 (fixes issues with WMR)
+* Added immersive ladder climbing: Grab ladders with controllers and pull up or down to move
+* Added visual damage feedback in form of pulsating gradient overlay (dark blue for drowning, light blue for freezing, green for poison/radiation, red for every other damage)
 
+0.5.0
+* (WIP) Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello")
+* 
 
