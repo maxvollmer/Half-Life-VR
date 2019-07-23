@@ -41,6 +41,7 @@ public:
 	inline bool IsValid() const { return m_isValid && m_id != VRControllerID::INVALID; }
 	inline int GetWeaponId() const { return m_weaponId; }
 	inline bool IsMirrored() const { return m_isMirrored; }
+	inline bool IsBlocked() const { return m_isBlocked; }
 
 	inline const std::vector<HitBox>& GetHitBoxes() const { return m_hitboxes; }
 
@@ -95,6 +96,7 @@ private:
 	bool m_isValid{ false };
 	bool m_isDragging{ false };
 	bool m_isMirrored{ false };
+	bool m_isBlocked{ true };
 	string_t m_modelName{ 0 };
 	string_t m_bboxModelName{ 0 };
 	int m_bboxModelSequence{ 0 };

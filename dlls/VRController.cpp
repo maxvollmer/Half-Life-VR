@@ -64,6 +64,8 @@ void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool 
 	m_isMirrored = isMirrored;
 	m_weaponId = weaponId;
 
+	m_isBlocked = !UTIL_CheckClearSight(pPlayer->EyePosition(), m_position, ignore_monsters, dont_ignore_glass, pPlayer->edict()) || VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->EyePosition(), m_position);
+
 	UpdateModel(pPlayer);
 
 	UpdateHitBoxes();
