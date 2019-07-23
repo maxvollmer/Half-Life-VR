@@ -268,6 +268,7 @@
     <ClCompile Include="VRIntermissionAndMenuRenderer.cpp" />
     <ClCompile Include="VRModExtraDataCacheHook.cpp" />
     <ClCompile Include="VRMODExtradataErrorIntercepter.cpp" />
+    <ClCompile Include="VRSpeechListener.cpp" />
     <ClCompile Include="VRTextureHelper.cpp" />
     <ClCompile Include="vr_gl.cpp" />
     <ClCompile Include="VRHelper.cpp" />
@@ -327,6 +328,7 @@
     <ClInclude Include="VRInputAction.h" />
     <ClInclude Include="VRInputHandlers.h" />
     <ClInclude Include="VRMODExtradataErrorIntercepter.h" />
+    <ClInclude Include="VRSpeechListener.h" />
     <ClInclude Include="VRTextureHelper.h" />
     <ClInclude Include="vr_gl.h" />
     <ClInclude Include="VRHelper.h" />

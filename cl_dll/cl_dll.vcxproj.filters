@@ -349,6 +349,9 @@
     <ClCompile Include="VRModExtraDataCacheHook.cpp">
       <Filter>VR\helpers</Filter>
     </ClCompile>
+    <ClCompile Include="VRSpeechListener.cpp">
+      <Filter>VR\input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parsemsg.h">
@@ -518,6 +521,9 @@
     </ClInclude>
     <ClInclude Include="VRMODExtradataErrorIntercepter.h">
       <Filter>VR\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRSpeechListener.h">
+      <Filter>VR\input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
