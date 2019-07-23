@@ -143,6 +143,7 @@ void VRController::UpdateModel(CBasePlayer* pPlayer)
 	if (!FStrEq(STRING(pModel->pev->model), STRING(m_modelName)))
 	{
 		pModel->SetModel(m_modelName);
+		PlayWeaponAnimation(0, 0);
 	}
 
 	if (m_isValid)
@@ -169,6 +170,22 @@ void VRController::UpdateModel(CBasePlayer* pPlayer)
 		{
 			PlayWeaponAnimation(FULLGRAB_END, 0);
 		}
+	}
+
+	if (m_weaponId == WEAPON_BAREHAND && m_hasFlashlight)
+	{
+		if (pPlayer->FlashlightIsOn())
+		{
+			pModel->pev->body = 3;
+		}
+		else
+		{
+			pModel->pev->body = 1;
+		}
+	}
+	else
+	{
+		pModel->pev->body = 0;
 	}
 }
 

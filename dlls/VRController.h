@@ -30,6 +30,8 @@ public:
 	void PlayWeaponAnimation(int iAnim, int body);
 	void PlayWeaponMuzzleflash();
 
+	void SetHasFlashlight(bool hasFlashlight) { m_hasFlashlight = hasFlashlight; }
+
 	inline VRControllerID GetID() const { return m_id; }
 	inline const Vector& GetOffset() const { return m_offset; }
 	inline const Vector& GetPosition() const { return m_position; }
@@ -97,6 +99,7 @@ private:
 	bool m_isDragging{ false };
 	bool m_isMirrored{ false };
 	bool m_isBlocked{ true };
+	bool m_hasFlashlight{ false };
 	string_t m_modelName{ 0 };
 	string_t m_bboxModelName{ 0 };
 	int m_bboxModelSequence{ 0 };

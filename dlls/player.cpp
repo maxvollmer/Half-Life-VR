@@ -5111,6 +5111,11 @@ void CBasePlayer::PlayVRWeaponMuzzleflash()
 
 void CBasePlayer::UpdateFlashlight()
 {
+	// always call GetFlashlightPose, as it sets/unsets hand model flashlight body on the appropriate controller(s)
+	Vector position;
+	Vector dir;
+	GetFlashlightPose(position, dir);
+
 	if (FlashlightIsOn())
 	{
 		if (hFlashlightMonster)
@@ -5120,9 +5125,6 @@ void CBasePlayer::UpdateFlashlight()
 		}
 		if (hFlashLight)
 		{
-			Vector position;
-			Vector dir;
-			GetFlashlightPose(position, dir);
 			TraceResult tr;
 			UTIL_TraceLine(position, dir * 8192., dont_ignore_monsters, edict(), &tr);
 			CBaseMonster *pFlashlightMonster = CBaseEntity::GetMonsterPointer(tr.pHit);
@@ -5202,6 +5204,11 @@ void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 {
 	int attachment = int(CVAR_GET_FLOAT("vr_flashlight_attachment"));
 
+	for (auto& controller : m_vrControllers)
+	{
+		controller.second.SetHasFlashlight(false);
+	}
+
 	if (attachment == VR_FLASHLIGHT_ATTACHMENT_POSE)
 	{
 		if (m_vrHasFlashlightPose)
@@ -5235,6 +5242,7 @@ void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 				position = m_vrControllers[VRControllerID::HAND].GetPosition();
 				UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::HAND].GetAngles(), dir, nullptr, nullptr);
 			}
+			m_vrControllers[VRControllerID::HAND].SetHasFlashlight(true);
 			return;
 		}
 		else
@@ -5262,6 +5270,7 @@ void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 				position = m_vrControllers[VRControllerID::WEAPON].GetPosition();
 				UTIL_MakeAimVectorsPrivate(m_vrControllers[VRControllerID::WEAPON].GetAngles(), dir, nullptr, nullptr);
 			}
+			m_vrControllers[VRControllerID::WEAPON].SetHasFlashlight(true);
 			return;
 		}
 		else
