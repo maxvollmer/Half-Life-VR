@@ -132,7 +132,7 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& tele
 		DisableXenMoundParabola();
 	}
 
-	vr_vecTeleDestination = teleportDestination;
+	vr_vecTeleDestination = teleportDestination + Vector{ 0.f, 0.f, 1.f };
 	UTIL_SetOrigin(vr_pTeleSprite->pev, teleportDestination);
 
 	bool isTeleporterBlocked =
@@ -151,26 +151,28 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer *pPlayer, const Vector& tele
 		vr_pTeleBeam->pev->rendercolor = Vector(0, 255, 0);
 
 		// Check if we need to duck for this destination (e.g. teleporting inside a duct)
-		TraceResult trStanding;
-		UTIL_TraceLine(vr_vecTeleDestination, vr_vecTeleDestination + VEC_HULL_MAX - VEC_HULL_MIN, ignore_monsters, pPlayer->edict(), &trStanding);
-		if (tr.flFraction < 1.f)
+		vr_needsToDuckAfterTeleport = needsToDuck;
+		if (!vr_needsToDuckAfterTeleport)
 		{
-			vr_needsToDuckAfterTeleport = true;
-			// Check if head would be in ceiling even when ducking and move destination down
-			TraceResult trDucking;
-			UTIL_TraceLine(vr_vecTeleDestination, vr_vecTeleDestination + VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN, ignore_monsters, pPlayer->edict(), &trDucking);
-			if (tr.flFraction < 1.f)
+			TraceResult trStanding;
+			UTIL_TraceLine(vr_vecTeleDestination, vr_vecTeleDestination + VEC_HULL_MAX - VEC_HULL_MIN, ignore_monsters, pPlayer->edict(), &trStanding);
+			if (trStanding.flFraction < 1.f)
 			{
-				// TODO: This will essentially make the player stuck - decide if we simply disallow teleporting here, this is probably an invalid destination!
-				vr_vecTeleDestination.z -= (VEC_DUCK_HULL_MAX.z - VEC_DUCK_HULL_MIN.z) * (1.f - tr.flFraction);
+				vr_needsToDuckAfterTeleport = true;
+				// Check if head would be in ceiling even when ducking and move destination down
+				TraceResult trDucking;
+				UTIL_TraceLine(vr_vecTeleDestination, vr_vecTeleDestination + VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN, ignore_monsters, pPlayer->edict(), &trDucking);
+				if (trDucking.flFraction < 1.f)
+				{
+					// TODO: This will essentially make the player stuck - decide if we simply disallow teleporting here, this is probably an invalid destination!
+					//vr_vecTeleDestination.z -= (VEC_DUCK_HULL_MAX.z - VEC_DUCK_HULL_MIN.z) * (1.f - tr.flFraction);
+					vr_fValidTeleDestination = false;
+				}
 			}
 		}
-		else
-		{
-			vr_needsToDuckAfterTeleport = needsToDuck;
-		}
 	}
-	else
+
+	if (!vr_fValidTeleDestination)
 	{
 		vr_pTeleSprite->pev->rendercolor = Vector(255, 0, 0);
 		vr_pTeleBeam->pev->rendercolor = Vector(255, 0, 0);
