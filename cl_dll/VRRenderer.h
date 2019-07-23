@@ -84,8 +84,13 @@ public:
 
 	void SetViewOfs(const Vector& viewOfs);
 
-private:
+	void RotateVectorX(Vector &vecToRotate, const float angle);
+	void RotateVectorY(Vector &vecToRotate, const float angle);
+	void RotateVectorZ(Vector &vecToRotate, const float angle);
+	void RotateVector(Vector &vecToRotate, const Vector &vecAngles, const bool reverse = false);
+	void HLAnglesToGLMatrix(const Vector& angles, float matrix[16]);
 
+private:
 	struct model_s* m_currentMapModel{ nullptr };
 	bool m_hdTexturesEnabled{ false };
 	void RenderWorldBackfaces();
@@ -116,11 +121,16 @@ private:
 	float m_hudRedrawTime{0.f};
 	int m_hudRedrawIntermission{0};
 
+	bool m_isDrawingDamage{ false };
+	float m_flDrawingDamageTime = 0.f;
+	Vector m_damageColor;
+
 	void GetStartingPosForHUDRenderType(const VRHUDRenderType m_hudRenderType, float & hudStartPositionUpOffset, float & hudStartPositionRightOffset);
 	bool GetHUDSpriteOriginAndOrientation(const VRHUDRenderType m_hudRenderType, Vector& origin, Vector& forward, Vector& right, Vector& up);
 	bool GetHUDAmmoOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up);
 	bool GetHUDHealthOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up);
 	bool GetHUDFlashlightOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up);
+
 };
 
 extern VRRenderer gVRRenderer;

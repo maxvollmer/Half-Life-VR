@@ -61,7 +61,7 @@ namespace
 	constexpr const int VR_HUD_SPRITE_OFFSET_STEPSIZE = 40;
 }
 
-void RotateVectorX(Vector &vecToRotate, const float angle)
+void VRRenderer::RotateVectorX(Vector &vecToRotate, const float angle)
 {
 	if (angle != 0.f)
 	{
@@ -76,7 +76,7 @@ void RotateVectorX(Vector &vecToRotate, const float angle)
 	}
 }
 
-void RotateVectorY(Vector &vecToRotate, const float angle)
+void VRRenderer::RotateVectorY(Vector &vecToRotate, const float angle)
 {
 	if (angle != 0.f)
 	{
@@ -91,7 +91,7 @@ void RotateVectorY(Vector &vecToRotate, const float angle)
 	}
 }
 
-void RotateVectorZ(Vector &vecToRotate, const float angle)
+void VRRenderer::RotateVectorZ(Vector &vecToRotate, const float angle)
 {
 	if (angle != 0.f)
 	{
@@ -106,7 +106,7 @@ void RotateVectorZ(Vector &vecToRotate, const float angle)
 	}
 }
 
-void RotateVector(Vector &vecToRotate, const Vector &vecAngles, const bool reverse = false)
+void VRRenderer::RotateVector(Vector &vecToRotate, const Vector &vecAngles, const bool reverse)
 {
 	if (vecToRotate.LengthSquared() > 0.f && vecAngles.LengthSquared() > 0.f)
 	{
@@ -125,7 +125,7 @@ void RotateVector(Vector &vecToRotate, const Vector &vecAngles, const bool rever
 	}
 }
 
-inline void HLAnglesToGLMatrix(const Vector& angles, float matrix[16])
+void VRRenderer::HLAnglesToGLMatrix(const Vector& angles, float matrix[16])
 {
 	Vector modifiedAngles = -angles;
 	Vector forward{ 1.f, 0.f, 0.f };
