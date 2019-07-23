@@ -163,6 +163,29 @@
       <DeploymentContent>true</DeploymentContent>
     </None>
   </ItemGroup>
+  
+  
+  <ItemGroup Label="Win32 and v142 and Release" Condition="'$(Platform.ToLower())' == 'win32' And '$(PlatformToolset.ToLower())' == 'v142' And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <None Include="$(MSBuildThisFileDirectory)../..//build/native/bin/Win32\v141\Release\EasyHook32.dll" Condition="(('$(AppContainerApplication.ToLower())' == 'true')) OR (('$(TargetPlatformIdentifier.ToLower())' == 'windows phone' And '$(TargetPlatformVersion)' == '8.0'))">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup Label="Win32 and v142 and Debug" Condition="'$(Platform.ToLower())' == 'win32' And '$(PlatformToolset.ToLower())' == 'v142' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <None Include="$(MSBuildThisFileDirectory)../..//build/native/bin/Win32\v141\Debug\EasyHook32.dll" Condition="(('$(AppContainerApplication.ToLower())' == 'true')) OR (('$(TargetPlatformIdentifier.ToLower())' == 'windows phone' And '$(TargetPlatformVersion)' == '8.0'))">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup Label="x64 and v142 and Release" Condition="'$(Platform.ToLower())' == 'x64' And '$(PlatformToolset.ToLower())' == 'v142' And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <None Include="$(MSBuildThisFileDirectory)../..//build/native/bin/x64\v141\Release\EasyHook64.dll" Condition="(('$(AppContainerApplication.ToLower())' == 'true')) OR (('$(TargetPlatformIdentifier.ToLower())' == 'windows phone' And '$(TargetPlatformVersion)' == '8.0'))">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup Label="x64 and v142 and Debug" Condition="'$(Platform.ToLower())' == 'x64' And '$(PlatformToolset.ToLower())' == 'v142' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <None Include="$(MSBuildThisFileDirectory)../..//build/native/bin/x64\v141\Debug\EasyHook64.dll" Condition="(('$(AppContainerApplication.ToLower())' == 'true')) OR (('$(TargetPlatformIdentifier.ToLower())' == 'windows phone' And '$(TargetPlatformVersion)' == '8.0'))">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  
   <ItemGroup>
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)\default-propertiesui.xml" />
   </ItemGroup>
@@ -215,6 +238,21 @@
   <Target Name="EasyHookNativePackage_redist_AfterBuild_x64_and_v141_and_Debug" Label="x64 and v141 and Debug" Condition="'$(Platform.ToLower())' == 'x64' And '$(PlatformToolset.ToLower())' == 'v141' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )" AfterTargets="EasyHookNativePackage_redist_AfterBuild">
     <Copy SourceFiles="$(MSBuildThisFileDirectory)../..//build/native/bin/x64\v141\Debug\EasyHook64.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
   </Target>
+  
+  <Target Name="EasyHookNativePackage_redist_AfterBuild_Win32_and_v142_and_Release" Label="Win32 and v142 and Release" Condition="'$(Platform.ToLower())' == 'win32' And '$(PlatformToolset.ToLower())' == 'v142' And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )" AfterTargets="EasyHookNativePackage_redist_AfterBuild">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)../..//build/native/bin/Win32\v141\Release\EasyHook32.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="EasyHookNativePackage_redist_AfterBuild_Win32_and_v142_and_Debug" Label="Win32 and v142 and Debug" Condition="'$(Platform.ToLower())' == 'win32' And '$(PlatformToolset.ToLower())' == 'v142' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )" AfterTargets="EasyHookNativePackage_redist_AfterBuild">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)../..//build/native/bin/Win32\v141\Debug\EasyHook32.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="EasyHookNativePackage_redist_AfterBuild_x64_and_v142_and_Release" Label="x64 and v142 and Release" Condition="'$(Platform.ToLower())' == 'x64' And '$(PlatformToolset.ToLower())' == 'v142' And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )" AfterTargets="EasyHookNativePackage_redist_AfterBuild">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)../..//build/native/bin/x64\v141\Release\EasyHook64.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="EasyHookNativePackage_redist_AfterBuild_x64_and_v142_and_Debug" Label="x64 and v142 and Debug" Condition="'$(Platform.ToLower())' == 'x64' And '$(PlatformToolset.ToLower())' == 'v142' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )" AfterTargets="EasyHookNativePackage_redist_AfterBuild">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)../..//build/native/bin/x64\v141\Debug\EasyHook64.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+  
+  
   <UsingTask TaskName="EasyHookNativePackage_redist_Contains" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" TaskFactory="CodeTaskFactory">
     <ParameterGroup>
       <Text Output="false" ParameterType="System.String" />

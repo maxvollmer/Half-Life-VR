@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <memory>
 
 class CSpEvent;
 struct ISpRecoGrammar;
