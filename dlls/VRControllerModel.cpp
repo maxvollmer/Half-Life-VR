@@ -71,36 +71,26 @@ void CVRControllerModel::TurnOn()
 void CVRControllerModel::SetSequence(int sequence)
 {
 	pev->sequence = sequence;
+	pev->frame = 0.f;
 	ResetSequenceInfo();
 }
 
 void CVRControllerModel::ControllerModelThink()
 {
-	pev->nextthink = gpGlobals->time + 0.1f;
-
-	float flInterval = StudioFrameAdvance();
-	DispatchAnimEvents(flInterval);
 	if (m_fSequenceFinished)
 	{
-		int iSequence;
 		if (m_fSequenceLoops)
 		{
-			iSequence = LookupActivity(Activity::ACT_IDLE);
+			SetSequence(pev->sequence);
 		}
-		else
-		{
-			iSequence = LookupActivityHeaviest(Activity::ACT_IDLE);
-		}
-		if (iSequence != ACTIVITY_NOT_AVAILABLE)
-		{
-			pev->sequence = iSequence;
-		}
-		else
-		{
-			pev->sequence = 0;
-		}
-		ResetSequenceInfo();
 	}
+	else
+	{
+		float flInterval = StudioFrameAdvance();
+		DispatchAnimEvents(flInterval);
+	}
+
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CVRControllerModel::HandleClientAnimEvent(ClientAnimEvent_t *pEvent)

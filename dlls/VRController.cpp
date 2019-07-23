@@ -30,6 +30,17 @@ VRController::~VRController()
 #endif
 }
 
+enum HandModelSequences {
+	IDLE = 0,
+	POINT_START,
+	POINT_END,
+	WAIT_START,
+	WAIT_END,
+	HALFGRAB_START,
+	HALFGRAB_END,
+	FULLGRAB_START,
+	FULLGRAB_END
+};
 
 
 void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, VRControllerID id, int weaponId)
@@ -148,9 +159,16 @@ void VRController::UpdateModel(CBasePlayer* pPlayer)
 		pModel->TurnOff();
 	}
 
-	if (m_isDragging && m_weaponId == WEAPON_BAREHAND && pModel->pev->sequence != 1)
+	if (m_weaponId == WEAPON_BAREHAND)
 	{
-		PlayWeaponAnimation(1, 0);
+		if (m_isDragging && pModel->pev->sequence != FULLGRAB_START)
+		{
+			PlayWeaponAnimation(FULLGRAB_START, 0);
+		}
+		else if (!m_isDragging && pModel->pev->sequence == FULLGRAB_START)
+		{
+			PlayWeaponAnimation(FULLGRAB_END, 0);
+		}
 	}
 }
 
@@ -255,12 +273,12 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 	auto& modelInfo = VRModelHelper::GetInstance().GetModelInfo(pModel);
 	if (modelInfo.m_isValid && iAnim < modelInfo.m_numSequences)
 	{
-		// ALERT(at_console, "VRController::PlayWeaponAnimation: Playing sequence %i of %i with framerate %.0f for %s (%s)\n", iAnim, modelInfo.m_numSequences, modelInfo.m_sequences[iAnim].framerate, STRING(m_modelName), STRING(pModel->pev->model));
+		ALERT(at_console, "VRController::PlayWeaponAnimation: Playing sequence %i of %i with framerate %.0f for %s\n", iAnim, modelInfo.m_numSequences, modelInfo.m_sequences[iAnim].framerate, STRING(m_modelName));
 		pModel->SetSequence(iAnim);
 	}
 	else
 	{
-		// ALERT(at_console, "VRController::PlayWeaponAnimation: Invalid sequence %i of %i for %s (%s)\n", iAnim, modelInfo.m_numSequences, STRING(m_modelName), STRING(pModel->pev->model));
+		ALERT(at_console, "VRController::PlayWeaponAnimation: Invalid sequence %i of %i for %s\n", iAnim, modelInfo.m_numSequences, STRING(m_modelName));
 		pModel->SetSequence(0);
 	}
 }
