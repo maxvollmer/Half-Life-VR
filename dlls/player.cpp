@@ -1864,7 +1864,6 @@ void CBasePlayer::PreThink(void)
 	if ( m_afPhysicsFlags & PFLAG_ONTRAIN )
 	{
 		CBaseEntity *pTrain = CBaseEntity::Instance( pev->groundentity );
-		float vel;
 		
 		if ( !pTrain )
 		{
@@ -1895,19 +1894,6 @@ void CBasePlayer::PreThink(void)
 			return;
 		}
 
-		pev->velocity = g_vecZero;
-		vel = 0;
-		if ( m_afButtonPressed & IN_FORWARD )
-		{
-			vel = 1;
-			pTrain->Use( this, this, USE_SET, (float)vel );
-		}
-		else if ( m_afButtonPressed & IN_BACK )
-		{
-			vel = -1;
-			pTrain->Use( this, this, USE_SET, (float)vel );
-		}
-
 		Vector forward;
 		Vector right;
 		Vector up;
@@ -1915,10 +1901,26 @@ void CBasePlayer::PreThink(void)
 		vr_trainControlPosition = pTrain->pev->origin + (forward * -48.f) + (right * 16.f) + (up * 24.f);
 		vr_trainControlYaw = pTrain->pev->angles.y;
 
-		if (vel)
+		if (CVAR_GET_FLOAT("vr_legacy_train_controls_enabled") != 0.f)
 		{
-			m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
-			m_iTrain |= TRAIN_ACTIVE|TRAIN_NEW;
+			pev->velocity = g_vecZero;
+			float vel = 0;
+			if (m_afButtonPressed & IN_FORWARD)
+			{
+				vel = 1;
+				pTrain->Use(this, this, USE_SET, (float)vel);
+			}
+			else if (m_afButtonPressed & IN_BACK)
+			{
+				vel = -1;
+				pTrain->Use(this, this, USE_SET, (float)vel);
+			}
+
+			if (vel)
+			{
+				m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
+				m_iTrain |= TRAIN_ACTIVE | TRAIN_NEW;
+			}
 		}
 	}
 	else if (m_iTrain & TRAIN_ACTIVE)
