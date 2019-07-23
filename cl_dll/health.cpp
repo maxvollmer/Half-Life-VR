@@ -112,8 +112,12 @@ int CHudHealth:: MsgFunc_Health(const char *pszName,  int iSize, void *pbuf )
 	if (x != m_iHealth)
 	{
 		m_fFade = FADE_TIME;
-		m_iHealth = x;
 	}
+
+	m_healthLost = x < m_iHealth;
+	m_healthGained = x > m_iHealth;
+
+	m_iHealth = x;
 
 	return 1;
 }

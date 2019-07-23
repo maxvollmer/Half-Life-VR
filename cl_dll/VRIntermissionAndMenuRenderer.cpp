@@ -44,10 +44,176 @@ extern globalvars_t *gpGlobals;
 
 void VRRenderer::RenderScreenFade()
 {
-	// TODO...
+	hlvrUnlockGLMatrices();
+
+	glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_TEXTURE_BIT);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glShadeModel(GL_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	// TODO: draw screen fade effect
 	screenfade_t screenfade;
 	gEngfuncs.pfnGetScreenFade(&screenfade);
 	//screenfade.fadealpha
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	// draw damage unless when being healed
+	// damage is drawn as pulsating red gradient overlay using a sine wave (well actually negative cosine so we start at 0, but who cares)
+	bool hasDamage = gHUD.m_Health.m_fAttackFront > 0 || gHUD.m_Health.m_fAttackRear > 0 || gHUD.m_Health.m_fAttackLeft > 0 || gHUD.m_Health.m_fAttackRight > 0
+		|| gHUD.m_Health.m_iHealth <= 15
+		|| gHUD.m_Health.m_bitsDamage
+		|| (gHUD.m_Health.m_fFade && gHUD.m_Health.m_healthLost);
+
+	bool isBeingHealed = gHUD.m_Health.m_fFade && gHUD.m_Health.m_healthGained;
+
+	if ((hasDamage || m_isDrawingDamage) && !isBeingHealed)
+	{
+		float brightness = 0.f;
+
+		if (!m_isDrawingDamage)
+		{
+			m_flDrawingDamageTime = gHUD.m_flTime;
+			m_isDrawingDamage = true;
+			brightness = 0.f;
+		}
+		else
+		{
+			constexpr const float speed = 2.f;
+			brightness = (-cos((gHUD.m_flTime - m_flDrawingDamageTime) * speed) + 1.f) * 0.5f;
+		}
+
+		// recalculate damage color everytime we fade out
+		if (brightness < 0.01f)
+		{
+			if (gHUD.m_Health.m_bitsDamage & DMG_DROWN)
+			{
+				// dark blue
+				m_damageColor = Vector{ 0.2f, 0.3f, 0.7f };
+			}
+			else if (gHUD.m_Health.m_bitsDamage & (DMG_FREEZE | DMG_SLOWFREEZE))
+			{
+				// light blue
+				m_damageColor = Vector{ 0.4f, 0.7f, 1.f };
+			}
+			else if (gHUD.m_Health.m_bitsDamage & (DMG_POISON | DMG_ACID | DMG_NERVEGAS | DMG_RADIATION))
+			{
+				// green
+				m_damageColor = Vector{ 0.4f, 0.8f, 0.f };
+			}
+			else
+			{
+				// any other damage is red
+				m_damageColor = Vector{ 1.f, 0.f, 0.f };
+			}
+		}
+
+		if (brightness < 0.01f && !hasDamage)
+		{
+			// we were just drawing the last "fade out"
+			m_isDrawingDamage = false;
+		}
+		else
+		{
+			Vector viewOrg;
+			Vector viewAngles;
+			vrHelper->GetViewOrg(viewOrg);
+			vrHelper->GetViewAngles(vr::EVREye::Eye_Left, viewAngles);
+
+			Vector topleftfront{ 8.f, -32.f, 32.f };
+			Vector toprightfront{ 8.f, 32.f, 32.f };
+			Vector bottomleftfront{ 8.f, -32.f, -32.f };
+			Vector bottomrightfront{ 8.f, 32.f, -32.f };
+			Vector centerfront{ 8.f, 0.f, 0.f };
+			Vector topleftback{ -8.f, topleftfront.y * 100.f, topleftfront.z * 100.f };
+			Vector toprightback{ -8.f, toprightfront.y * 100.f, toprightfront.z * 100.f };
+			Vector bottomleftback{ -8.f, bottomleftfront.y * 100.f, bottomleftfront.z * 100.f };
+			Vector bottomrightback{ -8.f, bottomrightfront.y * 100.f, bottomrightfront.z * 100.f };
+
+			RotateVector(topleftfront, viewAngles);
+			RotateVector(toprightfront, viewAngles);
+			RotateVector(bottomleftfront, viewAngles);
+			RotateVector(bottomrightfront, viewAngles);
+			RotateVector(centerfront, viewAngles);
+			RotateVector(topleftback, viewAngles);
+			RotateVector(toprightback, viewAngles);
+			RotateVector(bottomleftback, viewAngles);
+			RotateVector(bottomrightback, viewAngles);
+
+			float color[4];
+			m_damageColor.CopyToArray(color);
+			color[3] = brightness;
+
+			// good old legacy opengl xD
+
+			// gradient triangles forming a rectangular overlay in front of player that goes from solid red on the border to transparent in the center
+			glBegin(GL_TRIANGLES);
+			glColor4fv(color);					glVertex3fv(viewOrg + topleftfront);
+			glColor4fv(color);					glVertex3fv(viewOrg + toprightfront);
+			glColor4f(0.0, 0.0, 0.0, 0.0);		glVertex3fv(viewOrg + centerfront);
+
+			glColor4fv(color);					glVertex3fv(viewOrg + bottomleftfront);
+			glColor4fv(color);					glVertex3fv(viewOrg + topleftfront);
+			glColor4f(0.0, 0.0, 0.0, 0.0);		glVertex3fv(viewOrg + centerfront);
+
+			glColor4fv(color);					glVertex3fv(viewOrg + bottomrightfront);
+			glColor4fv(color);					glVertex3fv(viewOrg + bottomleftfront);
+			glColor4f(0.0, 0.0, 0.0, 0.0);		glVertex3fv(viewOrg + centerfront);
+
+			glColor4fv(color);					glVertex3fv(viewOrg + toprightfront);
+			glColor4fv(color);					glVertex3fv(viewOrg + bottomrightfront);
+			glColor4f(0.0, 0.0, 0.0, 0.0);		glVertex3fv(viewOrg + centerfront);
+			glEnd();
+
+			// solid quads that go behind the vieworg to "close" any holes in ultra-wide fov headsets of the future or whatever
+			glBegin(GL_QUADS);
+			glColor4fv(color);		glVertex3fv(viewOrg + topleftfront);
+			glColor4fv(color);		glVertex3fv(viewOrg + toprightfront);
+			glColor4fv(color);		glVertex3fv(viewOrg + toprightback);
+			glColor4fv(color);		glVertex3fv(viewOrg + topleftback);
+
+			glColor4fv(color);		glVertex3fv(viewOrg + bottomleftfront);
+			glColor4fv(color);		glVertex3fv(viewOrg + topleftfront);
+			glColor4fv(color);		glVertex3fv(viewOrg + topleftback);
+			glColor4fv(color);		glVertex3fv(viewOrg + bottomleftback);
+
+			glColor4fv(color);		glVertex3fv(viewOrg + bottomrightfront);
+			glColor4fv(color);		glVertex3fv(viewOrg + bottomleftfront);
+			glColor4fv(color);		glVertex3fv(viewOrg + bottomleftback);
+			glColor4fv(color);		glVertex3fv(viewOrg + bottomrightback);
+
+			glColor4fv(color);		glVertex3fv(viewOrg + toprightfront);
+			glColor4fv(color);		glVertex3fv(viewOrg + bottomrightfront);
+			glColor4fv(color);		glVertex3fv(viewOrg + bottomrightback);
+			glColor4fv(color);		glVertex3fv(viewOrg + toprightback);
+			glEnd();
+		}
+	}
+	else
+	{
+		m_isDrawingDamage = false;
+	}
+
+	glPopAttrib();
+
+	hlvrLockGLMatrices();
 }
 
 void RenderCube()
