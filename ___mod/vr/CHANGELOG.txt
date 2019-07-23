@@ -124,7 +124,3 @@
 * Added immersive ladder climbing: Grab ladders with controllers and pull up or down to move
 * Added visual damage feedback in form of pulsating gradient overlay (dark blue for drowning, light blue for freezing, green for poison/radiation, red for every other damage)
 
-0.5.0
-* (WIP) Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello")
-* 
-
