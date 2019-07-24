@@ -30,7 +30,10 @@ void* GetOpenGLFuncAddress(const char *name)
 		(p == (void*)-1))
 	{
 		HMODULE module = LoadLibraryA("opengl32.dll");
-		p = (void *)GetProcAddress(module, name);
+		if (module)
+		{
+			p = (void*)GetProcAddress(module, name);
+		}
 	}
 	return p;
 #else
@@ -38,43 +41,111 @@ void* GetOpenGLFuncAddress(const char *name)
 #endif
 }
 
+#include <functional>
+#include <stdexcept>
+#include <string>
+#include <iostream>
+#include <sstream>
+#include "hud.h"
+#include "cl_util.h"
+#include "VRInput.h"
+
+class OGLErrorException : public std::exception
+{
+public:
+	OGLErrorException(const std::string& errormsg) :
+		m_errormsg{ errormsg }
+	{
+	}
+
+	virtual char const* what() const override
+	{
+		return m_errormsg.data();
+	}
+
+private:
+	std::string m_errormsg;
+};
+
+void TryTryGLCall(std::function<void()> call, const char* name)
+{
+	call();
+	auto error = glGetError();
+	if (error != GL_NO_ERROR)
+	{
+		std::stringstream errormsg;
+		errormsg << "OpenGL call \"";
+		errormsg << name;
+		errormsg << "\"failed with error: ";
+		errormsg << error;
+		throw OGLErrorException{ errormsg.str() };
+	}
+}
+
+#define TryGLCall(call, ...) TryTryGLCall([&](){call(__VA_ARGS__);}, #call)
+
 bool CreateGLTexture(unsigned int* texture, int width, int height)
 {
 	extern bool gIsOwnCallToGenTextures;
 	gIsOwnCallToGenTextures = true;
-	glEnable(GL_TEXTURE_2D);
-	glActiveTexture(GL_TEXTURE0);
-	if (*texture)
+
+	try
 	{
-		glDeleteTextures(1, texture);
+		TryGLCall(glEnable, GL_TEXTURE_2D);
+		TryGLCall(glEnable, GL_TEXTURE_2D);
+		TryGLCall(glActiveTexture, GL_TEXTURE0);
+		if (*texture)
+		{
+			TryGLCall(glDeleteTextures, 1, texture);
+		}
+		TryGLCall(glGenTextures, 1, texture);
+		TryGLCall(glBindTexture, GL_TEXTURE_2D, *texture);
+		TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_BYTE, nullptr);
+		TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		TryGLCall(glBindTexture, GL_TEXTURE_2D, 0);
 	}
-	glGenTextures(1, texture);
-	glBindTexture(GL_TEXTURE_2D, *texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_BYTE, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	catch (const OGLErrorException& e)
+	{
+		gEngfuncs.Con_DPrintf("%s\n", e.what());
+		std::cerr << e.what() << std::endl << std::flush;
+		g_vrInput.DisplayErrorPopup(e.what());
+		*texture = 0;
+	}
+
 	gIsOwnCallToGenTextures = false;
-	return *texture != 0; // TODO: Proper error handling
+	return *texture != 0;
 }
 
 bool CreateGLFrameBuffer(unsigned int* framebuffer, unsigned int texture, int width, int height)
 {
-	glGenFramebuffers(1, framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, *framebuffer);
+	unsigned int rbo = 0;
 
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	try
+	{
+		TryGLCall(glGenFramebuffers, 1, framebuffer);
+		TryGLCall(glBindFramebuffer, GL_FRAMEBUFFER, *framebuffer);
 
-	unsigned int rbo;
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		TryGLCall(glFramebufferTexture2D, GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		TryGLCall(glGenRenderbuffers, 1, &rbo);
+		TryGLCall(glBindRenderbuffer, GL_RENDERBUFFER, rbo);
+		TryGLCall(glRenderbufferStorage, GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+		TryGLCall(glFramebufferRenderbuffer, GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+		TryGLCall(glBindRenderbuffer, GL_RENDERBUFFER, 0);
 
-	return *framebuffer != 0 && rbo != 0; // TODO: Proper error handling
+		TryGLCall(glBindFramebuffer, GL_FRAMEBUFFER, 0);
+	}
+	catch (const OGLErrorException& e)
+	{
+		gEngfuncs.Con_DPrintf("%s\n", e.what());
+		std::cerr << e.what() << std::endl << std::flush;
+		g_vrInput.DisplayErrorPopup(e.what());
+		*framebuffer = 0;
+		rbo = 0;
+	}
+
+	return *framebuffer != 0 && rbo != 0;
 }
 
 bool InitAdditionalGLFunctions()
