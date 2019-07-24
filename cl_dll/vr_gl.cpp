@@ -1,6 +1,14 @@
 
 #include "vr_gl.h"
 
+#include "hud.h"
+#include "cl_util.h"
+#include "VRInput.h"
+
+#ifndef GL_INVALID_FRAMEBUFFER_OPERATION
+#define GL_INVALID_FRAMEBUFFER_OPERATION 0x0506
+#endif
+
 PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers = nullptr;
 PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers = nullptr;
 
@@ -41,57 +49,54 @@ void* GetOpenGLFuncAddress(const char *name)
 #endif
 }
 
-#include <functional>
-#include <stdexcept>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include "hud.h"
-#include "cl_util.h"
-#include "VRInput.h"
-
-class OGLErrorException : public std::exception
+inline std::string GLErrorString(GLenum error)
 {
-public:
-	OGLErrorException(const std::string& errormsg) :
-		m_errormsg{ errormsg }
+	switch (error)
 	{
+	case GL_NO_ERROR: return "GL_NO_ERROR";
+	case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
+	case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
+	case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+	case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
+	case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
+	case GL_STACK_UNDERFLOW: return "GL_STACK_UNDERFLOW";
+	case GL_STACK_OVERFLOW: return "GL_STACK_OVERFLOW";
+	default: return std::to_string(error);
 	}
+}
 
-	virtual char const* what() const override
-	{
-		return m_errormsg.data();
-	}
+void ClearGLErrors()
+{
+	while (glGetError() != GL_NO_ERROR);
+}
 
-private:
-	std::string m_errormsg;
-};
-
-void TryTryGLCall(std::function<void()> call, const char* name)
+void TryTryGLCall(std::function<void()> call, const std::string& name, const std::string& args)
 {
 	call();
 	auto error = glGetError();
 	if (error != GL_NO_ERROR)
 	{
 		std::stringstream errormsg;
-		errormsg << "OpenGL call \"";
+		errormsg << "OpenGL call ";
 		errormsg << name;
-		errormsg << "\"failed with error: ";
-		errormsg << error;
+		errormsg << "(";
+		errormsg << args;
+		errormsg << ")";
+		errormsg << " failed with error: ";
+		errormsg << GLErrorString(error);
 		throw OGLErrorException{ errormsg.str() };
 	}
 }
-
-#define TryGLCall(call, ...) TryTryGLCall([&](){call(__VA_ARGS__);}, #call)
 
 bool CreateGLTexture(unsigned int* texture, int width, int height)
 {
 	extern bool gIsOwnCallToGenTextures;
 	gIsOwnCallToGenTextures = true;
 
+	ClearGLErrors();
+
 	try
 	{
-		TryGLCall(glEnable, GL_TEXTURE_2D);
 		TryGLCall(glEnable, GL_TEXTURE_2D);
 		TryGLCall(glActiveTexture, GL_TEXTURE0);
 		if (*texture)
@@ -100,9 +105,10 @@ bool CreateGLTexture(unsigned int* texture, int width, int height)
 		}
 		TryGLCall(glGenTextures, 1, texture);
 		TryGLCall(glBindTexture, GL_TEXTURE_2D, *texture);
-		TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_BYTE, nullptr);
+		TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 		TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		TryGLCall(glBindTexture, GL_TEXTURE_2D, 0);
 	}
 	catch (const OGLErrorException& e)
@@ -113,6 +119,8 @@ bool CreateGLTexture(unsigned int* texture, int width, int height)
 		*texture = 0;
 	}
 
+	ClearGLErrors();
+
 	gIsOwnCallToGenTextures = false;
 	return *texture != 0;
 }
@@ -120,6 +128,8 @@ bool CreateGLTexture(unsigned int* texture, int width, int height)
 bool CreateGLFrameBuffer(unsigned int* framebuffer, unsigned int texture, int width, int height)
 {
 	unsigned int rbo = 0;
+
+	ClearGLErrors();
 
 	try
 	{
@@ -144,6 +154,8 @@ bool CreateGLFrameBuffer(unsigned int* framebuffer, unsigned int texture, int wi
 		*framebuffer = 0;
 		rbo = 0;
 	}
+
+	ClearGLErrors();
 
 	return *framebuffer != 0 && rbo != 0;
 }

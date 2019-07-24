@@ -2,6 +2,14 @@
 #pragma once
 
 #include <windows.h>
+
+#include <functional>
+#include <stdexcept>
+#include <string>
+#include <iostream>
+#include <sstream>
+#include <iterator>
+
 #include "GL/gl.h"
 
 #define GL_FRAMEBUFFER 0x8D40
@@ -11,6 +19,7 @@
 #define GL_DEPTH_STENCIL_ATTACHMENT 0x821A
 #define GL_ACTIVE_TEXTURE 0x84E0
 #define GL_TEXTURE0 0x84C0
+#define GL_TEXTURE_MAX_LEVEL 0x813D
 
 typedef void (APIENTRY * PFNGLGENFRAMEBUFFERSPROC) (GLsizei n, GLuint* framebuffers);
 typedef void (APIENTRY * PFNGLGENRENDERBUFFERSPROC) (GLsizei n, GLuint* renderbuffers);
@@ -62,3 +71,43 @@ bool InitGLCallbackFunctions();
 
 void CaptureCurrentScreenToTexture(GLuint texture);
 
+
+class OGLErrorException : public std::exception
+{
+public:
+	OGLErrorException(const std::string& errormsg) :
+		m_errormsg{ errormsg }
+	{
+	}
+
+	virtual char const* what() const override
+	{
+		return m_errormsg.data();
+	}
+
+private:
+	std::string m_errormsg;
+};
+
+template <class T>
+auto ArgToString(T&& t)
+{
+	std::stringstream s;
+	s << std::forward<T>(t);
+	return s.str();
+}
+
+template <class... T>
+auto VarArgsToString(T&& ... args)
+{
+	std::vector<std::string> x{ ArgToString(std::forward<T>(args))... };
+	std::stringstream s;
+	std::copy(x.begin(), x.end(), std::ostream_iterator<std::string>(s, ", "));
+	return s.str();
+}
+
+void TryTryGLCall(std::function<void()> call, const std::string& name, const std::string& args);
+
+#define TryGLCall(call, ...) TryTryGLCall([&](){call(__VA_ARGS__);}, #call, VarArgsToString(__VA_ARGS__))
+
+void ClearGLErrors();

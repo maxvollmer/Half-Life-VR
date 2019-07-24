@@ -278,6 +278,7 @@ void VRHelper::Init()
 		else
 		{
 			vrSystem->GetRecommendedRenderTargetSize(&vrRenderWidth, &vrRenderHeight);
+			gEngfuncs.Con_DPrintf("VR render target size is: %u, %u\n", vrRenderWidth, vrRenderHeight);
 			CreateGLTexture(&vrGLLeftEyeTexture, vrRenderWidth, vrRenderHeight);
 			CreateGLTexture(&vrGLRightEyeTexture, vrRenderWidth, vrRenderHeight);
 			int viewport[4];
@@ -565,25 +566,33 @@ bool VRHelper::UpdatePositions()
 
 void VRHelper::PrepareVRScene(vr::EVREye eEye)
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, eEye == vr::EVREye::Eye_Left ? vrGLLeftEyeFrameBuffer : vrGLRightEyeFrameBuffer);
+	ClearGLErrors();
 
-	glViewport(0, 0, vrRenderWidth, vrRenderHeight);
+	try
+	{
+		TryGLCall(glBindFramebuffer, GL_FRAMEBUFFER, eEye == vr::EVREye::Eye_Left ? vrGLLeftEyeFrameBuffer : vrGLRightEyeFrameBuffer);
 
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		TryGLCall(glViewport, 0, 0, vrRenderWidth, vrRenderHeight);
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glLoadMatrixf(eEye == vr::EVREye::Eye_Left ? positions.m_mat4LeftProjection.get() : positions.m_mat4RightProjection.get());
+		TryGLCall(glClearColor, 0, 0, 0, 0);
+		TryGLCall(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	glLoadMatrixf(eEye == vr::EVREye::Eye_Left ? positions.m_mat4LeftModelView.get() : positions.m_mat4RightModelView.get());
+		TryGLCall(glMatrixMode, GL_PROJECTION);
+		TryGLCall(glPushMatrix);
+		TryGLCall(glLoadIdentity);
+		TryGLCall(glLoadMatrixf, eEye == vr::EVREye::Eye_Left ? positions.m_mat4LeftProjection.get() : positions.m_mat4RightProjection.get());
 
-	glDisable(GL_CULL_FACE);
-	glCullFace(GL_NONE);
+		TryGLCall(glMatrixMode, GL_MODELVIEW);
+		TryGLCall(glPushMatrix);
+		TryGLCall(glLoadIdentity);
+		TryGLCall(glLoadMatrixf, eEye == vr::EVREye::Eye_Left ? positions.m_mat4LeftModelView.get() : positions.m_mat4RightModelView.get());
+
+		TryGLCall(glDisable, GL_CULL_FACE);
+	}
+	catch (const OGLErrorException& e)
+	{
+		Exit((std::string{"VRHelper::PrepareVRScene failed: "} + e.what()).data());
+	}
 
 	hlvrLockGLMatrices();
 }
@@ -607,10 +616,18 @@ void VRHelper::SubmitImage(vr::EVREye eEye, unsigned int texture)
 {
 	vr::Texture_t vrTexture;
 	vrTexture.eType = vr::ETextureType::TextureType_OpenGL;
-	vrTexture.eColorSpace = vr::EColorSpace::ColorSpace_Auto;
+	vrTexture.eColorSpace = vr::EColorSpace::ColorSpace_Gamma;
 	vrTexture.handle = reinterpret_cast<void*>(texture);
 
-	vrCompositor->Submit(eEye, &vrTexture);
+	ClearGLErrors();
+	auto vrError = vrCompositor->Submit(eEye, &vrTexture);
+	auto glError = glGetError();
+	ClearGLErrors();
+
+	if (vrError != vr::EVRCompositorError::VRCompositorError_None || glError != GL_NO_ERROR)
+	{
+		gEngfuncs.Con_DPrintf("ERROR: Failed to submit texture to HMD, vrError: %i, glError: %i\n", vrError, glError);
+	}
 }
 
 void VRHelper::SubmitImages()
