@@ -22,27 +22,20 @@ namespace
 	IGameConsole *gGameConsole = nullptr;
 	bool IsConsoleOpen()
 	{
-		/*
-		gEngfuncs.Con_DPrintf("IsConsoleOpen()\n");
 		if (!gGameConsole)
 		{
 			auto gameuiModule = Sys_LoadModule("gameui.dll");
-			gEngfuncs.Con_DPrintf("Sys_LoadModule\n");
 			if (gameuiModule)
 			{
 				CreateInterfaceFn gameUIFactory = Sys_GetFactory(gameuiModule);
-				gEngfuncs.Con_DPrintf("Sys_GetFactory\n");
 				if (gameUIFactory)
 				{
 					int returnCode;
 					gGameConsole = (IGameConsole *)gameUIFactory(GAMECONSOLE_INTERFACE_VERSION, &returnCode);
-					gEngfuncs.Con_DPrintf("returnCode: %i\n", returnCode);
 				}
 			}
 		}
 		return gGameConsole && gGameConsole->IsConsoleVisible();
-		*/
-		return false;
 	}
 }
 
@@ -66,7 +59,6 @@ void VRInput::CreateHLMenu()
 	texture.eColorSpace = vr::ColorSpace_Gamma;
 	texture.eType = vr::TextureType_OpenGL;
 	texture.handle = reinterpret_cast<void*>(gVRRenderer.GetHelper()->GetVRGLMenuTexture());
-	//texture.handle = reinterpret_cast<void*>(gVRRenderer.GetHelper()->GetVRTexture(vr::Eye_Left));
 	error = vr::VROverlay()->SetOverlayTexture(m_hlMenu, &texture);
 	if (error != vr::VROverlayError_None)
 	{

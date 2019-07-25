@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.15
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hl", "dlls\hl.vcxproj", "{C4CD1E9E-A484-4436-A729-9B913BAE6A26}"
 EndProject
@@ -9,7 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cl_dll", "cl_dll\cl_dll.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "opengl32", "GLProxy\GLProxy.vcxproj", "{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HLVRLauncher", "HLVRLauncher\HLVRLauncher.vcxproj", "{274EE42E-CE6E-47A9-9940-7E00C06B4037}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OLDHLVRLauncher", "OLDHLVRLauncher\OLDHLVRLauncher.vcxproj", "{274EE42E-CE6E-47A9-9940-7E00C06B4037}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HLVRLauncher", "HLVRLauncher\HLVRLauncher.csproj", "{47168417-6749-49B5-AF9E-7FD855B388A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{274EE42E-CE6E-47A9-9940-7E00C06B4037}.Debug|x86.Build.0 = Debug|Win32
 		{274EE42E-CE6E-47A9-9940-7E00C06B4037}.Release|x86.ActiveCfg = Release|Win32
 		{274EE42E-CE6E-47A9-9940-7E00C06B4037}.Release|x86.Build.0 = Release|Win32
+		{47168417-6749-49B5-AF9E-7FD855B388A7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{47168417-6749-49B5-AF9E-7FD855B388A7}.Debug|x86.Build.0 = Debug|Any CPU
+		{47168417-6749-49B5-AF9E-7FD855B388A7}.Release|x86.ActiveCfg = Release|Any CPU
+		{47168417-6749-49B5-AF9E-7FD855B388A7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

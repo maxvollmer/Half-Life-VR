@@ -101,3 +101,8 @@ Copyright (C) 2015 Guilherme R. Lampert
 This mod uses LodePNG version 20190210
 https://lodev.org/lodepng/
 Copyright (c) 2005-2019 Lode Vandevenne
+
+===
+This mod uses DbMon.NET
+https://www.codeproject.com/Articles/13345/DbMon-NET-A-simple-NET-OutputDebugString-capturer
+Copyright (c) 2006 Christian Birkl

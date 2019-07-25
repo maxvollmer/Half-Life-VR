@@ -125,12 +125,24 @@
 * Added visual damage feedback in form of pulsating gradient overlay (dark blue for drowning, light blue for freezing, green for poison/radiation, red for every other damage)
 
 0.5.0
+* Fixed HMD display blackscreen issue with AMD drivers 18.8.1 and up
 * Fixed weapon animations not playing properly
 * Fixed some rotating levers not working with grab input
 * Fixed some buttons not working with touch input
 * Fixed screen fade effects rendering
 * Fixed some scripts using male voice for female scientists
+* Added better error handling and debug output for OpenGL and OpenVR calls
 * Implemented proper grab animation for hands
+* Display flashlight submodel on hand model if flashlight is attached to controller
+* Replaced old command line HLVRLauncher with new WPF based GUI HLVRLauncher
+** Adds interfaces for patching/unpatching Half-Life
+** Detects Half-Life installation directory using Steam library
+** Detects running Half-Life instances
+** Logs and prints Half-Life console output
+** Proper error messages and user feedback
+** Patching time is in the milliseconds (old HLVRLauncher took several seconds)
+** opengl32.dll is locked using a read handle instead of ACL/file properties
+* (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
 * (WIP) Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello")
 * 
 

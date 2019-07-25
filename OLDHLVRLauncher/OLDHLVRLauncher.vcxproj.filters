@@ -41,6 +41,9 @@
     <ClCompile Include="HLVRLauncher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HLVRLauncherMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HLVRLauncher.rc">
