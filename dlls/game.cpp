@@ -452,6 +452,8 @@ cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
 
 
 // VR stuff
+/*
+cvar_t vr_noclip = { "vr_noclip", "0" };
 cvar_t vr_npcscale = { "vr_npcscale", "1", FCVAR_ARCHIVE };
 cvar_t vr_weaponscale = { "vr_weaponscale", "1", FCVAR_ARCHIVE };
 cvar_t vr_shotgun_scale = { "vr_shotgun_scale", "1", FCVAR_ARCHIVE };
@@ -481,7 +483,6 @@ cvar_t vr_move_instant_decelerate = { "vr_move_instant_decelerate", "0", FCVAR_A
 cvar_t vr_move_instant_accelerate = { "vr_move_instant_accelerate", "0", FCVAR_ARCHIVE };
 cvar_t vr_weapon_grenade_mode = { "vr_weapon_grenade_mode", "0", FCVAR_ARCHIVE };
 cvar_t vr_crowbar_vanilla_attack_enabled = { "vr_crowbar_vanilla_attack_enabled", "0", FCVAR_ARCHIVE };
-cvar_t vr_noclip = { "vr_noclip", "0" };
 cvar_t vr_use_sd_models = { "vr_use_sd_models", "0", FCVAR_ARCHIVE };
 cvar_t vr_ladder_immersive_movement_enabled = { "vr_ladder_immersive_movement_enabled", "0", FCVAR_ARCHIVE };
 cvar_t vr_ladder_immersive_movement_swinging_enabled = { "vr_ladder_immersive_movement_enabled", "0", FCVAR_ARCHIVE };
@@ -493,6 +494,8 @@ cvar_t vr_enable_aim_laser = { "vr_enable_aim_laser", "0", FCVAR_ARCHIVE };
 cvar_t vr_flashlight_attachment = { "vr_flashlight_attachment", "0", FCVAR_ARCHIVE };
 cvar_t vr_teleport_attachment = { "vr_teleport_attachment", "0", FCVAR_ARCHIVE };
 cvar_t vr_legacy_train_controls_enabled = { "vr_legacy_train_controls_enabled", "0", FCVAR_ARCHIVE };
+*/
+
 
 // Register your console variables here
 // This gets called one time when the game is initialied
@@ -928,7 +931,9 @@ void GameDLLInit( void )
 	CVAR_REGISTER ( &sk_player_leg3 );
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
+
 	// VR stuff
+	/*
 	CVAR_REGISTER(&vr_npcscale);
 	CVAR_REGISTER(&vr_weaponscale);
 	CVAR_REGISTER(&vr_shotgun_scale);
@@ -970,6 +975,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&vr_flashlight_attachment);
 	CVAR_REGISTER(&vr_teleport_attachment);
 	CVAR_REGISTER(&vr_legacy_train_controls_enabled);
+	*/
+
 
 	gSDModelsEnabled = CVAR_GET_FLOAT("vr_use_sd_models") != 0.f;
 
