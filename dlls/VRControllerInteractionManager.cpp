@@ -833,6 +833,14 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer *pPlayer, EHANDLE
 			else
 			{
 				pPlayer->ClearLadderGrabbingController(controller.GetID());
+				if (CVAR_GET_FLOAT("vr_ladder_immersive_movement_swinging_enabled") != 0.f)
+				{
+					// we let go off the ladder, let's take the controller velocity to push us a bit (allows for swinging)
+					if (pPlayer->GetGrabbedLadderEntIndex() == 0)
+					{
+						pPlayer->pev->velocity = -controller.GetVelocity();
+					}
+				}
 			}
 		}
 		else

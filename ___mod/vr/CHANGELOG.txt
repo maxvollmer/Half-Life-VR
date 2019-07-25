@@ -142,6 +142,7 @@
 ** Proper error messages and user feedback
 ** Patching time is in the milliseconds (old HLVRLauncher took several seconds)
 ** opengl32.dll is locked using a read handle instead of ACL/file properties
+* Added cvar "vr_ladder_immersive_movement_swinging_enabled", if enabled players can push/swing from ladders (controller speed is translated onto player when letting go of ladders)
 * (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
 * (WIP) Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello")
 * 
