@@ -40,6 +40,8 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -59,6 +61,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DbMon.NET\DebugMonitor.cs" />
+    <Compile Include="Utilities\HLVRLauncherConfig.cs" />
+    <Compile Include="Utilities\HLVRModConfig.cs" />
     <Compile Include="Utilities\CancelAndTerminateAppException.cs" />
     <Compile Include="Utilities\HLVRPatcher.cs" />
     <Compile Include="Utilities\HLVRPaths.cs" />

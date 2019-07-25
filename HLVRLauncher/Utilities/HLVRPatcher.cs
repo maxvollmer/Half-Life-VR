@@ -48,7 +48,7 @@ namespace HLVRLauncher.Utilities
         {
             lock (patchLock)
             {
-                if (IsPatching || IsUnpatching)
+                if (IsPatching || IsUnpatching || IsGamePatched())
                     return;
 
                 IsPatching = true;
@@ -92,7 +92,7 @@ namespace HLVRLauncher.Utilities
         {
             lock (patchLock)
             {
-                if (IsPatching || IsUnpatching)
+                if (IsPatching || IsUnpatching || !IsGamePatched())
                     return;
 
                 IsUnpatching = true;
@@ -128,11 +128,21 @@ namespace HLVRLauncher.Utilities
             }
         }
 
-        public void LaunchMod()
+        public void LaunchMod(bool terminateIfAlreadyRunning)
         {
             lock (gameLock)
             {
-                TerminateGame(); // just to be sure...
+                if (IsGameRunning())
+                {
+                    if (terminateIfAlreadyRunning)
+                    {
+                        TerminateGame();
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
 
                 hlProcess = Process.Start(new ProcessStartInfo
                 {

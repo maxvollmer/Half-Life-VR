@@ -15,7 +15,6 @@ namespace HLVRLauncher.Utilities
 {
     public class HLVRPaths
     {
-        public static string SteamDirectory { get; private set; }
         public static string HLDirectory { get; private set; }
         public static string VRDirectory { get; private set; }
 
@@ -32,44 +31,104 @@ namespace HLVRLauncher.Utilities
 
         public static void Initialize()
         {
-            InitializeSteamDirectory();
-            InitializeHalfLifeDirectory();
-            CheckModDirectory();
+            // first try current location (we might be in the mod folder)
+            if (!InitializeFromLocation())
+            {
+                // if that fails use steam to find Half-Life
+                InitializeFromSteam();
+            }
         }
 
-        private static void InitializeSteamDirectory()
+        private static bool InitializeFromLocation()
         {
+            string currentLocation = Path.GetFullPath(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location));
+            if (IsModDirectory(currentLocation))
+            {
+                string hlDirectory = Path.GetFullPath(Path.Combine(currentLocation, "..\\"));
+                if (IsHalflifeDirectory(hlDirectory))
+                {
+                    HLDirectory = hlDirectory;
+                    VRDirectory = currentLocation;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static string GetSteamDirectory()
+        {
+            string steamDirectory = null;
+
             try
             {
                 using (RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\Valve\\Steam"))
                 {
                     if (key != null)
                     {
-                        SteamDirectory = key.GetValue("InstallPath")?.ToString()??"";
+                        steamDirectory = key.GetValue("InstallPath")?.ToString()??"";
                     }
                 }
             }
             catch (Exception)
             {
-                SteamDirectory = null;
+                steamDirectory = null;
             }
 
-            if (SteamDirectory == null || SteamDirectory.Length == 0 || !Directory.Exists(SteamDirectory))
+            if (steamDirectory == null || steamDirectory.Length == 0 || !Directory.Exists(steamDirectory))
             {
                 MessageBox.Show("Couldn't verify Steam installation. Please make sure Steam is installed. If the problem persists, try running HLVRLauncher with administrative privileges.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 throw new CancelAndTerminateAppException();
             }
+
+            return steamDirectory;
         }
 
-        private static string FindHalflifeDirectory()
+        private static string GetHalfLifeDirectoryFromManifest(string libraryfolder, string manifest)
         {
-            string hlmanifest = Path.Combine(Path.Combine(SteamDirectory, "steamapps"), "appmanifest_70.acf");
-            if (File.Exists(hlmanifest))
+            string foldername = "Half-Life";
+            StreamReader file = new StreamReader(manifest);
+            string line;
+            while ((line = file.ReadLine()) != null)
             {
-                return Path.Combine(Path.Combine(Path.Combine(SteamDirectory, "steamapps"), "common"), "Half-Life");
+                Match regMatch = Regex.Match(line, "^[\\s]*\"installdir\"[\\s]*\"([^\"]+)\"[\\s]*$");
+                if (regMatch.Success)
+                {
+                    foldername = Regex.Unescape(regMatch.Groups[1].Value);
+                }
             }
 
-            string libraryfolders = Path.Combine(Path.Combine(SteamDirectory, "steamapps"), "libraryfolders.vdf");
+            if (Path.IsPathRooted(foldername) && Directory.Exists(foldername))
+            {
+                return foldername;
+            }
+
+            if (!Path.IsPathRooted(foldername))
+            {
+                string hlDirectory = Path.Combine(Path.Combine(Path.Combine(libraryfolder, "steamapps"), "common"), foldername);
+                if (Directory.Exists(hlDirectory))
+                {
+                    return hlDirectory;
+                }
+            }
+
+            return Path.Combine(Path.Combine(Path.Combine(libraryfolder, "steamapps"), "common"), "Half-Life");
+        }
+
+        private static string FindHalflifeDirectoryFromSteam()
+        {
+            string steamDirectory = GetSteamDirectory();
+
+            string hlmanifest = Path.Combine(Path.Combine(steamDirectory, "steamapps"), "appmanifest_70.acf");
+            if (File.Exists(hlmanifest))
+            {
+                string hlDirectory = GetHalfLifeDirectoryFromManifest(steamDirectory, hlmanifest);
+                if (Directory.Exists(hlDirectory))
+                {
+                    return hlDirectory;
+                }
+            }
+
+            string libraryfolders = Path.Combine(Path.Combine(steamDirectory, "steamapps"), "libraryfolders.vdf");
             if (!File.Exists(libraryfolders))
             {
                 return null;
@@ -88,7 +147,11 @@ namespace HLVRLauncher.Utilities
                         hlmanifest = Path.Combine(Path.Combine(libraryfolder, "steamapps"), "appmanifest_70.acf");
                         if (File.Exists(hlmanifest))
                         {
-                            return Path.Combine(Path.Combine(Path.Combine(libraryfolder, "steamapps"), "common"), "Half-Life");
+                            string hlDirectory = GetHalfLifeDirectoryFromManifest(libraryfolder, hlmanifest);
+                            if (Directory.Exists(hlDirectory))
+                            {
+                                return hlDirectory;
+                            }
                         }
                     }
                 }
@@ -97,9 +160,9 @@ namespace HLVRLauncher.Utilities
             return null;
         }
 
-        private static void InitializeHalfLifeDirectory()
+        private static void InitializeFromSteam()
         {
-            HLDirectory = FindHalflifeDirectory();
+            HLDirectory = FindHalflifeDirectoryFromSteam();
             if (HLDirectory == null || HLDirectory.Length == 0 || !Directory.Exists(HLDirectory))
             {
                 MessageBox.Show("Couldn't find Half-Life installation. Please make sure your installation of Half-Life is valid and run the game at least once from the Steam library. If the problem persists, try running HLVRLauncher with administrative privileges.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -113,6 +176,8 @@ namespace HLVRLauncher.Utilities
                 MessageBox.Show("Couldn't verify Half-Life installation. Please make sure your installation of Half-Life is valid and run the game at least once from the Steam library.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 throw new CancelAndTerminateAppException();
             }
+
+            CheckModDirectory();
         }
 
         private static void CheckModDirectory()
@@ -140,6 +205,33 @@ namespace HLVRLauncher.Utilities
                 MessageBox.Show("Couldn't find necessary mod files. Please reinstall the mod.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 throw new CancelAndTerminateAppException();
             }
+        }
+
+        private static bool IsHalflifeDirectory(string directory)
+        {
+            if (!Directory.Exists(directory))
+                return false;
+
+            if (!File.Exists(Path.Combine(directory, "hl.exe")))
+                return false;
+
+            return true;
+        }
+
+        private static bool IsModDirectory(string directory)
+        {
+            string opengl32dll = Path.Combine(directory, "opengl32.dll");
+            string openvr_apidll = Path.Combine(directory, "openvr_api.dll");
+            string EasyHook32dll = Path.Combine(directory, "EasyHook32.dll");
+            string vrdll = Path.Combine(Path.Combine(directory, "dlls"), "vr.dll");
+            string clientdll = Path.Combine(Path.Combine(directory, "cl_dlls"), "client.dll");
+            string liblistgam = Path.Combine(directory, "liblist.gam");
+            return File.Exists(opengl32dll)
+                && File.Exists(openvr_apidll)
+                && File.Exists(EasyHook32dll)
+                && File.Exists(vrdll)
+                && File.Exists(clientdll)
+                && File.Exists(liblistgam);
         }
     }
 }

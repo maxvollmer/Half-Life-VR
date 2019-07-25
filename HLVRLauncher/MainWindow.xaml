@@ -53,9 +53,15 @@
                     </RichTextBox>
                 </DockPanel>
             </TabItem>
-            <TabItem Header="Configuration">
+            <TabItem Header="Launcher Config">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Orientation="Vertical" x:Name="Configuration">
+                    <StackPanel Orientation="Vertical" x:Name="LauncherConfig">
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Mod Config">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Orientation="Vertical" x:Name="ModConfig">
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

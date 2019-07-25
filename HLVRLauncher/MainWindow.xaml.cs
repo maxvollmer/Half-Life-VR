@@ -21,6 +21,8 @@ namespace HLVRLauncher
 {
     public partial class MainWindow : Window
     {
+        private System.Windows.Forms.NotifyIcon notifyIcon;
+
         private readonly SingleProcessEnforcer singleProcessEnforcer = new SingleProcessEnforcer();
         private readonly HLVRPatcher hlvrPatcher = new HLVRPatcher();
 
@@ -39,19 +41,57 @@ namespace HLVRLauncher
                 hlvrPatcher.Initialize();
                 IsValidProcess = true;
                 InitializeComponent();
-
-                CheckBox cb = new CheckBox();
-                cb.Name = "TestName";
-                cb.Content = "TestContent";
-                cb.Margin = new Thickness(10);
-                Configuration.Children.Add(cb);
-
+                HLVRLauncherConfig.Initialize(LauncherConfig);
+                HLVRModConfig.Initialize(ModConfig);
+                InitializeNotifyIcon();
                 UpdateState();
+                HandleInitialSettings();
             }
             catch (CancelAndTerminateAppException)
             {
                 System.Windows.Application.Current.Shutdown();
             }
+        }
+
+        private void HandleInitialSettings()
+        {
+            if (HLVRLauncherConfig.GetSetting(HLVRLauncherConfig.StartMinimized))
+            {
+                WindowState = WindowState.Minimized;
+                OnWindowStateChanged();
+            }
+            if (HLVRLauncherConfig.GetSetting(HLVRLauncherConfig.AutoPatchAndRunMod))
+            {
+                hlvrPatcher.PatchGame();
+                hlvrPatcher.LaunchMod(false);
+            }
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+            source.AddHook(new HwndSourceHook(WndProc));
+        }
+
+        private void InitializeNotifyIcon()
+        {
+            notifyIcon = new System.Windows.Forms.NotifyIcon();
+            notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetEntryAssembly().ManifestModule.Name);
+            notifyIcon.Click += TrayIconClicked;
+            notifyIcon.DoubleClick += TrayIconClicked;
+            notifyIcon.MouseClick += TrayIconMouseClicked;
+            notifyIcon.MouseDoubleClick += TrayIconMouseClicked;
+        }
+
+        private void TrayIconClicked(object sender, EventArgs e)
+        {
+            BringToForeground();
+        }
+
+        private void TrayIconMouseClicked(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            BringToForeground();
         }
 
         public void BringToForeground()
@@ -87,7 +127,11 @@ namespace HLVRLauncher
             if (IsValidProcess && hlvrPatcher.IsGamePatched())
             {
                 MessageBoxResult result;
-                if (hlvrPatcher.IsGameRunning())
+                if (HLVRLauncherConfig.GetSetting(HLVRLauncherConfig.AutoUnpatchAndCloseLauncher))
+                {
+                    result = MessageBoxResult.Yes;
+                }
+                else if (hlvrPatcher.IsGameRunning())
                 {
                     result = MessageBox.Show("Half-Life: VR is still running and Half-Life is still patched. Do you want to quit Half-Life and unpatch the game before exiting? If you chose no, Half-Life will remain patched after Half-Life: VR quit.", "Half-Life: VR is running!", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
                 }
@@ -118,7 +162,28 @@ namespace HLVRLauncher
             if (!cancel)
             {
                 singleProcessEnforcer.Dispose();
-                DebugMonitor.Stop();
+                try { if (DebugMonitor.IsStarted) DebugMonitor.Stop(); } catch(Exception) { }
+            }
+        }
+
+        private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.OnWindowStateChanged()));
+            return IntPtr.Zero;
+        }
+
+        private void OnWindowStateChanged()
+        {
+            if (WindowState == WindowState.Minimized
+                && HLVRLauncherConfig.GetSetting(HLVRLauncherConfig.MinimizeToTray))
+            {
+                ShowInTaskbar = false;
+                notifyIcon.Visible = true;
+            }
+            else
+            {
+                notifyIcon.Visible = false;
+                ShowInTaskbar = true;
             }
         }
 
@@ -136,7 +201,7 @@ namespace HLVRLauncher
 
         private void LaunchMod_Click(object sender, RoutedEventArgs e)
         {
-            hlvrPatcher.LaunchMod();
+            hlvrPatcher.LaunchMod(true);
             UpdateState();
         }
 
