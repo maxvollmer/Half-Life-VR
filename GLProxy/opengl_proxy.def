@@ -364,6 +364,4 @@ EXPORTS
     hlvrLockGLMatrices
     hlvrUnlockGLMatrices
     hlvrSetConsoleCallback
-    hlvrSetGenAndDeleteTexturesCallback
-    hlvrSetGLBeginCallback
 
