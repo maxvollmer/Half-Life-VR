@@ -19,19 +19,6 @@
 // Modified for Half-Life: VR by Max Vollmer, 2017-08-15
 // ================================================================================================
 
-// Added option to disable logging - Max Vollmer, 2017-08-15
-// #define GLPROXY_LOG_ENABLED
-
-// Added logging of any function call - Max Vollmer, 2017-08-17
-void logCall(const char* funcName);
-// #define GLPROXY_LOG_CALLS_ENABLED
-
-#ifdef GLPROXY_LOG_CALLS_ENABLED
-#define GLPROXY_LOG_CALL(funcName) logCall(funcName)
-#else
-#define GLPROXY_LOG_CALL(funcName) do {} while(0)
-#endif
-
 
 // Trim down the WinAPI crap. We also don't want WinGDI.h
 // to interfere with our WGL wrapper declarations.
@@ -40,15 +27,9 @@ void logCall(const char* funcName);
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
-#include <algorithm>
-#include <fstream>
+#include <iostream>
 #include <string>
 #include <unordered_set>
-#include <vector>
-#include <cstdint>
-#include <cstdlib>
-#include <ctime>
-#include <iostream>
 
 // We are not including 'WinGDI.h' and 'gl.h', so the
 // required types must be redefined in this source file.
@@ -59,11 +40,8 @@ void logCall(const char* funcName);
 // Local helper macros:
 // ========================================================
 
-// To pass the silly "constant expression" warning from Visual Studio...
-#define END_MACRO while (0,0)
-
 // Local log stream output:
-#define GLPROXY_LOG(message) do { GLProxy::getLogStream() << message << std::endl; } END_MACRO
+#define GLPROXY_LOG(...)
 
 // Appends a pair tokens into a single name/identifier.
 // Normally used to declared internal/built-in functions and variables.
@@ -89,65 +67,6 @@ void logCall(const char* funcName);
 
 namespace GLProxy
 {
-
-	static std::string numToString(std::uint64_t num)
-	{
-		char tempString[128];
-		std::snprintf(tempString, sizeof(tempString), "%-10llu", num);
-		return tempString;
-	}
-
-	static std::string ptrToString(const void* ptr)
-	{
-		char tempString[128];
-
-#if defined(_M_IX86)
-		std::snprintf(tempString, sizeof(tempString), "0x%08X",
-			reinterpret_cast<std::uintptr_t>(ptr));
-#elif defined(_M_X64)
-		std::snprintf(tempString, sizeof(tempString), "0x%016llX",
-			reinterpret_cast<std::uintptr_t>(ptr));
-#endif // x86/64
-
-		return tempString;
-	}
-
-	static std::string getTimeString()
-	{
-		const std::time_t rawTime = std::time(nullptr);
-		std::string ts;
-
-#ifdef _MSC_VER
-		// Visual Studio dislikes the static buffer of std::ctime.
-		char tempString[256] = { '\0' };
-		ctime_s(tempString, sizeof(tempString), &rawTime);
-		ts = tempString;
-#else // !_MSC_VER
-		ts = std::ctime(&rawTime);
-#endif // _MSC_VER
-
-		ts.pop_back(); // Remove the default '\n' added by ctime.
-		return ts;
-	}
-
-	class NullBuffer : public std::streambuf
-	{
-	public:
-		int overflow(int c) { return c; }
-	};
-	NullBuffer null_buffer;
-
-	static std::ostream& getLogStream()
-	{
-#ifdef GLPROXY_LOG_ENABLED
-		static std::ofstream theLog("opengl_proxy.log");
-#else
-		static std::ostream theLog(&null_buffer);
-#endif
-		return theLog;
-	}
-
-
 	static std::string lastWinErrorAsString()
 	{
 		// Adapted from this SO thread:
@@ -214,10 +133,6 @@ namespace GLProxy
 	DECLSPEC_NORETURN static void fatalError(const std::string& message)
 	{
 		std::cerr << "GLProxy Fatal Error: " << message << std::endl;
-
-		GLPROXY_LOG("Fatal error: " << message);
-		getLogStream().flush();
-
 		std::exit(EXIT_FAILURE);
 	}
 
@@ -280,12 +195,6 @@ namespace GLProxy
 			{
 				dllFilePath = tempString;
 			}
-
-			GLPROXY_LOG("\n--------------------------------------------------------");
-			GLPROXY_LOG("  Real OpenGL DLL is loaded!");
-			GLPROXY_LOG("  OpenGL = " + ptrToString(dllHandle) + ", GLProxy = " + ptrToString(selfHMod));
-			GLPROXY_LOG("  opengl32.dll path: \"" + dllFilePath + "\"");
-			GLPROXY_LOG("--------------------------------------------------------\n");
 		}
 
 		void unload()
@@ -333,7 +242,6 @@ namespace GLProxy
 	{
 		auto& glDll = OpenGLDll::getInstance();
 		void* addr = glDll.getFuncPtr(funcName);
-		GLPROXY_LOG("Loading real GL func: (" << ptrToString(addr) << ") " << funcName);
 		return addr;
 	}
 
@@ -381,59 +289,6 @@ namespace GLProxy
 #define TGLFUNC_DECL(funcName) TGLFUNC_NAME(funcName){ STRINGIZE(funcName) }
 #define TGLFUNC_CALL(funcName, ...) (TGLFUNC_NAME(funcName).callCount++, TGLFUNC_NAME(funcName).funcPtr(__VA_ARGS__))
 
-// ========================================================
-// struct AutoReport:
-//  Writes a report with the OpenGL function call counts.
-// ========================================================
-
-	struct AutoReport
-	{
-		AutoReport()
-		{
-			GLPROXY_LOG("\n--------------------------------------------------------");
-			GLPROXY_LOG("  OPENGL32.DLL proxy report - " << getTimeString());
-			GLPROXY_LOG("--------------------------------------------------------\n");
-		}
-
-		~AutoReport()
-		{
-			// Gather all function pointers first so we can sort them by call count.
-			std::vector<const GLFuncBase*> sortedFuncs;
-			for (const GLFuncBase* func = g_RealGLFunctions; func; func = func->next)
-			{
-				sortedFuncs.push_back(func);
-			}
-
-			// Higher call counts first. If same call count then sort alphabetically by name.
-			std::sort(std::begin(sortedFuncs), std::end(sortedFuncs),
-				[](const GLFuncBase* a, const GLFuncBase* b) -> bool
-				{
-					if (a->callCount == b->callCount)
-					{
-						return std::strcmp(a->name, b->name) < 0;
-					}
-					else
-					{
-						return a->callCount > b->callCount;
-					}
-				});
-
-			GLPROXY_LOG("--------------------------------------------------------");
-			GLPROXY_LOG("  Function call counts:");
-			GLPROXY_LOG("--------------------------------------------------------\n");
-
-			for (const GLFuncBase* func : sortedFuncs)
-			{
-				GLPROXY_LOG(numToString(func->callCount) << " " << func->name);
-			}
-
-			GLPROXY_LOG("\n" << sortedFuncs.size() << " GL functions were called by the application.");
-		}
-	};
-
-	// This static instance will open the GLProxy log on startup and
-	// write the function call counts on shutdown via its destructor.
-	static AutoReport g_AutoReport;
 
 } // namespace GLProxy {}
 
@@ -443,22 +298,8 @@ namespace GLProxy
 //  Probably a non issue, since OpenGL is single-threaded.
 // ========================================================
 
-BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* reserved */)
+BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD /* reasonForDllLoad */, LPVOID /* reserved */)
 {
-	switch (reasonForDllLoad)
-	{
-	case DLL_PROCESS_ATTACH:
-		GLPROXY_LOG("\nDllMain: DLL_PROCESS_ATTACH\n");
-		break;
-
-	case DLL_PROCESS_DETACH:
-		GLPROXY_LOG("\nDllMain: DLL_PROCESS_DETACH\n");
-		break;
-
-	default:
-		break;
-	} // switch (reasonForDllLoad)
-
 	return TRUE;
 }
 
@@ -473,7 +314,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_0_WRET(retType, funcName)                         \
     GLPROXY_EXTERN retType GLPROXY_DECL funcName(void)           \
     {                                                            \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<retType> TGLFUNC_DECL(funcName); \
         return TGLFUNC_CALL(funcName);                           \
     }
@@ -481,7 +321,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_1_WRET(retType, funcName, t0, p0)                     \
     GLPROXY_EXTERN retType GLPROXY_DECL funcName(t0 p0)              \
     {                                                                \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<retType, t0> TGLFUNC_DECL(funcName); \
         return TGLFUNC_CALL(funcName, p0);                           \
     }
@@ -489,7 +328,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_2_WRET(retType, funcName, t0, p0, t1, p1)                 \
     GLPROXY_EXTERN retType GLPROXY_DECL funcName(t0 p0, t1 p1)           \
     {                                                                    \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<retType, t0, t1> TGLFUNC_DECL(funcName); \
         return TGLFUNC_CALL(funcName, p0, p1);                           \
     }
@@ -497,7 +335,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_3_WRET(retType, funcName, t0, p0, t1, p1, t2, p2)             \
     GLPROXY_EXTERN retType GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2)        \
     {                                                                        \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<retType, t0, t1, t2> TGLFUNC_DECL(funcName); \
         return TGLFUNC_CALL(funcName, p0, p1, p2);                           \
     }
@@ -505,7 +342,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_4_WRET(retType, funcName, t0, p0, t1, p1, t2, p2, t3, p3)         \
     GLPROXY_EXTERN retType GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2, t3 p3)     \
     {                                                                            \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<retType, t0, t1, t2, t3> TGLFUNC_DECL(funcName); \
         return TGLFUNC_CALL(funcName, p0, p1, p2, p3);                           \
     }
@@ -513,7 +349,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_5_WRET(retType, funcName, t0, p0, t1, p1, t2, p2, t3, p3, t4, p4)     \
     GLPROXY_EXTERN retType GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2, t3 p3, t4 p4)  \
     {                                                                                \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<retType, t0, t1, t2, t3, t4> TGLFUNC_DECL(funcName); \
         return TGLFUNC_CALL(funcName, p0, p1, p2, p3, p4);                           \
     }
@@ -521,7 +356,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_8_WRET(retType, funcName, t0, p0, t1, p1, t2, p2, t3, p3, t4, p4, t5, p5, t6, p6, t7, p7) \
     GLPROXY_EXTERN retType GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2, t3 p3, t4 p4, t5 p5, t6 p6, t7 p7) \
     {                                                                                                    \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<retType, t0, t1, t2, t3, t4, t5, t6, t7> TGLFUNC_DECL(funcName);         \
         return TGLFUNC_CALL(funcName, p0, p1, p2, p3, p4, p5, p6, p7);                                   \
     }
@@ -533,7 +367,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_0(funcName)                                    \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(void)           \
     {                                                         \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void> TGLFUNC_DECL(funcName); \
         TGLFUNC_CALL(funcName);                               \
     }
@@ -541,7 +374,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_1(funcName, t0, p0)                                \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(t0 p0)              \
     {                                                             \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void, t0> TGLFUNC_DECL(funcName); \
         TGLFUNC_CALL(funcName, p0);                               \
     }
@@ -549,7 +381,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_2(funcName, t0, p0, t1, p1)                            \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(t0 p0, t1 p1)           \
     {                                                                 \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void, t0, t1> TGLFUNC_DECL(funcName); \
         TGLFUNC_CALL(funcName, p0, p1);                               \
     }
@@ -557,7 +388,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_3(funcName, t0, p0, t1, p1, t2, p2)                        \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2)        \
     {                                                                     \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void, t0, t1, t2> TGLFUNC_DECL(funcName); \
         TGLFUNC_CALL(funcName, p0, p1, p2);                               \
     }
@@ -565,7 +395,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_4(funcName, t0, p0, t1, p1, t2, p2, t3, p3)                    \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2, t3 p3)     \
     {                                                                         \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void, t0, t1, t2, t3> TGLFUNC_DECL(funcName); \
         TGLFUNC_CALL(funcName, p0, p1, p2, p3);                               \
     }
@@ -573,7 +402,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_5(funcName, t0, p0, t1, p1, t2, p2, t3, p3, t4, p4)                \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2, t3 p3, t4 p4)  \
     {                                                                             \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void, t0, t1, t2, t3, t4> TGLFUNC_DECL(funcName); \
         TGLFUNC_CALL(funcName, p0, p1, p2, p3, p4);                               \
     }
@@ -581,7 +409,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_6(funcName, t0, p0, t1, p1, t2, p2, t3, p3, t4, p4, t5, p5)              \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2, t3 p3, t4 p4, t5 p5) \
     {                                                                                   \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void, t0, t1, t2, t3, t4, t5> TGLFUNC_DECL(funcName);   \
         TGLFUNC_CALL(funcName, p0, p1, p2, p3, p4, p5);                                 \
     }
@@ -589,7 +416,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_7(funcName, t0, p0, t1, p1, t2, p2, t3, p3, t4, p4, t5, p5, t6, p6)             \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2, t3 p3, t4 p4, t5 p5, t6 p6) \
     {                                                                                          \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void, t0, t1, t2, t3, t4, t5, t6> TGLFUNC_DECL(funcName);      \
         TGLFUNC_CALL(funcName, p0, p1, p2, p3, p4, p5, p6);                                    \
     }
@@ -597,7 +423,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_8(funcName, t0, p0, t1, p1, t2, p2, t3, p3, t4, p4, t5, p5, t6, p6, t7, p7)            \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2, t3 p3, t4 p4, t5 p5, t6 p6, t7 p7) \
     {                                                                                                 \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void, t0, t1, t2, t3, t4, t5, t6, t7> TGLFUNC_DECL(funcName);         \
         TGLFUNC_CALL(funcName, p0, p1, p2, p3, p4, p5, p6, p7);                                       \
     }
@@ -605,7 +430,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_9(funcName, t0, p0, t1, p1, t2, p2, t3, p3, t4, p4, t5, p5, t6, p6, t7, p7, t8, p8)           \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2, t3 p3, t4 p4, t5 p5, t6 p6, t7 p7, t8 p8) \
     {                                                                                                        \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void, t0, t1, t2, t3, t4, t5, t6, t7, t8> TGLFUNC_DECL(funcName);            \
         TGLFUNC_CALL(funcName, p0, p1, p2, p3, p4, p5, p6, p7, p8);                                          \
     }
@@ -613,7 +437,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 #define GLFUNC_10(funcName, t0, p0, t1, p1, t2, p2, t3, p3, t4, p4, t5, p5, t6, p6, t7, p7, t8, p8, t9, p9)         \
     GLPROXY_EXTERN void GLPROXY_DECL funcName(t0 p0, t1 p1, t2 p2, t3 p3, t4 p4, t5 p5, t6 p6, t7 p7, t8 p8, t9 p9) \
     {                                                                                                               \
-		GLPROXY_LOG_CALL(STRINGIZE(funcName));																							\
         static GLProxy::TGLFunc<void, t0, t1, t2, t3, t4, t5, t6, t7, t8, t9> TGLFUNC_DECL(funcName);               \
         TGLFUNC_CALL(funcName, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);                                             \
     }
@@ -756,6 +579,8 @@ GLFUNC_8_WRET(BOOL, wglUseFontOutlinesA, HDC, hdc, DWORD, b, DWORD, c, DWORD, d,
 GLFUNC_8_WRET(BOOL, wglUseFontOutlinesW, HDC, hdc, DWORD, b, DWORD, c, DWORD, d, float, e, float, f, int, g, GLYPHMETRICSFLOAT*, gmf);
 
 // Used to make wglGetProcAddress return nullptr for these functions, as we want hl.exe to use GetProcAddress instead, so it will use our intercepting functions.
+
+
 std::unordered_set<std::string> g_interceptedFunctionNames = {
 	{
 		"glEnable",
@@ -775,13 +600,15 @@ std::unordered_set<std::string> g_interceptedFunctionNames = {
 		"glTranslatef",
 		"glRotated",
 		"glRotatef",
-		"glFrustum",
-		"glGenTextures",
-		"glDeleteTextures",
-		"glBegin",
-		"glEnd"
+		"glFrustum"
 	}
 };
+
+
+inline bool IsInterceptedFunction(const char* funcName)
+{
+	return g_interceptedFunctionNames.find(std::string{ funcName }) != g_interceptedFunctionNames.end();
+}
 
 //
 // wglGetProcAddress is a special case. We also want to log
@@ -789,16 +616,14 @@ std::unordered_set<std::string> g_interceptedFunctionNames = {
 //
 GLPROXY_EXTERN PROC GLPROXY_DECL wglGetProcAddress(LPCSTR funcName)
 {
-	static GLProxy::TGLFunc<PROC, LPCSTR> TGLFUNC_DECL(wglGetProcAddress);
-	GLPROXY_LOG("wglGetProcAddress('" << funcName << "')");
-	if (g_interceptedFunctionNames.count(std::string{ funcName }) != 0)
+	if (IsInterceptedFunction(funcName))
 	{
 		return nullptr;
 	}
 	else
 	{
-		auto result = TGLFUNC_CALL(wglGetProcAddress, funcName);
-		return result;
+		static GLProxy::TGLFunc<PROC, LPCSTR> TGLFUNC_DECL(wglGetProcAddress);
+		return TGLFUNC_CALL(wglGetProcAddress, funcName);
 	}
 }
 
@@ -806,7 +631,6 @@ GLPROXY_EXTERN PROC GLPROXY_DECL wglGetProcAddress(LPCSTR funcName)
 GLPROXY_EXTERN PROC GLPROXY_DECL wglGetDefaultProcAddress(LPCSTR funcName)
 {
 	static GLProxy::TGLFunc<PROC, LPCSTR> TGLFUNC_DECL(wglGetDefaultProcAddress);
-	GLPROXY_LOG("wglGetDefaultProcAddress('" << funcName << "')");
 	return TGLFUNC_CALL(wglGetDefaultProcAddress, funcName);
 }
 
@@ -1159,31 +983,20 @@ int hlvr_PushCount = 0;
 typedef void(__stdcall* HLVR_CONSOLE_CALLBACK) (char*);
 HLVR_CONSOLE_CALLBACK hlvr_Console = nullptr;
 
-void logCall(const char* funcName)
-{
-	if (hlvr_GLMatricesLocked)
-	{
-		GLPROXY_LOG(funcName << "();");
-	}
-}
-
 GLPROXY_EXTERN void GLPROXY_DECL hlvrLockGLMatrices(void)
 {
 	hlvr_GLMatricesLocked = true;
 	hlvr_PushCount = 0;
-	GLPROXY_LOG("===\nhlvrLockGLMatrices();");
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL hlvrUnlockGLMatrices(void)
 {
-	GLPROXY_LOG("hlvrUnlockGLMatrices();\n===");
 	hlvr_GLMatricesLocked = false;
 	hlvr_PushCount = 0;
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL hlvrSetConsoleCallback(void* consoleCallback)
 {
-	GLPROXY_LOG("hlvrSetConsoleCallback();");
 	hlvr_Console = reinterpret_cast<HLVR_CONSOLE_CALLBACK>(consoleCallback);
 	if (hlvr_Console != nullptr)
 	{
@@ -1193,7 +1006,6 @@ GLPROXY_EXTERN void GLPROXY_DECL hlvrSetConsoleCallback(void* consoleCallback)
 
 GLPROXY_EXTERN void GLPROXY_DECL glEnable(GLenum cap)
 {
-	GLPROXY_LOG_CALL("glEnable");
 	if (!(hlvr_GLMatricesLocked && cap >= GL_CLIP_PLANE0 && cap <= GL_CLIP_PLANE5))
 	{
 		static GLProxy::TGLFunc<void, GLenum> TGLFUNC_DECL(glEnable);
@@ -1203,7 +1015,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glEnable(GLenum cap)
 
 GLPROXY_EXTERN void GLPROXY_DECL glDisable(GLenum cap)
 {
-	GLPROXY_LOG_CALL("glDisable");
 	if (!(hlvr_GLMatricesLocked && cap == GL_DEPTH_TEST))
 	{
 		static GLProxy::TGLFunc<void, GLenum> TGLFUNC_DECL(glDisable);
@@ -1213,7 +1024,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glDisable(GLenum cap)
 
 GLPROXY_EXTERN void GLPROXY_DECL glViewport(GLint x, GLint y, GLint width, GLsizei height)
 {
-	GLPROXY_LOG_CALL("glViewport");
 	if (!hlvr_GLMatricesLocked)
 	{
 		static GLProxy::TGLFunc<void, GLint, GLint, GLint, GLsizei> TGLFUNC_DECL(glViewport);
@@ -1223,7 +1033,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glViewport(GLint x, GLint y, GLint width, GLsiz
 
 GLPROXY_EXTERN void GLPROXY_DECL glPushMatrix(void)
 {
-	GLPROXY_LOG_CALL("glPushMatrix");
 	static GLProxy::TGLFunc<void> TGLFUNC_DECL(glPushMatrix);
 	TGLFUNC_CALL(glPushMatrix);
 	hlvr_PushCount++;
@@ -1231,7 +1040,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glPushMatrix(void)
 
 GLPROXY_EXTERN void GLPROXY_DECL glPopMatrix(void)
 {
-	GLPROXY_LOG_CALL("glPopMatrix");
 	static GLProxy::TGLFunc<void> TGLFUNC_DECL(glPopMatrix);
 	TGLFUNC_CALL(glPopMatrix);
 	hlvr_PushCount--;
@@ -1239,7 +1047,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glPopMatrix(void)
 
 GLPROXY_EXTERN void GLPROXY_DECL glLoadIdentity(void)
 {
-	GLPROXY_LOG_CALL("glLoadIdentity");
 	if (!hlvr_GLMatricesLocked)
 	{
 		static GLProxy::TGLFunc<void> TGLFUNC_DECL(glLoadIdentity);
@@ -1249,7 +1056,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glLoadIdentity(void)
 
 GLPROXY_EXTERN void GLPROXY_DECL glMatrixMode(GLenum mode)
 {
-	GLPROXY_LOG_CALL("glMatrixMode");
 	if (!hlvr_GLMatricesLocked)
 	{
 		static GLProxy::TGLFunc<void, GLenum> TGLFUNC_DECL(glMatrixMode);
@@ -1259,7 +1065,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glMatrixMode(GLenum mode)
 
 GLPROXY_EXTERN void GLPROXY_DECL glLoadMatrixd(const GLdouble* m)
 {
-	GLPROXY_LOG_CALL("glLoadMatrixd");
 	if (!hlvr_GLMatricesLocked)
 	{
 		static GLProxy::TGLFunc<void, const GLdouble*> TGLFUNC_DECL(glLoadMatrixd);
@@ -1269,7 +1074,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glLoadMatrixd(const GLdouble* m)
 
 GLPROXY_EXTERN void GLPROXY_DECL glLoadMatrixf(const GLfloat* m)
 {
-	GLPROXY_LOG_CALL("glLoadMatrixf");
 	if (!hlvr_GLMatricesLocked)
 	{
 		static GLProxy::TGLFunc<void, const GLfloat*> TGLFUNC_DECL(glLoadMatrixf);
@@ -1279,7 +1083,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glLoadMatrixf(const GLfloat* m)
 
 GLPROXY_EXTERN void GLPROXY_DECL glMultMatrixd(const GLdouble* m)
 {
-	GLPROXY_LOG_CALL("glMultMatrixd");
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
 		static GLProxy::TGLFunc<void, const GLdouble*> TGLFUNC_DECL(glMultMatrixd);
@@ -1289,7 +1092,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glMultMatrixd(const GLdouble* m)
 
 GLPROXY_EXTERN void GLPROXY_DECL glMultMatrixf(const GLfloat* m)
 {
-	GLPROXY_LOG_CALL("glMultMatrixf");
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
 		static GLProxy::TGLFunc<void, const GLfloat*> TGLFUNC_DECL(glMultMatrixf);
@@ -1299,7 +1101,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glMultMatrixf(const GLfloat* m)
 
 GLPROXY_EXTERN void GLPROXY_DECL glScaled(GLdouble x, GLdouble y, GLdouble z)
 {
-	GLPROXY_LOG_CALL("glScaled");
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
 		static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glScaled);
@@ -1309,7 +1110,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glScaled(GLdouble x, GLdouble y, GLdouble z)
 
 GLPROXY_EXTERN void GLPROXY_DECL glScalef(GLfloat x, GLfloat y, GLfloat z)
 {
-	GLPROXY_LOG_CALL("glScalef");
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
 		static GLProxy::TGLFunc<void, GLfloat, GLfloat, GLfloat> TGLFUNC_DECL(glScalef);
@@ -1319,7 +1119,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glScalef(GLfloat x, GLfloat y, GLfloat z)
 
 GLPROXY_EXTERN void GLPROXY_DECL glTranslated(GLdouble x, GLdouble y, GLdouble z)
 {
-	GLPROXY_LOG_CALL("glTranslated");
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
 		static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glTranslated);
@@ -1329,7 +1128,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glTranslated(GLdouble x, GLdouble y, GLdouble z
 
 GLPROXY_EXTERN void GLPROXY_DECL glTranslatef(GLfloat x, GLfloat y, GLfloat z)
 {
-	GLPROXY_LOG_CALL("glTranslatef");
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
 		static GLProxy::TGLFunc<void, GLfloat, GLfloat, GLfloat> TGLFUNC_DECL(glTranslatef);
@@ -1339,7 +1137,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glTranslatef(GLfloat x, GLfloat y, GLfloat z)
 
 GLPROXY_EXTERN void GLPROXY_DECL glRotated(GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
 {
-	GLPROXY_LOG_CALL("glRotated");
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
 		static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glRotated);
@@ -1349,7 +1146,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glRotated(GLdouble angle, GLdouble x, GLdouble 
 
 GLPROXY_EXTERN void GLPROXY_DECL glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
-	GLPROXY_LOG_CALL("glRotatef");
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
 		static GLProxy::TGLFunc<void, GLfloat, GLfloat, GLfloat, GLfloat> TGLFUNC_DECL(glRotatef);
@@ -1359,7 +1155,6 @@ GLPROXY_EXTERN void GLPROXY_DECL glRotatef(GLfloat angle, GLfloat x, GLfloat y, 
 
 GLPROXY_EXTERN void GLPROXY_DECL glFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
 {
-	GLPROXY_LOG_CALL("glFrustum");
 	if (!hlvr_GLMatricesLocked)
 	{
 		static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glFrustum);

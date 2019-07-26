@@ -151,6 +151,15 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		pparams->nextView = 0;
 		pparams->onlyClientDraw = 1;
 		m_fIsOnlyClientDraw = true;
+
+		// should never happen, but just to be sure
+		if (m_displayList != 0)
+		{
+			glEndList();
+			glDeleteLists(m_displayList, 1);
+			m_displayList = 0;
+		}
+
 		return;
 	}
 
@@ -160,37 +169,44 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		vrHelper->UpdatePositions();
 
 		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
-		vrHelper->GetViewOrg(pparams->vieworg);
-		vrHelper->GetViewAngles(vr::EVREye::Eye_Left, pparams->viewangles);
 
-		// Update player viewangles from HMD pose
-		gEngfuncs.SetViewAngles(pparams->viewangles);
+		// Record entire engine rendering in an OpenGL display list
+		m_displayList = glGenLists(1);
+		glNewList(m_displayList, GL_COMPILE);
 
 		pparams->nextView = 1;
 		m_fIsOnlyClientDraw = false;
 	}
-	else if (pparams->nextView == 1)
-	{
-		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-		vrHelper->PrepareVRScene(vr::EVREye::Eye_Right);
-		vrHelper->GetViewOrg(pparams->vieworg);
-		vrHelper->GetViewAngles(vr::EVREye::Eye_Right, pparams->viewangles);
-
-		// Update player viewangles from HMD pose
-		gEngfuncs.SetViewAngles(pparams->viewangles);
-
-		pparams->nextView = 2;
-		m_fIsOnlyClientDraw = false;
-	}
 	else
 	{
+		glEndList();
 		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+
+		// draw recorderd display list for left eye
+		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
+		glCallList(m_displayList);
+		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+
+		// draw recorderd display list for right eye
+		vrHelper->PrepareVRScene(vr::EVREye::Eye_Right);
+		glCallList(m_displayList);
+		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+
+		// delete display list (we need a new one every frame)
+		glDeleteLists(m_displayList, 1);
+		m_displayList = 0;
+
+		// send messages to hmg
 		vrHelper->SubmitImages();
 
 		pparams->nextView = 0;
 		pparams->onlyClientDraw = 1;
 		m_fIsOnlyClientDraw = true;
 	}
+
+	vrHelper->GetViewOrg(pparams->vieworg);
+	vrHelper->GetViewAngles(vr::EVREye::Eye_Left, pparams->viewangles);
+	gEngfuncs.SetViewAngles(pparams->viewangles);
 
 	// Override vieworg if we have a viewentity (trigger_camera)
 	if (pparams->viewentity > pparams->maxclients)
@@ -201,16 +217,6 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		{
 			VectorCopy(viewentity->origin, pparams->vieworg);
 		}
-	}
-
-	extern int gAfterRefdefQuadsCounter;
-	if (!m_fIsOnlyClientDraw)
-	{
-		gAfterRefdefQuadsCounter = 0;
-	}
-	else
-	{
-		gAfterRefdefQuadsCounter = -1;
 	}
 }
 

@@ -23,8 +23,6 @@ PFNHLVRLOCKGLMATRICESPROC hlvrLockGLMatrices = nullptr;
 PFNHLVRUNLOCKGLMATRICESPROC hlvrUnlockGLMatrices = nullptr;
 
 PFNHLVRSETCONSOLECALLBACKPROC hlvrSetConsoleCallback = nullptr;
-PFNHLVRSETGENANDDELETETEXTURESCALLBACKPROC hlvrSetGenAndDeleteTexturesCallback = nullptr;
-PFNHLVRSETGLBEGINCALLBACKPROC hlvrSetGLBeginCallback = nullptr;
 
 PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
 PFNGLGENERATEMIPMAPPROC glGenerateMipmap = nullptr;
@@ -90,9 +88,6 @@ void TryTryGLCall(std::function<void()> call, const std::string& name, const std
 
 bool CreateGLTexture(unsigned int* texture, int width, int height)
 {
-	extern bool gIsOwnCallToGenTextures;
-	gIsOwnCallToGenTextures = true;
-
 	ClearGLErrors();
 
 	try
@@ -121,7 +116,6 @@ bool CreateGLTexture(unsigned int* texture, int width, int height)
 
 	ClearGLErrors();
 
-	gIsOwnCallToGenTextures = false;
 	return *texture != 0;
 }
 
@@ -202,14 +196,10 @@ bool InitGLMatrixOverrideFunctions()
 bool InitGLCallbackFunctions()
 {
 	hlvrSetConsoleCallback = (PFNHLVRSETCONSOLECALLBACKPROC)GetOpenGLFuncAddress("hlvrSetConsoleCallback");
-	hlvrSetGenAndDeleteTexturesCallback = (PFNHLVRSETGENANDDELETETEXTURESCALLBACKPROC)GetOpenGLFuncAddress("hlvrSetGenAndDeleteTexturesCallback");
-	hlvrSetGLBeginCallback = (PFNHLVRSETGLBEGINCALLBACKPROC)GetOpenGLFuncAddress("hlvrSetGLBeginCallback");
 
-	if (hlvrSetConsoleCallback != nullptr && hlvrSetGenAndDeleteTexturesCallback != nullptr && hlvrSetGLBeginCallback != nullptr)
+	if (hlvrSetConsoleCallback != nullptr )
 	{
 		hlvrSetConsoleCallback(&HLVRConsoleCallback);
-		hlvrSetGenAndDeleteTexturesCallback(&HLVRGenTexturesCallback, &HLVRDeleteTexturesCallback);
-		hlvrSetGLBeginCallback(&HLVRGLBeginCallback, &HLVRGLEndCallback);
 		return true;
 	}
 

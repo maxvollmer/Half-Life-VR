@@ -112,19 +112,21 @@ private:
 	bool m_HUDRedrawWasCalled{ false };
 
 	// HUD Render stuff
-	VRHUDRenderType m_hudRenderType{VRHUDRenderType::NONE};
-	HSPRITE_VALVE m_hudSpriteHandle{0};
-	color24 m_hudSpriteColor{0,0,0};
+	VRHUDRenderType m_hudRenderType{ VRHUDRenderType::NONE };
+	HSPRITE_VALVE m_hudSpriteHandle{ 0 };
+	color24 m_hudSpriteColor{ 0, 0, 0 };
 	int m_iHUDFirstSpriteX = 0;
 	int m_iHUDFirstSpriteY = 0;
 	bool m_fIsFirstSprite = true;
 
-	float m_hudRedrawTime{0.f};
-	int m_hudRedrawIntermission{0};
+	float m_hudRedrawTime{ 0.f };
+	int m_hudRedrawIntermission{ 0 };
 
 	bool m_isDrawingDamage{ false };
 	float m_flDrawingDamageTime = 0.f;
 	Vector m_damageColor;
+
+	unsigned int m_displayList{ 0 };
 
 	void GetStartingPosForHUDRenderType(const VRHUDRenderType m_hudRenderType, float & hudStartPositionUpOffset, float & hudStartPositionRightOffset);
 	bool GetHUDSpriteOriginAndOrientation(const VRHUDRenderType m_hudRenderType, Vector& origin, Vector& forward, Vector& right, Vector& up);

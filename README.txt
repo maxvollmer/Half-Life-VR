@@ -72,7 +72,7 @@ Female scientist audio files have been generated using MorphVox Pro with the Bat
 Smallest cup audio track by Michael Hillard. Permission for use in this mod generously granted.
 
 ====
-Hand model based on high poly hand model by Willdabeast and HEV arms textures by JohnChronic: https://gamebanana.com/skins/157391
+HEV hand model based on high poly hand model by Willdabeast and HEV arms textures by JohnChronic: https://gamebanana.com/skins/157391
 
 ====
 Female scientist model based on model by 23-down. Modified to add missing animations. Full info and further credits in models/femalesci_readme.txt
@@ -106,3 +106,8 @@ Copyright (c) 2005-2019 Lode Vandevenne
 This mod uses DbMon.NET
 https://www.codeproject.com/Articles/13345/DbMon-NET-A-simple-NET-OutputDebugString-capturer
 Copyright (c) 2006 Christian Birkl
+
+===
+This mod uses Newtonsoft.Json
+https://www.newtonsoft.com/json
+Copyright (c) 2007 James Newton-King

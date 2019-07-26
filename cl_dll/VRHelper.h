@@ -61,7 +61,6 @@ public:
 
 private:
 
-	bool AcceptsDisclaimer();
 	void Exit(const char* lpErrorMessage = nullptr);
 
 	void UpdateHMD();

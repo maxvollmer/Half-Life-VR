@@ -247,11 +247,9 @@ const Vector3 & VRHelper::GetHLToVR()
 
 void VRHelper::Init()
 {
-	if (!AcceptsDisclaimer())
-	{
-		Exit();
-	}
-	else if (!IEngineStudio.IsHardware())
+	g_vrSettings.Init();
+
+	if (!IEngineStudio.IsHardware())
 	{
 		Exit("Software mode not supported. Please start this game with OpenGL renderer. (Start Half-Life, open the Options menu, select Video, chose OpenGL as Renderer, save, quit Half-Life, then start Half-Life: VR)");
 	}
@@ -303,18 +301,12 @@ void VRHelper::Init()
 		}
 	}
 
-	g_vrSettings.Init();
 	g_vrInput.Init();
 
 	UpdateVRHLConversionVectors();
 
 	// Set skybox
 	SetSkybox("desert");
-}
-
-bool VRHelper::AcceptsDisclaimer()
-{
-	return true;
 }
 
 void VRHelper::Exit(const char* lpErrorMessage)
@@ -1572,56 +1564,3 @@ void __stdcall HLVRConsoleCallback(char* msg)
 	gEngfuncs.Con_DPrintf("%s\n", msg);
 }
 
-bool gIsOwnCallToGenTextures = false;
-std::vector<GLuint> gTextures;
-
-void __stdcall HLVRGenTexturesCallback(GLsizei n, GLuint* textures)
-{
-}
-
-void __stdcall HLVRDeleteTexturesCallback(GLsizei n, const GLuint* textures)
-{
-}
-
-int gAfterRefdefQuadsCounter = -1;
-bool gPreventInfiniteRecursionMarker = false;
-
-// This method will replace the skybox textures rendered by Half-Life with HD versions (if vr_hd_textures_enabled is set)
-// We don't have direct access to the skybox textures used by Half-Life or any of the methods responsible for rendering it.
-// But Half-Life renders the skybox using glBegin with GL_QUADS, and it does it right after the call to CalcRefdef (see VRRenderer).
-// Thus we can simply take the first 6 calls to glBegin with GL_QUADS after CalcRefDef was called, and replace the textures with HD versions.
-// - Max Vollmer, 2019-06-01
-void __stdcall HLVRGLBeginCallback(GLenum mode)
-{
-	if (gPreventInfiniteRecursionMarker)
-		return;
-
-	if (CVAR_GET_FLOAT("vr_hd_textures_enabled") == 0.f)
-		return;
-
-	// TODO: Order of QUADS isn't consistent - possibly the engine also doesn't call these if sky isn't visible
-	// Needs more checks:
-	// - Actual size and position of quads (intercept glVertex)
-	// - Size of textures?
-/*
-	if (mode == GL_QUADS && gAfterRefdefQuadsCounter >= 0 && gAfterRefdefQuadsCounter < 6)
-	{
-		// Cancel previous call to glBegin
-		glEnd();
-
-		// Set HD texture
-		glBindTexture(GL_TEXTURE_2D, reinterpret_cast<unsigned int>(m_skyboxHDTextures[gAfterRefdefQuadsCounter].handle));
-
-		// Call glBegin again with HD texture
-		gPreventInfiniteRecursionMarker = true;
-		glBegin(GL_QUADS);
-		gPreventInfiniteRecursionMarker = false;
-
-		gAfterRefdefQuadsCounter++;
-	}
-*/
-}
-
-void __stdcall HLVRGLEndCallback()
-{
-}

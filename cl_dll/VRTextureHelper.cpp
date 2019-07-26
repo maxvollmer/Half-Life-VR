@@ -71,29 +71,9 @@ unsigned int VRTextureHelper::GetTexture(const std::string& name)
 		}
 		else
 		{
-			/*
-			// Images are upside down, since we use them to replace textures used by Half-Life,
-			// we cannot change the line order while rendering (engine code), so we flip the image here:
-			std::vector<unsigned char> flippedImage;
-			flippedImage.resize(image.size());
-			for (unsigned int imageLine = 0; imageLine < height; imageLine++)
-			{
-				for (unsigned int x = 0; x < width; x++)
-				{
-					for (unsigned int c = 0; c < 4; c++)
-					{
-						flippedImage[4 * (height - imageLine - 1) * width + 4 * x + c] = image[4 * imageLine * width + 4 * x + c];
-					}
-				}
-			}
-			*/
-
 			// Now load it into OpenGL
 			glActiveTexture(GL_TEXTURE0);
-			extern bool gIsOwnCallToGenTextures;
-			gIsOwnCallToGenTextures = true;
 			glGenTextures(1, &texture);
-			gIsOwnCallToGenTextures = false;
 			glBindTexture(GL_TEXTURE_2D, texture);
 			glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
