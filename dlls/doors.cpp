@@ -873,8 +873,19 @@ void CRotDoor::Spawn( void )
 		SetTouch(&CBaseDoor::DoorTouch );
 
 	// Slow down fast spinning thingies in c1a4f to avoid nausea in VR
-	if ((strcmp(STRING(pev->model), "*1") == 0 && strcmp(STRING(pev->targetname), "bucket") == 0)
-		|| (strcmp(STRING(pev->model), "*15") == 0 && strcmp(STRING(pev->targetname), "crazybucket") == 0))
+	if ((strcmp(STRING(pev->model), "*1") == 0 && strcmp(STRING(pev->targetname), "bucket") == 0))
+	{
+		float speed = CVAR_GET_FLOAT("vr_semicheat_spinthingyspeed");
+		if (speed > 0.f)
+		{
+			pev->speed = min(speed, 50.f);
+		}
+		else
+		{
+			pev->speed = 50.f;
+		}
+	}
+	else if ((strcmp(STRING(pev->model), "*15") == 0 && strcmp(STRING(pev->targetname), "crazybucket") == 0))
 	{
 		float speed = CVAR_GET_FLOAT("vr_semicheat_spinthingyspeed");
 		if (speed > 0.f)
