@@ -150,6 +150,7 @@
 * Fixed "telekinetic" grab
 * Fixed bug in pushable push code
 * Fixed getting stuck on ladders when legacy ladder movement is disabled
+* Fixed minor bug in speed setting for those fast platforms near the tentacle monster
 * Improved rendering performance overall
 * Removed support for legacy input (mod now only supports SteamVR Input)
 * Improved error feedback for missing SteamVR Input actions
