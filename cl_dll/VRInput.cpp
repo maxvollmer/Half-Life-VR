@@ -227,6 +227,18 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 		gEngfuncs.Con_DPrintf("Error while trying to register input action set /actions/%s. (Error code: %i)\n", actionSet, result);
 		return false;
 	}
+	else if (handle == vr::k_ulInvalidActionHandle)
+	{
+		if (actionSet == "custom")
+		{
+			gEngfuncs.Con_DPrintf("Error while trying to register input action set /actions/%s. The action doesn't exist! (Did you define a custom action in customactions.cfg, but forgot to add it to actions.manifest?)\n", actionSet, result);
+		}
+		else
+		{
+			gEngfuncs.Con_DPrintf("Error while trying to register input action set /actions/%s. The action doesn't exist!\n", actionSet, result);
+		}
+		return false;
+	}
 	else
 	{
 		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
