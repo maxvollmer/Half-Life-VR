@@ -152,6 +152,8 @@
 * Fixed getting stuck on ladders when legacy ladder movement is disabled
 * Improved rendering performance overall
 * Removed support for legacy input (mod now only supports SteamVR Input)
+* Improved error feedback for missing SteamVR Input actions
+* Implemented config tabs in HLVRLauncher
 * (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
 * (WIP) Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello")
 * 
