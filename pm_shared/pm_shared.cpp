@@ -2094,12 +2094,14 @@ void PM_LadderMove(physent_t *pLadder)
 {
 	if (VRGlobalGetNoclipMode() || VRIsGrabbingLadder() || !VRIsLegacyLadderMoveEnabled())
 	{
+		/*
 		for (int i = 0; i < 3; i++)
 		{
 			pmove->velocity[i] = pmove->forward[i] * pmove->cmd.forwardmove + pmove->right[i] * pmove->cmd.sidemove;
 		}
 		pmove->velocity[2] += pmove->cmd.upmove;
 		PM_CheckVelocity();
+		*/
 		return;
 	}
 
@@ -2229,13 +2231,13 @@ physent_t *PM_Ladder(void)
 	if (VRGlobalGetNoclipMode())
 		return nullptr;
 
+	int grabbedLaderIndex = VRGetGrabbedLadder(pmove->player_index);
+
 	int			i;
 	physent_t	*pe;
 	hull_t		*hull;
 	int			num;
 	vec3_t		test;
-
-	int grabbedLaderIndex = VRGetGrabbedLadder(pmove->player_index);
 
 	for (i = 0; i < pmove->nummoveent; i++)
 	{
@@ -2243,58 +2245,64 @@ physent_t *PM_Ladder(void)
 
 		if (pe->model && (modtype_t)pmove->PM_GetModelType(pe->model) == mod_brush && pe->skin == CONTENTS_LADDER)
 		{
-			if (grabbedLaderIndex >= 0 && grabbedLaderIndex == pe->info)
+			if (grabbedLaderIndex > 0)
 			{
+				if (grabbedLaderIndex == pe->info)
+				{
+					return pe;
+				}
+			}
+			else if (VRIsLegacyLadderMoveEnabled())
+			{
+
+				hull = (hull_t*)pmove->PM_HullForBsp(pe, test);
+				num = hull->firstclipnode;
+
+				// Offset the test point appropriately for this hull.
+				// test = origin - test
+				VectorSubtract(pmove->origin, test, test);
+
+				// Test the player's hull for intersection with this model
+				if (pmove->PM_HullPointContents(hull, num, test) == CONTENTS_EMPTY)
+				{
+					if (g_pLastLadder == pe)
+					{
+						// Even the slightest head movements make the player fall off a ladder,
+						// so here we will do an additional check if the player is "close enough" to stay on the ladder.
+
+						// Get ladder bbox in world space
+						vec3_t ladderAbsmin;
+						vec3_t ladderAbsmax;
+						VectorAdd(pe->model->mins, pe->origin, ladderAbsmin);
+						VectorAdd(pe->model->maxs, pe->origin, ladderAbsmax);
+
+						// Get player bbox in world space
+						vec3_t playerAbsmin;
+						vec3_t playerAbsmax;
+						VectorAdd(pmove->origin, pmove->player_mins[pmove->usehull], playerAbsmin);
+						VectorAdd(pmove->origin, pmove->player_maxs[pmove->usehull], playerAbsmax);
+						playerAbsmax[2] = pmove->origin[2] + max(pmove->player_maxs[pmove->usehull][2], pmove->view_ofs[2]) + 20.f;
+
+						// Expand player bbox by 8 units in each direction
+						for (int i = 0; i < 3; i++)
+						{
+							playerAbsmin[i] -= 8.f;
+							playerAbsmax[i] += 8.f;
+						}
+
+						// Check if bbox's intersect, and if yes, return this ladder entity.
+						// (Player stays on ladder if VR headset movements remain within 8 units range.)
+						if (BBoxIntersectsBBox(ladderAbsmin, ladderAbsmax, playerAbsmin, playerAbsmax))
+						{
+							return pe;
+						}
+					}
+					continue;
+				}
+
+				g_pLastLadder = pe;
 				return pe;
 			}
-
-			hull = (hull_t *)pmove->PM_HullForBsp(pe, test);
-			num = hull->firstclipnode;
-
-			// Offset the test point appropriately for this hull.
-			// test = origin - test
-			VectorSubtract(pmove->origin, test, test);
-
-			// Test the player's hull for intersection with this model
-			if (pmove->PM_HullPointContents(hull, num, test) == CONTENTS_EMPTY)
-			{
-				if (g_pLastLadder == pe)
-				{
-					// Even the slightest head movements make the player fall off a ladder,
-					// so here we will do an additional check if the player is "close enough" to stay on the ladder.
-
-					// Get ladder bbox in world space
-					vec3_t ladderAbsmin;
-					vec3_t ladderAbsmax;
-					VectorAdd(pe->model->mins, pe->origin, ladderAbsmin);
-					VectorAdd(pe->model->maxs, pe->origin, ladderAbsmax);
-
-					// Get player bbox in world space
-					vec3_t playerAbsmin;
-					vec3_t playerAbsmax;
-					VectorAdd(pmove->origin, pmove->player_mins[pmove->usehull], playerAbsmin);
-					VectorAdd(pmove->origin, pmove->player_maxs[pmove->usehull], playerAbsmax);
-					playerAbsmax[2] = pmove->origin[2] + max(pmove->player_maxs[pmove->usehull][2], pmove->view_ofs[2]) + 20.f;
-
-					// Expand player bbox by 8 units in each direction
-					for (int i = 0; i < 3; i++)
-					{
-						playerAbsmin[i] -= 8.f;
-						playerAbsmax[i] += 8.f;
-					}
-
-					// Check if bbox's intersect, and if yes, return this ladder entity.
-					// (Player stays on ladder if VR headset movements remain within 8 units range.)
-					if (BBoxIntersectsBBox(ladderAbsmin, ladderAbsmax, playerAbsmin, playerAbsmax))
-					{
-						return pe;
-					}
-				}
-				continue;
-			}
-
-			g_pLastLadder = pe;
-			return pe;
 		}
 	}
 
@@ -3330,7 +3338,7 @@ void PM_PlayerMove ( qboolean server )
 		break;
 
 	case MOVETYPE_FLY:
-	
+
 		PM_CheckWater();
 
 		// Was jump button pressed?

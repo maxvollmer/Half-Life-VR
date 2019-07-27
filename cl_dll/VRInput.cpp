@@ -31,18 +31,15 @@ void VRInput::Init()
 		{
 			LoadCustomActions();
 			RegisterActionSets();
-			m_isLegacyInput = false;
 		}
 		else
 		{
-			gEngfuncs.Con_DPrintf("Error: Couldn't load actions.manifest, falling back to legacy input. (Error code: %i)\n", result);
-			m_isLegacyInput = true;
+			gEngfuncs.Con_DPrintf("Error: Couldn't load actions.manifest. (Error code: %i)\n", result);
 		}
 	}
 	else
 	{
-		gEngfuncs.Con_DPrintf("Error: Couldn't load actions.manifest, because it doesn't exist. Falling back to legacy input.\n");
-		m_isLegacyInput = true;
+		gEngfuncs.Con_DPrintf("Error: actions.manifest doesn't exist.\n");
 	}
 }
 
@@ -404,9 +401,6 @@ void VRInput::FireDamageFeedback(const std::string& action, float durationInSeco
 
 void VRInput::HandleInput(bool isInGame)
 {
-	if (IsLegacyInput())
-		return;
-
 	for (auto &[actionSetName, actionSet] : m_actionSets)
 	{
 		if (isInGame || actionSet.handleWhenNotInGame)

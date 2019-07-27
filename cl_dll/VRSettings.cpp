@@ -61,7 +61,6 @@ void VRSettings::Init()
 	CVAR_CREATE("vr_move_instant_accelerate", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_move_instant_decelerate", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_move_instant_decelerate", "1", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_movecontrols", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_no_gauss_recoil", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_npcscale", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_playerturn_enabled", "1", FCVAR_ARCHIVE);

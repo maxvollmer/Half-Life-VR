@@ -331,9 +331,6 @@
     <ClCompile Include="VRInput.cpp">
       <Filter>VR\input</Filter>
     </ClCompile>
-    <ClCompile Include="VRLegacyInput.cpp">
-      <Filter>VR\input</Filter>
-    </ClCompile>
     <ClCompile Include="VRRenderer.cpp">
       <Filter>VR\renderer</Filter>
     </ClCompile>

@@ -459,40 +459,11 @@ void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 		case vr::EVREventType::VREvent_DriverRequestedQuit:
 			Exit();
 			return;
-		case vr::EVREventType::VREvent_ButtonPress:
-		case vr::EVREventType::VREvent_ButtonUnpress:
-			if (isInGame && g_vrInput.IsLegacyInput())
-			{
-				vr::ETrackedControllerRole controllerRole = vrSystem->GetControllerRoleForTrackedDeviceIndex(vrEvent.trackedDeviceIndex);
-				if (controllerRole != vr::ETrackedControllerRole::TrackedControllerRole_Invalid)
-				{
-					vr::VRControllerState_t controllerState;
-					vrSystem->GetControllerState(vrEvent.trackedDeviceIndex, &controllerState, sizeof(controllerState));
-					g_vrInput.LegacyHandleButtonPress(vrEvent.data.controller.button, controllerState, controllerRole == vr::ETrackedControllerRole::TrackedControllerRole_LeftHand, vrEvent.eventType == vr::EVREventType::VREvent_ButtonPress);
-				}
-			}
-			break;
-		case vr::EVREventType::VREvent_ButtonTouch:
-		case vr::EVREventType::VREvent_ButtonUntouch:
-			if (isInGame && g_vrInput.IsLegacyInput())
-			{
-				vr::ETrackedControllerRole controllerRole = vrSystem->GetControllerRoleForTrackedDeviceIndex(vrEvent.trackedDeviceIndex);
-				if (controllerRole != vr::ETrackedControllerRole::TrackedControllerRole_Invalid)
-				{
-					vr::VRControllerState_t controllerState;
-					vrSystem->GetControllerState(vrEvent.trackedDeviceIndex, &controllerState, sizeof(controllerState));
-					g_vrInput.LegacyHandleButtonTouch(vrEvent.data.controller.button, controllerState, controllerRole == vr::ETrackedControllerRole::TrackedControllerRole_LeftHand, vrEvent.eventType == vr::EVREventType::VREvent_ButtonPress);
-				}
-			}
-			break;
 		default:
 			break;
 		}
 	}
-	if (!g_vrInput.IsLegacyInput())
-	{
-		g_vrInput.HandleInput(isInGame);
-	}
+	g_vrInput.HandleInput(isInGame);
 }
 
 bool VRHelper::UpdatePositions()

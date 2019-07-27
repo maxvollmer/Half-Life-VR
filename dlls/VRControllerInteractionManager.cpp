@@ -149,7 +149,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 	CBaseEntity *pWorld = CBaseEntity::Instance(INDEXENT(0));
 	if (hEntity != pWorld)
 	{
-		Vector entityCenter = (hEntity->pev->absmax + hEntity->pev->absmin) * 0.5f;
+		Vector entityCenter = hEntity->pev->origin + (hEntity->pev->maxs + hEntity->pev->mins) * 0.5f;
 		float distance = (controller.GetPosition() - entityCenter).Length();
 		float entityRadius = (std::max)(hEntity->pev->mins.Length(), hEntity->pev->maxs.Length());
 		if (distance > (controller.GetRadius() + entityRadius))
@@ -191,6 +191,16 @@ bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE hEntity)
 		|| hEntity->IsDraggable();
 }
 
+constexpr const int VR_DRAG_DISTANCE_TOLERANCE = 64;
+
+bool DistanceTooBigForDragging(EHANDLE hEntity, const VRController& controller)
+{
+	Vector entityCenter = hEntity->pev->origin + (hEntity->pev->maxs + hEntity->pev->mins) * 0.5f;
+	float distance = (controller.GetPosition() - entityCenter).Length();
+	float entityRadius = (std::max)(hEntity->pev->mins.Length(), hEntity->pev->maxs.Length());
+	return distance > (controller.GetRadius() + entityRadius + VR_DRAG_DISTANCE_TOLERANCE);
+}
+
 void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, const VRController& controller)
 {
 	CBaseEntity *pEntity = nullptr;
@@ -223,7 +233,11 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		bool didHitChange;
 
 		// If we are dragging something draggable, we override all the booleans to avoid "losing" the entity due to fast movements
-		if (controller.IsDragging() && controller.GetWeaponId() == WEAPON_BAREHAND && controller.IsDraggedEntity(hEntity) && IsDraggableEntity(hEntity))
+		if (controller.IsDragging()
+			/*&& controller.GetWeaponId() == WEAPON_BAREHAND*/
+			&& controller.IsDraggedEntity(hEntity)
+			&& IsDraggableEntity(hEntity)
+			&& !DistanceTooBigForDragging(hEntity, controller))
 		{
 			isTouching = true;
 			didTouchChange = false;
@@ -690,11 +704,11 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 		{
 			// backup origins and move entities temporarily out of world, so box won't collide with itself when moving
 			Vector playerOrigin = pPlayer->pev->origin;
-			pPlayer->pev->origin = Vector{ 999,999,999 };
+			pPlayer->pev->origin = Vector{ 9999, 9999, 9999 };
 			UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
 
 			Vector pushableOrigin = pPushable->pev->origin;
-			pPushable->pev->origin = Vector{ 999,999,999 };
+			pPushable->pev->origin = Vector{ 9999, 9999, 9999 };
 			UTIL_SetOrigin(pPushable->pev, pPushable->pev->origin);
 
 			Vector targetPos;
@@ -714,19 +728,16 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 			}
 			else
 			{
-				Vector pushableCenter = pPushable->pev->origin + (pPushable->pev->mins + pPushable->pev->maxs) * 0.5f;
+				Vector pushableCenter = pushableOrigin + (pPushable->pev->mins + pPushable->pev->maxs) * 0.5f;
 				Vector relativePos = interaction.intersectPoint - pushableCenter;
 
+				Vector size = pPushable->pev->maxs - pPushable->pev->mins;
+				Vector extends = size * 0.5f;
+
+				float normalizedX = relativePos.x / extends.x;
+				float normalizedY = relativePos.y / extends.y;
+
 				// Decide axis to push on:
-				Vector pushDelta;
-
-				float normalizedX = relativePos.x;
-				float normalizedY = relativePos.y;
-				if (normalizedX < 0.f) normalizedX /= fabs(pPushable->pev->mins.x);
-				if (normalizedX > 0.f) normalizedX /= fabs(pPushable->pev->maxs.x);
-				if (normalizedY < 0.f) normalizedY /= fabs(pPushable->pev->mins.y);
-				if (normalizedY > 0.f) normalizedY /= fabs(pPushable->pev->maxs.y);
-
 				bool useAxis[3];
 				useAxis[0] = fabs(normalizedX) >= 0.5f || fabs(normalizedY) <= 0.5f;
 				useAxis[1] = fabs(normalizedY) >= 0.5f || fabs(normalizedX) <= 0.5f;
@@ -734,19 +745,20 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 				// Only push up or down if floating in water
 				useAxis[2] = (pPushable->pev->waterlevel > 0 && !FBitSet(pPushable->pev->flags, FL_ONGROUND));
 
+				Vector pushDelta;
 				for (int i = 0; i < 3; i++)
 				{
 					if (useAxis[i])
 					{
 						if (relativePos[i] < 0.f)
 						{
-							pushDelta[i] = relativePos[i] - pPushable->pev->mins[i];
+							pushDelta[i] = relativePos[i] + extends[i];
 							if (pushDelta[i] < 0.f)
 								pushDelta[i] = 1.f;
 						}
 						else
 						{
-							pushDelta[i] = relativePos[i] - pPushable->pev->maxs[i];
+							pushDelta[i] = relativePos[i] - extends[i];
 							if (pushDelta[i] > 0.f)
 								pushDelta[i] = -1.f;
 						}

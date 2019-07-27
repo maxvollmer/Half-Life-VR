@@ -15,9 +15,6 @@ class VRInput
 public:
 	void Init();
 
-	void LegacyHandleButtonPress(unsigned int button, vr::VRControllerState_t controllerState, bool leftOrRight, bool downOrUp);
-	void LegacyHandleButtonTouch(unsigned int button, vr::VRControllerState_t controllerState, bool leftOrRight, bool downOrUp);
-
 	void HandleInput(bool isInGame);
 
 	inline bool RotateLeft() const
@@ -41,10 +38,6 @@ public:
 	void SetDrag(vr::ETrackedControllerRole controllerRole, bool on)
 	{
 		m_dragStates[controllerRole] = on;
-	}
-	inline bool IsLegacyInput() const
-	{
-		return m_isLegacyInput;
 	}
 	inline bool IsVRDucking()
 	{
@@ -121,8 +114,7 @@ private:
 
 	bool UpdateActionStates(const std::string& actionSetName, const ActionSet& actionSet);
 
-	bool m_isDucking{ false };	// TODO: Controller support for ducking
-	bool m_isLegacyInput{ false };
+	bool m_isDucking{ false };
 	bool m_isVRDucking{ false };
 
 	std::unordered_map<std::string, ActionSet>				m_actionSets;
