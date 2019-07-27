@@ -197,7 +197,15 @@ namespace HLVRLauncher.Utilities
             lock (gameLock)
             {
                 hlProcess = null;
-                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.UpdateState()));
+                if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.AutoUnpatchAndCloseLauncher].IsTrue())
+                {
+                    UnpatchGame();
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => System.Windows.Application.Current.Shutdown()));
+                }
+                else
+                {
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.UpdateState()));
+                }
             }
         }
 
