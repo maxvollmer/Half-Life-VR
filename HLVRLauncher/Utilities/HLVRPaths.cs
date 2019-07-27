@@ -29,7 +29,8 @@ namespace HLVRLauncher.Utilities
 
         public static string HLExecutable { get { return Path.Combine(HLVRPaths.HLDirectory, "hl.exe"); } }
 
-        public static string VRSettingsFile { get { return Path.Combine(HLVRPaths.VRDirectory, "hlvrsettings.cfg"); } }
+        public static string VRSettingsFileName { get { return "hlvrsettings.cfg"; } }
+        public static string VRSettingsFile { get { return Path.Combine(HLVRPaths.VRDirectory, VRSettingsFileName); } }
 
         public static void Initialize()
         {

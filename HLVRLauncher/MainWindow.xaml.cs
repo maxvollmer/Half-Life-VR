@@ -211,18 +211,24 @@ namespace HLVRLauncher
             ConsoleOutput.Inlines.Clear();
         }
 
+        public void RefreshConfigTabs()
+        {
+            LauncherConfig.Children.Clear();
+            HLVRLauncherConfig.Initialize(LauncherConfig);
+            ModConfig.Children.Clear();
+            HLVRModConfig.Initialize(ModConfig);
+        }
+
         private void RestoreDefaultLauncherConfig_Click(object sender, RoutedEventArgs e)
         {
             HLVRSettingsManager.RestoreLauncherSettings();
-            LauncherConfig.Children.Clear();
-            HLVRLauncherConfig.Initialize(LauncherConfig);
+            RefreshConfigTabs();
         }
 
         private void RestoreDefaultModConfig_Click(object sender, RoutedEventArgs e)
         {
             HLVRSettingsManager.RestoreModSettings();
-            ModConfig.Children.Clear();
-            HLVRModConfig.Initialize(ModConfig);
+            RefreshConfigTabs();
         }
 
         public void ConsoleLog(string msg, Brush color)
