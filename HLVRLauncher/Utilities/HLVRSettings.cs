@@ -108,14 +108,14 @@ namespace HLVRLauncher.Utilities
         public OrderedDictionary<string, OrderedDictionary<string, Setting>> ModSettings = new OrderedDictionary<string, OrderedDictionary<string, Setting>>()
         {
             { "Anti-nausea features", new OrderedDictionary<string, Setting>() {
-                { "vr_xenjumpthingies_teleporteronly", Setting.Create( "Disable being pushed up by xen jump thingies (you can use the teleporter on those things)", true ) },
-                { "vr_rotate_with_trains", Setting.Create( "Rotate with trains/elevators", true ) },
-                { "vr_semicheat_spinthingyspeed", Setting.Create( "Override speed for those fast spinning platforms near the tentacle monster", true ) },
-                { "vr_no_gauss_recoil", Setting.Create( "Disable gauss recoil", true ) },
                 { "vr_move_instant_accelerate", Setting.Create( "Instant acceleration", true ) },
                 { "vr_move_instant_decelerate", Setting.Create( "Instant deceleration", true ) },
+                { "vr_rotate_with_trains", Setting.Create( "Rotate with trains/elevators", true ) },
+                { "vr_no_gauss_recoil", Setting.Create( "Disable gauss recoil", true ) },
                 { "vr_disable_triggerpush", Setting.Create( "Disable areas that push the player (e.g. strong wind)", true ) },
                 { "vr_disable_func_friction", Setting.Create( "Disables slippery surfaces", true ) },
+                { "vr_xenjumpthingies_teleporteronly", Setting.Create( "Disable being pushed up by xen jump thingies (you can use the teleporter on those things)", true ) },
+                { "vr_semicheat_spinthingyspeed", Setting.Create( "Set maximum speed for those fast spinning platforms near the tentacle monster (c1a4f)", 110 ) },
             } },
 
             { "Movement", new OrderedDictionary<string, Setting>() {
@@ -128,6 +128,22 @@ namespace HLVRLauncher.Utilities
                 { "vr_move_analogturn_inverted", Setting.Create( "Invert analog turn input", false ) },
             } },
 
+            { "Input, Controls & Accessibility", new OrderedDictionary<string, Setting>() {
+                { "vr_lefthand_mode", Setting.Create( "Left hand mode", false ) },
+                { "vr_crowbar_vanilla_attack_enabled", Setting.Create( "Enable crowbar melee attack on 'fire' action.", false ) },
+
+                { "vr_flashlight_toggle", Setting.Create( "Flashlight should toggle", false ) },
+
+                { "vr_enable_aim_laser", Setting.Create( "Enable aim laser pointer for range weapons", false ) },
+
+                { "vr_melee_swing_speed", Setting.Create( "Minimum controller speed to trigger melee damage", 150 ) },
+
+                { "vr_weapon_grenade_mode", Setting.Create( "Grenade throw mode", 0, new OrderedDictionary<string, string>(){ {"0", "Use controller aim and velocity" }, { "1", "Aim with controller, but fly with fixed speed (as in original game)" } } ) },
+
+                { "vr_teleport_attachment", Setting.Create( "Teleporter attachment", 0, new OrderedDictionary<string, string>(){ {"0", "Hand" }, { "1", "Weapon" }, { "2", "Head (HMD)" }, { "3", "SteamVR Input pose" } } ) },
+                { "vr_flashlight_attachment", Setting.Create( "Flashlight attachment", 0 , new OrderedDictionary<string, string>(){ {"0", "Hand" }, { "1", "Weapon" }, { "2", "Head (HMD)" }, { "3", "SteamVR Input pose" } }) },
+            } },
+
             { "Ladders", new OrderedDictionary<string, Setting>() {
                 { "vr_ladder_immersive_movement_enabled", Setting.Create( "Enabled immersive climbing of ladders", true ) },
                 { "vr_ladder_immersive_movement_swinging_enabled", Setting.Create( "Enable momentum from immersive ladder climbing", true ) },
@@ -136,21 +152,12 @@ namespace HLVRLauncher.Utilities
                 { "vr_ladder_legacy_movement_speed", Setting.Create( "Climb speed on ladders (legacy movement)", 100 ) },
             } },
 
-            { "Input, Controls & Accessibility", new OrderedDictionary<string, Setting>() {
-                { "vr_lefthand_mode", Setting.Create( "Left hand mode", false ) },
-                { "vr_crowbar_vanilla_attack_enabled", Setting.Create( "Enable crowbar melee attack on 'fire' action.", false ) },
-
-                { "vr_flashlight_toggle", Setting.Create( "Flashlight should toggle", false ) },
-
-                { "vr_melee_swing_speed", Setting.Create( "Minimum controller speed to trigger melee damage", 150 ) },
-
-                { "vr_enable_aim_laser", Setting.Create( "Enable aim laser pointer for range weapons", false ) },
+            { "Trains", new OrderedDictionary<string, Setting>() {
                 { "vr_legacy_train_controls_enabled", Setting.Create( "Enable control of usable trains with 'LegacyUse' and forward/backward movement.", false ) },
+            } },
 
-                { "vr_weapon_grenade_mode", Setting.Create( "Grenade throw mode", 0, new OrderedDictionary<string, string>(){ {"0", "Use controller aim and velocity" }, { "1", "Aim with controller, but fly with fixed speed (as in original game)" } } ) },
-
-                { "vr_teleport_attachment", Setting.Create( "Teleporter attachment", 0, new OrderedDictionary<string, string>(){ {"0", "Hand" }, { "1", "Weapon" }, { "2", "Head (HMD)" }, { "3", "SteamVR Input pose" } } ) },
-                { "vr_flashlight_attachment", Setting.Create( "Flashlight attachment", 0 , new OrderedDictionary<string, string>(){ {"0", "Hand" }, { "1", "Weapon" }, { "2", "Head (HMD)" }, { "3", "SteamVR Input pose" } }) },
+            { "Stationary guns", new OrderedDictionary<string, Setting>() {
+                // TODO
             } },
 
             { "HUD", new OrderedDictionary<string, Setting>() {
@@ -166,10 +173,10 @@ namespace HLVRLauncher.Utilities
                 { "vr_use_hd_models", Setting.Create( "Use HD models", false ) },
                 { "vr_hd_textures_enabled", Setting.Create( "Use HD textures", false ) },
 
-                { "vr_world_scale", Setting.Create( "Teleporter", false ) },
-                { "vr_world_z_strech", Setting.Create( "Teleporter", false ) },
+                { "vr_world_scale", Setting.Create( "World scale", 1.0f ) },
+                { "vr_world_z_strech", Setting.Create( "World height factor", 1.0f ) },
 
-                { "vr_npcscale", Setting.Create( "Teleporter", false ) },
+                { "vr_npcscale", Setting.Create( "NPC scale", 1.0f ) },
             } },
 
             { "Individual weapon scaling", new OrderedDictionary<string, Setting>() {
@@ -195,6 +202,20 @@ namespace HLVRLauncher.Utilities
                 { "vr_satchel_scale", Setting.Create( "Satchel", 1.0f ) },
                 { "vr_satchel_radio_scale", Setting.Create( "Satchel radio scale", 1.0f ) },
                 { "vr_squeak_scale", Setting.Create( "Snark scale", 1.0f ) },
+            } },
+
+            { "Advanced HUD", new OrderedDictionary<string, Setting>() {
+                { "vr_hud_size", Setting.Create( "HUD scale", 1 ) },
+                { "vr_hud_textscale", Setting.Create( "HUD text scale", 1 ) },
+
+                { "vr_hud_ammo_offset_x", Setting.Create( "HUD ammo display offset X", 3 ) },
+                { "vr_hud_ammo_offset_y", Setting.Create( "HUD ammo display offset Y", -3 ) },
+
+                { "vr_hud_flashlight_offset_x", Setting.Create( "HUD ammo display offset X", -5 ) },
+                { "vr_hud_flashlight_offset_y", Setting.Create( "HUD ammo display offset Y", -2 ) },
+
+                { "vr_hud_health_offset_x", Setting.Create( "HUD ammo display offset X", -4 ) },
+                { "vr_hud_health_offset_y", Setting.Create( "HUD ammo display offset Y", -3 ) },
             } },
 
             { "Other", new OrderedDictionary<string, Setting>() {
