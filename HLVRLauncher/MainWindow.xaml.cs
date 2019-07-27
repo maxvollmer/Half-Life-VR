@@ -211,6 +211,20 @@ namespace HLVRLauncher
             ConsoleOutput.Inlines.Clear();
         }
 
+        private void RestoreDefaultLauncherConfig_Click(object sender, RoutedEventArgs e)
+        {
+            HLVRSettingsManager.RestoreLauncherSettings();
+            LauncherConfig.Children.Clear();
+            HLVRLauncherConfig.Initialize(LauncherConfig);
+        }
+
+        private void RestoreDefaultModConfig_Click(object sender, RoutedEventArgs e)
+        {
+            HLVRSettingsManager.RestoreModSettings();
+            ModConfig.Children.Clear();
+            HLVRModConfig.Initialize(ModConfig);
+        }
+
         public void ConsoleLog(string msg, Brush color)
         {
             ConsoleOutput.Inlines.Add(new Run(msg) { Foreground = color });

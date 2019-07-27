@@ -64,5 +64,19 @@ namespace HLVRLauncher.Utilities
         {
             File.WriteAllText(HLVRPaths.VRSettingsFile, JsonConvert.SerializeObject(Settings));
         }
+
+        internal static void RestoreLauncherSettings()
+        {
+            HLVRSettings defaultSettings = new HLVRSettings();
+            Settings.LauncherSettings = defaultSettings.LauncherSettings;
+            DelayedStoreSettings();
+        }
+
+        internal static void RestoreModSettings()
+        {
+            HLVRSettings defaultSettings = new HLVRSettings();
+            Settings.ModSettings = defaultSettings.ModSettings;
+            DelayedStoreSettings();
+        }
     }
 }

@@ -105,7 +105,7 @@ namespace HLVRLauncher.Utilities
 
     public class HLVRSettings
     {
-        public readonly OrderedDictionary<string, OrderedDictionary<string, Setting>> ModSettings = new OrderedDictionary<string, OrderedDictionary<string, Setting>>()
+        public OrderedDictionary<string, OrderedDictionary<string, Setting>> ModSettings = new OrderedDictionary<string, OrderedDictionary<string, Setting>>()
         {
             { "Anti-nausea features", new OrderedDictionary<string, Setting>() {
                 { "vr_xenjumpthingies_teleporteronly", Setting.Create( "Disable being pushed up by xen jump thingies (you can use the teleporter on those things)", true ) },
@@ -204,7 +204,7 @@ namespace HLVRLauncher.Utilities
 
         };
 
-        public readonly OrderedDictionary<string, Setting> LauncherSettings = new  OrderedDictionary<string, Setting>()
+        public OrderedDictionary<string, Setting> LauncherSettings = new  OrderedDictionary<string, Setting>()
         {
             { HLVRLauncherConfig.MinimizeToTray, Setting.Create( "Minimize to tray", true ) },
             { HLVRLauncherConfig.StartMinimized, Setting.Create( "Start HLVRLauncher minimized", false ) },

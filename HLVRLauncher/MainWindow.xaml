@@ -54,21 +54,24 @@
                 </DockPanel>
             </TabItem>
             <TabItem Header="Launcher Config">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Orientation="Vertical" x:Name="LauncherConfig">
-                    </StackPanel>
-                </ScrollViewer>
+                <DockPanel>
+                    <Button Click="RestoreDefaultLauncherConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Vertical" x:Name="LauncherConfig"/>
+                    </ScrollViewer>
+                </DockPanel>
             </TabItem>
             <TabItem Header="Mod Config">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Orientation="Vertical" x:Name="ModConfig">
-                    </StackPanel>
-                </ScrollViewer>
+                <DockPanel>
+                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Vertical" x:Name="ModConfig"/>
+                    </ScrollViewer>
+                </DockPanel>
             </TabItem>
             <TabItem Header="Custom Input Actions">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel Orientation="Vertical" x:Name="CustomInputActions">
-                    </StackPanel>
+                    <StackPanel Orientation="Vertical" x:Name="CustomInputActions"/>
                 </ScrollViewer>
             </TabItem>
         </TabControl>
