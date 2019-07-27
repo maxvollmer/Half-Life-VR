@@ -2143,10 +2143,21 @@ void PM_LadderMove(physent_t *pLadder)
 				maxClimbSpeed = DEFAULT_MAX_CLIMB_SPEED;
 			}
 
+			// get direction vectors for climbing on this ladder
 			vec3_t v_forward{ 1.f, 0.f, 0.f };
 			vec3_t v_right{ 0.f, 1.f, 0.f };
 			AngleVectors(pmove->angles, v_forward, v_right, NULL);
 
+			// remove any sideways movement from forward/backward input (basically this just becomes 0,0,1 or 0,0,-1)
+			v_forward[0] = 0.f;
+			v_forward[1] = 0.f;
+			VectorNormalize(v_forward);
+
+			// remove any upwards/downwards movement from sideways input
+			v_right[2] = 0.f;
+			VectorNormalize(v_right);
+
+			// up vector is always simply just that
 			vec3_t v_up{ 0.f, 0.f, 1.f };
 
 			float forward = 0.f;
