@@ -44,7 +44,6 @@ void VRSettings::Init()
 	CVAR_CREATE("vr_hud_mode", "2", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_size", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_hud_textscale", "1", FCVAR_ARCHIVE);
-	CVAR_CREATE("vr_ladder_immersive_movement_enabled", "0", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_ladder_immersive_movement_enabled", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_ladder_immersive_movement_swinging_enabled", "1", FCVAR_ARCHIVE);
 	CVAR_CREATE("vr_ladder_legacy_movement_enabled", "0", FCVAR_ARCHIVE);
