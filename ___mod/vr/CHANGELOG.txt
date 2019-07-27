@@ -147,8 +147,14 @@
 0.5.1
 * Fixed performance issues that came with changes in opengl32.dll in 0.4.4
 * Fixed issues with sparks and beam effects being not in sync on left and right eye
+* Fixed "telekinetic" grab
+* Fixed bug in pushable push code
+* Fixed getting stuck on ladders when legacy ladder movement is disabled
 * Improved rendering performance overall
+* Removed support for legacy input (mod now only supports SteamVR Input)
 * (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
 * (WIP) Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello")
 * 
+
+
 
