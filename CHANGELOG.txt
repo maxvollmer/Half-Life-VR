@@ -144,13 +144,16 @@
   * Patching time is in the milliseconds (old HLVRLauncher took several seconds)
   * opengl32.dll is locked using a read handle instead of ACL/file properties
 
-0.5.1
+0.5.0-hotfix - 2019-07-26
 * Fixed performance issues that came with changes in opengl32.dll in 0.4.4
 * Fixed issues with sparks and beam effects being not in sync on left and right eye
+
+0.5.1
 * Fixed "telekinetic" grab
 * Fixed bug in pushable push code
 * Fixed getting stuck on ladders when legacy ladder movement is disabled
 * Fixed minor bug in speed setting for those fast platforms near the tentacle monster
+* Fixed HD textures not working since 0.5.0-hotfix
 * Renamed cvar vr_use_sd_models to vr_use_hd_models
 * Improved rendering performance overall
 * Removed support for legacy input (mod now only supports SteamVR Input)
