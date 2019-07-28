@@ -1,7 +1,7 @@
 ====
 Half-Life: VR
 
-VERSION 0.4.9
+VERSION 0.5.1
 
 Copyright (c) 2017-2019 Max Vollmer
 
@@ -111,3 +111,8 @@ Copyright (c) 2006 Christian Birkl
 This mod uses Newtonsoft.Json
 https://www.newtonsoft.com/json
 Copyright (c) 2007 James Newton-King
+
+===
+This mod uses JSON for Modern C++
+https://github.com/nlohmann/json
+Copyright (c) 2013-2019 Niels Lohmann
