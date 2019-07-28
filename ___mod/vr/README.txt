@@ -46,8 +46,6 @@ If you are a coder and want to help, get in touch!
 List of known bugs and issues:
 
 - HUD text is rendered in the map center instead of in the player's view
-- Fade effects don't work
-- Glitches in hand and weapon animations
 - HL VR menu blocks/overlays SteamVR menus
 - Skybox images in VR menu are mixed up
 - Entities that are supposed to crush the player, don't crush the player (traps and such) (they just push you out of the way)
@@ -59,11 +57,12 @@ Unfinished/planned features:
 - Proper teleportation arc that matches path of jumping player
 - Vibrational feedback (recoil etc.) isn't implemented yet
 - Smooth out stairs
-- HD skyboxes
 
 ===================
 *******************
 THIRD PARTIES BELOW
+
+(Full licenses where applicable in folder vr/licenses)
 
 ====
 Female scientist audio files have been generated using MorphVox Pro with the Batch Converter Plugin, postprocessed using Auphonic, and then converted to a Half-Life friendly wav format with GoldWave. They are based on the original scientist audio files for Half-Life by Valve.
@@ -116,3 +115,8 @@ Copyright (c) 2007 James Newton-King
 This mod uses JSON for Modern C++
 https://github.com/nlohmann/json
 Copyright (c) 2013-2019 Niels Lohmann
+
+===
+This mod uses Microsoft.Experimental.Collections
+https://www.nuget.org/packages/Microsoft.Experimental.Collections/
+Copyright (c) 2014-2019 Microsoft Corporation
