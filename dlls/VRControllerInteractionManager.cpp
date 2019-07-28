@@ -12,6 +12,7 @@
 #include "weapons.h"
 #include "explode.h"
 #include "func_break.h"
+#include "pm_defs.h"
 
 #include "VRControllerInteractionManager.h"
 #include "VRPhysicsHelper.h"
@@ -1068,3 +1069,152 @@ void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer *pPlay
 		pMonster->vr_flShoulderTouchTime = 0;
 	}
 }
+
+
+bool IsPullingDownFastEnoughForLedge(const Vector& velocity)
+{
+	const float minLedgePullSpeed = CVAR_GET_FLOAT("vr_ledge_pull_speed");
+	return velocity.z < 0.f && velocity.Length() > minLedgePullSpeed;
+}
+
+bool AreInSamePlane(const Vector& pos1, const Vector& pos2)
+{
+	return fabs(pos1.z - pos2.z) < 12.f;
+}
+
+bool IsInLedge(CBasePlayer* pPlayer, const Vector& pos, float* ledgeheight)
+{
+	TraceResult tr;
+	UTIL_TraceLine(pos + Vector{ 0.f, 0.f, 32.f }, pos, ignore_monsters, pPlayer->edict(), &tr);
+	if (tr.flFraction < 1.f && DotProduct(tr.vecPlaneNormal, Vector{0.f, 0.f, 1.f}) > 0.8f)
+	{
+		*ledgeheight = tr.vecEndPos.z;
+		return true;
+	}
+	return false;
+}
+
+
+Vector CalculateLedgeTargetPosition(CBasePlayer* pPlayer, const Vector& controllerPosition1, float ledgeheight1, const Vector& controllerPosition2, float ledgeheight2, bool* isValidPosition)
+{
+	Vector middlePoint = (Vector{ controllerPosition1.x, controllerPosition1.y, ledgeheight1 } + Vector{ controllerPosition2.x, controllerPosition2.y, ledgeheight2 }) * 0.5f;
+	middlePoint.z -= VEC_DUCK_HULL_MIN.z;
+	middlePoint.z += 1.f;
+
+	extern playermove_t* pmove;
+	int originalhull = pmove->usehull;
+	pmove->usehull = 1;
+
+	// find closest free space that player can be pulled up to
+	Vector closestoffset;
+	bool foundfreepoint = false;
+	for (int x = -16; x <= 16; x++)
+	{
+		for (int y = -16; y <= 16; y++)
+		{
+			for (int z = 0; z <= 16; z++)
+			{
+				Vector offset = Vector{ float(x), float(y), float(z) };
+				if (pmove->PM_TestPlayerPosition(middlePoint + offset, nullptr) < 0)
+				{
+					if (!foundfreepoint || offset.LengthSquared() < closestoffset.LengthSquared())
+					{
+						closestoffset = offset;
+					}
+					foundfreepoint = true;
+				}
+			}
+		}
+	}
+
+	pmove->usehull = originalhull;
+
+	*isValidPosition = foundfreepoint;
+	return middlePoint + closestoffset;
+}
+
+
+
+void VRControllerInteractionManager::DoMultiControllerActions(CBasePlayer* pPlayer, const VRController& controller1, const VRController& controller2)
+{
+	float vr_ledge_pull_mode = CVAR_GET_FLOAT("vr_ledge_pull_mode");
+	if (vr_ledge_pull_mode != 1.f && vr_ledge_pull_mode != 2.f)
+		return;
+
+	// avoid pull cascades
+	if (pPlayer->m_vrWasPullingOnLedge && controller1.IsDragging() && controller2.IsDragging())
+		return;
+
+	pPlayer->m_vrWasPullingOnLedge = false;
+
+	float ledgeheight1 = 0.f;
+	float ledgeheight2 = 0.f;
+
+	// pulling
+	if (pPlayer->m_vrIsPullingOnLedge)
+	{
+		pPlayer->m_vrLedgePullSpeed = (std::max)(pPlayer->m_vrLedgePullSpeed, (std::max)(controller1.GetVelocity().Length(), controller2.GetVelocity().Length()));
+
+		float timeEllapsed = gpGlobals->time - pPlayer->m_vrLedgePullStartTime;
+		if (timeEllapsed > 0.f)
+		{
+			float totalDistance = (pPlayer->m_vrLedgeTargetPosition - pPlayer->m_vrLedgePullStartPosition).Length();
+
+			float percentageComplete = totalDistance / (pPlayer->m_vrLedgePullSpeed * timeEllapsed);
+
+			if (percentageComplete >= 1.f)
+			{
+				// finished pulling
+				pPlayer->pev->origin = pPlayer->m_vrLedgeTargetPosition;
+				pPlayer->m_vrIsPullingOnLedge = false;
+				pPlayer->m_vrWasPullingOnLedge = true;
+			}
+			else if (percentageComplete <= 0.f)
+			{
+				pPlayer->pev->origin = pPlayer->m_vrLedgePullStartPosition;
+			}
+			else
+			{
+				pPlayer->pev->origin = pPlayer->m_vrLedgeTargetPosition * percentageComplete + pPlayer->m_vrLedgePullStartPosition * (1.f - percentageComplete);
+			}
+
+			UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
+		}
+	}
+	// starting to pull
+	else if (controller1.IsDragging() && controller2.IsDragging()
+		&& IsPullingDownFastEnoughForLedge(controller1.GetVelocity())
+		&& IsPullingDownFastEnoughForLedge(controller2.GetVelocity())
+		&& AreInSamePlane(controller1.GetPosition(), controller2.GetPosition())
+		&& IsInLedge(pPlayer, controller1.GetPosition(), &ledgeheight1)
+		&& IsInLedge(pPlayer, controller2.GetPosition(), &ledgeheight2))
+	{
+		bool isValidPosition = false;
+		Vector ledgeTargetPosition = CalculateLedgeTargetPosition(pPlayer, controller1.GetPosition(), ledgeheight1, controller2.GetPosition(), ledgeheight2, &isValidPosition);
+
+		if (isValidPosition)
+		{
+			if (!FBitSet(pPlayer->pev->flags, FL_DUCKING))
+			{
+				pPlayer->pev->flags |= FL_DUCKING;
+				UTIL_SetSize(pPlayer->pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+				pPlayer->pev->origin.z += (VEC_HULL_MIN.z - VEC_DUCK_HULL_MIN.z);
+			}
+
+			if (vr_ledge_pull_mode == 2.f)
+			{
+				// Instant
+				pPlayer->pev->origin = ledgeTargetPosition;
+				pPlayer->m_vrWasPullingOnLedge = true;
+			}
+			else
+			{
+				// Move
+				pPlayer->StartPullingLedge(ledgeTargetPosition, (std::max)(controller1.GetVelocity().Length(), controller2.GetVelocity().Length()));
+			}
+
+			UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
+		}
+	}
+}
+

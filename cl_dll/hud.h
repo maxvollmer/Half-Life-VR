@@ -586,6 +586,7 @@ public:
 	ControllerEntData	m_weaponControllerEntData{ 0 };
 
 	int					m_vrGrabbedLadderEntIndex{ -1 };
+	bool				m_vrIsPullingOnLedge{ false };
 
 	HSPRITE_VALVE						m_hsprCursor;
 	float m_flTime;	   // the current client time
@@ -667,7 +668,8 @@ public:
 	int _cdecl MsgFunc_GroundEnt(const char *pszName, int iSize, void *pbuf);
 	int _cdecl MsgFunc_VRCtrlEnt(const char *pszName, int iSize, void *pbuf);
 	int _cdecl MsgFunc_TrainCtrl(const char *pszName, int iSize, void *pbuf);
-	int _cdecl MsgFunc_GrbdLddr(const char *pszName, int iSize, void *pbuf);
+	int _cdecl MsgFunc_GrbdLddr(const char* pszName, int iSize, void* pbuf);
+	int _cdecl MsgFunc_PullLdg(const char* pszName, int iSize, void* pbuf);
 	int _cdecl MsgFunc_VRUpdEgon(const char *pszName, int iSize, void *pbuf);
 
 	// Screen information

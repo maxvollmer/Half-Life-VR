@@ -65,6 +65,8 @@ void VRSettings::Init()
 	RegisterCVAR("vr_ladder_legacy_movement_enabled", "0");
 	RegisterCVAR("vr_ladder_legacy_movement_only_updown", "1");
 	RegisterCVAR("vr_ladder_legacy_movement_speed", "100");
+	RegisterCVAR("vr_ledge_pull_mode", "1");
+	RegisterCVAR("vr_ledge_pull_speed", "50");
 	RegisterCVAR("vr_lefthand_mode", "0");
 	RegisterCVAR("vr_legacy_train_controls_enabled", "0");
 	RegisterCVAR("vr_melee_swing_speed", "150");

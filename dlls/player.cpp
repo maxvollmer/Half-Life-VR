@@ -227,6 +227,7 @@ int gmsgVRSetSpawnYaw = 0;
 int gmsgVRControllerEnt = 0;
 int gmsgVRTrainControls = 0;
 int gmsgVRGrabbedLadder = 0;
+int gmsgVRPullingLedge = 0;
 int gmsgVRUpdateEgon = 0;
 
 
@@ -281,6 +282,7 @@ void LinkUserMessages( void )
 	gmsgVRControllerEnt = REG_USER_MSG("VRCtrlEnt", 29);
 	gmsgVRTrainControls = REG_USER_MSG("TrainCtrl", 7);
 	gmsgVRGrabbedLadder = REG_USER_MSG("GrbdLddr", 2);
+	gmsgVRPullingLedge = REG_USER_MSG("PullLdg", 1);
 	gmsgVRUpdateEgon = REG_USER_MSG("VRUpdEgon", -1);
 }
 
@@ -904,6 +906,7 @@ entvars_t *g_pevLastInflictor;  // Set in combat.cpp.  Used to pass the damage i
 void CBasePlayer::Killed( entvars_t *pevAttacker, int bitsDamageType, int iGib )
 {
 	ClearLadderGrabbingControllers();
+	StopPullingLedge();
 
 	m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
 	pev->flags &= ~FL_BARNACLED;
@@ -1322,6 +1325,7 @@ BOOL CBasePlayer::IsOnLadder( void )
 void CBasePlayer::PlayerDeathThink(void)
 {
 	ClearLadderGrabbingControllers();
+	StopPullingLedge();
 
 	float flForward;
 
@@ -1851,6 +1855,12 @@ void CBasePlayer::PreThink(void)
 	for (auto& controller : m_vrControllers)
 	{
 		m_vrControllerInteractionManager.CheckAndPressButtons(this, controller.second);
+	}
+
+	// Special interaction with 2 controllers at once (e.g. pull up on ledges)
+	if (m_vrControllers[VRControllerID::HAND].IsValid() && m_vrControllers[VRControllerID::WEAPON].IsValid())
+	{
+		m_vrControllerInteractionManager.DoMultiControllerActions(this, m_vrControllers[VRControllerID::HAND], m_vrControllers[VRControllerID::WEAPON]);
 	}
 
 	// So the correct flags get sent to client asap.
@@ -2832,6 +2842,7 @@ ReturnSpot:
 void CBasePlayer::Spawn( void )
 {
 	ClearLadderGrabbingControllers();
+	StopPullingLedge();
 
 	pev->classname		= MAKE_STRING("player");
 	pev->health			= 100;
@@ -3015,6 +3026,7 @@ void CBasePlayer::StoreVROffsetsForLevelchange()
 int CBasePlayer::Restore( CRestore &restore )
 {
 	ClearLadderGrabbingControllers();
+	StopPullingLedge();
 
 	if ( !CBaseMonster::Restore(restore) )
 		return 0;
@@ -5559,4 +5571,30 @@ int CBasePlayer::GetGrabbedLadderEntIndex()
 		return 0;
 
 	return ENTINDEX(m_ladderGrabbingControllers.back().ladder.Get());
+}
+
+
+void CBasePlayer::StartPullingLedge(const Vector& ledgeTargetPosition, float speed)
+{
+	m_vrLedgeTargetPosition = ledgeTargetPosition;
+	m_vrLedgePullSpeed = speed;
+	m_vrLedgePullStartTime = gpGlobals->time;
+	m_vrLedgePullStartPosition = pev->origin;
+	m_vrIsPullingOnLedge = true;
+
+	MESSAGE_BEGIN(MSG_ONE, gmsgVRPullingLedge, NULL, pev);
+	WRITE_BYTE(1);
+	MESSAGE_END();
+}
+
+void CBasePlayer::StopPullingLedge()
+{
+	if (!m_vrIsPullingOnLedge)
+		return;
+
+	m_vrIsPullingOnLedge = false;
+
+	MESSAGE_BEGIN(MSG_ONE, gmsgVRPullingLedge, NULL, pev);
+	WRITE_BYTE(0);
+	MESSAGE_END();
 }

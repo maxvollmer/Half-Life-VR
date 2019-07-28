@@ -44,6 +44,7 @@ extern bool VRIsLegacyLadderMoveEnabled();
 extern bool VRGetMoveOnlyUpDownOnLadder();
 extern int VRGetGrabbedLadder(int player);   // For client or server to use to identify (index into edicts or cl_entities)
 inline bool VRIsGrabbingLadder() { return VRGetGrabbedLadder(pmove->player_index) > 0; }
+extern bool VRIsPullingOnLedge(int player);
 
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
@@ -3544,7 +3545,7 @@ and client.  This will ensure that prediction behaves appropriately.
 
 void PM_Move ( struct playermove_s *ppmove, int server )
 {
-	if (VRIsGrabbingLadder())
+	if (VRIsGrabbingLadder() || VRIsPullingOnLedge(ppmove->player_index))
 		return;
 
 	assert( pm_shared_initialized );

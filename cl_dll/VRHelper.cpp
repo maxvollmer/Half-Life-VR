@@ -1534,6 +1534,16 @@ int VRGetGrabbedLadder(int player)
 	}
 }
 
+// for pm_shared.cpp
+bool VRIsPullingOnLedge(int player)
+{
+	float vr_ledge_pull_mode = CVAR_GET_FLOAT("vr_ledge_pull_mode");
+	if (vr_ledge_pull_mode != 1.f && vr_ledge_pull_mode != 2.f)
+		return false;
+
+	return gHUD.m_vrIsPullingOnLedge;
+}
+
 
 
 void __stdcall HLVRConsoleCallback(char* msg)

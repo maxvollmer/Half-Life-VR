@@ -104,3 +104,16 @@ int VRGetGrabbedLadder(int player)
 		return -1;
 	}
 }
+
+bool VRIsPullingOnLedge(int player)
+{
+	float vr_ledge_pull_mode = CVAR_GET_FLOAT("vr_ledge_pull_mode");
+	if (vr_ledge_pull_mode != 1.f && vr_ledge_pull_mode != 2.f)
+		return false;
+
+	CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(UTIL_PlayerByIndex(player + 1));
+	if (pPlayer == nullptr)
+		return false;
+
+	return pPlayer->m_vrIsPullingOnLedge;
+}

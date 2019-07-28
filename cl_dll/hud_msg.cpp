@@ -144,9 +144,16 @@ int CHud::MsgFunc_TrainCtrl(const char *pszName, int iSize, void *pbuf)
 	return 1;
 }
 
-int CHud::MsgFunc_GrbdLddr(const char *pszName, int iSize, void *pbuf)
+int CHud::MsgFunc_GrbdLddr(const char* pszName, int iSize, void* pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
 	m_vrGrabbedLadderEntIndex = READ_SHORT();
+	return 1;
+}
+
+int CHud::MsgFunc_PullLdg(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	m_vrIsPullingOnLedge = READ_BYTE() != 0;
 	return 1;
 }

@@ -446,6 +446,16 @@ public:
 	void ClearLadderGrabbingController(VRControllerID controller);
 	bool IsLadderGrabbingController(VRControllerID controller, CBaseEntity* pLadder);
 	int GetGrabbedLadderEntIndex();
+
+	void StartPullingLedge(const Vector& ledgeTargetPosition, float speed);
+	void StopPullingLedge();
+
+	Vector m_vrLedgeTargetPosition;
+	Vector m_vrLedgePullStartPosition;
+	float m_vrLedgePullSpeed{ 0.f };
+	float m_vrLedgePullStartTime{ 0.f };
+	bool m_vrIsPullingOnLedge{ false };
+	bool m_vrWasPullingOnLedge{ false };
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

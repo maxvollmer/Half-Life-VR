@@ -243,9 +243,14 @@ int __MsgFunc_TrainCtrl(const char *pszName, int iSize, void *pbuf)
 	return gHUD.MsgFunc_TrainCtrl(pszName, iSize, pbuf);
 }
 
-int __MsgFunc_GrbdLddr(const char *pszName, int iSize, void *pbuf)
+int __MsgFunc_GrbdLddr(const char* pszName, int iSize, void* pbuf)
 {
 	return gHUD.MsgFunc_GrbdLddr(pszName, iSize, pbuf);
+}
+
+int __MsgFunc_PullLdg(const char* pszName, int iSize, void* pbuf)
+{
+	return gHUD.MsgFunc_PullLdg(pszName, iSize, pbuf);
 }
 
 int __MsgFunc_VRUpdEgon(const char *pszName, int iSize, void *pbuf)
@@ -366,6 +371,7 @@ void CHud :: Init( void )
 	HOOK_MESSAGE(VRSpawnYaw);
 	HOOK_MESSAGE(TrainCtrl);
 	HOOK_MESSAGE(GrbdLddr);
+	HOOK_MESSAGE(PullLdg);
 	HOOK_MESSAGE(VRUpdEgon);
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch

@@ -157,13 +157,21 @@ namespace HLVRLauncher.Utilities
                     var newSettings = JsonConvert.DeserializeObject<HLVRSettings>(File.ReadAllText(HLVRPaths.VRSettingsFile));
                     foreach (var settingName in Settings.LauncherSettings.Keys)
                     {
-                        Settings.LauncherSettings[settingName].Value = newSettings.LauncherSettings[settingName].Value;
+                        try
+                        {
+                            Settings.LauncherSettings[settingName].Value = newSettings.LauncherSettings[settingName].Value;
+                        }
+                        catch (KeyNotFoundException) { }
                     }
                     foreach (var settingCategory in Settings.ModSettings)
                     {
                         foreach (var settingName in settingCategory.Value.Keys)
                         {
-                            settingCategory.Value[settingName].Value = newSettings.ModSettings[settingCategory.Key][settingName].Value;
+                            try
+                            {
+                                settingCategory.Value[settingName].Value = newSettings.ModSettings[settingCategory.Key][settingName].Value;
+                            }
+                            catch (KeyNotFoundException) { }
                         }
                     }
                     return true;
