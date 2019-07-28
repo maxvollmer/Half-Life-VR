@@ -165,9 +165,8 @@
 * Added new input action "LetGoOffLadder" for legacy ladder climbing. When used, player will simply drop from current ladder, instead of being catapulted away as when jumping.
 * Added cvars vr_ledge_pull_mode (0=disabled, 1=move, 2=instant) and vr_ledge_pull_speed
 * Implemented ledge pulling (grab ledge with both controllers and pull down to pull yourself onto the ledge)
+* Implemented auto crouch
 * (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
 * (WIP) Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello")
 * 
-
-
 
