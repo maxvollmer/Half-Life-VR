@@ -47,6 +47,14 @@ public:
 	{
 		m_isVRDucking = isVRDucking;
 	}
+	inline bool ShouldLetGoOffLadder()
+	{
+		return m_letGoOffLadder;
+	}
+	inline void SetLetGoOffLadder(bool letGoOffLadder)
+	{
+		m_letGoOffLadder = letGoOffLadder;
+	}
 
 	enum class FeedbackType
 	{
@@ -116,6 +124,7 @@ private:
 
 	bool m_isDucking{ false };
 	bool m_isVRDucking{ false };
+	bool m_letGoOffLadder{ false };
 
 	std::unordered_map<std::string, ActionSet>				m_actionSets;
 	std::unordered_map<std::string, CustomAction>			m_customActions;

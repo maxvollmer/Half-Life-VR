@@ -59,6 +59,7 @@ namespace VR
 			static void HandleLeftGrab(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleRightGrab(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleLegacyUse(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleLetGoOffLadder(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleQuickSave(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleQuickLoad(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleRestartCurrentMap(const vr::InputDigitalActionData_t& data, const std::string& action);

@@ -37,7 +37,8 @@ constexpr unsigned short IN_SCORE		= (1 << 15);	// Used by client.dll for when s
 
 constexpr unsigned int X_IN_UP			= (1 << 0);		// Extended button command for VR movement - upmove in ladders or in water
 constexpr unsigned int X_IN_DOWN		= (1 << 1);		// Extended button command for VR movement - downmove in ladders or in water
-constexpr unsigned int X_IN_VRDUCK		= (1 << 2);		//
+constexpr unsigned int X_IN_VRDUCK		= (1 << 2);		// Extended button command for VR movement - ducking using VR input
+constexpr unsigned int X_IN_LETLADDERGO	= (1 << 3);		// Extended button command for VR movement - let go off ladder
 
 
 #endif // IN_BUTTONS_H

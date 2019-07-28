@@ -145,6 +145,7 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "LeftGrab", &VR::Input::Other::HandleLeftGrab);
 		RegisterAction("input", "RightGrab", &VR::Input::Other::HandleRightGrab);
 		RegisterAction("input", "LegacyUse", &VR::Input::Other::HandleLegacyUse);
+		RegisterAction("input", "LetGoOffLadder", &VR::Input::Other::HandleLetGoOffLadder);
 
 		// TODO: Add to actions.manifest
 		RegisterAction("input", "QuickSave", &VR::Input::Other::HandleQuickSave, true);

@@ -64,6 +64,12 @@ namespace VR
 			}
 		}
 
+		void Other::HandleLetGoOffLadder(const vr::InputDigitalActionData_t& data, const std::string& action)
+		{
+			bool on = data.bActive && data.bState;
+			g_vrInput.SetLetGoOffLadder(on);
+		}
+
 		void Other::HandleQuickSave(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
 			if (data.bActive && data.bState && data.bChanged)

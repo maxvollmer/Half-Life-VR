@@ -208,6 +208,11 @@
          "type" : "boolean"
       },
       {
+         "name" : "/actions/input/in/LetGoOffLadder",
+         "requirement" : "optional",
+         "type" : "boolean"
+      },
+      {
          "name" : "/actions/input/in/QuickSave",
          "requirement" : "optional",
          "type" : "boolean"
@@ -421,6 +426,7 @@
          "/actions/input/in/HolsterWeapon" : "Holster weapon / Select last weapon",
          "/actions/input/in/Jump" : "Jump",
          "/actions/input/in/LegacyUse" : "Legacy Use (This triggers the default ingame use action, which 'uses' objects that you look at.)",
+         "/actions/input/in/LetGoOffLadder" : "Let go off ladder (for legacy ladder climbing)",
          "/actions/input/in/LongJump" : "Long Jump",
          "/actions/input/in/AnalogJump" : "Analog Jump",
          "/actions/input/in/AnalogCrouch" : "Analog Crouch",

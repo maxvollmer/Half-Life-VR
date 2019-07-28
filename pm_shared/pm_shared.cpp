@@ -2255,18 +2255,10 @@ void PM_LadderMove(physent_t *pLadder)
 	PM_CheckVelocity();
 }
 
-physent_t *g_pLastLadder = nullptr;
+physent_t*		g_pLastLadder = nullptr;
+bool			g_didPressLetGoOffLadder = false;
 
-// Ah, who doesn't love redundant copypaste code all over the place - Max Vollmer, 2018-11-17
-inline bool BBoxIntersectsBBox(vec3_t absmins1, vec3_t absmaxs1, vec3_t absmins2, vec3_t absmaxs2)
-{
-	if (absmaxs1[0] < absmins2[0] || absmins1[0] > absmaxs2[0]) return false;
-	if (absmaxs1[1] < absmins2[1] || absmins1[1] > absmaxs2[1]) return false;
-	if (absmaxs1[2] < absmins2[2] || absmins1[2] > absmaxs2[2]) return false;
-	return true;
-}
-
-physent_t *PM_Ladder(void)
+physent_t* PM_Ladder2(void)
 {
 	if (VRGlobalGetNoclipMode())
 		return nullptr;
@@ -2348,6 +2340,22 @@ physent_t *PM_Ladder(void)
 	return NULL;
 }
 
+physent_t* PM_Ladder(void)
+{
+	physent_t* lastladder = g_pLastLadder;
+	physent_t* ladder = PM_Ladder2();
+
+	if (ladder == nullptr)
+	{
+		g_didPressLetGoOffLadder = false;
+		return nullptr;
+	}
+
+	if (ladder == lastladder && g_didPressLetGoOffLadder)
+		return nullptr;
+
+	return ladder;
+}
 
 
 void PM_WaterJump (void)
@@ -3324,6 +3332,9 @@ void PM_PlayerMove ( qboolean server )
 		pmove->flFallVelocity = -pmove->velocity[2];
 	}
 
+	// if set, PM_Ladder will ignore the ladder we currently touch (will be reset when no ladder is touched)
+	g_didPressLetGoOffLadder = g_didPressLetGoOffLadder || (pmove->cmd.buttons_ex & X_IN_LETLADDERGO);
+
 	g_onladder = 0;
 	// Don't run ladder code if dead or on a train
 	if ( !pmove->dead && !(pmove->flags & FL_ONTRAIN) )
@@ -3338,7 +3349,7 @@ void PM_PlayerMove ( qboolean server )
 	PM_UpdateStepSound();
 
 	PM_Duck();
-	
+
 	// Don't run ladder code if dead or on a train
 	if ( !pmove->dead && !(pmove->flags & FL_ONTRAIN) )
 	{
