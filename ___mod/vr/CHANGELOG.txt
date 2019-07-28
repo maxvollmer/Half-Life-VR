@@ -160,6 +160,7 @@
 * Improved error feedback for missing SteamVR Input actions
 * Implemented config tabs in HLVRLauncher
 * Improved legacy ladder movement: Forward/backward movement only affects movement in z axis, sideways movement only affects movement in x and y axis
+* Implemented HD skybox
 * (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
 * (WIP) Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello")
 * 
