@@ -2148,10 +2148,38 @@ void PM_LadderMove(physent_t *pLadder)
 			vec3_t v_right{ 0.f, 1.f, 0.f };
 			AngleVectors(pmove->angles, v_forward, v_right, NULL);
 
-			// remove any sideways movement from forward/backward input (basically this just becomes 0,0,1 or 0,0,-1)
-			v_forward[0] = 0.f;
-			v_forward[1] = 0.f;
-			VectorNormalize(v_forward);
+			// remove any sideways movement from forward/backward input
+			if (trace.plane.normal[2] > 0.995f)
+			{
+				// ladder is horizontal, leave v_forward as it is
+			}
+			else if (trace.plane.normal[2] != 0.f)
+			{
+				// ladder is not straight up or down
+				// calculate vector in ladder plane
+				bool downwards = v_forward[2] < 0.f;
+				if (fabs(trace.plane.normal[0] > trace.plane.normal[1]))
+				{
+					CrossProduct(trace.plane.normal, vec3_t{ 0.f, 1.f, 0.f }, v_forward);
+				}
+				else
+				{
+					CrossProduct(trace.plane.normal, vec3_t{ 1.f, 0.f, 0.f }, v_forward);
+				}
+				if (downwards != (v_forward[2] < 0.f))
+				{
+					// flip vector if pointing in wrong direction
+					VectorScale(v_forward, -1.f, v_forward);
+				}
+			}
+			else
+			{
+				// if ladder is straight up or down, forward just becomes 0,0,1 or 0,0,-1
+				v_forward[0] = 0.f;
+				v_forward[1] = 0.f;
+				VectorNormalize(v_forward);
+			}
+
 
 			// remove any upwards/downwards movement from sideways input
 			v_right[2] = 0.f;

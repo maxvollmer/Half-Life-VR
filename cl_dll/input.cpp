@@ -704,7 +704,6 @@ void DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int activ
 	// (see line 2937 in pm_shared.cpp)
 	// - Max Vollmer, 2019-04-11
 	VectorCopy(gVRRenderer.GetMovementAngles(), cmd->viewangles);
-	cmd->viewangles.x = -cmd->viewangles.x;
 
 	// Clear analog VR input data
 	g_vrInput.analogforward = 0.f;

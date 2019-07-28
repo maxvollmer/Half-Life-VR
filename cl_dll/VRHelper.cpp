@@ -1058,18 +1058,22 @@ void VRHelper::ClearPose(VRPoseType poseType)
 
 Vector VRHelper::GetMovementAngles()
 {
+	Vector result;
 	if (m_hasMovementAngles)
 	{
-		return m_movementAngles;
+		result = m_movementAngles;
+		result.x = 360.f - result.x;
 	}
 	else if (m_handAnglesValid)
 	{
-		return m_handAngles;
+		result = m_handAngles;
+		result.x = 360.f - result.x;
 	}
 	else
 	{
-		return GetHLViewAnglesFromVRMatrix(positions.m_mat4RightModelView);
+		result = GetHLViewAnglesFromVRMatrix(positions.m_mat4RightModelView);
 	}
+	return result;
 }
 
 void RenderLine(Vector v1, Vector v2, Vector color)
