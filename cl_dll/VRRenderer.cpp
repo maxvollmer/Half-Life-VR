@@ -36,6 +36,7 @@
 #include "VRRenderer.h"
 #include "VRHelper.h"
 #include "VRInput.h"
+#include "VRSettings.h"
 
 #define HARDWARE_MODE
 #include "com_model.h"
@@ -75,6 +76,12 @@ float lasttime = 0.f;
 
 void VRRenderer::Frame(double time)
 {
+	if (m_isVeryFirstFrameEver)
+	{
+		g_vrSettings.InitialUpdateCVARSFromJson();
+		m_isVeryFirstFrameEver = false;
+	}
+
 	// make sure these are always properly set
 	gEngfuncs.pfnClientCmd("fps_max 90");
 	gEngfuncs.pfnClientCmd("fps_override 1");

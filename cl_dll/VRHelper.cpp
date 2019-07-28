@@ -437,6 +437,8 @@ Vector VRHelper::GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & 
 
 void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 {
+	g_vrSettings.CheckCVARsForChanges();
+
 	UpdateVRHLConversionVectors();
 	if (isInGame)
 	{

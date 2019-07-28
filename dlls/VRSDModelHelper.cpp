@@ -75,7 +75,7 @@ int PRECACHE_MODEL(char* s)
 		sdModelIndex = PRECACHE_MODEL2(sdModel);
 	}
 
-	if (sdModelIndex >= 0 && CVAR_GET_FLOAT("vr_use_sd_models") != 0.f)
+	if (sdModelIndex >= 0 && CVAR_GET_FLOAT("vr_use_hd_models") == 0.f)
 		return sdModelIndex;
 
 	return hdModelIndex;
@@ -92,7 +92,7 @@ int PRECACHE_GENERIC(char* s)
 		sdModelIndex = PRECACHE_GENERIC2(sdModel);
 	}
 
-	if (sdModelIndex >= 0 && CVAR_GET_FLOAT("vr_use_sd_models") != 0.f)
+	if (sdModelIndex >= 0 && CVAR_GET_FLOAT("vr_use_hd_models") == 0.f)
 		return sdModelIndex;
 
 	return hdModelIndex;
@@ -100,7 +100,7 @@ int PRECACHE_GENERIC(char* s)
 
 void SET_MODEL(edict_t *e, const char *m)
 {
-	if (CVAR_GET_FLOAT("vr_use_sd_models") != 0.f)
+	if (CVAR_GET_FLOAT("vr_use_hd_models") == 0.f)
 	{
 		char* sdModel = GetSDModel(m);
 		if (sdModel != nullptr)
@@ -115,7 +115,7 @@ void SET_MODEL(edict_t *e, const char *m)
 
 int MODEL_INDEX(const char *m)
 {
-	if (CVAR_GET_FLOAT("vr_use_sd_models") != 0.f)
+	if (CVAR_GET_FLOAT("vr_use_hd_models") == 0.f)
 	{
 		char* sdModel = GetSDModel(m);
 		if (sdModel != nullptr)
@@ -130,7 +130,7 @@ int MODEL_INDEX(const char *m)
 bool gSDModelsEnabled{ false };
 void UTIL_UpdateSDModels()
 {
-	bool sdModelsEnabled = CVAR_GET_FLOAT("vr_use_sd_models") != 0.f;
+	bool sdModelsEnabled = CVAR_GET_FLOAT("vr_use_hd_models") == 0.f;
 	if (sdModelsEnabled != gSDModelsEnabled)
 	{
 		gSDModelsEnabled = sdModelsEnabled;
