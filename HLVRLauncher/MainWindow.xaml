@@ -56,7 +56,7 @@
             <TabItem Header="Launcher Config">
                 <DockPanel>
                     <Button Click="RestoreDefaultLauncherConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
                         <StackPanel Orientation="Vertical" x:Name="LauncherConfig"/>
                     </ScrollViewer>
                 </DockPanel>
@@ -64,7 +64,7 @@
             <TabItem Header="Mod Config">
                 <DockPanel>
                     <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
                         <StackPanel Orientation="Vertical" x:Name="ModConfig"/>
                     </ScrollViewer>
                 </DockPanel>

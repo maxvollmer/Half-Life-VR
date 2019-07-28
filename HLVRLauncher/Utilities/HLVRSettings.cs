@@ -113,9 +113,10 @@ namespace HLVRLauncher.Utilities
                 { "vr_rotate_with_trains", Setting.Create( "Rotate with trains/elevators", true ) },
                 { "vr_no_gauss_recoil", Setting.Create( "Disable gauss recoil", true ) },
                 { "vr_disable_triggerpush", Setting.Create( "Disable areas that push the player (e.g. strong wind)", true ) },
-                { "vr_disable_func_friction", Setting.Create( "Disables slippery surfaces", true ) },
+                { "vr_disable_func_friction", Setting.Create( "Disable slippery surfaces", true ) },
                 { "vr_xenjumpthingies_teleporteronly", Setting.Create( "Disable being pushed up by xen jump thingies (you can use the teleporter on those things)", true ) },
-                { "vr_semicheat_spinthingyspeed", Setting.Create( "Set maximum speed for those fast spinning platforms near the tentacle monster (c1a4f)", 110 ) },
+                { "vr_semicheat_spinthingyspeed", Setting.Create( "Set maximum speed for those fast spinning platforms near the tentacle monster (map c1a4f) (game default: 110, mod default: 50)", 50,
+                    new OrderedDictionary<string, string>(){ { "10", "10" }, { "20", "20" }, { "30", "30" }, { "40", "40" }, { "50", "50" }, { "60", "60" }, { "70", "70" }, { "80", "80" }, { "90", "90" }, { "100", "100" }, { "110", "110" } } ) },
             } },
 
             { "Movement", new OrderedDictionary<string, Setting>() {
