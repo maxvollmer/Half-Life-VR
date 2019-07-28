@@ -72,19 +72,29 @@ unsigned int VRTextureHelper::GetTexture(const std::string& name)
 		else
 		{
 			// Now load it into OpenGL
-			glActiveTexture(GL_TEXTURE0);
-			glGenTextures(1, &texture);
-			glBindTexture(GL_TEXTURE_2D, texture);
-			glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glGenerateMipmap(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, 0);
+			ClearGLErrors();
+			try
+			{
+				TryGLCall(glActiveTexture, GL_TEXTURE0);
+				TryGLCall(glGenTextures, 1, &texture);
+				TryGLCall(glBindTexture, GL_TEXTURE_2D, texture);
+				TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				TryGLCall(glGenerateMipmap, GL_TEXTURE_2D);
+				TryGLCall(glBindTexture, GL_TEXTURE_2D, 0);
+			}
+			catch (const OGLErrorException& e)
+			{
+				gEngfuncs.Con_DPrintf("Couldn't create texture %s, error: %s\n", name.data(), e.what());
+				texture = 0;
+			}
 		}
 	}
 	else
 	{
 		gEngfuncs.Con_DPrintf("Couldn't load texture %s, it doesn't exist.\n", name.data());
+		texture = 0;
 	}
 
 	m_textures[name] = texture;

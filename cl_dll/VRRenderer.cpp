@@ -146,6 +146,73 @@ void VRRenderer::UpdateGameRenderState()
 	if (!m_isInMenu) m_wasMenuJustRendered = false;
 }
 
+/*
+void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
+{
+	m_CalcRefdefWasCalled = true;
+
+	if (m_isInMenu || !IsInGame())
+	{
+		// Unfortunately the OpenVR overlay menu ignores controller input when we render the game scene.
+		// (in fact controllers themselves aren't rendered at all)
+		// So when the menu is open, we hide the game (the user will see a skybox and the menu)
+		pparams->nextView = 0;
+		pparams->onlyClientDraw = 1;
+		m_fIsOnlyClientDraw = true;
+		return;
+	}
+
+	if (pparams->nextView == 0)
+	{
+		vrHelper->PollEvents(true, m_isInMenu);
+		vrHelper->UpdatePositions();
+
+		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
+		vrHelper->GetViewOrg(pparams->vieworg);
+		vrHelper->GetViewAngles(vr::EVREye::Eye_Left, pparams->viewangles);
+
+		// Update player viewangles from HMD pose
+		gEngfuncs.SetViewAngles(pparams->viewangles);
+
+		pparams->nextView = 1;
+		m_fIsOnlyClientDraw = false;
+	}
+	else if (pparams->nextView == 1)
+	{
+		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+		vrHelper->PrepareVRScene(vr::EVREye::Eye_Right);
+		vrHelper->GetViewOrg(pparams->vieworg);
+		vrHelper->GetViewAngles(vr::EVREye::Eye_Right, pparams->viewangles);
+
+		// Update player viewangles from HMD pose
+		gEngfuncs.SetViewAngles(pparams->viewangles);
+
+		pparams->nextView = 2;
+		m_fIsOnlyClientDraw = false;
+	}
+	else
+	{
+		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+		vrHelper->SubmitImages();
+
+		pparams->nextView = 0;
+		pparams->onlyClientDraw = 1;
+		m_fIsOnlyClientDraw = true;
+	}
+
+	// Override vieworg if we have a viewentity (trigger_camera)
+	if (pparams->viewentity > pparams->maxclients)
+	{
+		cl_entity_t* viewentity;
+		viewentity = gEngfuncs.GetEntityByIndex(pparams->viewentity);
+		if (viewentity)
+		{
+			VectorCopy(viewentity->origin, pparams->vieworg);
+		}
+	}
+}
+*/
+
 void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 {
 	m_CalcRefdefWasCalled = true;
@@ -170,6 +237,8 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		return;
 	}
 
+	bool hdTexturesEnabled = CVAR_GET_FLOAT("vr_hd_textures_enabled") != 0.f;
+
 	if (pparams->nextView == 0)
 	{
 		vrHelper->PollEvents(true, m_isInMenu);
@@ -179,7 +248,10 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 
 		// Record entire engine rendering in an OpenGL display list
 		m_displayList = glGenLists(1);
-		glNewList(m_displayList, GL_COMPILE);
+
+		// For HD textures to work, we need to execute the display list immediately (GL_COMPILE_AND_EXECUTE).
+		// However, GL_COMPILE_AND_EXECUTE is less performant on AMD hardware, so we still use GL_COMPILE when HD textures are not enabled.
+		glNewList(m_displayList, hdTexturesEnabled ? GL_COMPILE_AND_EXECUTE : GL_COMPILE);
 
 		pparams->nextView = 1;
 		m_fIsOnlyClientDraw = false;
@@ -189,10 +261,14 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		glEndList();
 		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
 
-		// draw recorderd display list for left eye
-		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
-		glCallList(m_displayList);
-		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+		// If HD textures are not enabled, we didn't execute the display list the first time (see above)
+		// thus we need to draw the recorderd display list for left eye here
+		if (!hdTexturesEnabled)
+		{
+			vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
+			glCallList(m_displayList);
+			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+		}
 
 		// draw recorderd display list for right eye
 		vrHelper->PrepareVRScene(vr::EVREye::Eye_Right);
@@ -226,6 +302,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		}
 	}
 }
+
 
 void VRRenderer::DrawNormal()
 {
