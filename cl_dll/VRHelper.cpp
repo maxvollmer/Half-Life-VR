@@ -18,6 +18,7 @@
 #include "pm_defs.h"
 #include "VRSpeechListener.h"
 #include "VRSettings.h"
+#include "../vr_shared/VRShared.h"
 
 #ifndef DUCK_SIZE
 #define DUCK_SIZE 36
@@ -446,8 +447,13 @@ void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 	}
 	if (isInGame && !isInMenu)
 	{
-		// TODO:
-		// VRSpeechListener::Instance().GetCommand();
+		auto command = VRSpeechListener::Instance().GetCommand();
+		if (command != VRSpeechCommand::NONE)
+		{
+			char speechCommand[MAX_COMMAND_SIZE] = { 0 };
+			sprintf_s(speechCommand, "vrspeech %i", int(command));
+			gEngfuncs.pfnClientCmd(speechCommand);
+		}
 	}
 	vr::VREvent_t vrEvent;
 	while (vrSystem != nullptr && vrSystem->PollNextEvent(&vrEvent, sizeof(vr::VREvent_t)))

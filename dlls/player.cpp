@@ -5598,3 +5598,8 @@ void CBasePlayer::StopPullingLedge()
 	WRITE_BYTE(0);
 	MESSAGE_END();
 }
+
+void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
+{
+
+}

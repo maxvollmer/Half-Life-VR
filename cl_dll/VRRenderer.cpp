@@ -763,7 +763,7 @@ void VRRenderer::DrawHDSkyBox()
 
 	try
 	{
-		TryGLCall(glDisable, GL_FOG);
+		//TryGLCall(glDisable, GL_FOG);
 		TryGLCall(glDisable, GL_BLEND);
 		TryGLCall(glDisable, GL_ALPHA_TEST);
 		TryGLCall(glDisable, GL_DEPTH_TEST);

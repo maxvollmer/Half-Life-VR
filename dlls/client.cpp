@@ -41,6 +41,7 @@
 #include "usercmd.h"
 #include "netadr.h"
 #include "VRPhysicsHelper.h"
+#include "vr_shared/VRShared.h"
 
 #include <vector>
 #include <unordered_map>
@@ -545,7 +546,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if (FStrEq(pcmd, "vrtele"))
 	{
-		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
 		if (atoi(CMD_ARGV(1)))
 		{
 			pPlayer->StartVRTele();
@@ -554,6 +555,11 @@ void ClientCommand( edict_t *pEntity )
 		{
 			pPlayer->StopVRTele();
 		}
+	}
+	else if (FStrEq(pcmd, "vrspeech"))
+	{
+		CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
+		pPlayer->HandleSpeechCommand(VRSpeechCommand(atoi(CMD_ARGV(1))));
 	}
 	else if ( g_pGameRules->ClientCommand( GetClassPtr((CBasePlayer *)pev), pcmd ) )
 	{

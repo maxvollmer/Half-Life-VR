@@ -288,6 +288,7 @@
     <ClInclude Include="..\pm_shared\pm_materials.h" />
     <ClInclude Include="..\pm_shared\pm_movevars.h" />
     <ClInclude Include="..\pm_shared\pm_shared.h" />
+    <ClInclude Include="..\vr_shared\VRShared.h" />
     <ClInclude Include="ammo.h" />
     <ClInclude Include="ammohistory.h" />
     <ClInclude Include="camera.h" />

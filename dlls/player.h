@@ -26,6 +26,7 @@
 #include "VRControllerInteractionManager.h"
 #include "VRControllerTeleporter.h"
 #include "VRGroundEntityHandler.h"
+#include "../vr_shared/VRShared.h"
 
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
@@ -456,6 +457,8 @@ public:
 	float m_vrLedgePullStartTime{ 0.f };
 	bool m_vrIsPullingOnLedge{ false };
 	bool m_vrWasPullingOnLedge{ false };
+
+	void HandleSpeechCommand(VRSpeechCommand command);
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

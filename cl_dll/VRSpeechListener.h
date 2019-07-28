@@ -6,6 +6,8 @@
 #include <unordered_set>
 #include <memory>
 
+#include "../vr_shared/VRShared.h"
+
 class CSpEvent;
 struct ISpRecoGrammar;
 struct ISpRecoContext;
@@ -13,15 +15,7 @@ struct ISpRecoContext;
 class VRSpeechListener
 {
 public:
-	enum class Command
-	{
-		WAIT,
-		FOLLOWME,
-		GREETING,
-		NONE
-	};
-
-	Command GetCommand() const;
+	VRSpeechCommand GetCommand() const;
 
 	static const VRSpeechListener& Instance();
 
@@ -38,10 +32,10 @@ private:
 	ISpRecoGrammar* InitGrammar(ISpRecoContext* recoContext) const;
 	std::string ExtractInput(const CSpEvent& event) const;
 
-	const std::unordered_map<Command, std::unordered_set<std::string>>	m_commands = { {
-		{ Command::WAIT, {{"wait", "stop", "hold"}} },
-		{ Command::FOLLOWME, {{"follow me", "come", "lets go"}} },
-		{ Command::GREETING, {{"hello", "good morning", "hey", "hi", "morning"}} },
+	const std::unordered_map<VRSpeechCommand, std::unordered_set<std::string>>	m_commands = { {
+		{ VRSpeechCommand::WAIT, {{"wait", "stop", "hold"}} },
+		{ VRSpeechCommand::FOLLOW, {{"follow me", "come", "lets go"}} },
+		{ VRSpeechCommand::HELLO, {{"hello", "good morning", "hey", "hi", "morning"}} },
 	} };
 
 	const unsigned __int64		m_grammarId = 0;

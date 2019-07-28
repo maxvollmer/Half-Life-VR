@@ -9,6 +9,8 @@
 #include <sstream>
 #include <string>
 
+#include "hud.h"
+#include "cl_util.h"
 
 VRSpeechListener VRSpeechListener::m_speechListener;
 
@@ -202,10 +204,13 @@ void get_text(ISpRecoContext* reco_context)
 }
 */
 
-VRSpeechListener::Command VRSpeechListener::GetCommand() const
+VRSpeechCommand VRSpeechListener::GetCommand() const
 {
+	if (CVAR_GET_FLOAT("") == 0.f)
+		return VRSpeechCommand::NONE;
+
 	//InitSAPI();
-	return Command::NONE;
+	return VRSpeechCommand::NONE;
 }
 
 void VRSpeechListener::InitSAPI() const

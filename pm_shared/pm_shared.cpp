@@ -1629,7 +1629,11 @@ void PM_CategorizePosition (void)
 	point[1] = pmove->origin[1];
 	point[2] = pmove->origin[2] - 2;
 
-	if (pmove->velocity[2] > 180)   // Shooting up really fast.  Definitely not on ground.
+	if (pmove->velocity[2] > 90.f)   // Shooting up really fast.  Definitely not on ground.
+	{
+		pmove->onground = -1;
+	}
+	else if ((g_onladder || pmove->movetype == MOVETYPE_FLY) && pmove->velocity[2] > 0.f)   // Moving up on ladder, not on ground
 	{
 		pmove->onground = -1;
 	}
@@ -1648,9 +1652,12 @@ void PM_CategorizePosition (void)
 		{
 			// Then we are not in water jump sequence
 			pmove->waterjumptime = 0;
+			/*
+			// This breaks a lot of initial upwards movement in 90fps, so we don't do that anymore. - Max Vollmer, 2019-07-29
 			// If we could make the move, drop us down that 1 pixel
 			if (pmove->waterlevel < 2 && !tr.startsolid && !tr.allsolid)
 				VectorCopy (tr.endpos, pmove->origin);
+			*/
 		}
 
 		// Standing on an entity other than the world
@@ -1987,7 +1994,7 @@ void PM_UnDuck(void)
 	}
 }
 
-void PM_FixPlayerCrouchStuck(int direction)
+void PM_FixPlayerCrouchStuck(int direction, int maxdistance = 36)
 {
 	int     hitent;
 	int i;
@@ -2118,11 +2125,15 @@ void PM_LadderMove(physent_t *pLadder)
 	VectorScale(ladderCenter, 0.5, ladderCenter);
 	VectorAdd(ladderCenter, pLadder->origin, ladderCenter);
 
-	vec3_t floor{ 0.f, 0.f, 0.f };
-	VectorCopy(pmove->origin, floor);
-	floor[2] += pmove->player_mins[pmove->usehull][2] - 1;
+	bool onFloor = pmove->flags & FL_ONGROUND || pmove->onground >= 0;
 
-	bool onFloor = pmove->PM_PointContents(floor, NULL) == CONTENTS_SOLID;
+	if (!onFloor)
+	{
+		vec3_t floor{ 0.f, 0.f, 0.f };
+		VectorCopy(pmove->origin, floor);
+		floor[2] += pmove->player_mins[pmove->usehull][2] - 1;
+		onFloor = pmove->PM_PointContents(floor, NULL) == CONTENTS_SOLID;
+	}
 
 	trace_t trace{ 0 };
 	float result = pmove->PM_TraceModel(pLadder, pmove->origin, ladderCenter, &trace);
@@ -2145,51 +2156,6 @@ void PM_LadderMove(physent_t *pLadder)
 				maxClimbSpeed = DEFAULT_MAX_CLIMB_SPEED;
 			}
 
-			// get direction vectors for climbing on this ladder
-			vec3_t v_forward{ 1.f, 0.f, 0.f };
-			vec3_t v_right{ 0.f, 1.f, 0.f };
-			AngleVectors(pmove->angles, v_forward, v_right, NULL);
-
-			// remove any sideways movement from forward/backward input
-			if (trace.plane.normal[2] > 0.995f)
-			{
-				// ladder is horizontal, leave v_forward as it is
-			}
-			else if (trace.plane.normal[2] != 0.f)
-			{
-				// ladder is not straight up or down
-				// calculate vector in ladder plane
-				bool downwards = v_forward[2] < 0.f;
-				if (fabs(trace.plane.normal[0] > trace.plane.normal[1]))
-				{
-					CrossProduct(trace.plane.normal, vec3_t{ 0.f, 1.f, 0.f }, v_forward);
-				}
-				else
-				{
-					CrossProduct(trace.plane.normal, vec3_t{ 1.f, 0.f, 0.f }, v_forward);
-				}
-				if (downwards != (v_forward[2] < 0.f))
-				{
-					// flip vector if pointing in wrong direction
-					VectorScale(v_forward, -1.f, v_forward);
-				}
-			}
-			else
-			{
-				// if ladder is straight up or down, forward just becomes 0,0,1 or 0,0,-1
-				v_forward[0] = 0.f;
-				v_forward[1] = 0.f;
-				VectorNormalize(v_forward);
-			}
-
-
-			// remove any upwards/downwards movement from sideways input
-			v_right[2] = 0.f;
-			VectorNormalize(v_right);
-
-			// up vector is always simply just that
-			vec3_t v_up{ 0.f, 0.f, 1.f };
-
 			float forward = 0.f;
 			if (pmove->cmd.buttons & IN_BACK)
 				forward -= maxClimbSpeed;
@@ -2210,40 +2176,69 @@ void PM_LadderMove(physent_t *pLadder)
 
 			if (forward != 0.f || right != 0.f || up != 0.f)
 			{
-				vec3_t velocity, perp, cross, lateral, tmp;
+				// get direction vectors for climbing on this ladder
+				vec3_t v_forward{ 1.f, 0.f, 0.f };
+				vec3_t v_right{ 0.f, 1.f, 0.f };
+				AngleVectors(pmove->angles, v_forward, v_right, NULL);
 
+				// remove any sideways movement from forward/backward input
+				if (trace.plane.normal[2] > 0.995f)
+				{
+					// ladder is horizontal, leave v_forward as it is
+				}
+				else if (trace.plane.normal[2] != 0.f)
+				{
+					// ladder is not straight up or down
+					// calculate vector in ladder plane
+					bool downwards = v_forward[2] < 0.f;
+					if (fabs(trace.plane.normal[0] > trace.plane.normal[1]))
+					{
+						CrossProduct(trace.plane.normal, vec3_t{ 0.f, 1.f, 0.f }, v_forward);
+					}
+					else
+					{
+						CrossProduct(trace.plane.normal, vec3_t{ 1.f, 0.f, 0.f }, v_forward);
+					}
+					if (downwards != (v_forward[2] < 0.f))
+					{
+						// flip vector if pointing in wrong direction
+						VectorScale(v_forward, -1.f, v_forward);
+					}
+				}
+				else
+				{
+					// if ladder is straight up or down, forward just becomes 0,0,1 or 0,0,-1
+					v_forward[0] = 0.f;
+					v_forward[1] = 0.f;
+					VectorNormalize(v_forward);
+				}
+
+				// remove any upwards/downwards movement from sideways input
+				v_right[2] = 0.f;
+				VectorNormalize(v_right);
+
+				// up vector is always simply just that
+				vec3_t v_up{ 0.f, 0.f, 1.f };
+
+				// Calculate velocity
+				vec3_t velocity;
 				VectorScale(v_up, up, velocity);
 				VectorMA(velocity, forward, v_forward, velocity);
 				VectorMA(velocity, right, v_right, velocity);
 
-				VectorClear(tmp);
-				tmp[2] = 1;
-				CrossProduct(tmp, trace.plane.normal, perp);
-				VectorNormalize(perp);
-
-				// decompose velocity into ladder plane
-				float normal = DotProduct(velocity, trace.plane.normal);
-				// This is the velocity into the face of the ladder
-				VectorScale(trace.plane.normal, normal, cross);
-
-				// This is the player's additional velocity
-				VectorSubtract(velocity, cross, lateral);
-
-				// This turns the velocity into the face of the ladder into velocity that
-				// is roughly vertically perpendicular to the face of the ladder.
-				// NOTE: It IS possible to face up and move down or face down and move up
-				// because the velocity is a sum of the directional velocity and the converted
-				// velocity through the face of the ladder -- by design.
-				CrossProduct(trace.plane.normal, perp, tmp);
-				VectorMA(lateral, -normal, tmp, pmove->velocity);
-				if (onFloor && normal > 0)	// On ground moving away from the ladder
+				if (onFloor && velocity[2] < 0.f)
 				{
-					VectorMA(pmove->velocity, maxClimbSpeed, trace.plane.normal, pmove->velocity);
+					VectorScale(trace.plane.normal, Length(velocity), pmove->velocity);
 				}
-				else if (VRGetMoveOnlyUpDownOnLadder())
+				else
 				{
-					pmove->velocity[0] = 0.f;
-					pmove->velocity[1] = 0.f;
+					VectorCopy(velocity, pmove->velocity);
+					// Throw out sideways movement if setting is set (TODO: still needed with the new ladder movement?)
+					if (VRGetMoveOnlyUpDownOnLadder())
+					{
+						pmove->velocity[0] = 0.f;
+						pmove->velocity[1] = 0.f;
+					}
 				}
 			}
 			else
@@ -3372,6 +3367,17 @@ void PM_PlayerMove ( qboolean server )
 		VectorScale( pmove->velocity, 0.3, pmove->velocity );
 	}
 
+	bool isDucking = pmove->usehull == 1;
+	// Always calculate movement as if ducking, then afterwards unduck if possible or stay ducked if not possible (this essentially makes players autoduck if necessary)
+	if (!isDucking && !pLadder)
+	{
+		pmove->usehull = 1;
+		pmove->flags |= FL_DUCKING;
+		pmove->origin[2] += pmove->player_mins[0][2] - pmove->player_mins[1][2];
+		PM_FixPlayerCrouchStuck(STUCK_MOVEUP, 8);
+		PM_FixPlayerCrouchStuck(STUCK_MOVEDOWN, 8);
+	}
+
 	// Handle movement
 	switch ( pmove->movetype )
 	{
@@ -3423,6 +3429,27 @@ void PM_PlayerMove ( qboolean server )
 			PM_YesClip(pLadder);	// Moved all the walking code in this switch-statement to its own method
 		}
 		break;
+	}
+
+	if (!isDucking && !pLadder)
+	{
+		vec3_t original_origin;
+		VectorCopy(pmove->origin, original_origin);
+
+		pmove->usehull = 0;
+		pmove->flags &= ~FL_DUCKING;
+		pmove->origin[2] += pmove->player_mins[1][2] - pmove->player_mins[0][2];
+
+		PM_FixPlayerCrouchStuck(STUCK_MOVEUP, 8);
+		PM_FixPlayerCrouchStuck(STUCK_MOVEDOWN, 8);
+
+		if (pmove->PM_TestPlayerPosition(pmove->origin, NULL) >= 0)
+		{
+			// stuck when standing, stay ducked
+			pmove->usehull = 1;
+			pmove->flags |= FL_DUCKING;
+			VectorCopy(original_origin, pmove->origin);
+		}
 	}
 }
 

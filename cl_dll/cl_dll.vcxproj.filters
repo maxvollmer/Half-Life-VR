@@ -41,6 +41,9 @@
     <Filter Include="Header Files\gameui">
       <UniqueIdentifier>{50c4a45e-cd62-43a2-89e2-12a35b62e2cd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\vr_shared">
+      <UniqueIdentifier>{a3f7ece5-bbda-460a-b072-dcf6ce0b2e2d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dlls\crossbow.cpp">
@@ -527,6 +530,9 @@
     </ClInclude>
     <ClInclude Include="VRSettings.h">
       <Filter>VR\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vr_shared\VRShared.h">
+      <Filter>VR\vr_shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

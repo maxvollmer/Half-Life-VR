@@ -9,10 +9,6 @@
       <UniqueIdentifier>{73abcdf0-e6e6-444a-8e8e-dec5f8d62f62}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;fi;fd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{4a099178-ddf8-4fd2-90fd-11b9794ccc3e}</UniqueIdentifier>
-      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
-    </Filter>
     <Filter Include="VR">
       <UniqueIdentifier>{860f3d8f-5250-4648-903c-9c3d577b2ddb}</UniqueIdentifier>
     </Filter>
@@ -21,6 +17,13 @@
     </Filter>
     <Filter Include="VR\stuff">
       <UniqueIdentifier>{4e28465b-28b9-4933-bd02-e02acd88d498}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{4a099178-ddf8-4fd2-90fd-11b9794ccc3e}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="VR\vr_shared">
+      <UniqueIdentifier>{837eaf4e-ec4a-4365-b9ee-bca9dc8b4e07}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -553,6 +556,9 @@
     </ClInclude>
     <ClInclude Include="CWorldsSmallestCup.h">
       <Filter>VR\stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vr_shared\VRShared.h">
+      <Filter>VR\vr_shared</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
