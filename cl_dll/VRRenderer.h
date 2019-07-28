@@ -40,6 +40,7 @@ public:
 
 	void DrawTransparent();
 	void DrawNormal();
+	void DrawHDSkyBox();
 
 	void InterceptHUDRedraw(float time, int intermission);
 

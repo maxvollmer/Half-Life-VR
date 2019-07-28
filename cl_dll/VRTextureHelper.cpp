@@ -5,6 +5,8 @@
 #include "cl_util.h"
 #include "VRInput.h"
 #include "eiface.h"
+#include "pm_defs.h"
+#include "pm_movevars.h"
 
 #include "VRTextureHelper.h"
 #include "VRCommon.h"
@@ -17,24 +19,46 @@ unsigned int VRTextureHelper::GetHDGameTexture(const std::string& name)
 	return GetTexture("game/" + name + ".png");
 }
 
-unsigned int VRTextureHelper::GetSkyboxTexture(const std::string& name, int index)
+unsigned int VRTextureHelper::GetVRSkyboxTexture(const std::string& name, int index)
 {
-	unsigned int texture = GetTexture("skybox/" + name + m_mapSkyboxIndices[index] + ".png");
+	unsigned int texture = GetTexture("skybox/" + name + m_vrMapSkyboxIndices[index] + ".png");
 	if (!texture && name != "desert")
 	{
-		gEngfuncs.Con_DPrintf("Skybox texture %s not found, falling back to desert.\n", (name + m_mapSkyboxIndices[index]).data());
-		texture = GetTexture("skybox/desert" + m_mapSkyboxIndices[index] + ".png");
+		gEngfuncs.Con_DPrintf("Skybox texture %s not found, falling back to desert.\n", (name + m_vrMapSkyboxIndices[index]).data());
+		texture = GetTexture("skybox/desert" + m_vrMapSkyboxIndices[index] + ".png");
 	}
 	return texture;
 }
 
-unsigned int VRTextureHelper::GetHDSkyboxTexture(const std::string& name, int index)
+unsigned int VRTextureHelper::GetVRHDSkyboxTexture(const std::string& name, int index)
 {
-	unsigned int texture = GetTexture("skybox/hd/" + name + m_mapSkyboxIndices[index] + ".png");
+	unsigned int texture = GetTexture("skybox/hd/" + name + m_vrMapSkyboxIndices[index] + ".png");
 	if (!texture)
 	{
-		gEngfuncs.Con_DPrintf("HD skybox texture %s not found, falling back to SD.\n", (name + m_mapSkyboxIndices[index]).data());
-		texture = GetSkyboxTexture(name, index);
+		gEngfuncs.Con_DPrintf("HD skybox texture %s not found, falling back to SD.\n", (name + m_vrMapSkyboxIndices[index]).data());
+		texture = GetVRSkyboxTexture(name, index);
+	}
+	return texture;
+}
+
+unsigned int VRTextureHelper::GetHLSkyboxTexture(const std::string& name, int index)
+{
+	unsigned int texture = GetTexture("skybox/" + name + m_hlMapSkyboxIndices[index] + ".png");
+	if (!texture && name != "desert")
+	{
+		gEngfuncs.Con_DPrintf("Skybox texture %s not found, falling back to desert.\n", (name + m_hlMapSkyboxIndices[index]).data());
+		texture = GetTexture("skybox/desert" + m_hlMapSkyboxIndices[index] + ".png");
+	}
+	return texture;
+}
+
+unsigned int VRTextureHelper::GetHLHDSkyboxTexture(const std::string& name, int index)
+{
+	unsigned int texture = GetTexture("skybox/hd/" + name + m_hlMapSkyboxIndices[index] + ".png");
+	if (!texture)
+	{
+		gEngfuncs.Con_DPrintf("HD skybox texture %s not found, falling back to SD.\n", (name + m_hlMapSkyboxIndices[index]).data());
+		texture = GetHLSkyboxTexture(name, index);
 	}
 	return texture;
 }
@@ -44,6 +68,15 @@ const char* VRTextureHelper::GetSkyboxNameFromMapName(const std::string& mapName
 	auto& skyboxName = m_mapSkyboxNames.find(mapName);
 	if (skyboxName != m_mapSkyboxNames.end())
 		return skyboxName->second.data();
+	else
+		return "desert";
+}
+
+const char* VRTextureHelper::GetCurrentSkyboxName()
+{
+	extern playermove_t* pmove;
+	if (pmove != nullptr && pmove->movevars->skyName[0] != 0)
+		return pmove->movevars->skyName;
 	else
 		return "desert";
 }
@@ -78,7 +111,7 @@ unsigned int VRTextureHelper::GetTexture(const std::string& name)
 				TryGLCall(glActiveTexture, GL_TEXTURE0);
 				TryGLCall(glGenTextures, 1, &texture);
 				TryGLCall(glBindTexture, GL_TEXTURE_2D, texture);
-				TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+				TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
 				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				TryGLCall(glGenerateMipmap, GL_TEXTURE_2D);
@@ -104,12 +137,24 @@ unsigned int VRTextureHelper::GetTexture(const std::string& name)
 VRTextureHelper VRTextureHelper::instance{};
 
 // from openvr docs: Order is Front, Back, Left, Right, Top, Bottom.
-const std::array<std::string, 6> VRTextureHelper::m_mapSkyboxIndices{
+const std::array<std::string, 6> VRTextureHelper::m_vrMapSkyboxIndices{
 	{
 		{"ft"},
 		{"bk"},
 		{"lf"},
 		{"rt"},
+		{"up"},
+		{"dn"}
+	}
+};
+
+// order of skybox as used by Half-Life
+const std::array<std::string, 6> VRTextureHelper::m_hlMapSkyboxIndices{
+	{
+		{"rt"},
+		{"bk"},
+		{"lf"},
+		{"ft"},
 		{"up"},
 		{"dn"}
 	}

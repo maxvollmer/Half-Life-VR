@@ -308,7 +308,6 @@ void VRRenderer::DrawNormal()
 {
 	glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_TEXTURE_BIT);
 
-
 	glPopAttrib();
 }
 
@@ -372,6 +371,8 @@ void VRRenderer::DrawTransparent()
 	}
 	else
 	{
+		DrawHDSkyBox();
+
 		RenderWorldBackfaces();
 
 		if (CVAR_GET_FLOAT("vr_debug_controllers") != 0.f)
@@ -682,6 +683,126 @@ void VRRenderer::SetViewOfs(const Vector& viewOfs)
 	vrHelper->SetViewOfs(viewOfs);
 }
 
+void VRRenderer::DrawHDSkyBox()
+{
+	bool hdTexturesEnabled = CVAR_GET_FLOAT("vr_hd_textures_enabled") != 0.f;
+	if (!hdTexturesEnabled)
+		return;
+
+	float size = 2048.f;
+	extern playermove_t* pmove;
+	if (pmove)
+	{
+		size = (std::max)(size, pmove->movevars->zmax * 0.5f);
+	}
+	float nsize = size -8.f;
+
+	/*
+	{"rt"},
+	{ "bk" },
+	{ "lf" },
+	{ "ft" },
+	{ "up" },
+	{ "dn" }
+	*/
+
+	/*
+	0,1
+	1,1
+	1,0
+	0,0
+	*/
+
+	const Vector skyboxbounds[6][4] = {
+		{
+			// right
+			{nsize, size, -size},
+			{nsize, -size, -size},
+			{nsize, -size, size},
+			{nsize, size, size},
+		},
+		{
+			// back
+			{-size, nsize, -size},
+			{size, nsize, -size},
+			{size, nsize, size},
+			{-size, nsize, size},
+		},
+		{
+			// left
+			{-nsize, -size, -size},
+			{-nsize, size, -size},
+			{-nsize, size, size},
+			{-nsize, -size, size},
+		},
+		{
+			// front
+			{size, -nsize, -size},
+			{-size, -nsize, -size},
+			{-size, -nsize, size},
+			{size, -nsize, size},
+		},
+		{
+			// up
+			{nsize, size, nsize},
+			{nsize, -size, nsize},
+			{-nsize, -size, nsize},
+			{-nsize, size, nsize},
+		},
+		{
+			// down
+			{-nsize, size, -nsize},
+			{-nsize, -size, -nsize},
+			{nsize, -size, -nsize},
+			{nsize, size, -nsize},
+		},
+	};
+
+	Vector skyboxorigin;
+	vrHelper->GetViewOrg(skyboxorigin);
+
+	try
+	{
+		TryGLCall(glDisable, GL_FOG);
+		TryGLCall(glDisable, GL_BLEND);
+		TryGLCall(glDisable, GL_ALPHA_TEST);
+		TryGLCall(glDisable, GL_DEPTH_TEST);
+		TryGLCall(glDisable, GL_CULL_FACE);
+		TryGLCall(glDepthMask, GL_FALSE);
+		TryGLCall(glTexEnvi, GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+		TryGLCall(glColor4f, 1.f, 1.f, 1.f, 1.f);
+
+		TryGLCall(glEnable, GL_TEXTURE_2D);
+		TryGLCall(glActiveTexture, GL_TEXTURE0);
+
+		for (int i = 0; i < 6; i++)
+		{
+			TryGLCall(glBindTexture, GL_TEXTURE_2D, VRTextureHelper::Instance().GetHLHDSkyboxTexture(VRTextureHelper::Instance().GetCurrentSkyboxName(), i));
+
+			glBegin(GL_QUADS);
+			
+			glTexCoord2f(0.f, 1.f);
+			glVertex3fv(skyboxorigin + skyboxbounds[i][0]);
+			
+			glTexCoord2f(1.f, 1.f);
+			glVertex3fv(skyboxorigin + skyboxbounds[i][1]);
+			
+			glTexCoord2f(1.f, 0.f);
+			glVertex3fv(skyboxorigin + skyboxbounds[i][2]);
+			
+			glTexCoord2f(0.f, 0.f);
+			glVertex3fv(skyboxorigin + skyboxbounds[i][3]);
+			
+			glEnd();
+		}
+	}
+	catch (const OGLErrorException& e)
+	{
+		gEngfuncs.Con_DPrintf("Failed to render HD sky: %s\n", e.what());
+	}
+}
+
 
 
 // For ev_common.cpp
@@ -693,4 +814,5 @@ void VRGlobalGetGunAim(Vector& forward, Vector& right, Vector& up, Vector& angle
 {
 	gVRRenderer.GetHelper()->GetGunAim(forward, right, up, angles);
 }
+
 

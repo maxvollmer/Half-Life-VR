@@ -1420,11 +1420,11 @@ void VRHelper::SetSkybox(const char* name)
 	{
 		m_skyboxTextures[i].eType = vr::TextureType_OpenGL;
 		m_skyboxTextures[i].eColorSpace = vr::ColorSpace_Auto;
-		m_skyboxTextures[i].handle = reinterpret_cast<void*>(VRTextureHelper::Instance().GetSkyboxTexture(name, i));
+		m_skyboxTextures[i].handle = reinterpret_cast<void*>(VRTextureHelper::Instance().GetVRSkyboxTexture(name, i));
 
 		m_skyboxHDTextures[i].eType = vr::TextureType_OpenGL;
 		m_skyboxHDTextures[i].eColorSpace = vr::ColorSpace_Auto;
-		m_skyboxHDTextures[i].handle = reinterpret_cast<void*>(VRTextureHelper::Instance().GetHDSkyboxTexture(name, i));
+		m_skyboxHDTextures[i].handle = reinterpret_cast<void*>(VRTextureHelper::Instance().GetVRHDSkyboxTexture(name, i));
 	}
 
 	if (CVAR_GET_FLOAT("vr_hd_textures_enabled") != 0.f)
