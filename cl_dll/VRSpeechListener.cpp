@@ -169,9 +169,12 @@ ISpRecoGrammar* VRSpeechListener::InitGrammar(ISpRecoContext* recoContext)
 		}
 	}
 
+	VerifyResult(grammar->LoadDictation(NULL, SPLO_STATIC), "Failed to load dictation");
+
 	VerifyResult(grammar->Commit(0), "Failed to commit grammar");
 
 	VerifyResult(grammar->SetRuleState(m_ruleName, nullptr, SPRS_ACTIVE), "Failed to activate commands");
+	VerifyResult(grammar->SetDictationState(SPRS_ACTIVE), "Failed setting dictation state");
 
 	return grammar;
 }
