@@ -165,12 +165,20 @@ namespace HLVRLauncher.Utilities
             } },
 
             { "HUD", new OrderedDictionary<string, Setting>() {
-                { "vr_hud_mode", Setting.Create( "HUD mode", 2, new OrderedDictionary<string, string>(){ {"0", "Disabled" }, { "1", "In View (true HUD)" }, { "2", "On Controllers" } } ) },
+                { "vr_hud_mode", Setting.Create( "HUD mode", 2, new OrderedDictionary<string, string>(){ { "2", "On Controllers" }, { "1", "In View (true HUD)" }, { "0", "Disabled" } } ) },
 
                 { "vr_hud_health", Setting.Create( "Show health in HUD", true ) },
                 { "vr_hud_damage_indicator", Setting.Create( "Show damage indicator in HUD", true ) },
                 { "vr_hud_flashlight", Setting.Create( "Show flashlight in HUD", true ) },
                 { "vr_hud_ammo", Setting.Create( "Show ammo in HUD", true ) },
+            } },
+
+            { "Speech recognition", new OrderedDictionary<string, Setting>() {
+                { "vr_speech_commands_enabled", Setting.Create( "Enable speech recognition", false ) },
+
+                { "vr_speech_commands_follow", Setting.Create( "Follow commands", "follow me,come,lets go" ) },
+                { "vr_speech_commands_wait", Setting.Create( "Wait commands", "wait,stop,hold") },
+                { "vr_speech_commands_hello", Setting.Create( "Greetings", "hello,good morning,hey,hi,morning" ) },
             } },
 
             { "World customization & scaling", new OrderedDictionary<string, Setting>() {

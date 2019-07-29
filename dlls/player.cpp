@@ -5601,5 +5601,5 @@ void CBasePlayer::StopPullingLedge()
 
 void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 {
-
+	ALERT(at_console, "HandleSpeechCommand: %i\n", int(command));
 }

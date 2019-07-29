@@ -9,15 +9,16 @@
 #include "../vr_shared/VRShared.h"
 
 class CSpEvent;
+struct ISpRecognizer;
 struct ISpRecoGrammar;
 struct ISpRecoContext;
 
 class VRSpeechListener
 {
 public:
-	VRSpeechCommand GetCommand() const;
+	VRSpeechCommand GetCommand();
 
-	static const VRSpeechListener& Instance();
+	static VRSpeechListener& Instance();
 
 private:
 	friend class std::unique_ptr<VRSpeechListener>;
@@ -26,20 +27,33 @@ private:
 	VRSpeechListener();
 	~VRSpeechListener();
 
-	void InitSAPI() const;
-	void CleanupSAPI() const;
+	void InitSAPI();
+	ISpRecoGrammar* InitGrammar(ISpRecoContext* recoContext);
+	void CleanupSAPI();
 
-	ISpRecoGrammar* InitGrammar(ISpRecoContext* recoContext) const;
-	std::string ExtractInput(const CSpEvent& event) const;
+	void VerifyResult(long result, const std::string& message);
 
-	const std::unordered_map<VRSpeechCommand, std::unordered_set<std::string>>	m_commands = { {
-		{ VRSpeechCommand::WAIT, {{"wait", "stop", "hold"}} },
-		{ VRSpeechCommand::FOLLOW, {{"follow me", "come", "lets go"}} },
-		{ VRSpeechCommand::HELLO, {{"hello", "good morning", "hey", "hi", "morning"}} },
+	std::string GetSpeechRecognitionErrorMessageText(long error);
+
+
+	const wchar_t*					m_ruleName{ L"hlvrRuleName" };
+	const unsigned __int64			m_grammarId{ 0 };
+
+	ISpRecognizer*					m_recognizer{ nullptr };
+	ISpRecoContext*					m_context{ nullptr };
+	ISpRecoGrammar*					m_grammar{ nullptr };
+
+	void*							m_eventHandle{ nullptr };
+
+	bool							m_isInitialized{ false };
+
+
+	const std::unordered_map<VRSpeechCommand, std::unordered_set<std::wstring>>	m_commands = { {
+		{ VRSpeechCommand::WAIT, {{L"wait", L"stop", L"hold"}} },
+		{ VRSpeechCommand::FOLLOW, {{L"follow me", L"come", L"lets go"}} },
+		{ VRSpeechCommand::HELLO, {{L"hello", L"good morning", L"hey", L"hi", L"morning"}} },
 	} };
 
-	const unsigned __int64		m_grammarId = 0;
-	const wchar_t*				m_ruleName1 = L"hlvrRuleName";
 
 	static VRSpeechListener		m_speechListener;
 };

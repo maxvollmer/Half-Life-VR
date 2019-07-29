@@ -39,6 +39,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_disable_triggerpush", "0");
 	RegisterCVAR("vr_egon_scale", "1");
 	RegisterCVAR("vr_enable_aim_laser", "0");
+	RegisterCVAR("vr_speech_commands_enabled", "0");
 	RegisterCVAR("vr_flashlight_attachment", "0");
 	RegisterCVAR("vr_flashlight_toggle", "0");
 	RegisterCVAR("vr_force_introtrainride", "1");
@@ -99,6 +100,10 @@ void VRSettings::Init()
 	RegisterCVAR("vr_world_scale", "1");
 	RegisterCVAR("vr_world_z_strech", "1");
 	RegisterCVAR("vr_xenjumpthingies_teleporteronly", "0");
+
+	RegisterCVAR("vr_speech_commands_follow", "follow me,come,lets go");
+	RegisterCVAR("vr_speech_commands_wait", "wait,stop,hold");
+	RegisterCVAR("vr_speech_commands_hello", "hello,good morning,hey,hi,morning");
 
 	// Initialize time that settings file was last changed
 	std::filesystem::path settingsPath = GetPathFor("/hlvrsettings.cfg");
