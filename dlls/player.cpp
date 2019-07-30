@@ -5626,7 +5626,7 @@ void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 			{
 				if (FClassnameIs(pent, "monster_barney") || FClassnameIs(pent, "monster_scientist"))
 				{
-					// If command is MUMBLE or HELLO, find the closest monster that can speak
+					// If command is MUMBLE or HELLO, only add monsters that can speak
 					// If command is FOLLOW or WAIT, always add to list
 					float biggestdot = 0.f;
 					float shortestdist = VR_MAX_TALK_DISTANCE;
@@ -5669,10 +5669,7 @@ void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 		closestReactingNPC->IdleHeadTurn(pev->origin);
 		if (command == VRSpeechCommand::HELLO)
 		{
-			if (FBitSet(closestReactingNPC->pev->spawnflags, SF_MONSTER_PREDISASTER))
-				PlaySentence(closestReactingNPC->m_szGrp[TLK_PHELLO], RANDOM_FLOAT(3, 3.5), VOL_NORM, ATTN_IDLE);
-			else
-				PlaySentence(closestReactingNPC->m_szGrp[TLK_HELLO], RANDOM_FLOAT(3, 3.5), VOL_NORM, ATTN_IDLE);
+			PlaySentence((FClassnameIs(closestReactingNPC->pev, "monster_scientist")) ? "SC_SHELLO" : "BA_SHELLO", RANDOM_FLOAT(3, 3.5), VOL_NORM, ATTN_IDLE);
 			SetBits(closestReactingNPC->m_bitsSaid, bit_saidHelloPlayer);
 		}
 		else

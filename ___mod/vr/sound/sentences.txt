@@ -1352,7 +1352,6 @@ GM_WONTWORK gman/gman_nowork
 
 
 
-
 FS_OK0 fsci/excellentteam
 FS_OK1 fsci/fellowscientist
 FS_OK2 fsci/fine
@@ -1735,3 +1734,25 @@ FS_FOOL fsci/c3a2_sci_fool
 //miscellaneous useful scripts
 FS_LETYOUIN fsci/letyouin
 FS_OVERHERE fsci/overhere
+
+
+
+// Responses to speech greetings
+
+SC_SHELLO0 scientist/greetings
+SC_SHELLO1 scientist/greetings2
+SC_SHELLO2 scientist/hello
+SC_SHELLO3 scientist/hellothere
+SC_SHELLO4 scientist/freeman
+
+FS_SHELLO0 fsci/greetings
+FS_SHELLO1 fsci/greetings2
+FS_SHELLO2 fsci/hello
+FS_SHELLO3 fsci/hellothere
+FS_SHELLO4 fsci/freeman
+
+BA_SHELLO0 barney/heybuddy
+BA_SHELLO1 barney/heyfella
+BA_SHELLO2 barney/hellonicesuit
+BA_SHELLO3 barney/howdy
+BA_SHELLO4 barney/howyoudoing

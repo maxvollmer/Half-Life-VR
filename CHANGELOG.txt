@@ -170,7 +170,8 @@
 * Added cvars vr_speech_commands_enabled, vr_speech_commands_follow, vr_speech_commands_wait and vr_speech_commands_hello
 * Teleporting now creates noise that AI can react to (the further the teleport distance, the "louder" the noise and thus greater attention from AI)
 
-
+0.5.2
+* Added extra sound groups with fitting audio files for scientists and barneys for responding to speech recognized greeting
 * (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
 * 
 
