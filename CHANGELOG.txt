@@ -147,6 +147,7 @@
 0.5.0-hotfix - 2019-07-26
 * Fixed performance issues that came with changes in opengl32.dll in 0.4.4
 * Fixed issues with sparks and beam effects being not in sync on left and right eye
+* Improved rendering performance overall
 
 0.5.1
 * Fixed "telekinetic" grab
@@ -154,19 +155,21 @@
 * Fixed getting stuck on ladders when legacy ladder movement is disabled
 * Fixed minor bug in speed setting for those fast platforms near the tentacle monster
 * Fixed HD textures not working since 0.5.0-hotfix
-* Fixed movement vector being upside down when using HMD as movement input direction (HMD input is already correct, but fix from 0.4.0 inverted it making it wrong)
-* Improved rendering performance overall
-* Renamed cvar vr_use_sd_models to vr_use_hd_models
+* Fixed movement vector being upside down when using HMD as movement input direction (HMD input is already correct, but fix from 0.4.0 inverted it making it wrong again)
+* Replaced cvar vr_use_sd_models with vr_use_hd_models
 * Removed support for legacy input (mod now only supports SteamVR Input)
 * Improved error feedback for missing SteamVR Input actions
 * Implemented config tabs in HLVRLauncher
 * Improved legacy ladder movement: Forward/backward movement only affects movement in z axis, sideways movement only affects movement in x and y axis
 * Implemented HD skybox
-* Added new input action "LetGoOffLadder" for legacy ladder climbing. When used, player will simply drop from current ladder, instead of being catapulted away as when jumping.
+* Added new input action "LetGoOffLadder" for legacy ladder climbing. When used, player will simply drop from current ladder, instead of being catapulted away as when jumping
 * Added cvars vr_ledge_pull_mode (0=disabled, 1=move, 2=instant) and vr_ledge_pull_speed
 * Implemented ledge pulling (grab ledge with both controllers and pull down to pull yourself onto the ledge)
 * Implemented auto crouch
+* Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello") and added cvar vr_speech_commands_enabled
+* Teleporting now creates noise that AI can react to (the further the teleport distance, the "louder" the noise and thus greater attention from AI)
+
+
 * (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
-* (WIP) Added speech recognition for using voice commands on NPCs ("follow me", "wait", "hello")
 * 
 
