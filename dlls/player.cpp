@@ -5611,6 +5611,7 @@ void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 	Vector lookDir;
 	UTIL_MakeAimVectorsPrivate(pev->angles, lookDir, nullptr, nullptr);
 
+	CTalkMonster* closestReactingNPC = nullptr;
 	std::vector<CTalkMonster*> reactingNPCs;
 
 	// Find all NPCs in PVS
@@ -5642,15 +5643,11 @@ void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 								float dot = DotProduct(dir.Normalize(), lookDir);
 								if (dot > 0.8f)
 								{
-									if (command == VRSpeechCommand::FOLLOW || command == VRSpeechCommand::WAIT)
+									reactingNPCs.push_back(pMonster);
+									if (dot > biggestdot)
 									{
-										reactingNPCs.push_back(pMonster);
-									}
-									else if (dot > biggestdot)
-									{
+										closestReactingNPC = pMonster;
 										biggestdot = dot;
-										reactingNPCs.resize(1);
-										reactingNPCs[0] = pMonster;
 									}
 								}
 							}
@@ -5662,27 +5659,31 @@ void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 		pent = pent->v.chain;
 	}
 
-	if (reactingNPCs.empty())
+	if (reactingNPCs.empty() || closestReactingNPC == nullptr)
 		return;
 
 	if (command == VRSpeechCommand::MUMBLE || command == VRSpeechCommand::HELLO)
 	{
 		// List contains closest NPC that should respond
-		CTalkMonster* pMonster = reactingNPCs[0];
-		pMonster->m_hTalkTarget = this;
-		pMonster->IdleHeadTurn(pev->origin);
+		closestReactingNPC->m_hTalkTarget = this;
+		closestReactingNPC->IdleHeadTurn(pev->origin);
 		if (command == VRSpeechCommand::HELLO)
 		{
-			if (FBitSet(pMonster->pev->spawnflags, SF_MONSTER_PREDISASTER))
-				PlaySentence(pMonster->m_szGrp[TLK_PHELLO], RANDOM_FLOAT(3, 3.5), VOL_NORM, ATTN_IDLE);
+			if (FBitSet(closestReactingNPC->pev->spawnflags, SF_MONSTER_PREDISASTER))
+				PlaySentence(closestReactingNPC->m_szGrp[TLK_PHELLO], RANDOM_FLOAT(3, 3.5), VOL_NORM, ATTN_IDLE);
 			else
-				PlaySentence(pMonster->m_szGrp[TLK_HELLO], RANDOM_FLOAT(3, 3.5), VOL_NORM, ATTN_IDLE);
-			SetBits(pMonster->m_bitsSaid, bit_saidHelloPlayer);
+				PlaySentence(closestReactingNPC->m_szGrp[TLK_HELLO], RANDOM_FLOAT(3, 3.5), VOL_NORM, ATTN_IDLE);
+			SetBits(closestReactingNPC->m_bitsSaid, bit_saidHelloPlayer);
 		}
 		else
 		{
-			pMonster->IdleRespond();
+			closestReactingNPC->IdleRespond();
 		}
+	}
+	else if (command == VRSpeechCommand::FOLLOW && FBitSet(closestReactingNPC->pev->spawnflags, SF_MONSTER_PREDISASTER))
+	{
+		// In predisaster maps only the closest NPC reacts to the follow command ("please, leave me alone until after the experiment")
+		closestReactingNPC->FollowerUse(this, this, USE_ON, 1.f);
 	}
 	else
 	{
