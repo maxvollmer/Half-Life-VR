@@ -149,7 +149,7 @@
 * Fixed issues with sparks and beam effects being not in sync on left and right eye
 * Improved rendering performance overall
 
-0.5.1
+0.5.1 - 2019-07-30
 * Fixed "telekinetic" grab
 * Fixed bug in pushable push code
 * Fixed getting stuck on ladders when legacy ladder movement is disabled

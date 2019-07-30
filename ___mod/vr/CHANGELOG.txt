@@ -170,3 +170,7 @@
 * Added cvars vr_speech_commands_enabled, vr_speech_commands_follow, vr_speech_commands_wait and vr_speech_commands_hello
 * Teleporting now creates noise that AI can react to (the further the teleport distance, the "louder" the noise and thus greater attention from AI)
 
+
+* (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
+* 
+
