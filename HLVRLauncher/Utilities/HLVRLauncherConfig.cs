@@ -62,6 +62,10 @@ namespace HLVRLauncher.Utilities
                             break;
                     }
                 }
+                if (category.Equals(CategoryMetaHook))
+                {
+                    AddMetaHookLink(categoryPanel, true);
+                }
             }
 
             panel.Children.Add(categoryPanel);
@@ -175,7 +179,7 @@ namespace HLVRLauncher.Utilities
             panel.Children.Add(inputPanel);
         }
 
-        private static void AddMetaHookLink(StackPanel panel)
+        private static void AddMetaHookLink(StackPanel panel, bool isInstalled = false)
         {
             StackPanel inputPanel = new StackPanel()
             {
@@ -183,21 +187,24 @@ namespace HLVRLauncher.Utilities
                 Margin = new Thickness(5),
             };
 
-            inputPanel.Children.Add(new TextBlock()
+            if (!isInstalled)
             {
-                TextWrapping = TextWrapping.NoWrap,
-                Padding = new Thickness(5),
-                Margin = new Thickness(5),
-                Focusable = true,
-                MinWidth = 150,
-                Text = "MetaHook is not installed. Get it from here: "
-            });
+                inputPanel.Children.Add(new TextBlock()
+                {
+                    TextWrapping = TextWrapping.NoWrap,
+                    Padding = new Thickness(5),
+                    Margin = new Thickness(5),
+                    Focusable = true,
+                    MinWidth = 150,
+                    Text = "MetaHook is not installed. Get it from here: "
+                });
+            }
 
             Button downloadbutton = new Button()
             {
                 Padding = new Thickness(5),
                 Margin = new Thickness(5),
-                Content = "Download MetaHook"
+                Content = isInstalled ? "Go to website" : "Download MetaHook"
             };
             downloadbutton.Click += DownloadButton_Click;
             inputPanel.Children.Add(downloadbutton);
