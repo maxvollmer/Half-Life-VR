@@ -99,9 +99,7 @@ void VRSpeechListener::InitSAPI()
 
 		VerifyResult(CoCreateInstance(CLSID_SpSharedRecognizer, nullptr, CLSCTX_ALL, IID_ISpRecognizer, reinterpret_cast<void**>(&m_recognizer)), "Failed to create speech recognizer instance");
 
-		ISpRecoContext* context{ nullptr };
-		VerifyResult(m_recognizer->CreateRecoContext(&context), "Failed to create speech recognition context");
-		m_context = context;
+		VerifyResult(m_recognizer->CreateRecoContext(&m_context), "Failed to create speech recognition context");
 
 		VerifyResult(m_context->Pause(0), "Failed to pazuse speech recognition for further initialization");
 

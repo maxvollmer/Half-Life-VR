@@ -5599,7 +5599,104 @@ void CBasePlayer::StopPullingLedge()
 	MESSAGE_END();
 }
 
+constexpr const float VR_MAX_TALK_DISTANCE = 512.f;
+
 void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 {
 	ALERT(at_console, "HandleSpeechCommand: %i\n", int(command));
+
+	// Create sound
+	CSoundEnt::InsertSound(bits_SOUND_PLAYER, pev->origin, 1000, 0.5f);
+
+	Vector lookDir;
+	UTIL_MakeAimVectorsPrivate(pev->angles, lookDir, nullptr, nullptr);
+
+	std::vector<CTalkMonster*> reactingNPCs;
+
+	// Find all NPCs in PVS
+	edict_t* pent = UTIL_EntitiesInPVS(edict());
+	while (pent && !FNullEnt(pent))
+	{
+		CBaseEntity* pEntity = CBaseEntity::Instance(pent);
+		if (pEntity)
+		{
+			CTalkMonster* pMonster = dynamic_cast<CTalkMonster*>(pEntity->MyMonsterPointer());
+			if (pMonster)
+			{
+				if (FClassnameIs(pent, "monster_barney") || FClassnameIs(pent, "monster_scientist"))
+				{
+					// If command is MUMBLE or HELLO, find the closest monster that can speak
+					// If command is FOLLOW or WAIT, always add to list
+					float biggestdot = 0.f;
+					float shortestdist = VR_MAX_TALK_DISTANCE;
+					if (command == VRSpeechCommand::FOLLOW || command == VRSpeechCommand::WAIT || pMonster->FOkToSpeak())
+					{
+						if (FVisible(pMonster) && pMonster->FVisible(this))
+						{
+							Vector dir = pEntity->EyePosition() - EyePosition();
+							float distance = dir.Length();
+							if (distance < VR_MAX_TALK_DISTANCE)
+							{
+								pMonster->MakeIdealYaw(pev->origin);
+
+								float dot = DotProduct(dir.Normalize(), lookDir);
+								if (dot > 0.8f)
+								{
+									if (command == VRSpeechCommand::FOLLOW || command == VRSpeechCommand::WAIT)
+									{
+										reactingNPCs.push_back(pMonster);
+									}
+									else if (dot > biggestdot)
+									{
+										biggestdot = dot;
+										reactingNPCs.resize(1);
+										reactingNPCs[0] = pMonster;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		pent = pent->v.chain;
+	}
+
+	if (reactingNPCs.empty())
+		return;
+
+	if (command == VRSpeechCommand::MUMBLE || command == VRSpeechCommand::HELLO)
+	{
+		// List contains closest NPC that should respond
+		CTalkMonster* pMonster = reactingNPCs[0];
+		pMonster->m_hTalkTarget = this;
+		pMonster->IdleHeadTurn(pev->origin);
+		if (command == VRSpeechCommand::HELLO)
+		{
+			if (FBitSet(pMonster->pev->spawnflags, SF_MONSTER_PREDISASTER))
+				PlaySentence(pMonster->m_szGrp[TLK_PHELLO], RANDOM_FLOAT(3, 3.5), VOL_NORM, ATTN_IDLE);
+			else
+				PlaySentence(pMonster->m_szGrp[TLK_HELLO], RANDOM_FLOAT(3, 3.5), VOL_NORM, ATTN_IDLE);
+			SetBits(pMonster->m_bitsSaid, bit_saidHelloPlayer);
+		}
+		else
+		{
+			pMonster->IdleRespond();
+		}
+	}
+	else
+	{
+		// All NPCS react
+		for (CTalkMonster* pMonster : reactingNPCs)
+		{
+			if (command == VRSpeechCommand::FOLLOW && !pMonster->IsFollowing())
+			{
+				pMonster->FollowerUse(this, this, USE_ON, 1.f);
+			}
+			else if (command == VRSpeechCommand::WAIT && pMonster->IsFollowing())
+			{
+				pMonster->StopFollowing(TRUE);
+			}
+		}
+	}
 }
