@@ -86,9 +86,15 @@ namespace HLVRLauncher.Utilities
             }
         }
 
-        public static void SetLauncherSetting(string name, bool value)
+        public static void SetLauncherSetting(string category, string name, bool value)
         {
-            Settings.LauncherSettings[name].Value = value ? "1" : "0";
+            Settings.LauncherSettings[category][name].Value = value ? "1" : "0";
+            DelayedStoreSettings();
+        }
+
+        public static void SetLauncherSetting(string category, string name, string value)
+        {
+            Settings.LauncherSettings[category][name].Value = value;
             DelayedStoreSettings();
         }
 
@@ -155,13 +161,16 @@ namespace HLVRLauncher.Utilities
                 try
                 {
                     var newSettings = JsonConvert.DeserializeObject<HLVRSettings>(File.ReadAllText(HLVRPaths.VRSettingsFile));
-                    foreach (var settingName in Settings.LauncherSettings.Keys)
+                    foreach (var settingCategory in Settings.LauncherSettings)
                     {
-                        try
+                        foreach (var settingName in settingCategory.Value.Keys)
                         {
-                            Settings.LauncherSettings[settingName].Value = newSettings.LauncherSettings[settingName].Value;
+                            try
+                            {
+                                settingCategory.Value[settingName].Value = newSettings.LauncherSettings[settingCategory.Key][settingName].Value;
+                            }
+                            catch (KeyNotFoundException) { }
                         }
-                        catch (KeyNotFoundException) { }
                     }
                     foreach (var settingCategory in Settings.ModSettings)
                     {

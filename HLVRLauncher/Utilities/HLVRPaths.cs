@@ -32,6 +32,12 @@ namespace HLVRLauncher.Utilities
         public static string VRSettingsFileName { get { return "hlvrsettings.cfg"; } }
         public static string VRSettingsFile { get { return Path.Combine(HLVRPaths.VRDirectory, VRSettingsFileName); } }
 
+
+        public static string MetaHookExe { get { return Path.Combine(HLVRPaths.HLDirectory, "MetaHook.exe"); } }
+        public static string MetaHookAudioDLL { get { return Path.Combine(Path.Combine(Path.Combine(HLVRPaths.VRDirectory, "metahook"), "plugins"), "Audio.dll"); } }
+        public static string MetaHookPluginsLST { get { return Path.Combine(Path.Combine(Path.Combine(HLVRPaths.VRDirectory, "metahook"), "configs"), "plugins.lst"); } }
+
+
         public static void Initialize()
         {
             // first try current location (we might be in the mod folder)

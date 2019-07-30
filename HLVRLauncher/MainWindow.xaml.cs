@@ -56,12 +56,12 @@ namespace HLVRLauncher
 
         private void HandleInitialSettings()
         {
-            if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.StartMinimized].IsTrue())
+            if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.StartMinimized].IsTrue())
             {
                 WindowState = WindowState.Minimized;
                 OnWindowStateChanged();
             }
-            if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.AutoPatchAndRunMod].IsTrue())
+            if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.AutoPatchAndRunMod].IsTrue())
             {
                 hlvrPatcher.PatchGame();
                 hlvrPatcher.LaunchMod(false);
@@ -128,7 +128,7 @@ namespace HLVRLauncher
             if (IsValidProcess && hlvrPatcher.IsGamePatched())
             {
                 MessageBoxResult result;
-                if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.AutoUnpatchAndCloseGame].IsTrue())
+                if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.AutoUnpatchAndCloseGame].IsTrue())
                 {
                     result = MessageBoxResult.Yes;
                 }
@@ -176,7 +176,7 @@ namespace HLVRLauncher
         private void OnWindowStateChanged()
         {
             if (WindowState == WindowState.Minimized
-                && HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.MinimizeToTray].IsTrue())
+                && HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.MinimizeToTray].IsTrue())
             {
                 ShowInTaskbar = false;
                 notifyIcon.Visible = true;

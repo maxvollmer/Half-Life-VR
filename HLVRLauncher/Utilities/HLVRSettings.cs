@@ -237,19 +237,25 @@ namespace HLVRLauncher.Utilities
 
         };
 
-        public OrderedDictionary<string, Setting> LauncherSettings = new  OrderedDictionary<string, Setting>()
+        public OrderedDictionary<string, OrderedDictionary<string, Setting>> LauncherSettings = new OrderedDictionary<string, OrderedDictionary<string, Setting>>()
         {
-            { HLVRLauncherConfig.MinimizeToTray, Setting.Create( "Minimize to tray", true ) },
-            { HLVRLauncherConfig.StartMinimized, Setting.Create( "Start HLVRLauncher minimized", false ) },
-            { HLVRLauncherConfig.AutoPatchAndRunMod, Setting.Create( "Patch game and run mod automatically when starting HLVRLauncher", false ) },
-            { HLVRLauncherConfig.AutoUnpatchAndCloseLauncher, Setting.Create( "Unpatch game and exit HLVRLauncher automatically when Half-Life: VR exits", false ) },
-            { HLVRLauncherConfig.AutoUnpatchAndCloseGame, Setting.Create( "Unpatch and terminate game automatically when HLVRLauncher is closed", false ) },
+            { HLVRLauncherConfig.CategoryLauncher, new OrderedDictionary<string, Setting>() {
+                { HLVRLauncherConfig.MinimizeToTray, Setting.Create( "Minimize to tray", true ) },
+                { HLVRLauncherConfig.StartMinimized, Setting.Create( "Start HLVRLauncher minimized", false ) },
+                { HLVRLauncherConfig.AutoPatchAndRunMod, Setting.Create( "Patch game and run mod automatically when starting HLVRLauncher", false ) },
+                { HLVRLauncherConfig.AutoUnpatchAndCloseLauncher, Setting.Create( "Unpatch game and exit HLVRLauncher automatically when Half-Life: VR exits", false ) },
+                { HLVRLauncherConfig.AutoUnpatchAndCloseGame, Setting.Create( "Unpatch and terminate game automatically when HLVRLauncher is closed", false ) },
+            } },
+
+            { HLVRLauncherConfig.CategoryMetaHook, new OrderedDictionary<string, Setting>() {
+                { HLVRLauncherConfig.UseMetaHook, Setting.Create( "Run the game with MetaHook (adds HRTF and surround sound support)", false ) },
+                { HLVRLauncherConfig.MetaHookDoppler, Setting.Create( "Doppler effect (0 - 1)", 0.3f ) },
+            } },
         };
 
         public HLVRSettings()
         {
         }
-
 
     }
 }
