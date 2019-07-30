@@ -101,9 +101,9 @@ void VRSettings::Init()
 	RegisterCVAR("vr_world_z_strech", "1");
 	RegisterCVAR("vr_xenjumpthingies_teleporteronly", "0");
 
-	RegisterCVAR("vr_speech_commands_follow", "follow me,come,lets go");
-	RegisterCVAR("vr_speech_commands_wait", "wait,stop,hold");
-	RegisterCVAR("vr_speech_commands_hello", "hello,good morning,hey,hi,morning");
+	RegisterCVAR("vr_speech_commands_follow", "follow-me|come|lets-go");
+	RegisterCVAR("vr_speech_commands_wait", "wait|stop|hold");
+	RegisterCVAR("vr_speech_commands_hello", "hello|good-morning|hey|hi|morning|greetings");
 
 	// Initialize time that settings file was last changed
 	std::filesystem::path settingsPath = GetPathFor("/hlvrsettings.cfg");
@@ -278,8 +278,8 @@ void VRSettings::RegisterCVAR(const char* name, const char* value)
 
 void VRSettings::SetCVAR(const char* name, const char* value)
 {
-	// TODO: Can we set the actual string value? Maybe through triggering a direct console command?
 	gEngfuncs.Cvar_SetValue(const_cast<char*>(name), atof(value));
+	gEngfuncs.pfnClientCmd((std::string(name) + " " + value).data());
 }
 
 void VRSettings::InitialUpdateCVARSFromJson()

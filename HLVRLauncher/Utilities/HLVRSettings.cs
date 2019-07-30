@@ -176,9 +176,9 @@ namespace HLVRLauncher.Utilities
             { "Speech recognition", new OrderedDictionary<string, Setting>() {
                 { "vr_speech_commands_enabled", Setting.Create( "Enable speech recognition", false ) },
 
-                { "vr_speech_commands_follow", Setting.Create( "Follow commands", "follow me,come,lets go" ) },
-                { "vr_speech_commands_wait", Setting.Create( "Wait commands", "wait,stop,hold") },
-                { "vr_speech_commands_hello", Setting.Create( "Greetings", "hello,good morning,hey,hi,morning" ) },
+                { "vr_speech_commands_follow", Setting.Create( "Follow commands", "follow-me|come|lets-go" ) },
+                { "vr_speech_commands_wait", Setting.Create( "Wait commands", "wait|stop|hold") },
+                { "vr_speech_commands_hello", Setting.Create( "Greetings", "hello|good-morning|hey|hi|morning|greetings" ) },
             } },
 
             { "World customization & scaling", new OrderedDictionary<string, Setting>() {

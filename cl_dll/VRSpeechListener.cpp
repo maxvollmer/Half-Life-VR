@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <regex>
 
 #include "hud.h"
 #include "cl_util.h"
@@ -41,6 +42,17 @@ VRSpeechCommand VRSpeechListener::GetCommand()
 	// check again, in case InitSAPI failed
 	if (!m_isInitialized || CVAR_GET_FLOAT("vr_speech_commands_enabled") == 0.f)
 		return VRSpeechCommand::NONE;
+
+	// reinit if command strings changed
+	if (DidCommandStringsChange())
+	{
+		CleanupSAPI();
+		InitSAPI();
+
+		// check again, in case InitSAPI failed
+		if (!m_isInitialized || CVAR_GET_FLOAT("vr_speech_commands_enabled") == 0.f)
+			return VRSpeechCommand::NONE;
+	}
 
 	if (WAIT_OBJECT_0 == WaitForSingleObjectEx(m_eventHandle, 0, FALSE))
 	{
@@ -82,6 +94,39 @@ VRSpeechCommand VRSpeechListener::GetCommand()
 	return VRSpeechCommand::NONE;
 }
 
+bool VRSpeechListener::DidCommandStringsChange()
+{
+	return m_followcommandstring != CVAR_GET_STRING("vr_speech_commands_follow")
+		|| m_waitcommandstring != CVAR_GET_STRING("vr_speech_commands_wait")
+		|| m_hellocommandstring != CVAR_GET_STRING("vr_speech_commands_hello");
+}
+
+void VRSpeechListener::InitCommandStrings()
+{
+	m_followcommandstring = CVAR_GET_STRING("vr_speech_commands_follow");
+	m_waitcommandstring = CVAR_GET_STRING("vr_speech_commands_wait");
+	m_hellocommandstring = CVAR_GET_STRING("vr_speech_commands_hello");
+
+	m_commands[VRSpeechCommand::FOLLOW] = GetCommandsFromCommandString(m_followcommandstring);
+	m_commands[VRSpeechCommand::WAIT] = GetCommandsFromCommandString(m_waitcommandstring);
+	m_commands[VRSpeechCommand::HELLO] = GetCommandsFromCommandString(m_hellocommandstring);
+}
+
+std::unordered_set<std::wstring> VRSpeechListener::GetCommandsFromCommandString(const std::string& commandstring)
+{
+	std::unordered_set<std::wstring> result;
+
+	std::istringstream commandstringstream{ commandstring };
+	std::string command;
+	while (getline(commandstringstream, command, '|'))
+	{
+		command = std::regex_replace(command, std::regex{"[-]"}, " ");
+		result.insert(std::wstring{ command.begin(), command.end() });
+	}
+
+	return result;
+}
+
 void VRSpeechListener::InitSAPI()
 {
 	if (CVAR_GET_FLOAT("vr_speech_commands_enabled") == 0.f)
@@ -89,6 +134,8 @@ void VRSpeechListener::InitSAPI()
 		m_isInitialized = false;
 		return;
 	}
+
+	InitCommandStrings();
 
 	try
 	{

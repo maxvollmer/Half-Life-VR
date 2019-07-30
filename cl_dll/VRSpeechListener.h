@@ -31,10 +31,13 @@ private:
 	ISpRecoGrammar* InitGrammar(ISpRecoContext* recoContext);
 	void CleanupSAPI();
 
+	void InitCommandStrings();
+	bool DidCommandStringsChange();
+	std::unordered_set<std::wstring> GetCommandsFromCommandString(const std::string& commandstring);
+
 	void VerifyResult(long result, const std::string& message);
 
 	std::string GetSpeechRecognitionErrorMessageText(long error);
-
 
 	const wchar_t*					m_ruleName{ L"hlvrRuleName" };
 	const unsigned __int64			m_grammarId{ 0 };
@@ -45,15 +48,13 @@ private:
 
 	void*							m_eventHandle{ nullptr };
 
+	std::string						m_followcommandstring;
+	std::string						m_waitcommandstring;
+	std::string						m_hellocommandstring;
+
+	std::unordered_map<VRSpeechCommand, std::unordered_set<std::wstring>>	m_commands;
+
 	bool							m_isInitialized{ false };
-
-
-	const std::unordered_map<VRSpeechCommand, std::unordered_set<std::wstring>>	m_commands = { {
-		{ VRSpeechCommand::WAIT, {{L"wait", L"stop", L"hold"}} },
-		{ VRSpeechCommand::FOLLOW, {{L"follow me", L"come", L"lets go"}} },
-		{ VRSpeechCommand::HELLO, {{L"hello", L"good morning", L"hey", L"hi", L"morning"}} },
-	} };
-
 
 	static VRSpeechListener		m_speechListener;
 };
