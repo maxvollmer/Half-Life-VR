@@ -6,6 +6,7 @@
 #include "player.h"
 #include "pm_defs.h"
 #include "com_model.h"
+#include "soundent.h"
 
 #include "VRControllerTeleporter.h"
 #include "VRPhysicsHelper.h"
@@ -68,6 +69,11 @@ void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 		{
 			gGlobalXenMounds.Trigger(pPlayer, vr_parabolaBeams[0]->pev->origin);
 		}
+
+		// Create sound
+		float distanceTeleported = (vr_vecTeleDestination - pPlayer->pev->origin).Length();
+		CSoundEnt::InsertSound(bits_SOUND_PLAYER, pPlayer->pev->origin, int(distanceTeleported), 0.2f);
+
 		pPlayer->pev->origin = vr_vecTeleDestination;
 		pPlayer->pev->origin.z -= pPlayer->pev->mins.z;
 		pPlayer->pev->origin.z += 1.f;
@@ -75,6 +81,8 @@ void VRControllerTeleporter::StopTele(CBasePlayer *pPlayer)
 		pPlayer->pev->absmin = pPlayer->pev->origin + pPlayer->pev->mins;
 		pPlayer->pev->absmax = pPlayer->pev->origin + pPlayer->pev->maxs;
 		TouchTriggersInTeleportPath(pPlayer);
+
+
 		// used to disable gravity in water when using VR teleporter
 		extern bool g_vrTeleportInWater;
 		g_vrTeleportInWater = vr_fTelePointsInWater;
