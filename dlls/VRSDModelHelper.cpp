@@ -127,6 +127,15 @@ int MODEL_INDEX(const char *m)
 	return MODEL_INDEX2(m);
 }
 
+void UTIL_SetModelKeepSize(edict_t* pent, const char* model)
+{
+	// pfnSetModel resets mins and maxs to 0, so we need to back them up and call setsize afterwards
+	Vector mins = pent->v.mins;
+	Vector maxs = pent->v.maxs;
+	SET_MODEL2(pent, model);
+	UTIL_SetSize(&pent->v, mins, maxs);
+}
+
 bool gSDModelsEnabled{ false };
 void UTIL_UpdateSDModels()
 {
@@ -145,12 +154,12 @@ void UTIL_UpdateSDModels()
 					char* sdModel = GetSDModel(modelName);
 					if (sdModel != nullptr)
 					{
-						SET_MODEL2(pEntity->edict(), sdModel);
+						UTIL_SetModelKeepSize(pEntity->edict(), sdModel);
 					}
 				}
 				else if (!gSDModelsEnabled && std::string{ modelName }.find("models/SD/") != std::string::npos)
 				{
-					SET_MODEL2(pEntity->edict(), GetHDModel(modelName));
+					UTIL_SetModelKeepSize(pEntity->edict(), GetHDModel(modelName));
 				}
 			}
 		}
