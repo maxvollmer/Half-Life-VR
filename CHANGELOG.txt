@@ -171,6 +171,7 @@
 * Teleporting now creates noise that AI can react to (the further the teleport distance, the "louder" the noise and thus greater attention from AI)
 
 0.5.2
+* Fixed scientists and barneys becoming non-solid and non-interactable after switching SD/HD models
 * Added extra sound groups with fitting audio files for scientists and barneys for responding to speech recognized greeting
 * (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
 * 
