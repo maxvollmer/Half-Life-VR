@@ -176,6 +176,7 @@
 * Fixed boxes being pushable while standing on them
 * Fixed several rotation related bugs when spawning/teleporting/loading/levelchanging would position the player at an offset from the actual position
 * Fixed HUD not being displayed properly in displaylist multipass mode
+* Fixed HD textures not working in displaylist multipass mode
 * Added extra sound groups with fitting audio files for scientists and barneys for responding to speech recognized greeting
 * Added cvar vr_multipass_mode and corresponding config in HLVRLauncher
 
