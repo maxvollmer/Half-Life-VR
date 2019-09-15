@@ -119,6 +119,7 @@ private:
 	float m_prevYaw = 0.f;
 	float m_currentYaw = 0.f;
 	bool m_hasReceivedYawUpdate = false;
+	bool m_hasReceivedSpawnYaw = false;
 	float m_instantRotateYawValue = 0.f;
 	Vector2D m_currentYawOffsetDelta;
 

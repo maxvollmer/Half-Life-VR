@@ -503,7 +503,7 @@ void ClientCommand( edict_t *pEntity )
 	else if (FStrEq(pcmd, "vrupd_hmd"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
-		if (size == 9)
+		if (size == 10)
 		{
 			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
 			int timestamp = atoi(CMD_ARGV(1));
@@ -512,7 +512,8 @@ void ClientCommand( edict_t *pEntity )
 			float prevYaw = atof(CMD_ARGV(6));
 			float currentYaw = atof(CMD_ARGV(7));
 			bool hasReceivedRestoreYawMsg = atoi(CMD_ARGV(8)) != 0;
-			pPlayer->UpdateVRHeadset(timestamp, offset, yawOffsetDelta, prevYaw, currentYaw, hasReceivedRestoreYawMsg);
+			bool hasReceivedSpawnYaw = atoi(CMD_ARGV(9)) != 0;
+			pPlayer->UpdateVRHeadset(timestamp, offset, yawOffsetDelta, prevYaw, currentYaw, hasReceivedRestoreYawMsg, hasReceivedSpawnYaw);
 		}
 		else
 		{

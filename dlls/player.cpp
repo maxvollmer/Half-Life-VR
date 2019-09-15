@@ -2946,6 +2946,8 @@ void CBasePlayer::Spawn( void )
 	g_pGameRules->PlayerSpawn( this );
 
 	vr_IsJustSpawned = true;
+	vr_hasSentRestoreYawMsgToClient = false;
+	vr_hasSentSpawnYawToClient = false;
 }
 
 
@@ -3113,6 +3115,8 @@ int CBasePlayer::Restore( CRestore &restore )
 	}
 
 	vr_IsJustRestored = true;
+	vr_hasSentRestoreYawMsgToClient = false;
+	vr_hasSentSpawnYawToClient = false;
 
 	return status;
 }
@@ -4878,7 +4882,7 @@ LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
 
 // VR methods:
 
-void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg)
+void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg, bool hasReceivedSpawnYaw)
 {
 	// Filter out outdated updates
 	if (timestamp <= vr_hmdLastUpdateClienttime && vr_hmdLastUpdateServertime >= gpGlobals->time)
@@ -4897,11 +4901,17 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	}
 	vr_hasSentRestoreYawMsgToClient = false;
 
+	Vector TEMPDEBUG_originBefore = pev->origin;
+
 	// Calculate view dir for view position offset
 	Vector viewDir2D;
 	UTIL_MakeVectorsPrivate(Vector{ 0.f, pev->angles.y, 0.f }, viewDir2D, nullptr, nullptr);
 	viewDir2D.z = 0.f;
 	viewDir2D = viewDir2D.Normalize();
+
+	// Get view dir with length to hull bounds
+	float vrViewOffsetDistToHullBounds = CVAR_GET_FLOAT("vr_view_dist_to_walls");
+	Vector viewDirToHullBounds = viewDir2D * (VEC_HULL_MAX.x - vrViewOffsetDistToHullBounds);
 
 	// If we just spawned we need to make sure that the HMD offset gets moved into the spawn position
 	// Thus we set vr_lastHMDOffset to the current HMD offset,
@@ -4910,15 +4920,30 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	// - Max Vollmer, 2019-04-13
 	if (vr_IsJustSpawned)
 	{
+		if (!vr_hasSentSpawnYawToClient)
+		{
+			MESSAGE_BEGIN(MSG_ONE, gmsgVRSetSpawnYaw, NULL, pev);
+			WRITE_ANGLE(vr_spawnYaw);
+			MESSAGE_END();
+			vr_spawnYaw = 0.f;
+			vr_hasSentSpawnYawToClient = true;
+			return;
+		}
+		if (vr_hasSentSpawnYawToClient && !hasReceivedSpawnYaw)
+		{
+			return;
+		}
+		vr_hasSentSpawnYawToClient = false;
+
 		vr_lastHMDOffset = Vector{ hmdOffset.x, hmdOffset.y, 0.f };
-		vr_ClientOriginOffset = Vector{ -hmdOffset.x, -hmdOffset.y, 0.f };
-		MESSAGE_BEGIN(MSG_ONE, gmsgVRSetSpawnYaw, NULL, pev);
-		WRITE_ANGLE(vr_spawnYaw);
-		MESSAGE_END();
-		vr_spawnYaw = 0.f;
+		vr_ClientOriginOffset = Vector{ -hmdOffset.x, -hmdOffset.y, 0.f } + viewDirToHullBounds;
 		vr_IsJustSpawned = false;
+
+		return;
 	}
-	else if (vr_IsJustRestored)
+
+	// We probably don't need this?
+	if (vr_IsJustRestored)
 	{
 		//vr_ClientOriginOffset = vr_ClientOriginOffset + viewDir2D * VEC_HULL_MAX.x;
 		vr_IsJustRestored = false;
@@ -4940,8 +4965,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	Vector newOrigin = clientOrigin + hmdOffset;
 
 	// push origin back so that view position is on border of player's bounding box
-	float vrViewOffsetDistToHullBounds = CVAR_GET_FLOAT("vr_view_dist_to_walls");
-	newOrigin = newOrigin - viewDir2D * (VEC_HULL_MAX.x - vrViewOffsetDistToHullBounds);
+	newOrigin = newOrigin - viewDirToHullBounds;
 
 	// Use movement handler to move to new position (instead of simply teleporting)
 	// Uses pm_shared code. Allows for climbing up stairs and handling all kinds of collisions with level geometry.

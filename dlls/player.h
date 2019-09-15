@@ -355,6 +355,7 @@ private:
 	float vr_currentYaw = 0.f;
 	bool vr_needsToSendRestoreYawMsgToClient = false;
 	bool vr_hasSentRestoreYawMsgToClient = false;
+	bool vr_hasSentSpawnYawToClient = false;
 
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrInUseButtons;
 	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrLeftMeleeEntities;
@@ -409,7 +410,7 @@ public:
 	bool IsWeaponUnderWater();
 	bool IsWeaponPositionValid();
 
-	void UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg);
+	void UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg, bool hasReceivedSpawnYaw);
 	void UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool dragOn);
 
 	void StoreVROffsetsForLevelchange();

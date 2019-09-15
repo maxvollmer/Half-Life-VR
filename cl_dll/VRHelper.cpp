@@ -154,6 +154,11 @@ void VRHelper::UpdateWorldRotation()
 			m_currentYaw += g_vrSpawnYaw - currentViewAngles.y;
 			g_vrSpawnYaw = 0.f;
 			g_vrSpawnYaw_HasData = false;
+			// Normalize angle
+			m_currentYaw = std::fmodf(m_currentYaw, 360.f);
+			if (m_currentYaw < 0.f) m_currentYaw += 360.f;
+
+			m_hasReceivedSpawnYaw = true;
 		}
 
 		// Already up to date
@@ -859,6 +864,9 @@ void VRHelper::UpdateControllers()
 void VRHelper::SendPositionUpdateToServer()
 {
 	cl_entity_t *localPlayer = SaveGetLocalPlayer();
+	if (!localPlayer)
+		return;
+
 	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform());
 	hmdOffset.z = 0.f;
 
@@ -866,15 +874,17 @@ void VRHelper::SendPositionUpdateToServer()
 	float hmdHeightInRL = hlTransform.get()[13];
 
 	char cmdHMD[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %i",
+	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %i %i",
 		m_vrUpdateTimestamp,
 		hmdOffset.x, hmdOffset.y,
 		m_currentYawOffsetDelta.x, m_currentYawOffsetDelta.y,
 		m_prevYaw, m_currentYaw,	// for save/restore
-		m_hasReceivedYawUpdate ? 1 : 0
+		m_hasReceivedYawUpdate ? 1 : 0,
+		m_hasReceivedSpawnYaw ? 1 : 0
 	);
 	m_currentYawOffsetDelta = Vector2D{}; // reset after sending
 	m_hasReceivedYawUpdate = false;
+	m_hasReceivedSpawnYaw = false;
 
 	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
 	bool leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);
