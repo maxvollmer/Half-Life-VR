@@ -14,6 +14,36 @@
 #include "vr_gl.h"
 #include "LodePNG/lodepng.h"
 
+void VRTextureHelper::PreloadAllTextures(const std::filesystem::path& path)
+{
+	if (std::filesystem::exists(path))
+	{
+		for (auto& p : std::filesystem::directory_iterator(path))
+		{
+			if (p.is_directory())
+			{
+				PreloadAllTextures(p.path());
+			}
+			else
+			{
+				unsigned int dummy;
+				GetTextureInternal(p.path(), dummy, dummy);
+			}
+		}
+	}
+}
+
+void VRTextureHelper::Init()
+{
+	if (m_isInitialized)
+		return;
+
+	PreloadAllTextures(GetPathFor("/textures/hud"));
+	//PreloadAllTextures(GetPathFor("/textures/skybox"));
+
+	m_isInitialized = true;
+}
+
 unsigned int VRTextureHelper::GetHDGameTexture(const std::string& name)
 {
 	return GetTexture("game/" + name + ".png");
@@ -81,26 +111,30 @@ const char* VRTextureHelper::GetCurrentSkyboxName()
 		return "desert";
 }
 
-unsigned int VRTextureHelper::GetTexture(const std::string& name)
+unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& path, unsigned int& width, unsigned int& height)
 {
-	if (m_textures.count(name) > 0)
-		return m_textures[name];
+	std::string canonicalpathstring = std::filesystem::canonical(std::filesystem::absolute(path)).string();
+
+	if (m_textures.count(canonicalpathstring) > 0)
+	{
+		width = m_textures[canonicalpathstring].width;
+		height = m_textures[canonicalpathstring].height;
+		return m_textures[canonicalpathstring].texnum;
+	}
 
 	GLuint texture{ 0 };
 
-	std::filesystem::path texturePath = GetPathFor("/textures/" + name);
-	if (std::filesystem::exists(texturePath))
+	if (std::filesystem::exists(path))
 	{
 		std::vector<unsigned char> image;
-		unsigned int width, height;
-		unsigned int error = lodepng::decode(image, width, height, texturePath.string().data());
+		unsigned int error = lodepng::decode(image, width, height, path.string().data());
 		if (error)
 		{
-			gEngfuncs.Con_DPrintf("Error (%i) trying to load texture %s: %s\n", error, name.data(), lodepng_error_text(error));
+			gEngfuncs.Con_DPrintf("Error (%i) trying to load texture %s: %s\n", error, path.string().data(), lodepng_error_text(error));
 		}
 		else if ((width & (width - 1)) || (height & (height - 1)))
 		{
-			gEngfuncs.Con_DPrintf("Invalid texture %s, width and height must be power of 2!\n", name.data());
+			gEngfuncs.Con_DPrintf("Invalid texture %s, width and height must be power of 2!\n", path.string().data());
 		}
 		else
 		{
@@ -119,19 +153,30 @@ unsigned int VRTextureHelper::GetTexture(const std::string& name)
 			}
 			catch (const OGLErrorException& e)
 			{
-				gEngfuncs.Con_DPrintf("Couldn't create texture %s, error: %s\n", name.data(), e.what());
+				gEngfuncs.Con_DPrintf("Couldn't create texture %s, error: %s\n", path.string().data(), e.what());
 				texture = 0;
 			}
 		}
 	}
 	else
 	{
-		gEngfuncs.Con_DPrintf("Couldn't load texture %s, it doesn't exist.\n", name.data());
+		gEngfuncs.Con_DPrintf("Couldn't load texture %s, it doesn't exist.\n", path.string().data());
 		texture = 0;
 	}
 
-	m_textures[name] = texture;
+	m_textures[canonicalpathstring] = Texture{ texture, width, height };
 	return texture;
+}
+
+unsigned int VRTextureHelper::GetTexture(const std::string& name, unsigned int& width, unsigned int& height)
+{
+	return GetTextureInternal(GetPathFor("/textures/" + name), width, height);
+}
+
+unsigned int VRTextureHelper::GetTexture(const std::string& name)
+{
+	unsigned int dummy;
+	return GetTexture(name, dummy, dummy);
 }
 
 VRTextureHelper VRTextureHelper::instance{};

@@ -69,18 +69,19 @@ List of known bugs and issues:
 - HL VR menu blocks/overlays SteamVR menus
 - Skybox images in VR menu are mixed up
 - Entities that are supposed to crush the player, don't crush the player (traps and such) (they just push you out of the way)
-- Player position when spawning is offset by HMD offset to VR roomscale origin
 - Damage feedback isn't properly visible on Index (and possibly other headsets)
-- It's possible to activate buttons, doors and other triggers when putting the controller through walls
+- It's possible to activate buttons, doors and other triggers through walls with the controllers
 
 ====
 Unfinished/planned features:
 
-- Proper VR controls for func_tank (those stationary guns, turrets etc.) and func_tracktrain (controllable trains)
+- Proper VR controls for stationary guns, turrets etc.
+- Proper VR controls for controllable trains
 - Proper teleportation arc that matches path of a jumping player
 - Vibrational feedback (recoil etc.)
 - Smooth out stairs
 - Two-handed weapons
+- Being able to pull yourself forward while crouching
 
 ===================
 *******************

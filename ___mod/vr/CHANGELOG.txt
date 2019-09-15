@@ -175,9 +175,11 @@
 * Fixed jumping out of water (was broken by auto-crouch)
 * Fixed boxes being pushable while standing on them
 * Fixed several rotation related bugs when spawning/teleporting/loading/levelchanging would position the player at an offset from the actual position
+* Fixed HUD not being displayed properly in displaylist multipass mode
 * Added extra sound groups with fitting audio files for scientists and barneys for responding to speech recognized greeting
 * Added cvar vr_multipass_mode and corresponding config in HLVRLauncher
 
+0.5.3
 * (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
 * 
 

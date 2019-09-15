@@ -241,6 +241,8 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 	{
 		vrHelper->PollEvents(true, m_isInMenu);
 		vrHelper->UpdatePositions();
+		CheckAndIfNecessaryReplaceHDTextures();
+		VRTextureHelper::Instance().Init();
 	}
 
 	MultiPassMode multiPassMode = MultiPassMode(int(CVAR_GET_FLOAT("vr_multipass_mode")));
@@ -416,8 +418,6 @@ void VRRenderer::DrawTransparent()
 	{
 		DrawHDSkyBox();
 
-		RenderWorldBackfaces();
-
 		if (CVAR_GET_FLOAT("vr_debug_controllers") != 0.f)
 		{
 			vrHelper->TestRenderControllerPositions();
@@ -587,8 +587,7 @@ void VRRenderer::CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s *map)
 	}
 }
 
-// This method just draws the backfaces of the entire map in black, so the player can't peak "through" walls with their VR headset
-void VRRenderer::RenderWorldBackfaces()
+void VRRenderer::CheckAndIfNecessaryReplaceHDTextures()
 {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
@@ -599,75 +598,11 @@ void VRRenderer::RenderWorldBackfaces()
 	if (map != nullptr && map->model != nullptr)
 	{
 		CheckAndIfNecessaryReplaceHDTextures(map);
-
-		RenderBSPBackfaces(map->model);
-
-		/* lol this actaually never worked, gpGlobals->maxEntities is server side only
-		int currentmessagenum = gEngfuncs.GetLocalPlayer()->curstate.messagenum;
-		for (int i = 1; i < gpGlobals->maxEntities; i++)
-		{
-			cl_entity_t *ent = gEngfuncs.GetEntityByIndex(i);
-			ReplaceAllTexturesWithHDVersion(ent);
-			if (ent != nullptr
-				&& ent->model != nullptr
-				&& ent->model->name != nullptr
-				&& ent->model->name[0] == '*'
-				&& ent->curstate.messagenum == currentmessagenum)
-			{
-				glPushMatrix();
-				glTranslatef(ent->curstate.origin.x, ent->curstate.origin.y, ent->curstate.origin.z);
-				glRotatef(ent->curstate.angles.x, 1, 0, 0);
-				glRotatef(ent->curstate.angles.y, 0, 0, 1);
-				glRotatef(ent->curstate.angles.z, 0, 1, 0);
-				RenderBSPBackfaces(ent->model);
-				glPopMatrix();
-			}
-		}
-		*/
 	}
 	else
 	{
 		m_currentMapModel = nullptr;
 	}
-}
-
-void VRRenderer::RenderBSPBackfaces(struct model_s* model)
-{
-	// Buggy as heck, also not really needed anymore since we properly prevent players from sticking their heads through walls
-	/*
-	for (int i = 0; i < model->nummodelsurfaces; i++)
-	{
-		int surfaceIndex = model->firstmodelsurface + i;
-		msurface_t *surface = &model->surfaces[surfaceIndex];
-
-		// Render backfaces
-		if (surface->texinfo != nullptr
-			&& surface->texinfo->texture != nullptr
-			&& surface->texinfo->texture->name != nullptr
-			&& strcmp("sky", surface->texinfo->texture->name) != 0
-			&& surface->texinfo->texture->name[0] != '!'
-			&& !(surface->texinfo->flags & (SURF_NOCULL | SURF_DRAWSKY | SURF_WATERCSG | SURF_TRANSPARENT))
-			)
-		{
-			glBegin(GL_POLYGON);
-			if (surface->texinfo->flags & SURF_PLANEBACK)
-			{
-				for (int k = 0; k < surface->polys->numverts; k++)
-				{
-					glVertex3fv(surface->polys->verts[k]);
-				}
-			}
-			else
-			{
-				for (int k = surface->polys->numverts - 1; k >= 0; k--)
-				{
-					glVertex3fv(surface->polys->verts[k]);
-				}
-			}
-			glEnd();
-		}
-	}
-	*/
 }
 
 

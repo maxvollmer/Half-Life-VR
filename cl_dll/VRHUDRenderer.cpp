@@ -1,5 +1,6 @@
 
 #include <functional>
+#include <regex>
 
 #include "Matrices.h"
 
@@ -30,6 +31,7 @@
 
 #include "VRRenderer.h"
 #include "VRHelper.h"
+#include "VRTextureHelper.h"
 
 #define HARDWARE_MODE
 #include "com_model.h"
@@ -59,6 +61,19 @@ namespace
 	constexpr const float VR_HUD_TRAINCONTROLS_SPRITE_SCALE = 0.5f;
 
 	constexpr const int VR_HUD_SPRITE_OFFSET_STEPSIZE = 40;
+
+	struct HUDSpriteSize { int width; int height; };
+	std::unordered_map<std::string, HUDSpriteSize> g_hudSpriteResolutions = {
+		{ std::string{ "sprites/640hud1.spr" }, HUDSpriteSize{ 256, 256 } },
+		{ std::string{ "sprites/640hud2.spr" }, HUDSpriteSize{ 256, 256 } },
+		{ std::string{ "sprites/640hud3.spr" }, HUDSpriteSize{ 256, 256 } },
+		{ std::string{ "sprites/640hud4.spr" }, HUDSpriteSize{ 256, 256 } },
+		{ std::string{ "sprites/640hud5.spr" }, HUDSpriteSize{ 256, 256 } },
+		{ std::string{ "sprites/640hud6.spr" }, HUDSpriteSize{ 256, 256 } },
+		{ std::string{ "sprites/640hud7.spr" }, HUDSpriteSize{ 256, 128 } },
+		{ std::string{ "sprites/640hud8.spr" }, HUDSpriteSize{ 256, 64 } },
+		{ std::string{ "sprites/640hud9.spr" }, HUDSpriteSize{ 256, 64 } },
+	};
 }
 
 void VRRenderer::RotateVectorX(Vector &vecToRotate, const float angle)
@@ -347,7 +362,7 @@ void RotatedGLCall(float x, float y, float z, Vector forward, Vector right, Vect
 	glCallback(result.x, result.y, result.z);
 }
 
-void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t *prc)
+void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t* prc)
 {
 	if (!ShouldRenderHUD(m_hudRenderType))
 		return;
@@ -363,7 +378,7 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 		m_fIsFirstSprite = false;
 	}
 
-	const model_s * pSpriteModel = gEngfuncs.GetSpritePointer(m_hudSpriteHandle);
+	const model_s* pSpriteModel = gEngfuncs.GetSpritePointer(m_hudSpriteHandle);
 	if (pSpriteModel == nullptr)
 	{
 		gEngfuncs.Con_DPrintf("Error: HUD Sprite model is NULL!\n");
@@ -371,13 +386,24 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 	}
 
 	extern engine_studio_api_t IEngineStudio;
-	gEngfuncs.pTriAPI->SpriteTexture(const_cast<model_s *>(pSpriteModel), frame);
 	IEngineStudio.GL_SetRenderMode(kRenderTransAdd);
 	glColor4f(m_hudSpriteColor.r / 255.f, m_hudSpriteColor.g / 255.f, m_hudSpriteColor.b / 255.f, 1.f);
+	//glColor4f(1.f, 1.f, 1.f, 1.f);
 
-	float w, h;
-	glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
-	glGetTexLevelParameterfv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
+	glEnable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// "sprites/640hud7.spr" -> "hud/640hud7.spr"
+	std::string hudTextureName = std::regex_replace(pSpriteModel->name, std::regex{ "sprites/([a-z0-9]+)\\.spr" }, m_hdTexturesEnabled ? "/hud/HD/$1.png" : "/hud/$1.png");
+
+	//unsigned int width, height;
+	glBindTexture(GL_TEXTURE_2D, VRTextureHelper::Instance().GetTexture(hudTextureName/*, width, height*/));
+
+	// Half-Life thinks HUD textures are fixed size sprites and gives us absolute coordinates for that size.
+	// We get the size here independent of the actual texture resolution, and then further below we calculate proper texture coordinates from 0 to 1.
+	float w = g_hudSpriteResolutions[std::string{ pSpriteModel->name }].width;
+	float h = g_hudSpriteResolutions[std::string{ pSpriteModel->name }].height;
 
 	float textureLeft, textureRight, textureTop, textureBottom;
 	float spriteWidth, spriteHeight;
@@ -415,53 +441,23 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 	// Move to controller position
 	glTranslatef(spriteOrigin.x, spriteOrigin.y, spriteOrigin.z);
 
-	//glRotatef(90, 0, 0, 1);
-
-	// Rotate sprite
-	/*
-	glRotatef(spriteAngles.y + 90, 0, 0, 1);
-	glRotatef(spriteAngles.x, 1, 0, 0);
-	glRotatef(spriteAngles.z, 0, 0, 1);
-	*/
-	/*
-	glRotatef(spriteAngles.y + 90, 0, 0, 1);
-	glRotatef(spriteAngles.x, 1, 0, 0);
-	glRotatef(spriteAngles.z, 0, 1, 0);
-	*/
-	/*
-	float matrix[16];
-	matrix[3] = matrix[7] = matrix[11] = matrix[12] = matrix[13] = matrix[14] = 0.f;
-	matrix[15] = 1.f;
-	spriteAngles.y = -spriteAngles.y;
-	AngleVectors(spriteAngles, matrix, matrix + 4, matrix + 8);
-	glMultMatrixf(matrix);
-	*/
-	//float matrix[16];
-	//HLAnglesToGLMatrix(spriteAngles, matrix);
-	//glMultMatrixf(matrix);
-	//glMultMatrixf(spriteMatrix);
-
-
 	// Move to starting position for HUD type
-	//glTranslatef(-hudStartPositionRightOffset, 0, hudStartPositionUpOffset);
 	RotatedGLCall(-hudStartPositionRightOffset, 0.f, hudStartPositionUpOffset, spriteForward, spriteRight, spriteUp, &glTranslatef);
 
 	// Move to HUD offset
-	//glTranslatef((m_iHUDFirstSpriteX - x) * GetVRHudSpriteScale(m_hudRenderType), 0, (y - m_iHUDFirstSpriteY) * GetVRHudSpriteScale(m_hudRenderType));
 	RotatedGLCall((m_iHUDFirstSpriteX - x) * GetVRHudSpriteScale(m_hudRenderType), 0.f, (y - m_iHUDFirstSpriteY) * GetVRHudSpriteScale(m_hudRenderType), spriteForward, spriteRight, spriteUp, &glTranslatef);
 
 	// Draw sprite
 	glBegin(GL_QUADS);
-	glTexCoord2f(textureRight, textureTop);		RotatedGLCall(0.f, 0.f, spriteHeight, spriteForward, spriteRight, spriteUp, &glVertex3f);//glVertex3i(0, 0, spriteHeight);
-	glTexCoord2f(textureLeft, textureTop);		RotatedGLCall(spriteWidth, 0.f, spriteHeight, spriteForward, spriteRight, spriteUp, &glVertex3f);//glVertex3i(spriteWidth, 0, spriteHeight);
-	glTexCoord2f(textureLeft, textureBottom);	RotatedGLCall(spriteWidth, 0.f, 0.f, spriteForward, spriteRight, spriteUp, &glVertex3f);//glVertex3i(spriteWidth, 0, 0);
-	glTexCoord2f(textureRight, textureBottom);	RotatedGLCall(0.f, 0.f, 0.f, spriteForward, spriteRight, spriteUp, &glVertex3f);//glVertex3i(0, 0, 0);
+	glTexCoord2f(textureRight, textureTop);		RotatedGLCall(0.f, 0.f, spriteHeight, spriteForward, spriteRight, spriteUp, &glVertex3f);
+	glTexCoord2f(textureLeft, textureTop);		RotatedGLCall(spriteWidth, 0.f, spriteHeight, spriteForward, spriteRight, spriteUp, &glVertex3f);
+	glTexCoord2f(textureLeft, textureBottom);	RotatedGLCall(spriteWidth, 0.f, 0.f, spriteForward, spriteRight, spriteUp, &glVertex3f);
+	glTexCoord2f(textureRight, textureBottom);	RotatedGLCall(0.f, 0.f, 0.f, spriteForward, spriteRight, spriteUp, &glVertex3f);
 	glEnd();
 
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	glPopMatrix();
-
-
-	// gEngfuncs.Con_DPrintf("HUD: %i, %i %i, %i %i\n", m_hudRenderType, x, y, spriteWidth, spriteHeight);
 }
 
 

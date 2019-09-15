@@ -104,8 +104,7 @@ public:
 private:
 	struct model_s* m_currentMapModel{ nullptr };
 	bool m_hdTexturesEnabled{ false };
-	void RenderWorldBackfaces();
-	void RenderBSPBackfaces(struct model_s* model);
+	void CheckAndIfNecessaryReplaceHDTextures();
 	void ReplaceAllTexturesWithHDVersion(struct cl_entity_s *ent, bool enableHD);
 	void CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s *ent);
 
