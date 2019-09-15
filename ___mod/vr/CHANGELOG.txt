@@ -170,7 +170,7 @@
 * Added cvars vr_speech_commands_enabled, vr_speech_commands_follow, vr_speech_commands_wait and vr_speech_commands_hello
 * Teleporting now creates noise that AI can react to (the further the teleport distance, the "louder" the noise and thus greater attention from AI)
 
-0.5.2
+0.5.2 - 2019-09-15
 * Fixed scientists and barneys becoming non-solid and non-interactable after switching SD/HD models
 * Fixed jumping out of water (was broken by auto-crouch)
 * Fixed boxes being pushable while standing on them

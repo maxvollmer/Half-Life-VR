@@ -69,7 +69,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_ledge_pull_mode", "1");
 	RegisterCVAR("vr_ledge_pull_speed", "50");
 	RegisterCVAR("vr_lefthand_mode", "0");
-	RegisterCVAR("vr_legacy_train_controls_enabled", "0");
+	RegisterCVAR("vr_legacy_train_controls_enabled", "1");
 	RegisterCVAR("vr_melee_swing_speed", "150");
 	RegisterCVAR("vr_move_analogforward_inverted", "0");
 	RegisterCVAR("vr_move_analogsideways_inverted", "0");

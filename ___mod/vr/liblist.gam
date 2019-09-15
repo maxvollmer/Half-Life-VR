@@ -1,6 +1,6 @@
 game "Half-Life: VR"
-developer "Max 'Protector' Vollmer"
-version "0.4.1"
+developer "Max Vollmer"
+version "0.5.2"
 size "130"
 svonly "0"
 cldll "1"

@@ -157,7 +157,7 @@ namespace HLVRLauncher.Utilities
             } },
 
             { "Trains", new OrderedDictionary<string, Setting>() {
-                { "vr_legacy_train_controls_enabled", Setting.Create( "Enable control of usable trains with 'LegacyUse' and forward/backward movement.", false ) },
+                // { "vr_legacy_train_controls_enabled", Setting.Create( "Enable control of usable trains with 'LegacyUse' and forward/backward movement.", true ) },
             } },
 
             { "Stationary guns", new OrderedDictionary<string, Setting>() {
