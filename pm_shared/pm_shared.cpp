@@ -3367,9 +3367,11 @@ void PM_PlayerMove ( qboolean server )
 		VectorScale( pmove->velocity, 0.3, pmove->velocity );
 	}
 
+	// Always calculate movement (on land) as if ducking, then afterwards unduck if possible or stay ducked if not possible (this essentially makes players autoduck if necessary)
+	// In water we don't do this, as it messes with waterjump
 	bool isDucking = pmove->usehull == 1;
-	// Always calculate movement as if ducking, then afterwards unduck if possible or stay ducked if not possible (this essentially makes players autoduck if necessary)
-	if (!isDucking && !pLadder)
+	bool tryAutoDuck = !isDucking && !pLadder && pmove->waterlevel == 0;
+	if (tryAutoDuck)
 	{
 		pmove->usehull = 1;
 		pmove->flags |= FL_DUCKING;
@@ -3431,7 +3433,7 @@ void PM_PlayerMove ( qboolean server )
 		break;
 	}
 
-	if (!isDucking && !pLadder)
+	if (tryAutoDuck)
 	{
 		vec3_t original_origin;
 		VectorCopy(pmove->origin, original_origin);

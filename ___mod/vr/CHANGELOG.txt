@@ -173,6 +173,10 @@
 0.5.2
 * Fixed scientists and barneys becoming non-solid and non-interactable after switching SD/HD models
 * Added extra sound groups with fitting audio files for scientists and barneys for responding to speech recognized greeting
+* Added cvar vr_multipass_mode and config in HLVRLauncher
+* Fixed jumping out of water (was broken by auto-crouch)
+* Fixed boxes being pushable while standing on them
+
 * (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
 * 
 

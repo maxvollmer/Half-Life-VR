@@ -100,6 +100,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_world_scale", "1");
 	RegisterCVAR("vr_world_z_strech", "1");
 	RegisterCVAR("vr_xenjumpthingies_teleporteronly", "0");
+	RegisterCVAR("vr_multipass_mode", "0");
 
 	RegisterCVAR("vr_speech_commands_follow", "follow-me|come|lets-go");
 	RegisterCVAR("vr_speech_commands_wait", "wait|stop|hold");

@@ -181,10 +181,20 @@ namespace HLVRLauncher.Utilities
                 { "vr_speech_commands_hello", Setting.Create( "Greetings", "hello|good-morning|hey|hi|morning|greetings" ) },
             } },
 
-            { "World customization & scaling", new OrderedDictionary<string, Setting>() {
+            { "Graphics & Rendering", new OrderedDictionary<string, Setting>() {
                 { "vr_use_hd_models", Setting.Create( "Use HD models", false ) },
                 { "vr_hd_textures_enabled", Setting.Create( "Use HD textures", false ) },
 
+                { "vr_multipass_mode", Setting.Create( "Multi-pass mode", 2, new OrderedDictionary<string, string>(){
+                    { "0", "Auto mode 1 (uses true display list mode when HD textures are disabled, mixed mode otherwise)" },
+                    { "1", "Auto mode 2 (uses true display list mode when HD textures are disabled, true multi-pass otherwise)" },
+                    { "2", "True multi-pass (least performant, HD textures guaranteed to work, issues with beam and spark effects)" },
+                    { "3", "True display list (most performant, HD textures guaranteed not working, beam and spark effects work fine)" },
+                    { "4", "Mixed mode (some performance issues on AMD, sometimes issues with HD textures, beam and spark effects work fine)" },
+                } ) },
+            } },
+
+            { "World customization & scaling", new OrderedDictionary<string, Setting>() {
                 { "vr_world_scale", Setting.Create( "World scale", 1.0f ) },
                 { "vr_world_z_strech", Setting.Create( "World height factor", 1.0f ) },
 

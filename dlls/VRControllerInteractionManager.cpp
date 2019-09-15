@@ -703,6 +703,22 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 	{
 		if (interaction.touching.isSet)
 		{
+			bool onlyZ = false;
+
+			// Is player standing on this pushable?
+			if (FBitSet(pPlayer->pev->flags, FL_ONGROUND) && pPlayer->pev->groundentity && VARS(pPlayer->pev->groundentity) == hEntity->pev)
+			{
+				// Allow vertical push if floating
+				if (hEntity->pev->waterlevel > 0)
+				{
+					onlyZ = true;
+				}
+				else
+				{
+					return true;
+				}
+			}
+
 			// backup origins and move entities temporarily out of world, so box won't collide with itself when moving
 			Vector playerOrigin = pPlayer->pev->origin;
 			pPlayer->pev->origin = Vector{ 9999, 9999, 9999 };
@@ -718,9 +734,12 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 			Vector controllerDragStartPos;
 			Vector entityDragStartOrigin;
 			Vector dummy;
-			if (interaction.dragging.isSet && controller.GetDraggedEntityPositions(hEntity,
-				dummy, controllerDragStartPos, entityDragStartOrigin, dummy,
-				dummy, dummy, dummy, dummy))
+			if (!onlyZ
+				&& interaction.dragging.isSet
+				&& controller.GetDraggedEntityPositions(hEntity,
+					dummy, controllerDragStartPos, entityDragStartOrigin, dummy,
+					dummy, dummy, dummy, dummy)
+				)
 			{
 				pPushable->pev->gravity = 0;
 				targetPos = entityDragStartOrigin + controller.GetPosition() - controllerDragStartPos;
@@ -740,11 +759,11 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 
 				// Decide axis to push on:
 				bool useAxis[3];
-				useAxis[0] = fabs(normalizedX) >= 0.5f || fabs(normalizedY) <= 0.5f;
-				useAxis[1] = fabs(normalizedY) >= 0.5f || fabs(normalizedX) <= 0.5f;
+				useAxis[0] = !onlyZ && (fabs(normalizedX) >= 0.5f || fabs(normalizedY) <= 0.5f);
+				useAxis[1] = !onlyZ && (fabs(normalizedY) >= 0.5f || fabs(normalizedX) <= 0.5f);
 
 				// Only push up or down if floating in water
-				useAxis[2] = (pPushable->pev->waterlevel > 0 && !FBitSet(pPushable->pev->flags, FL_ONGROUND));
+				useAxis[2] = onlyZ || (pPushable->pev->waterlevel > 0);
 
 				Vector pushDelta;
 				for (int i = 0; i < 3; i++)
@@ -772,6 +791,15 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 			if (targetPos != pushableOrigin)
 			{
 				Vector moveDir = (targetPos - pushableOrigin);
+
+				if (onlyZ)
+				{
+					if (moveDir.z < EPSILON)
+						return true;
+
+					moveDir.x = 0.f;
+					moveDir.y = 0.f;
+				}
 
 				float wishspeed;
 				if (isDragging)

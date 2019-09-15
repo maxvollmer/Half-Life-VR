@@ -31,6 +31,15 @@ public:
 	VRRenderer();
 	~VRRenderer();
 
+	enum class MultiPassMode : int
+	{
+		AUTO_TRUEDISPLAYLIST_MIXEDDISPLAYLIST = 0,
+		AUTO_TRUEDISPLAYLIST_TRUEMULTIPASS,
+		TRUE_MULTIPASS,
+		TRUE_DISPLAYLIST,
+		MIXED_DISPLAYLIST
+	};
+
 	void Init();
 	void VidInit();
 

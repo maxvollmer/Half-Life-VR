@@ -1,23 +1,43 @@
-====
-Half-Life: VR
 
-VERSION 0.5.1
+======
+======
+
+INTERNAL BETA NOTICE
+
+ YOU RECEIVED THIS MOD AS PART OF AN INTERNAL BETA TEST
+
+ DO NOT MAKE THIS MOD PUBLIC
+
+ DO NOT GIVE THIS MOD TO ANY THIRD PARTY
+
+======
+======
+
+
+Half-Life: VR
+=============
+Author: Max Vollmer
+github: https://github.com/maxvollmer/Half-Life-VR
+
+VERSION 0.5.2
 
 Copyright (c) 2017-2019 Max Vollmer
 
+Based on the Half-Life SDK by Valve Corporation. The Valve SDK LICENSE applies. All rights reserved.
+
 ======
 
-YOU RECEIVED THIS MOD AS PART OF AN INTERNAL BETA TEST
-
-DO NOT MAKE THIS MOD PUBLIC
-
-DO NOT GIVE THIS MOD TO ANY THIRD PARTY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ======
 
 This is a mod for Half-Life adding support for playing the game in Virtual Reality.
-
-Author: Max Vollmer
 
 VR enabled weapon models by Formic.Sapien and Rorin.
 
@@ -49,14 +69,18 @@ List of known bugs and issues:
 - HL VR menu blocks/overlays SteamVR menus
 - Skybox images in VR menu are mixed up
 - Entities that are supposed to crush the player, don't crush the player (traps and such) (they just push you out of the way)
+- Player position when spawning is offset by HMD offset to VR roomscale origin
+- Damage feedback isn't properly visible on Index (and possibly other headsets)
+- It's possible to activate buttons, doors and other triggers when putting the controller through walls
 
 ====
 Unfinished/planned features:
 
-- Proper controls for func_tank (those stationary guns, turrets etc.) and func_tracktrain (controllable trains)
-- Proper teleportation arc that matches path of jumping player
-- Vibrational feedback (recoil etc.) isn't implemented yet
+- Proper VR controls for func_tank (those stationary guns, turrets etc.) and func_tracktrain (controllable trains)
+- Proper teleportation arc that matches path of a jumping player
+- Vibrational feedback (recoil etc.)
 - Smooth out stairs
+- Two-handed weapons
 
 ===================
 *******************
