@@ -74,7 +74,7 @@ void VRInputAction::HandleAnalogInput()
 void VRInputAction::HandlePoseInput()
 {
 	vr::InputPoseActionData_t data{ 0 };
-	vr::EVRInputError result = vr::VRInput()->GetPoseActionData(m_handle, vr::TrackingUniverseStanding, 0.f, &data, sizeof(vr::InputPoseActionData_t), vr::k_ulInvalidInputValueHandle);
+	vr::EVRInputError result = vr::VRInput()->GetPoseActionDataForNextFrame(m_handle, vr::TrackingUniverseStanding, &data, sizeof(vr::InputPoseActionData_t), vr::k_ulInvalidInputValueHandle);
 	if (result == vr::VRInputError_None)
 	{
 		(m_poseActionHandler)(data, m_id);
