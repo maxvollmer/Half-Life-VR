@@ -414,29 +414,36 @@ void VRInput::FireDamageFeedback(const std::string& action, float durationInSeco
 
 void VRInput::HandleInput(bool isInGame)
 {
+	std::vector<vr::VRActiveActionSet_t> activeActionSets;
+	std::vector<ActionSet*> actionSets;
+
 	for (auto &[actionSetName, actionSet] : m_actionSets)
 	{
 		if (isInGame || actionSet.handleWhenNotInGame)
 		{
-			if (UpdateActionStates(actionSetName, actionSet))
+			activeActionSets.push_back(vr::VRActiveActionSet_t{ actionSet.handle, vr::k_ulInvalidInputValueHandle, vr::k_ulInvalidActionSetHandle, 0, 0 });
+			actionSets.push_back(&actionSet);
+		}
+	}
+
+	if (!actionSets.empty() && UpdateActionStates(activeActionSets))
+	{
+		for (auto& actionSet : actionSets)
+		{
+			for (auto& [actionName, action] : actionSet->actions)
 			{
-				for (auto &[actionName, action] : actionSet.actions)
-				{
-					action.HandleInput(isInGame);
-				}
+				action.HandleInput(isInGame);
 			}
 		}
 	}
 }
 
-bool VRInput::UpdateActionStates(const std::string& actionSetName, const ActionSet& actionSet)
+bool VRInput::UpdateActionStates(std::vector<vr::VRActiveActionSet_t>& actionSets)
 {
-	vr::VRActiveActionSet_t activeActionSet{ 0 };
-	activeActionSet.ulActionSet = actionSet.handle;
-	vr::EVRInputError result = vr::VRInput()->UpdateActionState(&activeActionSet, sizeof(vr::VRActiveActionSet_t), 1);
+	vr::EVRInputError result = vr::VRInput()->UpdateActionState(actionSets.data(), sizeof(vr::VRActiveActionSet_t), actionSets.size());
 	if (result != vr::VRInputError_None)
 	{
-		gEngfuncs.Con_DPrintf("Error while trying to get active state for input action set /actions/%s. (Error code: %i)\n", actionSetName, result);
+		gEngfuncs.Con_DPrintf("Error while trying to get active state for input action sets. (Error code: %i)\n", result);
 	}
 	return result == vr::VRInputError_None;
 }

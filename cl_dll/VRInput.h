@@ -120,7 +120,7 @@ private:
 
 	void FireDamageFeedback(const std::string& action, float durationInSeconds, float frequency, float amplitude);
 
-	bool UpdateActionStates(const std::string& actionSetName, const ActionSet& actionSet);
+	bool UpdateActionStates(std::vector<vr::VRActiveActionSet_t>& actionSets);
 
 	bool m_isDucking{ false };
 	bool m_isVRDucking{ false };
