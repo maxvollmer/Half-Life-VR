@@ -94,6 +94,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_teleport_attachment", "0");
 	RegisterCVAR("vr_tripmine_scale", "1");
 	RegisterCVAR("vr_use_hd_models", "0");
+	RegisterCVAR("vr_use_animated_weapons", "0");
 	RegisterCVAR("vr_view_dist_to_walls", (char*)VR_DEFAULT_VIEW_DIST_TO_WALLS_AS_STRING);
 	RegisterCVAR("vr_weapon_grenade_mode", "0");
 	RegisterCVAR("vr_weaponscale", "1");

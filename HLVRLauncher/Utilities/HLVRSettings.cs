@@ -141,6 +141,8 @@ namespace HLVRLauncher.Utilities
 
                 { "vr_weapon_grenade_mode", Setting.Create( "Grenade throw mode", 0, new OrderedDictionary<string, string>(){ {"0", "Use controller aim and velocity" }, { "1", "Aim with controller, but fly with fixed speed (as in original game)" } } ) },
 
+                { "vr_use_animated_weapons", Setting.Create( "Use weapon models with animated movement (affects aiming)", false ) },
+
                 { "vr_ledge_pull_mode", Setting.Create( "Ledge pulling", 1, new OrderedDictionary<string, string>(){ {"0", "Disabled" }, { "1", "Move onto ledge when pulling" }, { "2", "Teleport onto ledge instantly when pulling" } } ) },
                 { "vr_ledge_pull_speed", Setting.Create( "Minimum controller speed to trigger ledge pulling", 50 ) },
 

@@ -19,7 +19,7 @@ Half-Life: VR
 Author: Max Vollmer
 github: https://github.com/maxvollmer/Half-Life-VR
 
-VERSION 0.5.2
+VERSION 0.5.3
 
 Copyright (c) 2017-2019 Max Vollmer
 

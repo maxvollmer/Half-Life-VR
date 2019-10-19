@@ -13,6 +13,70 @@
 #include "VRPhysicsHelper.h"
 #include "VRModelHelper.h"
 
+
+namespace
+{
+	enum HandModelSequences {
+		IDLE = 0,
+		POINT_START,
+		POINT_END,
+		WAIT_START,
+		WAIT_END,
+		HALFGRAB_START,
+		HALFGRAB_END,
+		FULLGRAB_START,
+		FULLGRAB_END
+	};
+
+	std::unordered_map<std::string, const char*> g_animatedWeaponModelNameMap = {
+		{"models/v_9mmar", "models/animov/v_9mmar"},
+		{"models/v_9mmhandgun", "models/animov/v_9mmhandgun"},
+		{"models/v_357.mdl", "models/animov/v_357.mdl"},
+		{"models/v_9mmar.mdl", "models/animov/v_9mmar.mdl"},
+		{"models/v_9mmhandgun.mdl", "models/animov/v_9mmhandgun.mdl"},
+		{"models/v_crossbow.mdl", "models/animov/v_crossbow.mdl"},
+		{"models/v_crowbar.mdl", "models/animov/v_crowbar.mdl"},
+		{"models/v_egon.mdl", "models/animov/v_egon.mdl"},
+		{"models/v_gauss.mdl", "models/animov/v_gauss.mdl"},
+		{"models/v_grenade.mdl", "models/animov/v_grenade.mdl"},
+		{"models/v_hgun.mdl", "models/animov/v_hgun.mdl"},
+		{"models/v_rpg.mdl", "models/animov/v_rpg.mdl"},
+		{"models/v_satchel.mdl", "models/animov/v_satchel.mdl"},
+		{"models/v_satchel_radio.mdl", "models/animov/v_satchel_radio.mdl"},
+		{"models/v_shotgun.mdl", "models/animov/v_shotgun.mdl"},
+		{"models/v_squeak.mdl", "models/animov/v_squeak.mdl"},
+		{"models/v_tripmine.mdl", "models/animov/v_tripmine.mdl"},
+
+		{"models/SD/v_9mmar", "models/SD/animov/v_9mmar"},
+		{"models/SD/v_9mmhandgun", "models/SD/animov/v_9mmhandgun"},
+		{"models/SD/v_357.mdl", "models/SD/animov/v_357.mdl"},
+		{"models/SD/v_9mmar.mdl", "models/SD/animov/v_9mmar.mdl"},
+		{"models/SD/v_9mmhandgun.mdl", "models/SD/animov/v_9mmhandgun.mdl"},
+		{"models/SD/v_crossbow.mdl", "models/SD/animov/v_crossbow.mdl"},
+		{"models/SD/v_crowbar.mdl", "models/SD/animov/v_crowbar.mdl"},
+		{"models/SD/v_egon.mdl", "models/SD/animov/v_egon.mdl"},
+		{"models/SD/v_gauss.mdl", "models/SD/animov/v_gauss.mdl"},
+		{"models/SD/v_grenade.mdl", "models/SD/animov/v_grenade.mdl"},
+		{"models/SD/v_hgun.mdl", "models/SD/animov/v_hgun.mdl"},
+		{"models/SD/v_rpg.mdl", "models/SD/animov/v_rpg.mdl"},
+		{"models/SD/v_satchel.mdl", "models/SD/animov/v_satchel.mdl"},
+		{"models/SD/v_satchel_radio.mdl", "models/SD/animov/v_satchel_radio.mdl"},
+		{"models/SD/v_shotgun.mdl", "models/SD/animov/v_shotgun.mdl"},
+		{"models/SD/v_squeak.mdl", "models/SD/animov/v_squeak.mdl"},
+		{"models/SD/v_tripmine.mdl", "models/SD/animov/v_tripmine.mdl"},
+	};
+
+	string_t GetAnimatedWeaponModelName(string_t modelName)
+	{
+		auto it = g_animatedWeaponModelNameMap.find(STRING(modelName));
+		if (it != g_animatedWeaponModelNameMap.end())
+			return MAKE_STRING(it->second);
+		else
+			return modelName;
+	}
+}
+
+
 VRController::~VRController()
 {
 	if (m_hLaserSpot)
@@ -29,18 +93,6 @@ VRController::~VRController()
 	m_hDebugBBoxes.clear();
 #endif
 }
-
-enum HandModelSequences {
-	IDLE = 0,
-	POINT_START,
-	POINT_END,
-	WAIT_START,
-	WAIT_END,
-	HALFGRAB_START,
-	HALFGRAB_END,
-	FULLGRAB_START,
-	FULLGRAB_END
-};
 
 
 void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, VRControllerID id, int weaponId)
@@ -132,6 +184,11 @@ void VRController::UpdateModel(CBasePlayer* pPlayer)
 	else
 	{
 		m_modelName = pPlayer->pev->viewmodel;
+	}
+
+	if (CVAR_GET_FLOAT("vr_use_animated_weapons") != 0.f)
+	{
+		m_modelName = GetAnimatedWeaponModelName(m_modelName);
 	}
 
 	CVRControllerModel *pModel = (CVRControllerModel*)GetModel();

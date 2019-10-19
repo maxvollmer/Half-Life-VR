@@ -181,6 +181,8 @@
 * Added cvar vr_multipass_mode and corresponding config in HLVRLauncher
 
 0.5.3
-* (WIP) Improved weapon animations and added optional weapon models with all movement removed from animations
-* 
+* Fixed some input actions not working anymore due to change in SteamVR beta 1.7.7 (see https://github.com/ValveSoftware/SteamVR-for-Linux/issues/236)
+* Improved weapon animations and split weapon models into set with animated movement and without
+* Added cvar vr_use_animated_weapons and corresponding config in HLVRLauncher (default off)
+
 
