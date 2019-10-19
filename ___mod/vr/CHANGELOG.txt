@@ -180,7 +180,7 @@
 * Added extra sound groups with fitting audio files for scientists and barneys for responding to speech recognized greeting
 * Added cvar vr_multipass_mode and corresponding config in HLVRLauncher
 
-0.5.3
+0.5.3 - 2019-10-19
 * Fixed some input actions not working anymore due to change in SteamVR beta 1.7.7 (see https://github.com/ValveSoftware/SteamVR-for-Linux/issues/236)
 * Improved weapon animations and split weapon models into set with animated movement and without
 * Added cvar vr_use_animated_weapons and corresponding config in HLVRLauncher (default off)
