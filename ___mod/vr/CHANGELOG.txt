@@ -185,4 +185,5 @@
 * Improved weapon animations and split weapon models into set with animated movement and without
 * Added cvar vr_use_animated_weapons and corresponding config in HLVRLauncher (default off)
 
-
+0.5.4
+* Fixed some objects and traps not killing the player even though they should
