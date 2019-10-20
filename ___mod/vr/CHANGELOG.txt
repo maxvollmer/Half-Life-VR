@@ -188,4 +188,5 @@
 0.5.4 - 2019-10-20
 * Fixed some objects and traps not killing the player even though they should
 * Fixed crash when trying to load texture that doesn't exist
+* Fixed deploy animation in 9mmAR weapon model without animated movement
 
