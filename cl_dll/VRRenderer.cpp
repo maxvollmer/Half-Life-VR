@@ -246,91 +246,53 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 	}
 
 	MultiPassMode multiPassMode = MultiPassMode(int(CVAR_GET_FLOAT("vr_multipass_mode")));
-	bool hdTexturesEnabled = CVAR_GET_FLOAT("vr_hd_textures_enabled") != 0.f;
+	bool trueDisplayListMode = multiPassMode != MultiPassMode::MIXED_DISPLAYLIST;
 
-	bool trueMultiPassMode = multiPassMode == MultiPassMode::TRUE_MULTIPASS
-		|| multiPassMode == MultiPassMode::AUTO_TRUEDISPLAYLIST_TRUEMULTIPASS && hdTexturesEnabled;
-
-	if (trueMultiPassMode)
+	if (pparams->nextView == 0)
 	{
-		if (pparams->nextView == 0)
-		{
-			vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
+		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
 
-			pparams->nextView = 1;
-			m_fIsOnlyClientDraw = false;
-		}
-		else if (pparams->nextView == 1)
-		{
-			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-			vrHelper->PrepareVRScene(vr::EVREye::Eye_Right);
+		// Record entire engine rendering in an OpenGL display list
+		m_displayList = glGenLists(1);
 
-			pparams->nextView = 2;
-			m_fIsOnlyClientDraw = false;
-		}
-		else
-		{
-			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-			vrHelper->SubmitImages();
+		// For HD textures to work, we need to execute the display list immediately (GL_COMPILE_AND_EXECUTE).
+		// However, GL_COMPILE_AND_EXECUTE is less performant on AMD hardware, so we still use GL_COMPILE when HD textures are not enabled.
+		glNewList(m_displayList, trueDisplayListMode ? GL_COMPILE : GL_COMPILE_AND_EXECUTE);
 
-			pparams->nextView = 0;
-			pparams->onlyClientDraw = 1;
-			m_fIsOnlyClientDraw = true;
-		}
+		pparams->nextView = 1;
+		m_fIsOnlyClientDraw = false;
 	}
 	else
 	{
-		bool trueDisplayListMode = multiPassMode != MultiPassMode::MIXED_DISPLAYLIST &&
-			(multiPassMode == MultiPassMode::TRUE_DISPLAYLIST
-			|| multiPassMode == MultiPassMode::AUTO_TRUEDISPLAYLIST_MIXEDDISPLAYLIST && !hdTexturesEnabled
-			|| multiPassMode == MultiPassMode::AUTO_TRUEDISPLAYLIST_TRUEMULTIPASS && !hdTexturesEnabled);
+		glEndList();
+		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
 
-		if (pparams->nextView == 0)
+		// In true display list mode, we didn't execute the display list the first time (see above)
+		// thus we need to draw the recorderd display list for left eye here
+		if (trueDisplayListMode)
 		{
 			vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
-
-			// Record entire engine rendering in an OpenGL display list
-			m_displayList = glGenLists(1);
-
-			// For HD textures to work, we need to execute the display list immediately (GL_COMPILE_AND_EXECUTE).
-			// However, GL_COMPILE_AND_EXECUTE is less performant on AMD hardware, so we still use GL_COMPILE when HD textures are not enabled.
-			glNewList(m_displayList, trueDisplayListMode ? GL_COMPILE : GL_COMPILE_AND_EXECUTE);
-
-			pparams->nextView = 1;
-			m_fIsOnlyClientDraw = false;
-		}
-		else
-		{
-			glEndList();
-			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-
-			// In true display list mode, we didn't execute the display list the first time (see above)
-			// thus we need to draw the recorderd display list for left eye here
-			if (trueDisplayListMode)
-			{
-				vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
-				glCallList(m_displayList);
-				vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-			}
-
-			// draw recorderd display list for right eye
-			vrHelper->PrepareVRScene(vr::EVREye::Eye_Right);
 			glCallList(m_displayList);
 			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-
-			// delete display list (we need a new one every frame)
-			glDeleteLists(m_displayList, 1);
-			m_displayList = 0;
-
-			// send messages to hmg
-			vrHelper->SubmitImages();
-
-			pparams->nextView = 0;
-			pparams->onlyClientDraw = 1;
-			m_fIsOnlyClientDraw = true;
 		}
 
+		// draw recorderd display list for right eye
+		vrHelper->PrepareVRScene(vr::EVREye::Eye_Right);
+		glCallList(m_displayList);
+		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+
+		// delete display list (we need a new one every frame)
+		glDeleteLists(m_displayList, 1);
+		m_displayList = 0;
+
+		// send messages to hmg
+		vrHelper->SubmitImages();
+
+		pparams->nextView = 0;
+		pparams->onlyClientDraw = 1;
+		m_fIsOnlyClientDraw = true;
 	}
+
 
 	vrHelper->GetViewOrg(pparams->vieworg);
 	vrHelper->GetViewAngles(vr::EVREye::Eye_Left, pparams->viewangles);

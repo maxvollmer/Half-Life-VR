@@ -190,3 +190,5 @@
 * Fixed crash when trying to load texture that doesn't exist
 * Fixed deploy animation in 9mmAR weapon model without animated movement
 
+0.5.5
+* Reduced options for vr_multipass_mode to true display list and mixed display list
