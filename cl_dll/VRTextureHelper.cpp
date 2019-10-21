@@ -113,14 +113,6 @@ const char* VRTextureHelper::GetCurrentSkyboxName()
 
 unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& path, unsigned int& width, unsigned int& height)
 {
-	if (!std::filesystem::exists(path))
-	{
-		gEngfuncs.Con_DPrintf("Couldn't load texture %s, it doesn't exist.\n", path.string().data());
-		width = 0;
-		height = 0;
-		return 0;
-	}
-
 	std::string canonicalpathstring;
 	try
 	{
@@ -128,8 +120,7 @@ unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& pa
 	}
 	catch (std::filesystem::filesystem_error e)
 	{
-		gEngfuncs.Con_DPrintf("Can't cache texture %s, error while trying to create canonical path: %s\n", path.string().data(), e.what());
-		canonicalpathstring.clear();
+		canonicalpathstring = std::filesystem::absolute(path).string();
 	}
 
 	if (!canonicalpathstring.empty())
@@ -145,43 +136,54 @@ unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& pa
 
 	GLuint texture{ 0 };
 
-	std::vector<unsigned char> image;
-	unsigned int error = lodepng::decode(image, width, height, path.string().data());
-	if (error)
+	if (std::filesystem::exists(path))
 	{
-		gEngfuncs.Con_DPrintf("Error (%i) trying to load texture %s: %s\n", error, path.string().data(), lodepng_error_text(error));
-	}
-	else if ((width & (width - 1)) || (height & (height - 1)))
-	{
-		gEngfuncs.Con_DPrintf("Invalid texture %s, width and height must be power of 2!\n", path.string().data());
+		std::vector<unsigned char> image;
+		unsigned int error = lodepng::decode(image, width, height, path.string().data());
+		if (error)
+		{
+			gEngfuncs.Con_DPrintf("Error (%i) trying to load texture %s: %s\n", error, path.string().data(), lodepng_error_text(error));
+		}
+		else if ((width & (width - 1)) || (height & (height - 1)))
+		{
+			gEngfuncs.Con_DPrintf("Invalid texture %s, width and height must be power of 2!\n", path.string().data());
+			width = 0;
+			height = 0;
+			texture = 0;
+		}
+		else
+		{
+			// Now load it into OpenGL
+			ClearGLErrors();
+			try
+			{
+				TryGLCall(glActiveTexture, GL_TEXTURE0);
+				TryGLCall(glGenTextures, 1, &texture);
+				TryGLCall(glBindTexture, GL_TEXTURE_2D, texture);
+				TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				TryGLCall(glGenerateMipmap, GL_TEXTURE_2D);
+				TryGLCall(glBindTexture, GL_TEXTURE_2D, 0);
+			}
+			catch (OGLErrorException e)
+			{
+				gEngfuncs.Con_DPrintf("Couldn't create texture %s, error: %s\n", path.string().data(), e.what());
+				width = 0;
+				height = 0;
+				texture = 0;
+			}
+		}
 	}
 	else
 	{
-		// Now load it into OpenGL
-		ClearGLErrors();
-		try
-		{
-			TryGLCall(glActiveTexture, GL_TEXTURE0);
-			TryGLCall(glGenTextures, 1, &texture);
-			TryGLCall(glBindTexture, GL_TEXTURE_2D, texture);
-			TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
-			TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			TryGLCall(glGenerateMipmap, GL_TEXTURE_2D);
-			TryGLCall(glBindTexture, GL_TEXTURE_2D, 0);
-		}
-		catch (const OGLErrorException& e)
-		{
-			gEngfuncs.Con_DPrintf("Couldn't create texture %s, error: %s\n", path.string().data(), e.what());
-			texture = 0;
-		}
+		gEngfuncs.Con_DPrintf("Couldn't load texture %s, it doesn't exist.\n", path.string().data());
+		width = 0;
+		height = 0;
+		texture = 0;
 	}
 
-	if (!canonicalpathstring.empty())
-	{
-		m_textures[canonicalpathstring] = Texture{ texture, width, height };
-	}
-
+	m_textures[canonicalpathstring] = Texture{ texture, width, height };
 	return texture;
 }
 
