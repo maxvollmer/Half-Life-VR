@@ -431,6 +431,46 @@ bool VRRenderer::ShouldMirrorCurrentModel(cl_entity_t *ent)
 	return false;
 }
 
+namespace
+{
+	std::unordered_set<std::string> g_handmodels{
+		{
+			"models/v_hand_labcoat.mdl",
+			"models/v_hand_hevsuit.mdl",
+			"models/SD/v_hand_labcoat.mdl",
+			"models/SD/v_hand_hevsuit.mdl",
+		}
+	};
+}
+
+bool VRRenderer::IsCurrentModelHandWithSkeletalData(cl_entity_t* ent, float fingerCurl[5])
+{
+	if (!ent || !ent->model)
+		return false;
+
+	// check if model is hand model
+	if (g_handmodels.find(ent->model->name) != g_handmodels.end())
+	{
+		// check if model is left hand
+		if (ShouldMirrorCurrentModel(ent))
+		{
+			if (g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand))
+				return false;
+
+			return g_vrInput.HasSkeletalDataForHand(vr::TrackedControllerRole_LeftHand, fingerCurl);
+		}
+		else
+		{
+			if (g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand))
+				return false;
+
+			return g_vrInput.HasSkeletalDataForHand(vr::TrackedControllerRole_RightHand, fingerCurl);
+		}
+	}
+
+	return false;
+}
+
 void VRRenderer::ReverseCullface()
 {
 	glFrontFace(GL_CW);

@@ -9,7 +9,8 @@
 // routines for setting up to draw 3DStudio models
 
 #include <string>
-#include <set>
+#include <unordered_set>
+#include <unordered_map>
 
 #include "hud.h"
 #include "cl_util.h"
@@ -34,12 +35,58 @@
 
 #include "VRRenderer.h"
 
+
+namespace
+{
+	enum Finger
+	{
+		Finger_Thumb = 0,
+		Finger_Index,
+		Finger_Middle,
+		Finger_Ring,
+		Finger_Pinky,
+		Finger_Count
+	};
+
+	enum HandModelSequences {
+		IDLE = 0,
+		POINT_START,
+		POINT_END,
+		WAIT_START,
+		WAIT_END,
+		HALFGRAB_START,
+		HALFGRAB_END,
+		FULLGRAB_START,
+		FULLGRAB_END
+	};
+
+	const char* FingerBoneName(Finger finger)
+	{
+		switch (finger)
+		{
+		case Finger_Thumb:	return "Finger0";
+		case Finger_Index:	return "Finger1";
+		case Finger_Middle:	return "Finger2";
+		case Finger_Ring:	return "Finger3";
+		case Finger_Pinky:	return "Finger4";
+		default:			return nullptr;
+		}
+	}
+
+	bool IsFingerBoneName(Finger finger, const std::string& name)
+	{
+		const char* fingerbonename = FingerBoneName(finger);
+		return fingerbonename != nullptr && name.find(fingerbonename) != std::string::npos;
+	}
+}
+
+
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;
 
 
 // Set by HUD_TempEntUpdate, used here to filter out temp ents when applying scale (as scale is used as a timer in HUD_TempEntUpdate) - Max Vollmer, 2019-05-26
-std::set<cl_entity_t*> g_curFrameTempEnts;
+std::unordered_set<cl_entity_t*> g_curFrameTempEnts;
 
 
 /////////////////////
@@ -53,7 +100,7 @@ studiohdr_t* Mod_Extradata(const char* callerInfo, cl_entity_t* ent, model_t* mo
 {
 	if (!mod || mod->type != mod_studio || mod->name[0] == '*')
 	{
-		gEngfuncs.Con_DPrintf("Mod_Extradata: invalid model: %s (caller: %s, entity: %i)\n", mod->name, callerInfo, ent ? ent->index : -1);
+		gEngfuncs.Con_DPrintf("Mod_Extradata: invalid model: %s (caller: %s, entity: %i)\n", mod ? mod->name : "NULL", callerInfo, ent ? ent->index : -1);
 		return nullptr;
 	}
 
@@ -744,7 +791,7 @@ StudioEstimateFrame
 */
 float CStudioModelRenderer::StudioEstimateFrame( mstudioseqdesc_t *pseqdesc )
 {
-	double				dfdt, f;
+	float				dfdt, f;
 
 	if ( m_fDoInterp )
 	{
@@ -769,7 +816,7 @@ float CStudioModelRenderer::StudioEstimateFrame( mstudioseqdesc_t *pseqdesc )
 	}
 	else
 	{
-		f = (m_pCurrentEntity->curstate.frame * (pseqdesc->numframes - 1)) / 256.0;
+		f = (m_pCurrentEntity->curstate.frame * (pseqdesc->numframes - 1)) / 256.f;
 	}
  	
 	f += dfdt;
@@ -778,7 +825,7 @@ float CStudioModelRenderer::StudioEstimateFrame( mstudioseqdesc_t *pseqdesc )
 	{
 		if (pseqdesc->numframes > 1)
 		{
-			f -= (int)(f / (pseqdesc->numframes - 1)) *  (pseqdesc->numframes - 1);
+			f -= (int)(f / (pseqdesc->numframes - 1)) * (pseqdesc->numframes - 1);
 		}
 		if (f < 0) 
 		{
@@ -1256,7 +1303,54 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 	}
 	else
 	{
-		StudioSetupBones( );
+		float fingerCurl[5];
+		if (gVRRenderer.IsCurrentModelHandWithSkeletalData(m_pCurrentEntity, fingerCurl))
+		{
+			// Use skeletal data from OpenVR to animate curled fingers on hand models:
+			// 1. Call StudioSetupBones twice: Once with initial frame of IDLE (flat hand), and once with initial frame of FULLGRAB_END (fist)
+			// 2. Use fingerCurl data (0 = flat hand, 1 = fully curled) to interpolate between appropriate bone matrices
+			// (Use hardcoded map of bone names (g_handmodelfingerbonenames) to modify correct bone matrices)
+			// - Max Vollmer, 2019-10-22
+
+			m_pCurrentEntity->curstate.frame = 0;
+			m_pCurrentEntity->curstate.framerate = 0;
+			m_pCurrentEntity->curstate.animtime = m_clTime;
+
+			void* backupbonetransformpointer = m_pbonetransform;
+			void* backuplighttransformpointer = m_plighttransform;
+
+			float pGrabbingBoneTransform[MAXSTUDIOBONES][3][4];
+			float pGrabbingLightTransform[MAXSTUDIOBONES][3][4];
+			m_pbonetransform = &pGrabbingBoneTransform;
+			m_plighttransform = &pGrabbingLightTransform;
+
+			m_pCurrentEntity->curstate.sequence = FULLGRAB_END;
+			StudioSetupBones();
+
+			m_pbonetransform = (float(*)[MAXSTUDIOBONES][3][4])backupbonetransformpointer;
+			m_plighttransform = (float(*)[MAXSTUDIOBONES][3][4])backuplighttransformpointer;
+
+			m_pCurrentEntity->curstate.sequence = IDLE;
+			StudioSetupBones();
+
+			mstudiobone_t* pbones = (mstudiobone_t*)((byte*)m_pStudioHeader + m_pStudioHeader->boneindex);
+			for (int i = 0; i < m_pStudioHeader->numbones; i++)
+			{
+				for (int finger = 0; finger < Finger_Count; finger++)
+				{
+					if (IsFingerBoneName(Finger(finger), pbones[i].name))
+					{
+						StudioInterpolateMatrices((*m_pbonetransform)[i], pGrabbingBoneTransform[i], fingerCurl[finger]);
+						StudioInterpolateMatrices((*m_plighttransform)[i], pGrabbingLightTransform[i], fingerCurl[finger]);
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			StudioSetupBones();
+		}
 	}
 	StudioSaveBones( );
 

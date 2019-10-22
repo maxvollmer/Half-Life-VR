@@ -887,8 +887,8 @@ void VRHelper::SendPositionUpdateToServer()
 	m_hasReceivedSpawnYaw = false;
 
 	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
-	bool leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);
-	bool rightDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand);
+	bool leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand) || g_vrInput.AreFingersBendForDragging(vr::TrackedControllerRole_LeftHand);
+	bool rightDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand) || g_vrInput.AreFingersBendForDragging(vr::TrackedControllerRole_RightHand);
 
 	VRControllerID leftControllerID;
 	VRControllerID rightControllerID;

@@ -7,7 +7,7 @@
 
 // Client side entity management functions
 
-#include <set>
+#include <unordered_set>
 
 #include <memory.h>
 
@@ -607,7 +607,7 @@ void DLLEXPORT HUD_TempEntUpdate (
 	float		freq, gravity, gravitySlow, life, fastFreq;
 
 	// USed by StudioModelRenderer to filter out temp ents when applying scale (as scale is used as a timer here) - Max Vollmer, 2019-05-26
-	extern std::set<cl_entity_t*> g_curFrameTempEnts;
+	extern std::unordered_set<cl_entity_t*> g_curFrameTempEnts;
 	g_curFrameTempEnts.clear();
 
 	// Nothing to simulate

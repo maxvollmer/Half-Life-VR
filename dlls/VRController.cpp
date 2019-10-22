@@ -29,8 +29,6 @@ namespace
 	};
 
 	std::unordered_map<std::string, const char*> g_animatedWeaponModelNameMap = {
-		{"models/v_9mmar", "models/animov/v_9mmar"},
-		{"models/v_9mmhandgun", "models/animov/v_9mmhandgun"},
 		{"models/v_357.mdl", "models/animov/v_357.mdl"},
 		{"models/v_9mmar.mdl", "models/animov/v_9mmar.mdl"},
 		{"models/v_9mmhandgun.mdl", "models/animov/v_9mmhandgun.mdl"},
@@ -47,8 +45,6 @@ namespace
 		{"models/v_squeak.mdl", "models/animov/v_squeak.mdl"},
 		{"models/v_tripmine.mdl", "models/animov/v_tripmine.mdl"},
 
-		{"models/SD/v_9mmar", "models/SD/animov/v_9mmar"},
-		{"models/SD/v_9mmhandgun", "models/SD/animov/v_9mmhandgun"},
 		{"models/SD/v_357.mdl", "models/SD/animov/v_357.mdl"},
 		{"models/SD/v_9mmar.mdl", "models/SD/animov/v_9mmar.mdl"},
 		{"models/SD/v_9mmhandgun.mdl", "models/SD/animov/v_9mmhandgun.mdl"},

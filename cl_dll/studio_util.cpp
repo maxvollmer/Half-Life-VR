@@ -249,3 +249,28 @@ void MatrixCopy( float in[3][4], float out[3][4] )
 {
 	memcpy( out, in, sizeof( float ) * 3 * 4 );
 }
+
+
+
+/// Interpolates between matrix1 and matrix2, modifying values of matrix1, using the given factor (0 = 100% matrix1, 1 = 100% matrix2)
+// For use by StudioModelRenderer when animating finger bones on hand models with skeletal data from OpenVR
+// - Max Vollmer, 2019-10-22
+void StudioInterpolateMatrices(float m1[3][4], float m2[3][4], float factor)
+{
+	if (factor <= 0.f)
+		return;
+	
+	if (factor >= 1.f)
+	{
+		MatrixCopy(m2, m1);
+		return;
+	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			m1[i][j] = m1[i][j] * (1.f - factor) + m2[i][j] * factor;
+		}
+	}
+}

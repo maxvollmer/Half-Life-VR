@@ -43,6 +43,15 @@ VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle,
 {
 }
 
+VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, SkeletalActionHandler handler, bool handleWhenNotInGame) :
+	m_id{ id },
+	m_handle{ handle },
+	m_type{ ActionType::SKELETAL },
+	m_skeletalActionHandler{ handler },
+	m_handleWhenNotInGame{ handleWhenNotInGame }
+{
+}
+
 void VRInputAction::HandleDigitalInput()
 {
 	vr::InputDigitalActionData_t data{ 0 };
@@ -85,6 +94,32 @@ void VRInputAction::HandlePoseInput()
 	}
 }
 
+void VRInputAction::HandleSkeletalInput()
+{
+	vr::InputSkeletalActionData_t data{ 0 };
+	vr::EVRInputError result = vr::VRInput()->GetSkeletalActionData(m_handle, &data, sizeof(vr::InputSkeletalActionData_t));
+	if (result == vr::VRInputError_None)
+	{
+		if (data.bActive)
+		{
+			vr::VRSkeletalSummaryData_t summaryData{ 0 };
+			result = vr::VRInput()->GetSkeletalSummaryData(m_handle, vr::EVRSummaryType::VRSummaryType_FromAnimation, &summaryData);
+			if (result == vr::VRInputError_None)
+			{
+				(m_skeletalActionHandler)(summaryData, m_id);
+			}
+			else
+			{
+				gEngfuncs.Con_DPrintf("Error while trying to get skeletal summary data from input action %s. (Error code: %i)\n", m_id.data(), result);
+			}
+		}
+	}
+	else
+	{
+		gEngfuncs.Con_DPrintf("Error while trying to get skeletal input action %s. (Error code: %i)\n", m_id.data(), result);
+	}
+}
+
 void VRInputAction::HandleInput(bool isInGame)
 {
 	if (!isInGame && !m_handleWhenNotInGame)
@@ -100,6 +135,9 @@ void VRInputAction::HandleInput(bool isInGame)
 		break;
 	case ActionType::POSE:
 		HandlePoseInput();
+		break;
+	case ActionType::SKELETAL:
+		HandleSkeletalInput();
 		break;
 	default:
 		gEngfuncs.Con_DPrintf("VRInputAction::HandleInput: Invalid action type: %i\n", static_cast<int>(m_type));

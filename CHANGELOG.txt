@@ -192,3 +192,5 @@
 
 0.5.5
 * Reduced options for vr_multipass_mode to true display list and mixed display list
+* Added support for finger/hand skeleton input and corresponding cvar vr_min_fingercurl_for_grab
+

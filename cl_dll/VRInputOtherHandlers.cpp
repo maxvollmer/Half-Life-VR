@@ -117,5 +117,16 @@ namespace VR
 				g_vrInput.ExecuteCustomAction(action);
 			}
 		}
+
+		void Other::HandleLeftHandSkeleton(const vr::VRSkeletalSummaryData_t& data, const std::string& action)
+		{
+			g_vrInput.SetFingerSkeletalData(vr::TrackedControllerRole_LeftHand, data.flFingerCurl);
+		}
+
+		void Other::HandleRightHandSkeleton(const vr::VRSkeletalSummaryData_t& data, const std::string& action)
+		{
+			g_vrInput.SetFingerSkeletalData(vr::TrackedControllerRole_RightHand, data.flFingerCurl);
+		}
+
 	}
 }

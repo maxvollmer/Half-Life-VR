@@ -143,6 +143,13 @@ private:
 				}}
 			},
 			{
+				"c2a5",
+				{{
+					{ "*133", CrushMode::WHEN_MOVING },	// underwater ventilators in the canyon dam (need to be shut off from control tower)
+					{ "*134", CrushMode::WHEN_MOVING }
+				}}
+			},
+			{
 				"c2a5g",
 				{{
 					{ "*95", CrushMode::WHEN_MOVING },	// the cars being kicked by gargantua in that underground parking lot

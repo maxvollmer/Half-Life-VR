@@ -147,12 +147,14 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "LegacyUse", &VR::Input::Other::HandleLegacyUse);
 		RegisterAction("input", "LetGoOffLadder", &VR::Input::Other::HandleLetGoOffLadder);
 
-		// TODO: Add to actions.manifest
 		RegisterAction("input", "QuickSave", &VR::Input::Other::HandleQuickSave, true);
 		RegisterAction("input", "QuickLoad", &VR::Input::Other::HandleQuickLoad, true);
 		RegisterAction("input", "RestartCurrentMap", &VR::Input::Other::HandleRestartCurrentMap, true);
 		RegisterAction("input", "PauseGame", &VR::Input::Other::HandlePauseGame, true);
 		RegisterAction("input", "ExitGame", &VR::Input::Other::HandleExitGame, true);
+
+		RegisterAction("input", "LeftHandSkeleton", &VR::Input::Other::HandleLeftHandSkeleton);
+		RegisterAction("input", "RightHandSkeleton", &VR::Input::Other::HandleRightHandSkeleton);
 	}
 	if (RegisterActionSet("feedback", false))
 	{
@@ -265,6 +267,23 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 }
 
 bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame)
+{
+	std::string actionName = "/actions/" + actionSet + "/in/" + action;
+	vr::VRActionHandle_t handle{ 0 };
+	vr::EVRInputError result = vr::VRInput()->GetActionHandle(actionName.data(), &handle);
+	if (result != vr::VRInputError_None)
+	{
+		gEngfuncs.Con_DPrintf("Error while trying to register input action set /actions/%s. (Error code: %i)\n", actionSet, result);
+		return false;
+	}
+	else
+	{
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
+		return true;
+	}
+}
+
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::SkeletalActionHandler handler, bool handleWhenNotInGame)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -414,6 +433,8 @@ void VRInput::FireDamageFeedback(const std::string& action, float durationInSeco
 
 void VRInput::HandleInput(bool isInGame)
 {
+	m_fingerSkeletalData.clear();
+
 	std::vector<vr::VRActiveActionSet_t> activeActionSets;
 	std::vector<ActionSet*> actionSets;
 
@@ -474,4 +495,39 @@ float CalculateWeaponTimeOffset(float offset)
 		return offset * 1.f / analogfire;
 	}
 	return offset;
+}
+
+void VRInput::SetFingerSkeletalData(vr::ETrackedControllerRole controllerRole, const float fingerCurl[vr::VRFinger_Count])
+{
+	for (int i = 0; i < 5; i++)
+		m_fingerSkeletalData[vr::TrackedControllerRole_RightHand][i] = fingerCurl[i];
+}
+
+bool VRInput::HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, float fingerCurl[5]) const
+{
+	auto it = m_fingerSkeletalData.find(controllerRole);
+	if (it != m_fingerSkeletalData.end())
+	{
+		for (int i = 0; i < 5; i++)
+			fingerCurl[i] = it->second[i];
+		return true;
+	}
+	return false;
+}
+
+bool VRInput::AreFingersBendForDragging(vr::ETrackedControllerRole controllerRole) const
+{
+	float fingerCurl[5];
+	if (HasSkeletalDataForHand(controllerRole, fingerCurl))
+	{
+		const float minCurlForGrab = CVAR_GET_FLOAT("vr_min_fingercurl_for_grab") * 0.01f;
+		if (fingerCurl[vr::VRFinger_Thumb] > minCurlForGrab)
+		{
+			float total = 0.f;
+			for (int i = 1; i < 5; i++)
+				total += fingerCurl[i];
+			return total > (minCurlForGrab * 4.f);
+		}
+	}
+	return false;
 }

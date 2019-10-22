@@ -238,6 +238,16 @@
          "type" : "boolean"
       },
       {
+         "name": "/actions/input/in/LeftHandSkeleton",
+         "type": "skeleton",
+         "skeleton": "/skeleton/hand/left"
+      },
+      {
+         "name": "/actions/input/in/RightHandSkeleton",
+         "type": "skeleton",
+         "skeleton": "/skeleton/hand/left"
+      },
+      {
          "name" : "/actions/feedback/out/Recoil",
          "requirement" : "optional",
          "type" : "vibration"
@@ -459,6 +469,8 @@
          "/actions/input/in/Turn90Right" : "Turn 90° right",
          "/actions/input/in/TurnLeft" : "Turn left",
          "/actions/input/in/TurnRight" : "Turn right",
+         "/actions/input/in/LeftHandSkeleton" : "Left Hand Skeleton",
+         "/actions/input/in/RightHandSkeleton" : "Right Hand Skeleton",
          "/actions/poses" : "Controller Positions",
          "/actions/poses/in/Flashlight" : "Flashlight (If not set, flashlight is attached to left hand or right hand.)",
          "/actions/poses/in/Movement" : "Movement (If not set, movement follows HMD orientation.)",

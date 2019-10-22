@@ -60,6 +60,7 @@ public:
 	void RestoreCullface();
 
 	bool ShouldMirrorCurrentModel(cl_entity_t *ent);
+	bool IsCurrentModelHandWithSkeletalData(cl_entity_t* ent, float fingerCurl[5]);
 
 	// Called in Frame if no game is running
 	void RenderIntermissionRoom();
