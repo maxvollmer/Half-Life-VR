@@ -72,6 +72,15 @@ namespace
 	}
 }
 
+const char* GetAnimatedWeaponModelName(const char* modelName)
+{
+	auto it = g_animatedWeaponModelNameMap.find(modelName);
+	if (it != g_animatedWeaponModelNameMap.end())
+		return it->second;
+	else
+		return modelName;
+}
+
 
 VRController::~VRController()
 {
@@ -343,7 +352,7 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 	auto& modelInfo = VRModelHelper::GetInstance().GetModelInfo(pModel);
 	if (modelInfo.m_isValid && iAnim < modelInfo.m_numSequences)
 	{
-		ALERT(at_console, "VRController::PlayWeaponAnimation: Playing sequence %i of %i with framerate %.0f for %s\n", iAnim, modelInfo.m_numSequences, modelInfo.m_sequences[iAnim].framerate, STRING(m_modelName));
+		//ALERT(at_console, "VRController::PlayWeaponAnimation: Playing sequence %i of %i with framerate %.0f for %s\n", iAnim, modelInfo.m_numSequences, modelInfo.m_sequences[iAnim].framerate, STRING(m_modelName));
 		pModel->SetSequence(iAnim);
 	}
 	else

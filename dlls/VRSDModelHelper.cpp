@@ -64,6 +64,24 @@ const char* GetHDModel(const char* model)
 	return GetSafeModelCharPtr(hdModel);
 }
 
+extern const char* GetAnimatedWeaponModelName(const char* modelName);
+
+int PRECACHE_MODEL2(char* s)
+{
+	const char* anims = GetAnimatedWeaponModelName(s);
+	if (anims != s)
+		PRECACHE_MODEL3(const_cast<char*>(anims));
+	return PRECACHE_MODEL3(s);
+}
+
+int PRECACHE_GENERIC2(char* s)
+{
+	const char* anims = GetAnimatedWeaponModelName(s);
+	if (anims != s)
+		PRECACHE_GENERIC3(const_cast<char*>(anims));
+	return PRECACHE_GENERIC3(s);
+}
+
 int PRECACHE_MODEL(char* s)
 {
 	int sdModelIndex = -1;
