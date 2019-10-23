@@ -210,27 +210,27 @@ void CStudioModelRenderer::StudioCalcBoneAdj( float dadt, float *adj, const byte
 					int a, b;
 					a = (pcontroller1[j] + 128) % 256;
 					b = (pcontroller2[j] + 128) % 256;
-					value = ((a * dadt) + (b * (1 - dadt)) - 128) * (360.0/256.0) + pbonecontroller[j].start;
+					value = ((a * dadt) + (b * (1 - dadt)) - 128) * (360.0f/256.0f) + pbonecontroller[j].start;
 				}
 				else 
 				{
-					value = ((pcontroller1[i] * dadt + (pcontroller2[i]) * (1.0 - dadt))) * (360.0/256.0) + pbonecontroller[j].start;
+					value = ((pcontroller1[i] * dadt + (pcontroller2[i]) * (1.0f - dadt))) * (360.0f/256.0f) + pbonecontroller[j].start;
 				}
 			}
 			else 
 			{
-				value = (pcontroller1[i] * dadt + pcontroller2[i] * (1.0 - dadt)) / 255.0;
+				value = (pcontroller1[i] * dadt + pcontroller2[i] * (1.0f - dadt)) / 255.0f;
 				if (value < 0) value = 0;
-				if (value > 1.0) value = 1.0;
-				value = (1.0 - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
+				if (value > 1.0f) value = 1.0f;
+				value = (1.0f - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
 			}
 			// Con_DPrintf( "%d %d %f : %f\n", m_pCurrentEntity->curstate.controller[j], m_pCurrentEntity->latched.prevcontroller[j], value, dadt );
 		}
 		else
 		{
-			value = mouthopen / 64.0;
-			if (value > 1.0) value = 1.0;				
-			value = (1.0 - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
+			value = mouthopen / 64.0f;
+			if (value > 1.0f) value = 1.0f;				
+			value = (1.0f - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
 			// Con_DPrintf("%d %f\n", mouthopen, value );
 		}
 		switch(pbonecontroller[j].type & STUDIO_TYPES)
@@ -238,7 +238,7 @@ void CStudioModelRenderer::StudioCalcBoneAdj( float dadt, float *adj, const byte
 		case STUDIO_XR:
 		case STUDIO_YR:
 		case STUDIO_ZR:
-			adj[j] = value * (M_PI / 180.0);
+			adj[j] = value * (M_PI / 180.0f);
 			break;
 		case STUDIO_X:
 		case STUDIO_Y:
@@ -377,7 +377,7 @@ void CStudioModelRenderer::StudioCalcBonePosition( int frame, float s, mstudiobo
 				// and there's more data in the span
 				if (panimvalue->num.valid > k + 1)
 				{
-					pos[j] += (panimvalue[k+1].value * (1.0 - s) + s * panimvalue[k+2].value) * pbone->scale[j];
+					pos[j] += (panimvalue[k+1].value * (1.0f - s) + s * panimvalue[k+2].value) * pbone->scale[j];
 				}
 				else
 				{
@@ -389,7 +389,7 @@ void CStudioModelRenderer::StudioCalcBonePosition( int frame, float s, mstudiobo
 				// are we at the end of the repeating values section and there's another section with data?
 				if (panimvalue->num.total <= k + 1)
 				{
-					pos[j] += (panimvalue[panimvalue->num.valid].value * (1.0 - s) + s * panimvalue[panimvalue->num.valid + 2].value) * pbone->scale[j];
+					pos[j] += (panimvalue[panimvalue->num.valid].value * (1.0f - s) + s * panimvalue[panimvalue->num.valid + 2].value) * pbone->scale[j];
 				}
 				else
 				{
@@ -417,9 +417,9 @@ void CStudioModelRenderer::StudioSlerpBones( vec4_t q1[], float pos1[][3], vec4_
 	float		s1;
 
 	if (s < 0) s = 0;
-	else if (s > 1.0) s = 1.0;
+	else if (s > 1.0f) s = 1.0f;
 
-	s1 = 1.0 - s;
+	s1 = 1.0f - s;
 
 	for (i = 0; i < m_pStudioHeader->numbones; i++)
 	{
@@ -480,17 +480,17 @@ void CStudioModelRenderer::StudioPlayerBlend( mstudioseqdesc_t *pseqdesc, int *p
 	*pBlend = (*pPitch * 3);
 	if (*pBlend < pseqdesc->blendstart[0])
 	{
-		*pPitch -= pseqdesc->blendstart[0] / 3.0;
+		*pPitch -= pseqdesc->blendstart[0] / 3.0f;
 		*pBlend = 0;
 	}
 	else if (*pBlend > pseqdesc->blendend[0])
 	{
-		*pPitch -= pseqdesc->blendend[0] / 3.0;
+		*pPitch -= pseqdesc->blendend[0] / 3.0f;
 		*pBlend = 255;
 	}
 	else
 	{
-		if (pseqdesc->blendend[0] - pseqdesc->blendstart[0] < 0.1) // catch qc error
+		if (pseqdesc->blendend[0] - pseqdesc->blendstart[0] < 0.1f) // catch qc error
 			*pBlend = 127;
 		else
 			*pBlend = 255 * (*pBlend - pseqdesc->blendstart[0]) / (pseqdesc->blendend[0] - pseqdesc->blendstart[0]);
@@ -533,7 +533,7 @@ void CStudioModelRenderer::StudioSetUpTransform (int trivial_accept)
 		// don't do it if the goalstarttime hasn't updated in a while.
 
 		// NOTE:  Because we need to interpolate multiplayer characters, the interpolation time limit
-		//  was increased to 1.0 s., which is 2x the max lag we are accounting for.
+		//  was increased to 1.0f s., which is 2x the max lag we are accounting for.
 
 		if ( ( m_clTime < m_pCurrentEntity->curstate.animtime + 1.0f ) &&
 			 ( m_pCurrentEntity->curstate.animtime != m_pCurrentEntity->latched.prevanimtime ) )
@@ -544,8 +544,8 @@ void CStudioModelRenderer::StudioSetUpTransform (int trivial_accept)
 
 		if (m_fDoInterp)
 		{
-			// ugly hack to interpolate angle, position. current is reached 0.1 seconds after being set
-			f = f - 1.0;
+			// ugly hack to interpolate angle, position. current is reached 0.1f seconds after being set
+			f = f - 1.0f;
 		}
 		else
 		{
@@ -559,7 +559,7 @@ void CStudioModelRenderer::StudioSetUpTransform (int trivial_accept)
 
 		// NOTE:  Because multiplayer lag can be relatively large, we don't want to cap
 		//  f at 1.5 anymore.
-		//if (f > -1.0 && f < 1.5) {}
+		//if (f > -1.0f && f < 1.5) {}
 
 //			Con_DPrintf("%.0f %.0f\n",m_pCurrentEntity->msg_angles[0][YAW], m_pCurrentEntity->msg_angles[1][YAW] );
 		for (i = 0; i < 3; i++)
@@ -619,10 +619,10 @@ void CStudioModelRenderer::StudioSetUpTransform (int trivial_accept)
 			for (i=0 ; i<4 ; i++)
 			{
 				(*m_paliastransform)[0][i] *= m_fSoftwareXScale *
-						(1.0 / (ZISCALE * 0x10000));
+						(1.0f / (ZISCALE * 0x10000));
 				(*m_paliastransform)[1][i] *= m_fSoftwareYScale *
-						(1.0 / (ZISCALE * 0x10000));
-				(*m_paliastransform)[2][i] *= 1.0 / (ZISCALE * 0x10000);
+						(1.0f / (ZISCALE * 0x10000));
+				(*m_paliastransform)[2][i] *= 1.0f / (ZISCALE * 0x10000);
 
 			}
 		}
@@ -642,14 +642,14 @@ StudioEstimateInterpolant
 */
 float CStudioModelRenderer::StudioEstimateInterpolant( void )
 {
-	float dadt = 1.0;
+	float dadt = 1.0f;
 
-	if ( m_fDoInterp && ( m_pCurrentEntity->curstate.animtime >= m_pCurrentEntity->latched.prevanimtime + 0.01 ) )
+	if ( m_fDoInterp && ( m_pCurrentEntity->curstate.animtime >= m_pCurrentEntity->latched.prevanimtime + 0.01f ) )
 	{
-		dadt = (m_clTime - m_pCurrentEntity->curstate.animtime) / 0.1;
-		if (dadt > 2.0)
+		dadt = (m_clTime - m_pCurrentEntity->curstate.animtime) / 0.1f;
+		if (dadt > 2.0f)
 		{
-			dadt = 2.0;
+			dadt = 2.0f;
 		}
 	}
 	return dadt;
@@ -678,9 +678,9 @@ void CStudioModelRenderer::StudioCalcRotations ( float pos[][3], vec4_t *q, mstu
 	// BUG ( somewhere else ) but this code should validate this data.
 	// This could cause a crash if the frame # is negative, so we'll go ahead
 	//  and clamp it here
-	else if ( f < -0.01 )
+	else if ( f < -0.01f )
 	{
-		f = -0.01;
+		f = -0.01f;
 	}
 
 	frame = (int)f;
@@ -711,18 +711,18 @@ void CStudioModelRenderer::StudioCalcRotations ( float pos[][3], vec4_t *q, mstu
 
 	if (pseqdesc->motiontype & STUDIO_X)
 	{
-		pos[pseqdesc->motionbone][0] = 0.0;
+		pos[pseqdesc->motionbone][0] = 0.0f;
 	}
 	if (pseqdesc->motiontype & STUDIO_Y)
 	{
-		pos[pseqdesc->motionbone][1] = 0.0;
+		pos[pseqdesc->motionbone][1] = 0.0f;
 	}
 	if (pseqdesc->motiontype & STUDIO_Z)
 	{
-		pos[pseqdesc->motionbone][2] = 0.0;
+		pos[pseqdesc->motionbone][2] = 0.0f;
 	}
 
-	s = 0 * ((1.0 - (f - (int)(f))) / (pseqdesc->numframes)) * m_pCurrentEntity->curstate.framerate;
+	s = 0 * ((1.0f - (f - (int)(f))) / (pseqdesc->numframes)) * m_pCurrentEntity->curstate.framerate;
 
 	if (pseqdesc->motiontype & STUDIO_LX)
 	{
@@ -771,7 +771,7 @@ void CStudioModelRenderer::StudioFxTransform( cl_entity_t *ent, float transform[
 		{
 			float scale;
 
-			scale = 1.0 + ( m_clTime - ent->curstate.animtime) * 10.0;
+			scale = 1.0f + ( m_clTime - ent->curstate.animtime) * 10.0f;
 			if ( scale > 2 )	// Don't blow up more than 200%
 				scale = 2;
 			transform[0][1] *= scale;
@@ -834,13 +834,13 @@ float CStudioModelRenderer::StudioEstimateFrame( mstudioseqdesc_t *pseqdesc )
 	}
 	else 
 	{
-		if (f >= pseqdesc->numframes - 1.001) 
+		if (f >= pseqdesc->numframes - 1.001f) 
 		{
-			f = pseqdesc->numframes - 1.001;
+			f = pseqdesc->numframes - 1.001f;
 		}
-		if (f < 0.0) 
+		if (f < 0.0f) 
 		{
-			f = 0.0;
+			f = 0.0f;
 		}
 	}
 	return f;
@@ -855,7 +855,7 @@ StudioSetupBones
 void CStudioModelRenderer::StudioSetupBones ( void )
 {
 	int					i;
-	double				f;
+	float				f;
 
 	mstudiobone_t		*pbones;
 	mstudioseqdesc_t	*pseqdesc;
@@ -898,7 +898,7 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 		StudioCalcRotations( pos2, q2, pseqdesc, panim, f );
 
 		dadt = StudioEstimateInterpolant();
-		s = (m_pCurrentEntity->curstate.blending[0] * dadt + m_pCurrentEntity->latched.prevblending[0] * (1.0 - dadt)) / 255.0;
+		s = (m_pCurrentEntity->curstate.blending[0] * dadt + m_pCurrentEntity->latched.prevblending[0] * (1.0f - dadt)) / 255.0f;
 
 		StudioSlerpBones( q, pos, q2, pos2, s );
 
@@ -910,10 +910,10 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 			panim += m_pStudioHeader->numbones;
 			StudioCalcRotations( pos4, q4, pseqdesc, panim, f );
 
-			s = (m_pCurrentEntity->curstate.blending[0] * dadt + m_pCurrentEntity->latched.prevblending[0] * (1.0 - dadt)) / 255.0;
+			s = (m_pCurrentEntity->curstate.blending[0] * dadt + m_pCurrentEntity->latched.prevblending[0] * (1.0f - dadt)) / 255.0f;
 			StudioSlerpBones( q3, pos3, q4, pos4, s );
 
-			s = (m_pCurrentEntity->curstate.blending[1] * dadt + m_pCurrentEntity->latched.prevblending[1] * (1.0 - dadt)) / 255.0;
+			s = (m_pCurrentEntity->curstate.blending[1] * dadt + m_pCurrentEntity->latched.prevblending[1] * (1.0f - dadt)) / 255.0f;
 			StudioSlerpBones( q, pos, q3, pos3, s );
 		}
 	}
@@ -938,7 +938,7 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 			panim += m_pStudioHeader->numbones;
 			StudioCalcRotations( pos2, q2, pseqdesc, panim, m_pCurrentEntity->latched.prevframe );
 
-			s = (m_pCurrentEntity->latched.prevseqblending[0]) / 255.0;
+			s = (m_pCurrentEntity->latched.prevseqblending[0]) / 255.0f;
 			StudioSlerpBones( q1b, pos1b, q2, pos2, s );
 
 			if (pseqdesc->numblends == 4)
@@ -949,15 +949,15 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 				panim += m_pStudioHeader->numbones;
 				StudioCalcRotations( pos4, q4, pseqdesc, panim, m_pCurrentEntity->latched.prevframe );
 
-				s = (m_pCurrentEntity->latched.prevseqblending[0]) / 255.0;
+				s = (m_pCurrentEntity->latched.prevseqblending[0]) / 255.0f;
 				StudioSlerpBones( q3, pos3, q4, pos4, s );
 
-				s = (m_pCurrentEntity->latched.prevseqblending[1]) / 255.0;
+				s = (m_pCurrentEntity->latched.prevseqblending[1]) / 255.0f;
 				StudioSlerpBones( q1b, pos1b, q3, pos3, s );
 			}
 		}
 
-		s = 1.0 - (m_clTime - m_pCurrentEntity->latched.sequencetime) / 0.2;
+		s = 1.0f - (m_clTime - m_pCurrentEntity->latched.sequencetime) / 0.2;
 		StudioSlerpBones( q, pos, q1b, pos1b, s );
 	}
 	else
@@ -1096,7 +1096,7 @@ StudioMergeBones
 void CStudioModelRenderer::StudioMergeBones ( model_t *m_pSubModel )
 {
 	int					i, j;
-	double				f;
+	float				f;
 	int					do_hunt = true;
 
 	mstudiobone_t		*pbones;
@@ -1418,7 +1418,7 @@ void CStudioModelRenderer::StudioEstimateGait( entity_state_t *pplayer )
 	dt = (m_clTime - m_clOldTime);
 	if (dt < 0)
 		dt = 0;
-	else if (dt > 1.0)
+	else if (dt > 1.0f)
 		dt = 1;
 
 	if (dt == 0 || m_pPlayerInfo->renderframe == m_nFrameCount)
@@ -1508,7 +1508,7 @@ void CStudioModelRenderer::StudioProcessGait( entity_state_t *pplayer )
 	dt = (m_clTime - m_clOldTime);
 	if (dt < 0)
 		dt = 0;
-	else if (dt > 1.0)
+	else if (dt > 1.0f)
 		dt = 1;
 
 	StudioEstimateGait( pplayer );
@@ -1537,10 +1537,10 @@ void CStudioModelRenderer::StudioProcessGait( entity_state_t *pplayer )
 	}
 
 	// adjust torso
-	m_pCurrentEntity->curstate.controller[0] = ((flYaw / 4.0) + 30) / (60.0 / 255.0);
-	m_pCurrentEntity->curstate.controller[1] = ((flYaw / 4.0) + 30) / (60.0 / 255.0);
-	m_pCurrentEntity->curstate.controller[2] = ((flYaw / 4.0) + 30) / (60.0 / 255.0);
-	m_pCurrentEntity->curstate.controller[3] = ((flYaw / 4.0) + 30) / (60.0 / 255.0);
+	m_pCurrentEntity->curstate.controller[0] = ((flYaw / 4.0f) + 30) / (60.0f / 255.0f);
+	m_pCurrentEntity->curstate.controller[1] = ((flYaw / 4.0f) + 30) / (60.0f / 255.0f);
+	m_pCurrentEntity->curstate.controller[2] = ((flYaw / 4.0f) + 30) / (60.0f / 255.0f);
+	m_pCurrentEntity->curstate.controller[3] = ((flYaw / 4.0f) + 30) / (60.0f / 255.0f);
 	m_pCurrentEntity->latched.prevcontroller[0] = m_pCurrentEntity->curstate.controller[0];
 	m_pCurrentEntity->latched.prevcontroller[1] = m_pCurrentEntity->curstate.controller[1];
 	m_pCurrentEntity->latched.prevcontroller[2] = m_pCurrentEntity->curstate.controller[2];

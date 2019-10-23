@@ -731,8 +731,8 @@ void DLLEXPORT HUD_TempEntUpdate (
 				pTemp->x += pTemp->entity.baseline.origin[0] * frametime;
 				pTemp->y += pTemp->entity.baseline.origin[1] * frametime;
 
-				pTemp->entity.origin[0] = pTemp->x + sin( pTemp->entity.baseline.origin[2] + client_time * pTemp->entity.prevstate.frame ) * (10*pTemp->entity.curstate.framerate);
-				pTemp->entity.origin[1] = pTemp->y + sin( pTemp->entity.baseline.origin[2] + fastFreq + 0.7 ) * (8*pTemp->entity.curstate.framerate);
+				pTemp->entity.origin[0] = pTemp->x + sinf( pTemp->entity.baseline.origin[2] + client_time * pTemp->entity.prevstate.frame ) * (10*pTemp->entity.curstate.framerate);
+				pTemp->entity.origin[1] = pTemp->y + sinf( pTemp->entity.baseline.origin[2] + fastFreq + 0.7f ) * (8*pTemp->entity.curstate.framerate);
 				pTemp->entity.origin[2] += pTemp->entity.baseline.origin[2] * frametime;
 			}
 			else if ( pTemp->flags & FTENT_SPIRAL )

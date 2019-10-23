@@ -101,9 +101,9 @@ public:
 public:
 
 	// Client clock
-	double			m_clTime;				
+	double			m_clTime;
 	// Old Client clock
-	double			m_clOldTime;			
+	double			m_clOldTime;
 
 	// Do interpolation?
 	int				m_fDoInterp;			
