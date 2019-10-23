@@ -197,4 +197,4 @@
 * Added "About" section that displays contents of README.txt to HLVRLauncher
 * Added credits for betatesters, patreons and third party helpers to README.txt
 * Added release date to README.txt and clarified some things
-* 
+
