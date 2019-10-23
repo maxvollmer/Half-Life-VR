@@ -852,7 +852,18 @@ StudioSetupBones
 
 ====================
 */
-void CStudioModelRenderer::StudioSetupBones ( void )
+void CStudioModelRenderer::StudioSetupBones(void)
+{
+	StudioSetupBonesInline(*m_pbonetransform, *m_plighttransform);
+}
+
+/*
+====================
+StudioSetupBonesInline
+
+====================
+*/
+void CStudioModelRenderer::StudioSetupBonesInline(float bonetransform[MAXSTUDIOBONES][3][4], float lighttransform[MAXSTUDIOBONES][3][4], float* overrideFrame)
 {
 	int					i;
 	float				f;
@@ -879,12 +890,7 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 
 	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;
 
-	f = StudioEstimateFrame( pseqdesc );
-
-	if (m_pCurrentEntity->latched.prevframe > f)
-	{
-		//Con_DPrintf("%f %f\n", m_pCurrentEntity->prevframe, f );
-	}
+	f = overrideFrame ? *overrideFrame : StudioEstimateFrame( pseqdesc );
 
 	panim = StudioGetAnim( m_pRenderModel, pseqdesc );
 	StudioCalcRotations( pos, q, pseqdesc, panim, f );
@@ -990,6 +996,10 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 		}
 	}
 
+	// backup rotation matrix
+	float rotationmatrix_backup[3][4];
+	MatrixCopy(*m_protationmatrix, rotationmatrix_backup);
+
 	// Added studio model scaling - Max Vollmer, 2017-08-26
 	if (g_curFrameTempEnts.count(m_pCurrentEntity) == 0
 		&& m_pCurrentEntity->curstate.scale > 0.f
@@ -1039,27 +1049,27 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 		{
 			if ( IEngineStudio.IsHardware() )
 			{
-				ConcatTransforms ((*m_protationmatrix), bonematrix, (*m_pbonetransform)[i]);
-
-				// MatrixCopy should be faster...
-				//ConcatTransforms ((*m_protationmatrix), bonematrix, (*m_plighttransform)[i]);
-				MatrixCopy( (*m_pbonetransform)[i], (*m_plighttransform)[i] );
+				ConcatTransforms((*m_protationmatrix), bonematrix, bonetransform[i]);
+				MatrixCopy(bonetransform[i], lighttransform[i]);
 			}
 			else
 			{
-				ConcatTransforms ((*m_paliastransform), bonematrix, (*m_pbonetransform)[i]);
-				ConcatTransforms ((*m_protationmatrix), bonematrix, (*m_plighttransform)[i]);
+				ConcatTransforms((*m_paliastransform), bonematrix, bonetransform[i]);
+				ConcatTransforms((*m_protationmatrix), bonematrix, lighttransform[i]);
 			}
 
 			// Apply client-side effects to the transformation matrix
-			StudioFxTransform( m_pCurrentEntity, (*m_pbonetransform)[i] );
+			StudioFxTransform(m_pCurrentEntity, bonetransform[i]);
 		} 
 		else 
 		{
-			ConcatTransforms ((*m_pbonetransform)[pbones[i].parent], bonematrix, (*m_pbonetransform)[i]);
-			ConcatTransforms ((*m_plighttransform)[pbones[i].parent], bonematrix, (*m_plighttransform)[i]);
+			ConcatTransforms(bonetransform[pbones[i].parent], bonematrix, bonetransform[i]);
+			ConcatTransforms(lighttransform[pbones[i].parent], bonematrix, lighttransform[i]);
 		}
 	}
+
+	// restore rotation matrix
+	MatrixCopy(rotationmatrix_backup, *m_protationmatrix);
 }
 
 
@@ -1303,7 +1313,7 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 	}
 	else
 	{
-		float fingerCurl[5];
+		float fingerCurl[Finger_Count];
 		if (gVRRenderer.IsCurrentModelHandWithSkeletalData(m_pCurrentEntity, fingerCurl))
 		{
 			// Use skeletal data from OpenVR to animate curled fingers on hand models:
@@ -1315,37 +1325,40 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 			m_pCurrentEntity->curstate.frame = 0;
 			m_pCurrentEntity->curstate.framerate = 0;
 			m_pCurrentEntity->curstate.animtime = m_clTime;
-
-			void* backupbonetransformpointer = m_pbonetransform;
-			void* backuplighttransformpointer = m_plighttransform;
-
-			float pGrabbingBoneTransform[MAXSTUDIOBONES][3][4];
-			float pGrabbingLightTransform[MAXSTUDIOBONES][3][4];
-			m_pbonetransform = &pGrabbingBoneTransform;
-			m_plighttransform = &pGrabbingLightTransform;
-
-			m_pCurrentEntity->curstate.sequence = FULLGRAB_END;
-			StudioSetupBones();
-
-			m_pbonetransform = (float(*)[MAXSTUDIOBONES][3][4])backupbonetransformpointer;
-			m_plighttransform = (float(*)[MAXSTUDIOBONES][3][4])backuplighttransformpointer;
-
 			m_pCurrentEntity->curstate.sequence = IDLE;
 			StudioSetupBones();
 
 			mstudiobone_t* pbones = (mstudiobone_t*)((byte*)m_pStudioHeader + m_pStudioHeader->boneindex);
-			for (int i = 0; i < m_pStudioHeader->numbones; i++)
+			for (int finger = 0; finger < Finger_Count; finger++)
 			{
-				for (int finger = 0; finger < Finger_Count; finger++)
+				float f = fingerCurl[finger];
+				if (f > 0.f)
 				{
-					if (IsFingerBoneName(Finger(finger), pbones[i].name))
+					m_pCurrentEntity->curstate.frame = 0;
+					m_pCurrentEntity->curstate.framerate = 0;
+					m_pCurrentEntity->curstate.animtime = m_clTime;
+					m_pCurrentEntity->curstate.sequence = FULLGRAB_START;
+
+					mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;
+					float overrideFrame = pseqdesc->numframes * f;
+
+					float pGrabbingBoneTransform[MAXSTUDIOBONES][3][4];
+					float pGrabbingLightTransform[MAXSTUDIOBONES][3][4];
+					StudioSetupBonesInline(pGrabbingBoneTransform, pGrabbingLightTransform, &overrideFrame);
+
+					for (int i = 0; i < m_pStudioHeader->numbones; i++)
 					{
-						StudioInterpolateMatrices((*m_pbonetransform)[i], pGrabbingBoneTransform[i], fingerCurl[finger]);
-						StudioInterpolateMatrices((*m_plighttransform)[i], pGrabbingLightTransform[i], fingerCurl[finger]);
-						break;
+						if (IsFingerBoneName(Finger(finger), pbones[i].name))
+						{
+							MatrixCopy((*m_pbonetransform)[i], pGrabbingBoneTransform[i]);
+							MatrixCopy((*m_plighttransform)[i], pGrabbingLightTransform[i]);
+							break;
+						}
 					}
 				}
 			}
+
+			m_pCurrentEntity->curstate.sequence = IDLE;
 		}
 		else
 		{

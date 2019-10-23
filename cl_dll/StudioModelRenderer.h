@@ -98,6 +98,11 @@ public:
 	// Process movement of player
 	virtual void StudioProcessGait ( entity_state_t *pplayer );
 
+private:
+	// Calculates bones for given matrices, leaving m_pbonetransform and m_plighttransform intact
+	// Max Vollmer, 2019-10-23
+	void StudioSetupBonesInline(float bonetransform[MAXSTUDIOBONES][3][4], float lighttransform[MAXSTUDIOBONES][3][4], float* overrideFrame = nullptr);
+
 public:
 
 	// Client clock

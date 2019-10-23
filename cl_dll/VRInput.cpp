@@ -500,7 +500,7 @@ float CalculateWeaponTimeOffset(float offset)
 void VRInput::SetFingerSkeletalData(vr::ETrackedControllerRole controllerRole, const float fingerCurl[vr::VRFinger_Count])
 {
 	for (int i = 0; i < 5; i++)
-		m_fingerSkeletalData[vr::TrackedControllerRole_RightHand][i] = fingerCurl[i];
+		m_fingerSkeletalData[controllerRole][i] = fingerCurl[i];
 }
 
 bool VRInput::HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, float fingerCurl[5]) const
