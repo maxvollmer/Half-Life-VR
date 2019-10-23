@@ -23,14 +23,17 @@ namespace HLVRLauncher.Utilities
         public static string VROpenvr_apidll { get { return Path.Combine(HLVRPaths.VRDirectory, "openvr_api.dll"); } }
         public static string VREasyHook32dll { get { return Path.Combine(HLVRPaths.VRDirectory, "EasyHook32.dll"); } }
 
+
         public static string HLOpengl32dll { get { return Path.Combine(HLVRPaths.HLDirectory, "opengl32.dll"); } }
         public static string HLOpenvr_apidll { get { return Path.Combine(HLVRPaths.HLDirectory, "openvr_api.dll"); } }
         public static string HLEasyHook32dll { get { return Path.Combine(HLVRPaths.HLDirectory, "EasyHook32.dll"); } }
 
         public static string HLExecutable { get { return Path.Combine(HLVRPaths.HLDirectory, "hl.exe"); } }
 
+
         public static string VRSettingsFileName { get { return "hlvrsettings.cfg"; } }
         public static string VRSettingsFile { get { return Path.Combine(HLVRPaths.VRDirectory, VRSettingsFileName); } }
+        public static string VRReadme { get { return Path.Combine(HLVRPaths.VRDirectory, "README.txt"); } }
 
 
         public static string MetaHookExe { get { return Path.Combine(HLVRPaths.HLDirectory, "MetaHook.exe"); } }

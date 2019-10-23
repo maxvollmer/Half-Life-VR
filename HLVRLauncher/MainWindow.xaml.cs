@@ -3,6 +3,7 @@ using HLVRLauncher.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,10 +48,25 @@ namespace HLVRLauncher
                 InitializeNotifyIcon();
                 UpdateState();
                 HandleInitialSettings();
+                LoadReadme();
             }
             catch (CancelAndTerminateAppException)
             {
                 System.Windows.Application.Current.Shutdown();
+            }
+        }
+
+        private void LoadReadme()
+        {
+            AboutText.Inlines.Clear();
+            try
+            {
+                AboutText.Inlines.Add(File.ReadAllText(HLVRPaths.VRReadme, Encoding.UTF8));
+            }
+            catch(IOException e)
+            {
+                AboutText.Inlines.Clear();
+                AboutText.Inlines.Add("Couldn't load README.txt: " + e.Message);
             }
         }
 

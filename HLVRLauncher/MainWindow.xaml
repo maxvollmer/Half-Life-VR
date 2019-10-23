@@ -74,6 +74,16 @@
                     <StackPanel Orientation="Vertical" x:Name="CustomInputActions"/>
                 </ScrollViewer>
             </TabItem>
+            <TabItem Header="About">
+                <DockPanel>
+                    <RichTextBox Background="Transparent" BorderThickness="1" Padding="5" Margin="10" DockPanel.Dock="Bottom" IsReadOnly="True"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
+                        <FlowDocument PageWidth="999999">
+                            <Paragraph FontSize="14" FontFamily="Courier New" x:Name="AboutText"></Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                </DockPanel>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>

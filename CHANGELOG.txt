@@ -190,7 +190,11 @@
 * Fixed crash when trying to load texture that doesn't exist
 * Fixed deploy animation in 9mmAR weapon model without animated movement
 
-0.5.5
+0.5.5-beta - 2019-10-23
 * Reduced options for vr_multipass_mode to true display list and mixed display list
 * Added support for finger/hand skeleton input and corresponding cvar vr_min_fingercurl_for_grab
+* Updated version scheme to include "beta" (all versions have been alpha or beta so far, but the version numbers didn't express this)
+* Added "About" section that displays contents of README.txt to HLVRLauncher
+* Added credits for betatesters, patreons and third party helpers to README.txt
+* Added release date to README.txt and clarified some things
 
