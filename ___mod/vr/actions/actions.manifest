@@ -239,13 +239,15 @@
       },
       {
          "name": "/actions/input/in/LeftHandSkeleton",
+         "requirement" : "optional",
          "type": "skeleton",
          "skeleton": "/skeleton/hand/left"
       },
       {
          "name": "/actions/input/in/RightHandSkeleton",
+         "requirement" : "optional",
          "type": "skeleton",
-         "skeleton": "/skeleton/hand/left"
+         "skeleton": "/skeleton/hand/right"
       },
       {
          "name" : "/actions/feedback/out/Recoil",
