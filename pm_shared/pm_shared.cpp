@@ -45,6 +45,7 @@ extern bool VRGetMoveOnlyUpDownOnLadder();
 extern int VRGetGrabbedLadder(int player);   // For client or server to use to identify (index into edicts or cl_entities)
 inline bool VRIsGrabbingLadder() { return VRGetGrabbedLadder(pmove->player_index) > 0; }
 extern bool VRIsPullingOnLedge(int player);
+extern bool VRIsAutoDuckingEnabled(int player);
 
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
@@ -3258,6 +3259,62 @@ void PM_ReduceTimers( void )
 	}
 }
 
+void PM_HandleMovement(physent_t* pLadder)
+{
+	// Handle movement
+	switch (pmove->movetype)
+	{
+	default:
+		pmove->Con_DPrintf("Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", pmove->movetype, pmove->server);
+		break;
+
+	case MOVETYPE_NONE:
+		break;
+
+	case MOVETYPE_TOSS:
+	case MOVETYPE_BOUNCE:
+		PM_Physics_Toss();
+		break;
+
+	case MOVETYPE_FLY:
+
+		PM_CheckWater();
+
+		// Was jump button pressed?
+		// If so, set velocity to 270 away from ladder.  This is currently wrong.
+		// Also, set MOVE_TYPE to walk, too.
+		if (pmove->cmd.buttons & IN_JUMP)
+		{
+			if (!pLadder)
+			{
+				PM_Jump();
+			}
+		}
+		else
+		{
+			pmove->oldbuttons &= ~IN_JUMP;
+		}
+
+		// Perform the move accounting for any base velocity.
+		VectorAdd(pmove->velocity, pmove->basevelocity, pmove->velocity);
+		PM_FlyMove();
+		VectorSubtract(pmove->velocity, pmove->basevelocity, pmove->velocity);
+		break;
+
+	case MOVETYPE_NOCLIP:	// In VR player movetype is always NOCLIP so doors, elevators etc don't crush us
+	case MOVETYPE_WALK:
+		if (VRGlobalGetNoclipMode())
+		{
+			PM_NoClip(false);
+		}
+		else
+		{
+			PM_YesClip(pLadder);	// Moved all the walking code in this switch-statement to its own method
+		}
+		break;
+	}
+}
+
 /*
 =============
 PlayerMove
@@ -3370,89 +3427,112 @@ void PM_PlayerMove ( qboolean server )
 	// Always calculate movement (on land) as if ducking, then afterwards unduck if possible or stay ducked if not possible (this essentially makes players autoduck if necessary)
 	// In water we don't do this, as it messes with waterjump
 	bool isDucking = pmove->usehull == 1;
-	bool tryAutoDuck = !isDucking && !pLadder && pmove->waterlevel == 0;
-	if (tryAutoDuck)
+	bool tryAutoDuck = VRIsAutoDuckingEnabled(pmove->player_index) && !isDucking && !pLadder && pmove->waterlevel == 0;
+
+	if (tryAutoDuck && pmove->onground != -1)
 	{
-		pmove->usehull = 1;
-		pmove->flags |= FL_DUCKING;
-		pmove->origin[2] += pmove->player_mins[0][2] - pmove->player_mins[1][2];
-		PM_FixPlayerCrouchStuck(STUCK_MOVEUP, 8);
-		PM_FixPlayerCrouchStuck(STUCK_MOVEDOWN, 8);
-	}
-
-	// Handle movement
-	switch ( pmove->movetype )
-	{
-	default:
-		pmove->Con_DPrintf("Bogus pmove player movetype %i on (%i) 0=cl 1=sv\n", pmove->movetype, pmove->server);
-		break;
-
-	case MOVETYPE_NONE:
-		break;
-
-	case MOVETYPE_TOSS:
-	case MOVETYPE_BOUNCE:
-		PM_Physics_Toss();
-		break;
-
-	case MOVETYPE_FLY:
-
-		PM_CheckWater();
-
-		// Was jump button pressed?
-		// If so, set velocity to 270 away from ladder.  This is currently wrong.
-		// Also, set MOVE_TYPE to walk, too.
-		if (pmove->cmd.buttons & IN_JUMP)
+		// same logic as in PM_CategorizePosition()
+		vec3_t point;
+		VectorCopy(pmove->origin, point);
+		point[2] -= 2.f;
+		auto tr = pmove->PM_PlayerTrace(pmove->origin, point, PM_NORMAL, -1);
+		// don't auto crouch if surface isn't horizontal
+		if (tr.fraction >= 1.f || tr.plane.normal[2] < 1.f)
 		{
-			if (!pLadder)
-			{
-				PM_Jump();
-			}
+			tryAutoDuck = false;
 		}
-		else
-		{
-			pmove->oldbuttons &= ~IN_JUMP;
-		}
-
-		// Perform the move accounting for any base velocity.
-		VectorAdd (pmove->velocity, pmove->basevelocity, pmove->velocity);
-		PM_FlyMove ();
-		VectorSubtract (pmove->velocity, pmove->basevelocity, pmove->velocity);
-		break;
-
-	case MOVETYPE_NOCLIP:	// In VR player movetype is always NOCLIP so doors, elevators etc don't crush us
-	case MOVETYPE_WALK:
-		if (VRGlobalGetNoclipMode())
-		{
-			PM_NoClip(false);
-		}
-		else
-		{
-			PM_YesClip(pLadder);	// Moved all the walking code in this switch-statement to its own method
-		}
-		break;
 	}
 
 	if (tryAutoDuck)
 	{
+		// Backup original origin
 		vec3_t original_origin;
 		VectorCopy(pmove->origin, original_origin);
 
+		// Move standing up
+		PM_HandleMovement(pLadder);
+
+		// Backup standmove origin
+		vec3_t standmove_origin;
+		VectorCopy(pmove->origin, standmove_origin);
+
+		// Restore original origin
+		VectorCopy(original_origin, pmove->origin);
+		PM_CategorizePosition();
+
+		// Set crouching
+		pmove->usehull = 1;
+		pmove->flags |= FL_DUCKING;
+		pmove->origin[2] = pmove->origin[2] + pmove->player_mins[0][2] - pmove->player_mins[1][2];
+
+		// Make sure we stay onground when switching to crouching
+		if (pmove->onground != -1)
+		{
+			PM_CategorizePosition();
+			int tries = 0;
+			while (pmove->onground == -1 && tries < 20)
+			{
+				pmove->origin[2] -= 0.1f;
+				PM_CategorizePosition();
+				tries++;
+			}
+			// if we can't get properly back on ground, smth is wrong, and we cannot reliably do auto-crouch (steep ground or whatever), cancel and use standing movement
+			if (pmove->onground == -1)
+			{
+				VectorCopy(standmove_origin, pmove->origin);
+				PM_CategorizePosition();
+				return;
+			}
+		}
+
+		// Move crouching
+		PM_HandleMovement(pLadder);
+
+		// Backup duckmove origin
+		vec3_t duckmove_origin;
+		VectorCopy(pmove->origin, duckmove_origin);
+
+		// Get distance moved ducking and standing
+		vec3_t standmove_dist;
+		vec3_t duckmove_dist;
+		VectorSubtract(standmove_origin, original_origin, standmove_dist);
+		VectorSubtract(duckmove_origin, original_origin, duckmove_dist);
+
+		// Restore standing
 		pmove->usehull = 0;
 		pmove->flags &= ~FL_DUCKING;
-		pmove->origin[2] += pmove->player_mins[1][2] - pmove->player_mins[0][2];
 
-		PM_FixPlayerCrouchStuck(STUCK_MOVEUP, 8);
-		PM_FixPlayerCrouchStuck(STUCK_MOVEDOWN, 8);
-
-		if (pmove->PM_TestPlayerPosition(pmove->origin, NULL) >= 0)
+		// Use ducking if we walked 50% further ducking than standing (happens on entering something where we must duck)
+		if (Length2D(duckmove_dist) > Length2D(standmove_dist) * 1.5f)
 		{
-			// stuck when standing, stay ducked
-			pmove->usehull = 1;
-			pmove->flags |= FL_DUCKING;
-			VectorCopy(original_origin, pmove->origin);
+			// check if we can actually stand at the ducking origin!
+			vec3_t standing_ducking_origin;
+			VectorCopy(duckmove_origin, standing_ducking_origin);
+			standing_ducking_origin[2] = standing_ducking_origin[2] + pmove->player_mins[1][2] - pmove->player_mins[0][2];
+			if (pmove->PM_TestPlayerPosition(standing_ducking_origin, NULL) < 0)
+			{
+				// use standing origin, if we can actually stand at the ducking origin!
+				VectorCopy(standmove_origin, pmove->origin);
+			}
+			else
+			{
+				// ducking origin is further away, and we can't stand here, really use ducking origin and stay ducked
+				pmove->usehull = 1;
+				pmove->flags |= FL_DUCKING;
+				VectorCopy(duckmove_origin, pmove->origin);
+			}
+		}
+		else // Use standing otherwise
+		{
+			VectorCopy(standmove_origin, pmove->origin);
 		}
 	}
+	else
+	{
+		PM_HandleMovement(pLadder);
+	}
+
+	PM_CategorizePosition();
 }
 
 void PM_CreateStuckTable( void )

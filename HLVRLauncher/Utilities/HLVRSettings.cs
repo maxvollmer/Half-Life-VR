@@ -123,6 +123,7 @@ namespace HLVRLauncher.Utilities
                 { "vr_rl_ducking_enabled", Setting.Create( "Enable real-life crouch detection", true ) },
                 { "vr_rl_duck_height", Setting.Create( "Real-life crouch height", 100 ) },
                 { "vr_playerturn_enabled", Setting.Create( "Enable player turning", true ) },
+                { "vr_autocrouch_enabled", Setting.Create( "Enabled automatic crouching", true ) },
                 { "vr_move_analogforward_inverted", Setting.Create( "Invert analog forward input", false ) },
                 { "vr_move_analogsideways_inverted", Setting.Create( "Invert analog sideways input", false ) },
                 { "vr_move_analogupdown_inverted", Setting.Create( "Invert analog updown input", false ) },

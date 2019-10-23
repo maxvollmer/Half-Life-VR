@@ -117,3 +117,8 @@ bool VRIsPullingOnLedge(int player)
 
 	return pPlayer->m_vrIsPullingOnLedge;
 }
+
+bool VRIsAutoDuckingEnabled(int player)
+{
+	return CVAR_GET_FLOAT("vr_autocrouch_enabled") != 0.f;
+}

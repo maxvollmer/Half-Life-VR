@@ -321,6 +321,11 @@ float Length(const vec3_t v)
 	return length;
 }
 
+float Length2D(const vec3_t v)
+{
+	return sqrt(v[0] * v[0] + v[1] * v[1]);
+}
+
 float Distance(const vec3_t v1, const vec3_t v2)
 {
 	vec3_t d;

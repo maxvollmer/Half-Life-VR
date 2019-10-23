@@ -1322,11 +1322,6 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 			// (Use hardcoded map of bone names (g_handmodelfingerbonenames) to modify correct bone matrices)
 			// - Max Vollmer, 2019-10-22
 
-			float backupframe = m_pCurrentEntity->curstate.frame;
-			float backupframerate = m_pCurrentEntity->curstate.framerate;
-			float backupanimtime = m_pCurrentEntity->curstate.animtime;
-			int backupsequence = m_pCurrentEntity->curstate.sequence;
-
 			m_pCurrentEntity->curstate.frame = 0;
 			m_pCurrentEntity->curstate.framerate = 0;
 			m_pCurrentEntity->curstate.animtime = m_clTime;
@@ -1345,8 +1340,8 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 					m_pCurrentEntity->curstate.sequence = FULLGRAB_END;
 
 					mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)m_pStudioHeader + m_pStudioHeader->seqindex) + FULLGRAB_END;
-
-					float overrideFrame = pseqdesc->numframes * f;
+					float overrideFrame = (pseqdesc->numframes - 1) * f;
+					m_pCurrentEntity->curstate.frame = overrideFrame;
 
 					float pGrabbingBoneTransform[MAXSTUDIOBONES][3][4];
 					float pGrabbingLightTransform[MAXSTUDIOBONES][3][4];
@@ -1363,10 +1358,10 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 				}
 			}
 
-			m_pCurrentEntity->curstate.frame = backupframe;
-			m_pCurrentEntity->curstate.framerate = backupframerate;
-			m_pCurrentEntity->curstate.animtime = backupanimtime;
-			m_pCurrentEntity->curstate.sequence = backupsequence;
+			m_pCurrentEntity->curstate.frame = 0;
+			m_pCurrentEntity->curstate.framerate = 0;
+			m_pCurrentEntity->curstate.animtime = m_clTime;
+			m_pCurrentEntity->curstate.sequence = IDLE;
 		}
 		else
 		{

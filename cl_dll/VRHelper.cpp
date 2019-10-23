@@ -1560,6 +1560,11 @@ bool VRIsPullingOnLedge(int player)
 	return gHUD.m_vrIsPullingOnLedge;
 }
 
+bool VRIsAutoDuckingEnabled(int player)
+{
+	return CVAR_GET_FLOAT("vr_autocrouch_enabled") != 0.f;
+}
+
 
 
 void __stdcall HLVRConsoleCallback(char* msg)
