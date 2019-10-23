@@ -203,3 +203,10 @@
 * Fixed copypaste arror in action.manifest mapping right skeleton action to left skeleton input
 * Fixed copypaste error in code overriding right hand with skeletal input from any hand
 
+0.5.7-beta - 2019-10-24
+* Fixed error due to weapon models with animated movement not being cached
+* Fixed bugs in finger skeleton animation
+* Fixed several issues with auto-crouch on sloped surfaces
+* Added cvar vr_autocrouch_enabled
+
+
