@@ -34,10 +34,13 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+    <Import Project="..\shared.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+    <Import Project="..\shared.props" />
+    <Import Project="..\shared.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -102,7 +105,7 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
-      <Command>copy "D:\\Work\\HL\\Half-Life VR\\cl_dll\\Debug\\client.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\cl_dlls\\client.dll"
+      <Command>copy .\Debug\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -149,7 +152,7 @@
       <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "D:\\Work\\HL\\Half-Life VR\\cl_dll\\Release\\client.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\cl_dlls\\client.dll"
+      <Command>copy .\Release\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

@@ -53,8 +53,6 @@ void VRInput::CreateHLMenu()
 	float distance = 1.f;
 	float opacity = 0.9f;
 
-	error = vr::VROverlay()->SetOverlayFromFile(m_hlMenu, "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\textures\\background.png");
-
 	vr::Texture_t texture;
 	texture.eColorSpace = vr::ColorSpace_Gamma;
 	texture.eType = vr::TextureType_OpenGL;

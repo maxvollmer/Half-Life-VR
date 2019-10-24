@@ -38,16 +38,22 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\shared.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\shared.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -66,7 +72,7 @@
       <ModuleDefinitionFile>opengl_proxy.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>copy "D:\\Work\\HL\\Half-Life VR\\Debug\\opengl32.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\opengl32.dll"</Command>
+      <Command>copy .\Debug\opengl32.dll "$(HalfLifeInstallDirectory)vr/opengl32.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -89,7 +95,7 @@
       <ModuleDefinitionFile>opengl_proxy.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>copy "D:\\Work\\HL\\Half-Life VR\\Release\\opengl32.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\opengl32.dll"</Command>
+      <Command>copy .\Release\opengl32.dll "$(HalfLifeInstallDirectory)vr/opengl32.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -943,45 +943,6 @@ void VRHelper::UpdateViewEnt(bool isControllerValid, const Vector& controllerPos
 		return;
 	}
 
-	// forces Mod_Extradata: caching failed error
-	//extern studiohdr_t* Mod_Extradata(const char* callerInfo, cl_entity_t* ent, model_s* mod);
-	//Mod_Extradata("DEBUGTEST", nullptr, IEngineStudio.Mod_ForName("models/agrunt01.mdl", 1));
-
-	/*
-	// hackhack testest
-	gEngfuncs.Con_DPrintf("Starting the model thing.\n");
-	for (auto& p : std::filesystem::directory_iterator("E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\valve\\models"))
-	{
-		std::string modelname = "models/" + p.path().filename().string();
-		if (modelname.find(".mdl") != std::string::npos)
-		{
-			gEngfuncs.Con_DPrintf("Trying model: %s\n", modelname.data());
-			model_t* model = IEngineStudio.Mod_ForName(modelname.data(), 1);
-			if (!model)
-			{
-				gEngfuncs.Con_DPrintf("Failed to load: %s\n", modelname.data());
-			}
-			else
-			{
-				if (model->type == mod_brush)
-				{
-					gEngfuncs.Con_DPrintf("Invalid model: %s\n", modelname.data());
-				}
-				extern studiohdr_t* Mod_Extradata(model_s* model);
-				studiohdr_t* modelheader = Mod_Extradata(model);
-				if (!modelheader)
-				{
-					gEngfuncs.Con_DPrintf("Mod_Extradata failed for: %s\n", modelname.data());
-				}
-			}
-		}
-	}
-	gEngfuncs.Con_DPrintf("Done with the model thing.\n");
-	*/
-
-
-
-
 	mIsViewEntMirrored = isMirrored;
 
 	if (isControllerValid)

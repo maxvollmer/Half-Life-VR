@@ -33,10 +33,12 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+    <Import Project="..\shared.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+    <Import Project="..\shared.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -96,8 +98,7 @@
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "D:\\Work\\HL\\Half-Life VR\\dlls\\Release\\hl.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\dlls\\vr.dll"
-</Command>
+      <Command>copy .\Release\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -151,7 +152,7 @@
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy "D:\\Work\\HL\\Half-Life VR\\dlls\\Debug\\hl.dll" "E:\\Spiele\\Steam\\steamapps\\common\\Half-Life\\vr\\dlls\\vr.dll"</Command>
+      <Command>copy .\Debug\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
