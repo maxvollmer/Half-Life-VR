@@ -41,7 +41,8 @@ void VRGroundEntityHandler::HandleMovingWithSolidGroundEntities()
 
 void VRGroundEntityHandler::DetectAndSetGroundEntity()
 {
-	if (CVAR_GET_FLOAT("vr_noclip") != 0.f)
+	extern bool VRGlobalGetNoclipMode();
+	if (VRGlobalGetNoclipMode())
 	{
 		m_pPlayer->pev->groundentity = nullptr;
 		m_hGroundEntity = nullptr;

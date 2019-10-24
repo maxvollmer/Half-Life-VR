@@ -27,6 +27,7 @@ void VRSettings::Init()
 	CVAR_CREATE("vr_debug_physics", "0", 0);
 	CVAR_CREATE("vr_debug_controllers", "0", 0);
 	CVAR_CREATE("vr_noclip", "0", 0);
+	CVAR_CREATE("vr_cheat_enable_healing_exploit", "0", 0);
 
 	// These are all stored in hlsettings.cfg and synchronized with HLVRLauncher
 	RegisterCVAR("vr_357_scale", "1");
@@ -104,6 +105,9 @@ void VRSettings::Init()
 	RegisterCVAR("vr_multipass_mode", "0");
 	RegisterCVAR("vr_min_fingercurl_for_grab", "70");
 	RegisterCVAR("vr_autocrouch_enabled", "1");
+	RegisterCVAR("vr_tankcontrols", "2");
+	RegisterCVAR("vr_tankcontrols_max_distance", "128");
+	RegisterCVAR("vr_legacy_tankcontrols_enabled", "0");
 
 	RegisterCVAR("vr_speech_commands_follow", "follow-me|come|lets-go");
 	RegisterCVAR("vr_speech_commands_wait", "wait|stop|hold");
@@ -164,6 +168,23 @@ bool VRSettings::WasAnyCVARChanged()
 
 void VRSettings::CheckCVARsForChanges()
 {
+	// make sure these are always properly set
+	gEngfuncs.pfnClientCmd("fps_max 90");
+	gEngfuncs.pfnClientCmd("fps_override 1");
+	gEngfuncs.pfnClientCmd("gl_vsync 0");
+	gEngfuncs.pfnClientCmd("default_fov 180");
+	gEngfuncs.pfnClientCmd("cl_mousegrab 0");
+	//gEngfuncs.pfnClientCmd("firstperson");
+
+	// reset cheats if cheats are disabled
+	if (CVAR_GET_FLOAT("sv_cheats") == 0.f)
+	{
+		gEngfuncs.Cvar_SetValue("vr_debug_physics", 0.f);
+		gEngfuncs.Cvar_SetValue("vr_debug_controllers", 0.f);
+		gEngfuncs.Cvar_SetValue("vr_noclip", 0.f);
+		gEngfuncs.Cvar_SetValue("vr_cheat_enable_healing_exploit", 0.f);
+	}
+
 	// only check every 100ms
 	auto now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).time_since_epoch().count();
 	if (now < m_nextSettingCheckTime)

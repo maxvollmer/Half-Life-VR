@@ -20,7 +20,8 @@ private:
 		ALWAYS,
 		WHEN_MOVING,
 		WHEN_MOVING_DOWN,
-		WHEN_MOVING_UP
+		WHEN_MOVING_UP,
+		HEALING_EXPLOIT
 	};
 
 	const std::unordered_map<std::string, std::unordered_map<std::string, CrushMode>> m_entityCrushModes{
@@ -150,6 +151,13 @@ private:
 				}}
 			},
 			{
+				"c2a5f",
+				{{
+					{ "*139", CrushMode::HEALING_EXPLOIT },	// the healing exploit doors
+					{ "*144", CrushMode::HEALING_EXPLOIT }
+				}}
+			},
+			{
 				"c2a5g",
 				{{
 					{ "*95", CrushMode::WHEN_MOVING },	// the cars being kicked by gargantua in that underground parking lot
@@ -184,20 +192,20 @@ private:
 	CrushMode GetCrushModeFromEntity(CBaseEntity* pEntity);
 
 public:
-	void CheckEntAndMaybeCrushPlayer(CBaseEntity* pEntity, CBaseEntity* pPlayer);
+	bool CheckEntAndMaybeCrushPlayer(CBaseEntity* pEntity, CBaseEntity* pPlayer);
 };
 
 VRCrushEntityHandler gVRCrushEntityHandler;
 
 // called by pm_shared.cpp when we are stuck on an entity (pm_shared will unstuck us, but we use this here to determine if we should get killed)
-void VRNotifyStuckEnt(int player, int ent)
+bool VRNotifyStuckEnt(int player, int ent)
 {
 	if (ent <= 0)
-		return;
+		return false;
 
 	CBaseEntity* pPlayer = UTIL_PlayerByIndex(player);
 	if (pPlayer == nullptr)
-		return;
+		return false;
 
 	CBaseEntity* pEntity = nullptr;
 	INDEXENT(ent);
@@ -207,9 +215,9 @@ void VRNotifyStuckEnt(int player, int ent)
 		pEntity = CBaseEntity::Instance(pent);
 	}
 	if (pEntity == nullptr)
-		return;
+		return false;
 
-	gVRCrushEntityHandler.CheckEntAndMaybeCrushPlayer(pEntity, pPlayer);
+	return gVRCrushEntityHandler.CheckEntAndMaybeCrushPlayer(pEntity, pPlayer);
 }
 
 VRCrushEntityHandler::CrushMode VRCrushEntityHandler::GetCrushModeFromEntity(CBaseEntity* pEntity)
@@ -241,13 +249,23 @@ VRCrushEntityHandler::CrushMode VRCrushEntityHandler::GetCrushModeFromEntity(CBa
 	return CrushMode::NEVER;
 }
 
-void VRCrushEntityHandler::CheckEntAndMaybeCrushPlayer(CBaseEntity* pEntity, CBaseEntity* pPlayer)
+bool VRCrushEntityHandler::CheckEntAndMaybeCrushPlayer(CBaseEntity* pEntity, CBaseEntity* pPlayer)
 {
 	// already dead
 	if (pPlayer->pev->deadflag != DEAD_NO)
-		return;
+		return true;	// dont unstuck
 
 	CrushMode crushMode = GetCrushModeFromEntity(pEntity);
+
+	// healing bug entities
+	if (crushMode == CrushMode::HEALING_EXPLOIT &&
+		CVAR_GET_FLOAT("sv_cheats") != 0.f &&
+		CVAR_GET_FLOAT("vr_cheat_enable_healing_exploit") != 0.f &&
+		pEntity->pev->dmg < 0.f)
+	{
+		pPlayer->TakeDamage(pEntity->pev, pEntity->pev, pEntity->pev->dmg, DMG_CRUSH);
+		return true;	// dont unstuck
+	}
 
 	bool crush = false;
 
@@ -278,5 +296,8 @@ void VRCrushEntityHandler::CheckEntAndMaybeCrushPlayer(CBaseEntity* pEntity, CBa
 	if (crush)
 	{
 		pPlayer->TakeDamage(pEntity->pev, pEntity->pev, pPlayer->pev->health + pPlayer->pev->armorvalue + pEntity->pev->dmg + 1000.f, DMG_CRUSH | DMG_ALWAYSGIB);
+		return true;	// dont unstuck
 	}
+
+	return false;
 }

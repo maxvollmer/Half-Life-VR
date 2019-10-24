@@ -443,8 +443,6 @@ Vector VRHelper::GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & 
 
 void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 {
-	g_vrSettings.CheckCVARsForChanges();
-
 	UpdateVRHLConversionVectors();
 	if (isInGame)
 	{
@@ -1483,7 +1481,7 @@ void VRGlobalGetEntityOrigin(int ent, float* entorigin)
 
 bool VRGlobalGetNoclipMode()
 {
-	return CVAR_GET_FLOAT("vr_noclip") != 0.f;
+	return CVAR_GET_FLOAT("sv_cheats") != 0.f && CVAR_GET_FLOAT("vr_noclip") != 0.f;
 }
 
 /// Simply copied from server dll's util.cpp
@@ -1514,9 +1512,10 @@ bool VRGlobalIsPointInsideEnt(const float* point, int ent)
 }
 
 // for pm_shared.cpp, only implemented on server side
-void VRNotifyStuckEnt(int player, int ent)
+bool VRNotifyStuckEnt(int player, int ent)
 {
 	/*noop*/
+	return false;
 }
 
 // for pm_shared.cpp

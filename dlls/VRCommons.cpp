@@ -63,7 +63,7 @@ void VRGlobalGetEntityOrigin(int ent, float* entorigin)
 
 bool VRGlobalGetNoclipMode()
 {
-	return CVAR_GET_FLOAT("vr_noclip") != 0.f;
+	return CVAR_GET_FLOAT("sv_cheats") != 0.f && CVAR_GET_FLOAT("vr_noclip") != 0.f;
 }
 
 bool VRGlobalIsPointInsideEnt(const float* point, int ent)

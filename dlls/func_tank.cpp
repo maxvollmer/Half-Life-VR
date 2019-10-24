@@ -339,10 +339,6 @@ BOOL CFuncTank :: OnControls( entvars_t *pevTest )
 	return FALSE;
 }
 
-// TODO
-// TODO VR: Figure out tank control
-// TODO
-
 BOOL CFuncTank :: StartControl( CBasePlayer *pController )
 {
 	if ( m_pController != NULL )
@@ -441,8 +437,12 @@ void CFuncTank :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 		}
 		else if ( !m_pController && useType != USE_OFF )
 		{
-			((CBasePlayer*)pActivator)->m_pTank = this;
-			StartControl( (CBasePlayer*)pActivator );
+			// value == 1337 is hacky way used by CBasePlayer::VRUseOrUnuseTank() to tell us that this is a VR initiated control
+			if (CVAR_GET_FLOAT("vr_legacy_tankcontrols_enabled") != 0.f || value == 1337)
+			{
+				((CBasePlayer*)pActivator)->m_pTank = this;
+				StartControl((CBasePlayer*)pActivator);
+			}
 		}
 		else
 		{
@@ -503,8 +503,7 @@ void CFuncTank::TrackTarget( void )
 	if (m_pController)
 	{
 		// Tanks attempt to mirror the player's angles
-		angles = m_pController->pev->v_angle;
-		angles[0] = 0 - angles[0];
+		angles = m_pController->GetTankControlAngles();
 		pev->nextthink = pev->ltime + 0.05;
 	}
 	else
@@ -520,6 +519,11 @@ void CFuncTank::TrackTarget( void )
 				pev->nextthink = pev->ltime + 2;	// Wait 2 secs
 			return;
 		}
+
+		// func_tanks ignored notarget in vanilla HL - Max Vollmer, 2019-10-24
+		if (FBitSet(pPlayer->v.flags, FL_NOTARGET))
+			return;
+
 		pTarget = FindTarget( pPlayer );
 		if ( !pTarget )
 			return;

@@ -209,4 +209,6 @@
 * Fixed several issues with auto-crouch on sloped surfaces
 * Added cvar vr_autocrouch_enabled
 
-
+0.5.8-beta
+* Added immersive stationary gun (func_tank) controls: Grab and rotate gun with both controllers, shoot with "fire"
+* "Fixed" broken infinite health door exploit (default disabled, added cheat to enable exploit)

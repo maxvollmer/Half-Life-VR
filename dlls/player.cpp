@@ -2574,6 +2574,8 @@ void CBasePlayer::PostThink()
 		}
 	}
 
+	VRUseOrUnuseTank();
+
 // do weapon stuff
 	ItemPostFrame( );
 
@@ -5722,3 +5724,146 @@ void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 		}
 	}
 }
+
+constexpr const int SF_TANK_CANCONTROL = 0x0020;
+
+bool IsValidTankDraggingController(const VRController& controller)
+{
+	return controller.IsValid() &&
+		controller.IsDragging() &&
+		controller.GetWeaponId() == WEAPON_BAREHAND;
+}
+
+bool CBasePlayer::IsTankVRControlled(EHANDLE hTank)
+{
+	if (CVAR_GET_FLOAT("vr_tankcontrols") == 0.f)
+		return false;
+
+	if (hTank &&
+		FBitSet(hTank->pev->spawnflags, SF_TANK_CANCONTROL) &&
+		strncmp(STRING(hTank->pev->classname), "func_tank", strlen("func_tank")) == 0 &&
+		(pev->origin - hTank->pev->origin).Length() < CVAR_GET_FLOAT("vr_tankcontrols_max_distance"))
+	{
+		if (CVAR_GET_FLOAT("vr_tankcontrols") == 1.f)
+		{
+			return IsValidTankDraggingController(m_vrControllers[VRControllerID::HAND]) ||
+				IsValidTankDraggingController(m_vrControllers[VRControllerID::WEAPON]);
+		}
+		else
+		{
+			return IsValidTankDraggingController(m_vrControllers[VRControllerID::HAND]) &&
+				IsValidTankDraggingController(m_vrControllers[VRControllerID::WEAPON]);
+		}
+	}
+	return false;
+}
+
+inline float NormalizeAngle(float angle)
+{
+	while (angle < 0.f) angle += 360.f;
+	while (angle >= 360.f) angle -= 360.f;
+	return angle;
+}
+
+inline Vector NormalizeAngles(const Vector& angles)
+{
+	return Vector{ NormalizeAngle(angles.x), NormalizeAngle(angles.y), NormalizeAngle(angles.z) };
+}
+
+void CBasePlayer::VRUseOrUnuseTank()
+{
+	if (m_vrIsUsingTankWithVRControllers)
+	{
+		bool cancelUse = false;
+		if (IsTankVRControlled(m_pTank))
+		{
+			std::vector<Vector> allControllerAngles;
+			for (auto& [id, controller] : m_vrControllers)
+			{
+				if (IsValidTankDraggingController(controller))
+				{
+					if (m_vrTankVRControllerStartOffsets.count(id) == 0)
+					{
+						m_vrTankVRControllerStartOffsets[id] = (m_pTank->pev->origin - controller.GetPosition()).Normalize();
+					}
+					const Vector& startOffset = m_vrTankVRControllerStartOffsets[id];
+					Vector offset = (m_pTank->pev->origin - controller.GetPosition()).Normalize();
+					allControllerAngles.push_back(NormalizeAngles(NormalizeAngles(UTIL_VecToAngles(offset)) - NormalizeAngles(UTIL_VecToAngles(startOffset))));
+				}
+			}
+
+			if (allControllerAngles.empty())
+			{
+				cancelUse = true;
+			}
+			else
+			{
+				Vector angles;
+				for (auto& controllerAngles : allControllerAngles)
+				{
+					angles = angles + controllerAngles;
+				}
+				m_vrTankVRControllerAngles = NormalizeAngles(angles / float(allControllerAngles.size()));
+				m_vrTankVRControllerAngles.z = 0.f;
+			}
+		}
+		else
+		{
+			cancelUse = true;
+		}
+
+		if (cancelUse)
+		{
+			if (m_pTank) m_pTank->Use(this, this, USE_OFF, 0);
+			m_pTank = NULL;
+			m_vrIsUsingTankWithVRControllers = false;
+			m_vrTankVRControllerAngles = Vector{};
+			m_vrTankVRControllerStartOffsets.clear();
+		}
+	}
+
+	if (!m_vrIsUsingTankWithVRControllers)
+	{
+		CBaseEntity* pTank = nullptr;
+		CBaseEntity* pEntity = nullptr;
+		while (UTIL_FindAllEntities(&pEntity))
+		{
+			if (UTIL_IsFacing(pev->origin, pev->angles.ToViewAngles(), pEntity->pev->origin) && IsTankVRControlled(pEntity))
+			{
+				pTank = pEntity;
+				break;
+			}
+		}
+		if (pTank)
+		{
+			if (m_pTank && m_pTank != pTank)
+				m_pTank->Use(this, this, USE_OFF, 0);
+			m_pTank = pTank;
+			m_pTank->Use(this, this, USE_ON, 1337);	// 1337 is hacky way to tell CFuncTank that this is a VR initiated control
+			m_vrIsUsingTankWithVRControllers = true;
+			m_vrTankVRControllerAngles = Vector{};
+			for (auto& [id, controller] : m_vrControllers)
+			{
+				if (IsValidTankDraggingController(controller))
+				{
+					m_vrTankVRControllerStartOffsets[id] = (m_pTank->pev->origin - controller.GetPosition()).Normalize();
+				}
+			}
+		}
+	}
+}
+
+Vector CBasePlayer::GetTankControlAngles()
+{
+	if (m_vrIsUsingTankWithVRControllers)
+	{
+		return m_vrTankVRControllerAngles;
+	}
+	else
+	{
+		Vector angles = pev->v_angle;
+		angles.x = -angles.x;
+		return angles;
+	}
+}
+

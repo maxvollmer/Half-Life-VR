@@ -37,7 +37,7 @@ extern bool VRGlobalIsInstantAccelerateOn();
 extern bool VRGlobalIsInstantDecelerateOn();
 extern void VRGlobalGetEntityOrigin(int ent, float* entorigin);
 extern bool VRGlobalGetNoclipMode();
-extern void VRNotifyStuckEnt(int player, int ent);
+extern bool VRNotifyStuckEnt(int player, int ent);
 extern bool VRGlobalIsPointInsideEnt(const float* point, int ent);
 extern float VRGetMaxClimbSpeed();
 extern bool VRIsLegacyLadderMoveEnabled();
@@ -3357,18 +3357,23 @@ void PM_PlayerMove ( qboolean server )
 	}
 
 	// Always try and unstick us unless we are in NOCLIP mode
-	if ( !VRGlobalGetNoclipMode() && pmove->movetype != MOVETYPE_NONE )
+	if (!VRGlobalGetNoclipMode() && pmove->movetype != MOVETYPE_NONE)
 	{
+		bool dontUnstuck = false;
 		int stuckent = pmove->PM_TestPlayerPosition(pmove->origin, nullptr);
 		if (stuckent > 0)
 		{
 			// Tell server dll that we got stuck in an entity - server dll can then determine if this entity should kill us or not
-			VRNotifyStuckEnt(pmove->player_index, pmove->physents[stuckent].info);
+			dontUnstuck = VRNotifyStuckEnt(pmove->player_index, pmove->physents[stuckent].info);
 		}
 		if (PM_CheckStuck() || stuckent >= 0)
 		{
 			// When we're stuck, noclip away if our move direction is going away from whatever we're stuck on
-			PM_NoClip(true);
+			// (Only unstuck us on server, to not interfere with dontUnstuck, which is only set by server)
+			if ((server || pmove->server) && !dontUnstuck)
+			{
+				PM_NoClip(true);
+			}
 			return;
 		}
 	}

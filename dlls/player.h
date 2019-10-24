@@ -95,6 +95,7 @@ enum sbar_data
 
 class CSprite;
 class CBeam;
+class CFuncTank;
 
 #include <map>
 
@@ -397,6 +398,14 @@ private:
 	std::vector<VRLadderGrabbingController>		m_ladderGrabbingControllers;
 	void ClearLadderGrabbingControllers();
 
+	// Called by PostThink()
+	void VRUseOrUnuseTank();
+	bool IsTankVRControlled(EHANDLE hTank);
+
+	bool												m_vrIsUsingTankWithVRControllers{ false };
+	Vector												m_vrTankVRControllerAngles;
+	std::unordered_map<VRControllerID, Vector>			m_vrTankVRControllerStartOffsets;
+
 public:
 	void StartVRTele();
 	void StopVRTele();
@@ -460,6 +469,9 @@ public:
 	bool m_vrWasPullingOnLedge{ false };
 
 	void HandleSpeechCommand(VRSpeechCommand command);
+
+	// For tanks (used in CFuncTank::TrackTarget())
+	Vector GetTankControlAngles();
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

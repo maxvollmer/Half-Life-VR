@@ -72,8 +72,6 @@ void VRRenderer::VidInit()
 {
 }
 
-float lasttime = 0.f;
-
 void VRRenderer::Frame(double time)
 {
 	if (m_isVeryFirstFrameEver)
@@ -82,20 +80,9 @@ void VRRenderer::Frame(double time)
 		m_isVeryFirstFrameEver = false;
 	}
 
-	// make sure these are always properly set
-	gEngfuncs.pfnClientCmd("fps_max 90");
-	gEngfuncs.pfnClientCmd("fps_override 1");
-	gEngfuncs.pfnClientCmd("gl_vsync 0");
-	gEngfuncs.pfnClientCmd("default_fov 180");
-	gEngfuncs.pfnClientCmd("cl_mousegrab 0");
-	//gEngfuncs.pfnClientCmd("firstperson");
+	g_vrSettings.CheckCVARsForChanges();
 
 	UpdateGameRenderState();
-
-	float curtime = std::chrono::duration_cast<std::chrono::duration<float>>(std::chrono::system_clock::now().time_since_epoch()).count();
-	float frametime = lasttime - curtime;
-
-	//gEngfuncs.Con_DPrintf("Menu: %i, Ingame: %i, time: %f, frametime: %f!\n", m_isInMenu, m_isInGame, float(time), frametime);
 
 	if (m_isInMenu || !IsInGame())
 	{
@@ -145,73 +132,6 @@ void VRRenderer::UpdateGameRenderState()
 
 	if (!m_isInMenu) m_wasMenuJustRendered = false;
 }
-
-/*
-void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
-{
-	m_CalcRefdefWasCalled = true;
-
-	if (m_isInMenu || !IsInGame())
-	{
-		// Unfortunately the OpenVR overlay menu ignores controller input when we render the game scene.
-		// (in fact controllers themselves aren't rendered at all)
-		// So when the menu is open, we hide the game (the user will see a skybox and the menu)
-		pparams->nextView = 0;
-		pparams->onlyClientDraw = 1;
-		m_fIsOnlyClientDraw = true;
-		return;
-	}
-
-	if (pparams->nextView == 0)
-	{
-		vrHelper->PollEvents(true, m_isInMenu);
-		vrHelper->UpdatePositions();
-
-		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
-		vrHelper->GetViewOrg(pparams->vieworg);
-		vrHelper->GetViewAngles(vr::EVREye::Eye_Left, pparams->viewangles);
-
-		// Update player viewangles from HMD pose
-		gEngfuncs.SetViewAngles(pparams->viewangles);
-
-		pparams->nextView = 1;
-		m_fIsOnlyClientDraw = false;
-	}
-	else if (pparams->nextView == 1)
-	{
-		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-		vrHelper->PrepareVRScene(vr::EVREye::Eye_Right);
-		vrHelper->GetViewOrg(pparams->vieworg);
-		vrHelper->GetViewAngles(vr::EVREye::Eye_Right, pparams->viewangles);
-
-		// Update player viewangles from HMD pose
-		gEngfuncs.SetViewAngles(pparams->viewangles);
-
-		pparams->nextView = 2;
-		m_fIsOnlyClientDraw = false;
-	}
-	else
-	{
-		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-		vrHelper->SubmitImages();
-
-		pparams->nextView = 0;
-		pparams->onlyClientDraw = 1;
-		m_fIsOnlyClientDraw = true;
-	}
-
-	// Override vieworg if we have a viewentity (trigger_camera)
-	if (pparams->viewentity > pparams->maxclients)
-	{
-		cl_entity_t* viewentity;
-		viewentity = gEngfuncs.GetEntityByIndex(pparams->viewentity);
-		if (viewentity)
-		{
-			VectorCopy(viewentity->origin, pparams->vieworg);
-		}
-	}
-}
-*/
 
 void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 {
@@ -285,7 +205,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		glDeleteLists(m_displayList, 1);
 		m_displayList = 0;
 
-		// send messages to hmg
+		// send images to HMD
 		vrHelper->SubmitImages();
 
 		pparams->nextView = 0;
