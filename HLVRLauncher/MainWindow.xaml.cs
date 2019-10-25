@@ -250,12 +250,14 @@ namespace HLVRLauncher
         public void ConsoleLog(string msg, Brush color)
         {
             ConsoleOutput.Inlines.Add(new Run(msg) { Foreground = color });
-        }
-
-        public void ConsoleLogLn(string msg, Brush color)
-        {
-            ConsoleLog(msg, color);
-            ConsoleOutput.Inlines.Add(new LineBreak());
+            var lines = ConsoleOutput.Inlines.Skip(ConsoleOutput.Inlines.Count() - 100);
+            ConsoleOutput.Inlines.Clear();
+            ConsoleOutput.Inlines.AddRange(lines);
+            try
+            {
+                File.AppendAllText(HLVRPaths.VRLogFile, msg);
+            }
+            catch (IOException) { } // TODO: Somehow notify user of exception
         }
     }
 }

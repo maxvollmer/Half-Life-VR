@@ -2153,6 +2153,11 @@ bool UTIL_IsFacing(const Vector &viewPos, const Vector &viewAngles, const Vector
 	return false;
 }
 
+bool UTIL_StartsWith(const char* s1, const char* s2)
+{
+	return strncmp(s1, s2, strlen(s2)) == 0;
+}
+
 // Checks if a trace would hit this entity (does not check if stuff is in the way, use UTIL_CheckClearSight for that), entity must be solid - Max Vollmer, 2018-01-06
 bool UTIL_CheckTraceIntersectsEntity(const Vector &pos1, const Vector &pos2, CBaseEntity *pCheck)
 {

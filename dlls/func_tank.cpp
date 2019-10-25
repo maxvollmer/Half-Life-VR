@@ -401,10 +401,13 @@ void CFuncTank :: ControllerPostFrame( void )
 {
 	ASSERT(m_pController != NULL);
 
+	if (!m_pController)
+		return;
+
 	if ( gpGlobals->time < m_flNextAttack )
 		return;
 
-	if ( m_pController->pev->button & IN_ATTACK )
+	if ( (m_pController->pev->button & IN_ATTACK) || (m_pController->GetAnalogFire() > 0.f) )
 	{
 		Vector vecForward;
 		UTIL_MakeVectorsPrivate( pev->angles, vecForward, NULL, NULL );

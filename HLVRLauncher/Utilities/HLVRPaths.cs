@@ -34,6 +34,7 @@ namespace HLVRLauncher.Utilities
         public static string VRSettingsFileName { get { return "hlvrsettings.cfg"; } }
         public static string VRSettingsFile { get { return Path.Combine(HLVRPaths.VRDirectory, VRSettingsFileName); } }
         public static string VRReadme { get { return Path.Combine(HLVRPaths.VRDirectory, "README.txt"); } }
+        public static string VRLogFile { get { return Path.Combine(HLVRPaths.VRDirectory, "hlvr_log.txt"); } }
 
 
         public static string MetaHookExe { get { return Path.Combine(HLVRPaths.HLDirectory, "MetaHook.exe"); } }

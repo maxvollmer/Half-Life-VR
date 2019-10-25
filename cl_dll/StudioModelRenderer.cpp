@@ -1337,9 +1337,9 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 					m_pCurrentEntity->curstate.frame = 0;
 					m_pCurrentEntity->curstate.framerate = 0;
 					m_pCurrentEntity->curstate.animtime = m_clTime;
-					m_pCurrentEntity->curstate.sequence = FULLGRAB_END;
+					m_pCurrentEntity->curstate.sequence =FULLGRAB_START;
 
-					mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)m_pStudioHeader + m_pStudioHeader->seqindex) + FULLGRAB_END;
+					mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)m_pStudioHeader + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;
 					float overrideFrame = (pseqdesc->numframes - 1) * f;
 					m_pCurrentEntity->curstate.frame = overrideFrame;
 

@@ -166,7 +166,7 @@ namespace HLVRLauncher.Utilities
             } },
 
             { "Stationary guns", new OrderedDictionary<string, Setting>() {
-                { "vr_tankcontrols", Setting.Create( "Immersive controls", 0, new OrderedDictionary<string, string>(){ {"0", "disabled" }, { "1", "enabled with one hand" }, { "2", "enabled with both hands" } } ) },
+                { "vr_tankcontrols", Setting.Create( "Immersive controls", 2, new OrderedDictionary<string, string>(){ {"0", "disabled" }, { "1", "enabled with one hand" }, { "2", "enabled with both hands" } } ) },
                 { "vr_tankcontrols_max_distance", Setting.Create( "Maximum player distance to gun for immersive controls", 128 ) },
                 { "vr_legacy_tankcontrols_enabled", Setting.Create( "Enable control of usable guns with 'LegacyUse'.", false ) },
             } },

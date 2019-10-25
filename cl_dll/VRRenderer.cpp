@@ -661,6 +661,8 @@ void VRRenderer::DrawHDSkyBox()
 	Vector skyboxorigin;
 	vrHelper->GetViewOrg(skyboxorigin);
 
+	ClearGLErrors();
+
 	try
 	{
 		//TryGLCall(glDisable, GL_FOG);

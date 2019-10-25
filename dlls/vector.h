@@ -132,6 +132,13 @@ inline Vector operator*(float fl, const Vector& v)	{ return v * fl; }
 inline float DotProduct(const Vector& a, const Vector& b) { return(a.x*b.x+a.y*b.y+a.z*b.z); }
 inline Vector CrossProduct(const Vector& a, const Vector& b) { return Vector( a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x ); }
 
+#include <sstream>
+
+template <class _Elem, class _Traits>
+std::basic_ostream<_Elem, _Traits>& operator<<(std::basic_ostream<_Elem, _Traits>& o, const Vector& _Val)
+{
+	return o << "[" << _Val.x << ", " << _Val.y << ", " << _Val.z << "]";
+}
 
 
 #endif

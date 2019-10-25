@@ -404,7 +404,7 @@ private:
 
 	bool												m_vrIsUsingTankWithVRControllers{ false };
 	Vector												m_vrTankVRControllerAngles;
-	std::unordered_map<VRControllerID, Vector>			m_vrTankVRControllerStartOffsets;
+	//std::unordered_map<VRControllerID, Vector>			m_vrTankVRControllerStartOffsets;
 
 public:
 	void StartVRTele();

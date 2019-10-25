@@ -351,6 +351,8 @@ extern void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity );
 // Moved from barney.cpp - Max Vollmer, 2018-01-02
 extern bool UTIL_IsFacing(const Vector &origin, const Vector &view_angles, const Vector &reference);
 
+bool UTIL_StartsWith(const char* s1, const char* s2);
+
 extern bool UTIL_CheckTraceIntersectsEntity(const Vector &pos1, const Vector &pos2, CBaseEntity *pCheck);
 
 extern float UTIL_CalculateMeleeDamage(int iId, float speed);
