@@ -1,7 +1,10 @@
-0.5.8-beta
+0.5.8-beta - 2019-10-25
 * Added immersive stationary gun (func_tank) controls: Grab and rotate gun with both controllers, shoot with "fire"
 * "Fixed" broken infinite health door exploit (default disabled, added cheat to enable exploit)
 * VR specific cheats now only work if sv_cheats is 1
+* Fixed minor issue with HD sky rendering when OpenGL has an error state from something before
+* Fixed tracked fingers animation being reversed
+* Fixed HLVRLauncher dying on long console output from Half-Life and added log to file
 
 0.5.7-beta - 2019-10-24
 * Fixed error due to weapon models with animated movement not being cached
