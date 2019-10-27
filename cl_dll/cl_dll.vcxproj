@@ -106,6 +106,7 @@
     </Link>
     <PostBuildEvent>
       <Command>copy .\Debug\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
+copy .\Debug\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -150,9 +151,11 @@
       <OutputFile>.\Release\client.dll</OutputFile>
       <ImportLibrary>.\Release\client.lib</ImportLibrary>
       <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
       <Command>copy .\Release\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
+copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

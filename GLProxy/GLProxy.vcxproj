@@ -72,7 +72,8 @@
       <ModuleDefinitionFile>opengl_proxy.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>copy .\Debug\opengl32.dll "$(HalfLifeInstallDirectory)vr/opengl32.dll"</Command>
+      <Command>copy .\Debug\opengl32.dll "$(HalfLifeInstallDirectory)vr/opengl32.dll"
+copy .\Debug\opengl32.pdb "$(HalfLifeInstallDirectory)vr/opengl32.pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -95,7 +96,8 @@
       <ModuleDefinitionFile>opengl_proxy.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>copy .\Release\opengl32.dll "$(HalfLifeInstallDirectory)vr/opengl32.dll"</Command>
+      <Command>copy .\Release\opengl32.dll "$(HalfLifeInstallDirectory)vr/opengl32.dll"
+copy .\Release\opengl32.pdb "$(HalfLifeInstallDirectory)vr/opengl32.pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

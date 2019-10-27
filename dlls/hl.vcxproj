@@ -89,7 +89,7 @@
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\hl.def</ModuleDefinitionFile>
       <OutputFile>.\Release\hl.dll</OutputFile>
@@ -98,7 +98,8 @@
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy .\Release\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"</Command>
+      <Command>copy .\Release\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"
+copy .\Release\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -152,7 +153,8 @@
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy .\Debug\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"</Command>
+      <Command>copy .\Debug\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"
+copy .\Debug\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
