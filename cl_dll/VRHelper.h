@@ -192,4 +192,6 @@ public:
 	bool IsViewEntMirrored() { return mIsViewEntMirrored; }
 
 	void SetViewOfs(const Vector& viewOfs) { m_viewOfs = viewOfs; }
+
+	bool CanAttack();
 };

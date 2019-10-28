@@ -357,6 +357,10 @@ float CBasePlayer::GetAnalogFire()
 {
 	return gVRRenderer.GetHelper()->GetAnalogFire();
 }
+bool CBasePlayer::VRCanAttack()
+{
+	return gVRRenderer.GetHelper()->CanAttack();
+}
 
 
 void ClearMultiDamage(void) { }

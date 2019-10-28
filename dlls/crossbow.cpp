@@ -473,10 +473,12 @@ void CCrossbow::Reload( void )
 	if ( m_pPlayer->ammo_bolts <= 0 )
 		return;
 
+	/*
 	if ( m_pPlayer->pev->fov != 0 )
 	{
 		SecondaryAttack();
 	}
+	*/
 
 	if ( DefaultReload( 5, CROSSBOW_RELOAD, 4.5 ) )
 	{

@@ -25,6 +25,15 @@
     <Filter Include="VR\vr_shared">
       <UniqueIdentifier>{837eaf4e-ec4a-4365-b9ee-bca9dc8b4e07}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\Handlers">
+      <UniqueIdentifier>{27e2a0b0-e883-4d9c-9ba7-2f4d25cbc58f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\Helpers">
+      <UniqueIdentifier>{7d793ead-fcac-43a4-aa0c-829465757ea4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\Controller">
+      <UniqueIdentifier>{fb1c902e-fae5-4a88-969e-468c14fc0079}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="aflock.cpp">
@@ -327,21 +336,6 @@
     <ClCompile Include="..\pm_shared\pm_shared.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VRPhysicsHelper.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
-    <ClCompile Include="VRController.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
-    <ClCompile Include="VRControllerTeleporter.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
-    <ClCompile Include="VRControllerInteractionManager.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
-    <ClCompile Include="VRModelHelper.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
     <ClCompile Include="hlmv_mathlib.cpp">
       <Filter>VR\StudioModel</Filter>
     </ClCompile>
@@ -357,26 +351,41 @@
     <ClCompile Include="StudioModel.cpp">
       <Filter>VR\StudioModel</Filter>
     </ClCompile>
-    <ClCompile Include="VRGroundEntityHandler.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
-    <ClCompile Include="VRControllerModel.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
     <ClCompile Include="VRRotatableEnt.cpp">
       <Filter>VR\stuff</Filter>
     </ClCompile>
-    <ClCompile Include="VRCrushEntityHandler.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
-    <ClCompile Include="VRMovementHandler.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
-    <ClCompile Include="VRSDModelHelper.cpp">
-      <Filter>VR</Filter>
-    </ClCompile>
     <ClCompile Include="CWorldsSmallestCup.cpp">
       <Filter>VR\stuff</Filter>
+    </ClCompile>
+    <ClCompile Include="VRCrushEntityHandler.cpp">
+      <Filter>VR\Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRGroundEntityHandler.cpp">
+      <Filter>VR\Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRMovementHandler.cpp">
+      <Filter>VR\Handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRSDModelHelper.cpp">
+      <Filter>VR\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRPhysicsHelper.cpp">
+      <Filter>VR\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRModelHelper.cpp">
+      <Filter>VR\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRController.cpp">
+      <Filter>VR\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="VRControllerInteractionManager.cpp">
+      <Filter>VR\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="VRControllerModel.cpp">
+      <Filter>VR\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="VRControllerTeleporter.cpp">
+      <Filter>VR\Controller</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -515,21 +524,6 @@
     <ClInclude Include="weapons.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VRPhysicsHelper.h">
-      <Filter>VR</Filter>
-    </ClInclude>
-    <ClInclude Include="VRController.h">
-      <Filter>VR</Filter>
-    </ClInclude>
-    <ClInclude Include="VRControllerTeleporter.h">
-      <Filter>VR</Filter>
-    </ClInclude>
-    <ClInclude Include="VRControllerInteractionManager.h">
-      <Filter>VR</Filter>
-    </ClInclude>
-    <ClInclude Include="VRModelHelper.h">
-      <Filter>VR</Filter>
-    </ClInclude>
     <ClInclude Include="hlmv_mathlib.h">
       <Filter>VR\StudioModel</Filter>
     </ClInclude>
@@ -542,23 +536,38 @@
     <ClInclude Include="VRCommons.h">
       <Filter>VR\stuff</Filter>
     </ClInclude>
-    <ClInclude Include="VRGroundEntityHandler.h">
-      <Filter>VR</Filter>
-    </ClInclude>
-    <ClInclude Include="VRControllerModel.h">
-      <Filter>VR</Filter>
-    </ClInclude>
     <ClInclude Include="VRRotatableEnt.h">
       <Filter>VR\stuff</Filter>
-    </ClInclude>
-    <ClInclude Include="VRMovementHandler.h">
-      <Filter>VR</Filter>
     </ClInclude>
     <ClInclude Include="CWorldsSmallestCup.h">
       <Filter>VR\stuff</Filter>
     </ClInclude>
     <ClInclude Include="..\vr_shared\VRShared.h">
       <Filter>VR\vr_shared</Filter>
+    </ClInclude>
+    <ClInclude Include="VRGroundEntityHandler.h">
+      <Filter>VR\Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRMovementHandler.h">
+      <Filter>VR\Handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRPhysicsHelper.h">
+      <Filter>VR\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRModelHelper.h">
+      <Filter>VR\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRController.h">
+      <Filter>VR\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="VRControllerInteractionManager.h">
+      <Filter>VR\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="VRControllerModel.h">
+      <Filter>VR\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="VRControllerTeleporter.h">
+      <Filter>VR\Controller</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

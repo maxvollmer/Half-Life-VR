@@ -837,7 +837,7 @@ void CRotButton::Spawn( void )
 
 	pev->movetype	= MOVETYPE_PUSH;
 	
-	if ( pev->spawnflags & SF_ROTBUTTON_NOTSOLID )
+	if ( pev->spawnflags & SF_ROTBUTTON_NOTSOLID || CVAR_GET_FLOAT("vr_make_levers_nonsolid") != 0.f )
 		pev->solid		= SOLID_NOT;
 	else
 		pev->solid		= SOLID_BSP;

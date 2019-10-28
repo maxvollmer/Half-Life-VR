@@ -179,7 +179,14 @@ void CFuncTank :: Spawn( void )
 	Precache();
 
 	pev->movetype	= MOVETYPE_PUSH;  // so it doesn't get pushed by anything
-	pev->solid		= SOLID_BSP;
+	if (FBitSet(pev->spawnflags, SF_TANK_CANCONTROL) && CVAR_GET_FLOAT("vr_make_mountedguns_nonsolid") != 0.f)
+	{
+		pev->solid = SOLID_NOT;
+	}
+	else
+	{
+		pev->solid = SOLID_BSP;
+	}
 	SET_MODEL( ENT(pev), STRING(pev->model) );
 
 	m_yawCenter = pev->angles.y;
@@ -567,6 +574,7 @@ void CFuncTank::TrackTarget( void )
 	}
 
 	angles.x = -angles.x;
+	angles.z = 0.f;
 
 	// Force the angles to be relative to the center position
 	angles.y = m_yawCenter + UTIL_AngleDistance( angles.y, m_yawCenter );
@@ -610,8 +618,15 @@ void CFuncTank::TrackTarget( void )
 	else if ( pev->avelocity.x < -m_pitchRate )
 		pev->avelocity.x = -m_pitchRate;
 
-	if ( m_pController )
+	if (m_pController)
+	{
+		if (CVAR_GET_FLOAT("vr_tankcontrols_instant_turn") != 0.f)
+		{
+			pev->avelocity = Vector{};
+			pev->angles = angles;
+		}
 		return;
+	}
 
 	if ( CanFire() && ( (fabs(distX) < m_pitchTolerance && fabs(distY) < m_yawTolerance) || (pev->spawnflags & SF_TANK_LINEOFSIGHT) ) )
 	{

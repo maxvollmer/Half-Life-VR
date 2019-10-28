@@ -131,6 +131,16 @@ bool IsNonInteractingEntity(EHANDLE hEntity)
 		|| FClassnameIs(hEntity->pev, "vr_controllermodel");	// TODO/NOTE: If this mod gets ever patched up for multiplayer, and you want players to be able to crowbar-fight, this should probably be changed
 }
 
+bool IsReachable(CBasePlayer* pPlayer, const VRController::HitBox& hitbox)
+{
+	TraceResult tr{ 0 };
+	UTIL_TraceLine(pPlayer->pev->origin, hitbox.origin, ignore_monsters, nullptr, &tr);
+	if (tr.flFraction < 1.f)
+		return false;
+
+	return !VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->pev->origin, hitbox.origin);
+}
+
 bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
 {
 	if (!controller.IsValid())
@@ -158,14 +168,14 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 			return false;
 		}
 	}
-	else
-	{
-		int kfjskgj = 0;
-	}
 
 	// Check each hitbox of current weapon
 	for (auto hitbox : controller.GetHitBoxes())
 	{
+		// Prevent interaction with stuff through walls
+		if (!IsReachable(pPlayer, hitbox))
+			continue;
+
 		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult) || UTIL_IsPointInEntity(hEntity, hitbox.origin))
 		{
 			if (!intersectResult->hasresult)

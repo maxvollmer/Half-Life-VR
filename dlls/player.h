@@ -472,6 +472,9 @@ public:
 
 	// For tanks (used in CFuncTank::TrackTarget())
 	Vector GetTankControlAngles();
+
+	// Checks if the weapon can be fired (prevents shooting when controller is pointed through walls)
+	bool VRCanAttack();
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

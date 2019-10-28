@@ -138,6 +138,8 @@ namespace HLVRLauncher.Utilities
 
                 { "vr_enable_aim_laser", Setting.Create( "Enable aim laser pointer for range weapons", false ) },
 
+                { "vr_make_levers_nonsolid", Setting.Create( "Make levers non-solid (fixes some collision issues)", true ) },
+
                 { "vr_use_animated_weapons", Setting.Create( "Use weapon models with animated movement (affects aiming)", false ) },
 
                 { "vr_melee_swing_speed", Setting.Create( "Minimum controller speed to trigger melee damage", 150 ) },
@@ -165,9 +167,11 @@ namespace HLVRLauncher.Utilities
                 // { "vr_legacy_train_controls_enabled", Setting.Create( "Enable control of usable trains with 'LegacyUse' and forward/backward movement.", true ) },
             } },
 
-            { "Stationary guns", new OrderedDictionary<string, Setting>() {
+            { "Mounted guns", new OrderedDictionary<string, Setting>() {
                 { "vr_tankcontrols", Setting.Create( "Immersive controls", 2, new OrderedDictionary<string, string>(){ {"0", "disabled" }, { "1", "enabled with one hand" }, { "2", "enabled with both hands" } } ) },
-                { "vr_tankcontrols_max_distance", Setting.Create( "Maximum player distance to gun for immersive controls", 128 ) },
+                { "vr_tankcontrols_max_distance", Setting.Create( "Maximum controller distance to gun for immersive controls", 128 ) },
+                { "vr_tankcontrols_instant_turn", Setting.Create( "Enable instant-turn (if off, guns turn with a predefined speed, lagging behind your hands)", false ) },
+                { "vr_make_mountedguns_nonsolid", Setting.Create( "Make mounted guns non-solid (fixes some collision issues)", true ) },
                 { "vr_legacy_tankcontrols_enabled", Setting.Create( "Enable control of usable guns with 'LegacyUse'.", false ) },
             } },
 

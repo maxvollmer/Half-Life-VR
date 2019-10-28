@@ -674,18 +674,22 @@ bool CanAttack( CBasePlayer *pPlayer, float attack_time, float curtime, BOOL isP
 		return false;
 	}
 
+	bool result;
+
 #if defined( CLIENT_WEAPONS )
 	if ( !isPredicted )
 #else
 	if ( true )
 #endif
 	{
-		return attack_time <= curtime;
+		result = attack_time <= curtime;
 	}
 	else
 	{
-		return attack_time <= 0.0;
+		result = attack_time <= 0.0;
 	}
+
+	return result && pPlayer->VRCanAttack();
 }
 
 void CBasePlayerWeapon::ItemPostFrame( void )

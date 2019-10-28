@@ -108,6 +108,9 @@ void VRSettings::Init()
 	RegisterCVAR("vr_tankcontrols", "2");
 	RegisterCVAR("vr_tankcontrols_max_distance", "128");
 	RegisterCVAR("vr_legacy_tankcontrols_enabled", "0");
+	RegisterCVAR("vr_make_levers_nonsolid", "1");
+	RegisterCVAR("vr_make_mountedguns_nonsolid", "1");
+	RegisterCVAR("vr_tankcontrols_instant_turn", "0");
 
 	RegisterCVAR("vr_speech_commands_follow", "follow-me|come|lets-go");
 	RegisterCVAR("vr_speech_commands_wait", "wait|stop|hold");

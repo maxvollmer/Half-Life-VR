@@ -10,6 +10,7 @@
 #include "ref_params.h"
 #include "com_model.h"
 #include "studio.h"
+#include "event_api.h"
 #include "VRHelper.h"
 #include "VRTextureHelper.h"
 #include "VRRenderer.h"
@@ -1420,6 +1421,23 @@ void VRHelper::SetSkyboxFromMap(const char* mapName)
 {
 	SetSkybox(VRTextureHelper::Instance().GetSkyboxNameFromMapName(mapName));
 }
+
+bool VRHelper::CanAttack()
+{
+	cl_entity_t* localPlayer = SaveGetLocalPlayer();
+	if (localPlayer)
+	{
+		pmtrace_t tr{ 0 };
+		gEngfuncs.pEventAPI->EV_SetTraceHull(2); // point hull
+		gEngfuncs.pEventAPI->EV_PlayerTrace(localPlayer->curstate.origin, GetWeaponPosition(), PM_STUDIO_IGNORE | PM_GLASS_IGNORE, -1, &tr);
+		return tr.fraction == 1.f;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 
 
 // For pm_shared.cpp

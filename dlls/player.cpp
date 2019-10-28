@@ -5859,3 +5859,9 @@ Vector CBasePlayer::GetTankControlAngles()
 	}
 }
 
+bool CBasePlayer::VRCanAttack()
+{
+	TraceResult tr{ 0 };
+	UTIL_TraceLine(pev->origin, GetGunPosition(), ignore_monsters, nullptr, &tr);
+	return tr.flFraction == 1.f;
+}
