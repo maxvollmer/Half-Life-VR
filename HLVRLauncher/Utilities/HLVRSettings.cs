@@ -117,6 +117,7 @@ namespace HLVRLauncher.Utilities
                 { "vr_xenjumpthingies_teleporteronly", Setting.Create( "Disable being pushed up by xen jump thingies (you can use the teleporter on those things)", true ) },
                 { "vr_semicheat_spinthingyspeed", Setting.Create( "Set maximum speed for those fast spinning platforms near the tentacle monster (map c1a4f) (game default: 110, mod default: 50)", 50,
                     new OrderedDictionary<string, string>(){ { "10", "10" }, { "20", "20" }, { "30", "30" }, { "40", "40" }, { "50", "50" }, { "60", "60" }, { "70", "70" }, { "80", "80" }, { "90", "90" }, { "100", "100" }, { "110", "110" } } ) },
+                { "vr_smooth_steps", Setting.Create( "Smooth out steps (may affect performance!)", 2, new OrderedDictionary<string, string>(){ {"0", "Disabled" }, { "1", "Smooth out most steps" }, { "2", "Smooth out all steps" } } ) },
             } },
 
             { "Movement", new OrderedDictionary<string, Setting>() {

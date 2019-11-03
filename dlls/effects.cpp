@@ -221,7 +221,7 @@ const Vector &CBeam::GetEndPos( void )
 CBeam *CBeam::BeamCreate( const char *pSpriteName, int width )
 {
 	// Create a new entity with CBeam private data
-	CBeam *pBeam = GetClassPtr( (CBeam *)NULL );
+	CBeam *pBeam = GetClassPtr<CBeam>(nullptr);
 	pBeam->pev->classname = MAKE_STRING("beam");
 
 	pBeam->BeamInit( pSpriteName, width );
@@ -1229,7 +1229,7 @@ void CSprite::SpriteInit( const char *pSpriteName, const Vector &origin )
 
 CSprite *CSprite::SpriteCreate( const char *pSpriteName, const Vector &origin, BOOL animate )
 {
-	CSprite *pSprite = GetClassPtr( (CSprite *)NULL );
+	CSprite *pSprite = GetClassPtr<CSprite>(nullptr);
 	pSprite->SpriteInit( pSpriteName, origin );
 	pSprite->pev->classname = MAKE_STRING("env_sprite");
 	pSprite->pev->solid = SOLID_NOT;
@@ -1460,7 +1460,7 @@ CGib *CGibShooter :: CreateGib ( void )
 	if ( CVAR_GET_FLOAT("violence_hgibs") == 0 )
 		return NULL;
 
-	CGib *pGib = GetClassPtr( (CGib *)NULL );
+	CGib *pGib = GetClassPtr<CGib>(nullptr);
 	pGib->Spawn( "models/hgibs.mdl" );
 	pGib->m_bloodColor = BLOOD_COLOR_RED;
 
@@ -1587,7 +1587,7 @@ void CEnvShooter :: Precache ( void )
 
 CGib *CEnvShooter :: CreateGib ( void )
 {
-	CGib *pGib = GetClassPtr( (CGib *)NULL );
+	CGib *pGib = GetClassPtr<CGib>(nullptr);
 
 	pGib->Spawn( STRING(pev->model) );
 	

@@ -718,7 +718,7 @@ void ScriptEntityCancel( edict_t *pentCine )
 	// make sure they are a scripted_sequence
 	if (FClassnameIs( pentCine, CLASSNAME ))
 	{
-		CCineMonster *pCineTarget = GetClassPtr((CCineMonster *)VARS(pentCine));
+		CCineMonster *pCineTarget = GetClassPtr<CCineMonster>(VARS(pentCine));
 		// make sure they have a monster in mind for the script
 		CBaseEntity		*pEntity = pCineTarget->m_hTargetEnt;
 		CBaseMonster	*pTarget = NULL;
@@ -770,7 +770,7 @@ void CCineMonster :: DelayStart( int state )
 	{
 		if (FClassnameIs( pentCine, "scripted_sequence" ))
 		{
-			CCineMonster *pTarget = GetClassPtr((CCineMonster *)VARS(pentCine));
+			CCineMonster *pTarget = GetClassPtr<CCineMonster>(VARS(pentCine));
 			if (state)
 			{
 				pTarget->m_iDelay++;

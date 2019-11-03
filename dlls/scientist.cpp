@@ -1435,7 +1435,7 @@ int CSittingScientist :: FIdleSpeak ( void )
 
 	if (pentFriend && RANDOM_LONG(0,1))
 	{
-		CTalkMonster *pTalkMonster = GetClassPtr((CTalkMonster *)pentFriend->pev);
+		CTalkMonster *pTalkMonster = GetClassPtr<CTalkMonster>(pentFriend->pev);
 		pTalkMonster->SetAnswerQuestion( this );
 		
 		IdleHeadTurn(pentFriend->pev->origin);

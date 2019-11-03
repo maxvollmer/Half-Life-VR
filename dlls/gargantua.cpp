@@ -91,7 +91,7 @@ private:
 LINK_ENTITY_TO_CLASS( garg_stomp, CStomp );
 CStomp *CStomp::StompCreate( const Vector &origin, const Vector &end, float speed )
 {
-	CStomp *pStomp = GetClassPtr( (CStomp *)NULL );
+	CStomp* pStomp = GetClassPtr<CStomp>(nullptr);
 	
 	pStomp->pev->origin = origin;
 	Vector dir = (end - origin);
@@ -1131,7 +1131,7 @@ void CGargantua::RunTask( Task_t *pTask )
 			int parts = MODEL_FRAMES( gGargGibModel );
 			for ( i = 0; i < 10; i++ )
 			{
-				CGib *pGib = GetClassPtr( (CGib *)NULL );
+				CGib *pGib = GetClassPtr<CGib>(nullptr);
 
 				pGib->Spawn( GARG_GIB_MODEL );
 				
@@ -1293,7 +1293,7 @@ CSpiral *CSpiral::Create( const Vector &origin, float height, float radius, floa
 	if ( duration <= 0 )
 		return NULL;
 
-	CSpiral *pSpiral = GetClassPtr( (CSpiral *)NULL );
+	CSpiral *pSpiral = GetClassPtr<CSpiral>(nullptr);
 	pSpiral->Spawn();
 	pSpiral->pev->dmgtime = pSpiral->pev->nextthink;
 	pSpiral->pev->origin = origin;

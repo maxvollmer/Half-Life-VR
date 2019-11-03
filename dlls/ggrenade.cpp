@@ -360,7 +360,7 @@ void CGrenade:: Spawn( void )
 
 CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity )
 {
-	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	CGrenade *pGrenade = GetClassPtr<CGrenade>(nullptr);
 	pGrenade->Spawn();
 	// contact grenades arc lower
 	pGrenade->pev->gravity = 0.5;// lower gravity since grenade is aerodynamic and engine doesn't know it.
@@ -387,7 +387,7 @@ CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector v
 
 CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time )
 {
-	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	CGrenade *pGrenade = GetClassPtr<CGrenade>(nullptr);
 	pGrenade->Spawn();
 	UTIL_SetOrigin( pGrenade->pev, vecStart );
 	pGrenade->pev->velocity = vecVelocity;
@@ -427,7 +427,7 @@ CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector v
 
 CGrenade * CGrenade :: ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity )
 {
-	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	CGrenade *pGrenade = GetClassPtr<CGrenade>(nullptr);
 	pGrenade->pev->movetype = MOVETYPE_BOUNCE;
 	pGrenade->pev->classname = MAKE_STRING( "grenade" );
 	

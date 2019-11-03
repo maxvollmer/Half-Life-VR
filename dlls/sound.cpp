@@ -845,7 +845,7 @@ void CEnvSound :: KeyValue( KeyValueData *pkvd )
 
 BOOL FEnvSoundInRange(entvars_t *pev, entvars_t *pevTarget, float *pflRange) 
 {
-	CEnvSound *pSound = GetClassPtr( (CEnvSound *)pev );
+	CEnvSound *pSound = GetClassPtr<CEnvSound>(pev);
 	Vector vecSpot1 = pev->origin + pev->view_ofs;
 	Vector vecSpot2 = pevTarget->origin + pevTarget->view_ofs;
 	Vector vecRange;
@@ -895,7 +895,7 @@ void CEnvSound :: Think( void )
 	if (FNullEnt(pentPlayer))
 		goto env_sound_Think_slow; // no player in pvs of sound entity, slow it down
  
-	pPlayer = GetClassPtr( (CBasePlayer *)VARS(pentPlayer));
+	pPlayer = GetClassPtr<CBasePlayer>(VARS(pentPlayer));
 	float flRange;
 
 	// check to see if this is the sound entity that is 

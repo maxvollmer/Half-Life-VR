@@ -235,7 +235,7 @@ LINK_ENTITY_TO_CLASS( xen_ttrigger, CXenTreeTrigger );
 
 CXenTreeTrigger *CXenTreeTrigger :: TriggerCreate( edict_t *pOwner, const Vector &position )
 {
-	CXenTreeTrigger *pTrigger = GetClassPtr( (CXenTreeTrigger *)NULL );
+	CXenTreeTrigger *pTrigger = GetClassPtr<CXenTreeTrigger>(nullptr);
 	pTrigger->pev->origin = position;
 	pTrigger->pev->classname = MAKE_STRING("xen_ttrigger");
 	pTrigger->pev->solid = SOLID_TRIGGER;
@@ -466,7 +466,7 @@ public:
 
 CXenHull *CXenHull :: CreateHull( CBaseEntity *source, const Vector &mins, const Vector &maxs, const Vector &offset )
 {
-	CXenHull *pHull = GetClassPtr( (CXenHull *)NULL );
+	CXenHull *pHull = GetClassPtr<CXenHull>(nullptr);
 
 	UTIL_SetOrigin( pHull->pev, source->pev->origin + offset );
 	SET_MODEL( pHull->edict(), STRING(source->pev->model) );

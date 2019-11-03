@@ -46,6 +46,7 @@ extern int VRGetGrabbedLadder(int player);   // For client or server to use to i
 inline bool VRIsGrabbingLadder() { return VRGetGrabbedLadder(pmove->player_index) > 0; }
 extern bool VRIsPullingOnLedge(int player);
 extern bool VRIsAutoDuckingEnabled(int player);
+extern float VRGetSmoothStepsSetting();
 
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
@@ -53,6 +54,142 @@ void PM_CheckWaterJump(void);
 void PM_CheckFalling(void);
 void PM_PlayWaterSounds(void);
 void PM_Jump(void);
+
+float PM_GetStepHeight(playermove_t* pmove, vec3_t start, const float origdisttofloor, const float factor)
+{
+	vec3_t infdown;
+	VectorCopy(start, infdown);
+	infdown[2] = -8192.f;
+	pmtrace_t trace = pmove->PM_PlayerTrace(start, infdown, PM_NORMAL, -1);
+
+	// Don't check steps if in void or on sloped ground
+	if (trace.allsolid || trace.fraction >= 1.f || trace.plane.normal[2] != 1.f)
+		return 0.f;
+
+	float disttofloor = start[2] - trace.endpos[2];
+	if (disttofloor < origdisttofloor)
+	{
+		float stepsize = origdisttofloor - disttofloor;
+		if (stepsize > 0.1f && stepsize <= pmove->movevars->stepsize)
+		{
+			float stepHeight = stepsize * factor;
+			return stepHeight;
+		}
+	}
+
+	return 0.f;
+}
+
+float PM_GetStepHeight(playermove_t* pmove, vec3_t origin, const int xDir, const int yDir, const float origdisttofloor)
+{
+	vec3_t moveto;
+	VectorCopy(origin, moveto);
+	moveto[0] += pmove->movevars->stepsize * xDir;
+	moveto[1] += pmove->movevars->stepsize * yDir;
+	pmtrace_t trace = pmove->PM_PlayerTrace(origin, moveto, PM_NORMAL, -1);
+
+	// Don't check steps if we can't move at all in that direction
+	if (trace.allsolid || trace.fraction == 0.f || trace.fraction > 1.f)
+		return 0.f;
+
+	// Get actual maxdist
+	float maxdist = pmove->movevars->stepsize * trace.fraction;
+	float curdist = maxdist * 0.5f;
+	float curstep = curdist * 0.5f;
+
+	float highestStepHeight = 0.f;
+
+	// divide and conquer
+	while (curstep >= 0.5f && curdist > 0.1f && (maxdist - curdist) > 0.1f)
+	{
+		vec3_t start;
+		start[0] = origin[0] + curdist * xDir;
+		start[1] = origin[1] + curdist * yDir;
+		start[2] = origin[2];
+
+		float factor = 1.f - (curdist / pmove->movevars->stepsize);
+
+		float stepHeight = PM_GetStepHeight(pmove, start, origdisttofloor, factor);
+		if (stepHeight == 0.f)
+		{
+			curdist += curstep;
+		}
+		else
+		{
+			if (stepHeight > highestStepHeight)
+			{
+				highestStepHeight = stepHeight;
+			}
+
+			// unlikely, but not impossible, early exit
+			if (highestStepHeight >= pmove->movevars->stepsize)
+				return pmove->movevars->stepsize;
+
+			curdist -= curstep;
+		}
+
+		curstep *= 0.5f;
+	}
+
+	return highestStepHeight;
+}
+
+float PM_GetStepHeight(playermove_t* pmove, float origin[3])
+{
+	// CVAR_GET_FLOAT("vr_smooth_steps");
+	float vr_smooth_steps = VRGetSmoothStepsSetting();
+	if (vr_smooth_steps == 0.f)
+		return 0.f;
+
+	vec3_t uporigin;
+	VectorCopy(origin, uporigin);
+	uporigin[2] += pmove->movevars->stepsize;
+	pmtrace_t trace = pmove->PM_PlayerTrace(origin, uporigin, PM_NORMAL, -1);
+
+	// Don't check steps if we can't move upwards
+	if (trace.allsolid || trace.fraction != 1.f)
+		return 0.f;
+
+	vec3_t infdown;
+	VectorCopy(uporigin, infdown);
+	infdown[2] = -8192.f;
+	trace = pmove->PM_PlayerTrace(uporigin, infdown, PM_NORMAL, -1);
+
+	// Don't check steps if in void or on sloped ground
+	if (trace.allsolid || trace.fraction >= 1.f || trace.plane.normal[2] != 1.f)
+		return 0.f;
+
+	float disttofloor = uporigin[2] - trace.endpos[2];
+
+	float highestStepHeight = 0.f;
+
+	for (int x = -1; x <= 1; x++)
+	{
+		for (int y = -1; y <= 1; y++)
+		{
+			if (x == 0 && y == 0)
+				continue;
+
+			// if vr_smooth_steps is 1, we skip diagonal checks
+			// if vr_smooth_steps is 2, we do diagonal checks
+			if (vr_smooth_steps == 1.f)
+			{
+				if (x != 0 && y != 0)
+					continue;
+			}
+
+			float stepHeight = PM_GetStepHeight(pmove, uporigin, x, y, disttofloor);
+			if (stepHeight > highestStepHeight)
+				highestStepHeight = stepHeight;
+
+			// unlikely, but not impossible, early exit
+			if (highestStepHeight >= pmove->movevars->stepsize)
+				return pmove->movevars->stepsize;
+		}
+	}
+
+	return highestStepHeight;
+}
 
 
 #ifdef CLIENT_DLL
@@ -857,7 +994,7 @@ int PM_FlyMove (void)
 			end[i] = pmove->origin[i] + time_left * pmove->velocity[i];
 
 		// See if we can make it from origin to end point.
-		trace = pmove->PM_PlayerTrace (pmove->origin, end, PM_NORMAL, -1 );
+		trace = pmove->PM_PlayerTrace(pmove->origin, end, PM_NORMAL, -1 );
 
 		// If we started in a solid object, or we were in solid space
 		//  the whole way, zero out our velocity and return that we
@@ -1063,6 +1200,85 @@ void PM_Accelerate (vec3_t wishdir, float wishspeed, float accel)
 	}
 }
 
+bool PM_SlideUpStepsMove()
+{
+	// Try sliding forward both on ground and up 16 pixels
+	//  take the move that goes farthest
+	vec3_t originalOrigin, originalVelocity;
+	VectorCopy(pmove->origin, originalOrigin);		// Save out original pos &
+	VectorCopy(pmove->velocity, originalVelocity);	//  velocity.
+
+	// Slide move
+	PM_FlyMove();
+
+	// Copy the results out
+	vec3_t downMoveDestination, downMoveResultVelocity;
+	VectorCopy(pmove->origin, downMoveDestination);
+	VectorCopy(pmove->velocity, downMoveResultVelocity);
+
+	// Reset original values.
+	VectorCopy(originalOrigin, pmove->origin);
+	VectorCopy(originalVelocity, pmove->velocity);
+
+	// Start out up one stair height
+	vec3_t dest;
+	VectorCopy(pmove->origin, dest);
+	dest[2] += pmove->movevars->stepsize;
+
+	pmtrace_t trace = pmove->PM_PlayerTrace(pmove->origin, dest, PM_NORMAL, -1);
+	// If we started okay and made it part of the way at least,
+	//  copy the results to the movement start position and then
+	//  run another move try.
+	if (!trace.startsolid && !trace.allsolid)
+	{
+		VectorCopy(trace.endpos, pmove->origin);
+	}
+
+	// slide move the rest of the way.
+	PM_FlyMove();
+
+	// Now try going back down from the end point
+	//  press down the stepheight
+	VectorCopy(pmove->origin, dest);
+	dest[2] -= pmove->movevars->stepsize;
+	trace = pmove->PM_PlayerTrace(pmove->origin, dest, PM_NORMAL, -1);
+
+	// If we are not on the ground any more then
+	//  use the original movement attempt
+	bool useDownMovement = trace.plane.normal[2] < 0.7;
+
+	if (!useDownMovement)
+	{
+		// If the trace ended up in empty space, copy the end
+		//  over to the origin.
+		if (!trace.startsolid && !trace.allsolid)
+		{
+			VectorCopy(trace.endpos, pmove->origin);
+		}
+
+		// decide which one went farther
+		float downdist = (downMoveDestination[0] - originalOrigin[0]) * (downMoveDestination[0] - originalOrigin[0]) + (downMoveDestination[1] - originalOrigin[1]) * (downMoveDestination[1] - originalOrigin[1]);
+		float updist = (pmove->origin[0] - originalOrigin[0]) * (pmove->origin[0] - originalOrigin[0]) + (pmove->origin[1] - originalOrigin[1]) * (pmove->origin[1] - originalOrigin[1]);
+
+		useDownMovement = downdist > updist;
+	}
+
+	if (useDownMovement)
+	{
+		VectorCopy(downMoveDestination, pmove->origin);
+		VectorCopy(downMoveResultVelocity, pmove->velocity);
+
+		return false;
+	}
+	else
+	{
+		// copy z value from slide move
+		pmove->velocity[2] = downMoveResultVelocity[2];
+
+		return true;
+	}
+}
+
 /*
 =====================
 PM_WalkMove
@@ -1070,47 +1286,33 @@ PM_WalkMove
 Only used by players.  Moves along the ground when player is a MOVETYPE_WALK.
 ======================
 */
-void PM_WalkMove ()
+void PM_WalkMove()
 {
-	int			clip;
-	int			oldonground;
-	int i;
-
-	vec3_t		wishvel;
-	float       spd;
-	float		fmove, smove;
-	vec3_t		wishdir;
-	float		wishspeed;
-
-	vec3_t dest, start;
-	vec3_t original, originalvel;
-	vec3_t down, downvel;
-	float downdist, updist;
-
-	pmtrace_t trace;
-	
 	// Copy movement amounts
-	fmove = pmove->cmd.forwardmove;
-	smove = pmove->cmd.sidemove;
-	
+	float fmove = pmove->cmd.forwardmove;
+	float smove = pmove->cmd.sidemove;
+
 	// Zero out z components of movement vectors
 	pmove->forward[2] = 0;
 	pmove->right[2]   = 0;
-	
-	VectorNormalize (pmove->forward);  // Normalize remainder of vectors.
-	VectorNormalize (pmove->right);    // 
 
-	for (i=0 ; i<2 ; i++)       // Determine x and y parts of velocity
-		wishvel[i] = pmove->forward[i]*fmove + pmove->right[i]*smove;
-	
+	// Normalize remainder of vectors.
+	VectorNormalize(pmove->forward);
+	VectorNormalize(pmove->right);
+
+	vec3_t wishvel;
+	for (int i = 0; i < 2; i++)       // Determine x and y parts of velocity
+	{
+		wishvel[i] = pmove->forward[i] * fmove + pmove->right[i] * smove;
+	}
 	wishvel[2] = 0;             // Zero out z part of velocity
 
-	VectorCopy (wishvel, wishdir);   // Determine maginitude of speed of move
-	wishspeed = VectorNormalize(wishdir);
+	// Determine maginitude of speed of move
+	vec3_t wishdir;
+	VectorCopy (wishvel, wishdir);
+	float wishspeed = VectorNormalize(wishdir);
 
-//
-// Clamp to server defined max speed
-//
+	// Clamp to server defined max speed
 	if (wishspeed > pmove->maxspeed)
 	{
 		VectorScale (wishvel, pmove->maxspeed/wishspeed, wishvel);
@@ -1119,115 +1321,96 @@ void PM_WalkMove ()
 
 	// Set pmove velocity
 	pmove->velocity[2] = 0;
-	PM_Accelerate (wishdir, wishspeed, pmove->movevars->accelerate);
+	PM_Accelerate(wishdir, wishspeed, pmove->movevars->accelerate);
 	pmove->velocity[2] = 0;
 
 	// Add in any base velocity to the current velocity.
-	VectorAdd (pmove->velocity, pmove->basevelocity, pmove->velocity );
+	VectorAdd(pmove->velocity, pmove->basevelocity, pmove->velocity);
 
-	spd = Length( pmove->velocity );
-
-	if (spd < 1.0f)
+	// If we are not moving, do nothing
+	if (Length(pmove->velocity) < 1.f)
 	{
-		VectorClear( pmove->velocity );
+		VectorClear(pmove->velocity);
 		return;
 	}
 
-	// If we are not moving, do nothing
-	//if (!pmove->velocity[0] && !pmove->velocity[1] && !pmove->velocity[2])
-	//	return;
+	int oldonground = pmove->onground;
 
-	oldonground = pmove->onground;
-
-// first try just moving to the destination	
-	dest[0] = pmove->origin[0] + pmove->velocity[0]*pmove->frametime;
-	dest[1] = pmove->origin[1] + pmove->velocity[1]*pmove->frametime;	
+	// first try just moving to the destination
+	vec3_t dest;
+	dest[0] = pmove->origin[0] + pmove->velocity[0] * pmove->frametime;
+	dest[1] = pmove->origin[1] + pmove->velocity[1] * pmove->frametime;
 	dest[2] = pmove->origin[2];
 
 	// first try moving directly to the next spot
-	VectorCopy (dest, start);
-	trace = pmove->PM_PlayerTrace (pmove->origin, dest, PM_NORMAL, -1 );
-	// If we made it all the way, then copy trace end
-	//  as new player position.
+	pmtrace_t trace = pmove->PM_PlayerTrace(pmove->origin, dest, PM_NORMAL, -1);
+
+	// If we made it all the way, then copy trace end as new player position.
 	if (trace.fraction == 1)
 	{
-		VectorCopy (trace.endpos, pmove->origin);
+		VectorCopy(trace.endpos, pmove->origin);
 		return;
 	}
 
-	if (oldonground == -1 &&   // Don't walk up stairs if not on ground.
-		pmove->waterlevel  == 0)
+	// Don't walk up stairs if not on ground.
+	if (oldonground == -1 && pmove->waterlevel == 0)
 		return;
 
-	if (pmove->waterjumptime)         // If we are jumping out of water, don't do anything more.
+	// If we are jumping out of water, don't do anything more.
+	if (pmove->waterjumptime)
 		return;
 
-	// Try sliding forward both on ground and up 16 pixels
-	//  take the move that goes farthest
-	VectorCopy (pmove->origin, original);       // Save out original pos &
-	VectorCopy (pmove->velocity, originalvel);  //  velocity.
+	PM_SlideUpStepsMove();
 
-	// Slide move
-	clip = PM_FlyMove ();
-
-	// Copy the results out
-	VectorCopy (pmove->origin  , down);
-	VectorCopy (pmove->velocity, downvel);
-
-	// Reset original values.
-	VectorCopy (original, pmove->origin);
-
-	VectorCopy (originalvel, pmove->velocity);
-
-	// Start out up one stair height
-	VectorCopy (pmove->origin, dest);
-	dest[2] += pmove->movevars->stepsize;
-	
-	trace = pmove->PM_PlayerTrace (pmove->origin, dest, PM_NORMAL, -1 );
-	// If we started okay and made it part of the way at least,
-	//  copy the results to the movement start position and then
-	//  run another move try.
-	if (!trace.startsolid && !trace.allsolid)
-	{
-		VectorCopy (trace.endpos, pmove->origin);
-	}
-
-// slide move the rest of the way.
-	clip = PM_FlyMove ();
-
-// Now try going back down from the end point
-//  press down the stepheight
-	VectorCopy (pmove->origin, dest);
+	/*
+	// check if ground is sloped
+	VectorCopy(pmove->origin, dest);
 	dest[2] -= pmove->movevars->stepsize;
-	
-	trace = pmove->PM_PlayerTrace (pmove->origin, dest, PM_NORMAL, -1 );
+	pmtrace_t trace = pmove->PM_PlayerTrace(pmove->origin, dest, PM_NORMAL, -1);
 
-	// If we are not on the ground any more then
-	//  use the original movement attempt
-	if ( trace.plane.normal[2] < 0.7)
-		goto usedown;
-	// If the trace ended up in empty space, copy the end
-	//  over to the origin.
-	if (!trace.startsolid && !trace.allsolid)
+	// if sloped, just do the vanilla step movement
+	if (trace.allsolid || trace.plane.normal[2] < 1.f)
 	{
-		VectorCopy (trace.endpos, pmove->origin);
+		PM_SlideUpStepsMove();
+		return;
 	}
-	// Copy this origion to up.
-	VectorCopy (pmove->origin, pmove->up);
 
-	// decide which one went farther
-	downdist = (down[0] - original[0])*(down[0] - original[0])
-		     + (down[1] - original[1])*(down[1] - original[1]);
-	updist   = (pmove->up[0]   - original[0])*(pmove->up[0]   - original[0])
-		     + (pmove->up[1]   - original[1])*(pmove->up[1]   - original[1]);
+	// if not sloped, try to move in 16 steps and move the player smoothly if we detect stairs
 
-	if (downdist > updist)
+	// backup origin and velocity
+	vec3_t originalOrigin, originalVelocity;
+	VectorCopy(pmove->origin, originalOrigin);
+	VectorCopy(pmove->velocity, originalVelocity);
+
+	// get movedir
+	vec3_t movedir;
+	VectorCopy(pmove->velocity, movedir);
+	VectorNormalize(movedir);
+
+	float distance = pmove->movevars->stepsize;
+	float nearestDistance = 0.f;
+
+	for (int numTries = 0; numTries < 16; numTries++)
 	{
-usedown:
-		VectorCopy (down   , pmove->origin);
-		VectorCopy (downvel, pmove->velocity);
-	} else // copy z value from slide move
-		pmove->velocity[2] = downvel[2];
+		vec3_t curMoveOffset;
+		VectorScale(movedir, distance, curMoveOffset);
+		VectorAdd(originalOrigin, curMoveOffset, pmove->origin);
+		VectorCopy(originalVelocity, pmove->velocity);
+		if (PM_SlideUpStepsMove())
+		{
+			nearestDistance = distance;
+			distance = distance * 0.5f;
+		}
+		else
+		{
+			distance = distance * 1.5f;
+		}
+		if (distance <= 0.f || distance > pmove->movevars->stepsize)
+		{
+			return;
+		}
+	}
+	*/
 }
 
 /*
@@ -1653,12 +1836,19 @@ void PM_CategorizePosition (void)
 		{
 			// Then we are not in water jump sequence
 			pmove->waterjumptime = 0;
-			/*
-			// This breaks a lot of initial upwards movement in 90fps, so we don't do that anymore. - Max Vollmer, 2019-07-29
-			// If we could make the move, drop us down that 1 pixel
-			if (pmove->waterlevel < 2 && !tr.startsolid && !tr.allsolid)
-				VectorCopy (tr.endpos, pmove->origin);
-			*/
+
+			// This logic broke a lot of initial upwards movement in 90fps,
+			// so we only do this if no upwards movement whatsoever, and if not on ladder
+			// - Max Vollmer, 2019-07-29
+			if (pmove->velocity[2] <= 0.f &&
+				!(pmove->cmd.buttons & IN_JUMP) &&
+				!(pmove->cmd.buttons_ex & X_IN_UP) &&
+				!VRIsGrabbingLadder())
+			{
+				// If we could make the move, drop us down that 1 pixel
+				if (pmove->waterlevel < 2 && !tr.startsolid && !tr.allsolid)
+					VectorCopy(tr.endpos, pmove->origin);
+			}
 		}
 
 		// Standing on an entity other than the world
@@ -3004,6 +3194,9 @@ void PM_CheckWaterJump (void)
 	vecStart[2] += WJ_HEIGHT;
 
 	VectorMA ( vecStart, 24, flatforward, vecEnd );
+
+	constexpr const float f1 = 1.5;
+	constexpr const double f2 = 1.523;
 	
 	// Trace, this trace should use the point sized collision hull
 	savehull = pmove->usehull;

@@ -96,7 +96,7 @@ typedef int BOOL;
 #ifdef _WIN32
 #define LINK_ENTITY_TO_CLASS(mapClassName,DLLClassName) \
 	extern "C" _declspec( dllexport ) void mapClassName( entvars_t *pev ); \
-	void mapClassName( entvars_t *pev ) { GetClassPtr( (DLLClassName *)pev ); }
+	void mapClassName( entvars_t *pev ) { GetClassPtr<DLLClassName>( pev ); }
 #else
 #define LINK_ENTITY_TO_CLASS(mapClassName,DLLClassName) extern "C" void mapClassName( entvars_t *pev ); void mapClassName( entvars_t *pev ) { GetClassPtr( (DLLClassName *)pev ); }
 #endif

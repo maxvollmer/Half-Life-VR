@@ -1,3 +1,12 @@
+0.5.9-beta
+* Fixed crash bug when engine feeds client update methods with invalid edict
+* Fixed controllers activating stuff through walls
+* Fixed weapons being able to shoot when controller is put through wall
+* Added options for non-solid levers and mounted guns (fixes collision issues)
+* Added missing skybox textures and removed obsolete city skybox
+* Added option to smooth out movement on stairs
+* Removed OLDHLVRLauncher
+
 0.5.8-beta - 2019-10-25
 * Added immersive stationary gun (func_tank) controls: Grab and rotate gun with both controllers, shoot with "fire"
 * "Fixed" broken infinite health door exploit (default disabled, added cheat to enable exploit)

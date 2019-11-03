@@ -320,7 +320,7 @@ public:
 	int		IsDormant( void );
 	BOOL    IsLockedByMaster( void ) { return FALSE; }
 
-	static CBaseEntity *Instance( edict_t *pent )
+	static CBaseEntity *Instance( const edict_t *pent )
 	{ 
 		if ( !pent )
 			pent = ENT(0);
@@ -328,17 +328,17 @@ public:
 		return pEnt;
 	}
 
-	static CBaseEntity *Instance( entvars_t *pev ) { return Instance( ENT( pev ) ); }
+	static CBaseEntity *Instance( const entvars_t *pev ) { return Instance( ENT( pev ) ); }
 	static CBaseEntity *Instance( int eoffset) { return Instance( ENT( eoffset) ); }
 
-	CBaseMonster *GetMonsterPointer( entvars_t *pevMonster ) 
+	CBaseMonster *GetMonsterPointer(const entvars_t *pevMonster )
 	{ 
 		CBaseEntity *pEntity = Instance( pevMonster );
 		if ( pEntity )
 			return pEntity->MyMonsterPointer();
 		return NULL;
 	}
-	CBaseMonster *GetMonsterPointer( edict_t *pentMonster ) 
+	CBaseMonster *GetMonsterPointer(const edict_t *pentMonster )
 	{ 
 		CBaseEntity *pEntity = Instance( pentMonster );
 		if ( pEntity )
@@ -828,24 +828,24 @@ public:
 // Converts a entvars_t * to a class pointer
 // It will allocate the class and entity if necessary
 //
-template <class T> T * GetClassPtr( T *a )
+template <class T>
+T* GetClassPtr(entvars_t* pev)
 {
-	entvars_t *pev = (entvars_t *)a;
-
 	// allocate entity if necessary
-	if (pev == NULL)
+	if (pev == nullptr)
 		pev = VARS(CREATE_ENTITY());
 
 	// get the private data
-	a = (T *)GET_PRIVATE(ENT(pev));
+	T* t = (T *)GET_PRIVATE(ENT(pev));
 
-	if (a == NULL) 
+	if (t == nullptr) 
 	{
 		// allocate private data 
-		a = new(pev) T;
-		a->pev = pev;
+		t = new(pev) T;
+		t->pev = pev;
 	}
-	return a;
+
+	return t;
 }
 
 

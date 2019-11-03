@@ -186,7 +186,7 @@ void CFlockingFlyerFlock :: SpawnFlock( void )
 
 	for ( iCount = 0 ; iCount < m_cFlockSize ; iCount++ )
 	{
-		pBoid = GetClassPtr( (CFlockingFlyer *)NULL );
+		pBoid = GetClassPtr<CFlockingFlyer>(nullptr);
 
 		if ( !pLeader ) 
 		{

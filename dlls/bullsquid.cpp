@@ -114,7 +114,7 @@ void CSquidSpit::Animate( void )
 
 void CSquidSpit::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity )
 {
-	CSquidSpit *pSpit = GetClassPtr( (CSquidSpit *)NULL );
+	CSquidSpit* pSpit = GetClassPtr<CSquidSpit>(nullptr);
 	pSpit->Spawn();
 	
 	UTIL_SetOrigin( pSpit->pev, vecStart );

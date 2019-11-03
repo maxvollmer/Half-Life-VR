@@ -49,7 +49,7 @@ LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot );
 //=========================================================
 CLaserSpot *CLaserSpot::CreateSpot( void )
 {
-	CLaserSpot *pSpot = GetClassPtr( (CLaserSpot *)NULL );
+	CLaserSpot *pSpot = GetClassPtr<CLaserSpot>(nullptr);
 	pSpot->Spawn();
 
 	pSpot->pev->classname = MAKE_STRING("laser_spot");
@@ -105,7 +105,7 @@ LINK_ENTITY_TO_CLASS( rpg_rocket, CRpgRocket );
 //=========================================================
 CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher )
 {
-	CRpgRocket *pRocket = GetClassPtr( (CRpgRocket *)NULL );
+	CRpgRocket *pRocket = GetClassPtr<CRpgRocket>(nullptr);
 
 	UTIL_SetOrigin( pRocket->pev, vecOrigin );
 	pRocket->pev->angles = vecAngles;

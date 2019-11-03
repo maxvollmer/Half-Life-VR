@@ -122,3 +122,8 @@ bool VRIsAutoDuckingEnabled(int player)
 {
 	return CVAR_GET_FLOAT("vr_autocrouch_enabled") != 0.f;
 }
+
+float VRGetSmoothStepsSetting()
+{
+	return CVAR_GET_FLOAT("vr_smooth_steps");
+}

@@ -105,7 +105,7 @@ inline void WRITE_PRECISE_VECTOR(const float* v)
 #define ALERT				(*g_engfuncs.pfnAlertMessage)
 #define ENGINE_FPRINTF		(*g_engfuncs.pfnEngineFprintf)
 #define ALLOC_PRIVATE		(*g_engfuncs.pfnPvAllocEntPrivateData)
-inline void *GET_PRIVATE( edict_t *pent )
+inline void *GET_PRIVATE(const edict_t *pent )
 {
 	if ( pent )
 		return pent->pvPrivateData;

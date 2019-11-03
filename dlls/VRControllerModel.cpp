@@ -13,7 +13,7 @@ LINK_ENTITY_TO_CLASS(vr_controllermodel, CVRControllerModel);
 
 CVRControllerModel* CVRControllerModel::Create(const char *pModelName, const Vector &origin)
 {
-	CVRControllerModel* pModel = GetClassPtr((CVRControllerModel*)nullptr);
+	CVRControllerModel* pModel = GetClassPtr<CVRControllerModel>(nullptr);
 	pModel->pev->classname = MAKE_STRING("vr_controllermodel");
 	pModel->pev->model = MAKE_STRING(pModelName);
 	pModel->pev->origin = origin;

@@ -181,16 +181,16 @@ public:
 	int			m_iFOV;			// field of view
 	int			m_iClientFOV;	// client's known FOV
 	// usable player items 
-	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES];
-	CBasePlayerItem *m_pActiveItem;
-	CBasePlayerItem *m_pClientActiveItem;  // client version of the active item
-	CBasePlayerItem *m_pLastItem;
+	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES]{ nullptr };
+	CBasePlayerItem* m_pActiveItem{ nullptr };
+	CBasePlayerItem *m_pClientActiveItem{ nullptr };  // client version of the active item
+	CBasePlayerItem *m_pLastItem{ nullptr };
 	// shared ammo slots
-	int	m_rgAmmo[MAX_AMMO_SLOTS];
-	int	m_rgAmmoLast[MAX_AMMO_SLOTS];
+	int	m_rgAmmo[MAX_AMMO_SLOTS]{ 0 };
+	int	m_rgAmmoLast[MAX_AMMO_SLOTS]{ 0 };
 
-	int					m_iDeaths;
-	float				m_iRespawnFrames;	// used in PlayerDeathThink() to make sure players can always respawn
+	int					m_iDeaths{ 0 };
+	float				m_iRespawnFrames{ 0.f };	// used in PlayerDeathThink() to make sure players can always respawn
 
 	int m_lastx, m_lasty;  // These are the previous update's crosshair angles, DON"T SAVE/RESTORE
 

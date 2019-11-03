@@ -1190,7 +1190,7 @@ void CBMortar::Animate( void )
 
 CBMortar *CBMortar::Shoot( edict_t *pOwner, Vector vecStart, Vector vecVelocity )
 {
-	CBMortar *pSpit = GetClassPtr( (CBMortar *)NULL );
+	CBMortar *pSpit = GetClassPtr<CBMortar>(nullptr);
 	pSpit->Spawn();
 	
 	UTIL_SetOrigin( pSpit->pev, vecStart );

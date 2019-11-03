@@ -737,7 +737,7 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 				if ( FClassnameIs ( pentTarget, "func_door" ) || FClassnameIs ( pentTarget, "func_door_rotating" ) )
 				{
 				
-					pDoor = GetClassPtr( (CBaseDoor *) VARS(pentTarget) );
+					pDoor = GetClassPtr<CBaseDoor>(VARS(pentTarget));
 
 					if ( pDoor->m_flWait >= 0)
 					{

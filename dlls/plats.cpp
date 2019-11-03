@@ -341,9 +341,9 @@ void CFuncPlat :: Spawn( )
 
 static void PlatSpawnInsideTrigger(entvars_t* pevPlatform)
 {
-	GetClassPtr( (CPlatTrigger *)NULL)->SpawnInsideTrigger( GetClassPtr( (CFuncPlat *)pevPlatform ) );
+	GetClassPtr<CPlatTrigger>(nullptr)->SpawnInsideTrigger(GetClassPtr<CFuncPlat>(pevPlatform));
 }
-		
+
 
 //
 // Create a trigger entity for a platform.

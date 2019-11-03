@@ -93,6 +93,10 @@ private:
 	Vector GetHLViewAnglesFromVRMatrix(const Matrix4 &mat);
 	Vector GetHLAnglesFromVRMatrix(const Matrix4 &mat);
 
+	float GetStepHeight();
+	float m_stepHeight{ 0 };
+	Vector m_stepHeightOrigin;
+
 	Positions positions;
 
 	bool isVRRoomScale = true;

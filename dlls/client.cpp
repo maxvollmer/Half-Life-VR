@@ -146,7 +146,7 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 		}
 
 		// respawn player
-		GetClassPtr( (CBasePlayer *)pev)->Spawn( );
+		GetClassPtr<CBasePlayer>(pev)->Spawn();
 	}
 	else
 	{       // restart the entire server
@@ -196,7 +196,7 @@ void ClientPutInServer( edict_t *pEntity )
 
 	entvars_t *pev = &pEntity->v;
 
-	pPlayer = GetClassPtr((CBasePlayer *)pev);
+	pPlayer = GetClassPtr<CBasePlayer>(pev);
 	pPlayer->SetCustomDecalFrames(-1); // Assume none;
 
 	// Allocate a CBasePlayer for pev, and call spawn
@@ -231,7 +231,7 @@ void Host_Say( edict_t *pEntity, int teamonly )
 		return;
 
 	entvars_t *pev = &pEntity->v;
-	CBasePlayer* player = GetClassPtr((CBasePlayer *)pev);
+	CBasePlayer* player = GetClassPtr<CBasePlayer>(pev);
 
 	//Not yet.
 	if ( player->m_flNextChatTime > gpGlobals->time )
@@ -399,55 +399,55 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if ( FStrEq(pcmd, "fullupdate" ) )
 	{
-		GetClassPtr((CBasePlayer *)pev)->ForceClientDllUpdate(); 
+		GetClassPtr<CBasePlayer>(pev)->ForceClientDllUpdate();
 	}
 	else if ( FStrEq(pcmd, "give" ) )
 	{
 		if (AreCheatsEnabled())
 		{
 			int iszItem = ALLOC_STRING( CMD_ARGV(1) );	// Make a copy of the classname
-			GetClassPtr((CBasePlayer *)pev)->GiveNamedItem( STRING(iszItem) );
+			GetClassPtr<CBasePlayer>(pev)->GiveNamedItem( STRING(iszItem) );
 		}
 	}
 
 	else if ( FStrEq(pcmd, "drop" ) )
 	{
 		// player is dropping an item. 
-		GetClassPtr((CBasePlayer *)pev)->DropPlayerItem((char *)CMD_ARGV(1));
+		GetClassPtr<CBasePlayer>(pev)->DropPlayerItem((char *)CMD_ARGV(1));
 	}
 	else if ( FStrEq(pcmd, "fov" ) )
 	{
 		if (AreCheatsEnabled() && CMD_ARGC() > 1)
 		{
-			GetClassPtr((CBasePlayer *)pev)->m_iFOV = atoi( CMD_ARGV(1) );
+			GetClassPtr<CBasePlayer>(pev)->m_iFOV = atoi( CMD_ARGV(1) );
 		}
 		else
 		{
-			CLIENT_PRINTF( pEntity, print_console, UTIL_VarArgs( "\"fov\" is \"%d\"\n", (int)GetClassPtr((CBasePlayer *)pev)->m_iFOV ) );
+			CLIENT_PRINTF( pEntity, print_console, UTIL_VarArgs( "\"fov\" is \"%d\"\n", GetClassPtr<CBasePlayer>(pev)->m_iFOV ) );
 		}
 	}
 	else if ( FStrEq(pcmd, "use" ) )
 	{
-		GetClassPtr((CBasePlayer *)pev)->SelectItem((char *)CMD_ARGV(1));
+		GetClassPtr<CBasePlayer>(pev)->SelectItem((char *)CMD_ARGV(1));
 	}
 	else if (((pstr = strstr(pcmd, "weapon_")) != NULL)  && (pstr == pcmd))
 	{
-		GetClassPtr((CBasePlayer *)pev)->SelectItem(pcmd);
+		GetClassPtr<CBasePlayer>(pev)->SelectItem(pcmd);
 	}
 	else if (FStrEq(pcmd, "lastinv" ))
 	{
-		GetClassPtr((CBasePlayer *)pev)->SelectLastItem();
+		GetClassPtr<CBasePlayer>(pev)->SelectLastItem();
 	}
 	else if ( FStrEq( pcmd, "spectate" ) && (pev->flags & FL_PROXY) )	// added for proxy support
 	{
-		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		CBasePlayer * pPlayer = GetClassPtr<CBasePlayer>(pev);
 
 		edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
 		pPlayer->StartObserver( pev->origin, VARS(pentSpawnSpot)->angles);
 	}
 	else if (FStrEq(pcmd, "vr_flashlight"))
 	{
-		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		CBasePlayer * pPlayer = GetClassPtr<CBasePlayer>(pev);
 		if (atoi(CMD_ARGV(1)))
 		{
 			Vector offset( atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4)) );
@@ -461,7 +461,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if (FStrEq(pcmd, "vr_teleporter"))
 	{
-		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		CBasePlayer * pPlayer = GetClassPtr<CBasePlayer>(pev);
 		if (atoi(CMD_ARGV(1)))
 		{
 			Vector offset(atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4)));
@@ -475,29 +475,29 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if (FStrEq(pcmd, "vr_anlgfire"))
 	{
-		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		CBasePlayer * pPlayer = GetClassPtr<CBasePlayer>(pev);
 		pPlayer->SetAnalogFire(atof(CMD_ARGV(1)));
 	}
 	else if (FStrEq(pcmd, "vr_lngjump"))
 	{
-		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		CBasePlayer * pPlayer = GetClassPtr<CBasePlayer>(pev);
 		pPlayer->DoLongJump();
 	}
 	else if (FStrEq(pcmd, "vr_restartmap"))
 	{
-		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		CBasePlayer * pPlayer = GetClassPtr<CBasePlayer>(pev);
 		pPlayer->RestartCurrentMap();
 	}
 	else if (FStrEq(pcmd, "vr_wpnanim"))	// Client side weapon animations are now sent to the server - Max Vollmer, 2019-04-13
 	{
-		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		int sequence = atoi(CMD_ARGV(1));
 		int body = atoi(CMD_ARGV(2));
 		pPlayer->PlayVRWeaponAnimation(sequence, body);
 	}
 	else if (FStrEq(pcmd, "vr_muzzleflash"))	// Client side weapon animations are now sent to the server - Max Vollmer, 2019-04-13
 	{
-		CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+		CBasePlayer * pPlayer = GetClassPtr<CBasePlayer>(pev);
 		pPlayer->PlayVRWeaponMuzzleflash();
 	}
 	else if (FStrEq(pcmd, "vrupd_hmd"))	// Client sends update for VR related data - Max Vollmer, 2017-08-18
@@ -505,7 +505,7 @@ void ClientCommand( edict_t *pEntity )
 		int size = CMD_ARGC();
 		if (size == 10)
 		{
-			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+			CBasePlayer * pPlayer = GetClassPtr<CBasePlayer>(pev);
 			int timestamp = atoi(CMD_ARGV(1));
 			Vector2D offset( atof(CMD_ARGV(2)), atof(CMD_ARGV(3)) );
 			Vector2D yawOffsetDelta(atof(CMD_ARGV(4)), atof(CMD_ARGV(5)) );
@@ -527,7 +527,7 @@ void ClientCommand( edict_t *pEntity )
 		int size = CMD_ARGC();
 		if (size == 15)
 		{
-			CBasePlayer * pPlayer = GetClassPtr((CBasePlayer *)pev);
+			CBasePlayer * pPlayer = GetClassPtr<CBasePlayer>(pev);
 			int timestamp = atoi(CMD_ARGV(1));
 			bool isValid = atoi(CMD_ARGV(2)) != 0;
 			VRControllerID id = VRControllerID(atoi(CMD_ARGV(3)));
@@ -547,7 +547,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if (FStrEq(pcmd, "vrtele"))
 	{
-		CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
+		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		if (atoi(CMD_ARGV(1)))
 		{
 			pPlayer->StartVRTele();
@@ -559,10 +559,10 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if (FStrEq(pcmd, "vrspeech"))
 	{
-		CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
+		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		pPlayer->HandleSpeechCommand(VRSpeechCommand(atoi(CMD_ARGV(1))));
 	}
-	else if ( g_pGameRules->ClientCommand( GetClassPtr((CBasePlayer *)pev), pcmd ) )
+	else if ( g_pGameRules->ClientCommand(GetClassPtr<CBasePlayer>(pev), pcmd ) )
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
 	}
@@ -644,7 +644,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		}
 	}
 
-	g_pGameRules->ClientUserInfoChanged( GetClassPtr((CBasePlayer *)&pEntity->v), infobuffer );
+	g_pGameRules->ClientUserInfoChanged(GetClassPtr<CBasePlayer>(&pEntity->v), infobuffer );
 }
 
 static int g_serveractive = 0;
@@ -1568,60 +1568,66 @@ void RegisterEncoders( void )
 
 int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 {
+	memset(info, 0, 32 * sizeof(weapon_data_t));
+
 #if defined( CLIENT_WEAPONS )
-	int i;
-	weapon_data_t *item;
-	entvars_t *pev = &player->v;
-	CBasePlayer *pl = ( CBasePlayer *) CBasePlayer::Instance( pev );
-	CBasePlayerWeapon *gun;
-	
-	ItemInfo II;
+	if (!player)
+		return 1;
 
-	memset( info, 0, 32 * sizeof( weapon_data_t ) );
+	const entvars_t* pev = &player->v;
 
-	if ( !pl )
+	if (pev->pContainingEntity != player)
+		return 1;
+
+	CBasePlayer* pl = nullptr;
+	if (player->pvPrivateData != nullptr)
+	{
+		pl = dynamic_cast<CBasePlayer*>(CBaseEntity::Instance(player));
+	}
+
+	if (!pl)
 		return 1;
 
 	// go through all of the weapons and make a list of the ones to pack
-	for ( i = 0 ; i < MAX_ITEM_TYPES ; i++ )
+	for (int i = 0; i < MAX_ITEM_TYPES; i++)
 	{
-		if ( pl->m_rgpPlayerItems[ i ] )
+		if (pl->m_rgpPlayerItems[i])
 		{
 			// there's a weapon here. Should I pack it?
-			CBasePlayerItem *pPlayerItem = pl->m_rgpPlayerItems[ i ];
+			CBasePlayerItem* pPlayerItem = pl->m_rgpPlayerItems[i];
 
-			while ( pPlayerItem )
+			while (pPlayerItem)
 			{
-				gun = (CBasePlayerWeapon *)pPlayerItem->GetWeaponPtr();
-				if ( gun && gun->UseDecrement() )
+				CBasePlayerWeapon* gun = dynamic_cast<CBasePlayerWeapon*>(pPlayerItem->GetWeaponPtr());
+				if (gun && gun->UseDecrement())
 				{
 					// Get The ID.
+					ItemInfo II;
 					memset( &II, 0, sizeof( II ) );
 					gun->GetItemInfo( &II );
 
 					if ( II.iId >= 0 && II.iId < 32 )
 					{
-						item = &info[ II.iId ];
-					 	
-						item->m_iId						= II.iId;
-						item->m_iClip					= gun->m_iClip;
-						
+						weapon_data_t& item = info[ II.iId ];
+
+						item.m_iId						= II.iId;
+						item.m_iClip					= gun->m_iClip;
+
 						//item->m_flTimeWeaponIdle		= (std::max)( gun->m_flTimeWeaponIdle.GetRaw(), -0.001f );
 						//item->m_flNextPrimaryAttack		= (std::max)( gun->m_flNextPrimaryAttack.GetRaw(), -0.001f );
 						//item->m_flNextSecondaryAttack	= (std::max)( gun->m_flNextSecondaryAttack.GetRaw(), -0.001f );
-						item->m_flTimeWeaponIdle		= (std::max)( gun->m_flTimeWeaponIdle, -0.001f );
-						item->m_flNextPrimaryAttack		= (std::max)( gun->m_flNextPrimaryAttack, -0.001f );
-						item->m_flNextSecondaryAttack	= (std::max)( gun->m_flNextSecondaryAttack, -0.001f );
-						item->m_fInReload				= gun->m_fInReload;
-						item->m_fInSpecialReload		= gun->m_fInSpecialReload;
-						item->fuser1					= (std::max)( gun->pev->fuser1, -0.001f );
-						item->fuser2					= gun->m_flStartThrow;
-						item->fuser3					= gun->m_flReleaseThrow;
-						item->iuser1					= gun->m_chargeReady;
-						item->iuser2					= gun->m_fInAttack;
-						item->iuser3					= gun->m_fireState;
-						
-											
+						item.m_flTimeWeaponIdle		= (std::max)( gun->m_flTimeWeaponIdle, -0.001f );
+						item.m_flNextPrimaryAttack		= (std::max)( gun->m_flNextPrimaryAttack, -0.001f );
+						item.m_flNextSecondaryAttack	= (std::max)( gun->m_flNextSecondaryAttack, -0.001f );
+						item.m_fInReload				= gun->m_fInReload;
+						item.m_fInSpecialReload		= gun->m_fInSpecialReload;
+						item.fuser1					= (std::max)( gun->pev->fuser1, -0.001f );
+						item.fuser2					= gun->m_flStartThrow;
+						item.fuser3					= gun->m_flReleaseThrow;
+						item.iuser1					= gun->m_chargeReady;
+						item.iuser2					= gun->m_fInAttack;
+						item.iuser3					= gun->m_fireState;
+
 //						item->m_flPumpTime				= max( gun->m_flPumpTime, -0.001 );
 					}
 				}
@@ -1629,8 +1635,6 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 			}
 		}
 	}
-#else
-	memset( info, 0, 32 * sizeof( weapon_data_t ) );
 #endif
 	return 1;
 }
@@ -1643,10 +1647,28 @@ Data sent to current client only
 engine sets cd to 0 before calling.
 =================
 */
-void UpdateClientData ( const struct edict_s *ent, int sendweapons, struct clientdata_s *cd )
+
+void UpdateClientData(const struct edict_s* ent, int sendweapons, struct clientdata_s* cd)
 {
-	entvars_t *pev = (entvars_t *)&ent->v;
-	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance(pev);
+	if (!ent)
+		return;
+
+	const entvars_t* pev = &ent->v;
+
+	if (pev->pContainingEntity != ent)
+		return;
+
+	CBasePlayer* pl = nullptr;
+	if (ent->pvPrivateData != nullptr)
+	{
+		pl = dynamic_cast<CBasePlayer*>(CBaseEntity::Instance(ent));
+	}
+
+	OutputDebugStringA(("ent: " + std::to_string((int)ent) + "\n").data());
+
+	OutputDebugStringA(("ent->pvPrivateData: " + std::to_string((int)ent->pvPrivateData) + "\n").data());
+
+	OutputDebugStringA(("pl: " + std::to_string((int)pl) + "\n").data());
 
 	cd->flags			= ent->v.flags;
 	cd->health			= ent->v.health;
@@ -1701,9 +1723,10 @@ void UpdateClientData ( const struct edict_s *ent, int sendweapons, struct clien
 			cd->ammo_rockets	= pl->ammo_rockets;
 			cd->ammo_cells		= pl->ammo_uranium;
 			cd->vuser2.x		= pl->ammo_hornets;
-			
 
-			if ( pl->m_pActiveItem )
+			OutputDebugStringA(("pl->m_pActiveItem: " + std::to_string((int)pl->m_pActiveItem) + "\n").data());
+
+			if (pl->m_pActiveItem)
 			{
 				CBasePlayerWeapon *gun;
 				gun = (CBasePlayerWeapon *)pl->m_pActiveItem->GetWeaponPtr();

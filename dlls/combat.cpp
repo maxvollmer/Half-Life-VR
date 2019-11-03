@@ -65,7 +65,7 @@ void CGib :: SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs 
 
 	for ( i = 0 ; i < cGibs ; i++ )
 	{
-		CGib *pGib = GetClassPtr( (CGib *)NULL );
+		CGib *pGib = GetClassPtr<CGib>(nullptr);
 
 		pGib->Spawn( "models/stickygib.mdl" );
 		pGib->pev->body = RANDOM_LONG(0,2);
@@ -124,7 +124,7 @@ void CGib :: SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs 
 
 void CGib :: SpawnHeadGib( entvars_t *pevVictim )
 {
-	CGib *pGib = GetClassPtr( (CGib *)NULL );
+	CGib *pGib = GetClassPtr<CGib>(nullptr);
 
 	if ( g_Language == LANGUAGE_GERMAN )
 	{
@@ -183,7 +183,7 @@ void CGib :: SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 
 	for ( cSplat = 0 ; cSplat < cGibs ; cSplat++ )
 	{
-		CGib *pGib = GetClassPtr( (CGib *)NULL );
+		CGib *pGib = GetClassPtr<CGib>(nullptr);
 
 		if ( g_Language == LANGUAGE_GERMAN )
 		{
