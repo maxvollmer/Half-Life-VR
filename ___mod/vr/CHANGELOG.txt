@@ -1,4 +1,4 @@
-0.5.9-beta
+0.5.9-beta - 2019-11-03
 * Fixed crash bug when engine feeds client update methods with invalid edict
 * Fixed controllers activating stuff through walls
 * Fixed weapons being able to shoot when controller is put through wall
