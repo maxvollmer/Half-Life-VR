@@ -160,9 +160,14 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 	if (pparams->nextView == 0)
 	{
 		vrHelper->PollEvents(true, m_isInMenu);
-		vrHelper->UpdatePositions();
-		CheckAndIfNecessaryReplaceHDTextures();
+		if (!vrHelper->UpdatePositions())
+		{
+			// No valid HMD input, render default (2D pancake mode)
+			return;
+		}
+
 		VRTextureHelper::Instance().Init();
+		CheckAndIfNecessaryReplaceHDTextures();
 	}
 
 	MultiPassMode multiPassMode = MultiPassMode(int(CVAR_GET_FLOAT("vr_multipass_mode")));
