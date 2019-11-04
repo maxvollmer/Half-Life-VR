@@ -358,7 +358,7 @@ BOOL CFuncTank::OnControls(entvars_t* pevTest)
 
 BOOL CFuncTank::StartControl(CBasePlayer* pController)
 {
-	if (m_pController != NULL)
+	if (m_pController != nullptr)
 		return FALSE;
 
 	// Team only or disabled?
@@ -407,7 +407,7 @@ void CFuncTank::StopControl()
 	m_pController->m_iHideHUD &= ~HIDEHUD_WEAPONS;
 
 	pev->nextthink = 0;
-	m_pController = NULL;
+	m_pController = nullptr;
 
 	if (IsActive())
 		pev->nextthink = pev->ltime + 1.0;
@@ -416,7 +416,7 @@ void CFuncTank::StopControl()
 // Called each frame by the player's ItemPostFrame
 void CFuncTank::ControllerPostFrame(void)
 {
-	ASSERT(m_pController != NULL);
+	ASSERT(m_pController != nullptr);
 
 	if (!m_pController)
 		return;
@@ -427,7 +427,7 @@ void CFuncTank::ControllerPostFrame(void)
 	if ((m_pController->pev->button & IN_ATTACK) || (m_pController->GetAnalogFire() > 0.f))
 	{
 		Vector vecForward;
-		UTIL_MakeVectorsPrivate(pev->angles, vecForward, NULL, NULL);
+		UTIL_MakeVectorsPrivate(pev->angles, vecForward, nullptr, nullptr);
 
 		m_fireLast = gpGlobals->time - (1 / m_fireRate) - 0.01;  // to make sure the gun doesn't fire too many bullets
 
@@ -642,7 +642,7 @@ void CFuncTank::TrackTarget(void)
 	{
 		BOOL fire = FALSE;
 		Vector forward;
-		UTIL_MakeVectorsPrivate(pev->angles, forward, NULL, NULL);
+		UTIL_MakeVectorsPrivate(pev->angles, forward, nullptr, nullptr);
 
 		if (pev->spawnflags & SF_TANK_LINEOFSIGHT)
 		{
@@ -864,7 +864,7 @@ CLaser* CFuncTankLaser::GetLaser(void)
 
 	edict_t* pentLaser;
 
-	pentLaser = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->message));
+	pentLaser = FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(pev->message));
 	while (!FNullEnt(pentLaser))
 	{
 		// Found the landmark
@@ -1044,13 +1044,13 @@ void CFuncTankControls::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 	if (m_pTank)
 		m_pTank->Use(pActivator, pCaller, useType, value);
 
-	ASSERT(m_pTank != NULL);  // if this fails,  most likely means save/restore hasn't worked properly
+	ASSERT(m_pTank != nullptr);  // if this fails,  most likely means save/restore hasn't worked properly
 }
 
 
 void CFuncTankControls::Think(void)
 {
-	edict_t* pTarget = NULL;
+	edict_t* pTarget = nullptr;
 
 	do
 	{

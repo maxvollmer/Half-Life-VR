@@ -364,7 +364,7 @@ void CHGrunt::JustSpoke(void)
 //=========================================================
 void CHGrunt::PrescheduleThink(void)
 {
-	if (InSquad() && m_hEnemy != NULL)
+	if (InSquad() && m_hEnemy != nullptr)
 	{
 		if (HasConditions(bits_COND_SEE_ENEMY))
 		{
@@ -414,7 +414,7 @@ BOOL CHGrunt::CheckMeleeAttack1(float flDot, float flDist)
 {
 	CBaseMonster* pEnemy;
 
-	if (m_hEnemy != NULL)
+	if (m_hEnemy != nullptr)
 	{
 		pEnemy = m_hEnemy->MyMonsterPointer();
 
@@ -762,7 +762,7 @@ CBaseEntity* CHGrunt::Kick(void)
 		return pEntity;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //=========================================================
@@ -786,7 +786,7 @@ Vector CHGrunt::GetGunPosition()
 //=========================================================
 void CHGrunt::Shoot(void)
 {
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == nullptr)
 	{
 		return;
 	}
@@ -813,7 +813,7 @@ void CHGrunt::Shoot(void)
 //=========================================================
 void CHGrunt::Shotgun(void)
 {
-	if (m_hEnemy == NULL)
+	if (m_hEnemy == nullptr)
 	{
 		return;
 	}
@@ -1962,7 +1962,7 @@ Schedule_t* CHGrunt::GetSchedule(void)
 		CSound* pSound;
 		pSound = PBestSound();
 
-		ASSERT(pSound != NULL);
+		ASSERT(pSound != nullptr);
 		if (pSound)
 		{
 			if (pSound->m_iType & bits_SOUND_DANGER)
@@ -2024,10 +2024,10 @@ Schedule_t* CHGrunt::GetSchedule(void)
 					// before he starts pluggin away.
 					if (FOkToSpeak())  // && RANDOM_LONG(0,1))
 					{
-						if ((m_hEnemy != NULL) && m_hEnemy->IsPlayer())
+						if ((m_hEnemy != nullptr) && m_hEnemy->IsPlayer())
 							// player
 							SENTENCEG_PlayRndSz(ENT(pev), "HG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-						else if ((m_hEnemy != NULL) &&
+						else if ((m_hEnemy != nullptr) &&
 							(m_hEnemy->Classify() != CLASS_PLAYER_ALLY) &&
 							(m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE) &&
 							(m_hEnemy->Classify() != CLASS_MACHINE))
@@ -2065,7 +2065,7 @@ Schedule_t* CHGrunt::GetSchedule(void)
 			// 10% chance of flinch.
 			int iPercent = RANDOM_LONG(0, 99);
 
-			if (iPercent <= 90 && m_hEnemy != NULL)
+			if (iPercent <= 90 && m_hEnemy != nullptr)
 			{
 				// only try to take cover if we actually have an enemy!
 
@@ -2299,7 +2299,7 @@ Schedule_t* CHGrunt::GetScheduleOfType(int Type)
 	}
 	case SCHED_FAIL:
 	{
-		if (m_hEnemy != NULL)
+		if (m_hEnemy != nullptr)
 		{
 			// grunt has an enemy, so pick a different default fail schedule most likely to help recover.
 			return &slGruntCombatFail[0];
@@ -2367,7 +2367,7 @@ void CHGruntRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 	UTIL_TraceLine(pev->origin, pev->origin + Vector(0, 0, -4096.0), dont_ignore_monsters, ENT(pev), &tr);
 	/*
 	if ( tr.pHit && Instance( tr.pHit )->pev->solid != SOLID_BSP)
-		return NULL;
+		return nullptr;
 	*/
 
 	CBaseEntity* pEntity = Create("monster_human_grunt", pev->origin, pev->angles);

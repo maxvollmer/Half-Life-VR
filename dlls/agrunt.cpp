@@ -891,7 +891,7 @@ BOOL CAGrunt::FCanCheckAttacks(void)
 //=========================================================
 BOOL CAGrunt::CheckMeleeAttack1(float flDot, float flDist)
 {
-	if (HasConditions(bits_COND_SEE_ENEMY) && flDist <= AGRUNT_MELEE_DIST && flDot >= 0.6 && m_hEnemy != NULL)
+	if (HasConditions(bits_COND_SEE_ENEMY) && flDist <= AGRUNT_MELEE_DIST && flDot >= 0.6 && m_hEnemy != nullptr)
 	{
 		return TRUE;
 	}
@@ -947,7 +947,7 @@ void CAGrunt::StartTask(Task_t* pTask)
 	case TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE:
 	{
 		UTIL_MakeVectors(pev->angles);
-		if (BuildRoute(m_vecEnemyLKP - gpGlobals->v_forward * 50, bits_MF_TO_LOCATION, NULL))
+		if (BuildRoute(m_vecEnemyLKP - gpGlobals->v_forward * 50, bits_MF_TO_LOCATION, nullptr))
 		{
 			TaskComplete();
 		}
@@ -1051,7 +1051,7 @@ Schedule_t* CAGrunt::GetSchedule(void)
 		CSound* pSound;
 		pSound = PBestSound();
 
-		ASSERT(pSound != NULL);
+		ASSERT(pSound != nullptr);
 		if (pSound && (pSound->m_iType & bits_SOUND_DANGER))
 		{
 			// dangerous sound nearby!
@@ -1148,7 +1148,7 @@ Schedule_t* CAGrunt::GetScheduleOfType(int Type)
 	case SCHED_FAIL:
 		// no fail schedule specified, so pick a good generic one.
 	{
-		if (m_hEnemy != NULL)
+		if (m_hEnemy != nullptr)
 		{
 			// I have an enemy
 			// !!!LATER - what if this enemy is really far away and i'm chasing it?

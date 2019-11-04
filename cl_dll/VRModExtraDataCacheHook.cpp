@@ -23,12 +23,12 @@ void* MyModExtradata(struct model_s* mod)
 
 void InstallModExtraDataCacheHook()
 {
-	HOOK_TRACE_INFO hHook = { NULL };
+	HOOK_TRACE_INFO hHook = { nullptr };
 
 	NTSTATUS result = LhInstallHook(
 		IEngineStudio.DONOTUSEMod_ExtradataDONOTUSE,
 		MyModExtradata,
-		NULL,
+		nullptr,
 		&hHook);
 
 	if (FAILED(result))

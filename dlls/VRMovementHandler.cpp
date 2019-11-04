@@ -38,11 +38,11 @@ Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to)
 		return to;
 
 	// if "to" is free, we can move there
-	if (pmove->PM_TestPlayerPosition(to, NULL) == -1)
+	if (pmove->PM_TestPlayerPosition(to, nullptr) == -1)
 		return to;
 
 	// if "from" is blocked, we can't move (let normal pm_shared unstuck as first)
-	if (pmove->PM_TestPlayerPosition(from, NULL) >= 0)
+	if (pmove->PM_TestPlayerPosition(from, nullptr) >= 0)
 		return from;
 
 	// if we end up here, noclip is off, from is free, and to is blocked - use pm_shared code to see if we can move (up stairs, along walls etc.)

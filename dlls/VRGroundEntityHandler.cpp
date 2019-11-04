@@ -200,7 +200,7 @@ bool VRGroundEntityHandler::IsExcludedAsGroundEntity(CBaseEntity* pEntity)
 void VRGroundEntityHandler::SendGroundEntityToClient()
 {
 	extern int gmsgVRGroundEntity;
-	MESSAGE_BEGIN(MSG_ONE, gmsgVRGroundEntity, NULL, m_pPlayer->pev);
+	MESSAGE_BEGIN(MSG_ONE, gmsgVRGroundEntity, nullptr, m_pPlayer->pev);
 	if (m_hGroundEntity)
 	{
 		WRITE_ENTITY(ENTINDEX(m_hGroundEntity->edict()));

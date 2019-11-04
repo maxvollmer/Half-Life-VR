@@ -44,9 +44,9 @@ cvar_t allowmonsters = { "mp_allowmonsters", "0", FCVAR_SERVER };
 cvar_t mp_chattime = { "mp_chattime", "10", FCVAR_SERVER };
 
 // Engine Cvars
-cvar_t* g_psv_gravity = NULL;
-cvar_t* g_psv_aim = NULL;
-cvar_t* g_footsteps = NULL;
+cvar_t* g_psv_gravity = nullptr;
+cvar_t* g_psv_aim = nullptr;
+cvar_t* g_footsteps = nullptr;
 
 //CVARS FOR SKILL LEVEL SETTINGS
 // Agrunt
@@ -894,7 +894,7 @@ void GameDLLInit(void)
 
 
 	// Seed rand()
-	srand(rand() ^ time(NULL));
+	srand(rand() ^ time(nullptr));
 }
 
 

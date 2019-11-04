@@ -248,7 +248,7 @@ int CBullsquid::IgnoreConditions(void)
 		iIgnore = bits_COND_SMELL | bits_COND_SMELL_FOOD;
 	}
 
-	if (m_hEnemy != NULL)
+	if (m_hEnemy != nullptr)
 	{
 		if (FClassnameIs(m_hEnemy->pev, "monster_headcrab"))
 		{
@@ -288,7 +288,7 @@ int CBullsquid::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 
 	// if the squid is running, has an enemy, was hurt by the enemy, hasn't been hurt in the last 3 seconds, and isn't too close to the enemy,
 	// it will swerve. (whew).
-	if (m_hEnemy != NULL && IsMoving() && pevAttacker == m_hEnemy->pev && gpGlobals->time - m_flLastHurtTime > 3)
+	if (m_hEnemy != nullptr && IsMoving() && pevAttacker == m_hEnemy->pev && gpGlobals->time - m_flLastHurtTime > 3)
 	{
 		flDist = (pev->origin - m_hEnemy->pev->origin).Length2D();
 
@@ -325,7 +325,7 @@ BOOL CBullsquid::CheckRangeAttack1(float flDot, float flDist)
 
 	if (flDist > 64 && flDist <= 784 && flDot >= 0.5 && gpGlobals->time >= m_flNextSpitTime)
 	{
-		if (m_hEnemy != NULL)
+		if (m_hEnemy != nullptr)
 		{
 			if (fabs(pev->origin.z - m_hEnemy->pev->origin.z) > 256)
 			{
@@ -786,7 +786,7 @@ void CBullsquid::RunAI(void)
 		pev->skin = 1;
 	}
 
-	if (m_hEnemy != NULL && m_Activity == ACT_RUN)
+	if (m_hEnemy != nullptr && m_Activity == ACT_RUN)
 	{
 		// chasing enemy. Sprint for last bit
 		if ((pev->origin - m_hEnemy->pev->origin).Length2D() < SQUID_SPRINT_DIST)
@@ -1235,10 +1235,10 @@ MONSTERSTATE CBullsquid::GetIdealState(void)
 	COMBAT goes to ALERT upon death of enemy
 	*/
 	{
-		if (m_hEnemy != NULL && (iConditions & bits_COND_LIGHT_DAMAGE || iConditions & bits_COND_HEAVY_DAMAGE) && FClassnameIs(m_hEnemy->pev, "monster_headcrab"))
+		if (m_hEnemy != nullptr && (iConditions & bits_COND_LIGHT_DAMAGE || iConditions & bits_COND_HEAVY_DAMAGE) && FClassnameIs(m_hEnemy->pev, "monster_headcrab"))
 		{
 			// if the squid has a headcrab enemy and something hurts it, it's going to forget about the crab for a while.
-			m_hEnemy = NULL;
+			m_hEnemy = nullptr;
 			m_IdealMonsterState = MONSTERSTATE_ALERT;
 		}
 		break;

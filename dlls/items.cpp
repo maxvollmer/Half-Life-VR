@@ -54,7 +54,7 @@ void CWorldItem::KeyValue(KeyValueData* pkvd)
 
 void CWorldItem::Spawn(void)
 {
-	CBaseEntity* pEntity = NULL;
+	CBaseEntity* pEntity = nullptr;
 
 	switch (m_iType)
 	{
@@ -125,7 +125,7 @@ void CItem::ItemTouch(CBaseEntity* pOther)
 	if (MyTouch(pPlayer))
 	{
 		SUB_UseTargets(pOther, USE_TOGGLE, 0);
-		SetTouch(NULL);
+		SetTouch(nullptr);
 
 		// player grabbed the item.
 		g_pGameRules->PlayerGotItem(pPlayer, this);
@@ -146,7 +146,7 @@ void CItem::ItemTouch(CBaseEntity* pOther)
 
 CBaseEntity* CItem::Respawn(void)
 {
-	SetTouch(NULL);
+	SetTouch(nullptr);
 	pev->effects |= EF_NODRAW;
 
 	UTIL_SetOrigin(pev, g_pGameRules->VecItemRespawnSpot(this));  // blip to whereever you should respawn.
@@ -233,7 +233,7 @@ class CItemBattery : public CItem
 
 			EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
 
-			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, nullptr, pPlayer->pev);
 			WRITE_STRING(STRING(pev->classname));
 			MESSAGE_END();
 
@@ -328,7 +328,7 @@ class CItemLongJump : public CItem
 
 			g_engfuncs.pfnSetPhysicsKeyValue(pPlayer->edict(), "slj", "1");
 
-			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, nullptr, pPlayer->pev);
 			WRITE_STRING(STRING(pev->classname));
 			MESSAGE_END();
 

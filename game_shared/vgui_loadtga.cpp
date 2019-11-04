@@ -20,7 +20,7 @@ class MemoryInputStream : public vgui::InputStream
 public:
 	MemoryInputStream()
 	{
-		m_pData = NULL;
+		m_pData = nullptr;
 		m_DataLen = m_ReadPos = 0;
 	}
 
@@ -69,7 +69,7 @@ public:
 
 	virtual void close(bool& success)
 	{
-		m_pData = NULL;
+		m_pData = nullptr;
 		m_DataLen = m_ReadPos = 0;
 	}
 
@@ -84,7 +84,7 @@ vgui::BitmapTGA* vgui_LoadTGA(char const* pFilename)
 
 	stream.m_pData = gEngfuncs.COM_LoadFile((char*)pFilename, 5, &stream.m_DataLen);
 	if (!stream.m_pData)
-		return NULL;
+		return nullptr;
 
 	stream.m_ReadPos = 0;
 	vgui::BitmapTGA* pRet = new vgui::BitmapTGA(&stream, true);
@@ -99,7 +99,7 @@ vgui::BitmapTGA* vgui_LoadTGANoInvertAlpha(char const* pFilename)
 
 	stream.m_pData = gEngfuncs.COM_LoadFile((char*)pFilename, 5, &stream.m_DataLen);
 	if (!stream.m_pData)
-		return NULL;
+		return nullptr;
 
 	stream.m_ReadPos = 0;
 	vgui::BitmapTGA* pRet = new vgui::BitmapTGA(&stream, false);

@@ -185,7 +185,7 @@ public:
 	virtual Schedule_t* GetScheduleOfType(int Type);
 	virtual Schedule_t* GetSchedule(void);
 	virtual void ScheduleChange(void) {}
-	// virtual int CanPlaySequence( void ) { return ((m_pCine == NULL) && (m_MonsterState == MONSTERSTATE_NONE || m_MonsterState == MONSTERSTATE_IDLE || m_IdealMonsterState == MONSTERSTATE_IDLE)); }
+	// virtual int CanPlaySequence( void ) { return ((m_pCine == nullptr) && (m_MonsterState == MONSTERSTATE_NONE || m_MonsterState == MONSTERSTATE_IDLE || m_IdealMonsterState == MONSTERSTATE_IDLE)); }
 	virtual int CanPlaySequence(BOOL fDisregardState, int interruptLevel);
 	virtual int CanPlaySentence(BOOL fDisregardState) { return IsAlive(); }
 	virtual void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation);

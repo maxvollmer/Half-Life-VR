@@ -255,7 +255,7 @@ void VRController::UpdateModel(CBasePlayer* pPlayer)
 void VRController::SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID id)
 {
 	extern int gmsgVRControllerEnt;
-	MESSAGE_BEGIN(MSG_ALL, gmsgVRControllerEnt, NULL);
+	MESSAGE_BEGIN(MSG_ALL, gmsgVRControllerEnt, nullptr);
 	WRITE_ENTITY(ENTINDEX(GetModel()->edict()));
 	WRITE_BYTE((id == VRControllerID::WEAPON) ? 1 : 0);
 	WRITE_PRECISE_VECTOR(GetModel()->pev->origin);

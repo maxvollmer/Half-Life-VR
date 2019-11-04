@@ -440,7 +440,7 @@ public:
 	CSBLabel(char* name, char* sortkey) :
 		Label(name)
 	{
-		m_pBrowser = NULL;
+		m_pBrowser = nullptr;
 
 		strcpy(m_szSortKey, sortkey);
 

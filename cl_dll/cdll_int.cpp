@@ -37,7 +37,7 @@
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
-TeamFortressViewport* gViewPort = NULL;
+TeamFortressViewport* gViewPort = nullptr;
 
 void InitInput(void);
 void EV_HookEvents(void);

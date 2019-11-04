@@ -31,15 +31,44 @@
 
 #include "VRRenderer.h"
 
-WEAPON* gpActiveSel;  // NULL means off, 1 means just the menu bar, otherwise
-					  // this points to the active weapon menu item
-WEAPON* gpLastSel;    // Last weapon menu selection
+namespace
+{
+	WEAPON g_menuBar{ 0 };
+}
 
-client_sprite_t* GetSpriteList(client_sprite_t* pList, const char* psz, int iRes, int iCount);
+WEAPON* gpActiveSel = nullptr;  // nullptr means off, g_menuBar means just the menu bar, otherwise this points to the active weapon menu item
+WEAPON* gpLastSel = nullptr;    // Last weapon menu selection
 
 WeaponsResource gWR;
-
 int g_weaponselect = 0;
+
+
+/* =================================
+	GetSpriteList
+
+Finds and returns the matching
+sprite name 'psz' and resolution 'iRes'
+in the given sprite list 'pList'
+iCount is the number of items in the pList
+================================= */
+client_sprite_t* GetSpriteList(client_sprite_t* pList, const char* psz, int iRes, int iCount)
+{
+	if (!pList)
+		return nullptr;
+
+	int i = iCount;
+	client_sprite_t* p = pList;
+
+	while (i--)
+	{
+		if ((!strcmp(psz, p->szName)) && (p->iRes == iRes))
+			return p;
+		p++;
+	}
+
+	return nullptr;
+}
+
 
 void WeaponsResource::LoadAllWeaponSprites(void)
 {
@@ -110,7 +139,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 		pWeapon->rcCrosshair = p->rc;
 	}
 	else
-		pWeapon->hCrosshair = NULL;
+		pWeapon->hCrosshair = 0;
 
 	p = GetSpriteList(pList, "autoaim", iRes, i);
 	if (p)
@@ -120,7 +149,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 		pWeapon->rcAutoaim = p->rc;
 	}
 	else
-		pWeapon->hAutoaim = 0;
+		pWeapon->hAutoaim = HSPRITE_VALVE(0);
 
 	p = GetSpriteList(pList, "zoom", iRes, i);
 	if (p)
@@ -198,7 +227,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 // Returns the first weapon for a given slot.
 WEAPON* WeaponsResource::GetFirstPos(int iSlot)
 {
-	WEAPON* pret = NULL;
+	WEAPON* pret = nullptr;
 
 	for (int i = 0; i < MAX_WEAPON_POSITIONS; i++)
 	{
@@ -216,7 +245,7 @@ WEAPON* WeaponsResource::GetFirstPos(int iSlot)
 WEAPON* WeaponsResource::GetNextActivePos(int iSlot, int iSlotPos)
 {
 	if (iSlotPos >= MAX_WEAPON_POSITIONS || iSlot >= MAX_WEAPON_SLOTS)
-		return NULL;
+		return nullptr;
 
 	WEAPON* p = gWR.rgSlots[iSlot][iSlotPos + 1];
 
@@ -303,7 +332,7 @@ void CHudAmmo::Reset(void)
 	m_fFade = 0;
 	m_iFlags |= HUD_ACTIVE;  //!!!
 
-	gpActiveSel = NULL;
+	gpActiveSel = nullptr;
 	gHUD.m_iHideHUDDisplay = 0;
 
 	gWR.Reset();
@@ -374,14 +403,14 @@ void CHudAmmo::Think(void)
 	// has the player selected one?
 	if (gHUD.m_iKeyBits & IN_ATTACK)
 	{
-		if (gpActiveSel != (WEAPON*)1)
+		if (gpActiveSel != &g_menuBar)
 		{
 			ServerCmd(gpActiveSel->szName);
 			g_weaponselect = gpActiveSel->iId;
 		}
 
 		gpLastSel = gpActiveSel;
-		gpActiveSel = NULL;
+		gpActiveSel = nullptr;
 		gHUD.m_iKeyBits &= ~IN_ATTACK;
 
 		PlaySound("common/wpn_select.wav", 1);
@@ -408,7 +437,7 @@ HSPRITE_VALVE* WeaponsResource::GetAmmoPicFromWeapon(int iAmmoId, wrect_t& rect)
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -434,10 +463,10 @@ void WeaponsResource::SelectSlot(int iSlot, int fAdvance, int iDirection)
 	if (!(gHUD.m_iWeaponBits & ~(1 << (WEAPON_SUIT))))
 		return;
 
-	WEAPON* p = NULL;
+	WEAPON* p = nullptr;
 	bool fastSwitch = CVAR_GET_FLOAT("hud_fastswitch") != 0;
 
-	if ((gpActiveSel == NULL) || (gpActiveSel == (WEAPON*)1) || (iSlot != gpActiveSel->iSlot))
+	if ((gpActiveSel == nullptr) || (gpActiveSel == &g_menuBar) || (iSlot != gpActiveSel->iSlot))
 	{
 		PlaySound("common/wpn_hudon.wav", 1);
 		p = GetFirstPos(iSlot);
@@ -469,9 +498,9 @@ void WeaponsResource::SelectSlot(int iSlot, int fAdvance, int iDirection)
 	{
 		// just display the weapon list, unless fastswitch is on just ignore it
 		if (!fastSwitch)
-			gpActiveSel = (WEAPON*)1;
+			gpActiveSel = &g_menuBar;
 		else
-			gpActiveSel = NULL;
+			gpActiveSel = nullptr;
 	}
 	else
 		gpActiveSel = p;
@@ -543,7 +572,7 @@ int CHudAmmo::MsgFunc_HideWeapon(const char* pszName, int iSize, void* pbuf)
 	if (gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL))
 	{
 		static wrect_t nullrc;
-		gpActiveSel = NULL;
+		gpActiveSel = nullptr;
 		SetCrosshair(0, nullrc, 0, 0, 0);
 	}
 	else
@@ -589,7 +618,7 @@ int CHudAmmo::MsgFunc_CurWeapon(const char* pszName, int iSize, void* pbuf)
 		if ((iId == -1) && (iClip == -1))
 		{
 			gHUD.m_fPlayerDead = TRUE;
-			gpActiveSel = NULL;
+			gpActiveSel = nullptr;
 			return 1;
 		}
 		gHUD.m_fPlayerDead = FALSE;
@@ -732,7 +761,7 @@ void CHudAmmo::UserCmd_Close(void)
 	if (gpActiveSel)
 	{
 		gpLastSel = gpActiveSel;
-		gpActiveSel = NULL;
+		gpActiveSel = nullptr;
 		PlaySound("common/wpn_hudoff.wav", 1);
 	}
 	else
@@ -746,7 +775,7 @@ void CHudAmmo::UserCmd_NextWeapon(void)
 	if (gHUD.m_fPlayerDead || (gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL)))
 		return;
 
-	if (!gpActiveSel || gpActiveSel == (WEAPON*)1)
+	if (!gpActiveSel || gpActiveSel == &g_menuBar)
 		gpActiveSel = m_pWeapon;
 
 	int pos = 0;
@@ -778,7 +807,7 @@ void CHudAmmo::UserCmd_NextWeapon(void)
 		slot = 0;  // start looking from the first slot again
 	}
 
-	gpActiveSel = NULL;
+	gpActiveSel = nullptr;
 }
 
 // Selects the previous item in the menu
@@ -787,7 +816,7 @@ void CHudAmmo::UserCmd_PrevWeapon(void)
 	if (gHUD.m_fPlayerDead || (gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL)))
 		return;
 
-	if (!gpActiveSel || gpActiveSel == (WEAPON*)1)
+	if (!gpActiveSel || gpActiveSel == &g_menuBar)
 		gpActiveSel = m_pWeapon;
 
 	int pos = MAX_WEAPON_POSITIONS - 1;
@@ -819,7 +848,7 @@ void CHudAmmo::UserCmd_PrevWeapon(void)
 		slot = MAX_WEAPON_SLOTS - 1;
 	}
 
-	gpActiveSel = NULL;
+	gpActiveSel = nullptr;
 }
 
 int CHudAmmo::FirstSlotWithWeapon()
@@ -1083,7 +1112,7 @@ int CHudAmmo::DrawWList(float flTime)
 
 	int iActiveSlot;
 
-	if (gpActiveSel == (WEAPON*)1)
+	if (gpActiveSel == &g_menuBar)
 		iActiveSlot = -1;  // current slot has no weapons
 	else
 		iActiveSlot = gpActiveSel->iSlot;
@@ -1097,7 +1126,7 @@ int CHudAmmo::DrawWList(float flTime)
 	{
 		if (!gWR.GetFirstPos(iActiveSlot))
 		{
-			gpActiveSel = (WEAPON*)1;
+			gpActiveSel = &g_menuBar;
 			iActiveSlot = -1;
 		}
 	}
@@ -1232,29 +1261,3 @@ int CHudAmmo::DrawWList(float flTime)
 	return 1;
 }
 
-
-/* =================================
-	GetSpriteList
-
-Finds and returns the matching
-sprite name 'psz' and resolution 'iRes'
-in the given sprite list 'pList'
-iCount is the number of items in the pList
-================================= */
-client_sprite_t* GetSpriteList(client_sprite_t* pList, const char* psz, int iRes, int iCount)
-{
-	if (!pList)
-		return NULL;
-
-	int i = iCount;
-	client_sprite_t* p = pList;
-
-	while (i--)
-	{
-		if ((!strcmp(psz, p->szName)) && (p->iRes == iRes))
-			return p;
-		p++;
-	}
-
-	return NULL;
-}

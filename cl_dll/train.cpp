@@ -65,7 +65,7 @@ int CHudTrain::Draw(float fTime)
 		UnpackRGB(r, g, b, RGB_YELLOWISH);
 		SPR_Set(m_hSprite, r, g, b);
 
-		SPR_DrawAdditive(m_iPos - 1, x, y, NULL);
+		SPR_DrawAdditive(m_iPos - 1, x, y, nullptr);
 
 		gVRRenderer.VRHUDDrawFinished();
 	}

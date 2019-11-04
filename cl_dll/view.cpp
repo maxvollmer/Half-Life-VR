@@ -217,7 +217,7 @@ void V_CalcIntermissionRefdef(struct ref_params_s* pparams)
 
 	if (view != nullptr)
 	{
-		view->model = NULL;
+		view->model = nullptr;
 	}
 
 	// allways idle in intermission
@@ -322,7 +322,7 @@ void V_CalcNormalRefdef(struct ref_params_s* pparams)
 			if (waterEntity >= 0 && waterEntity < pparams->max_entities)
 			{
 				pwater = gEngfuncs.GetEntityByIndex(waterEntity);
-				if (pwater && (pwater->model != NULL))
+				if (pwater && (pwater->model != nullptr))
 				{
 					waterDist += (pwater->curstate.scale * 16);  // Add in wave height
 				}
@@ -341,7 +341,7 @@ void V_CalcNormalRefdef(struct ref_params_s* pparams)
 			point[2] -= waterDist;
 			for (i = 0; i < waterDist; i++)
 			{
-				contents = gEngfuncs.PM_PointContents(point, NULL);
+				contents = gEngfuncs.PM_PointContents(point, nullptr);
 				if (contents > CONTENTS_WATER)
 					break;
 				point[2] += 1;
@@ -355,7 +355,7 @@ void V_CalcNormalRefdef(struct ref_params_s* pparams)
 
 			for (i = 0; i < waterDist; i++)
 			{
-				contents = gEngfuncs.PM_PointContents(point, NULL);
+				contents = gEngfuncs.PM_PointContents(point, nullptr);
 				if (contents <= CONTENTS_WATER)
 					break;
 				point[2] -= 1;
@@ -588,10 +588,10 @@ void V_GetChaseOrigin(float* angles, float* origin, float distance, float* retur
 
 	int ignoreent = -1;  // first, ignore no entity
 
-	cl_entity_t* ent = NULL;
+	cl_entity_t* ent = nullptr;
 
 	// Trace back from the target using the player's view angles
-	AngleVectors(angles, forward, NULL, NULL);
+	AngleVectors(angles, forward, nullptr, nullptr);
 
 	VectorScale(forward, -1, forward);
 
@@ -610,7 +610,7 @@ void V_GetChaseOrigin(float* angles, float* origin, float distance, float* retur
 
 		ent = gEngfuncs.GetEntityByIndex(PM_GetPhysEntInfo(trace->ent));
 
-		if (ent == NULL)
+		if (ent == nullptr)
 			break;
 
 		// hit non-player solid BSP , stop here
@@ -918,7 +918,7 @@ void V_GetDirectedChasePosition(cl_entity_t* ent1, cl_entity_t* ent2, float* ang
 
 void V_GetChasePos(int target, float* cl_angles, float* origin, float* angles)
 {
-	cl_entity_t* ent = NULL;
+	cl_entity_t* ent = nullptr;
 
 	if (target)
 	{
@@ -944,7 +944,7 @@ void V_GetChasePos(int target, float* cl_angles, float* origin, float* angles)
 	}
 	else
 	{
-		if (cl_angles == NULL)  // no mouse angles given, use entity angles ( locked mode )
+		if (cl_angles == nullptr)  // no mouse angles given, use entity angles ( locked mode )
 		{
 			VectorCopy(ent->angles, angles);
 			angles[0] *= -1;
@@ -1020,7 +1020,7 @@ void V_GetMapFreePosition(float* cl_angles, float* origin, float* angles)
 	zScaledTarget[2] = gHUD.m_Spectator.m_mapOrigin[2] * ((90.0f - angles[0]) / 90.0f);
 
 
-	AngleVectors(angles, forward, NULL, NULL);
+	AngleVectors(angles, forward, nullptr, nullptr);
 
 	VectorNormalize(forward);
 
@@ -1063,7 +1063,7 @@ void V_GetMapChasePosition(int target, float* cl_angles, float* origin, float* a
 	origin[2] *= ((90.0f - angles[0]) / 90.0f);
 	angles[2] = 0.0f;  // don't roll angle (if chased player is dead)
 
-	AngleVectors(angles, forward, NULL, NULL);
+	AngleVectors(angles, forward, nullptr, nullptr);
 
 	VectorNormalize(forward);
 
@@ -1096,7 +1096,7 @@ int V_FindViewModelByWeaponModel(int weaponindex)
 		int len = strlen(weaponModel->name);
 		int i = 0;
 
-		while (modelmap[i] != NULL)
+		while (modelmap[i] != nullptr)
 		{
 			if (!strnicmp(weaponModel->name, modelmap[i][0], len))
 			{
@@ -1183,7 +1183,7 @@ void V_CalcSpectatorRefdef(struct ref_params_s* pparams)
 				else
 				{
 					// model not found
-					gunModel->model = NULL;  // disable weapon model
+					gunModel->model = nullptr;  // disable weapon model
 					lastWeaponModelIndex = lastViewModelIndex = 0;
 				}
 			}
@@ -1198,7 +1198,7 @@ void V_CalcSpectatorRefdef(struct ref_params_s* pparams)
 			}
 			else
 			{
-				gunModel->model = NULL;  // disable weaopn model
+				gunModel->model = nullptr;  // disable weaopn model
 			}
 		}
 		else
@@ -1218,7 +1218,7 @@ void V_CalcSpectatorRefdef(struct ref_params_s* pparams)
 		switch (g_iUser1)
 		{
 		case OBS_CHASE_LOCKED:
-			V_GetChasePos(g_iUser2, NULL, v_origin, v_angles);
+			V_GetChasePos(g_iUser2, nullptr, v_origin, v_angles);
 			break;
 
 		case OBS_CHASE_FREE:

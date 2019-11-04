@@ -225,7 +225,7 @@ void CHeadCrab::HandleAnimEvent(MonsterEvent_t* pEvent)
 		UTIL_MakeVectors(pev->angles);
 
 		Vector vecJumpDir;
-		if (m_hEnemy != NULL)
+		if (m_hEnemy != nullptr)
 		{
 			float gravity = g_psv_gravity->value;
 			if (gravity <= 1)
@@ -326,7 +326,7 @@ void CHeadCrab::RunTask(Task_t* pTask)
 		if (m_fSequenceFinished)
 		{
 			TaskComplete();
-			SetTouch(NULL);
+			SetTouch(nullptr);
 			m_IdealActivity = ACT_IDLE;
 		}
 		break;
@@ -362,7 +362,7 @@ void CHeadCrab::LeapTouch(CBaseEntity* pOther)
 		pOther->TakeDamage(pev, pev, GetDamageAmount(), DMG_SLASH);
 	}
 
-	SetTouch(NULL);
+	SetTouch(nullptr);
 }
 
 //=========================================================
@@ -542,7 +542,7 @@ Schedule_t* CBabyCrab::GetScheduleOfType(int Type)
 	switch (Type)
 	{
 	case SCHED_FAIL:  // If you fail, try to jump!
-		if (m_hEnemy != NULL)
+		if (m_hEnemy != nullptr)
 			return slHCRangeAttack1Fast;
 		break;
 

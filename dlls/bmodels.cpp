@@ -112,7 +112,7 @@ void CFuncWall::CheckIsSpecialVREntity()
 	}
 	else
 	{
-		SetThink(NULL);
+		SetThink(nullptr);
 
 		// If we are the coffee cup and flask in gordon's locker, replace us with the Worlds Smallest Cup (easter egg)
 		// see https://www.youtube.com/watch?v=M_AnIizeH1Q
@@ -923,7 +923,7 @@ void CPendulum::PendulumUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 		else
 		{
 			pev->speed = 0;  // Dead stop
-			SetThink(NULL);
+			SetThink(nullptr);
 			pev->avelocity = g_vecZero;
 		}
 	}
@@ -941,7 +941,7 @@ void CPendulum::Stop(void)
 {
 	pev->angles = m_start;
 	pev->speed = 0;
-	SetThink(NULL);
+	SetThink(nullptr);
 	pev->avelocity = g_vecZero;
 }
 
@@ -982,7 +982,7 @@ void CPendulum::Swing(void)
 		{
 			pev->angles = m_center;
 			pev->speed = 0;
-			SetThink(NULL);
+			SetThink(nullptr);
 			pev->avelocity = g_vecZero;
 		}
 		else if (pev->speed > m_dampSpeed)

@@ -281,7 +281,7 @@ public:
 
 	virtual int UpdateClientData(CBasePlayer* pPlayer) { return 0; }
 
-	virtual CBasePlayerItem* GetWeaponPtr(void) { return NULL; };
+	virtual CBasePlayerItem* GetWeaponPtr(void) { return nullptr; };
 
 	static ItemInfo ItemInfoArray[MAX_WEAPONS];
 	static AmmoInfo AmmoInfoArray[MAX_AMMO_SLOTS];
@@ -534,7 +534,7 @@ class CWeaponBox : public CBaseEntity
 	void Touch(CBaseEntity* pOther);
 	void KeyValue(KeyValueData* pkvd);
 	BOOL IsEmpty(void);
-	int GiveAmmo(int iCount, char* szName, int iMax, int* pIndex = NULL);
+	int GiveAmmo(int iCount, char* szName, int iMax, int* pIndex = nullptr);
 	void SetObjectCollisionBox(void);
 
 public:

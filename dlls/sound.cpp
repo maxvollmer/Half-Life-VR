@@ -910,7 +910,7 @@ void CEnvSound::Think(void)
 	// cycle through visible clients on consecutive calls.
 
 	edict_t* pentPlayer = FIND_CLIENT_IN_PVS(edict());
-	CBasePlayer* pPlayer = NULL;
+	CBasePlayer* pPlayer = nullptr;
 
 	if (FNullEnt(pentPlayer))
 		goto env_sound_Think_slow;  // no player in pvs of sound entity, slow it down
@@ -974,7 +974,7 @@ void CEnvSound::Think(void)
 
 			//CLIENT_COMMAND(pentPlayer, "room_type %f", m_flRoomtype);
 
-			MESSAGE_BEGIN(MSG_ONE, SVC_ROOMTYPE, NULL, pentPlayer);  // use the magic #1 for "one client"
+			MESSAGE_BEGIN(MSG_ONE, SVC_ROOMTYPE, nullptr, pentPlayer);  // use the magic #1 for "one client"
 			WRITE_SHORT((short)m_flRoomtype);                        // sequence number
 			MESSAGE_END();
 
@@ -1306,7 +1306,7 @@ void SENTENCEG_Init()
 		return;
 
 	// for each line in the file...
-	while (memfgets(pMemFile, fileSize, filePos, buffer, 511) != NULL)
+	while (memfgets(pMemFile, fileSize, filePos, buffer, 511) != nullptr)
 	{
 		// skip whitespace
 		i = 0;
@@ -1635,15 +1635,15 @@ static char* memfgets(byte* pMemFile, int fileSize, int& filePos, char* pBuffer,
 {
 	// Bullet-proofing
 	if (!pMemFile || !pBuffer)
-		return NULL;
+		return nullptr;
 
 	if (filePos >= fileSize)
-		return NULL;
+		return nullptr;
 
 	int i = filePos;
 	int last = fileSize;
 
-	// fgets always NULL terminates, so only read bufferSize-1 characters
+	// fgets always nullptr terminates, so only read bufferSize-1 characters
 	if (last - filePos > (bufferSize - 1))
 		last = filePos + (bufferSize - 1);
 
@@ -1676,7 +1676,7 @@ static char* memfgets(byte* pMemFile, int fileSize, int& filePos, char* pBuffer,
 	}
 
 	// No data read, bail
-	return NULL;
+	return nullptr;
 }
 
 
@@ -1701,7 +1701,7 @@ void TEXTURETYPE_Init()
 		return;
 
 	// for each line in the file...
-	while (memfgets(pMemFile, fileSize, filePos, buffer, 511) != NULL && (gcTextures < CTEXTURESMAX))
+	while (memfgets(pMemFile, fileSize, filePos, buffer, 511) != nullptr && (gcTextures < CTEXTURESMAX))
 	{
 		// skip whitespace
 		i = 0;

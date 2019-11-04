@@ -208,11 +208,11 @@ ISpRecoGrammar* VRSpeechListener::InitGrammar(ISpRecoContext* recoContext)
 	{
 		for (const auto& commandPhrase : commandPhrases)
 		{
-			VerifyResult(grammar->AddWordTransition(rule, NULL, commandPhrase.data(), L" ", SPWT_LEXICAL, 1, nullptr), "Failed to register command phrase");
+			VerifyResult(grammar->AddWordTransition(rule, nullptr, commandPhrase.data(), L" ", SPWT_LEXICAL, 1, nullptr), "Failed to register command phrase");
 		}
 	}
 
-	VerifyResult(grammar->LoadDictation(NULL, SPLO_STATIC), "Failed to load dictation");
+	VerifyResult(grammar->LoadDictation(nullptr, SPLO_STATIC), "Failed to load dictation");
 
 	VerifyResult(grammar->Commit(0), "Failed to commit grammar");
 
@@ -409,7 +409,7 @@ void VRSpeechListener::InitSAPI() const
 	if (g_sapiIsInitialized)
 		return;
 
-	if (FAILED(CoInitialize(NULL)))
+	if (FAILED(CoInitialize(nullptr)))
 	{
 		throw std::string("Unable to initialise COM objects");
 	}
@@ -427,7 +427,7 @@ void VRSpeechListener::InitSAPI() const
 		throw std::string("Failed command recognition");
 	}
 
-	hr = g_sapiRecoCtx->SetNotifyCallbackFunction(SAPICallback, NULL, NULL);
+	hr = g_sapiRecoCtx->SetNotifyCallbackFunction(SAPICallback, nullptr, nullptr);
 	if (FAILED(hr))
 	{
 		throw std::string("Unable to select notification window");
@@ -451,7 +451,7 @@ void VRSpeechListener::InitSAPI() const
 		throw std::string("Unable to create grammar");
 	}
 
-	hr = g_sapiRecoGrammar->LoadDictation(NULL, SPLO_STATIC);
+	hr = g_sapiRecoGrammar->LoadDictation(nullptr, SPLO_STATIC);
 	if (FAILED(hr))
 	{
 		throw std::string("Failed to load dictation");
@@ -477,7 +477,7 @@ void VRSpeechListener::CleanupSAPI() const
 	}
 	if (g_sapiRecoCtx)
 	{
-		g_sapiRecoCtx->SetNotifySink(NULL);
+		g_sapiRecoCtx->SetNotifySink(nullptr);
 		g_sapiRecoCtx.Release();
 	}
 	if (g_sapiEngine)
@@ -498,7 +498,7 @@ std::string VRSpeechListener::ExtractInput(const CSpEvent& event) const
 	if (SUCCEEDED(hr))
 	{
 		WCHAR* pwszText{ nullptr };
-		hr = cpRecoResult->GetText(SP_GETWHOLEPHRASE, SP_GETWHOLEPHRASE, TRUE, &pwszText, NULL);
+		hr = cpRecoResult->GetText(SP_GETWHOLEPHRASE, SP_GETWHOLEPHRASE, TRUE, &pwszText, nullptr);
 		if (SUCCEEDED(hr))
 		{
 			_bstr_t bstrText{ pwszText };

@@ -166,7 +166,7 @@ public:
 	int m_iTrain;    // Train control position
 	BOOL m_fWeapon;  // Set this to FALSE to force a reset of the current weapon HUD info
 
-	EHANDLE m_pTank;    // the tank which the player is currently controlling,  NULL if no tank
+	EHANDLE m_pTank;    // the tank which the player is currently controlling,  nullptr if no tank
 	float m_fDeadTime;  // the time at which the player died  (used in PlayerDeathThink())
 
 	BOOL m_fNoPlayerSound;  // a debugging feature. Player makes no sound if this is true.

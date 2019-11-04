@@ -22,7 +22,7 @@
 #include "pm_movevars.h"
 #include "pm_debug.h"
 #include "com_model.h"
-#include <stdio.h>   // NULL
+#include <stdio.h>   // nullptr
 #include <math.h>    // sqrt
 #include <string.h>  // strcpy
 #include <stdlib.h>  // atoi
@@ -335,13 +335,13 @@ void PM_InitTextureTypes()
 	memset(buffer, 0, 512);
 
 	fileSize = pmove->COM_FileSize("sound/materials.txt");
-	pMemFile = pmove->COM_LoadFile("sound/materials.txt", 5, NULL);
+	pMemFile = pmove->COM_LoadFile("sound/materials.txt", 5, nullptr);
 	if (!pMemFile)
 		return;
 
 	filePos = 0;
 	// for each line in the file...
-	while (pmove->memfgets(pMemFile, fileSize, &filePos, buffer, 511) != NULL && (gcTextures < CTEXTURESMAX))
+	while (pmove->memfgets(pMemFile, fileSize, &filePos, buffer, 511) != nullptr && (gcTextures < CTEXTURESMAX))
 	{
 		// skip whitespace
 		i = 0;
@@ -690,13 +690,13 @@ void PM_UpdateStepSound(void)
 			fvol = 0.35;
 			pmove->flTimeStepSound = 350;
 		}
-		else if (pmove->PM_PointContents(knee, NULL) == CONTENTS_WATER)
+		else if (pmove->PM_PointContents(knee, nullptr) == CONTENTS_WATER)
 		{
 			step = STEP_WADE;
 			fvol = 0.65;
 			pmove->flTimeStepSound = 600;
 		}
-		else if (pmove->PM_PointContents(feet, NULL) == CONTENTS_WATER)
+		else if (pmove->PM_PointContents(feet, nullptr) == CONTENTS_WATER)
 		{
 			step = STEP_SLOSH;
 			fvol = fWalking ? 0.2 : 0.5;
@@ -1751,7 +1751,7 @@ qboolean PM_CheckWater()
 
 		// Now check a point that is at the player hull midpoint.
 		point[2] = pmove->origin[2] + heightover2;
-		cont = pmove->PM_PointContents(point, NULL);
+		cont = pmove->PM_PointContents(point, nullptr);
 		// If that point is also under water...
 		if (cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT)
 		{
@@ -1761,7 +1761,7 @@ qboolean PM_CheckWater()
 			// Now check the eye position.  (view_ofs is relative to the origin)
 			point[2] = pmove->origin[2] + pmove->view_ofs[2];
 
-			cont = pmove->PM_PointContents(point, NULL);
+			cont = pmove->PM_PointContents(point, nullptr);
 			if (cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT)
 				pmove->waterlevel = 3;  // In over our eyes
 		}
@@ -1919,7 +1919,7 @@ int PM_CheckStuck(void)
 	{
 		// World or BSP model
 		if ((hitent == 0) ||
-			(pmove->physents[hitent].model != NULL))
+			(pmove->physents[hitent].model != nullptr))
 		{
 			int nReps = 0;
 			PM_ResetStuckOffsets(pmove->player_index, pmove->server);
@@ -1961,7 +1961,7 @@ int PM_CheckStuck(void)
 	i = PM_GetRandomStuckOffsets(pmove->player_index, pmove->server, offset);
 
 	VectorAdd(base, offset, test);
-	if ((hitent = pmove->PM_TestPlayerPosition(test, NULL)) == -1)
+	if ((hitent = pmove->PM_TestPlayerPosition(test, nullptr)) == -1)
 	{
 		//Con_DPrintf("Nudged\n");
 
@@ -1994,7 +1994,7 @@ int PM_CheckStuck(void)
 					test[1] += y;
 					test[2] += z;
 
-					if (pmove->PM_TestPlayerPosition(test, NULL) == -1)
+					if (pmove->PM_TestPlayerPosition(test, nullptr) == -1)
 					{
 						VectorCopy(test, pmove->origin);
 						return 0;
@@ -2185,7 +2185,7 @@ void PM_FixPlayerCrouchStuck(int direction, int maxdistance = 36)
 	int i;
 	vec3_t test;
 
-	hitent = pmove->PM_TestPlayerPosition(pmove->origin, NULL);
+	hitent = pmove->PM_TestPlayerPosition(pmove->origin, nullptr);
 	if (hitent == -1)
 		return;
 
@@ -2193,7 +2193,7 @@ void PM_FixPlayerCrouchStuck(int direction, int maxdistance = 36)
 	for (i = 0; i < 36; i++)
 	{
 		pmove->origin[2] += direction;
-		hitent = pmove->PM_TestPlayerPosition(pmove->origin, NULL);
+		hitent = pmove->PM_TestPlayerPosition(pmove->origin, nullptr);
 		if (hitent == -1)
 			return;
 	}
@@ -2316,7 +2316,7 @@ void PM_LadderMove(physent_t* pLadder)
 		vec3_t floor{ 0.f, 0.f, 0.f };
 		VectorCopy(pmove->origin, floor);
 		floor[2] += pmove->player_mins[pmove->usehull][2] - 1;
-		onFloor = pmove->PM_PointContents(floor, NULL) == CONTENTS_SOLID;
+		onFloor = pmove->PM_PointContents(floor, nullptr) == CONTENTS_SOLID;
 	}
 
 	trace_t trace{ 0 };
@@ -2359,7 +2359,7 @@ void PM_LadderMove(physent_t* pLadder)
 				// get direction vectors for climbing on this ladder
 				vec3_t v_forward{ 1.f, 0.f, 0.f };
 				vec3_t v_right{ 0.f, 1.f, 0.f };
-				AngleVectors(pmove->angles, v_forward, v_right, NULL);
+				AngleVectors(pmove->angles, v_forward, v_right, nullptr);
 
 				// remove any sideways movement from forward/backward input
 				if (trace.plane.normal[2] > 0.995f)
@@ -2513,7 +2513,7 @@ physent_t* PM_Ladder2(void)
 	}
 
 	g_pLastLadder = nullptr;
-	return NULL;
+	return nullptr;
 }
 
 physent_t* PM_Ladder(void)
@@ -3508,7 +3508,7 @@ were contacted during the move.
 */
 void PM_PlayerMove(qboolean server)
 {
-	physent_t* pLadder = NULL;
+	physent_t* pLadder = nullptr;
 
 	// Are we running server code?
 	pmove->server = server;
@@ -3695,7 +3695,7 @@ void PM_PlayerMove(qboolean server)
 			vec3_t standing_ducking_origin;
 			VectorCopy(duckmove_origin, standing_ducking_origin);
 			standing_ducking_origin[2] = standing_ducking_origin[2] + pmove->player_mins[1][2] - pmove->player_mins[0][2];
-			if (pmove->PM_TestPlayerPosition(standing_ducking_origin, NULL) < 0)
+			if (pmove->PM_TestPlayerPosition(standing_ducking_origin, nullptr) < 0)
 			{
 				// use standing origin, if we can actually stand at the ducking origin!
 				VectorCopy(standmove_origin, pmove->origin);

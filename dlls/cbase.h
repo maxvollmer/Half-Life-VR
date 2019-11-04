@@ -223,8 +223,8 @@ public:
 
 	virtual void TraceBleed(float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	virtual BOOL IsTriggered(CBaseEntity* pActivator) { return TRUE; }
-	virtual CBaseMonster* MyMonsterPointer(void) { return NULL; }
-	virtual CSquadMonster* MySquadMonsterPointer(void) { return NULL; }
+	virtual CBaseMonster* MyMonsterPointer(void) { return nullptr; }
+	virtual CSquadMonster* MySquadMonsterPointer(void) { return nullptr; }
 	virtual int GetToggleState(void) { return TS_AT_TOP; }
 	virtual void AddPoints(int score, BOOL bAllowNegativeScore) {}
 	virtual void AddPointsToTeam(int score, BOOL bAllowNegativeScore) {}
@@ -318,10 +318,10 @@ public:
 	void EXPORT SUB_FadeOut(void);
 	void EXPORT SUB_CallUseToggle(void) { this->Use(this, this, USE_TOGGLE, 0); }
 	int ShouldToggle(USE_TYPE useType, BOOL currentState);
-	void FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = NULL);
-	Vector FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = NULL, int shared_rand = 0);
+	void FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = nullptr);
+	Vector FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = nullptr, int shared_rand = 0);
 
-	virtual CBaseEntity* Respawn(void) { return NULL; }
+	virtual CBaseEntity* Respawn(void) { return nullptr; }
 
 	void SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, float value);
 	// Do the bounding boxes of these two intersect?
@@ -346,14 +346,14 @@ public:
 		CBaseEntity* pEntity = Instance(pevMonster);
 		if (pEntity)
 			return pEntity->MyMonsterPointer();
-		return NULL;
+		return nullptr;
 	}
 	CBaseMonster* GetMonsterPointer(const edict_t* pentMonster)
 	{
 		CBaseEntity* pEntity = Instance(pentMonster);
 		if (pEntity)
 			return pEntity->MyMonsterPointer();
-		return NULL;
+		return nullptr;
 	}
 
 
@@ -400,7 +400,7 @@ public:
 
 
 	//
-	static CBaseEntity* Create(char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner = NULL);
+	static CBaseEntity* Create(char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner = nullptr);
 
 	virtual BOOL FBecomeProne(void) { return FALSE; };
 	edict_t* edict() { return ENT(pev); };

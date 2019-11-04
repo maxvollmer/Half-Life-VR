@@ -139,7 +139,7 @@ public:
 	void Talk(float flDuration);
 	// For following
 	BOOL CanFollow(void);
-	BOOL IsFollowing(void) { return m_hTargetEnt != NULL && m_hTargetEnt->IsPlayer(); }
+	BOOL IsFollowing(void) { return m_hTargetEnt != nullptr && m_hTargetEnt->IsPlayer(); }
 	void StopFollowing(BOOL clearSchedule);
 	void StartFollowing(CBaseEntity* pLeader);
 	virtual void DeclineFollowing(void) {}

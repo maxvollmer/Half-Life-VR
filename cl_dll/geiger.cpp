@@ -37,7 +37,7 @@ int CHudGeiger::Init(void)
 
 	gHUD.AddHudElem(this);
 
-	srand((unsigned)time(NULL));
+	srand((unsigned)time(nullptr));
 
 	return 1;
 };

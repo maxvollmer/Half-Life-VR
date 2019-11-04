@@ -294,14 +294,14 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer* pPlayer, const TraceRe
 				{
 					while (ladderHit.z > tr.pHit->v.absmin.z)
 					{
-						int blockingEnt = pmove->PM_TestPlayerPosition(ladderHit, NULL);
+						int blockingEnt = pmove->PM_TestPlayerPosition(ladderHit, nullptr);
 						bool isBlocked = blockingEnt >= 0;
 						bool isBlockedDucking = isBlocked;
 						if (isBlocked && pmove->usehull == 0)
 						{
 							// check ducking
 							pmove->usehull = 1;
-							isBlockedDucking = pmove->PM_TestPlayerPosition(ladderHit, NULL) >= 0;
+							isBlockedDucking = pmove->PM_TestPlayerPosition(ladderHit, nullptr) >= 0;
 							pmove->usehull = 0;
 						}
 						if (isBlockedDucking)

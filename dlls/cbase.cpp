@@ -190,7 +190,7 @@ void DispatchKeyValue(edict_t* pentKeyvalue, KeyValueData* pkvd)
 
 	// If the key was an entity variable, or there's no class set yet, don't look for the object, it may
 	// not exist yet.
-	if (pkvd->fHandled || pkvd->szClassName == NULL)
+	if (pkvd->fHandled || pkvd->szClassName == nullptr)
 		return;
 
 	// Get the actualy entity object
@@ -286,14 +286,14 @@ void DispatchSave(edict_t* pent, SAVERESTOREDATA* pSaveData)
 // different classes with the same global name
 CBaseEntity* FindGlobalEntity(string_t classname, string_t globalname)
 {
-	edict_t* pent = FIND_ENTITY_BY_STRING(NULL, "globalname", STRING(globalname));
+	edict_t* pent = FIND_ENTITY_BY_STRING(nullptr, "globalname", STRING(globalname));
 	CBaseEntity* pReturn = CBaseEntity::Instance(pent);
 	if (pReturn)
 	{
 		if (!FClassnameIs(pReturn->pev, STRING(classname)))
 		{
 			ALERT(at_console, "Global entity found %s, wrong class %s\n", STRING(globalname), STRING(pReturn->pev->classname));
-			pReturn = NULL;
+			pReturn = nullptr;
 		}
 	}
 
@@ -445,9 +445,9 @@ edict_t* EHANDLE::Get(void)
 		if (m_pent->serialnumber == m_serialnumber)
 			return m_pent;
 		else
-			return NULL;
+			return nullptr;
 	}
-	return NULL;
+	return nullptr;
 };
 
 edict_t* EHANDLE::Set(edict_t* pent)
@@ -481,7 +481,7 @@ CBaseEntity* EHANDLE ::operator=(CBaseEntity* pEntity)
 	}
 	else
 	{
-		m_pent = NULL;
+		m_pent = nullptr;
 		m_serialnumber = 0;
 	}
 	return pEntity;
@@ -489,7 +489,7 @@ CBaseEntity* EHANDLE ::operator=(CBaseEntity* pEntity)
 
 EHANDLE ::operator int()
 {
-	return Get() != NULL;
+	return Get() != nullptr;
 }
 
 CBaseEntity* EHANDLE ::operator->()
@@ -584,10 +584,10 @@ void CBaseEntity::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 CBaseEntity* CBaseEntity::GetNextTarget(void)
 {
 	if (FStringNull(pev->target))
-		return NULL;
-	edict_t* pTarget = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target));
+		return nullptr;
+	edict_t* pTarget = FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(pev->target));
 	if (FNullEnt(pTarget))
-		return NULL;
+		return nullptr;
 
 	return Instance(pTarget);
 }
@@ -777,8 +777,8 @@ CBaseEntity* CBaseEntity::Create(char* szName, const Vector& vecOrigin, const Ve
 	pent = CREATE_NAMED_ENTITY(MAKE_STRING(szName));
 	if (FNullEnt(pent))
 	{
-		ALERT(at_console, "NULL Ent in Create!\n");
-		return NULL;
+		ALERT(at_console, "nullptr Ent in Create!\n");
+		return nullptr;
 	}
 	pEntity = Instance(pent);
 	pEntity->pev->owner = pentOwner;

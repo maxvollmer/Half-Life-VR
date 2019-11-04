@@ -88,9 +88,9 @@ void CGrenade::Explode(TraceResult* pTrace, int bitsDamageType)
 	if (pev->owner)
 		pevOwner = VARS(pev->owner);
 	else
-		pevOwner = NULL;
+		pevOwner = nullptr;
 
-	pev->owner = NULL;  // can't traceline attack owner if this is set
+	pev->owner = nullptr;  // can't traceline attack owner if this is set
 
 	RadiusDamage(pev, pevOwner, pev->dmg, CLASS_NONE, bitsDamageType);
 
@@ -121,7 +121,7 @@ void CGrenade::Explode(TraceResult* pTrace, int bitsDamageType)
 	{
 		int sparkCount = RANDOM_LONG(0, 3);
 		for (int i = 0; i < sparkCount; i++)
-			Create("spark_shower", pev->origin, pTrace->vecPlaneNormal, NULL);
+			Create("spark_shower", pev->origin, pTrace->vecPlaneNormal, nullptr);
 	}
 }
 
@@ -467,7 +467,7 @@ void CGrenade::UseSatchelCharges(entvars_t* pevOwner, SATCHELCODE code)
 
 	pentOwner = pOwner->edict();
 
-	pentFind = FIND_ENTITY_BY_CLASSNAME(NULL, "grenade");
+	pentFind = FIND_ENTITY_BY_CLASSNAME(nullptr, "grenade");
 	while (!FNullEnt(pentFind))
 	{
 		CBaseEntity* pEnt = Instance(pentFind);
@@ -478,7 +478,7 @@ void CGrenade::UseSatchelCharges(entvars_t* pevOwner, SATCHELCODE code)
 				if (code == SATCHEL_DETONATE)
 					pEnt->Use(pOwner, pOwner, USE_ON, 0);
 				else  // SATCHEL_RELEASE
-					pEnt->pev->owner = NULL;
+					pEnt->pev->owner = nullptr;
 			}
 		}
 		pentFind = FIND_ENTITY_BY_CLASSNAME(pentFind, "grenade");

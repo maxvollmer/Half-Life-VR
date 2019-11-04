@@ -330,7 +330,7 @@ int CHudHealth::DrawPain(float flTime)
 
 		x = ScreenWidth / 2 - SPR_Width(m_hSprite, 0) / 2;
 		y = ScreenHeight / 2 - SPR_Height(m_hSprite, 0) * 3;
-		SPR_DrawAdditive(0, x, y, NULL);
+		SPR_DrawAdditive(0, x, y, nullptr);
 		m_fAttackFront = max(0, m_fAttackFront - fFade);
 	}
 	else
@@ -345,7 +345,7 @@ int CHudHealth::DrawPain(float flTime)
 
 		x = ScreenWidth / 2 + SPR_Width(m_hSprite, 1) * 2;
 		y = ScreenHeight / 2 - SPR_Height(m_hSprite, 1) / 2;
-		SPR_DrawAdditive(1, x, y, NULL);
+		SPR_DrawAdditive(1, x, y, nullptr);
 		m_fAttackRight = max(0, m_fAttackRight - fFade);
 	}
 	else
@@ -360,7 +360,7 @@ int CHudHealth::DrawPain(float flTime)
 
 		x = ScreenWidth / 2 - SPR_Width(m_hSprite, 2) / 2;
 		y = ScreenHeight / 2 + SPR_Height(m_hSprite, 2) * 2;
-		SPR_DrawAdditive(2, x, y, NULL);
+		SPR_DrawAdditive(2, x, y, nullptr);
 		m_fAttackRear = max(0, m_fAttackRear - fFade);
 	}
 	else
@@ -375,7 +375,7 @@ int CHudHealth::DrawPain(float flTime)
 
 		x = ScreenWidth / 2 - SPR_Width(m_hSprite, 3) * 3;
 		y = ScreenHeight / 2 - SPR_Height(m_hSprite, 3) / 2;
-		SPR_DrawAdditive(3, x, y, NULL);
+		SPR_DrawAdditive(3, x, y, nullptr);
 
 		m_fAttackLeft = max(0, m_fAttackLeft - fFade);
 	}

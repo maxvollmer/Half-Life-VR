@@ -38,7 +38,7 @@ namespace
 
 		if (title == "Fatal Error")
 		{
-			HWND hwndLabel = NULL;
+			HWND hwndLabel = nullptr;
 			EnumChildWindows(hwndMsgBox, FindMod_ExtradataErrorMessageChildWindow, (LPARAM)&hwndLabel);
 
 			if (hwndLabel)
@@ -73,7 +73,7 @@ VRMODExtradataErrorIntercepter::VRMODExtradataErrorIntercepter()
 	hMsgBoxHook = SetWindowsHookExA(
 		WH_CBT,
 		MsgBoxProc,
-		NULL,
+		nullptr,
 		GetCurrentThreadId());
 }
 

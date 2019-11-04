@@ -31,8 +31,8 @@ int g_runfuncs = 0;
 
 // During our weapon prediction processing, we'll need to reference some data that is part of
 //  the final state passed into the postthink functionality.  We'll set this pointer and then
-//  reset it to NULL as appropriate
-struct local_state_s* g_finalstate = NULL;
+//  reset it to nullptr as appropriate
+struct local_state_s* g_finalstate = nullptr;
 
 /*
 ====================
@@ -216,28 +216,20 @@ UTIL_SharedRandomFloat
 */
 float UTIL_SharedRandomFloat(unsigned int seed, float low, float high)
 {
-	//
-	unsigned int range;
-
-	U_Srand((int)seed + *(int*)&low + *(int*)&high);
+	U_Srand(seed + *reinterpret_cast<unsigned int*>(&low) + *reinterpret_cast<unsigned int*>(&high));
 
 	U_Random();
 	U_Random();
 
-	range = high - low;
+	unsigned int range = static_cast<unsigned int>(high) - static_cast<unsigned int>(low);
 	if (!range)
 	{
 		return low;
 	}
 	else
 	{
-		int tensixrand;
-		float offset;
-
-		tensixrand = U_Random() & 65535;
-
-		offset = (float)tensixrand / 65536.0;
-
+		unsigned int tensixrand = U_Random() & 65535U;
+		float offset = static_cast<float>(tensixrand) / 65536.f;
 		return (low + offset * range);
 	}
 }

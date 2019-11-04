@@ -76,7 +76,7 @@ CVoiceStatus* GetClientVoiceMgr()
 // CVoiceStatus.
 // ---------------------------------------------------------------------- //
 
-static CVoiceStatus* g_pInternalVoiceStatus = NULL;
+static CVoiceStatus* g_pInternalVoiceStatus = nullptr;
 
 int __MsgFunc_VoiceMask(const char* pszName, int iSize, void* pbuf)
 {
@@ -126,16 +126,16 @@ CVoiceStatus::CVoiceStatus()
 	m_bBanMgrInitialized = false;
 	m_LastUpdateServerState = 0;
 
-	m_pSpeakerLabelIcon = NULL;
-	m_pScoreboardNeverSpoken = NULL;
-	m_pScoreboardNotSpeaking = NULL;
-	m_pScoreboardSpeaking = NULL;
-	m_pScoreboardSpeaking2 = NULL;
-	m_pScoreboardSquelch = NULL;
-	m_pScoreboardBanned = NULL;
+	m_pSpeakerLabelIcon = nullptr;
+	m_pScoreboardNeverSpoken = nullptr;
+	m_pScoreboardNotSpeaking = nullptr;
+	m_pScoreboardSpeaking = nullptr;
+	m_pScoreboardSpeaking2 = nullptr;
+	m_pScoreboardSquelch = nullptr;
+	m_pScoreboardBanned = nullptr;
 
-	m_pLocalBitmap = NULL;
-	m_pAckBitmap = NULL;
+	m_pLocalBitmap = nullptr;
+	m_pAckBitmap = nullptr;
 
 	m_bTalking = m_bServerAcked = false;
 
@@ -143,28 +143,28 @@ CVoiceStatus::CVoiceStatus()
 
 	m_bServerModEnable = -1;
 
-	m_pchGameDir = NULL;
+	m_pchGameDir = nullptr;
 }
 
 
 CVoiceStatus::~CVoiceStatus()
 {
-	g_pInternalVoiceStatus = NULL;
+	g_pInternalVoiceStatus = nullptr;
 
 	for (int i = 0; i < MAX_VOICE_SPEAKERS; i++)
 	{
 		delete m_Labels[i].m_pLabel;
-		m_Labels[i].m_pLabel = NULL;
+		m_Labels[i].m_pLabel = nullptr;
 
 		delete m_Labels[i].m_pIcon;
-		m_Labels[i].m_pIcon = NULL;
+		m_Labels[i].m_pIcon = nullptr;
 
 		delete m_Labels[i].m_pBackground;
-		m_Labels[i].m_pBackground = NULL;
+		m_Labels[i].m_pBackground = nullptr;
 	}
 
 	delete m_pLocalLabel;
-	m_pLocalLabel = NULL;
+	m_pLocalLabel = nullptr;
 
 	FreeBitmaps();
 
@@ -201,7 +201,7 @@ int CVoiceStatus::Init(
 	g_pInternalVoiceStatus = this;
 
 	m_BlinkTimer = 0;
-	m_VoiceHeadModel = NULL;
+	m_VoiceHeadModel = HSPRITE_VALVE(0);
 	memset(m_Labels, 0, sizeof(m_Labels));
 
 	for (int i = 0; i < MAX_VOICE_SPEAKERS; i++)
@@ -219,7 +219,7 @@ int CVoiceStatus::Init(
 			pLabel->m_pLabel->setParent(pLabel->m_pBackground);
 		}
 
-		if (pLabel->m_pIcon = new ImagePanel(NULL))
+		if (pLabel->m_pIcon = new ImagePanel(nullptr))
 		{
 			pLabel->m_pIcon->setVisible(true);
 			pLabel->m_pIcon->setParent(pLabel->m_pBackground);
@@ -228,7 +228,7 @@ int CVoiceStatus::Init(
 		pLabel->m_clientindex = -1;
 	}
 
-	m_pLocalLabel = new ImagePanel(NULL);
+	m_pLocalLabel = new ImagePanel(nullptr);
 
 	m_bInSquelchMode = false;
 
@@ -290,7 +290,7 @@ int CVoiceStatus::VidInit()
 
 	// Figure out the voice head model height.
 	m_VoiceHeadModelHeight = 45;
-	char* pFile = (char*)gEngfuncs.COM_LoadFile("scripts/voicemodel.txt", 5, NULL);
+	char* pFile = (char*)gEngfuncs.COM_LoadFile("scripts/voicemodel.txt", 5, nullptr);
 	if (pFile)
 	{
 		char token[4096];
@@ -677,7 +677,7 @@ CVoiceLabel* CVoiceStatus::FindVoiceLabel(int clientindex)
 			return &m_Labels[i];
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -768,43 +768,43 @@ void CVoiceStatus::FreeBitmaps()
 {
 	// Delete all the images we have loaded.
 	delete m_pLocalBitmap;
-	m_pLocalBitmap = NULL;
+	m_pLocalBitmap = nullptr;
 
 	delete m_pAckBitmap;
-	m_pAckBitmap = NULL;
+	m_pAckBitmap = nullptr;
 
 	delete m_pSpeakerLabelIcon;
-	m_pSpeakerLabelIcon = NULL;
+	m_pSpeakerLabelIcon = nullptr;
 
 	delete m_pScoreboardNeverSpoken;
-	m_pScoreboardNeverSpoken = NULL;
+	m_pScoreboardNeverSpoken = nullptr;
 
 	delete m_pScoreboardNotSpeaking;
-	m_pScoreboardNotSpeaking = NULL;
+	m_pScoreboardNotSpeaking = nullptr;
 
 	delete m_pScoreboardSpeaking;
-	m_pScoreboardSpeaking = NULL;
+	m_pScoreboardSpeaking = nullptr;
 
 	delete m_pScoreboardSpeaking2;
-	m_pScoreboardSpeaking2 = NULL;
+	m_pScoreboardSpeaking2 = nullptr;
 
 	delete m_pScoreboardSquelch;
-	m_pScoreboardSquelch = NULL;
+	m_pScoreboardSquelch = nullptr;
 
 	delete m_pScoreboardBanned;
-	m_pScoreboardBanned = NULL;
+	m_pScoreboardBanned = nullptr;
 
 	// Clear references to the images in panels.
 	for (int i = 0; i < VOICE_MAX_PLAYERS; i++)
 	{
 		if (m_pBanButtons[i])
 		{
-			m_pBanButtons[i]->setImage(NULL);
+			m_pBanButtons[i]->setImage(nullptr);
 		}
 	}
 
 	if (m_pLocalLabel)
-		m_pLocalLabel->setImage(NULL);
+		m_pLocalLabel->setImage(nullptr);
 }
 
 //-----------------------------------------------------------------------------

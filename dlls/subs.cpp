@@ -102,7 +102,7 @@ void CBaseEntity::UpdateOnRemove(void)
 			if (WorldGraph.m_pLinkPool[i].m_pLinkEnt == pev)
 			{
 				// if this link has a link ent which is the same ent that is removing itself, remove it!
-				WorldGraph.m_pLinkPool[i].m_pLinkEnt = NULL;
+				WorldGraph.m_pLinkPool[i].m_pLinkEnt = nullptr;
 			}
 		}
 	}
@@ -188,7 +188,7 @@ void CBaseEntity::SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, floa
 
 void FireTargets(const char* targetName, CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	edict_t* pentTarget = NULL;
+	edict_t* pentTarget = nullptr;
 	if (!targetName)
 		return;
 
@@ -249,7 +249,7 @@ void CBaseDelay::SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, float
 		}
 		else
 		{
-			pTemp->pev->owner = NULL;
+			pTemp->pev->owner = nullptr;
 		}
 
 		return;
@@ -261,10 +261,10 @@ void CBaseDelay::SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, float
 
 	if (m_iszKillTarget)
 	{
-		edict_t* pentKillTarget = NULL;
+		edict_t* pentKillTarget = nullptr;
 
 		ALERT(at_aiconsole, "KillTarget: %s\n", STRING(m_iszKillTarget));
-		pentKillTarget = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_iszKillTarget));
+		pentKillTarget = FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(m_iszKillTarget));
 		while (!FNullEnt(pentKillTarget))
 		{
 			UTIL_Remove(CBaseEntity::Instance(pentKillTarget));
@@ -318,9 +318,9 @@ void SetMovedir(entvars_t* pev)
 
 void CBaseDelay::DelayThink(void)
 {
-	CBaseEntity* pActivator = NULL;
+	CBaseEntity* pActivator = nullptr;
 
-	if (pev->owner != NULL)  // A player activated this on delay
+	if (pev->owner != nullptr)  // A player activated this on delay
 	{
 		pActivator = CBaseEntity::Instance(pev->owner);
 	}
@@ -393,7 +393,7 @@ pev->origin traveling at flSpeed
 void CBaseToggle::LinearMove(Vector vecDest, float flSpeed)
 {
 	ASSERTSZ(flSpeed != 0, "LinearMove:  no speed is defined!");
-	//	ASSERTSZ(m_pfnCallWhenMoveDone != NULL, "LinearMove: no post-move function defined");
+	//	ASSERTSZ(m_pfnCallWhenMoveDone != nullptr, "LinearMove: no post-move function defined");
 
 	m_vecFinalDest = vecDest;
 
@@ -453,7 +453,7 @@ Just like LinearMove, but rotational.
 void CBaseToggle::AngularMove(Vector vecDestAngle, float flSpeed)
 {
 	ASSERTSZ(flSpeed != 0, "AngularMove:  no speed is defined!");
-	//	ASSERTSZ(m_pfnCallWhenMoveDone != NULL, "AngularMove: no post-move function defined");
+	//	ASSERTSZ(m_pfnCallWhenMoveDone != nullptr, "AngularMove: no post-move function defined");
 
 	m_vecFinalAngle = vecDestAngle;
 

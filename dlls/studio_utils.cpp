@@ -48,7 +48,7 @@ studiohdr_t* StudioModel::LoadModel(const char* modelname)
 		return 0;
 
 	// load the model
-	if ((fp = fopen(modelname, "rb")) == NULL)
+	if ((fp = fopen(modelname, "rb")) == nullptr)
 		return 0;
 
 	fseek(fp, 0, SEEK_END);

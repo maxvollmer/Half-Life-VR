@@ -227,7 +227,7 @@ void CEnvExplosion::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 
 		for (int i = 0; i < sparkCount; i++)
 		{
-			Create("spark_shower", pev->origin, tr.vecPlaneNormal, NULL);
+			Create("spark_shower", pev->origin, tr.vecPlaneNormal, nullptr);
 		}
 	}
 }
@@ -269,5 +269,5 @@ void ExplosionCreate(const Vector& center, const Vector& angles, edict_t* pOwner
 		pExplosion->pev->spawnflags |= SF_ENVEXPLOSION_NODAMAGE;
 
 	pExplosion->Spawn();
-	pExplosion->Use(NULL, NULL, USE_TOGGLE, 0);
+	pExplosion->Use(nullptr, nullptr, USE_TOGGLE, 0);
 }

@@ -385,7 +385,7 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 	const model_s* pSpriteModel = gEngfuncs.GetSpritePointer(m_hudSpriteHandle);
 	if (pSpriteModel == nullptr)
 	{
-		gEngfuncs.Con_DPrintf("Error: HUD Sprite model is NULL!\n");
+		gEngfuncs.Con_DPrintf("Error: HUD Sprite model is nullptr!\n");
 		return;
 	}
 

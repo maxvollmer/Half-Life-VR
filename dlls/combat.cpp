@@ -116,7 +116,7 @@ void CGib::SpawnStickyGibs(entvars_t* pevVictim, Vector vecOrigin, int cGibs)
 			pGib->pev->solid = SOLID_BBOX;
 			UTIL_SetSize(pGib->pev, Vector(0, 0, 0), Vector(0, 0, 0));
 			pGib->SetTouch(&CGib::StickyGibTouch);
-			pGib->SetThink(NULL);
+			pGib->SetThink(nullptr);
 		}
 		pGib->LimitVelocity();
 	}
@@ -619,7 +619,7 @@ void CBaseMonster::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 	}
 	else if (pev->flags & FL_MONSTER)
 	{
-		SetTouch(NULL);
+		SetTouch(nullptr);
 		BecomeDead();
 	}
 
@@ -922,7 +922,7 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 			Killed(pevAttacker, bitsDamageType, GIB_NORMAL);
 		}
 
-		g_pevLastInflictor = NULL;
+		g_pevLastInflictor = nullptr;
 
 		return 0;
 	}
@@ -936,7 +936,7 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 			// enemy's last known position is somewhere down the vector that the attack came from.
 			if (pevInflictor)
 			{
-				if (m_hEnemy == NULL || pevInflictor == m_hEnemy->pev || !HasConditions(bits_COND_SEE_ENEMY))
+				if (m_hEnemy == nullptr || pevInflictor == m_hEnemy->pev || !HasConditions(bits_COND_SEE_ENEMY))
 				{
 					m_vecEnemyLKP = pevInflictor->origin;
 				}
@@ -1036,7 +1036,7 @@ float CBaseMonster::DamageForce(float damage)
 
 void RadiusDamage(Vector vecSrc, entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType)
 {
-	CBaseEntity* pEntity = NULL;
+	CBaseEntity* pEntity = nullptr;
 	TraceResult tr;
 	float flAdjustedDamage, falloff;
 	Vector vecSpot;
@@ -1054,7 +1054,7 @@ void RadiusDamage(Vector vecSrc, entvars_t* pevInflictor, entvars_t* pevAttacker
 		pevAttacker = pevInflictor;
 
 	// iterate on all entities in the vicinity.
-	while ((pEntity = UTIL_FindEntityInSphere(pEntity, vecSrc, flRadius)) != NULL)
+	while ((pEntity = UTIL_FindEntityInSphere(pEntity, vecSrc, flRadius)) != nullptr)
 	{
 		if (pEntity->pev->takedamage != DAMAGE_NO)
 		{
@@ -1156,7 +1156,7 @@ CBaseEntity* CBaseMonster::CheckTraceHullAttack(float flDist, int iDamage, int i
 		return pEntity;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -1375,7 +1375,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
 
-	if (pevAttacker == NULL)
+	if (pevAttacker == nullptr)
 		pevAttacker = pev;  // the default attacker is ourselves
 
 	ClearMultiDamage();
@@ -1511,7 +1511,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	Vector vecUp = gpGlobals->v_up;
 	float x, y, z;
 
-	if (pevAttacker == NULL)
+	if (pevAttacker == nullptr)
 		pevAttacker = pev;  // the default attacker is ourselves
 
 	ClearMultiDamage();

@@ -560,7 +560,7 @@ void CGamePlayerZone::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	if (!CanFireForActivator(pActivator))
 		return;
 
-	CBaseEntity* pPlayer = NULL;
+	CBaseEntity* pPlayer = nullptr;
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
@@ -823,7 +823,7 @@ void CGamePlayerEquip::Touch(CBaseEntity* pOther)
 
 void CGamePlayerEquip::EquipPlayer(CBaseEntity* pEntity)
 {
-	CBasePlayer* pPlayer = NULL;
+	CBasePlayer* pPlayer = nullptr;
 
 	if (pEntity->IsPlayer())
 	{
@@ -879,15 +879,15 @@ LINK_ENTITY_TO_CLASS(game_player_team, CGamePlayerTeam);
 
 const char* CGamePlayerTeam::TargetTeamName(const char* pszTargetName)
 {
-	CBaseEntity* pTeamEntity = NULL;
+	CBaseEntity* pTeamEntity = nullptr;
 
-	while ((pTeamEntity = UTIL_FindEntityByTargetname(pTeamEntity, pszTargetName)) != NULL)
+	while ((pTeamEntity = UTIL_FindEntityByTargetname(pTeamEntity, pszTargetName)) != nullptr)
 	{
 		if (FClassnameIs(pTeamEntity->pev, "game_team_master"))
 			return pTeamEntity->TeamID();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 

@@ -268,14 +268,14 @@ CGlobalState::CGlobalState(void)
 
 void CGlobalState::Reset(void)
 {
-	m_pList = NULL;
+	m_pList = nullptr;
 	m_listCount = 0;
 }
 
 globalentity_t* CGlobalState::Find(string_t globalname)
 {
 	if (!globalname)
-		return NULL;
+		return nullptr;
 
 	globalentity_t* pTest;
 	const char* pEntityName = STRING(globalname);
@@ -317,7 +317,7 @@ void CGlobalState::EntityAdd(string_t globalname, string_t mapName, GLOBALESTATE
 	ASSERT(!Find(globalname));
 
 	globalentity_t* pNewEntity = (globalentity_t*)calloc(sizeof(globalentity_t), 1);
-	ASSERT(pNewEntity != NULL);
+	ASSERT(pNewEntity != nullptr);
 	pNewEntity->pNext = m_pList;
 	m_pList = pNewEntity;
 	strcpy(pNewEntity->name, STRING(globalname));
@@ -482,7 +482,7 @@ void CWorld::Spawn(void)
 
 void CWorld::Precache(void)
 {
-	g_pLastSpawn = NULL;
+	g_pLastSpawn = nullptr;
 
 #if 1
 	CVAR_SET_STRING("sv_gravity", "800");  // 67ft/sec
@@ -640,7 +640,7 @@ void CWorld::Precache(void)
 	if (pev->netname)
 	{
 		ALERT(at_aiconsole, "Chapter title: %s\n", STRING(pev->netname));
-		CBaseEntity* pEntity = CBaseEntity::Create("env_message", g_vecZero, g_vecZero, NULL);
+		CBaseEntity* pEntity = CBaseEntity::Create("env_message", g_vecZero, g_vecZero, nullptr);
 		if (pEntity)
 		{
 			pEntity->SetThink(&CBaseEntity::SUB_CallUseToggle);

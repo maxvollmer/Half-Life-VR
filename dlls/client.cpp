@@ -109,7 +109,7 @@ void ClientDisconnect(edict_t* pEntity)
 
 	char text[256];
 	sprintf(text, "- %s has left the game\n", STRING(pEntity->v.netname));
-	MESSAGE_BEGIN(MSG_ALL, gmsgSayText, NULL);
+	MESSAGE_BEGIN(MSG_ALL, gmsgSayText, nullptr);
 	WRITE_BYTE(ENTINDEX(pEntity));
 	WRITE_STRING(text);
 	MESSAGE_END();
@@ -271,15 +271,15 @@ void Host_Say(edict_t* pEntity, int teamonly)
 
 	// make sure the text has content
 	char* pc = p;
-	for (; pc != NULL && *pc != 0; pc++)
+	for (; pc != nullptr && *pc != 0; pc++)
 	{
 		if (isprint(*pc) && !isspace(*pc))
 		{
-			pc = NULL;  // we've found an alphanumeric character,  so text is valid
+			pc = nullptr;  // we've found an alphanumeric character,  so text is valid
 			break;
 		}
 	}
-	if (pc != NULL)
+	if (pc != nullptr)
 		return;  // no character found, so say nothing
 
 	// turn on color set 2  (color on,  no sound)
@@ -303,8 +303,8 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	// This may return the world in single player if the client types something between levels or during spawn
 	// so check it, or it will infinite loop
 
-	client = NULL;
-	while (((client = (CBasePlayer*)UTIL_FindEntityByClassname(client, "player")) != NULL) && (!FNullEnt(client->edict())))
+	client = nullptr;
+	while (((client = (CBasePlayer*)UTIL_FindEntityByClassname(client, "player")) != nullptr) && (!FNullEnt(client->edict())))
 	{
 		if (!client->pev)
 			continue;
@@ -322,14 +322,14 @@ void Host_Say(edict_t* pEntity, int teamonly)
 		if (teamonly && g_pGameRules->PlayerRelationship(client, CBaseEntity::Instance(pEntity)) != GR_TEAMMATE)
 			continue;
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, client->pev);
+		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, nullptr, client->pev);
 		WRITE_BYTE(ENTINDEX(pEntity));
 		WRITE_STRING(text);
 		MESSAGE_END();
 	}
 
 	// print to the sending client
-	MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, &pEntity->v);
+	MESSAGE_BEGIN(MSG_ONE, gmsgSayText, nullptr, &pEntity->v);
 	WRITE_BYTE(ENTINDEX(pEntity));
 	WRITE_STRING(text);
 	MESSAGE_END();
@@ -428,7 +428,7 @@ void ClientCommand(edict_t* pEntity)
 	{
 		GetClassPtr<CBasePlayer>(pev)->SelectItem((char*)CMD_ARGV(1));
 	}
-	else if (((pstr = strstr(pcmd, "weapon_")) != NULL) && (pstr == pcmd))
+	else if (((pstr = strstr(pcmd, "weapon_")) != nullptr) && (pstr == pcmd))
 	{
 		GetClassPtr<CBasePlayer>(pev)->SelectItem(pcmd);
 	}
@@ -604,7 +604,7 @@ void ClientUserInfoChanged(edict_t* pEntity, char* infobuffer)
 		sName[sizeof(sName) - 1] = '\0';
 
 		// First parse the name and remove any %'s
-		for (char* pApersand = sName; pApersand != NULL && *pApersand != 0; pApersand++)
+		for (char* pApersand = sName; pApersand != nullptr && *pApersand != 0; pApersand++)
 		{
 			// Replace it with a space
 			if (*pApersand == '%')
@@ -616,7 +616,7 @@ void ClientUserInfoChanged(edict_t* pEntity, char* infobuffer)
 
 		char text[256];
 		sprintf(text, "* %s changed name to %s\n", STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue(infobuffer, "name"));
-		MESSAGE_BEGIN(MSG_ALL, gmsgSayText, NULL);
+		MESSAGE_BEGIN(MSG_ALL, gmsgSayText, nullptr);
 		WRITE_BYTE(ENTINDEX(pEntity));
 		WRITE_STRING(text);
 		MESSAGE_END();
@@ -947,7 +947,7 @@ void PlayerCustomization(edict_t* pEntity, customization_t* pCust)
 
 	if (!pCust)
 	{
-		ALERT(at_console, "PlayerCustomization:  NULL customization!\n");
+		ALERT(at_console, "PlayerCustomization:  nullptr customization!\n");
 		return;
 	}
 
@@ -1024,7 +1024,7 @@ void SpectatorThink(edict_t* pEntity)
 SetupVisibility
 
 A client can have a separate "view entity" indicating that their view should depend on the origin of that
-view entity.  If that's the case, then pViewEntity will be non-NULL and will be used.  Otherwise, the current
+view entity.  If that's the case, then pViewEntity will be non-nullptr and will be used.  Otherwise, the current
 entity's origin is used.  Either is offset by the view_ofs to get the eye position.
 
 From the eye position, we set up the PAS and PVS to use for filtering network messages to the client.  At this point, we could
@@ -1046,8 +1046,8 @@ void SetupVisibility(edict_t* pViewEntity, edict_t* pClient, unsigned char** pvs
 
 	if (pClient->v.flags & FL_PROXY)
 	{
-		*pvs = NULL;  // the spectator proxy sees
-		*pas = NULL;  // and hears everything
+		*pvs = nullptr;  // the spectator proxy sees
+		*pas = nullptr;  // and hears everything
 		return;
 	}
 
@@ -1092,7 +1092,7 @@ int AddToFullPack(struct entity_state_s* state, int e, edict_t* ent, edict_t* ho
 	}
 
 	// Ignore if not the host and not touching a PVS/PAS leaf
-	// If pSet is NULL, then the test will always succeed and the entity will be added to the update
+	// If pSet is nullptr, then the test will always succeed and the entity will be added to the update
 	if (ent != host)
 	{
 		if (!ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, pSet))

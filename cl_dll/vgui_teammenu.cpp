@@ -201,7 +201,7 @@ void CTeamMenuPanel::Update(void)
 				int iTotal = 0;
 				for (int j = 1; j < MAX_PLAYERS; j++)
 				{
-					if (g_PlayerInfoList[j].name == NULL)
+					if (g_PlayerInfoList[j].name == nullptr)
 						continue;  // empty player slot, skip
 					if (g_PlayerInfoList[j].thisplayer)
 						continue;  // skip this player
@@ -295,7 +295,7 @@ void CTeamMenuPanel::Update(void)
 			ch = strchr(sz, '.');
 			*ch = '\0';
 			strcat(sz, ".txt");
-			char* pfile = (char*)gEngfuncs.COM_LoadFile(sz, 5, NULL);
+			char* pfile = (char*)gEngfuncs.COM_LoadFile(sz, 5, nullptr);
 			if (pfile)
 			{
 				m_pBriefing->setText(pfile);

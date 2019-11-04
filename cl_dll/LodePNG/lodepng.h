@@ -860,7 +860,7 @@ In a non-corrupt PNG file, the last chunk should have name "IEND".
 unsigned char* lodepng_chunk_next(unsigned char* chunk);
 const unsigned char* lodepng_chunk_next_const(const unsigned char* chunk);
 
-/*Finds the first chunk with the given type in the range [chunk, end), or returns NULL if not found.*/
+/*Finds the first chunk with the given type in the range [chunk, end), or returns nullptr if not found.*/
 unsigned char* lodepng_chunk_find(unsigned char* chunk, const unsigned char* end, const char type[5]);
 const unsigned char* lodepng_chunk_find_const(const unsigned char* chunk, const unsigned char* end, const char type[5]);
 
@@ -902,7 +902,7 @@ unsigned lodepng_inflate(unsigned char** out, size_t* outsize,
 /*
 Decompresses Zlib data. Reallocates the out buffer and appends the data. The
 data must be according to the zlib specification.
-Either, *out must be NULL and *outsize must be 0, or, *out must be a valid
+Either, *out must be nullptr and *outsize must be 0, or, *out must be a valid
 buffer and *outsize its size in bytes. out must be freed by user after usage.
 */
 unsigned lodepng_zlib_decompress(unsigned char** out, size_t* outsize,
@@ -915,7 +915,7 @@ unsigned lodepng_zlib_decompress(unsigned char** out, size_t* outsize,
 Compresses data with Zlib. Reallocates the out buffer and appends the data.
 Zlib adds a small header and trailer around the deflate data.
 The data is output in the format of the zlib specification.
-Either, *out must be NULL and *outsize must be 0, or, *out must be a valid
+Either, *out must be nullptr and *outsize must be 0, or, *out must be a valid
 buffer and *outsize its size in bytes. out must be freed by user after usage.
 */
 unsigned lodepng_zlib_compress(unsigned char** out, size_t* outsize,

@@ -19,7 +19,7 @@
 
 namespace
 {
-	HWND hlWindow{ NULL };
+	HWND hlWindow{ nullptr };
 
 	BOOL CALLBACK VRFindHalflifeWindow(_In_ HWND hwnd, _In_ LPARAM lParam)
 	{
@@ -108,7 +108,7 @@ namespace
 		input.mi.dy = (iy + rect.top) * YSCALEFACTOR;
 		input.mi.mouseData = 0;
 		input.mi.time = 0;
-		input.mi.dwExtraInfo = NULL;
+		input.mi.dwExtraInfo = 0;
 		input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
 		if (blatest)
 		{
