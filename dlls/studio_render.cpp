@@ -17,16 +17,16 @@
 
 #include "StudioModel.h"
 
-#pragma warning( disable : 4244 ) // double to float
+#pragma warning(disable : 4244)  // double to float
 
 
 void StudioModel::CalcBoneAdj()
 {
-	int					i, j;
-	float				value;
-	mstudiobonecontroller_t *pbonecontroller;
+	int i, j;
+	float value;
+	mstudiobonecontroller_t* pbonecontroller;
 
-	pbonecontroller = (mstudiobonecontroller_t *)((byte *)m_pstudiohdr + m_pstudiohdr->bonecontrollerindex);
+	pbonecontroller = (mstudiobonecontroller_t*)((byte*)m_pstudiohdr + m_pstudiohdr->bonecontrollerindex);
 
 	for (j = 0; j < m_pstudiohdr->numbonecontrollers; j++)
 	{
@@ -41,8 +41,10 @@ void StudioModel::CalcBoneAdj()
 			else
 			{
 				value = m_controller[i] / 255.0;
-				if (value < 0) value = 0;
-				if (value > 1.0) value = 1.0;
+				if (value < 0)
+					value = 0;
+				if (value > 1.0)
+					value = 1.0;
 				value = (1.0 - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
 			}
 			// Con_DPrintf( "%d %d %f : %f\n", m_controller[j], m_prevcontroller[j], value, dadt );
@@ -50,7 +52,8 @@ void StudioModel::CalcBoneAdj()
 		else
 		{
 			value = m_mouth / 64.0;
-			if (value > 1.0) value = 1.0;
+			if (value > 1.0)
+				value = 1.0;
 			value = (1.0 - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
 			// Con_DPrintf("%d %f\n", mouthopen, value );
 		}
@@ -71,22 +74,22 @@ void StudioModel::CalcBoneAdj()
 }
 
 
-void StudioModel::CalcBoneQuaternion(int frame, float s, mstudiobone_t *pbone, mstudioanim_t *panim, float *q)
+void StudioModel::CalcBoneQuaternion(int frame, float s, mstudiobone_t* pbone, mstudioanim_t* panim, float* q)
 {
-	int					j, k;
-	vec4_t				q1, q2;
-	vec3_t				angle1, angle2;
-	mstudioanimvalue_t	*panimvalue;
+	int j, k;
+	vec4_t q1, q2;
+	vec3_t angle1, angle2;
+	mstudioanimvalue_t* panimvalue;
 
 	for (j = 0; j < 3; j++)
 	{
 		if (panim->offset[j + 3] == 0)
 		{
-			angle2[j] = angle1[j] = pbone->value[j + 3]; // default;
+			angle2[j] = angle1[j] = pbone->value[j + 3];  // default;
 		}
 		else
 		{
-			panimvalue = (mstudioanimvalue_t *)((byte *)panim + panim->offset[j + 3]);
+			panimvalue = (mstudioanimvalue_t*)((byte*)panim + panim->offset[j + 3]);
 			k = frame;
 			while (panimvalue->num.total <= k)
 			{
@@ -146,17 +149,17 @@ void StudioModel::CalcBoneQuaternion(int frame, float s, mstudiobone_t *pbone, m
 }
 
 
-void StudioModel::CalcBonePosition(int frame, float s, mstudiobone_t *pbone, mstudioanim_t *panim, float *pos)
+void StudioModel::CalcBonePosition(int frame, float s, mstudiobone_t* pbone, mstudioanim_t* panim, float* pos)
 {
-	int					j, k;
-	mstudioanimvalue_t	*panimvalue;
+	int j, k;
+	mstudioanimvalue_t* panimvalue;
 
 	for (j = 0; j < 3; j++)
 	{
-		pos[j] = pbone->value[j]; // default;
+		pos[j] = pbone->value[j];  // default;
 		if (panim->offset[j] != 0)
 		{
-			panimvalue = (mstudioanimvalue_t *)((byte *)panim + panim->offset[j]);
+			panimvalue = (mstudioanimvalue_t*)((byte*)panim + panim->offset[j]);
 
 			k = frame;
 			// find span of values that includes the frame we want
@@ -199,12 +202,12 @@ void StudioModel::CalcBonePosition(int frame, float s, mstudiobone_t *pbone, mst
 }
 
 
-void StudioModel::CalcRotations(vec3_t *pos, vec4_t *q, mstudioseqdesc_t *pseqdesc, mstudioanim_t *panim, float f)
+void StudioModel::CalcRotations(vec3_t* pos, vec4_t* q, mstudioseqdesc_t* pseqdesc, mstudioanim_t* panim, float f)
 {
-	int					i;
-	int					frame;
-	mstudiobone_t		*pbone;
-	float				s;
+	int i;
+	int frame;
+	mstudiobone_t* pbone;
+	float s;
 
 	frame = (int)f;
 	s = (f - frame);
@@ -212,7 +215,7 @@ void StudioModel::CalcRotations(vec3_t *pos, vec4_t *q, mstudioseqdesc_t *pseqde
 	// add in programatic controllers
 	CalcBoneAdj();
 
-	pbone = (mstudiobone_t *)((byte *)m_pstudiohdr + m_pstudiohdr->boneindex);
+	pbone = (mstudiobone_t*)((byte*)m_pstudiohdr + m_pstudiohdr->boneindex);
 	for (i = 0; i < m_pstudiohdr->numbones; i++, pbone++, panim++)
 	{
 		CalcBoneQuaternion(frame, s, pbone, panim, q[i]);
@@ -228,28 +231,30 @@ void StudioModel::CalcRotations(vec3_t *pos, vec4_t *q, mstudioseqdesc_t *pseqde
 }
 
 
-mstudioanim_t * StudioModel::GetAnim(mstudioseqdesc_t *pseqdesc)
+mstudioanim_t* StudioModel::GetAnim(mstudioseqdesc_t* pseqdesc)
 {
-	mstudioseqgroup_t	*pseqgroup;
-	pseqgroup = (mstudioseqgroup_t *)((byte *)m_pstudiohdr + m_pstudiohdr->seqgroupindex) + pseqdesc->seqgroup;
+	mstudioseqgroup_t* pseqgroup;
+	pseqgroup = (mstudioseqgroup_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqgroupindex) + pseqdesc->seqgroup;
 
 	if (pseqdesc->seqgroup == 0)
 	{
-		return (mstudioanim_t *)((byte *)m_pstudiohdr + pseqgroup->data + pseqdesc->animindex);
+		return (mstudioanim_t*)((byte*)m_pstudiohdr + pseqgroup->data + pseqdesc->animindex);
 	}
 
-	return (mstudioanim_t *)((byte *)m_panimhdr[pseqdesc->seqgroup] + pseqdesc->animindex);
+	return (mstudioanim_t*)((byte*)m_panimhdr[pseqdesc->seqgroup] + pseqdesc->animindex);
 }
 
 
 void StudioModel::SlerpBones(vec4_t q1[], vec3_t pos1[], vec4_t q2[], vec3_t pos2[], float s)
 {
-	int			i;
-	vec4_t		q3;
-	float		s1;
+	int i;
+	vec4_t q3;
+	float s1;
 
-	if (s < 0) s = 0;
-	else if (s > 1.0) s = 1.0;
+	if (s < 0)
+		s = 0;
+	else if (s > 1.0)
+		s = 1.0;
 
 	s1 = 1.0 - s;
 
@@ -272,8 +277,8 @@ void StudioModel::AdvanceFrame(float dt)
 	if (!m_pstudiohdr)
 		return;
 
-	mstudioseqdesc_t	*pseqdesc;
-	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pstudiohdr + m_pstudiohdr->seqindex) + m_sequence;
+	mstudioseqdesc_t* pseqdesc;
+	pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex) + m_sequence;
 
 	if (dt > 0.1)
 		dt = 0.1f;
@@ -299,8 +304,8 @@ int StudioModel::SetFrame(int nFrame)
 	if (!m_pstudiohdr)
 		return 0;
 
-	mstudioseqdesc_t	*pseqdesc;
-	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pstudiohdr + m_pstudiohdr->seqindex) + m_sequence;
+	mstudioseqdesc_t* pseqdesc;
+	pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex) + m_sequence;
 
 	m_frame = nFrame;
 
@@ -320,36 +325,37 @@ int StudioModel::SetFrame(int nFrame)
 
 void StudioModel::SetUpBones(void)
 {
-	int					i;
+	int i;
 
-	mstudiobone_t		*pbones;
-	mstudioseqdesc_t	*pseqdesc;
-	mstudioanim_t		*panim;
+	mstudiobone_t* pbones;
+	mstudioseqdesc_t* pseqdesc;
+	mstudioanim_t* panim;
 
-	static vec3_t		pos[MAXSTUDIOBONES];
-	float				bonematrix[3][4];
-	static vec4_t		q[MAXSTUDIOBONES];
+	static vec3_t pos[MAXSTUDIOBONES];
+	float bonematrix[3][4];
+	static vec4_t q[MAXSTUDIOBONES];
 
-	static vec3_t		pos2[MAXSTUDIOBONES];
-	static vec4_t		q2[MAXSTUDIOBONES];
-	static vec3_t		pos3[MAXSTUDIOBONES];
-	static vec4_t		q3[MAXSTUDIOBONES];
-	static vec3_t		pos4[MAXSTUDIOBONES];
-	static vec4_t		q4[MAXSTUDIOBONES];
+	static vec3_t pos2[MAXSTUDIOBONES];
+	static vec4_t q2[MAXSTUDIOBONES];
+	static vec3_t pos3[MAXSTUDIOBONES];
+	static vec4_t q3[MAXSTUDIOBONES];
+	static vec3_t pos4[MAXSTUDIOBONES];
+	static vec4_t q4[MAXSTUDIOBONES];
 
 
-	if (m_sequence >= m_pstudiohdr->numseq) {
+	if (m_sequence >= m_pstudiohdr->numseq)
+	{
 		m_sequence = 0;
 	}
 
-	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pstudiohdr + m_pstudiohdr->seqindex) + m_sequence;
+	pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex) + m_sequence;
 
 	panim = GetAnim(pseqdesc);
 	CalcRotations(pos, q, pseqdesc, panim, m_frame);
 
 	if (pseqdesc->numblends > 1)
 	{
-		float				s;
+		float s;
 
 		panim += m_pstudiohdr->numbones;
 		CalcRotations(pos2, q2, pseqdesc, panim, m_frame);
@@ -373,19 +379,22 @@ void StudioModel::SetUpBones(void)
 		}
 	}
 
-	pbones = (mstudiobone_t *)((byte *)m_pstudiohdr + m_pstudiohdr->boneindex);
+	pbones = (mstudiobone_t*)((byte*)m_pstudiohdr + m_pstudiohdr->boneindex);
 
-	for (i = 0; i < m_pstudiohdr->numbones; i++) {
+	for (i = 0; i < m_pstudiohdr->numbones; i++)
+	{
 		QuaternionMatrix(q[i], bonematrix);
 
 		bonematrix[0][3] = pos[i][0];
 		bonematrix[1][3] = pos[i][1];
 		bonematrix[2][3] = pos[i][2];
 
-		if (pbones[i].parent == -1) {
+		if (pbones[i].parent == -1)
+		{
 			std::memcpy(m_bonetransform[i], bonematrix, sizeof(float) * 12);
 		}
-		else {
+		else
+		{
 			R_ConcatTransforms(m_bonetransform[pbones[i].parent], bonematrix, m_bonetransform[i]);
 		}
 	}
@@ -401,10 +410,10 @@ void StudioModel::SetupModel(int bodypart)
 		bodypart = 0;
 	}
 
-	mstudiobodyparts_t   *pbodypart = (mstudiobodyparts_t *)((byte *)m_pstudiohdr + m_pstudiohdr->bodypartindex) + bodypart;
+	mstudiobodyparts_t* pbodypart = (mstudiobodyparts_t*)((byte*)m_pstudiohdr + m_pstudiohdr->bodypartindex) + bodypart;
 
 	index = m_bodynum / pbodypart->base;
 	index = index % pbodypart->nummodels;
 
-	m_pmodel = (mstudiomodel_t *)((byte *)m_pstudiohdr + pbodypart->modelindex) + index;
+	m_pmodel = (mstudiomodel_t*)((byte*)m_pstudiohdr + pbodypart->modelindex) + index;
 }

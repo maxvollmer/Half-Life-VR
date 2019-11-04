@@ -32,7 +32,7 @@ namespace
 			{
 				RECT rect;
 				GetWindowRect(hwnd, &rect);
-				if (rect.right > rect.left && rect.bottom > rect.top)
+				if (rect.right > rect.left&& rect.bottom > rect.top)
 				{
 					hlWindow = hwnd;
 					return FALSE;
@@ -136,7 +136,7 @@ namespace
 		VRFindHLWindow();
 		MessageBoxA(hlWindow, errorMessage, "Error starting Half-Life: VR", MB_OK);
 	}
-}
+}  // namespace
 
 void VRInput::SendMousePosToHLWindow(float x, float y)
 {

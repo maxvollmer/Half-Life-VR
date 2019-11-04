@@ -18,7 +18,7 @@
 #include <string.h>
 #include "StudioModel.h"
 
-#pragma warning( disable : 4244 ) // double to float
+#pragma warning(disable : 4244)  // double to float
 
 void StudioModel::FreeModel()
 {
@@ -38,11 +38,11 @@ void StudioModel::FreeModel()
 	}
 }
 
-studiohdr_t *StudioModel::LoadModel(const char *modelname)
+studiohdr_t* StudioModel::LoadModel(const char* modelname)
 {
-	FILE *fp;
+	FILE* fp;
 	long size;
-	void *buffer;
+	void* buffer;
 
 	if (!modelname)
 		return 0;
@@ -65,22 +65,22 @@ studiohdr_t *StudioModel::LoadModel(const char *modelname)
 	fread(buffer, size, 1, fp);
 	fclose(fp);
 
-	byte				*pin;
-	studiohdr_t			*phdr;
-	mstudiotexture_t	*ptexture;
+	byte* pin;
+	studiohdr_t* phdr;
+	mstudiotexture_t* ptexture;
 
-	pin = (byte *)buffer;
-	phdr = (studiohdr_t *)pin;
-	ptexture = (mstudiotexture_t *)(pin + phdr->textureindex);
+	pin = (byte*)buffer;
+	phdr = (studiohdr_t*)pin;
+	ptexture = (mstudiotexture_t*)(pin + phdr->textureindex);
 
-	if (strncmp((const char *)buffer, "IDST", 4) &&
-		strncmp((const char *)buffer, "IDSQ", 4))
+	if (strncmp((const char*)buffer, "IDST", 4) &&
+		strncmp((const char*)buffer, "IDSQ", 4))
 	{
 		free(buffer);
 		return 0;
 	}
 
-	if (!strncmp((const char *)buffer, "IDSQ", 4) && !m_pstudiohdr)
+	if (!strncmp((const char*)buffer, "IDSQ", 4) && !m_pstudiohdr)
 	{
 		free(buffer);
 		return 0;
@@ -100,14 +100,14 @@ studiohdr_t *StudioModel::LoadModel(const char *modelname)
 	// UNDONE: free texture memory
 
 	if (!m_pstudiohdr)
-		m_pstudiohdr = (studiohdr_t *)buffer;
+		m_pstudiohdr = (studiohdr_t*)buffer;
 
-	return (studiohdr_t *)buffer;
+	return (studiohdr_t*)buffer;
 }
 
 
 
-bool StudioModel::PostLoadModel(const char *modelname)
+bool StudioModel::PostLoadModel(const char* modelname)
 {
 	// preload animations
 	if (m_pstudiohdr->numseqgroups > 1)
@@ -142,7 +142,7 @@ bool StudioModel::PostLoadModel(const char *modelname)
 
 constexpr const int VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE = 4096;
 
-void StudioModel::ExtractBbox(float *mins, float *maxs)
+void StudioModel::ExtractBbox(float* mins, float* maxs)
 {
 	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex);
 
@@ -170,11 +170,11 @@ void StudioModel::ExtractBbox(float *mins, float *maxs)
 	}
 }
 
-void StudioModel::GetSequenceInfo(float *pflFrameRate, float *pflGroundSpeed)
+void StudioModel::GetSequenceInfo(float* pflFrameRate, float* pflGroundSpeed)
 {
-	mstudioseqdesc_t	*pseqdesc;
+	mstudioseqdesc_t* pseqdesc;
 
-	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pstudiohdr + m_pstudiohdr->seqindex) + (int)m_sequence;
+	pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex) + (int)m_sequence;
 
 	if (pseqdesc->numframes > 1)
 	{
@@ -208,7 +208,7 @@ int StudioModel::SetBodygroup(int iGroup, int iValue)
 	if (iGroup > m_pstudiohdr->numbodyparts)
 		return -1;
 
-	mstudiobodyparts_t *pbodypart = (mstudiobodyparts_t *)((byte *)m_pstudiohdr + m_pstudiohdr->bodypartindex) + iGroup;
+	mstudiobodyparts_t* pbodypart = (mstudiobodyparts_t*)((byte*)m_pstudiohdr + m_pstudiohdr->bodypartindex) + iGroup;
 
 	int iCurrent = (m_bodynum / pbodypart->base) % pbodypart->nummodels;
 

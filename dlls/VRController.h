@@ -24,7 +24,7 @@ public:
 		Vector maxs;
 	};
 
-	void Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, VRControllerID id, int weaponId);
+	void Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, VRControllerID id, int weaponId);
 
 	CBaseEntity* GetModel() const;
 	void PlayWeaponAnimation(int iAnim, int body);
@@ -75,18 +75,24 @@ public:
 	};
 
 	bool GetDraggedEntityPositions(EHANDLE hEntity,
-		Vector& controllerStartOffset, Vector& controllerStartPos, Vector& entityStartOrigin, Vector& playerStartOrigin,
-		Vector& controllerLastOffset, Vector& controllerLastPos, Vector& entityLastOrigin, Vector& playerLastOrigin) const;
+		Vector& controllerStartOffset,
+		Vector& controllerStartPos,
+		Vector& entityStartOrigin,
+		Vector& playerStartOrigin,
+		Vector& controllerLastOffset,
+		Vector& controllerLastPos,
+		Vector& entityLastOrigin,
+		Vector& playerLastOrigin) const;
 
 private:
 	void UpdateModel(CBasePlayer* pPlayer);
 	void UpdateLaserSpot();
 	void UpdateHitBoxes();
-	void SendEntityDataToClient(CBasePlayer *pPlayer, VRControllerID id);
+	void SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID id);
 
 	EHANDLE m_hPlayer;
 
-	VRControllerID	m_id{ VRControllerID::INVALID };
+	VRControllerID m_id{ VRControllerID::INVALID };
 	Vector m_offset;
 	Vector m_position;
 	Vector m_angles;
@@ -128,8 +134,7 @@ private:
 	}
 
 #ifdef RENDER_DEBUG_HITBOXES
-	void DebugDrawHitBoxes(CBasePlayer *pPlayer);
-	mutable std::vector<EHANDLE>		m_hDebugBBoxes;
+	void DebugDrawHitBoxes(CBasePlayer* pPlayer);
+	mutable std::vector<EHANDLE> m_hDebugBBoxes;
 #endif
 };
-

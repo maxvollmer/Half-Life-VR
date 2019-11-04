@@ -19,23 +19,34 @@
 #include "mathlib.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-#define	SIDE_FRONT		0
-#define	SIDE_ON			2
-#define	SIDE_BACK		1
-#define	SIDE_CROSS		-2
+#define SIDE_FRONT 0
+#define SIDE_ON    2
+#define SIDE_BACK  1
+#define SIDE_CROSS -2
 
-#define	Q_PI	3.14159265358979323846
+#define Q_PI 3.14159265358979323846
 
 	// Use this definition globally
-#define	ON_EPSILON		0.01
-#define	EQUAL_EPSILON	0.001
+#define ON_EPSILON    0.01
+#define EQUAL_EPSILON 0.001
 
-#define VectorFill(a,b) { (a)[0]=(b); (a)[1]=(b); (a)[2]=(b);}
-#define VectorAvg(a) ( ( (a)[0] + (a)[1] + (a)[2] ) / 3 )
-#define VectorScale(a,b,c) {(c)[0]=(b)*(a)[0];(c)[1]=(b)*(a)[1];(c)[2]=(b)*(a)[2];}
+#define VectorFill(a, b) \
+	{                    \
+		(a)[0] = (b);    \
+		(a)[1] = (b);    \
+		(a)[2] = (b);    \
+	}
+#define VectorAvg(a) (((a)[0] + (a)[1] + (a)[2]) / 3)
+#define VectorScale(a, b, c)   \
+	{                          \
+		(c)[0] = (b) * (a)[0]; \
+		(c)[1] = (b) * (a)[1]; \
+		(c)[2] = (b) * (a)[2]; \
+	}
 
 	vec_t Q_rint(vec_t in);
 

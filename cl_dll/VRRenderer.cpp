@@ -15,7 +15,7 @@
 #include "entity_state.h"
 #include "cl_entity.h"
 #include "ref_params.h"
-#include "in_defs.h" // PITCH YAW ROLL
+#include "in_defs.h"  // PITCH YAW ROLL
 #include "pm_movevars.h"
 #include "pm_shared.h"
 #include "pm_defs.h"
@@ -44,7 +44,7 @@
 #include "vr_gl.h"
 
 
-extern globalvars_t *gpGlobals;
+extern globalvars_t* gpGlobals;
 
 VRRenderer gVRRenderer;
 
@@ -130,7 +130,8 @@ void VRRenderer::UpdateGameRenderState()
 	m_isInMenu = !m_HUDRedrawWasCalled;
 	m_HUDRedrawWasCalled = false;
 
-	if (!m_isInMenu) m_wasMenuJustRendered = false;
+	if (!m_isInMenu)
+		m_wasMenuJustRendered = false;
 }
 
 void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
@@ -226,7 +227,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 	// Override vieworg if we have a viewentity (trigger_camera)
 	if (pparams->viewentity > pparams->maxclients)
 	{
-		cl_entity_t *viewentity;
+		cl_entity_t* viewentity;
 		viewentity = gEngfuncs.GetEntityByIndex(pparams->viewentity);
 		if (viewentity)
 		{
@@ -287,10 +288,14 @@ void VRRenderer::DrawTransparent()
 		float size = 1.f;
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(0, renderUpsideDown ? 0 : 1);		glVertex3f(-size, -size, -1.f);
-		glTexCoord2f(1, renderUpsideDown ? 0 : 1);		glVertex3f(size, -size, -1.f);
-		glTexCoord2f(1, renderUpsideDown ? 1 : 0);		glVertex3f(size, size, -1.f);
-		glTexCoord2f(0, renderUpsideDown ? 1 : 0);		glVertex3f(-size, size, -1.f);
+		glTexCoord2f(0, renderUpsideDown ? 0 : 1);
+		glVertex3f(-size, -size, -1.f);
+		glTexCoord2f(1, renderUpsideDown ? 0 : 1);
+		glVertex3f(size, -size, -1.f);
+		glTexCoord2f(1, renderUpsideDown ? 1 : 0);
+		glVertex3f(size, size, -1.f);
+		glTexCoord2f(0, renderUpsideDown ? 1 : 0);
+		glVertex3f(-size, size, -1.f);
 		glEnd();
 
 		glMatrixMode(GL_PROJECTION);
@@ -332,7 +337,7 @@ void VRRenderer::InterceptHUDRedraw(float time, int intermission)
 	m_HUDRedrawWasCalled = true;
 }
 
-void VRRenderer::GetViewAngles(float * angles)
+void VRRenderer::GetViewAngles(float* angles)
 {
 	vrHelper->GetViewAngles(vr::EVREye::Eye_Right, angles);
 }
@@ -342,7 +347,7 @@ Vector VRRenderer::GetMovementAngles()
 	return vrHelper->GetMovementAngles();
 }
 
-bool VRRenderer::ShouldMirrorCurrentModel(cl_entity_t *ent)
+bool VRRenderer::ShouldMirrorCurrentModel(cl_entity_t* ent)
 {
 	if (!ent)
 		return false;
@@ -364,8 +369,7 @@ namespace
 			"models/v_hand_hevsuit.mdl",
 			"models/SD/v_hand_labcoat.mdl",
 			"models/SD/v_hand_hevsuit.mdl",
-		}
-	};
+		} };
 }
 
 bool VRRenderer::IsCurrentModelHandWithSkeletalData(cl_entity_t* ent, float fingerCurl[5])
@@ -408,31 +412,27 @@ void VRRenderer::RestoreCullface()
 
 
 
+#define SURF_NOCULL      1    // two-sided polygon (e.g. 'water4b')
+#define SURF_PLANEBACK   2    // plane should be negated
+#define SURF_DRAWSKY     4    // sky surface
+#define SURF_WATERCSG    8    // culled by csg (was SURF_DRAWSPRITE)
+#define SURF_DRAWTURB    16   // warp surface
+#define SURF_DRAWTILED   32   // face without lighmap
+#define SURF_CONVEYOR    64   // scrolled texture (was SURF_DRAWBACKGROUND)
+#define SURF_UNDERWATER  128  // caustics
+#define SURF_TRANSPARENT 256  // it's a transparent texture (was SURF_DONTWARP)
 
-#define SURF_NOCULL			1		// two-sided polygon (e.g. 'water4b')
-#define SURF_PLANEBACK		2		// plane should be negated
-#define SURF_DRAWSKY		4		// sky surface
-#define SURF_WATERCSG		8		// culled by csg (was SURF_DRAWSPRITE)
-#define SURF_DRAWTURB		16		// warp surface
-#define SURF_DRAWTILED		32		// face without lighmap
-#define SURF_CONVEYOR		64		// scrolled texture (was SURF_DRAWBACKGROUND)
-#define SURF_UNDERWATER		128		// caustics
-#define SURF_TRANSPARENT	256		// it's a transparent texture (was SURF_DONTWARP)
-
-std::unordered_map<std::string, int>		m_originalTextureIDs;
-void VRRenderer::ReplaceAllTexturesWithHDVersion(struct cl_entity_s *ent, bool enableHD)
+std::unordered_map<std::string, int> m_originalTextureIDs;
+void VRRenderer::ReplaceAllTexturesWithHDVersion(struct cl_entity_s* ent, bool enableHD)
 {
 	if (ent != nullptr && ent->model != nullptr)
 	{
 		for (int i = 0; i < ent->model->numtextures; i++)
 		{
-			texture_t *texture = ent->model->textures[i];
+			texture_t* texture = ent->model->textures[i];
 
 			// Replace textures with HD versions (created by Cyril Paulus using ESRGAN)
-			if (texture != nullptr
-				&& texture->name != nullptr
-				&& strcmp("sky", texture->name) != 0
-				&& texture->name[0] != '{'	// skip transparent textures, they are broken
+			if (texture != nullptr && texture->name != nullptr && strcmp("sky", texture->name) != 0 && texture->name[0] != '{'  // skip transparent textures, they are broken
 				)
 			{
 				// Backup
@@ -460,7 +460,7 @@ void VRRenderer::ReplaceAllTexturesWithHDVersion(struct cl_entity_s *ent, bool e
 	}
 }
 
-void VRRenderer::CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s *map)
+void VRRenderer::CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s* map)
 {
 	bool replaceHDTextures = false;
 	if (map->model != m_currentMapModel)
@@ -489,15 +489,11 @@ void VRRenderer::CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s *map)
 			{
 				for (int i = 0; !replaceHDTextures && i < map->model->numtextures; i++)
 				{
-					texture_t *texture = map->model->textures[i];
-					if (texture != nullptr
-						&& texture->name != nullptr
-						&& strcmp("sky", texture->name) != 0
-						&& texture->name[0] != '{'	// skip transparent textures, they are broken
+					texture_t* texture = map->model->textures[i];
+					if (texture != nullptr && texture->name != nullptr && strcmp("sky", texture->name) != 0 && texture->name[0] != '{'  // skip transparent textures, they are broken
 						)
 					{
-						if (m_originalTextureIDs.count(texture->name) == 0
-							|| m_originalTextureIDs[texture->name] == texture->gl_texturenum)
+						if (m_originalTextureIDs.count(texture->name) == 0 || m_originalTextureIDs[texture->name] == texture->gl_texturenum)
 						{
 							replaceHDTextures = true;
 							break;
@@ -545,20 +541,12 @@ void VRRenderer::EnableDepthTest()
 
 bool VRRenderer::IsDeadInGame()
 {
-	return gEngfuncs.pfnGetLevelName() != 0
-		&& gEngfuncs.pfnGetLevelName()[0] != '\0'
-		&& gEngfuncs.GetMaxClients() > 0
-		&& CL_IsDead();
+	return gEngfuncs.pfnGetLevelName() != 0 && gEngfuncs.pfnGetLevelName()[0] != '\0' && gEngfuncs.GetMaxClients() > 0 && CL_IsDead();
 }
 
 bool VRRenderer::IsInGame()
 {
-	return m_isInGame
-		&& gEngfuncs.pfnGetLevelName() != 0
-		&& gEngfuncs.pfnGetLevelName()[0] != '\0'
-		&& gEngfuncs.GetMaxClients() > 0
-		&& !CL_IsDead()
-		&& !gHUD.m_iIntermission;
+	return m_isInGame && gEngfuncs.pfnGetLevelName() != 0 && gEngfuncs.pfnGetLevelName()[0] != '\0' && gEngfuncs.GetMaxClients() > 0 && !CL_IsDead() && !gHUD.m_iIntermission;
 }
 
 cl_entity_t* VRRenderer::SaveGetLocalPlayer()
@@ -600,7 +588,7 @@ void VRRenderer::DrawHDSkyBox()
 	{
 		size = (std::max)(size, pmove->movevars->zmax * 0.5f);
 	}
-	float nsize = size -8.f;
+	float nsize = size - 8.f;
 
 	/*
 	{"rt"},
@@ -688,23 +676,23 @@ void VRRenderer::DrawHDSkyBox()
 			TryGLCall(glBindTexture, GL_TEXTURE_2D, VRTextureHelper::Instance().GetHLHDSkyboxTexture(VRTextureHelper::Instance().GetCurrentSkyboxName(), i));
 
 			glBegin(GL_QUADS);
-			
+
 			glTexCoord2f(0.f, 1.f);
 			glVertex3fv(skyboxorigin + skyboxbounds[i][0]);
-			
+
 			glTexCoord2f(1.f, 1.f);
 			glVertex3fv(skyboxorigin + skyboxbounds[i][1]);
-			
+
 			glTexCoord2f(1.f, 0.f);
 			glVertex3fv(skyboxorigin + skyboxbounds[i][2]);
-			
+
 			glTexCoord2f(0.f, 0.f);
 			glVertex3fv(skyboxorigin + skyboxbounds[i][3]);
-			
+
 			glEnd();
 		}
 	}
-	catch (const OGLErrorException& e)
+	catch (const OGLErrorException & e)
 	{
 		gEngfuncs.Con_DPrintf("Failed to render HD sky: %s\n", e.what());
 	}
@@ -721,5 +709,3 @@ void VRGlobalGetGunAim(Vector& forward, Vector& right, Vector& up, Vector& angle
 {
 	gVRRenderer.GetHelper()->GetGunAim(forward, right, up, angles);
 }
-
-

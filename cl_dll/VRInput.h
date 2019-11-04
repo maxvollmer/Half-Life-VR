@@ -91,32 +91,32 @@ private:
 	struct ActionSet
 	{
 	public:
-		vr::VRActionSetHandle_t									handle;
-		std::unordered_map<std::string, VRInputAction>			actions;
-		std::unordered_map<std::string, vr::VRActionHandle_t>	feedbackActions;
-		bool													handleWhenNotInGame;
+		vr::VRActionSetHandle_t handle;
+		std::unordered_map<std::string, VRInputAction> actions;
+		std::unordered_map<std::string, vr::VRActionHandle_t> feedbackActions;
+		bool handleWhenNotInGame;
 	};
 
 	struct CustomAction
 	{
 	public:
-		std::string					name;
-		std::vector<std::string>	commands;
-		size_t						currentCommand{ 0 };
+		std::string name;
+		std::vector<std::string> commands;
+		size_t currentCommand{ 0 };
 	};
 
 	void LoadCustomActions();
 	void RegisterActionSets();
 	bool RegisterActionSet(const std::string& actionSet, bool handleWhenNotInGame);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame=false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame = false);
 	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame = false);
 	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame = false);
 	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::SkeletalActionHandler handler, bool handleWhenNotInGame = false);
 	bool RegisterFeedback(const std::string& actionSet, const std::string& action);
 
-	vr::VROverlayHandle_t		m_hlMenu{ vr::k_ulOverlayHandleInvalid };
-	bool						m_isHLMenuShown{ false };
-	bool						m_vrMenuKeyboardOpen{ false };
+	vr::VROverlayHandle_t m_hlMenu{ vr::k_ulOverlayHandleInvalid };
+	bool m_isHLMenuShown{ false };
+	bool m_vrMenuKeyboardOpen{ false };
 	void CreateHLMenu();
 	void HandleHLMenuInput();
 
@@ -131,12 +131,12 @@ private:
 	bool m_isVRDucking{ false };
 	bool m_letGoOffLadder{ false };
 
-	std::unordered_map<std::string, ActionSet>					m_actionSets;
-	std::unordered_map<std::string, CustomAction>				m_customActions;
+	std::unordered_map<std::string, ActionSet> m_actionSets;
+	std::unordered_map<std::string, CustomAction> m_customActions;
 
-	std::unordered_map<vr::ETrackedControllerRole, bool>		m_dragStates;
+	std::unordered_map<vr::ETrackedControllerRole, bool> m_dragStates;
 
-	std::unordered_map<vr::ETrackedControllerRole, float[5]>	m_fingerSkeletalData;
+	std::unordered_map<vr::ETrackedControllerRole, float[5]> m_fingerSkeletalData;
 };
 
 extern VRInput g_vrInput;

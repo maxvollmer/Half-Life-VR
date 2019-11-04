@@ -8,10 +8,10 @@
 class VRInputAction
 {
 public:
-	typedef void(*DigitalActionHandler)(const vr::InputDigitalActionData_t&, const std::string&);
-	typedef void(*AnalogActionHandler)(const vr::InputAnalogActionData_t&, const std::string&);
-	typedef void(*PoseActionHandler)(const vr::InputPoseActionData_t&, const std::string&);
-	typedef void(*SkeletalActionHandler)(const vr::VRSkeletalSummaryData_t&, const std::string&);
+	typedef void (*DigitalActionHandler)(const vr::InputDigitalActionData_t&, const std::string&);
+	typedef void (*AnalogActionHandler)(const vr::InputAnalogActionData_t&, const std::string&);
+	typedef void (*PoseActionHandler)(const vr::InputPoseActionData_t&, const std::string&);
+	typedef void (*SkeletalActionHandler)(const vr::VRSkeletalSummaryData_t&, const std::string&);
 
 	enum class ActionType
 	{
@@ -36,14 +36,13 @@ private:
 	void HandlePoseInput();
 	void HandleSkeletalInput();
 
-	std::string				m_id;
-	vr::VRActionHandle_t	m_handle{ 0 };
-	ActionType				m_type{ ActionType::INVALID };
-	bool					m_handleWhenNotInGame{ false };
+	std::string m_id;
+	vr::VRActionHandle_t m_handle{ 0 };
+	ActionType m_type{ ActionType::INVALID };
+	bool m_handleWhenNotInGame{ false };
 
-	DigitalActionHandler	m_digitalActionHandler{ nullptr };
-	AnalogActionHandler		m_analogActionHandler{ nullptr };
-	PoseActionHandler		m_poseActionHandler{ nullptr };
-	SkeletalActionHandler	m_skeletalActionHandler{ nullptr };
+	DigitalActionHandler m_digitalActionHandler{ nullptr };
+	AnalogActionHandler m_analogActionHandler{ nullptr };
+	PoseActionHandler m_poseActionHandler{ nullptr };
+	SkeletalActionHandler m_skeletalActionHandler{ nullptr };
 };
-

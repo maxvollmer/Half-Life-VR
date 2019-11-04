@@ -38,7 +38,7 @@ Vector VRRotatableEnt::GetWishAngles(float wishDeltaAngle)
 	{
 		wishAngles.x += wishDeltaAngle;
 	}
-	else // Y
+	else  // Y
 	{
 		wishAngles.y += wishDeltaAngle;
 	}
@@ -56,7 +56,7 @@ Vector2D VRRotatableEnt::CalculateDeltaPos2D(const Vector& pos)
 	{
 		return Vector2D{ pos.x, pos.z };
 	}
-	else	// Y
+	else  // Y
 	{
 		return Vector2D{ pos.x, pos.y };
 	}
@@ -102,13 +102,13 @@ float VRRotatableEnt::CalculateAngleDelta(const Vector& angles, const Vector& an
 	{
 		return (angles.x - angleStart.x) / (angleEnd.x - angleStart.x);
 	}
-	else // Y
+	else  // Y
 	{
 		return (angles.y - angleStart.y) / (angleEnd.y - angleStart.y);
 	}
 }
 
-void VRRotatableEnt::VRRotate(CBaseEntity *pPlayer, const Vector& pos, bool fStart)
+void VRRotatableEnt::VRRotate(CBaseEntity* pPlayer, const Vector& pos, bool fStart)
 {
 	Vector angleStart;
 	Vector angleEnd;
@@ -141,7 +141,7 @@ void VRRotatableEnt::VRRotate(CBaseEntity *pPlayer, const Vector& pos, bool fSta
 	}
 }
 
-void VRRotatableEnt::FollowWishDeltaAngle(CBaseEntity *pPlayer, const Vector& wishAngles, const Vector& angleStart, const Vector& angleEnd, float maxRotSpeed)
+void VRRotatableEnt::FollowWishDeltaAngle(CBaseEntity* pPlayer, const Vector& wishAngles, const Vector& angleStart, const Vector& angleEnd, float maxRotSpeed)
 {
 	Vector actualAngles = CalculateAnglesFromWishAngles(wishAngles, maxRotSpeed);
 	float delta = CalculateAngleDelta(actualAngles, angleStart, angleEnd);

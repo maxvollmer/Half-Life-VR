@@ -30,7 +30,7 @@ bool GlobalXenMounds::Has(const Vector& position)
 	return false;
 }
 
-bool GlobalXenMounds::Trigger(CBasePlayer *pPlayer, const Vector& position)
+bool GlobalXenMounds::Trigger(CBasePlayer* pPlayer, const Vector& position)
 {
 	for (auto m_xen_mound : m_xen_mounds)
 	{

@@ -16,7 +16,7 @@
 #include "entity_state.h"
 #include "cl_entity.h"
 #include "ref_params.h"
-#include "in_defs.h" // PITCH YAW ROLL
+#include "in_defs.h"  // PITCH YAW ROLL
 #include "pm_movevars.h"
 #include "pm_shared.h"
 #include "pm_defs.h"
@@ -41,7 +41,7 @@
 #include "vr_gl.h"
 
 
-extern globalvars_t *gpGlobals;
+extern globalvars_t* gpGlobals;
 extern engine_studio_api_t IEngineStudio;
 
 
@@ -137,10 +137,7 @@ void VRRenderer::RenderScreenOverlays()
 
 	// draw damage unless when being healed
 	// damage is drawn as pulsating red gradient overlay using a sine wave (well actually negative cosine so we start at 0, but who cares)
-	bool hasDamage = gHUD.m_Health.m_fAttackFront > 0 || gHUD.m_Health.m_fAttackRear > 0 || gHUD.m_Health.m_fAttackLeft > 0 || gHUD.m_Health.m_fAttackRight > 0
-		|| gHUD.m_Health.m_iHealth <= 15
-		|| gHUD.m_Health.m_bitsDamage
-		|| (gHUD.m_Health.m_fFade && gHUD.m_Health.m_healthLost);
+	bool hasDamage = gHUD.m_Health.m_fAttackFront > 0 || gHUD.m_Health.m_fAttackRear > 0 || gHUD.m_Health.m_fAttackLeft > 0 || gHUD.m_Health.m_fAttackRight > 0 || gHUD.m_Health.m_iHealth <= 15 || gHUD.m_Health.m_bitsDamage || (gHUD.m_Health.m_fFade && gHUD.m_Health.m_healthLost);
 
 	bool isBeingHealed = gHUD.m_Health.m_fFade && gHUD.m_Health.m_healthGained;
 
@@ -225,44 +222,72 @@ void VRRenderer::RenderScreenOverlays()
 
 			// gradient triangles forming a rectangular overlay in front of player that goes from solid red on the border to transparent in the center
 			glBegin(GL_TRIANGLES);
-			glColor4fv(color);					glVertex3fv(viewOrg + topleftfront);
-			glColor4fv(color);					glVertex3fv(viewOrg + toprightfront);
-			glColor4f(0.f, 0.f, 0.f, 0.f);		glVertex3fv(viewOrg + centerfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + topleftfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + toprightfront);
+			glColor4f(0.f, 0.f, 0.f, 0.f);
+			glVertex3fv(viewOrg + centerfront);
 
-			glColor4fv(color);					glVertex3fv(viewOrg + bottomleftfront);
-			glColor4fv(color);					glVertex3fv(viewOrg + topleftfront);
-			glColor4f(0.f, 0.f, 0.f, 0.f);		glVertex3fv(viewOrg + centerfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomleftfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + topleftfront);
+			glColor4f(0.f, 0.f, 0.f, 0.f);
+			glVertex3fv(viewOrg + centerfront);
 
-			glColor4fv(color);					glVertex3fv(viewOrg + bottomrightfront);
-			glColor4fv(color);					glVertex3fv(viewOrg + bottomleftfront);
-			glColor4f(0.f, 0.f, 0.f, 0.f);		glVertex3fv(viewOrg + centerfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomrightfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomleftfront);
+			glColor4f(0.f, 0.f, 0.f, 0.f);
+			glVertex3fv(viewOrg + centerfront);
 
-			glColor4fv(color);					glVertex3fv(viewOrg + toprightfront);
-			glColor4fv(color);					glVertex3fv(viewOrg + bottomrightfront);
-			glColor4f(0.f, 0.f, 0.f, 0.f);		glVertex3fv(viewOrg + centerfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + toprightfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomrightfront);
+			glColor4f(0.f, 0.f, 0.f, 0.f);
+			glVertex3fv(viewOrg + centerfront);
 			glEnd();
 
 			// solid quads that go behind the vieworg to "close" any holes in ultra-wide fov headsets of the future or whatever
 			glBegin(GL_QUADS);
-			glColor4fv(color);		glVertex3fv(viewOrg + topleftfront);
-			glColor4fv(color);		glVertex3fv(viewOrg + toprightfront);
-			glColor4fv(color);		glVertex3fv(viewOrg + toprightback);
-			glColor4fv(color);		glVertex3fv(viewOrg + topleftback);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + topleftfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + toprightfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + toprightback);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + topleftback);
 
-			glColor4fv(color);		glVertex3fv(viewOrg + bottomleftfront);
-			glColor4fv(color);		glVertex3fv(viewOrg + topleftfront);
-			glColor4fv(color);		glVertex3fv(viewOrg + topleftback);
-			glColor4fv(color);		glVertex3fv(viewOrg + bottomleftback);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomleftfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + topleftfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + topleftback);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomleftback);
 
-			glColor4fv(color);		glVertex3fv(viewOrg + bottomrightfront);
-			glColor4fv(color);		glVertex3fv(viewOrg + bottomleftfront);
-			glColor4fv(color);		glVertex3fv(viewOrg + bottomleftback);
-			glColor4fv(color);		glVertex3fv(viewOrg + bottomrightback);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomrightfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomleftfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomleftback);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomrightback);
 
-			glColor4fv(color);		glVertex3fv(viewOrg + toprightfront);
-			glColor4fv(color);		glVertex3fv(viewOrg + bottomrightfront);
-			glColor4fv(color);		glVertex3fv(viewOrg + bottomrightback);
-			glColor4fv(color);		glVertex3fv(viewOrg + toprightback);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + toprightfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomrightfront);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + bottomrightback);
+			glColor4fv(color);
+			glVertex3fv(viewOrg + toprightback);
 			glEnd();
 		}
 	}
@@ -283,55 +308,79 @@ void RenderCube()
 	//Multi-colored side - FRONT
 	glBindTexture(GL_TEXTURE_2D, VRTextureHelper::Instance().GetTexture("/skybox/desertft.png"));
 	glBegin(GL_POLYGON);
-	glTexCoord2f(0, 0);		glVertex3f(scale, -scale, -scale);
-	glTexCoord2f(1, 0);		glVertex3f(scale, scale, -scale);
-	glTexCoord2f(1, 1);		glVertex3f(-scale, scale, -scale);
-	glTexCoord2f(0, 1);		glVertex3f(-scale, -scale, -scale);
+	glTexCoord2f(0, 0);
+	glVertex3f(scale, -scale, -scale);
+	glTexCoord2f(1, 0);
+	glVertex3f(scale, scale, -scale);
+	glTexCoord2f(1, 1);
+	glVertex3f(-scale, scale, -scale);
+	glTexCoord2f(0, 1);
+	glVertex3f(-scale, -scale, -scale);
 	glEnd();
 
 	// White side - BACK
 	glBindTexture(GL_TEXTURE_2D, VRTextureHelper::Instance().GetTexture("/skybox/desertbk.png"));
 	glBegin(GL_POLYGON);
-	glTexCoord2f(0, 0);		glVertex3f(scale, -scale, scale);
-	glTexCoord2f(1, 0);		glVertex3f(scale, scale, scale);
-	glTexCoord2f(1, 1);		glVertex3f(-scale, scale, scale);
-	glTexCoord2f(0, 1);		glVertex3f(-scale, -scale, scale);
+	glTexCoord2f(0, 0);
+	glVertex3f(scale, -scale, scale);
+	glTexCoord2f(1, 0);
+	glVertex3f(scale, scale, scale);
+	glTexCoord2f(1, 1);
+	glVertex3f(-scale, scale, scale);
+	glTexCoord2f(0, 1);
+	glVertex3f(-scale, -scale, scale);
 	glEnd();
 
 	// Purple side - RIGHT
 	glBindTexture(GL_TEXTURE_2D, VRTextureHelper::Instance().GetTexture("/skybox/desertrt.png"));
 	glBegin(GL_POLYGON);
-	glTexCoord2f(0, 0);		glVertex3f(scale, -scale, -scale);
-	glTexCoord2f(1, 0);		glVertex3f(scale, scale, -scale);
-	glTexCoord2f(1, 1);		glVertex3f(scale, scale, scale);
-	glTexCoord2f(0, 1);		glVertex3f(scale, -scale, scale);
+	glTexCoord2f(0, 0);
+	glVertex3f(scale, -scale, -scale);
+	glTexCoord2f(1, 0);
+	glVertex3f(scale, scale, -scale);
+	glTexCoord2f(1, 1);
+	glVertex3f(scale, scale, scale);
+	glTexCoord2f(0, 1);
+	glVertex3f(scale, -scale, scale);
 	glEnd();
 
 	// Green side - LEFT
 	glBindTexture(GL_TEXTURE_2D, VRTextureHelper::Instance().GetTexture("/skybox/desertlf.png"));
 	glBegin(GL_POLYGON);
-	glTexCoord2f(0, 0);		glVertex3f(-scale, -scale, scale);
-	glTexCoord2f(1, 0);		glVertex3f(-scale, scale, scale);
-	glTexCoord2f(1, 1);		glVertex3f(-scale, scale, -scale);
-	glTexCoord2f(0, 1);		glVertex3f(-scale, -scale, -scale);
+	glTexCoord2f(0, 0);
+	glVertex3f(-scale, -scale, scale);
+	glTexCoord2f(1, 0);
+	glVertex3f(-scale, scale, scale);
+	glTexCoord2f(1, 1);
+	glVertex3f(-scale, scale, -scale);
+	glTexCoord2f(0, 1);
+	glVertex3f(-scale, -scale, -scale);
 	glEnd();
 
 	// Blue side - TOP
 	glBindTexture(GL_TEXTURE_2D, VRTextureHelper::Instance().GetTexture("/skybox/desertup.png"));
 	glBegin(GL_POLYGON);
-	glTexCoord2f(0, 0);		glVertex3f(scale, scale, scale);
-	glTexCoord2f(1, 0);		glVertex3f(scale, scale, -scale);
-	glTexCoord2f(1, 1);		glVertex3f(-scale, scale, -scale);
-	glTexCoord2f(0, 1);		glVertex3f(-scale, scale, scale);
+	glTexCoord2f(0, 0);
+	glVertex3f(scale, scale, scale);
+	glTexCoord2f(1, 0);
+	glVertex3f(scale, scale, -scale);
+	glTexCoord2f(1, 1);
+	glVertex3f(-scale, scale, -scale);
+	glTexCoord2f(0, 1);
+	glVertex3f(-scale, scale, scale);
 	glEnd();
 
 	// Red side - BOTTOM
 	glBindTexture(GL_TEXTURE_2D, VRTextureHelper::Instance().GetTexture("/skybox/desertdn.png"));
 	glBegin(GL_POLYGON);
-	glTexCoord2f(0, 0);		glVertex3f(scale, -scale, -scale);
-	glTexCoord2f(1, 0);		glVertex3f(scale, -scale, scale);
-	glTexCoord2f(1, 1);		glVertex3f(-scale, -scale, scale);
-	glTexCoord2f(0, 1);		glVertex3f(-scale, -scale, -scale);
+	glTexCoord2f(0, 0);
+	glVertex3f(scale, -scale, -scale);
+	glTexCoord2f(1, 0);
+	glVertex3f(scale, -scale, scale);
+	glTexCoord2f(1, 1);
+	glVertex3f(-scale, -scale, scale);
+	glTexCoord2f(0, 1);
+	glVertex3f(-scale, -scale, -scale);
 	glEnd();
 }
 

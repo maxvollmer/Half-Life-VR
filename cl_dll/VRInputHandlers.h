@@ -77,6 +77,5 @@ namespace VR
 			static void HandleMovement(const vr::InputPoseActionData_t& data, const std::string& action);
 			static void HandleTeleporter(const vr::InputPoseActionData_t& data, const std::string& action);
 		};
-	}
-}
-
+	}  // namespace Input
+}  // namespace VR

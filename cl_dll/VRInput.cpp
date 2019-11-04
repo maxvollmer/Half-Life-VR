@@ -15,7 +15,8 @@
 
 VRInput g_vrInput;
 
-static inline void TrimString(std::string &s) {
+static inline void TrimString(std::string& s)
+{
 	s.erase(s.begin(), std::find_if_not(s.begin(), s.end(), std::isspace));
 	s.erase(std::find_if_not(s.rbegin(), s.rend(), std::isspace).base(), s.end());
 }
@@ -93,7 +94,7 @@ void VRInput::LoadCustomActions()
 					throw 0;
 				}
 			}
-			catch(...)
+			catch (...)
 			{
 				gEngfuncs.Con_DPrintf("Invalid custom command in /vr/actions/customactions.cfg (line %i): %s\n", lineNum, line.data());
 			}
@@ -438,7 +439,7 @@ void VRInput::HandleInput(bool isInGame)
 	std::vector<vr::VRActiveActionSet_t> activeActionSets;
 	std::vector<ActionSet*> actionSets;
 
-	for (auto &[actionSetName, actionSet] : m_actionSets)
+	for (auto& [actionSetName, actionSet] : m_actionSets)
 	{
 		if (isInGame || actionSet.handleWhenNotInGame)
 		{
@@ -490,7 +491,7 @@ void VRInput::ExecuteCustomAction(const std::string& action)
 float CalculateWeaponTimeOffset(float offset)
 {
 	float analogfire = fabs(g_vrInput.analogfire);
-	if (analogfire > EPSILON && analogfire < 1.f)
+	if (analogfire > EPSILON&& analogfire < 1.f)
 	{
 		return offset * 1.f / analogfire;
 	}

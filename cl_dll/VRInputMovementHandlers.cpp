@@ -234,5 +234,5 @@ namespace VR
 			TryAddInAnalogSpeed(g_vrInput.analogupmove, data.z, "vr_move_analogupdown_inverted");
 		}
 
-	}
-}
+	}  // namespace Input
+}  // namespace VR

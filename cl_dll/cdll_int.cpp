@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -32,40 +32,40 @@
 
 #include "VRRenderer.h"
 
-#define DLLEXPORT __declspec( dllexport )
+#define DLLEXPORT __declspec(dllexport)
 
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
-TeamFortressViewport *gViewPort = NULL;
+TeamFortressViewport* gViewPort = NULL;
 
-void InitInput (void);
-void EV_HookEvents( void );
-void IN_Commands( void );
+void InitInput(void);
+void EV_HookEvents(void);
+void IN_Commands(void);
 
 /*
-========================== 
-    Initialize
+==========================
+	Initialize
 
 Called when the DLL is first loaded.
 ==========================
 */
-extern "C" 
+extern "C"
 {
-int		DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion );
-int		DLLEXPORT HUD_VidInit( void );
-void	DLLEXPORT HUD_Init( void );
-int		DLLEXPORT HUD_Redraw( float flTime, int intermission );
-int		DLLEXPORT HUD_UpdateClientData( client_data_t *cdata, float flTime );
-void	DLLEXPORT HUD_Reset ( void );
-void	DLLEXPORT HUD_PlayerMove( struct playermove_s *ppmove, int server );
-void	DLLEXPORT HUD_PlayerMoveInit( struct playermove_s *ppmove );
-char	DLLEXPORT HUD_PlayerMoveTexture( char *name );
-int		DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size );
-int		DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs );
-void	DLLEXPORT HUD_Frame( double time );
-void	DLLEXPORT HUD_VoiceStatus(int entindex, qboolean bTalking);
-void	DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf );
+	int DLLEXPORT Initialize(cl_enginefunc_t* pEnginefuncs, int iVersion);
+	int DLLEXPORT HUD_VidInit(void);
+	void DLLEXPORT HUD_Init(void);
+	int DLLEXPORT HUD_Redraw(float flTime, int intermission);
+	int DLLEXPORT HUD_UpdateClientData(client_data_t* cdata, float flTime);
+	void DLLEXPORT HUD_Reset(void);
+	void DLLEXPORT HUD_PlayerMove(struct playermove_s* ppmove, int server);
+	void DLLEXPORT HUD_PlayerMoveInit(struct playermove_s* ppmove);
+	char DLLEXPORT HUD_PlayerMoveTexture(char* name);
+	int DLLEXPORT HUD_ConnectionlessPacket(const struct netadr_s* net_from, const char* args, char* response_buffer, int* response_buffer_size);
+	int DLLEXPORT HUD_GetHullBounds(int hullnumber, float* mins, float* maxs);
+	void DLLEXPORT HUD_Frame(double time);
+	void DLLEXPORT HUD_VoiceStatus(int entindex, qboolean bTalking);
+	void DLLEXPORT HUD_DirectorMessage(int iSize, void* pbuf);
 }
 
 /*
@@ -78,7 +78,7 @@ HUD_GetHullBounds
 float* g_pEngineHullMins[4]{ nullptr };
 float* g_pEngineHullMaxs[4]{ nullptr };
 
-int InternalGetHullBounds(int hullnumber, float *mins, float *maxs, bool calledFromPMInit)
+int InternalGetHullBounds(int hullnumber, float* mins, float* maxs, bool calledFromPMInit)
 {
 	if (!calledFromPMInit)
 	{
@@ -88,15 +88,15 @@ int InternalGetHullBounds(int hullnumber, float *mins, float *maxs, bool calledF
 
 	switch (hullnumber)
 	{
-	case 0: // Normal player
+	case 0:  // Normal player
 		VEC_HULL_MIN.CopyToArray(mins);
 		VEC_HULL_MAX.CopyToArray(maxs);
 		return 1;
-	case 1: // Crouched player
+	case 1:  // Crouched player
 		VEC_DUCK_HULL_MIN.CopyToArray(mins);
 		VEC_DUCK_HULL_MAX.CopyToArray(maxs);
 		return 1;
-	case 2: // Point based hull
+	case 2:  // Point based hull
 		Vector{}.CopyToArray(mins);
 		Vector{}.CopyToArray(maxs);
 		return 1;
@@ -105,7 +105,7 @@ int InternalGetHullBounds(int hullnumber, float *mins, float *maxs, bool calledF
 	return 0;
 }
 
-int DLLEXPORT HUD_GetHullBounds(int hullnumber, float *mins, float *maxs)
+int DLLEXPORT HUD_GetHullBounds(int hullnumber, float* mins, float* maxs)
 {
 	return InternalGetHullBounds(hullnumber, mins, maxs, false);
 }
@@ -118,7 +118,7 @@ HUD_ConnectionlessPacket
   size of the response_buffer, so you must zero it out if you choose not to respond.
 ================================
 */
-int	DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
+int DLLEXPORT HUD_ConnectionlessPacket(const struct netadr_s* net_from, const char* args, char* response_buffer, int* response_buffer_size)
 {
 	// Parse stuff from args
 	int max_buffer_size = *response_buffer_size;
@@ -132,22 +132,22 @@ int	DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const c
 	return 0;
 }
 
-void DLLEXPORT HUD_PlayerMoveInit( struct playermove_s *ppmove )
+void DLLEXPORT HUD_PlayerMoveInit(struct playermove_s* ppmove)
 {
-	PM_Init( ppmove );
+	PM_Init(ppmove);
 }
 
-char DLLEXPORT HUD_PlayerMoveTexture( char *name )
+char DLLEXPORT HUD_PlayerMoveTexture(char* name)
 {
-	return PM_FindTextureType( name );
+	return PM_FindTextureType(name);
 }
 
-void DLLEXPORT HUD_PlayerMove( struct playermove_s *ppmove, int server )
+void DLLEXPORT HUD_PlayerMove(struct playermove_s* ppmove, int server)
 {
-	PM_Move( ppmove, server );
+	PM_Move(ppmove, server);
 }
 
-int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
+int DLLEXPORT Initialize(cl_enginefunc_t* pEnginefuncs, int iVersion)
 {
 	gEngfuncs = *pEnginefuncs;
 
@@ -172,7 +172,7 @@ so the HUD can reinitialize itself.
 ==========================
 */
 
-int DLLEXPORT HUD_VidInit( void )
+int DLLEXPORT HUD_VidInit(void)
 {
 	gHUD.VidInit();
 
@@ -186,12 +186,12 @@ int DLLEXPORT HUD_VidInit( void )
 	HUD_Init
 
 Called whenever the client connects
-to a server.  Reinitializes all 
+to a server.  Reinitializes all
 the hud variables.
 ==========================
 */
 
-void DLLEXPORT HUD_Init( void )
+void DLLEXPORT HUD_Init(void)
 {
 	InitInput();
 	gHUD.Init();
@@ -208,7 +208,7 @@ redraw the HUD.
 ===========================
 */
 
-int DLLEXPORT HUD_Redraw( float time, int intermission )
+int DLLEXPORT HUD_Redraw(float time, int intermission)
 {
 	gVRRenderer.InterceptHUDRedraw(time, intermission);
 	//gHUD.Redraw( time, intermission );
@@ -230,11 +230,11 @@ returns 1 if anything has been changed, 0 otherwise.
 ==========================
 */
 
-int DLLEXPORT HUD_UpdateClientData(client_data_t *pcldata, float flTime )
+int DLLEXPORT HUD_UpdateClientData(client_data_t* pcldata, float flTime)
 {
 	IN_Commands();
 
-	return gHUD.UpdateClientData(pcldata, flTime );
+	return gHUD.UpdateClientData(pcldata, flTime);
 }
 
 /*
@@ -245,7 +245,7 @@ Called at start and end of demos to restore to "non"HUD state.
 ==========================
 */
 
-void DLLEXPORT HUD_Reset( void )
+void DLLEXPORT HUD_Reset(void)
 {
 	gHUD.VidInit();
 }
@@ -258,9 +258,9 @@ Called by engine every frame that client .dll is loaded
 ==========================
 */
 
-void DLLEXPORT HUD_Frame( double time )
+void DLLEXPORT HUD_Frame(double time)
 {
-	ServersThink( time );
+	ServersThink(time);
 
 	GetClientVoiceMgr()->Frame(time);
 
@@ -289,9 +289,9 @@ Called when a director event message was received
 ==========================
 */
 
-void DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf )
+void DLLEXPORT HUD_DirectorMessage(int iSize, void* pbuf)
 {
-	 gHUD.m_Spectator.DirectorMessage( iSize, pbuf );
+	gHUD.m_Spectator.DirectorMessage(iSize, pbuf);
 }
 
 

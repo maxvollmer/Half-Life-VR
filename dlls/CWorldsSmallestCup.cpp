@@ -114,11 +114,8 @@ void CWorldsSmallestCup::CupThink()
 			CBaseEntity* pKleiner = nullptr;
 			while (pKleiner = UTIL_FindEntityInSphere(pKleiner, pev->origin, 256.f))
 			{
-				if (FClassnameIs(pKleiner->pev, "monster_scientist")
-					&& !pKleiner->IsFemaleNPC()
-					&& pKleiner->pev->body == 0/*HEAD_GLASSES*/
-					&& m_hAlreadySpokenKleiners.count(EHANDLE{ pKleiner }) == 0
-					&& AmIInKleinersFace(pKleiner))
+				if (FClassnameIs(pKleiner->pev, "monster_scientist") && !pKleiner->IsFemaleNPC() && pKleiner->pev->body == 0 /*HEAD_GLASSES*/
+					&& m_hAlreadySpokenKleiners.count(EHANDLE{ pKleiner }) == 0 && AmIInKleinersFace(pKleiner))
 				{
 					m_hKleiner = pKleiner;
 					m_flKleinerFaceStart = gpGlobals->time;

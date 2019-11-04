@@ -96,9 +96,7 @@ VRSpeechCommand VRSpeechListener::GetCommand()
 
 bool VRSpeechListener::DidCommandStringsChange()
 {
-	return m_followcommandstring != CVAR_GET_STRING("vr_speech_commands_follow")
-		|| m_waitcommandstring != CVAR_GET_STRING("vr_speech_commands_wait")
-		|| m_hellocommandstring != CVAR_GET_STRING("vr_speech_commands_hello");
+	return m_followcommandstring != CVAR_GET_STRING("vr_speech_commands_follow") || m_waitcommandstring != CVAR_GET_STRING("vr_speech_commands_wait") || m_hellocommandstring != CVAR_GET_STRING("vr_speech_commands_hello");
 }
 
 void VRSpeechListener::InitCommandStrings()
@@ -120,7 +118,7 @@ std::unordered_set<std::wstring> VRSpeechListener::GetCommandsFromCommandString(
 	std::string command;
 	while (getline(commandstringstream, command, '|'))
 	{
-		command = std::regex_replace(command, std::regex{"[-]"}, " ");
+		command = std::regex_replace(command, std::regex{ "[-]" }, " ");
 		result.insert(std::wstring{ command.begin(), command.end() });
 	}
 
@@ -184,7 +182,7 @@ void VRSpeechListener::CleanupSAPI()
 	}
 	m_grammar = nullptr;
 	m_recognizer = nullptr;
-	m_context =  nullptr;
+	m_context = nullptr;
 	CoUninitialize();
 }
 
@@ -238,7 +236,7 @@ void VRSpeechListener::VerifyResult(long result, const std::string& message)
 	else
 	{
 		LPSTR errorMessageBuffer{ nullptr };
-		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, result, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)& errorMessageBuffer, 0, nullptr);
+		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, result, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&errorMessageBuffer, 0, nullptr);
 		if (size == 0)
 		{
 			errorMessage = message + ": " + GetSpeechRecognitionErrorMessageText(result);
@@ -388,8 +386,6 @@ std::string VRSpeechListener::GetSpeechRecognitionErrorMessageText(long error)
 	default: return "Unknown error code: " + std::to_string(error);
 	}
 }
-
-
 
 
 

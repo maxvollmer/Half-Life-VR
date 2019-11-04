@@ -28,9 +28,8 @@ namespace
 		"maps/c0a0a.bsp",
 		"maps/c0a0b.bsp",
 		"maps/c0a0c.bsp",
-		"maps/c0a0d.bsp"
-	};
-}
+		"maps/c0a0d.bsp" };
+}  // namespace
 
 void VRGroundEntityHandler::HandleMovingWithSolidGroundEntities()
 {
@@ -60,8 +59,7 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 		if (pGroundEntity)
 		{
 			// if we fell out, teleport us back in
-			if (!UTIL_PointInsideBBox(m_pPlayer->pev->origin, pGroundEntity->pev->absmin, pGroundEntity->pev->absmax)
-				|| m_pPlayer->pev->origin.z < (pGroundEntity->pev->origin.z + pGroundEntity->pev->mins.z))
+			if (!UTIL_PointInsideBBox(m_pPlayer->pev->origin, pGroundEntity->pev->absmin, pGroundEntity->pev->absmax) || m_pPlayer->pev->origin.z < (pGroundEntity->pev->origin.z + pGroundEntity->pev->mins.z))
 			{
 				m_pPlayer->pev->origin = pGroundEntity->pev->origin;
 				m_pPlayer->pev->origin.z += 64.f;
@@ -128,7 +126,7 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 	m_hGroundEntity = pGroundEntity;
 }
 
-CBaseEntity* VRGroundEntityHandler::ChoseBetterGroundEntityForPlayer(CBaseEntity *pEntity1, CBaseEntity *pEntity2)
+CBaseEntity* VRGroundEntityHandler::ChoseBetterGroundEntityForPlayer(CBaseEntity* pEntity1, CBaseEntity* pEntity2)
 {
 	if (!pEntity1)
 		return pEntity2;
@@ -155,7 +153,7 @@ CBaseEntity* VRGroundEntityHandler::ChoseBetterGroundEntityForPlayer(CBaseEntity
 	return pEntity2;
 }
 
-bool VRGroundEntityHandler::CheckIfPotentialGroundEntityForPlayer(CBaseEntity *pEntity)
+bool VRGroundEntityHandler::CheckIfPotentialGroundEntityForPlayer(CBaseEntity* pEntity)
 {
 	if (pEntity->pev->solid != SOLID_BSP)
 		return false;
@@ -176,18 +174,18 @@ bool VRGroundEntityHandler::CheckIfPotentialGroundEntityForPlayer(CBaseEntity *p
 	return VRPhysicsHelper::Instance().ModelIntersectsCapsule(
 		pEntity,
 		m_pPlayer->pev->origin - Vector{ 0.f, 0.f, 8.f },
-		/*radius*/m_pPlayer->pev->size.x,
-		/*height*/m_pPlayer->pev->size.z + 8.f);
+		/*radius*/ m_pPlayer->pev->size.x,
+		/*height*/ m_pPlayer->pev->size.z + 8.f);
 }
 
-bool VRGroundEntityHandler::IsExcludedAsGroundEntity(CBaseEntity *pEntity)
+bool VRGroundEntityHandler::IsExcludedAsGroundEntity(CBaseEntity* pEntity)
 {
 	if (pEntity->pev->size.x < EPSILON || pEntity->pev->size.y < EPSILON || pEntity->pev->size.z < EPSILON)
 		return true;
 
 	if (FClassnameIs(pEntity->pev, "func_door_rotating"))
 	{
-		if (pEntity->pev->size.z > pEntity->pev->size.y && pEntity->pev->size.z > pEntity->pev->size.x)
+		if (pEntity->pev->size.z > pEntity->pev->size.y&& pEntity->pev->size.z > pEntity->pev->size.x)
 		{
 			constexpr const float DoorRatio = 4.f;
 			float ratio = pEntity->pev->size.x / pEntity->pev->size.y;

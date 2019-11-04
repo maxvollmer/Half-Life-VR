@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -19,8 +19,8 @@
 #include "../common/nowin.h"
 
 typedef int BOOL;
-#define TRUE	 1	
-#define FALSE	0
+#define TRUE  1
+#define FALSE 0
 
 // hack into header files that we can ship
 typedef int qboolean;
@@ -53,9 +53,9 @@ typedef unsigned char byte;
 
 #include "com_model.h"
 
-extern globalvars_t				*gpGlobals;
+extern globalvars_t* gpGlobals;
 
-#pragma warning( disable : 4244 )
+#pragma warning(disable : 4244)
 
 constexpr const float min(float a, float b)
 {
@@ -64,7 +64,7 @@ constexpr const float min(float a, float b)
 
 constexpr const int VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE = 1024;
 
-int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
+int ExtractBbox(void* pmodel, int sequence, float* mins, float* maxs)
 {
 	studiohdr_t* pstudiohdr = (studiohdr_t*)pmodel;
 	if (!pstudiohdr)
@@ -76,7 +76,7 @@ int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
 	if (pstudiohdr->numseq <= 0)
 		return 0;
 
-	mstudioseqdesc_t * pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
+	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
 
 	VectorCopy(pseqdesc[sequence].bbmin, mins);
 	VectorCopy(pseqdesc[sequence].bbmax, maxs);
@@ -85,9 +85,7 @@ int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
 	// The bounding boxes then are invalid, which we fix by simply taking the bounding box for the idle animation (index 0)
 	vec3_t size;
 	VectorSubtract(maxs, mins, size);
-	if (VectorLength(size) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE
-		|| VectorLength(mins) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE
-		|| VectorLength(maxs) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE)
+	if (VectorLength(size) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE || VectorLength(mins) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE || VectorLength(maxs) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE)
 	{
 		// idle bounding box is too big, print warning
 		ALERT(at_console, "NOTICE: bounding box for model %s with animation %s is too big, trying to find smaller bbox!\n", pstudiohdr->name, pseqdesc[sequence].label);
@@ -106,9 +104,7 @@ int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
 	}
 
 	VectorSubtract(maxs, mins, size);
-	if (VectorLength(size) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE
-		|| VectorLength(mins) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE
-		|| VectorLength(maxs) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE)
+	if (VectorLength(size) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE || VectorLength(mins) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE || VectorLength(maxs) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE)
 	{
 		// idle bounding box is too big, print warning
 		ALERT(at_console, "WARNING: smallest bounding box for model %s is too big, trying to create a fitting bbox!\n", pstudiohdr->name);
@@ -130,9 +126,7 @@ int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
 	}
 
 	VectorSubtract(maxs, mins, size);
-	if (VectorLength(size) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE
-		|| VectorLength(mins) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE
-		|| VectorLength(maxs) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE)
+	if (VectorLength(size) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE || VectorLength(mins) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE || VectorLength(maxs) > VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE)
 	{
 		// idle bounding box is too big, print warning
 		ALERT(at_console, "WARNING: created bounding box for model %s is still too big, falling back to 16x16x16!\n", pstudiohdr->name, pseqdesc[sequence].label);
@@ -149,17 +143,17 @@ int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
 }
 
 
-int LookupActivity( void *pmodel, entvars_t *pev, int activity )
+int LookupActivity(void* pmodel, entvars_t* pev, int activity)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if (! pstudiohdr)
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
 		return 0;
 
-	mstudioseqdesc_t	*pseqdesc;
+	mstudioseqdesc_t* pseqdesc;
 
-	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex);
+	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
 
 	int weighttotal = 0;
 	int seq = ACTIVITY_NOT_AVAILABLE;
@@ -168,7 +162,7 @@ int LookupActivity( void *pmodel, entvars_t *pev, int activity )
 		if (pseqdesc[i].activity == activity)
 		{
 			weighttotal += pseqdesc[i].actweight;
-			if (!weighttotal || RANDOM_LONG(0,weighttotal-1) < pseqdesc[i].actweight)
+			if (!weighttotal || RANDOM_LONG(0, weighttotal - 1) < pseqdesc[i].actweight)
 				seq = i;
 		}
 	}
@@ -176,17 +170,17 @@ int LookupActivity( void *pmodel, entvars_t *pev, int activity )
 	return seq;
 }
 
-int LookupActivityHeaviest( void *pmodel, entvars_t *pev, int activity )
+int LookupActivityHeaviest(void* pmodel, entvars_t* pev, int activity)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if ( !pstudiohdr )
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
 		return 0;
 
-	mstudioseqdesc_t	*pseqdesc;
+	mstudioseqdesc_t* pseqdesc;
 
-	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex);
+	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
 
 	int weight = 0;
 	int seq = ACTIVITY_NOT_AVAILABLE;
@@ -194,7 +188,7 @@ int LookupActivityHeaviest( void *pmodel, entvars_t *pev, int activity )
 	{
 		if (pseqdesc[i].activity == activity)
 		{
-			if ( pseqdesc[i].actweight > weight )
+			if (pseqdesc[i].actweight > weight)
 			{
 				weight = pseqdesc[i].actweight;
 				seq = i;
@@ -205,36 +199,36 @@ int LookupActivityHeaviest( void *pmodel, entvars_t *pev, int activity )
 	return seq;
 }
 
-void GetEyePosition ( void *pmodel, float *vecEyePosition )
+void GetEyePosition(void* pmodel, float* vecEyePosition)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
+	studiohdr_t* pstudiohdr;
 
-	if ( !pstudiohdr )
+	pstudiohdr = (studiohdr_t*)pmodel;
+
+	if (!pstudiohdr)
 	{
-		ALERT ( at_console, "GetEyePosition() Can't get pstudiohdr ptr!\n" );
+		ALERT(at_console, "GetEyePosition() Can't get pstudiohdr ptr!\n");
 		return;
 	}
 
-	VectorCopy ( pstudiohdr->eyeposition, vecEyePosition );
+	VectorCopy(pstudiohdr->eyeposition, vecEyePosition);
 }
 
-int LookupSequence( void *pmodel, const char *label )
+int LookupSequence(void* pmodel, const char* label)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if (! pstudiohdr)
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
 		return 0;
 
-	mstudioseqdesc_t	*pseqdesc;
+	mstudioseqdesc_t* pseqdesc;
 
-	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex);
+	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
 
 	for (int i = 0; i < pstudiohdr->numseq; i++)
 	{
-		if (stricmp( pseqdesc[i].label, label ) == 0)
+		if (stricmp(pseqdesc[i].label, label) == 0)
 			return i;
 	}
 
@@ -242,75 +236,75 @@ int LookupSequence( void *pmodel, const char *label )
 }
 
 
-int IsSoundEvent( int eventNumber )
+int IsSoundEvent(int eventNumber)
 {
-	if ( eventNumber == SCRIPT_EVENT_SOUND || eventNumber == SCRIPT_EVENT_SOUND_VOICE )
+	if (eventNumber == SCRIPT_EVENT_SOUND || eventNumber == SCRIPT_EVENT_SOUND_VOICE)
 		return 1;
 	return 0;
 }
 
 
-void SequencePrecache( void *pmodel, const char *pSequenceName )
+void SequencePrecache(void* pmodel, const char* pSequenceName)
 {
-	int index = LookupSequence( pmodel, pSequenceName );
-	if ( index >= 0 )
+	int index = LookupSequence(pmodel, pSequenceName);
+	if (index >= 0)
 	{
-		studiohdr_t *pstudiohdr;
-	
-		pstudiohdr = (studiohdr_t *)pmodel;
-		if ( !pstudiohdr || index >= pstudiohdr->numseq )
+		studiohdr_t* pstudiohdr;
+
+		pstudiohdr = (studiohdr_t*)pmodel;
+		if (!pstudiohdr || index >= pstudiohdr->numseq)
 			return;
 
-		mstudioseqdesc_t	*pseqdesc;
-		mstudioevent_t		*pevent;
+		mstudioseqdesc_t* pseqdesc;
+		mstudioevent_t* pevent;
 
-		pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + index;
-		pevent = (mstudioevent_t *)((byte *)pstudiohdr + pseqdesc->eventindex);
+		pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + index;
+		pevent = (mstudioevent_t*)((byte*)pstudiohdr + pseqdesc->eventindex);
 
 		for (int i = 0; i < pseqdesc->numevents; i++)
 		{
 			// Don't send client-side events to the server AI
-			if ( pevent[i].event >= EVENT_CLIENT )
+			if (pevent[i].event >= EVENT_CLIENT)
 				continue;
 
 			// UNDONE: Add a callback to check to see if a sound is precached yet and don't allocate a copy
 			// of it's name if it is.
-			if ( IsSoundEvent( pevent[i].event ) )
+			if (IsSoundEvent(pevent[i].event))
 			{
-				if ( !strlen(pevent[i].options) )
+				if (!strlen(pevent[i].options))
 				{
-					ALERT( at_error, "Bad sound event %d in sequence %s :: %s (sound is \"%s\")\n", pevent[i].event, pstudiohdr->name, pSequenceName, pevent[i].options );
+					ALERT(at_error, "Bad sound event %d in sequence %s :: %s (sound is \"%s\")\n", pevent[i].event, pstudiohdr->name, pSequenceName, pevent[i].options);
 				}
 
 				extern int PRECACHE_SOUND(char*);
-				PRECACHE_SOUND( (char *)(gpGlobals->pStringBase + ALLOC_STRING(pevent[i].options) ) );
+				PRECACHE_SOUND((char*)(gpGlobals->pStringBase + ALLOC_STRING(pevent[i].options)));
 			}
 		}
 	}
 }
 
-int GetNumSequences(void *pmodel)
+int GetNumSequences(void* pmodel)
 {
-	studiohdr_t *pstudiohdr = (studiohdr_t *)pmodel;
+	studiohdr_t* pstudiohdr = (studiohdr_t*)pmodel;
 	if (!pstudiohdr)
 		return 0;
 	return pstudiohdr->numseq;
 }
 
-int GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed, float *pflFPS, int *piNumFrames, bool *pfIsLooping)
+int GetSequenceInfo(void* pmodel, entvars_t* pev, float* pflFrameRate, float* pflGroundSpeed, float* pflFPS, int* piNumFrames, bool* pfIsLooping)
 {
 	return GetSequenceInfo(pmodel, pev->sequence, pflFrameRate, pflGroundSpeed, pflFPS, piNumFrames, pfIsLooping);
 }
 
-int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflGroundSpeed, float *pflFPS, int *piNumFrames, bool *pfIsLooping)
+int GetSequenceInfo(void* pmodel, int sequence, float* pflFrameRate, float* pflGroundSpeed, float* pflFPS, int* piNumFrames, bool* pfIsLooping)
 {
-	studiohdr_t *pstudiohdr;
+	studiohdr_t* pstudiohdr;
 
-	pstudiohdr = (studiohdr_t *)pmodel;
+	pstudiohdr = (studiohdr_t*)pmodel;
 	if (!pstudiohdr)
 		return 0;
 
-	mstudioseqdesc_t	*pseqdesc;
+	mstudioseqdesc_t* pseqdesc;
 
 	if (sequence >= pstudiohdr->numseq)
 	{
@@ -319,11 +313,14 @@ int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflG
 		return 0;
 	}
 
-	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + sequence;
+	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + sequence;
 
-	if (pflFPS) *pflFPS = pseqdesc->fps;
-	if (piNumFrames) *piNumFrames = pseqdesc->numframes;
-	if (pfIsLooping) *pfIsLooping = pseqdesc->flags & STUDIO_LOOPING;
+	if (pflFPS)
+		*pflFPS = pseqdesc->fps;
+	if (piNumFrames)
+		*piNumFrames = pseqdesc->numframes;
+	if (pfIsLooping)
+		*pfIsLooping = pseqdesc->flags & STUDIO_LOOPING;
 
 	if (pseqdesc->numframes > 1)
 	{
@@ -341,38 +338,38 @@ int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflG
 }
 
 
-int GetSequenceFlags( void *pmodel, entvars_t *pev )
+int GetSequenceFlags(void* pmodel, entvars_t* pev)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if ( !pstudiohdr || pev->sequence >= pstudiohdr->numseq )
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr || pev->sequence >= pstudiohdr->numseq)
 		return 0;
 
-	mstudioseqdesc_t	*pseqdesc;
-	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + (int)pev->sequence;
+	mstudioseqdesc_t* pseqdesc;
+	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + (int)pev->sequence;
 
 	return pseqdesc->flags;
 }
 
 
-int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEvent, float flStart, float flEnd, int index, ClientAnimEvent_t *pClientAnimEvent)
+int GetAnimationEvent(void* pmodel, entvars_t* pev, MonsterEvent_t* pMonsterEvent, float flStart, float flEnd, int index, ClientAnimEvent_t* pClientAnimEvent)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if ( !pstudiohdr || pev->sequence >= pstudiohdr->numseq || !pMonsterEvent )
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr || pev->sequence >= pstudiohdr->numseq || !pMonsterEvent)
 		return 0;
 
 	int events = 0;
 
-	mstudioseqdesc_t	*pseqdesc;
-	mstudioevent_t		*pevent;
+	mstudioseqdesc_t* pseqdesc;
+	mstudioevent_t* pevent;
 
-	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + (int)pev->sequence;
-	pevent = (mstudioevent_t *)((byte *)pstudiohdr + pseqdesc->eventindex);
+	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + (int)pev->sequence;
+	pevent = (mstudioevent_t*)((byte*)pstudiohdr + pseqdesc->eventindex);
 
-	if (pseqdesc->numevents == 0 || index > pseqdesc->numevents )
+	if (pseqdesc->numevents == 0 || index > pseqdesc->numevents)
 		return 0;
 
 	if (pseqdesc->numframes > 1)
@@ -389,7 +386,7 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 	for (; index < pseqdesc->numevents; index++)
 	{
 		if ((pevent[index].frame >= flStart && pevent[index].frame < flEnd) ||
-				((pseqdesc->flags & STUDIO_LOOPING) && flEnd >= pseqdesc->numframes - 1 && pevent[index].frame < flEnd - pseqdesc->numframes + 1))
+			((pseqdesc->flags & STUDIO_LOOPING) && flEnd >= pseqdesc->numframes - 1 && pevent[index].frame < flEnd - pseqdesc->numframes + 1))
 		{
 			// Don't send client-side events to the server AI
 			if (pevent[index].event >= EVENT_CLIENT)
@@ -415,15 +412,15 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 	return 0;
 }
 
-float SetController( void *pmodel, entvars_t *pev, int iController, float flValue )
+float SetController(void* pmodel, entvars_t* pev, int iController, float flValue)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if (! pstudiohdr)
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
 		return flValue;
 
-	mstudiobonecontroller_t	*pbonecontroller = (mstudiobonecontroller_t *)((byte *)pstudiohdr + pstudiohdr->bonecontrollerindex);
+	mstudiobonecontroller_t* pbonecontroller = (mstudiobonecontroller_t*)((byte*)pstudiohdr + pstudiohdr->bonecontrollerindex);
 
 	// find first controller that matches the index
 	int i = 0;
@@ -462,25 +459,27 @@ float SetController( void *pmodel, entvars_t *pev, int iController, float flValu
 
 	int setting = 255 * (flValue - pbonecontroller->start) / (pbonecontroller->end - pbonecontroller->start);
 
-	if (setting < 0) setting = 0;
-	if (setting > 255) setting = 255;
+	if (setting < 0)
+		setting = 0;
+	if (setting > 255)
+		setting = 255;
 	pev->controller[iController] = setting;
 
 	return setting * (1.0 / 255.0) * (pbonecontroller->end - pbonecontroller->start) + pbonecontroller->start;
 }
 
 
-float SetBlending( void *pmodel, entvars_t *pev, int iBlender, float flValue )
+float SetBlending(void* pmodel, entvars_t* pev, int iBlender, float flValue)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if (! pstudiohdr)
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
 		return flValue;
 
-	mstudioseqdesc_t	*pseqdesc;
+	mstudioseqdesc_t* pseqdesc;
 
-	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + (int)pev->sequence;
+	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + (int)pev->sequence;
 
 	if (pseqdesc->blendtype[iBlender] == 0)
 		return flValue;
@@ -503,8 +502,10 @@ float SetBlending( void *pmodel, entvars_t *pev, int iBlender, float flValue )
 
 	int setting = 255 * (flValue - pseqdesc->blendstart[iBlender]) / (pseqdesc->blendend[iBlender] - pseqdesc->blendstart[iBlender]);
 
-	if (setting < 0) setting = 0;
-	if (setting > 255) setting = 255;
+	if (setting < 0)
+		setting = 0;
+	if (setting > 255)
+		setting = 255;
 
 	pev->blending[iBlender] = setting;
 
@@ -513,17 +514,16 @@ float SetBlending( void *pmodel, entvars_t *pev, int iBlender, float flValue )
 
 
 
-
-int FindTransition( void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir )
+int FindTransition(void* pmodel, int iEndingAnim, int iGoalAnim, int* piDir)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if (! pstudiohdr)
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
 		return iGoalAnim;
 
-	mstudioseqdesc_t	*pseqdesc;
-	pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex);
+	mstudioseqdesc_t* pseqdesc;
+	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
 
 	// bail if we're going to or from a node 0
 	if (pseqdesc[iEndingAnim].entrynode == 0 || pseqdesc[iGoalAnim].entrynode == 0)
@@ -531,7 +531,7 @@ int FindTransition( void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir )
 		return iGoalAnim;
 	}
 
-	int	iEndNode;
+	int iEndNode;
 
 	// ALERT( at_console, "from %d to %d: ", pEndNode->iEndNode, pGoalNode->iStartNode );
 
@@ -550,9 +550,9 @@ int FindTransition( void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir )
 		return iGoalAnim;
 	}
 
-	byte *pTransition = ((byte *)pstudiohdr + pstudiohdr->transitionindex);
+	byte* pTransition = ((byte*)pstudiohdr + pstudiohdr->transitionindex);
 
-	int iInternNode = pTransition[(iEndNode-1)*pstudiohdr->numtransitions + (pseqdesc[iGoalAnim].entrynode-1)];
+	int iInternNode = pTransition[(iEndNode - 1) * pstudiohdr->numtransitions + (pseqdesc[iGoalAnim].entrynode - 1)];
 
 	if (iInternNode == 0)
 		return iGoalAnim;
@@ -577,22 +577,22 @@ int FindTransition( void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir )
 		}
 	}
 
-	ALERT( at_console, "error in transition graph" );
+	ALERT(at_console, "error in transition graph");
 	return iGoalAnim;
 }
 
-void SetBodygroup( void *pmodel, entvars_t *pev, int iGroup, int iValue )
+void SetBodygroup(void* pmodel, entvars_t* pev, int iGroup, int iValue)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if (! pstudiohdr)
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
 		return;
 
 	if (iGroup > pstudiohdr->numbodyparts)
 		return;
 
-	mstudiobodyparts_t *pbodypart = (mstudiobodyparts_t *)((byte *)pstudiohdr + pstudiohdr->bodypartindex) + iGroup;
+	mstudiobodyparts_t* pbodypart = (mstudiobodyparts_t*)((byte*)pstudiohdr + pstudiohdr->bodypartindex) + iGroup;
 
 	if (iValue >= pbodypart->nummodels)
 		return;
@@ -603,18 +603,18 @@ void SetBodygroup( void *pmodel, entvars_t *pev, int iGroup, int iValue )
 }
 
 
-int GetBodygroup( void *pmodel, entvars_t *pev, int iGroup )
+int GetBodygroup(void* pmodel, entvars_t* pev, int iGroup)
 {
-	studiohdr_t *pstudiohdr;
-	
-	pstudiohdr = (studiohdr_t *)pmodel;
-	if (! pstudiohdr)
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
 		return 0;
 
- 	if (iGroup > pstudiohdr->numbodyparts)
+	if (iGroup > pstudiohdr->numbodyparts)
 		return 0;
 
-	mstudiobodyparts_t *pbodypart = (mstudiobodyparts_t *)((byte *)pstudiohdr + pstudiohdr->bodypartindex) + iGroup;
+	mstudiobodyparts_t* pbodypart = (mstudiobodyparts_t*)((byte*)pstudiohdr + pstudiohdr->bodypartindex) + iGroup;
 
 	if (pbodypart->nummodels <= 1)
 		return 0;
@@ -628,28 +628,28 @@ int GetBodygroup( void *pmodel, entvars_t *pev, int iGroup )
 // Blatantly copied from client.dll's StudioSetupBones, modified for our VR weapons - Max Vollmer, 2019-07-13
 namespace
 {
-	#ifndef M_PI
-	#define M_PI 3.14159265358979323846
-	#endif
-	#ifndef PITCH
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+#ifndef PITCH
 	// up / down
-	#define	PITCH	0
-	#endif
-	#ifndef YAW
+#define PITCH 0
+#endif
+#ifndef YAW
 	// left / right
-	#define	YAW		1
-	#endif
-	#ifndef ROLL
+#define YAW 1
+#endif
+#ifndef ROLL
 	// fall over
-	#define	ROLL	2 
-	#endif
-	void StudioCalcBoneAdj(studiohdr_t *pstudiohdr, float *adj, const byte *pcontroller)
+#define ROLL 2
+#endif
+	void StudioCalcBoneAdj(studiohdr_t* pstudiohdr, float* adj, const byte* pcontroller)
 	{
-		int					i, j;
-		float				value;
-		mstudiobonecontroller_t *pbonecontroller;
+		int i, j;
+		float value;
+		mstudiobonecontroller_t* pbonecontroller;
 
-		pbonecontroller = (mstudiobonecontroller_t *)((byte *)pstudiohdr + pstudiohdr->bonecontrollerindex);
+		pbonecontroller = (mstudiobonecontroller_t*)((byte*)pstudiohdr + pstudiohdr->bonecontrollerindex);
 
 		for (j = 0; j < pstudiohdr->numbonecontrollers; j++)
 		{
@@ -664,8 +664,10 @@ namespace
 				else
 				{
 					value = pcontroller[i] / 255.f;
-					if (value < 0) value = 0;
-					if (value > 1.f) value = 1.f;
+					if (value < 0)
+						value = 0;
+					if (value > 1.f)
+						value = 1.f;
 					value = (1.f - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
 				}
 			}
@@ -689,9 +691,9 @@ namespace
 			}
 		}
 	}
-	int VectorCompare(const float *v1, const float *v2)
+	int VectorCompare(const float* v1, const float* v2)
 	{
-		int		i;
+		int i;
 
 		for (i = 0; i < 3; i++)
 			if (v1[i] != v2[i])
@@ -699,22 +701,22 @@ namespace
 
 		return 1;
 	}
-	void StudioCalcBoneQuaterion(int frame, float s, mstudiobone_t *pbone, mstudioanim_t *panim, float *adj, float *q)
+	void StudioCalcBoneQuaterion(int frame, float s, mstudiobone_t* pbone, mstudioanim_t* panim, float* adj, float* q)
 	{
-		int					j, k;
-		vec4_t				q1, q2;
-		vec3_t				angle1, angle2;
-		mstudioanimvalue_t	*panimvalue;
+		int j, k;
+		vec4_t q1, q2;
+		vec3_t angle1, angle2;
+		mstudioanimvalue_t* panimvalue;
 
 		for (j = 0; j < 3; j++)
 		{
 			if (panim->offset[j + 3] == 0)
 			{
-				angle2[j] = angle1[j] = pbone->value[j + 3]; // default;
+				angle2[j] = angle1[j] = pbone->value[j + 3];  // default;
 			}
 			else
 			{
-				panimvalue = (mstudioanimvalue_t *)((byte *)panim + panim->offset[j + 3]);
+				panimvalue = (mstudioanimvalue_t*)((byte*)panim + panim->offset[j + 3]);
 				k = frame;
 				// DEBUG
 				if (panimvalue->num.total < panimvalue->num.valid)
@@ -778,17 +780,17 @@ namespace
 			AngleQuaternion(angle1, q);
 		}
 	}
-	void StudioCalcBonePosition(int frame, float s, mstudiobone_t *pbone, mstudioanim_t *panim, float *adj, float *pos)
+	void StudioCalcBonePosition(int frame, float s, mstudiobone_t* pbone, mstudioanim_t* panim, float* adj, float* pos)
 	{
-		int					j, k;
-		mstudioanimvalue_t	*panimvalue;
+		int j, k;
+		mstudioanimvalue_t* panimvalue;
 
 		for (j = 0; j < 3; j++)
 		{
-			pos[j] = pbone->value[j]; // default;
+			pos[j] = pbone->value[j];  // default;
 			if (panim->offset[j] != 0)
 			{
-				panimvalue = (mstudioanimvalue_t *)((byte *)panim + panim->offset[j]);
+				panimvalue = (mstudioanimvalue_t*)((byte*)panim + panim->offset[j]);
 				/*
 				if (i == 0 && j == 0)
 					Con_DPrintf("%d  %d:%d  %f\n", frame, panimvalue->num.valid, panimvalue->num.total, s );
@@ -839,15 +841,15 @@ namespace
 			}
 		}
 	}
-	void StudioCalcRotations(entvars_t *pev, studiohdr_t *pstudiohdr, float pos[][3], vec4_t *q, mstudioseqdesc_t *pseqdesc, mstudioanim_t *panim, float f)
+	void StudioCalcRotations(entvars_t* pev, studiohdr_t* pstudiohdr, float pos[][3], vec4_t* q, mstudioseqdesc_t* pseqdesc, mstudioanim_t* panim, float f)
 	{
-		int					i;
-		int					frame;
-		mstudiobone_t		*pbone;
+		int i;
+		int frame;
+		mstudiobone_t* pbone;
 
-		float				s;
-		float				adj[MAXSTUDIOCONTROLLERS];
-		float				dadt;
+		float s;
+		float adj[MAXSTUDIOCONTROLLERS];
+		float dadt;
 
 		if (f > pseqdesc->numframes - 1)
 		{
@@ -864,7 +866,7 @@ namespace
 		s = (f - frame);
 
 		// add in programtic controllers
-		pbone = (mstudiobone_t *)((byte *)pstudiohdr + pstudiohdr->boneindex);
+		pbone = (mstudiobone_t*)((byte*)pstudiohdr + pstudiohdr->boneindex);
 
 		StudioCalcBoneAdj(pstudiohdr, adj, pev->controller);
 
@@ -905,14 +907,16 @@ namespace
 			pos[pseqdesc->motionbone][2] += s * pseqdesc->linearmovement[2];
 		}
 	}
-	void StudioSlerpBones(studiohdr_t *pstudiohdr, vec4_t q1[], float pos1[][3], vec4_t q2[], float pos2[][3], float s)
+	void StudioSlerpBones(studiohdr_t* pstudiohdr, vec4_t q1[], float pos1[][3], vec4_t q2[], float pos2[][3], float s)
 	{
-		int			i;
-		vec4_t		q3;
-		float		s1;
+		int i;
+		vec4_t q3;
+		float s1;
 
-		if (s < 0) s = 0;
-		else if (s > 1.0) s = 1.0;
+		if (s < 0)
+			s = 0;
+		else if (s > 1.0)
+			s = 1.0;
 
 		s1 = 1.0 - s;
 
@@ -928,10 +932,10 @@ namespace
 			pos1[i][2] = pos1[i][2] * s1 + pos2[i][2] * s;
 		}
 	}
-	void AngleMatrix(const float *angles, float(*matrix)[4])
+	void AngleMatrix(const float* angles, float(*matrix)[4])
 	{
-		float		angle;
-		float		sr, sp, sy, cr, cp, cy;
+		float angle;
+		float sr, sp, sy, cr, cp, cy;
 
 		angle = angles[YAW] * (M_PI * 2 / 360);
 		sy = sin(angle);
@@ -947,17 +951,17 @@ namespace
 		matrix[0][0] = cp * cy;
 		matrix[1][0] = cp * sy;
 		matrix[2][0] = -sp;
-		matrix[0][1] = sr * sp*cy + cr * -sy;
-		matrix[1][1] = sr * sp*sy + cr * cy;
+		matrix[0][1] = sr * sp * cy + cr * -sy;
+		matrix[1][1] = sr * sp * sy + cr * cy;
 		matrix[2][1] = sr * cp;
-		matrix[0][2] = cr*sp*cy + -sr * -sy;
-		matrix[1][2] = cr*sp*sy + -sr * cy;
+		matrix[0][2] = cr * sp * cy + -sr * -sy;
+		matrix[1][2] = cr * sp * sy + -sr * cy;
 		matrix[2][2] = cr * cp;
 		matrix[0][3] = 0.0;
 		matrix[1][3] = 0.0;
 		matrix[2][3] = 0.0;
 	}
-	void MatrixAngles(const float(*matrix)[4], float *angles)
+	void MatrixAngles(const float(*matrix)[4], float* angles)
 	{
 		float cp = sqrt(matrix[0][0] * matrix[0][0] + matrix[1][0] * matrix[1][0]);
 		if (cp < 0.000001f)
@@ -973,10 +977,10 @@ namespace
 			angles[ROLL] = atan2(matrix[2][1], matrix[2][2]) * 180.f / M_PI;
 		}
 	}
-	void StudioSetUpTransform(entvars_t *pev, float(*modeltransform)[3][4])
+	void StudioSetUpTransform(entvars_t* pev, float(*modeltransform)[3][4])
 	{
-		vec3_t			angles;
-		vec3_t			modelpos;
+		vec3_t angles;
+		vec3_t modelpos;
 
 		VectorCopy(pev->origin, modelpos);
 		VectorCopy(pev->angles, angles);
@@ -1030,7 +1034,7 @@ namespace
 		vec3_t origin;
 		vec3_t angles;
 	};
-	int GetBoneTransforms(entvars_t *pev, studiohdr_t *pstudiohdr, int sequence, float frame, BoneTransform* bonetransforms, StudioAttachment* attachments, bool mirrored)
+	int GetBoneTransforms(entvars_t* pev, studiohdr_t* pstudiohdr, int sequence, float frame, BoneTransform* bonetransforms, StudioAttachment* attachments, bool mirrored)
 	{
 		if (pstudiohdr->numbones <= 0)
 			return 0;
@@ -1041,22 +1045,22 @@ namespace
 		float modeltransform[3][4];
 		StudioSetUpTransform(pev, &modeltransform);
 
-		int					i;
+		int i;
 
-		mstudiobone_t		*pbones;
-		mstudioseqdesc_t	*pseqdesc;
-		mstudioanim_t		*panim;
+		mstudiobone_t* pbones;
+		mstudioseqdesc_t* pseqdesc;
+		mstudioanim_t* panim;
 
-		static float		pos[MAXSTUDIOBONES][3];
-		static vec4_t		q[MAXSTUDIOBONES];
-		float				bonematrix[3][4];
+		static float pos[MAXSTUDIOBONES][3];
+		static vec4_t q[MAXSTUDIOBONES];
+		float bonematrix[3][4];
 
-		static float		pos2[MAXSTUDIOBONES][3];
-		static vec4_t		q2[MAXSTUDIOBONES];
-		static float		pos3[MAXSTUDIOBONES][3];
-		static vec4_t		q3[MAXSTUDIOBONES];
-		static float		pos4[MAXSTUDIOBONES][3];
-		static vec4_t		q4[MAXSTUDIOBONES];
+		static float pos2[MAXSTUDIOBONES][3];
+		static vec4_t q2[MAXSTUDIOBONES];
+		static float pos3[MAXSTUDIOBONES][3];
+		static vec4_t q3[MAXSTUDIOBONES];
+		static float pos4[MAXSTUDIOBONES][3];
+		static vec4_t q4[MAXSTUDIOBONES];
 
 		if (sequence >= pstudiohdr->numseq)
 		{
@@ -1064,12 +1068,12 @@ namespace
 			frame = 0.f;
 		}
 
-		pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex) + sequence;
+		pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + sequence;
 		if (pseqdesc->seqgroup != 0)
 		{
 			sequence = 0;
 			frame = 0.f;
-			pseqdesc = (mstudioseqdesc_t *)((byte *)pstudiohdr + pstudiohdr->seqindex);
+			pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
 		}
 
 		if (pseqdesc->seqgroup != 0)
@@ -1077,14 +1081,14 @@ namespace
 			return 0;
 		}
 
-		mstudioseqgroup_t* pseqgroup = (mstudioseqgroup_t *)((byte *)pstudiohdr + pstudiohdr->seqgroupindex) + pseqdesc->seqgroup;
-		panim = (mstudioanim_t *)((byte *)pstudiohdr + pseqgroup->data + pseqdesc->animindex);
+		mstudioseqgroup_t* pseqgroup = (mstudioseqgroup_t*)((byte*)pstudiohdr + pstudiohdr->seqgroupindex) + pseqdesc->seqgroup;
+		panim = (mstudioanim_t*)((byte*)pstudiohdr + pseqgroup->data + pseqdesc->animindex);
 
 		StudioCalcRotations(pev, pstudiohdr, pos, q, pseqdesc, panim, frame);
 
 		if (pseqdesc->numblends > 1)
 		{
-			float				s;
+			float s;
 
 			panim += pstudiohdr->numbones;
 			StudioCalcRotations(pev, pstudiohdr, pos2, q2, pseqdesc, panim, frame);
@@ -1109,7 +1113,7 @@ namespace
 			}
 		}
 
-		pbones = (mstudiobone_t *)((byte *)pstudiohdr + pstudiohdr->boneindex);
+		pbones = (mstudiobone_t*)((byte*)pstudiohdr + pstudiohdr->boneindex);
 
 		if (pev->scale > 0)
 		{
@@ -1127,9 +1131,15 @@ namespace
 			// create mirror matrix
 			float mirrormatrix[3][4] = { 0 };
 
-			mirrormatrix[0][0] = 1; mirrormatrix[0][1] = 0; mirrormatrix[0][2] = 0;
-			mirrormatrix[1][0] = 0; mirrormatrix[1][1] = -1; mirrormatrix[1][2] = 0;
-			mirrormatrix[2][0] = 0; mirrormatrix[2][1] = 0; mirrormatrix[2][2] = 1;
+			mirrormatrix[0][0] = 1;
+			mirrormatrix[0][1] = 0;
+			mirrormatrix[0][2] = 0;
+			mirrormatrix[1][0] = 0;
+			mirrormatrix[1][1] = -1;
+			mirrormatrix[1][2] = 0;
+			mirrormatrix[2][0] = 0;
+			mirrormatrix[2][1] = 0;
+			mirrormatrix[2][2] = 1;
 
 			mirrormatrix[0][3] = 1;
 			mirrormatrix[1][3] = 1;
@@ -1175,7 +1185,7 @@ namespace
 		// calculate attachment points
 		if (attachments)
 		{
-			mstudioattachment_t* pattachment = (mstudioattachment_t *)((byte *)pstudiohdr + pstudiohdr->attachmentindex);
+			mstudioattachment_t* pattachment = (mstudioattachment_t*)((byte*)pstudiohdr + pstudiohdr->attachmentindex);
 			for (int i = 0; i < pstudiohdr->numattachments; i++)
 			{
 				VectorTransform(pattachment[i].org, bonetransform[pattachment[i].bone], attachments[i].pos);
@@ -1185,32 +1195,32 @@ namespace
 		return 1;
 	}
 
-}
-int GetNumHitboxes(void *pmodel)
+}  // namespace
+int GetNumHitboxes(void* pmodel)
 {
-	studiohdr_t *pstudiohdr;
+	studiohdr_t* pstudiohdr;
 
-	pstudiohdr = (studiohdr_t *)pmodel;
+	pstudiohdr = (studiohdr_t*)pmodel;
 	if (!pstudiohdr)
 		return 0;
 
 	return pstudiohdr->numhitboxes;
 }
-int GetNumAttachments(void *pmodel)
+int GetNumAttachments(void* pmodel)
 {
-	studiohdr_t *pstudiohdr;
+	studiohdr_t* pstudiohdr;
 
-	pstudiohdr = (studiohdr_t *)pmodel;
+	pstudiohdr = (studiohdr_t*)pmodel;
 	if (!pstudiohdr)
 		return 0;
 
 	return pstudiohdr->numattachments;
 }
-int GetHitboxesAndAttachments(entvars_t *pev, void *pmodel, int sequence, float frame, StudioHitBox* hitboxes, StudioAttachment* attachments, bool mirrored)
+int GetHitboxesAndAttachments(entvars_t* pev, void* pmodel, int sequence, float frame, StudioHitBox* hitboxes, StudioAttachment* attachments, bool mirrored)
 {
-	studiohdr_t *pstudiohdr;
+	studiohdr_t* pstudiohdr;
 
-	pstudiohdr = (studiohdr_t *)pmodel;
+	pstudiohdr = (studiohdr_t*)pmodel;
 	if (!pstudiohdr)
 		return 0;
 
@@ -1218,7 +1228,7 @@ int GetHitboxesAndAttachments(entvars_t *pev, void *pmodel, int sequence, float 
 	if (!GetBoneTransforms(pev, pstudiohdr, sequence, frame, bonetransforms, attachments, mirrored))
 		return 0;
 
-	mstudiobbox_t* pbbox = (mstudiobbox_t *)((byte *)pstudiohdr + pstudiohdr->hitboxindex);
+	mstudiobbox_t* pbbox = (mstudiobbox_t*)((byte*)pstudiohdr + pstudiohdr->hitboxindex);
 
 	for (int i = 0; i < pstudiohdr->numhitboxes; i++)
 	{

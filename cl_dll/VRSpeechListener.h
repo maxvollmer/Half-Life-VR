@@ -39,23 +39,22 @@ private:
 
 	std::string GetSpeechRecognitionErrorMessageText(long error);
 
-	const wchar_t*					m_ruleName{ L"hlvrRuleName" };
-	const unsigned __int64			m_grammarId{ 0 };
+	const wchar_t* m_ruleName{ L"hlvrRuleName" };
+	const unsigned __int64 m_grammarId{ 0 };
 
-	ISpRecognizer*					m_recognizer{ nullptr };
-	ISpRecoContext*					m_context{ nullptr };
-	ISpRecoGrammar*					m_grammar{ nullptr };
+	ISpRecognizer* m_recognizer{ nullptr };
+	ISpRecoContext* m_context{ nullptr };
+	ISpRecoGrammar* m_grammar{ nullptr };
 
-	void*							m_eventHandle{ nullptr };
+	void* m_eventHandle{ nullptr };
 
-	std::string						m_followcommandstring;
-	std::string						m_waitcommandstring;
-	std::string						m_hellocommandstring;
+	std::string m_followcommandstring;
+	std::string m_waitcommandstring;
+	std::string m_hellocommandstring;
 
-	std::unordered_map<VRSpeechCommand, std::unordered_set<std::wstring>>	m_commands;
+	std::unordered_map<VRSpeechCommand, std::unordered_set<std::wstring>> m_commands;
 
-	bool							m_isInitialized{ false };
+	bool m_isInitialized{ false };
 
-	static VRSpeechListener		m_speechListener;
+	static VRSpeechListener m_speechListener;
 };
-

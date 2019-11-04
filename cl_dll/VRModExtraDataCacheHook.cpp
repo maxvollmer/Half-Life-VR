@@ -15,9 +15,9 @@
 
 extern engine_studio_api_t IEngineStudio;
 
-void* MyModExtradata(struct model_s *mod)
+void* MyModExtradata(struct model_s* mod)
 {
-	extern studiohdr_t* Mod_Extradata(const char* callerInfo, cl_entity_t* ent, model_t* mod);
+	extern studiohdr_t* Mod_Extradata(const char* callerInfo, cl_entity_t * ent, model_t * mod);
 	return Mod_Extradata("EngineHook", nullptr, mod);
 }
 

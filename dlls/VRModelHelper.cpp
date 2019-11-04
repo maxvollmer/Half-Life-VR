@@ -12,9 +12,9 @@
 #include "VRModelHelper.h"
 #include "StudioModel.h"
 
-extern int ExtractBbox(void *pmodel, int sequence, float *mins, float *maxs);
-extern int GetSequenceInfo(void *pmodel, int sequence, float *pflFrameRate, float *pflGroundSpeed, float *pflFPS, int *piNumFrames, bool *pfIsLooping);
-extern int GetNumSequences(void *pmodel);
+extern int ExtractBbox(void* pmodel, int sequence, float* mins, float* maxs);
+extern int GetSequenceInfo(void* pmodel, int sequence, float* pflFrameRate, float* pflGroundSpeed, float* pflFPS, int* piNumFrames, bool* pfIsLooping);
+extern int GetNumSequences(void* pmodel);
 
 VRModelInfo::SequenceInfo::SequenceInfo() :
 	bboxMins{},
@@ -44,7 +44,7 @@ VRModelInfo::VRModelInfo() :
 {
 }
 
-VRModelInfo::VRModelInfo(CBaseEntity *pModel) :
+VRModelInfo::VRModelInfo(CBaseEntity* pModel) :
 	m_isValid{ false },
 	m_hlName{ pModel->pev->model },
 	m_name{ STRING(pModel->pev->model) },
@@ -52,7 +52,7 @@ VRModelInfo::VRModelInfo(CBaseEntity *pModel) :
 {
 	if (m_hlName && !m_name.empty())
 	{
-		void *pmodel = GET_MODEL_PTR(pModel->edict());
+		void* pmodel = GET_MODEL_PTR(pModel->edict());
 		if (pmodel)
 		{
 			m_numSequences = GetNumSequences(pmodel);
@@ -66,8 +66,7 @@ VRModelInfo::VRModelInfo(CBaseEntity *pModel) :
 					int numFrames;
 					bool isLooping;
 					float dummy;
-					if (ExtractBbox(pmodel, sequence, mins, maxs)
-						&& GetSequenceInfo(pmodel, sequence, &dummy, &dummy, &framerate, &numFrames, &isLooping))
+					if (ExtractBbox(pmodel, sequence, mins, maxs) && GetSequenceInfo(pmodel, sequence, &dummy, &dummy, &framerate, &numFrames, &isLooping))
 					{
 						m_sequences.emplace_back(mins, maxs, framerate, numFrames, isLooping);
 					}
@@ -83,7 +82,7 @@ VRModelInfo::VRModelInfo(CBaseEntity *pModel) :
 }
 
 
-const VRModelInfo& VRModelHelper::GetModelInfo(CBaseEntity *pEntity)
+const VRModelInfo& VRModelHelper::GetModelInfo(CBaseEntity* pEntity)
 {
 	if (!pEntity)
 		return VRModelInfo::INVALID;

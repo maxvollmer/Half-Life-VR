@@ -5,7 +5,7 @@ class CBaseEntity;
 class VRRotatableEnt
 {
 public:
-	void VRRotate(CBaseEntity *pPlayer, const Vector& pos, bool fStart);
+	void VRRotate(CBaseEntity* pPlayer, const Vector& pos, bool fStart);
 	void VRStopRotate();
 	bool IsDraggingCancelled() { return m_draggingCancelled; }
 	void ClearDraggingCancelled() { m_draggingCancelled = false; }
@@ -23,11 +23,11 @@ private:
 	Vector GetWishAngles(float wishDeltaAngle);
 	Vector CalculateAnglesFromWishAngles(const Vector& wishAngles, float maxRotSpeed);
 	float CalculateAngleDelta(const Vector& angles, const Vector& angleStart, const Vector& angleEnd);
-	void FollowWishDeltaAngle(CBaseEntity *pPlayer, const Vector& wishAngles, const Vector& angleStart, const Vector& angleEnd, float maxRotSpeed);
+	void FollowWishDeltaAngle(CBaseEntity* pPlayer, const Vector& wishAngles, const Vector& angleStart, const Vector& angleEnd, float maxRotSpeed);
 
-	Vector		m_vrRotateStartPos{ 0.f, 0.f, 0.f };
-	Vector		m_vrRotateStartAngles{ 0.f, 0.f, 0.f };
-	float		m_vrWishDeltaAngle{ 0.f };
-	float		m_vrLastWishAngleTime{ 0.f };
-	bool		m_draggingCancelled{ false };
+	Vector m_vrRotateStartPos{ 0.f, 0.f, 0.f };
+	Vector m_vrRotateStartAngles{ 0.f, 0.f, 0.f };
+	float m_vrWishDeltaAngle{ 0.f };
+	float m_vrLastWishAngleTime{ 0.f };
+	bool m_draggingCancelled{ false };
 };

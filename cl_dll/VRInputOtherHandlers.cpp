@@ -128,5 +128,5 @@ namespace VR
 			g_vrInput.SetFingerSkeletalData(vr::TrackedControllerRole_RightHand, data.flFingerCurl);
 		}
 
-	}
-}
+	}  // namespace Input
+}  // namespace VR

@@ -66,7 +66,7 @@ namespace
 			return CallNextHookEx(hMsgBoxHook, nCode, wParam, lParam);
 		}
 	}
-}
+}  // namespace
 
 VRMODExtradataErrorIntercepter::VRMODExtradataErrorIntercepter()
 {
@@ -74,8 +74,7 @@ VRMODExtradataErrorIntercepter::VRMODExtradataErrorIntercepter()
 		WH_CBT,
 		MsgBoxProc,
 		NULL,
-		GetCurrentThreadId()
-	);
+		GetCurrentThreadId());
 }
 
 VRMODExtradataErrorIntercepter::~VRMODExtradataErrorIntercepter()

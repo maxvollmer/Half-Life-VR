@@ -78,7 +78,7 @@ namespace HLVRLauncher.Utilities
                 {
                     if (key != null)
                     {
-                        steamDirectory = key.GetValue("InstallPath")?.ToString()??"";
+                        steamDirectory = key.GetValue("InstallPath")?.ToString() ?? "";
                     }
                 }
             }

@@ -6,7 +6,7 @@
 
 #include "VRCommon.h"
 
-extern void VectorAngles(const float *forward, float *angles);
+extern void VectorAngles(const float* forward, float* angles);
 
 class Positions
 {
@@ -40,9 +40,9 @@ public:
 	int GetVRGLMenuTextureWidth() { return m_vrGLMenuTextureWidth; }
 	int GetVRGLMenuTextureHeight() { return m_vrGLMenuTextureHeight; }
 
-	void GetViewAngles(vr::EVREye eEye, float * angles);
+	void GetViewAngles(vr::EVREye eEye, float* angles);
 	void GetViewMatrix(vr::EVREye eEye, float* matrix);
-	void GetViewOrg(float * origin);
+	void GetViewOrg(float* origin);
 	void GetViewVectors(Vector& forward, Vector& right, Vector& up);
 
 	void TestRenderControllerPositions();
@@ -60,7 +60,6 @@ public:
 	void SetSkyboxFromMap(const char* namename);
 
 private:
-
 	void Exit(const char* lpErrorMessage = nullptr);
 
 	void UpdateHMD();
@@ -68,8 +67,13 @@ private:
 	bool UpdateController(
 		vr::TrackedDeviceIndex_t controllerIndex,
 		Matrix4& controllerMatrix,
-		Vector& controllerOffset, Vector& controllerPosition, Vector& controllerAngles, Vector& controllerVelocity,
-		Vector &controllerForward, Vector &controllerRight, Vector &controllerUp);
+		Vector& controllerOffset,
+		Vector& controllerPosition,
+		Vector& controllerAngles,
+		Vector& controllerVelocity,
+		Vector& controllerForward,
+		Vector& controllerRight,
+		Vector& controllerUp);
 	void SendPositionUpdateToServer();
 	void UpdateViewEnt(bool isControllerValid, const Vector& controllerPosition, const Vector& controllerAngles, const Vector& controllerVelocity, bool isMirrored);
 
@@ -83,15 +87,15 @@ private:
 
 	Matrix4 GetHMDMatrixProjectionEye(vr::EVREye eEye);
 	Matrix4 GetHMDMatrixPoseEye(vr::EVREye eEye);
-	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose);
-	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix44_t &matPose);
+	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t& matPose);
+	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix44_t& matPose);
 
-	Matrix4 GetModelViewMatrixFromAbsoluteTrackingMatrix(const Matrix4 &absoluteTrackingMatrix, const Vector translate);
-	Vector GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & absoluteTrackingMatrix);
-	Vector GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4 & absoluteTrackingMatrix);
+	Matrix4 GetModelViewMatrixFromAbsoluteTrackingMatrix(const Matrix4& absoluteTrackingMatrix, const Vector translate);
+	Vector GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4& absoluteTrackingMatrix);
+	Vector GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4& absoluteTrackingMatrix);
 
-	Vector GetHLViewAnglesFromVRMatrix(const Matrix4 &mat);
-	Vector GetHLAnglesFromVRMatrix(const Matrix4 &mat);
+	Vector GetHLViewAnglesFromVRMatrix(const Matrix4& mat);
+	Vector GetHLAnglesFromVRMatrix(const Matrix4& mat);
 
 	float GetStepHeight();
 	float m_stepHeight{ 0 };
@@ -101,8 +105,8 @@ private:
 
 	bool isVRRoomScale = true;
 
-	vr::IVRSystem *vrSystem = nullptr;
-	vr::IVRCompositor *vrCompositor = nullptr;
+	vr::IVRSystem* vrSystem = nullptr;
+	vr::IVRCompositor* vrCompositor = nullptr;
 
 	unsigned int vrGLLeftEyeFrameBuffer = 0;
 	unsigned int vrGLRightEyeFrameBuffer = 0;

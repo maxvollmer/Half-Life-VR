@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -18,14 +18,14 @@
 //=========================================================
 // Failed
 //=========================================================
-extern Schedule_t	slFail[];
+extern Schedule_t slFail[];
 
 //=========================================================
 //	Idle Schedules
 //=========================================================
-extern Schedule_t	slIdleStand[];
-extern Schedule_t	slIdleTrigger[];
-extern Schedule_t	slIdleWalk[];
+extern Schedule_t slIdleStand[];
+extern Schedule_t slIdleTrigger[];
+extern Schedule_t slIdleWalk[];
 
 //=========================================================
 //	Wake Schedules
@@ -35,22 +35,22 @@ extern Schedule_t slWakeAngry[];
 //=========================================================
 // AlertTurn Schedules
 //=========================================================
-extern Schedule_t	slAlertFace[];
+extern Schedule_t slAlertFace[];
 
 //=========================================================
 // AlertIdle Schedules
 //=========================================================
-extern Schedule_t	slAlertStand[];
+extern Schedule_t slAlertStand[];
 
 //=========================================================
 // CombatIdle Schedule
 //=========================================================
-extern Schedule_t	slCombatStand[];
+extern Schedule_t slCombatStand[];
 
 //=========================================================
 // CombatFace Schedule
 //=========================================================
-extern Schedule_t	slCombatFace[];
+extern Schedule_t slCombatFace[];
 
 //=========================================================
 // reload schedule
@@ -61,13 +61,13 @@ extern Schedule_t slReload[];
 //	Attack Schedules
 //=========================================================
 
-extern Schedule_t	slRangeAttack1[];
-extern Schedule_t	slRangeAttack2[];
+extern Schedule_t slRangeAttack1[];
+extern Schedule_t slRangeAttack2[];
 
-extern Schedule_t	slTakeCoverFromBestSound[];
+extern Schedule_t slTakeCoverFromBestSound[];
 
 // primary melee attack
-extern Schedule_t	slMeleeAttack[];
+extern Schedule_t slMeleeAttack[];
 
 // Chase enemy schedule
 extern Schedule_t slChaseEnemy[];
@@ -95,4 +95,4 @@ extern Schedule_t slWalkToScript[];
 extern Schedule_t slRunToScript[];
 extern Schedule_t slWaitScript[];
 
-#endif		// DEFAULTAI_H
+#endif  // DEFAULTAI_H

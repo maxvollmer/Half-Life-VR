@@ -1,6 +1,6 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -12,13 +12,13 @@
 
 #include "in_defs.h"
 
-extern "C" 
+extern "C"
 {
-	void DLLEXPORT IN_ActivateMouse( void );
-	void DLLEXPORT IN_DeactivateMouse( void );
-	void DLLEXPORT IN_MouseEvent (int mstate);
-	void DLLEXPORT IN_Accumulate (void);
-	void DLLEXPORT IN_ClearStates (void);
+	void DLLEXPORT IN_ActivateMouse(void);
+	void DLLEXPORT IN_DeactivateMouse(void);
+	void DLLEXPORT IN_MouseEvent(int mstate);
+	void DLLEXPORT IN_Accumulate(void);
+	void DLLEXPORT IN_ClearStates(void);
 }
 
 void IN_ActivateMouse() {}
@@ -29,5 +29,5 @@ void IN_ClearStates() {}
 void IN_ResetMouse() {}
 void IN_Commands() {}
 void IN_Init() {}
-void IN_Move(float f, struct usercmd_s * cmd) {}
+void IN_Move(float f, struct usercmd_s* cmd) {}
 void IN_Shutdown(void) {}

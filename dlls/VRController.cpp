@@ -16,7 +16,8 @@
 
 namespace
 {
-	enum HandModelSequences {
+	enum HandModelSequences
+	{
 		IDLE = 0,
 		POINT_START,
 		POINT_END,
@@ -70,7 +71,7 @@ namespace
 		else
 			return modelName;
 	}
-}
+}  // namespace
 
 const char* GetAnimatedWeaponModelName(const char* modelName)
 {
@@ -100,7 +101,7 @@ VRController::~VRController()
 }
 
 
-void VRController::Update(CBasePlayer *pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector & offset, const Vector & angles, const Vector & velocity, bool isDragging, VRControllerID id, int weaponId)
+void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, VRControllerID id, int weaponId)
 {
 	m_hPlayer = pPlayer;
 
@@ -153,7 +154,7 @@ void VRController::UpdateLaserSpot()
 	{
 		if (!m_hLaserSpot)
 		{
-			CLaserSpot *pLaserSpot = CLaserSpot::CreateSpot();
+			CLaserSpot* pLaserSpot = CLaserSpot::CreateSpot();
 			pLaserSpot->Revive();
 			pLaserSpot->pev->scale = 0.1f;
 			m_hLaserSpot = pLaserSpot;
@@ -196,7 +197,7 @@ void VRController::UpdateModel(CBasePlayer* pPlayer)
 		m_modelName = GetAnimatedWeaponModelName(m_modelName);
 	}
 
-	CVRControllerModel *pModel = (CVRControllerModel*)GetModel();
+	CVRControllerModel* pModel = (CVRControllerModel*)GetModel();
 	pModel->pev->origin = GetPosition();
 	pModel->pev->angles = GetAngles();
 	pModel->pev->velocity = GetVelocity();
@@ -251,7 +252,7 @@ void VRController::UpdateModel(CBasePlayer* pPlayer)
 	}
 }
 
-void VRController::SendEntityDataToClient(CBasePlayer *pPlayer, VRControllerID id)
+void VRController::SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID id)
 {
 	extern int gmsgVRControllerEnt;
 	MESSAGE_BEGIN(MSG_ALL, gmsgVRControllerEnt, NULL);
@@ -272,8 +273,8 @@ void VRController::UpdateHitBoxes()
 		return;
 	}
 
-	CBaseEntity *pModel = GetModel();
-	void *pmodel = GET_MODEL_PTR(pModel->edict());
+	CBaseEntity* pModel = GetModel();
+	void* pmodel = GET_MODEL_PTR(pModel->edict());
 	if (!pmodel)
 	{
 		ClearHitBoxes();
@@ -287,7 +288,7 @@ void VRController::UpdateHitBoxes()
 		return;
 	}
 
-	if (m_hitboxes.size() == numhitboxes && FStrEq(STRING(m_hitboxModelName), STRING(pModel->pev->model)) && gpGlobals->time < (m_hitboxLastUpdateTime + (1.f/25.f)))
+	if (m_hitboxes.size() == numhitboxes && FStrEq(STRING(m_hitboxModelName), STRING(pModel->pev->model)) && gpGlobals->time < (m_hitboxLastUpdateTime + (1.f / 25.f)))
 		return;
 
 	int numattachments = GetNumAttachments(pmodel);
@@ -311,7 +312,7 @@ void VRController::UpdateHitBoxes()
 			// Skip hitboxes too far away or too big
 			if (l1 > 256.f || l2 > 256.f)
 			{
-				int fjskajfes = 0;	// to set breakpoint in debug mode
+				int fjskajfes = 0;  // to set breakpoint in debug mode
 				continue;
 			}
 
@@ -333,7 +334,7 @@ CBaseEntity* VRController::GetModel() const
 {
 	if (!m_hModel)
 	{
-		CVRControllerModel *pModel = CVRControllerModel::Create(m_modelName ? STRING(m_modelName) :"models/v_hand_labcoat.mdl", GetPosition());
+		CVRControllerModel* pModel = CVRControllerModel::Create(m_modelName ? STRING(m_modelName) : "models/v_hand_labcoat.mdl", GetPosition());
 		if (IsValid())
 		{
 			pModel->TurnOn();
@@ -348,7 +349,7 @@ void VRController::PlayWeaponAnimation(int iAnim, int body)
 	if (!IsValid())
 		return;
 
-	CVRControllerModel *pModel = (CVRControllerModel*)GetModel();
+	CVRControllerModel* pModel = (CVRControllerModel*)GetModel();
 	auto& modelInfo = VRModelHelper::GetInstance().GetModelInfo(pModel);
 	if (modelInfo.m_isValid && iAnim < modelInfo.m_numSequences)
 	{
@@ -367,7 +368,7 @@ void VRController::PlayWeaponMuzzleflash()
 	if (!IsValid())
 		return;
 
-	CBaseEntity *pModel = GetModel();
+	CBaseEntity* pModel = GetModel();
 	pModel->pev->effects |= EF_MUZZLEFLASH;
 }
 
@@ -394,7 +395,7 @@ bool VRController::AddDraggedEntity(EHANDLE hEntity) const
 	if (m_draggedEntities.count(hEntity) != 0)
 		return false;
 
-	EHANDLE hPlayer = m_hPlayer;	// need copy due to const
+	EHANDLE hPlayer = m_hPlayer;  // need copy due to const
 
 	m_draggedEntities.insert(std::pair<EHANDLE, DraggedEntityPositions>(hEntity, DraggedEntityPositions{ GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin, GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin }));
 	return true;
@@ -415,8 +416,14 @@ bool VRController::IsDraggedEntity(EHANDLE hEntity) const
 }
 
 bool VRController::GetDraggedEntityPositions(EHANDLE hEntity,
-	Vector& controllerStartOffset, Vector& controllerStartPos, Vector& entityStartOrigin, Vector& playerStartOrigin,
-	Vector& controllerLastOffset, Vector& controllerLastPos, Vector& entityLastOrigin, Vector& playerLastOrigin) const
+	Vector& controllerStartOffset,
+	Vector& controllerStartPos,
+	Vector& entityStartOrigin,
+	Vector& playerStartOrigin,
+	Vector& controllerLastOffset,
+	Vector& controllerLastPos,
+	Vector& entityLastOrigin,
+	Vector& playerLastOrigin) const
 {
 	auto draggedEntityData = m_draggedEntities.find(hEntity);
 	if (draggedEntityData != m_draggedEntities.end())
@@ -432,7 +439,8 @@ bool VRController::GetDraggedEntityPositions(EHANDLE hEntity,
 		draggedEntityData->second.controllerLastOffset = GetOffset();
 		draggedEntityData->second.controllerLastPos = GetPosition();
 		draggedEntityData->second.entityLastOrigin = hEntity->pev->origin;
-		draggedEntityData->second.playerLastOrigin = EHANDLE{ m_hPlayer }->pev->origin;
+		draggedEntityData->second.playerLastOrigin = EHANDLE{ m_hPlayer }
+		->pev->origin;
 		return true;
 	}
 	return false;
@@ -496,9 +504,8 @@ bool VRController::GetAttachment(size_t index, Vector& attachment) const
 
 
 
-
 #ifdef RENDER_DEBUG_HITBOXES
-void VRController::DebugDrawHitBoxes(CBasePlayer *pPlayer)
+void VRController::DebugDrawHitBoxes(CBasePlayer* pPlayer)
 {
 	constexpr const int numlinesperbox = 6;
 

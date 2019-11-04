@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -28,12 +28,12 @@
 #include "cbase.h"
 #include "soundent.h"
 
-DLL_GLOBAL ULONG		g_ulFrameCount;
-DLL_GLOBAL ULONG		g_ulModelIndexEyes;
-DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
-DLL_GLOBAL Vector		g_vecAttackDir;
-DLL_GLOBAL int			g_iSkillLevel;
-DLL_GLOBAL int			gDisplayTitle;
-DLL_GLOBAL BOOL			g_fGameOver;
-DLL_GLOBAL const Vector	g_vecZero = Vector(0,0,0);
-DLL_GLOBAL int			g_Language;
+DLL_GLOBAL ULONG g_ulFrameCount;
+DLL_GLOBAL ULONG g_ulModelIndexEyes;
+DLL_GLOBAL ULONG g_ulModelIndexPlayer;
+DLL_GLOBAL Vector g_vecAttackDir;
+DLL_GLOBAL int g_iSkillLevel;
+DLL_GLOBAL int gDisplayTitle;
+DLL_GLOBAL BOOL g_fGameOver;
+DLL_GLOBAL const Vector g_vecZero = Vector(0, 0, 0);
+DLL_GLOBAL int g_Language;

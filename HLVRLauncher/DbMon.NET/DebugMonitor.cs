@@ -311,13 +311,16 @@ namespace DbMon.NET
                 return;
 
 #if !DEBUG
-			try {
+            try
+            {
 #endif
-            OnOutputDebugString(pid, text);
+                OnOutputDebugString(pid, text);
 #if !DEBUG
-			} catch (Exception ex) {
-				Console.WriteLine("An 'OnOutputDebugString' handler failed to execute: " + ex.ToString());
-			}
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An 'OnOutputDebugString' handler failed to execute: " + ex.ToString());
+            }
 #endif
         }
 

@@ -12,33 +12,33 @@
 
 #include "GL/gl.h"
 
-#define GL_FRAMEBUFFER 0x8D40
-#define GL_RENDERBUFFER 0x8D41
-#define GL_COLOR_ATTACHMENT0 0x8CE0
-#define GL_DEPTH24_STENCIL8 0x88F0
+#define GL_FRAMEBUFFER              0x8D40
+#define GL_RENDERBUFFER             0x8D41
+#define GL_COLOR_ATTACHMENT0        0x8CE0
+#define GL_DEPTH24_STENCIL8         0x88F0
 #define GL_DEPTH_STENCIL_ATTACHMENT 0x821A
-#define GL_ACTIVE_TEXTURE 0x84E0
-#define GL_TEXTURE0 0x84C0
-#define GL_TEXTURE_MAX_LEVEL 0x813D
+#define GL_ACTIVE_TEXTURE           0x84E0
+#define GL_TEXTURE0                 0x84C0
+#define GL_TEXTURE_MAX_LEVEL        0x813D
 
-typedef void (APIENTRY * PFNGLGENFRAMEBUFFERSPROC) (GLsizei n, GLuint* framebuffers);
-typedef void (APIENTRY * PFNGLGENRENDERBUFFERSPROC) (GLsizei n, GLuint* renderbuffers);
+typedef void(APIENTRY* PFNGLGENFRAMEBUFFERSPROC)(GLsizei n, GLuint* framebuffers);
+typedef void(APIENTRY* PFNGLGENRENDERBUFFERSPROC)(GLsizei n, GLuint* renderbuffers);
 
-typedef void (APIENTRY * PFNGLBINDFRAMEBUFFERPROC) (GLenum target, GLuint framebuffer);
-typedef void (APIENTRY * PFNGLBINDRENDERBUFFERPROC) (GLenum target, GLuint renderbuffer);
+typedef void(APIENTRY* PFNGLBINDFRAMEBUFFERPROC)(GLenum target, GLuint framebuffer);
+typedef void(APIENTRY* PFNGLBINDRENDERBUFFERPROC)(GLenum target, GLuint renderbuffer);
 
-typedef void (APIENTRY * PFNGLFRAMEBUFFERTEXTURE2DPROC) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-typedef void (APIENTRY * PFNGLRENDERBUFFERSTORAGEPROC) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
-typedef void (APIENTRY * PFNGLFRAMEBUFFERRENDERBUFFERPROC) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+typedef void(APIENTRY* PFNGLFRAMEBUFFERTEXTURE2DPROC)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+typedef void(APIENTRY* PFNGLRENDERBUFFERSTORAGEPROC)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+typedef void(APIENTRY* PFNGLFRAMEBUFFERRENDERBUFFERPROC)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
 
-typedef void (APIENTRY * PFNGLACTIVETEXTUREPROC) (GLenum texture);
-typedef void (APIENTRY * PFNGLGENERATEMIPMAPPROC) (GLenum texture);
+typedef void(APIENTRY* PFNGLACTIVETEXTUREPROC)(GLenum texture);
+typedef void(APIENTRY* PFNGLGENERATEMIPMAPPROC)(GLenum texture);
 
-typedef void (APIENTRY * PFNHLVRLOCKGLMATRICESPROC) (void);
-typedef void (APIENTRY * PFNHLVRUNLOCKGLMATRICESPROC) (void);
-typedef void (APIENTRY * PFNHLVRSETCONSOLECALLBACKPROC) (void*);
-typedef void (APIENTRY * PFNHLVRSETGENANDDELETETEXTURESCALLBACKPROC) (void*, void*);
-typedef void (APIENTRY * PFNHLVRSETGLBEGINCALLBACKPROC) (void*, void*);
+typedef void(APIENTRY* PFNHLVRLOCKGLMATRICESPROC)(void);
+typedef void(APIENTRY* PFNHLVRUNLOCKGLMATRICESPROC)(void);
+typedef void(APIENTRY* PFNHLVRSETCONSOLECALLBACKPROC)(void*);
+typedef void(APIENTRY* PFNHLVRSETGENANDDELETETEXTURESCALLBACKPROC)(void*, void*);
+typedef void(APIENTRY* PFNHLVRSETGLBEGINCALLBACKPROC)(void*, void*);
 
 extern PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
 extern PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers;
@@ -89,7 +89,7 @@ private:
 	std::string m_errormsg;
 };
 
-template <class T>
+template<class T>
 auto ArgToString(T&& t)
 {
 	std::stringstream s;
@@ -97,8 +97,8 @@ auto ArgToString(T&& t)
 	return s.str();
 }
 
-template <class... T>
-auto VarArgsToString(T&& ... args)
+template<class... T>
+auto VarArgsToString(T&&... args)
 {
 	std::vector<std::string> x{ ArgToString(std::forward<T>(args))... };
 	std::stringstream s;
@@ -108,6 +108,6 @@ auto VarArgsToString(T&& ... args)
 
 void TryTryGLCall(std::function<void()> call, const std::string& name, const std::string& args);
 
-#define TryGLCall(call, ...) TryTryGLCall([&](){call(__VA_ARGS__);}, #call, VarArgsToString(__VA_ARGS__))
+#define TryGLCall(call, ...) TryTryGLCall([&]() { call(__VA_ARGS__); }, #call, VarArgsToString(__VA_ARGS__))
 
 void ClearGLErrors();

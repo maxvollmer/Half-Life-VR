@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -13,7 +13,7 @@
 *
 ****/
 // Physics info string definition
-#if !defined( PM_INFOH )
+#if !defined(PM_INFOH)
 #define PM_INFOH
 #ifdef _WIN32
 #pragma once
@@ -21,4 +21,4 @@
 
 #define MAX_PHYSINFO_STRING 256
 
-#endif // PM_INFOH
+#endif  // PM_INFOH

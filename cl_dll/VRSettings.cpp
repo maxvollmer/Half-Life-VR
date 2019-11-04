@@ -18,7 +18,7 @@
 
 VRSettings g_vrSettings;
 
-constexpr const char* VR_DEFAULT_VIEW_DIST_TO_WALLS_AS_STRING = "5";	// for cvar
+constexpr const char* VR_DEFAULT_VIEW_DIST_TO_WALLS_AS_STRING = "5";  // for cvar
 
 
 void VRSettings::Init()
@@ -233,7 +233,7 @@ void VRSettings::UpdateCVARSFromJson()
 
 				m_lastSettingsFileChangedTime = std::filesystem::last_write_time(settingsPath).time_since_epoch().count();
 			}
-			catch(const nlohmann::detail::exception& e)
+			catch (const nlohmann::detail::exception & e)
 			{
 				gEngfuncs.Con_DPrintf("Couldn't load settings from hlvrsettings.cfg, error: %i (%s)\n", e.id, e.what());
 			}
@@ -287,7 +287,7 @@ void VRSettings::UpdateJsonFromCVARS()
 					m_needsRetry = RetryMode::WRITE;
 				}
 			}
-			catch (const nlohmann::detail::exception& e)
+			catch (const nlohmann::detail::exception & e)
 			{
 				gEngfuncs.Con_DPrintf("Couldn't store settings to hlvrsettings.cfg, error: %i (%s)\n", e.id, e.what());
 			}

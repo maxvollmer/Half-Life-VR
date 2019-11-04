@@ -24,22 +24,22 @@ public:
 	};
 
 	VRModelInfo();
-	VRModelInfo(CBaseEntity *pEntity);
+	VRModelInfo(CBaseEntity* pEntity);
 
-	bool						m_isValid;
+	bool m_isValid;
 
-	string_t					m_hlName;
-	std::string					m_name;
-	int							m_numSequences;
-	std::vector<SequenceInfo>	m_sequences;
+	string_t m_hlName;
+	std::string m_name;
+	int m_numSequences;
+	std::vector<SequenceInfo> m_sequences;
 
-	static const VRModelInfo	INVALID;
+	static const VRModelInfo INVALID;
 };
 
 class VRModelHelper
 {
 public:
-	const VRModelInfo& GetModelInfo(CBaseEntity *pModel);
+	const VRModelInfo& GetModelInfo(CBaseEntity* pModel);
 	//std::vector<TransformedBBox> GetTransformedBBoxesForModel(CBaseEntity* pModel);
 	//bool GetAttachment(CBaseEntity *pModel, int attachmentIndex, bool mirrored, Vector& attachment);
 
@@ -48,7 +48,6 @@ public:
 private:
 	static VRModelHelper m_instance;
 
-	std::unordered_map<string_t, VRModelInfo>						m_modelInfoMap;
-	std::unordered_map<std::string, std::unique_ptr<StudioModel>>	m_studioModels;
+	std::unordered_map<string_t, VRModelInfo> m_modelInfoMap;
+	std::unordered_map<std::string, std::unique_ptr<StudioModel>> m_studioModels;
 };
-

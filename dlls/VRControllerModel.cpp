@@ -11,7 +11,7 @@
 
 LINK_ENTITY_TO_CLASS(vr_controllermodel, CVRControllerModel);
 
-CVRControllerModel* CVRControllerModel::Create(const char *pModelName, const Vector &origin)
+CVRControllerModel* CVRControllerModel::Create(const char* pModelName, const Vector& origin)
 {
 	CVRControllerModel* pModel = GetClassPtr<CVRControllerModel>(nullptr);
 	pModel->pev->classname = MAKE_STRING("vr_controllermodel");
@@ -93,12 +93,12 @@ void CVRControllerModel::ControllerModelThink()
 	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
-void CVRControllerModel::HandleClientAnimEvent(ClientAnimEvent_t *pEvent)
+void CVRControllerModel::HandleClientAnimEvent(ClientAnimEvent_t* pEvent)
 {
 	// TODO
 }
 
-void CVRControllerModel::HandleAnimEvent(MonsterEvent_t *pEvent)
+void CVRControllerModel::HandleAnimEvent(MonsterEvent_t* pEvent)
 {
 	// TODO
 }

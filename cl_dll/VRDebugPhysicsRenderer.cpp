@@ -14,7 +14,7 @@
 #include "entity_state.h"
 #include "cl_entity.h"
 #include "ref_params.h"
-#include "in_defs.h" // PITCH YAW ROLL
+#include "in_defs.h"  // PITCH YAW ROLL
 #include "pm_movevars.h"
 #include "pm_shared.h"
 #include "pm_defs.h"
@@ -39,7 +39,7 @@
 #include "vr_gl.h"
 
 
-extern globalvars_t *gpGlobals;
+extern globalvars_t* gpGlobals;
 
 
 // Collect faces of world
@@ -73,13 +73,14 @@ public:
 	}
 };
 
-enum class PlaneMajor {
+enum class PlaneMajor
+{
 	X,
 	Y,
 	Z
 };
 
-inline PlaneMajor PlaneMajorFromNormal(const Vector & normal)
+inline PlaneMajor PlaneMajorFromNormal(const Vector& normal)
 {
 	if (fabs(normal.x) > fabs(normal.y))
 	{
@@ -116,28 +117,22 @@ public:
 class TranslatedPlane
 {
 public:
-	TranslatedPlane(const Vector & vert, const Vector & normal)
-		: normal{ normal }
-		, dist{ DotProduct(normal, vert) }
-		, hash{ intHasher(dist) ^ intHasher(normal.x * 10) ^ intHasher(normal.y * 10) ^ intHasher(normal.z * 10) }
-		, major{ PlaneMajorFromNormal(normal) }
+	TranslatedPlane(const Vector& vert, const Vector& normal) :
+		normal{ normal }, dist{ DotProduct(normal, vert) }, hash{ intHasher(dist) ^ intHasher(normal.x * 10) ^ intHasher(normal.y * 10) ^ intHasher(normal.z * 10) }, major{ PlaneMajorFromNormal(normal) }
 	{
 	}
 
-	inline bool IsCoPlanar(const TranslatedPlane & other) const
+	inline bool IsCoPlanar(const TranslatedPlane& other) const
 	{
-		return fabs(dist - other.dist) < EPSILON
-			&& fabs(normal.x - other.normal.x) < EPSILON
-			&& fabs(normal.y - other.normal.y) < EPSILON
-			&& fabs(normal.z - other.normal.z) < EPSILON;
+		return fabs(dist - other.dist) < EPSILON && fabs(normal.x - other.normal.x) < EPSILON && fabs(normal.y - other.normal.y) < EPSILON && fabs(normal.z - other.normal.z) < EPSILON;
 	}
 
-	inline const Vector & GetNormal() const
+	inline const Vector& GetNormal() const
 	{
 		return normal;
 	}
 
-	inline const PlaneMajor & GetMajor() const
+	inline const PlaneMajor& GetMajor() const
 	{
 		return major;
 	}
@@ -189,14 +184,14 @@ typedef std::unordered_map<TranslatedPlane, std::unordered_map<Vector, VertexMet
 class TranslatedFace
 {
 public:
-	TranslatedFace(const msurface_t & face, const Vector & origin, PlaneVertexMetaDataMap & planeVertexMetaData)
-		: plane{ origin + face.polys->verts[0], (face.flags & SURF_PLANEBACK) ? -face.plane->normal : face.plane->normal }
+	TranslatedFace(const msurface_t& face, const Vector& origin, PlaneVertexMetaDataMap& planeVertexMetaData) :
+		plane{ origin + face.polys->verts[0], (face.flags & SURF_PLANEBACK) ? -face.plane->normal : face.plane->normal }
 	{
 		for (int i = 0; i < face.polys->numverts; ++i)
 		{
-			Vector & vertexBefore = origin + face.polys->verts[(i > 0) ? (i - 1) : (face.polys->numverts - 1)];
-			Vector & vertex = origin + face.polys->verts[i];
-			Vector & vertexAfter = origin + face.polys->verts[(i < (face.polys->numverts - 1)) ? (i + 1) : 0];
+			Vector& vertexBefore = origin + face.polys->verts[(i > 0) ? (i - 1) : (face.polys->numverts - 1)];
+			Vector& vertex = origin + face.polys->verts[i];
+			Vector& vertexAfter = origin + face.polys->verts[(i < (face.polys->numverts - 1)) ? (i + 1) : 0];
 
 			float vertDot = DotProduct((vertexBefore - vertex).Normalize(), (vertexAfter - vertex).Normalize());
 
@@ -217,13 +212,13 @@ public:
 		}
 	}
 
-	inline const std::vector<Vector> & GetVertices() const
+	inline const std::vector<Vector>& GetVertices() const
 	{
 		return vertices;
 	}
 
 	// Returns those vertices of A and B that enclose a gap between these faces (if one exists)
-	bool GetGapVertices(const TranslatedFace & other, std::vector<Vector> & mergedVertices, PlaneVertexMetaDataMap & planeVertexMetaData) const
+	bool GetGapVertices(const TranslatedFace& other, std::vector<Vector>& mergedVertices, PlaneVertexMetaDataMap& planeVertexMetaData) const
 	{
 		if (vertices.size() < 3 || other.vertices.size() < 3)
 		{
@@ -239,23 +234,21 @@ public:
 		}
 	}
 
-	inline const TranslatedPlane & GetPlane() const
+	inline const TranslatedPlane& GetPlane() const
 	{
 		return plane;
 	}
 
 private:
-	inline bool IsCloseEnough(const TranslatedFace & other) const
+	inline bool IsCloseEnough(const TranslatedFace& other) const
 	{
 		// Since faces in a HL BSP are always maximum 240 units wide,
 		// if any vertex from this face is further than MIN_DISTANCE (240 + player width) units
 		// away from any vertex in the other face, these faces can't have a gap too narrow for a player
-		return fabs(vertices[0].x - other.vertices[0].x) < MIN_DISTANCE
-			&& fabs(vertices[0].y - other.vertices[0].y) < MIN_DISTANCE
-			&& fabs(vertices[0].z - other.vertices[0].z) < MIN_DISTANCE;
+		return fabs(vertices[0].x - other.vertices[0].x) < MIN_DISTANCE && fabs(vertices[0].y - other.vertices[0].y) < MIN_DISTANCE && fabs(vertices[0].z - other.vertices[0].z) < MIN_DISTANCE;
 	}
 
-	bool GetGapVerticesInPlane(const TranslatedFace & other, std::vector<Vector> & mergedVertices, PlaneVertexMetaDataMap & planeVertexMetaData, const size_t a, const size_t b) const
+	bool GetGapVerticesInPlane(const TranslatedFace& other, std::vector<Vector>& mergedVertices, PlaneVertexMetaDataMap& planeVertexMetaData, const size_t a, const size_t b) const
 	{
 		// We only want the two outermost vertices of each face, since we don't care about overlapping triangles and we don't have to deal with arbitrary shapes this way - also keeps amount of triangles down
 		std::vector<Vector> verticesA, verticesB;
@@ -264,7 +257,7 @@ private:
 		const Vector faceDir = (other.vecAnyPointInside - vecAnyPointInside).Normalize();
 
 		// Loop over all vertices and check if we have a gap
-		for (const Vector & vec : vertices)
+		for (const Vector& vec : vertices)
 		{
 			// Discard vertex if it's completely enclosed by other faces
 			if (CVAR_GET_FLOAT("vr_debug_physics") >= 1.f && planeVertexMetaData[plane][vec].totalCos < (EPSILON - 4.f))
@@ -277,7 +270,7 @@ private:
 				continue;
 			}
 			bool foundOther = false;
-			for (const Vector & vecOther : other.vertices)
+			for (const Vector& vecOther : other.vertices)
 			{
 				// Discard vertex if it's completely enclosed by other faces
 				if (CVAR_GET_FLOAT("vr_debug_physics") >= 2.f && planeVertexMetaData[plane][vecOther].totalCos < (EPSILON - 4.f))
@@ -285,7 +278,7 @@ private:
 					continue;
 				}
 				float distanceSquared = (vec - vecOther).LengthSquared();
-				if (distanceSquared < (EPSILON*EPSILON))
+				if (distanceSquared < (EPSILON * EPSILON))
 				{
 					// If any two vertices are equal (that is: if the faces are touching), we can safely cancel this algorithm,
 					// because of what we know about the simple architecture used throughout Half-Life maps:
@@ -342,7 +335,7 @@ public:
 
 typedef std::unordered_map<TranslatedPlane, std::vector<TranslatedFace>, TranslatedPlane::Hash, TranslatedPlane::Equal> PlaneFacesMap;
 
-void CollectFaces(const model_t * model, const Vector & origin, PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData)
+void CollectFaces(const model_t* model, const Vector& origin, PlaneFacesMap& planeFaces, PlaneVertexMetaDataMap& planeVertexMetaData)
 {
 	if (model != nullptr)
 	{
@@ -354,7 +347,7 @@ void CollectFaces(const model_t * model, const Vector & origin, PlaneFacesMap & 
 	}
 }
 
-void TriangulateGapsBetweenCoplanarFaces(const TranslatedFace & faceA, const TranslatedFace & faceB, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector> & vertices, std::vector<int> & indices)
+void TriangulateGapsBetweenCoplanarFaces(const TranslatedFace& faceA, const TranslatedFace& faceB, PlaneVertexMetaDataMap& planeVertexMetaData, std::vector<Vector>& vertices, std::vector<int>& indices)
 {
 	std::vector<Vector> mergedVertices;
 	if (faceA.GetGapVertices(faceB, mergedVertices, planeVertexMetaData))
@@ -364,29 +357,37 @@ void TriangulateGapsBetweenCoplanarFaces(const TranslatedFace & faceA, const Tra
 		vertices.insert(vertices.end(), mergedVertices.begin(), mergedVertices.end());
 
 		// a-b-c
-		indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 1); indices.push_back(indexoffset + 2);
+		indices.push_back(indexoffset + 0);
+		indices.push_back(indexoffset + 1);
+		indices.push_back(indexoffset + 2);
 		// a-c-b
-		indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 1);
+		indices.push_back(indexoffset + 0);
+		indices.push_back(indexoffset + 2);
+		indices.push_back(indexoffset + 1);
 
 		if (mergedVertices.size() == 4)
 		{
 			// a-c-d
-			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 3);
+			indices.push_back(indexoffset + 0);
+			indices.push_back(indexoffset + 2);
+			indices.push_back(indexoffset + 3);
 			// a-d-c
-			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 3); indices.push_back(indexoffset + 2);
+			indices.push_back(indexoffset + 0);
+			indices.push_back(indexoffset + 3);
+			indices.push_back(indexoffset + 2);
 		}
 	}
 }
 
-void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector> & vertices, std::vector<int> & indices)
+void TriangulateBSPFaces(const PlaneFacesMap& planeFaces, PlaneVertexMetaDataMap& planeVertexMetaData, std::vector<Vector>& vertices, std::vector<int>& indices)
 {
 	for (auto pair : planeFaces)
 	{
-		const TranslatedPlane & plane = pair.first;
-		const std::vector<TranslatedFace> & faces = pair.second;
+		const TranslatedPlane& plane = pair.first;
+		const std::vector<TranslatedFace>& faces = pair.second;
 		for (size_t faceIndexA = 0; faceIndexA < faces.size(); ++faceIndexA)
 		{
-			const TranslatedFace & faceA = faces[faceIndexA];
+			const TranslatedFace& faceA = faces[faceIndexA];
 
 			// First do normal triangulation of all surfaces
 			/*
@@ -406,7 +407,7 @@ void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMa
 			// Then do triangulation of gaps between faces that are too small for a player to fit through
 			for (size_t faceIndexB = faceIndexA + 1; faceIndexB < faces.size(); ++faceIndexB)
 			{
-				const TranslatedFace & faceB = faces[faceIndexB];
+				const TranslatedFace& faceB = faces[faceIndexB];
 				TriangulateGapsBetweenCoplanarFaces(faceA, faceB, planeVertexMetaData, vertices, indices);
 			}
 		}
@@ -415,7 +416,7 @@ void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMa
 
 
 
-model_s * lol = nullptr;
+model_s* lol = nullptr;
 float loldebug = 0;
 PlaneFacesMap gPlaneFaces;
 PlaneVertexMetaDataMap gPlaneVertexMetaData;
@@ -428,7 +429,7 @@ void VRRenderer::DebugRenderPhysicsPolygons()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glColor4f(1.f, 0.08f, 1.f, 0.58f);	// pink for debugging/testing
+	glColor4f(1.f, 0.08f, 1.f, 0.58f);  // pink for debugging/testing
 
 	cl_entity_s* map = gEngfuncs.GetEntityByIndex(0);
 	if (map != nullptr && map->model != nullptr)

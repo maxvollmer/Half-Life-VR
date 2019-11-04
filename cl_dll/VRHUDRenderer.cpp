@@ -13,7 +13,7 @@
 #include "entity_state.h"
 #include "cl_entity.h"
 #include "ref_params.h"
-#include "in_defs.h" // PITCH YAW ROLL
+#include "in_defs.h"  // PITCH YAW ROLL
 #include "pm_movevars.h"
 #include "pm_shared.h"
 #include "pm_defs.h"
@@ -39,7 +39,7 @@
 #include "vr_gl.h"
 
 
-extern globalvars_t *gpGlobals;
+extern globalvars_t* gpGlobals;
 
 enum class HUDRenderMode
 {
@@ -62,21 +62,25 @@ namespace
 
 	constexpr const int VR_HUD_SPRITE_OFFSET_STEPSIZE = 40;
 
-	struct HUDSpriteSize { int width; int height; };
-	std::unordered_map<std::string, HUDSpriteSize> g_hudSpriteResolutions = {
-		{ std::string{ "sprites/640hud1.spr" }, HUDSpriteSize{ 256, 256 } },
-		{ std::string{ "sprites/640hud2.spr" }, HUDSpriteSize{ 256, 256 } },
-		{ std::string{ "sprites/640hud3.spr" }, HUDSpriteSize{ 256, 256 } },
-		{ std::string{ "sprites/640hud4.spr" }, HUDSpriteSize{ 256, 256 } },
-		{ std::string{ "sprites/640hud5.spr" }, HUDSpriteSize{ 256, 256 } },
-		{ std::string{ "sprites/640hud6.spr" }, HUDSpriteSize{ 256, 256 } },
-		{ std::string{ "sprites/640hud7.spr" }, HUDSpriteSize{ 256, 128 } },
-		{ std::string{ "sprites/640hud8.spr" }, HUDSpriteSize{ 256, 64 } },
-		{ std::string{ "sprites/640hud9.spr" }, HUDSpriteSize{ 256, 64 } },
+	struct HUDSpriteSize
+	{
+		int width;
+		int height;
 	};
-}
+	std::unordered_map<std::string, HUDSpriteSize> g_hudSpriteResolutions = {
+		{std::string{"sprites/640hud1.spr"}, HUDSpriteSize{256, 256}},
+		{std::string{"sprites/640hud2.spr"}, HUDSpriteSize{256, 256}},
+		{std::string{"sprites/640hud3.spr"}, HUDSpriteSize{256, 256}},
+		{std::string{"sprites/640hud4.spr"}, HUDSpriteSize{256, 256}},
+		{std::string{"sprites/640hud5.spr"}, HUDSpriteSize{256, 256}},
+		{std::string{"sprites/640hud6.spr"}, HUDSpriteSize{256, 256}},
+		{std::string{"sprites/640hud7.spr"}, HUDSpriteSize{256, 128}},
+		{std::string{"sprites/640hud8.spr"}, HUDSpriteSize{256, 64}},
+		{std::string{"sprites/640hud9.spr"}, HUDSpriteSize{256, 64}},
+	};
+}  // namespace
 
-void VRRenderer::RotateVectorX(Vector &vecToRotate, const float angle)
+void VRRenderer::RotateVectorX(Vector& vecToRotate, const float angle)
 {
 	if (angle != 0.f)
 	{
@@ -91,7 +95,7 @@ void VRRenderer::RotateVectorX(Vector &vecToRotate, const float angle)
 	}
 }
 
-void VRRenderer::RotateVectorY(Vector &vecToRotate, const float angle)
+void VRRenderer::RotateVectorY(Vector& vecToRotate, const float angle)
 {
 	if (angle != 0.f)
 	{
@@ -106,7 +110,7 @@ void VRRenderer::RotateVectorY(Vector &vecToRotate, const float angle)
 	}
 }
 
-void VRRenderer::RotateVectorZ(Vector &vecToRotate, const float angle)
+void VRRenderer::RotateVectorZ(Vector& vecToRotate, const float angle)
 {
 	if (angle != 0.f)
 	{
@@ -121,21 +125,21 @@ void VRRenderer::RotateVectorZ(Vector &vecToRotate, const float angle)
 	}
 }
 
-void VRRenderer::RotateVector(Vector &vecToRotate, const Vector &vecAngles, const bool reverse)
+void VRRenderer::RotateVector(Vector& vecToRotate, const Vector& vecAngles, const bool reverse)
 {
 	if (vecToRotate.LengthSquared() > 0.f && vecAngles.LengthSquared() > 0.f)
 	{
 		if (reverse)
 		{
-			RotateVectorY(vecToRotate, vecAngles.y / 180.*M_PI);
-			RotateVectorX(vecToRotate, vecAngles.x / 180.*M_PI);
-			RotateVectorZ(vecToRotate, vecAngles.z / 180.*M_PI);
+			RotateVectorY(vecToRotate, vecAngles.y / 180. * M_PI);
+			RotateVectorX(vecToRotate, vecAngles.x / 180. * M_PI);
+			RotateVectorZ(vecToRotate, vecAngles.z / 180. * M_PI);
 		}
 		else
 		{
-			RotateVectorZ(vecToRotate, vecAngles.z / 180.*M_PI);
-			RotateVectorX(vecToRotate, vecAngles.x / 180.*M_PI);
-			RotateVectorY(vecToRotate, vecAngles.y / 180.*M_PI);
+			RotateVectorZ(vecToRotate, vecAngles.z / 180. * M_PI);
+			RotateVectorX(vecToRotate, vecAngles.x / 180. * M_PI);
+			RotateVectorY(vecToRotate, vecAngles.y / 180. * M_PI);
 		}
 	}
 }
@@ -245,7 +249,7 @@ float GetVRHudSpriteScale(const VRHUDRenderType hudRenderType)
 
 Vector GetLocalActualHUDOffset(const std::string& name)
 {
-	float x = CVAR_GET_FLOAT(("vr_hud_"+ name +"_offset_x").data());
+	float x = CVAR_GET_FLOAT(("vr_hud_" + name + "_offset_x").data());
 	float y = CVAR_GET_FLOAT(("vr_hud_" + name + "_offset_y").data());
 	return Vector{ 8.f, x, y };
 }
@@ -353,7 +357,7 @@ bool VRRenderer::GetHUDSpriteOriginAndOrientation(const VRHUDRenderType hudRende
 	}
 }
 
-void RotatedGLCall(float x, float y, float z, Vector forward, Vector right, Vector up, std::function<void(float,float,float)> glCallback)
+void RotatedGLCall(float x, float y, float z, Vector forward, Vector right, Vector up, std::function<void(float, float, float)> glCallback)
 {
 	// Can't wrap my head around getting a proper GL matrix from HL's euler angle mess,
 	// so instead I just transform the coordinates in HL space by hand before sending them down to OpenGL
@@ -398,7 +402,7 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 	std::string hudTextureName = std::regex_replace(pSpriteModel->name, std::regex{ "sprites/([a-z0-9]+)\\.spr" }, m_hdTexturesEnabled ? "/hud/HD/$1.png" : "/hud/$1.png");
 
 	//unsigned int width, height;
-	glBindTexture(GL_TEXTURE_2D, VRTextureHelper::Instance().GetTexture(hudTextureName/*, width, height*/));
+	glBindTexture(GL_TEXTURE_2D, VRTextureHelper::Instance().GetTexture(hudTextureName /*, width, height*/));
 
 	// Half-Life thinks HUD textures are fixed size sprites and gives us absolute coordinates for that size.
 	// We get the size here independent of the actual texture resolution, and then further below we calculate proper texture coordinates from 0 to 1.
@@ -416,8 +420,8 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 		textureTop = static_cast<float>(prc->top + 1) / static_cast<float>(h);
 		textureBottom = static_cast<float>(prc->bottom - 1) / static_cast<float>(h);
 
-		spriteWidth = static_cast<float>(prc->right - prc->left) * GetVRHudSpriteScale(m_hudRenderType);
-		spriteHeight = static_cast<float>(prc->bottom - prc->top) * GetVRHudSpriteScale(m_hudRenderType);
+		spriteWidth = static_cast<float>(prc->right - prc->left)* GetVRHudSpriteScale(m_hudRenderType);
+		spriteHeight = static_cast<float>(prc->bottom - prc->top)* GetVRHudSpriteScale(m_hudRenderType);
 	}
 	else
 	{
@@ -449,10 +453,14 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 
 	// Draw sprite
 	glBegin(GL_QUADS);
-	glTexCoord2f(textureRight, textureTop);		RotatedGLCall(0.f, 0.f, spriteHeight, spriteForward, spriteRight, spriteUp, &glVertex3f);
-	glTexCoord2f(textureLeft, textureTop);		RotatedGLCall(spriteWidth, 0.f, spriteHeight, spriteForward, spriteRight, spriteUp, &glVertex3f);
-	glTexCoord2f(textureLeft, textureBottom);	RotatedGLCall(spriteWidth, 0.f, 0.f, spriteForward, spriteRight, spriteUp, &glVertex3f);
-	glTexCoord2f(textureRight, textureBottom);	RotatedGLCall(0.f, 0.f, 0.f, spriteForward, spriteRight, spriteUp, &glVertex3f);
+	glTexCoord2f(textureRight, textureTop);
+	RotatedGLCall(0.f, 0.f, spriteHeight, spriteForward, spriteRight, spriteUp, &glVertex3f);
+	glTexCoord2f(textureLeft, textureTop);
+	RotatedGLCall(spriteWidth, 0.f, spriteHeight, spriteForward, spriteRight, spriteUp, &glVertex3f);
+	glTexCoord2f(textureLeft, textureBottom);
+	RotatedGLCall(spriteWidth, 0.f, 0.f, spriteForward, spriteRight, spriteUp, &glVertex3f);
+	glTexCoord2f(textureRight, textureBottom);
+	RotatedGLCall(0.f, 0.f, 0.f, spriteForward, spriteRight, spriteUp, &glVertex3f);
 	glEnd();
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -488,7 +496,7 @@ void VRRenderer::RenderHUDSprites()
 	glPopAttrib();
 }
 
-void VRRenderer::GetStartingPosForHUDRenderType(const VRHUDRenderType hudRenderType, float & hudStartPositionUpOffset, float & hudStartPositionRightOffset)
+void VRRenderer::GetStartingPosForHUDRenderType(const VRHUDRenderType hudRenderType, float& hudStartPositionUpOffset, float& hudStartPositionRightOffset)
 {
 	switch (hudRenderType)
 	{
@@ -553,8 +561,7 @@ void InterceptSPR_Set(HSPRITE_VALVE hPic, int r, int g, int b)
 {
 	gVRRenderer.InterceptSPR_Set(hPic, r, g, b);
 }
-void InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t *prc)
+void InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t* prc)
 {
 	gVRRenderer.InterceptSPR_DrawAdditive(frame, x, y, prc);
 }
-

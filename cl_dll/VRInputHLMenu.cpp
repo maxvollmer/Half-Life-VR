@@ -19,7 +19,7 @@
 
 namespace
 {
-	IGameConsole *gGameConsole = nullptr;
+	IGameConsole* gGameConsole = nullptr;
 	bool IsConsoleOpen()
 	{
 		if (!gGameConsole)
@@ -31,13 +31,13 @@ namespace
 				if (gameUIFactory)
 				{
 					int returnCode;
-					gGameConsole = (IGameConsole *)gameUIFactory(GAMECONSOLE_INTERFACE_VERSION, &returnCode);
+					gGameConsole = (IGameConsole*)gameUIFactory(GAMECONSOLE_INTERFACE_VERSION, &returnCode);
 				}
 			}
 		}
 		return gGameConsole && gGameConsole->IsConsoleVisible();
 	}
-}
+}  // namespace
 
 void VRInput::CreateHLMenu()
 {
@@ -66,13 +66,10 @@ void VRInput::CreateHLMenu()
 	vr::VRTextureBounds_t textureBounds = { 0.f, 0.f, 1.f, 1.f };
 	vr::VROverlay()->SetOverlayTextureBounds(m_hlMenu, &textureBounds);
 
-	vr::VROverlay()->SetOverlayAlpha(m_hlMenu, opacity);	// no error handling, we don't care if this fails
+	vr::VROverlay()->SetOverlayAlpha(m_hlMenu, opacity);  // no error handling, we don't care if this fails
 
 	vr::HmdMatrix34_t transform = {
-		1.f, 0.0f, 0.0f, 0.f,
-		0.0f, 1.f, 0.0f, 0.2f,
-		0.0f, 0.0f, 1.0f, -1.f
-	};
+		1.f, 0.0f, 0.0f, 0.f, 0.0f, 1.f, 0.0f, 0.2f, 0.0f, 0.0f, 1.0f, -1.f };
 	error = vr::VROverlay()->SetOverlayTransformTrackedDeviceRelative(m_hlMenu, vr::k_unTrackedDeviceIndex_Hmd, &transform);
 	//error = vr::VROverlay()->SetOverlayTransformAbsolute(m_hlMenu, vr::TrackingUniverseStanding, &transform);
 	if (error != vr::VROverlayError_None)
@@ -145,7 +142,7 @@ void VRInput::ShowHLMenu()
 			//auto error = vr::VROverlay()->ShowKeyboard(vr::k_EGamepadTextInputModeNormal, vr::k_EGamepadTextInputLineModeSingleLine, "HL:VR Console Input Keyboard", 1024, "", false, 0);
 			//if (error != vr::VROverlayError_None && error != vr::VROverlayError_KeyboardAlreadyInUse)
 			{
-			//	gEngfuncs.Con_DPrintf("Could not show keyboard overlay: %s\n", vr::VROverlay()->GetOverlayErrorNameFromEnum(error));
+				//	gEngfuncs.Con_DPrintf("Could not show keyboard overlay: %s\n", vr::VROverlay()->GetOverlayErrorNameFromEnum(error));
 			}
 			// set to true even if we got an error, otherwise console gets spammed with the error message every frame
 			m_vrMenuKeyboardOpen = true;

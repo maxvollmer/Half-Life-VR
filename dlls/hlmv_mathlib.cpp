@@ -12,22 +12,22 @@
 
 // Modified to compile with hl.dll - Max Vollmer - 2019-04-07
 
-#pragma warning( disable : 4244 )
-#pragma warning( disable : 4237 )
-#pragma warning( disable : 4305 )
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4237)
+#pragma warning(disable : 4305)
 
 #include "hlmv_mathlib.h"
 
 
 double VectorLength(vec3_t v)
 {
-	int		i;
-	double	length;
+	int i;
+	double length;
 
 	length = 0;
 	for (i = 0; i < 3; i++)
 		length += v[i] * v[i];
-	length = sqrt(length);		// FIXME
+	length = sqrt(length);  // FIXME
 
 	return length;
 }
@@ -35,7 +35,7 @@ double VectorLength(vec3_t v)
 
 int VectorCompare(vec3_t v1, vec3_t v2)
 {
-	int		i;
+	int i;
 
 	for (i = 0; i < 3; i++)
 		if (fabs(v1[i] - v2[i]) > EQUAL_EPSILON)
@@ -78,8 +78,8 @@ void ClearBounds(vec3_t mins, vec3_t maxs)
 
 void AddPointToBounds(vec3_t v, vec3_t mins, vec3_t maxs)
 {
-	int		i;
-	vec_t	val;
+	int i;
+	vec_t val;
 
 	for (i = 0; i < 3; i++)
 	{
@@ -91,7 +91,7 @@ void AddPointToBounds(vec3_t v, vec3_t mins, vec3_t maxs)
 	}
 }
 
-void R_ConcatTransforms(const float (*in1)[4], const float (*in2)[4], float (*out)[4])
+void R_ConcatTransforms(const float(*in1)[4], const float(*in2)[4], float(*out)[4])
 {
 	out[0][0] = in1[0][0] * in2[0][0] + in1[0][1] * in2[1][0] +
 		in1[0][2] * in2[2][0];
@@ -132,8 +132,8 @@ void VectorTransform(const vec3_t in1, const float in2[3][4], vec3_t out)
 
 void AngleQuaternion(const vec3_t angles, vec4_t quaternion)
 {
-	float		angle;
-	float		sr, sp, sy, cr, cp, cy;
+	float angle;
+	float sr, sp, sy, cr, cp, cy;
 
 	// FIXME: rescale the inputs to 1/2 angle
 	angle = angles[2] * 0.5;
@@ -146,15 +146,14 @@ void AngleQuaternion(const vec3_t angles, vec4_t quaternion)
 	sr = sin(angle);
 	cr = cos(angle);
 
-	quaternion[0] = sr * cp*cy - cr * sp*sy; // X
-	quaternion[1] = cr * sp*cy + sr * cp*sy; // Y
-	quaternion[2] = cr * cp*sy - sr * sp*cy; // Z
-	quaternion[3] = cr * cp*cy + sr * sp*sy; // W
+	quaternion[0] = sr * cp * cy - cr * sp * sy;  // X
+	quaternion[1] = cr * sp * cy + sr * cp * sy;  // Y
+	quaternion[2] = cr * cp * sy - sr * sp * cy;  // Z
+	quaternion[3] = cr * cp * cy + sr * sp * sy;  // W
 }
 
 void QuaternionMatrix(const vec4_t quaternion, float(*matrix)[4])
 {
-
 	matrix[0][0] = 1.0 - 2.0 * quaternion[1] * quaternion[1] - 2.0 * quaternion[2] * quaternion[2];
 	matrix[1][0] = 2.0 * quaternion[0] * quaternion[1] + 2.0 * quaternion[3] * quaternion[2];
 	matrix[2][0] = 2.0 * quaternion[0] * quaternion[2] - 2.0 * quaternion[3] * quaternion[1];
@@ -176,44 +175,51 @@ void QuaternionSlerp(const vec4_t p, vec4_t q, float t, vec4_t qt)
 	// decide if one of the quaternions is backwards
 	float a = 0;
 	float b = 0;
-	for (i = 0; i < 4; i++) {
-		a += (p[i] - q[i])*(p[i] - q[i]);
-		b += (p[i] + q[i])*(p[i] + q[i]);
+	for (i = 0; i < 4; i++)
+	{
+		a += (p[i] - q[i]) * (p[i] - q[i]);
+		b += (p[i] + q[i]) * (p[i] + q[i]);
 	}
-	if (a > b) {
-		for (i = 0; i < 4; i++) {
+	if (a > b)
+	{
+		for (i = 0; i < 4; i++)
+		{
 			q[i] = -q[i];
 		}
 	}
 
 	cosom = p[0] * q[0] + p[1] * q[1] + p[2] * q[2] + p[3] * q[3];
 
-	if ((1.0 + cosom) > 0.00000001) {
-		if ((1.0 - cosom) > 0.00000001) {
+	if ((1.0 + cosom) > 0.00000001)
+	{
+		if ((1.0 - cosom) > 0.00000001)
+		{
 			omega = acos(cosom);
 			sinom = sin(omega);
-			sclp = sin((1.0 - t)*omega) / sinom;
-			sclq = sin(t*omega) / sinom;
+			sclp = sin((1.0 - t) * omega) / sinom;
+			sclq = sin(t * omega) / sinom;
 		}
-		else {
+		else
+		{
 			sclp = 1.0 - t;
 			sclq = t;
 		}
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < 4; i++)
+		{
 			qt[i] = sclp * p[i] + sclq * q[i];
 		}
 	}
-	else {
+	else
+	{
 		qt[0] = -p[1];
 		qt[1] = p[0];
 		qt[2] = -p[3];
 		qt[3] = p[2];
 		sclp = sin((1.0 - t) * 0.5 * Q_PI);
 		sclq = sin(t * 0.5 * Q_PI);
-		for (i = 0; i < 3; i++) {
+		for (i = 0; i < 3; i++)
+		{
 			qt[i] = sclp * p[i] + sclq * qt[i];
 		}
 	}
 }
-
-

@@ -63,7 +63,7 @@ namespace HLVRLauncher
             {
                 AboutText.Inlines.Add(File.ReadAllText(HLVRPaths.VRReadme, Encoding.UTF8));
             }
-            catch(IOException e)
+            catch (IOException e)
             {
                 AboutText.Inlines.Clear();
                 AboutText.Inlines.Add("Couldn't load README.txt: " + e.Message);
@@ -179,7 +179,7 @@ namespace HLVRLauncher
             if (!cancel)
             {
                 singleProcessEnforcer.Dispose();
-                try { if (DebugMonitor.IsStarted) DebugMonitor.Stop(); } catch(Exception) { }
+                try { if (DebugMonitor.IsStarted) DebugMonitor.Stop(); } catch (Exception) { }
             }
         }
 

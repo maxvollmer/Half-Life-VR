@@ -5,7 +5,7 @@
 class CWorldsSmallestCup : public CBaseEntity
 {
 public:
-	virtual int ObjectCaps() { return FCAP_ACROSS_TRANSITION; }// | FCAP_MUST_SPAWN; }
+	virtual int ObjectCaps() { return FCAP_ACROSS_TRANSITION; }  // | FCAP_MUST_SPAWN; }
 
 	virtual void Spawn() override;
 	virtual void Precache() override;
@@ -15,10 +15,10 @@ private:
 	bool AmIInKleinersFace(CBaseEntity* pKleiner);
 	bool IsFallingOutOfWorld();
 
-	EHANDLE							m_hKleiner;
-	float							m_flKleinerFaceStart{ 0.f };
+	EHANDLE m_hKleiner;
+	float m_flKleinerFaceStart{ 0.f };
 
-	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal>		m_hAlreadySpokenKleiners;
+	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_hAlreadySpokenKleiners;
 
-	static EHANDLE					m_instance;
+	static EHANDLE m_instance;
 };

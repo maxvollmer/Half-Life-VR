@@ -23,11 +23,11 @@
 #include "VRRotatableEnt.h"
 
 
-#define SF_BUTTON_TOUCH_ONLY	256		// button only fires as a result of USE key.
-#define SF_DOOR_PASSABLE		8
-#define SF_DOOR_USE_ONLY		256		// door must be opened by player's use button.
+#define SF_BUTTON_TOUCH_ONLY 256  // button only fires as a result of USE key.
+#define SF_DOOR_PASSABLE     8
+#define SF_DOOR_USE_ONLY     256  // door must be opened by player's use button.
 
-#define	bits_COND_CLIENT_PUSH (bits_COND_SPECIAL1)
+#define bits_COND_CLIENT_PUSH (bits_COND_SPECIAL1)
 
 constexpr const int VR_MAX_ANGRY_GUNPOINT_DIST = 256;
 constexpr const int VR_INITIAL_ANGRY_GUNPOINT_TIME = 2;
@@ -64,15 +64,15 @@ float g_vrRetinaScannerLookTime = 0.f;
 bool g_vrRetinaScannerUsed = false;
 
 
-bool CheckShoulderTouch(CBaseMonster *pMonster, const Vector & pos)
+bool CheckShoulderTouch(CBaseMonster* pMonster, const Vector& pos)
 {
 	Vector posInMonsterLocalSpace = pos - pMonster->pev->origin;
-	if (posInMonsterLocalSpace.z >= (VR_SHOULDER_TOUCH_MIN_Z*pMonster->pev->scale) && posInMonsterLocalSpace.z <= (VR_SHOULDER_TOUCH_MAX_Z*pMonster->pev->scale))
+	if (posInMonsterLocalSpace.z >= (VR_SHOULDER_TOUCH_MIN_Z * pMonster->pev->scale) && posInMonsterLocalSpace.z <= (VR_SHOULDER_TOUCH_MAX_Z * pMonster->pev->scale))
 	{
 		float angle = -pMonster->pev->angles.y * M_PI / 180.f;
 		//float localX = cos(angle)*posInMonsterLocalSpace.x - sin(angle)*posInMonsterLocalSpace.y;
-		float localY = sin(angle)*posInMonsterLocalSpace.x + cos(angle)*posInMonsterLocalSpace.y;
-		if (fabs(localY) >= (VR_SHOULDER_TOUCH_MIN_Y*pMonster->pev->scale) && fabs(localY) <= (VR_SHOULDER_TOUCH_MAX_Y*pMonster->pev->scale))
+		float localY = sin(angle) * posInMonsterLocalSpace.x + cos(angle) * posInMonsterLocalSpace.y;
+		if (fabs(localY) >= (VR_SHOULDER_TOUCH_MIN_Y * pMonster->pev->scale) && fabs(localY) <= (VR_SHOULDER_TOUCH_MAX_Y * pMonster->pev->scale))
 		{
 			return true;
 		}
@@ -80,16 +80,15 @@ bool CheckShoulderTouch(CBaseMonster *pMonster, const Vector & pos)
 	return false;
 }
 
-bool CheckStopSignal(CBaseMonster *pMonster, const Vector & pos, const Vector & angles)
+bool CheckStopSignal(CBaseMonster* pMonster, const Vector& pos, const Vector& angles)
 {
 	Vector posInMonsterLocalSpace = pos - pMonster->pev->origin;
-	if (posInMonsterLocalSpace.z >= (VR_STOP_SIGNAL_MIN_Z*pMonster->pev->scale) && posInMonsterLocalSpace.z <= (VR_STOP_SIGNAL_MAX_Z*pMonster->pev->scale))
+	if (posInMonsterLocalSpace.z >= (VR_STOP_SIGNAL_MIN_Z * pMonster->pev->scale) && posInMonsterLocalSpace.z <= (VR_STOP_SIGNAL_MAX_Z * pMonster->pev->scale))
 	{
 		float angle = -pMonster->pev->angles.y * M_PI / 180.f;
-		float localX = cos(angle)*posInMonsterLocalSpace.x - sin(angle)*posInMonsterLocalSpace.y;
-		float localY = sin(angle)*posInMonsterLocalSpace.x + cos(angle)*posInMonsterLocalSpace.y;
-		if (localX >= (VR_STOP_SIGNAL_MIN_X*pMonster->pev->scale) && localX <= (VR_STOP_SIGNAL_MAX_X*pMonster->pev->scale)
-			&& localY >= (VR_STOP_SIGNAL_MIN_Y*pMonster->pev->scale) && localY <= (VR_STOP_SIGNAL_MAX_Y*pMonster->pev->scale))
+		float localX = cos(angle) * posInMonsterLocalSpace.x - sin(angle) * posInMonsterLocalSpace.y;
+		float localY = sin(angle) * posInMonsterLocalSpace.x + cos(angle) * posInMonsterLocalSpace.y;
+		if (localX >= (VR_STOP_SIGNAL_MIN_X * pMonster->pev->scale) && localX <= (VR_STOP_SIGNAL_MAX_X * pMonster->pev->scale) && localY >= (VR_STOP_SIGNAL_MIN_Y * pMonster->pev->scale) && localY <= (VR_STOP_SIGNAL_MAX_Y * pMonster->pev->scale))
 		{
 			// Stop signal is given when hand is pointing up and back of hand is facing away from ally
 			Vector forward;
@@ -98,7 +97,7 @@ bool CheckStopSignal(CBaseMonster *pMonster, const Vector & pos, const Vector & 
 			UTIL_MakeAimVectorsPrivate(angles, forward, up, nullptr);
 			UTIL_MakeAimVectorsPrivate(pMonster->pev->angles, monsterForward, nullptr, nullptr);
 			bool isHandFacingUp = DotProduct(forward, Vector(0, 0, 1)) > 0.9f;
-			bool isBackOfHandFacingAway = true;// DotProduct(up, monsterForward) > 0.9f;	// TODO: Buggy
+			bool isBackOfHandFacingAway = true;  // DotProduct(up, monsterForward) > 0.9f;	// TODO: Buggy
 			return isHandFacingUp && isBackOfHandFacingAway;
 		}
 	}
@@ -110,9 +109,7 @@ bool WasJustThrownByPlayer(CBasePlayer* pPlayer, EHANDLE hEntity)
 	if (hEntity->pev->owner != pPlayer->edict())
 		return false;
 
-	if (!FClassnameIs(hEntity->pev, "monster_satchel")
-		&& !FClassnameIs(hEntity->pev, "grenade")
-		&& !FClassnameIs(hEntity->pev, "monster_snark"))
+	if (!FClassnameIs(hEntity->pev, "monster_satchel") && !FClassnameIs(hEntity->pev, "grenade") && !FClassnameIs(hEntity->pev, "monster_snark"))
 		return false;
 
 	return (gpGlobals->time - hEntity->m_spawnTime) < 2.f;
@@ -125,10 +122,7 @@ bool IsUsableDoor(EHANDLE hEntity)
 
 bool IsNonInteractingEntity(EHANDLE hEntity)
 {
-	return (hEntity->pev->solid == SOLID_NOT && !IsUsableDoor(hEntity))
-		|| FClassnameIs(hEntity->pev, "func_wall")
-		|| FClassnameIs(hEntity->pev, "func_illusionary")
-		|| FClassnameIs(hEntity->pev, "vr_controllermodel");	// TODO/NOTE: If this mod gets ever patched up for multiplayer, and you want players to be able to crowbar-fight, this should probably be changed
+	return (hEntity->pev->solid == SOLID_NOT && !IsUsableDoor(hEntity)) || FClassnameIs(hEntity->pev, "func_wall") || FClassnameIs(hEntity->pev, "func_illusionary") || FClassnameIs(hEntity->pev, "vr_controllermodel");  // TODO/NOTE: If this mod gets ever patched up for multiplayer, and you want players to be able to crowbar-fight, this should probably be changed
 }
 
 bool IsReachable(CBasePlayer* pPlayer, const VRController::HitBox& hitbox)
@@ -157,7 +151,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 		return false;
 
 	// Rule out entities too far away
-	CBaseEntity *pWorld = CBaseEntity::Instance(INDEXENT(0));
+	CBaseEntity* pWorld = CBaseEntity::Instance(INDEXENT(0));
 	if (hEntity != pWorld)
 	{
 		Vector entityCenter = hEntity->pev->origin + (hEntity->pev->maxs + hEntity->pev->mins) * 0.5f;
@@ -193,13 +187,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 
 bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE hEntity)
 {
-	return FClassnameIs(hEntity->pev, "vr_easteregg")
-		|| FClassnameIs(hEntity->pev, "func_rot_button")
-		|| FClassnameIs(hEntity->pev, "momentary_rot_button")
-		|| (FClassnameIs(hEntity->pev, "func_door_rotating") && FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
-		|| FClassnameIs(hEntity->pev, "func_pushable")
-		|| (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f && FClassnameIs(hEntity->pev, "func_ladder"))
-		|| hEntity->IsDraggable();
+	return FClassnameIs(hEntity->pev, "vr_easteregg") || FClassnameIs(hEntity->pev, "func_rot_button") || FClassnameIs(hEntity->pev, "momentary_rot_button") || (FClassnameIs(hEntity->pev, "func_door_rotating") && FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY)) || FClassnameIs(hEntity->pev, "func_pushable") || (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f && FClassnameIs(hEntity->pev, "func_ladder")) || hEntity->IsDraggable();
 }
 
 constexpr const int VR_DRAG_DISTANCE_TOLERANCE = 64;
@@ -212,9 +200,9 @@ bool DistanceTooBigForDragging(EHANDLE hEntity, const VRController& controller)
 	return distance > (controller.GetRadius() + entityRadius + VR_DRAG_DISTANCE_TOLERANCE);
 }
 
-void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, const VRController& controller)
+void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, const VRController& controller)
 {
-	CBaseEntity *pEntity = nullptr;
+	CBaseEntity* pEntity = nullptr;
 	while (UTIL_FindAllEntities(&pEntity))
 	{
 		if (pEntity == pPlayer)
@@ -246,9 +234,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		// If we are dragging something draggable, we override all the booleans to avoid "losing" the entity due to fast movements
 		if (controller.IsDragging()
 			/*&& controller.GetWeaponId() == WEAPON_BAREHAND*/
-			&& controller.IsDraggedEntity(hEntity)
-			&& IsDraggableEntity(hEntity)
-			&& !DistanceTooBigForDragging(hEntity, controller))
+			&& controller.IsDraggedEntity(hEntity) && IsDraggableEntity(hEntity) && !DistanceTooBigForDragging(hEntity, controller))
 		{
 			isTouching = true;
 			didTouchChange = false;
@@ -301,16 +287,26 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer *pPlayer, 
 		Interaction::InteractionInfo hitting{ isHitting, didHitChange };
 		Interaction interaction{ touching, dragging, hitting, flHitDamage, intersectResult.hasresult ? intersectResult.hitpoint : controller.GetPosition() };
 
-		if (HandleEasterEgg(pPlayer, hEntity, controller, isTouching, didTouchChange));	// easter egg first, obviously the most important
-		else if (HandleRetinaScanners(pPlayer, hEntity, controller, isTouching, didTouchChange));
-		else if (HandleButtonsAndDoors(pPlayer, hEntity, controller, interaction));
-		else if (HandleRechargers(pPlayer, hEntity, controller, isTouching, didTouchChange));
-		else if (HandleTriggers(pPlayer, hEntity, controller, isTouching, didTouchChange));
-		else if (HandleBreakables(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
-		else if (HandlePushables(pPlayer, hEntity, controller, interaction));
-		else if (HandleGrabbables(pPlayer, hEntity, controller, interaction));
-		else if (HandleLadders(pPlayer, hEntity, controller, interaction));
-		else if (HandleAlliedMonsters(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage));
+		if (HandleEasterEgg(pPlayer, hEntity, controller, isTouching, didTouchChange))
+			;  // easter egg first, obviously the most important
+		else if (HandleRetinaScanners(pPlayer, hEntity, controller, isTouching, didTouchChange))
+			;
+		else if (HandleButtonsAndDoors(pPlayer, hEntity, controller, interaction))
+			;
+		else if (HandleRechargers(pPlayer, hEntity, controller, isTouching, didTouchChange))
+			;
+		else if (HandleTriggers(pPlayer, hEntity, controller, isTouching, didTouchChange))
+			;
+		else if (HandleBreakables(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage))
+			;
+		else if (HandlePushables(pPlayer, hEntity, controller, interaction))
+			;
+		else if (HandleGrabbables(pPlayer, hEntity, controller, interaction))
+			;
+		else if (HandleLadders(pPlayer, hEntity, controller, interaction))
+			;
+		else if (HandleAlliedMonsters(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage))
+			;
 		else if (isTouching && didTouchChange)
 		{
 			// Touch any entity not handled yet and set player velocity temporarily to controller velocity, as some entities (e.g. cockroaches) use the velocity in their touch logic
@@ -336,7 +332,7 @@ bool IsSoftWeapon(int weaponId)
 	}
 }
 
-float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult)
+float VRControllerInteractionManager::DoDamage(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult)
 {
 	if (hEntity->pev->solid == SOLID_NOT || hEntity->pev->solid == SOLID_TRIGGER)
 		return 0.f;
@@ -393,7 +389,7 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEn
 			{
 				dynamic_cast<CSqueak*>(pPlayer->m_pActiveItem)->m_fJustThrown = 1;
 				pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
-				CBaseEntity *pSqueak = CBaseEntity::Create("monster_snark", controller.GetPosition(), controller.GetAngles(), pPlayer->edict());
+				CBaseEntity* pSqueak = CBaseEntity::Create("monster_snark", controller.GetPosition(), controller.GetAngles(), pPlayer->edict());
 				pSqueak->pev->health = -1;
 				pSqueak->Killed(pPlayer->pev, DMG_CRUSH, GIB_ALWAYS);
 				pSqueak = nullptr;
@@ -420,7 +416,7 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer *pPlayer, EHANDLE hEn
 	return damage;
 }
 
-bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
 {
 	if (FClassnameIs(hEntity->pev, "vr_easteregg"))
 	{
@@ -441,15 +437,12 @@ bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer *pPlayer, EHAND
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleRetinaScanners(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleRetinaScanners(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
 {
 	if (g_vrRetinaScanners.count(hEntity) > 0)
 	{
 		Vector retinaScannerPosition = (hEntity->pev->absmax + hEntity->pev->absmin) / 2.f;
-		bool isLookingAtRetinaScanner = UTIL_IsFacing(pPlayer->pev->origin, pPlayer->pev->angles.ToViewAngles(), retinaScannerPosition)
-			&& ((pPlayer->EyePosition() - retinaScannerPosition).Length() < 32.f)
-			&& (pPlayer->EyePosition().z >= hEntity->pev->absmin.z)
-			&& (pPlayer->EyePosition().z <= hEntity->pev->absmax.z);
+		bool isLookingAtRetinaScanner = UTIL_IsFacing(pPlayer->pev->origin, pPlayer->pev->angles.ToViewAngles(), retinaScannerPosition) && ((pPlayer->EyePosition() - retinaScannerPosition).Length() < 32.f) && (pPlayer->EyePosition().z >= hEntity->pev->absmin.z) && (pPlayer->EyePosition().z <= hEntity->pev->absmax.z);
 
 		if (isLookingAtRetinaScanner)
 		{
@@ -486,7 +479,7 @@ bool VRControllerInteractionManager::HandleRetinaScanners(CBasePlayer *pPlayer, 
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
+bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
 {
 	// Don't touch activate retina scanners
 	if (g_vrRetinaScannerButtons.count(hEntity) > 0)
@@ -516,7 +509,7 @@ bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer *pPlayer,
 		{
 			if (interaction.touching.didChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
 			{
-				if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
+				if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY))  // touchable button
 				{
 					hEntity->Touch(pPlayer);
 				}
@@ -569,7 +562,7 @@ bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer *pPlayer,
 				{
 					if (interaction.dragging.didChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
 					{
-						if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // touchable button
+						if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY))  // touchable button
 						{
 							hEntity->Touch(pPlayer);
 						}
@@ -611,7 +604,7 @@ bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer *pPlayer,
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleRechargers(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleRechargers(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
 {
 	if (FClassnameIs(hEntity->pev, "func_healthcharger") || FClassnameIs(hEntity->pev, "func_recharge"))
 	{
@@ -621,11 +614,11 @@ bool VRControllerInteractionManager::HandleRechargers(CBasePlayer *pPlayer, EHAN
 		}
 		return true;
 	}
-		
+
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleTriggers(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleTriggers(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
 {
 	if (hEntity->pev->solid != SOLID_TRIGGER)
 		return false;
@@ -660,10 +653,7 @@ bool VRControllerInteractionManager::HandleTriggers(CBasePlayer *pPlayer, EHANDL
 			hEntity->Touch(pPlayer);
 		}
 	}
-	else if (std::string{ STRING(hEntity->pev->classname) }.find("item_") == 0
-		|| std::string{ STRING(hEntity->pev->classname) }.find("weapon_") == 0
-		|| std::string{ STRING(hEntity->pev->classname) }.find("ammo_") == 0
-		|| FClassnameIs(hEntity->pev, "weaponbox"))
+	else if (std::string{ STRING(hEntity->pev->classname) }.find("item_") == 0 || std::string{ STRING(hEntity->pev->classname) }.find("weapon_") == 0 || std::string{ STRING(hEntity->pev->classname) }.find("ammo_") == 0 || FClassnameIs(hEntity->pev, "weaponbox"))
 	{
 		if (isTouching)
 		{
@@ -681,21 +671,15 @@ bool VRControllerInteractionManager::HandleTriggers(CBasePlayer *pPlayer, EHANDL
 	return true;
 }
 
-bool VRControllerInteractionManager::HandleBreakables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
+bool VRControllerInteractionManager::HandleBreakables(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
 {
 	if (!FClassnameIs(hEntity->pev, "func_breakable"))
 		return false;
 
-	CBreakable *pBreakable = dynamic_cast<CBreakable*>((CBaseEntity*)hEntity);
+	CBreakable* pBreakable = dynamic_cast<CBreakable*>((CBaseEntity*)hEntity);
 
 	// Make sure breakables that are supposed to immediately break on melee attacks, do break.
-	if (pPlayer->HasWeapons()
-		&& pBreakable != nullptr
-		&& pBreakable->IsBreakable()
-		&& pBreakable->pev->takedamage != DAMAGE_NO
-		&& !FBitSet(pBreakable->pev->spawnflags, SF_BREAK_TRIGGER_ONLY)
-		&& FBitSet(pBreakable->pev->spawnflags, SF_BREAK_CROWBAR)
-		&& isHitting && didHitChange)
+	if (pPlayer->HasWeapons() && pBreakable != nullptr && pBreakable->IsBreakable() && pBreakable->pev->takedamage != DAMAGE_NO && !FBitSet(pBreakable->pev->spawnflags, SF_BREAK_TRIGGER_ONLY) && FBitSet(pBreakable->pev->spawnflags, SF_BREAK_CROWBAR) && isHitting && didHitChange)
 	{
 		pBreakable->TakeDamage(pPlayer->pev, pPlayer->pev, pBreakable->pev->health, DMG_CLUB);
 	}
@@ -703,12 +687,12 @@ bool VRControllerInteractionManager::HandleBreakables(CBasePlayer *pPlayer, EHAN
 	return true;
 }
 
-bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
+bool VRControllerInteractionManager::HandlePushables(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
 {
 	if (!FClassnameIs(hEntity->pev, "func_pushable"))
 		return false;
 
-	CPushable *pPushable = dynamic_cast<CPushable*>((CBaseEntity*)hEntity);
+	CPushable* pPushable = dynamic_cast<CPushable*>((CBaseEntity*)hEntity);
 	if (pPushable != nullptr)
 	{
 		if (interaction.touching.isSet)
@@ -744,16 +728,11 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 			Vector controllerDragStartPos;
 			Vector entityDragStartOrigin;
 			Vector dummy;
-			if (!onlyZ
-				&& interaction.dragging.isSet
-				&& controller.GetDraggedEntityPositions(hEntity,
-					dummy, controllerDragStartPos, entityDragStartOrigin, dummy,
-					dummy, dummy, dummy, dummy)
-				)
+			if (!onlyZ && interaction.dragging.isSet && controller.GetDraggedEntityPositions(hEntity, dummy, controllerDragStartPos, entityDragStartOrigin, dummy, dummy, dummy, dummy, dummy))
 			{
 				pPushable->pev->gravity = 0;
 				targetPos = entityDragStartOrigin + controller.GetPosition() - controllerDragStartPos;
-				targetPos.z = pushableOrigin.z;	// prevent lifting up, is buggy and allows for ugly cheating and exploits
+				targetPos.z = pushableOrigin.z;  // prevent lifting up, is buggy and allows for ugly cheating and exploits
 				isDragging = true;
 			}
 			else
@@ -814,18 +793,18 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 				float wishspeed;
 				if (isDragging)
 				{
-					wishspeed = moveDir.Length() / gpGlobals->frametime;		// when dragging, wishspeed is simply set to get there immediately this frame
+					wishspeed = moveDir.Length() / gpGlobals->frametime;  // when dragging, wishspeed is simply set to get there immediately this frame
 				}
 				else
 				{
-					constexpr const float Minspeed = 20.f;							// never go below this, or boxes won't move at all
-					float targetspeed = moveDir.Length() * 10.f;					// 0.1 seconds to reach target
-					float controllerspeed = controller.GetVelocity().Length();		// use controller speed, so smacking boxes with force pushes them faster
+					constexpr const float Minspeed = 20.f;                               // never go below this, or boxes won't move at all
+					float targetspeed = moveDir.Length() * 10.f;            // 0.1 seconds to reach target
+					float controllerspeed = controller.GetVelocity().Length();  // use controller speed, so smacking boxes with force pushes them faster
 
-					wishspeed = (std::max)(controllerspeed, (std::max)(targetspeed, Minspeed));	// take the highest speed value
+					wishspeed = (std::max)(controllerspeed, (std::max)(targetspeed, Minspeed));  // take the highest speed value
 				}
 
-				float speed = (std::min)(wishspeed, pPushable->MaxSpeed());		// cap at pushable's maxspeed
+				float speed = (std::min)(wishspeed, pPushable->MaxSpeed());  // cap at pushable's maxspeed
 
 				pPushable->EmitPushSound(speed);
 				pPushable->pev->velocity = moveDir.Normalize() * speed;
@@ -842,7 +821,7 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer *pPlayer, EHAND
 	return true;
 }
 
-bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
+bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
 {
 	if (hEntity->IsDraggable())
 	{
@@ -871,7 +850,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer *pPlayer, EHAN
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleLadders(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
+bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
 {
 	if (FClassnameIs(hEntity->pev, "func_ladder") && CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f)
 	{
@@ -902,8 +881,14 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer *pPlayer, EHANDLE
 				Vector playerDragStartOrigin;
 				Vector dummy;
 				if (controller.GetDraggedEntityPositions(hEntity,
-					controllerDragStartOffset, dummy, dummy, playerDragStartOrigin,
-					dummy, dummy, dummy, dummy))
+					controllerDragStartOffset,
+					dummy,
+					dummy,
+					playerDragStartOrigin,
+					dummy,
+					dummy,
+					dummy,
+					dummy))
 				{
 					// get new position from controller movement
 					Vector targetPos = playerDragStartOrigin + controllerDragStartOffset - controller.GetOffset();
@@ -926,10 +911,10 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer *pPlayer, EHANDLE
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer *pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
+bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
 {
 	// Special handling of barneys and scientists that don't hate us (yet)
-	CBaseMonster *pMonster = hEntity->MyMonsterPointer();
+	CBaseMonster* pMonster = hEntity->MyMonsterPointer();
 	if (pMonster != nullptr && (FClassnameIs(pMonster->pev, "monster_barney") || FClassnameIs(pMonster->pev, "monster_scientist")) && !pMonster->HasMemory(bits_MEMORY_PROVOKED))
 	{
 		if (isTouching)
@@ -970,19 +955,12 @@ bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer *pPlayer, 
 	return false;
 }
 
-void VRControllerInteractionManager::GetAngryIfAtGunpoint(CBasePlayer *pPlayer, CBaseMonster *pMonster, const VRController& controller)
+void VRControllerInteractionManager::GetAngryIfAtGunpoint(CBasePlayer* pPlayer, CBaseMonster* pMonster, const VRController& controller)
 {
 	Vector weaponForward;
 	UTIL_MakeVectorsPrivate(pPlayer->GetWeaponViewAngles(), weaponForward, nullptr, nullptr);
 
-	if (!pMonster->m_hEnemy
-		&& controller.IsValid()
-		&& IsWeaponWithRange(controller.GetWeaponId())
-		&& (controller.GetPosition() - pMonster->pev->origin).Length() < VR_MAX_ANGRY_GUNPOINT_DIST
-		&& UTIL_IsFacing(controller.GetPosition(), pPlayer->GetWeaponViewAngles(), pMonster->pev->origin)
-		&& UTIL_IsFacing(pMonster->pev->origin, pMonster->pev->angles.ToViewAngles(), controller.GetPosition())
-		&& pMonster->HasClearSight(controller.GetPosition())
-		&& UTIL_CheckTraceIntersectsEntity(controller.GetPosition(), controller.GetPosition() + (weaponForward * VR_MAX_ANGRY_GUNPOINT_DIST), pMonster))
+	if (!pMonster->m_hEnemy && controller.IsValid() && IsWeaponWithRange(controller.GetWeaponId()) && (controller.GetPosition() - pMonster->pev->origin).Length() < VR_MAX_ANGRY_GUNPOINT_DIST && UTIL_IsFacing(controller.GetPosition(), pPlayer->GetWeaponViewAngles(), pMonster->pev->origin) && UTIL_IsFacing(pMonster->pev->origin, pMonster->pev->angles.ToViewAngles(), controller.GetPosition()) && pMonster->HasClearSight(controller.GetPosition()) && UTIL_CheckTraceIntersectsEntity(controller.GetPosition(), controller.GetPosition() + (weaponForward * VR_MAX_ANGRY_GUNPOINT_DIST), pMonster))
 	{
 		pMonster->vr_flStopSignalTime = 0;
 		pMonster->vr_flShoulderTouchTime = 0;
@@ -997,7 +975,7 @@ void VRControllerInteractionManager::GetAngryIfAtGunpoint(CBasePlayer *pPlayer, 
 				if (FClassnameIs(pMonster->pev, "monster_barney"))
 				{
 					pMonster->PlaySentence("BA_GNPNT_PSSD", 4, VOL_NORM, ATTN_NORM);
-					pMonster->m_MonsterState = MONSTERSTATE_COMBAT;	// Make barneys draw their gun and point at player
+					pMonster->m_MonsterState = MONSTERSTATE_COMBAT;  // Make barneys draw their gun and point at player
 				}
 				else
 				{
@@ -1053,7 +1031,7 @@ void VRControllerInteractionManager::GetAngryIfAtGunpoint(CBasePlayer *pPlayer, 
 	}
 }
 
-void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer *pPlayer, CBaseMonster *pMonster, const VRController& controller, bool isTouching)
+void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer* pPlayer, CBaseMonster* pMonster, const VRController& controller, bool isTouching)
 {
 	// Check if we're touching the shoulder for 1 second (follow me!)
 	if (isTouching)
@@ -1062,7 +1040,7 @@ void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer *pPlay
 		if (!IsWeapon(controller.GetWeaponId()) && (controller.IsDragging() || CheckShoulderTouch(pMonster, controller.GetPosition())))
 		{
 			pMonster->ClearConditions(bits_COND_CLIENT_PUSH);
-			if (dynamic_cast<CTalkMonster*>(pMonster)->CanFollow()) // Ignore if can't follow
+			if (dynamic_cast<CTalkMonster*>(pMonster)->CanFollow())  // Ignore if can't follow
 			{
 				if (pMonster->vr_flShoulderTouchTime == 0)
 				{
@@ -1088,7 +1066,7 @@ void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer *pPlay
 		}
 	}
 	// Tell allies to stop following by holding hand in front of their face
-	else if (pMonster->IsFollowing() && !IsWeapon(controller.GetWeaponId()) &&CheckStopSignal(pMonster, controller.GetPosition(), controller.GetAngles()))
+	else if (pMonster->IsFollowing() && !IsWeapon(controller.GetWeaponId()) && CheckStopSignal(pMonster, controller.GetPosition(), controller.GetAngles()))
 	{
 		pMonster->vr_flShoulderTouchTime = 0;
 		if (pMonster->vr_flStopSignalTime == 0)
@@ -1124,7 +1102,7 @@ bool IsInLedge(CBasePlayer* pPlayer, const Vector& pos, float* ledgeheight)
 {
 	TraceResult tr;
 	UTIL_TraceLine(pos + Vector{ 0.f, 0.f, 32.f }, pos, ignore_monsters, pPlayer->edict(), &tr);
-	if (tr.flFraction < 1.f && DotProduct(tr.vecPlaneNormal, Vector{0.f, 0.f, 1.f}) > 0.8f)
+	if (tr.flFraction < 1.f && DotProduct(tr.vecPlaneNormal, Vector{ 0.f, 0.f, 1.f }) > 0.8f)
 	{
 		*ledgeheight = tr.vecEndPos.z;
 		return true;
@@ -1135,7 +1113,7 @@ bool IsInLedge(CBasePlayer* pPlayer, const Vector& pos, float* ledgeheight)
 
 Vector CalculateLedgeTargetPosition(CBasePlayer* pPlayer, const Vector& controllerPosition1, float ledgeheight1, const Vector& controllerPosition2, float ledgeheight2, bool* isValidPosition)
 {
-	Vector middlePoint = (Vector{ controllerPosition1.x, controllerPosition1.y, ledgeheight1 } + Vector{ controllerPosition2.x, controllerPosition2.y, ledgeheight2 }) * 0.5f;
+	Vector middlePoint = (Vector{ controllerPosition1.x, controllerPosition1.y, ledgeheight1 } +Vector{ controllerPosition2.x, controllerPosition2.y, ledgeheight2 }) * 0.5f;
 	middlePoint.z -= VEC_DUCK_HULL_MIN.z;
 	middlePoint.z += 1.f;
 
@@ -1220,12 +1198,7 @@ void VRControllerInteractionManager::DoMultiControllerActions(CBasePlayer* pPlay
 		}
 	}
 	// starting to pull
-	else if (controller1.IsDragging() && controller2.IsDragging()
-		&& IsPullingDownFastEnoughForLedge(controller1.GetVelocity())
-		&& IsPullingDownFastEnoughForLedge(controller2.GetVelocity())
-		&& AreInSamePlane(controller1.GetPosition(), controller2.GetPosition())
-		&& IsInLedge(pPlayer, controller1.GetPosition(), &ledgeheight1)
-		&& IsInLedge(pPlayer, controller2.GetPosition(), &ledgeheight2))
+	else if (controller1.IsDragging() && controller2.IsDragging() && IsPullingDownFastEnoughForLedge(controller1.GetVelocity()) && IsPullingDownFastEnoughForLedge(controller2.GetVelocity()) && AreInSamePlane(controller1.GetPosition(), controller2.GetPosition()) && IsInLedge(pPlayer, controller1.GetPosition(), &ledgeheight1) && IsInLedge(pPlayer, controller2.GetPosition(), &ledgeheight2))
 	{
 		bool isValidPosition = false;
 		Vector ledgeTargetPosition = CalculateLedgeTargetPosition(pPlayer, controller1.GetPosition(), ledgeheight1, controller2.GetPosition(), ledgeheight2, &isValidPosition);
@@ -1255,4 +1228,3 @@ void VRControllerInteractionManager::DoMultiControllerActions(CBasePlayer* pPlay
 		}
 	}
 }
-

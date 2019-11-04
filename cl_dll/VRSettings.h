@@ -8,7 +8,6 @@
 class VRSettings
 {
 public:
-
 	void Init();
 
 	void InitialUpdateCVARSFromJson();
@@ -30,11 +29,11 @@ private:
 	bool WasSettingsFileChanged();
 	bool WasAnyCVARChanged();
 
-	std::unordered_map<std::string, std::string>			m_cvarCache;
-	void*													m_watchVRFolderHandle;
-	RetryMode												m_needsRetry{ RetryMode::NONE };
-	long long												m_lastSettingsFileChangedTime{ 0 };
-	long long												m_nextSettingCheckTime{ 0 };
+	std::unordered_map<std::string, std::string> m_cvarCache;
+	void* m_watchVRFolderHandle;
+	RetryMode m_needsRetry{ RetryMode::NONE };
+	long long m_lastSettingsFileChangedTime{ 0 };
+	long long m_nextSettingCheckTime{ 0 };
 };
 
 extern VRSettings g_vrSettings;

@@ -62,5 +62,5 @@ namespace VR
 				gVRRenderer.GetHelper()->ClearPose(VRPoseType::TELEPORTER);
 			}
 		}
-	}
-}
+	}  // namespace Input
+}  // namespace VR

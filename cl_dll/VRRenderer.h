@@ -1,15 +1,15 @@
 #pragma once
 
-#define VEC_HULL_MIN		Vector(-16, -16, -36)
-#define VEC_HULL_MAX		Vector( 16,  16,  36)
-#define VEC_DUCK_HULL_MIN	Vector(-16, -16, -18 )
-#define VEC_DUCK_HULL_MAX	Vector( 16,  16,  18)
+#define VEC_HULL_MIN      Vector(-16, -16, -36)
+#define VEC_HULL_MAX      Vector(16, 16, 36)
+#define VEC_DUCK_HULL_MIN Vector(-16, -16, -18)
+#define VEC_DUCK_HULL_MAX Vector(16, 16, 18)
 
 class VRHelper;
 
 enum class VRHUDRenderType
 {
-	NONE=0,
+	NONE = 0,
 	HEALTH,
 	BATTERY,
 	FLASHLIGHT,
@@ -50,7 +50,7 @@ public:
 
 	void InterceptHUDRedraw(float time, int intermission);
 
-	void GetViewAngles(float * angles);
+	void GetViewAngles(float* angles);
 	Vector GetMovementAngles();
 
 
@@ -59,7 +59,7 @@ public:
 	void ReverseCullface();
 	void RestoreCullface();
 
-	bool ShouldMirrorCurrentModel(cl_entity_t *ent);
+	bool ShouldMirrorCurrentModel(cl_entity_t* ent);
 	bool IsCurrentModelHandWithSkeletalData(cl_entity_t* ent, float fingerCurl[5]);
 
 	// Called in Frame if no game is running
@@ -73,7 +73,7 @@ public:
 	// Called by HUD draw code
 	void VRHUDDrawBegin(const VRHUDRenderType renderType);
 	void InterceptSPR_Set(HSPRITE_VALVE hPic, int r, int g, int b);
-	void InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t *prc);
+	void InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_t* prc);
 	void VRHUDDrawFinished();
 
 	VRHelper* GetHelper() { return vrHelper; }
@@ -93,24 +93,24 @@ public:
 
 	void SetViewOfs(const Vector& viewOfs);
 
-	void RotateVectorX(Vector &vecToRotate, const float angle);
-	void RotateVectorY(Vector &vecToRotate, const float angle);
-	void RotateVectorZ(Vector &vecToRotate, const float angle);
-	void RotateVector(Vector &vecToRotate, const Vector &vecAngles, const bool reverse = false);
+	void RotateVectorX(Vector& vecToRotate, const float angle);
+	void RotateVectorY(Vector& vecToRotate, const float angle);
+	void RotateVectorZ(Vector& vecToRotate, const float angle);
+	void RotateVector(Vector& vecToRotate, const Vector& vecAngles, const bool reverse = false);
 	void HLAnglesToGLMatrix(const Vector& angles, float matrix[16]);
 
 private:
 	struct model_s* m_currentMapModel{ nullptr };
 	bool m_hdTexturesEnabled{ false };
 	void CheckAndIfNecessaryReplaceHDTextures();
-	void ReplaceAllTexturesWithHDVersion(struct cl_entity_s *ent, bool enableHD);
-	void CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s *ent);
+	void ReplaceAllTexturesWithHDVersion(struct cl_entity_s* ent, bool enableHD);
+	void CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s* ent);
 
 	void DebugRenderPhysicsPolygons();
 
 	bool m_fIsOnlyClientDraw = false;
 
-	VRHelper * vrHelper = nullptr;
+	VRHelper* vrHelper = nullptr;
 
 	bool m_isInGame{ false };
 	bool m_isInMenu{ false };
@@ -137,12 +137,11 @@ private:
 
 	bool m_isVeryFirstFrameEver{ true };
 
-	void GetStartingPosForHUDRenderType(const VRHUDRenderType m_hudRenderType, float & hudStartPositionUpOffset, float & hudStartPositionRightOffset);
+	void GetStartingPosForHUDRenderType(const VRHUDRenderType m_hudRenderType, float& hudStartPositionUpOffset, float& hudStartPositionRightOffset);
 	bool GetHUDSpriteOriginAndOrientation(const VRHUDRenderType m_hudRenderType, Vector& origin, Vector& forward, Vector& right, Vector& up);
 	bool GetHUDAmmoOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up);
 	bool GetHUDHealthOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up);
 	bool GetHUDFlashlightOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up);
-
 };
 
 extern VRRenderer gVRRenderer;

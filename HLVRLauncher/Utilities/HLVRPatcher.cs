@@ -194,7 +194,7 @@ namespace HLVRLauncher.Utilities
                                 Brush color;
                                 if (text.ToLower().Contains("error"))
                                     color = Brushes.Red;
-                                else if(text.ToLower().Contains("warning"))
+                                else if (text.ToLower().Contains("warning"))
                                     color = Brushes.OrangeRed;
                                 else
                                     color = Brushes.Black;
@@ -312,8 +312,8 @@ namespace HLVRLauncher.Utilities
                     {
                         File.Delete(hlDLLPath);
                     }
-                    }
                 }
+            }
             catch (Exception) { }    // ignore exceptions here, UpdateState will make sure GUI represents patch state of game
             try
             {
@@ -331,7 +331,7 @@ namespace HLVRLauncher.Utilities
                     File.Delete(hlDLLPath);
                 }
             }
-            catch (Exception) {}    // ignore exceptions here, UpdateState will make sure GUI represents patch state of game
+            catch (Exception) { }    // ignore exceptions here, UpdateState will make sure GUI represents patch state of game
             try
             {
                 if (restoreBackup && File.Exists(hlDLLPath + ".bak"))

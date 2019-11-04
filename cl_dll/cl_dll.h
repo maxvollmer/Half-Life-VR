@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -28,10 +28,10 @@
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef float vec_t;
-typedef int (*pfnUserMsgHook)(const char *pszName, int iSize, void *pbuf);
+typedef int (*pfnUserMsgHook)(const char* pszName, int iSize, void* pbuf);
 
 #include "util_vector.h"
-#define EXPORT	_declspec( dllexport )
+#define EXPORT _declspec(dllexport)
 
 #include "../engine/cdll_int.h"
 #include "../dlls/cdll_dll.h"

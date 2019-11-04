@@ -26,168 +26,119 @@ private:
 
 	const std::unordered_map<std::string, std::unordered_map<std::string, CrushMode>> m_entityCrushModes{
 		{
-			{
-				"c1a0c",
-				{{
-					{ "*63", CrushMode::WHEN_MOVING }	// toppling over server rack
-				}}
-			},
-			{
-				"c1a1c",
-				{{
-					{ "*147", CrushMode::WHEN_MOVING },	// under water grinder thingies
-					{ "*148", CrushMode::WHEN_MOVING },
-					{ "*31", CrushMode::WHEN_MOVING },
-					{ "*32", CrushMode::WHEN_MOVING },
-				}}
-			},
-			{
-				"c1a1f",
-				{{
-					{ "*47", CrushMode::WHEN_MOVING }	// toppling over server rack
-				}}
-			},
-			{
-				"c1a2",
-				{{
-					{ "*76", CrushMode::WHEN_MOVING }	// that one evil ventilator
-				}}
-			},
-			{
-				"c1a3",
-				{{
-					{ "*18", CrushMode::NEVER }		// ventilator in we got hostiles
-				}}
-			},
-			{
-				"c1a3c",
-				{{
-					{ "*1", CrushMode::NEVER }		// ventilator in we got hostiles
-				}}
-			},
-			{
-				"c1a4e",
-				{{
-					{ "*1", CrushMode::WHEN_MOVING }	// that huge ventilator near the tentacles
-				}}
-			},
-			{
-				"c2a1",
-				{{
-					{ "*97", CrushMode::WHEN_MOVING }	// cave-in near gargantua before on a rail
-				}}
-			},
-			{
-				"c2a3",
-				{{
-					{ "*89", CrushMode::WHEN_MOVING }	// cave-in under water after on a rail
-				}}
-			},
-			{
-				"c2a3b",
-				{{
-					{ "*4", CrushMode::NEVER },		// stompy thingies where that spit monster is
-					{ "*8", CrushMode::NEVER },		// these are the bottom ones and should not kill
-					{ "*9", CrushMode::NEVER },
-					{ "*10", CrushMode::WHEN_MOVING_DOWN },	// these are the top ones and should kill when moving down
-					{ "*11", CrushMode::WHEN_MOVING_DOWN },
-					{ "*12", CrushMode::WHEN_MOVING_DOWN },
-				}}
-			},
-			{
-				"c2a3e",
-				{{
-					{ "*6", CrushMode::WHEN_MOVING },	// the trash compactor walls
-					{ "*13", CrushMode::WHEN_MOVING }
-				}}
-			},
-			{
-				"c2a4b",
-				{{
-					{ "*3", CrushMode::NEVER },			// underwater ventilator players need to swim through
-					{ "*6", CrushMode::WHEN_MOVING },	// underwater grinder thingy players must avoid
-					{ "*9", CrushMode::WHEN_MOVING },	// underwater grinder thingy players must avoid
-					{ "*16", CrushMode::NEVER },		// underwater grinder thingy players must swim under
-					
-					{ "*19", CrushMode::WHEN_MOVING_DOWN },		// stompy piston thingies on conveyor belts
-					{ "*20", CrushMode::WHEN_MOVING_DOWN },
-					{ "*21", CrushMode::WHEN_MOVING_DOWN },
-					{ "*22", CrushMode::WHEN_MOVING_DOWN },
-					{ "*23", CrushMode::WHEN_MOVING_DOWN },
-					{ "*24", CrushMode::WHEN_MOVING_DOWN },
-				}}
-			},
-			{
-				"c2a4c",
-				{{
-					{ "*4", CrushMode::WHEN_MOVING },	// the sideways murder thingies in residue processing
-					{ "*5", CrushMode::WHEN_MOVING },
-					{ "*6", CrushMode::WHEN_MOVING },
+			{"c1a0c",
+			 {{
+				 {"*63", CrushMode::WHEN_MOVING}  // toppling over server rack
+			 }}},
+			{"c1a1c",
+			 {{
+				 {"*147", CrushMode::WHEN_MOVING},  // under water grinder thingies
+				 {"*148", CrushMode::WHEN_MOVING},
+				 {"*31", CrushMode::WHEN_MOVING},
+				 {"*32", CrushMode::WHEN_MOVING},
+			 }}},
+			{"c1a1f",
+			 {{
+				 {"*47", CrushMode::WHEN_MOVING}  // toppling over server rack
+			 }}},
+			{"c1a2",
+			 {{
+				 {"*76", CrushMode::WHEN_MOVING}  // that one evil ventilator
+			 }}},
+			{"c1a3",
+			 {{
+				 {"*18", CrushMode::NEVER}  // ventilator in we got hostiles
+			 }}},
+			{"c1a3c",
+			 {{
+				 {"*1", CrushMode::NEVER}  // ventilator in we got hostiles
+			 }}},
+			{"c1a4e",
+			 {{
+				 {"*1", CrushMode::WHEN_MOVING}  // that huge ventilator near the tentacles
+			 }}},
+			{"c2a1",
+			 {{
+				 {"*97", CrushMode::WHEN_MOVING}  // cave-in near gargantua before on a rail
+			 }}},
+			{"c2a3",
+			 {{
+				 {"*89", CrushMode::WHEN_MOVING}  // cave-in under water after on a rail
+			 }}},
+			{"c2a3b",
+			 {{
+				 {"*4", CrushMode::NEVER},  // stompy thingies where that spit monster is
+				 {"*8", CrushMode::NEVER},  // these are the bottom ones and should not kill
+				 {"*9", CrushMode::NEVER},
+				 {"*10", CrushMode::WHEN_MOVING_DOWN},  // these are the top ones and should kill when moving down
+				 {"*11", CrushMode::WHEN_MOVING_DOWN},
+				 {"*12", CrushMode::WHEN_MOVING_DOWN},
+			 }}},
+			{"c2a3e",
+			 {{{"*6", CrushMode::WHEN_MOVING},  // the trash compactor walls
+			   {"*13", CrushMode::WHEN_MOVING}}}},
+			{"c2a4b",
+			 {{
+				 {"*3", CrushMode::NEVER},        // underwater ventilator players need to swim through
+				 {"*6", CrushMode::WHEN_MOVING},  // underwater grinder thingy players must avoid
+				 {"*9", CrushMode::WHEN_MOVING},  // underwater grinder thingy players must avoid
+				 {"*16", CrushMode::NEVER},       // underwater grinder thingy players must swim under
 
-					{ "*2", CrushMode::WHEN_MOVING_DOWN },	// the downwards stompy murder thingies in residue processing
-					{ "*3", CrushMode::WHEN_MOVING_DOWN },
-					{ "*46", CrushMode::WHEN_MOVING_DOWN },
+				 {"*19", CrushMode::WHEN_MOVING_DOWN},  // stompy piston thingies on conveyor belts
+				 {"*20", CrushMode::WHEN_MOVING_DOWN},
+				 {"*21", CrushMode::WHEN_MOVING_DOWN},
+				 {"*22", CrushMode::WHEN_MOVING_DOWN},
+				 {"*23", CrushMode::WHEN_MOVING_DOWN},
+				 {"*24", CrushMode::WHEN_MOVING_DOWN},
+			 }}},
+			{"c2a4c",
+			 {{
+				 {"*4", CrushMode::WHEN_MOVING},  // the sideways murder thingies in residue processing
+				 {"*5", CrushMode::WHEN_MOVING},
+				 {"*6", CrushMode::WHEN_MOVING},
 
-					{ "*29", CrushMode::WHEN_MOVING },	// the rolling murder thingies in residue processing
-					{ "*30", CrushMode::WHEN_MOVING },
-					{ "*31", CrushMode::WHEN_MOVING },
+				 {"*2", CrushMode::WHEN_MOVING_DOWN},  // the downwards stompy murder thingies in residue processing
+				 {"*3", CrushMode::WHEN_MOVING_DOWN},
+				 {"*46", CrushMode::WHEN_MOVING_DOWN},
 
-					{ "*38", CrushMode::WHEN_MOVING },	// the crushy-bity murder thingies at the end of residue processing
-					{ "*39", CrushMode::WHEN_MOVING },
-				}}
-			},
-			{
-				"c2a4e",
-				{{
-					{ "*54", CrushMode::WHEN_MOVING },	// that super weird automated murder equipment in questionable ethics
-					{ "*56", CrushMode::WHEN_MOVING }
-				}}
-			},
-			{
-				"c2a5",
-				{{
-					{ "*133", CrushMode::WHEN_MOVING },	// underwater ventilators in the canyon dam (need to be shut off from control tower)
-					{ "*134", CrushMode::WHEN_MOVING }
-				}}
-			},
-			{
-				"c2a5f",
-				{{
-					{ "*139", CrushMode::HEALING_EXPLOIT },	// the healing exploit doors
-					{ "*144", CrushMode::HEALING_EXPLOIT }
-				}}
-			},
-			{
-				"c2a5g",
-				{{
-					{ "*95", CrushMode::WHEN_MOVING },	// the cars being kicked by gargantua in that underground parking lot
-					{ "*93", CrushMode::WHEN_MOVING },
-					{ "*96", CrushMode::WHEN_MOVING }
-				}}
-			},
-			{
-				"c3a1",
-				{{
-					{ "*8", CrushMode::WHEN_MOVING },	// cave-in ceiling pieces
-					{ "*9", CrushMode::WHEN_MOVING },
-					{ "*10", CrushMode::WHEN_MOVING },
-					{ "*11", CrushMode::WHEN_MOVING },
-					{ "*12", CrushMode::WHEN_MOVING },
-					{ "*13", CrushMode::WHEN_MOVING },
-					{ "*14", CrushMode::WHEN_MOVING },
-					{ "*27", CrushMode::WHEN_MOVING },
-				}}
-			},
-			{
-				"c3a1b",
-				{{
-					{ "*47", CrushMode::WHEN_MOVING },	// collapsing walls in that alien vs military warzone
-					{ "*48", CrushMode::WHEN_MOVING },
-					{ "*49", CrushMode::WHEN_MOVING },
-				}}
-			},
-		}
-	};
+				 {"*29", CrushMode::WHEN_MOVING},  // the rolling murder thingies in residue processing
+				 {"*30", CrushMode::WHEN_MOVING},
+				 {"*31", CrushMode::WHEN_MOVING},
+
+				 {"*38", CrushMode::WHEN_MOVING},  // the crushy-bity murder thingies at the end of residue processing
+				 {"*39", CrushMode::WHEN_MOVING},
+			 }}},
+			{"c2a4e",
+			 {{{"*54", CrushMode::WHEN_MOVING},  // that super weird automated murder equipment in questionable ethics
+			   {"*56", CrushMode::WHEN_MOVING}}}},
+			{"c2a5",
+			 {{{"*133", CrushMode::WHEN_MOVING},  // underwater ventilators in the canyon dam (need to be shut off from control tower)
+			   {"*134", CrushMode::WHEN_MOVING}}}},
+			{"c2a5f",
+			 {{{"*139", CrushMode::HEALING_EXPLOIT},  // the healing exploit doors
+			   {"*144", CrushMode::HEALING_EXPLOIT}}}},
+			{"c2a5g",
+			 {{{"*95", CrushMode::WHEN_MOVING},  // the cars being kicked by gargantua in that underground parking lot
+			   {"*93", CrushMode::WHEN_MOVING},
+			   {"*96", CrushMode::WHEN_MOVING}}}},
+			{"c3a1",
+			 {{
+				 {"*8", CrushMode::WHEN_MOVING},  // cave-in ceiling pieces
+				 {"*9", CrushMode::WHEN_MOVING},
+				 {"*10", CrushMode::WHEN_MOVING},
+				 {"*11", CrushMode::WHEN_MOVING},
+				 {"*12", CrushMode::WHEN_MOVING},
+				 {"*13", CrushMode::WHEN_MOVING},
+				 {"*14", CrushMode::WHEN_MOVING},
+				 {"*27", CrushMode::WHEN_MOVING},
+			 }}},
+			{"c3a1b",
+			 {{
+				 {"*47", CrushMode::WHEN_MOVING},  // collapsing walls in that alien vs military warzone
+				 {"*48", CrushMode::WHEN_MOVING},
+				 {"*49", CrushMode::WHEN_MOVING},
+			 }}},
+		} };
 
 	CrushMode GetCrushModeFromEntity(CBaseEntity* pEntity);
 
@@ -209,7 +160,7 @@ bool VRNotifyStuckEnt(int player, int ent)
 
 	CBaseEntity* pEntity = nullptr;
 	INDEXENT(ent);
-	edict_t *pent = INDEXENT(ent);
+	edict_t* pent = INDEXENT(ent);
 	if (pent && !pent->free && !FNullEnt(pent))
 	{
 		pEntity = CBaseEntity::Instance(pent);
@@ -253,7 +204,7 @@ bool VRCrushEntityHandler::CheckEntAndMaybeCrushPlayer(CBaseEntity* pEntity, CBa
 {
 	// already dead
 	if (pPlayer->pev->deadflag != DEAD_NO)
-		return true;	// dont unstuck
+		return true;  // dont unstuck
 
 	CrushMode crushMode = GetCrushModeFromEntity(pEntity);
 
@@ -264,7 +215,7 @@ bool VRCrushEntityHandler::CheckEntAndMaybeCrushPlayer(CBaseEntity* pEntity, CBa
 		pEntity->pev->dmg < 0.f)
 	{
 		pPlayer->TakeDamage(pEntity->pev, pEntity->pev, pEntity->pev->dmg, DMG_CRUSH);
-		return true;	// dont unstuck
+		return true;  // dont unstuck
 	}
 
 	bool crush = false;
@@ -296,7 +247,7 @@ bool VRCrushEntityHandler::CheckEntAndMaybeCrushPlayer(CBaseEntity* pEntity, CBa
 	if (crush)
 	{
 		pPlayer->TakeDamage(pEntity->pev, pEntity->pev, pPlayer->pev->health + pPlayer->pev->armorvalue + pEntity->pev->dmg + 1000.f, DMG_CRUSH | DMG_ALWAYSGIB);
-		return true;	// dont unstuck
+		return true;  // dont unstuck
 	}
 
 	return false;

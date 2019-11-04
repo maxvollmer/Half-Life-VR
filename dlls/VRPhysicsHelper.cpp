@@ -18,7 +18,7 @@ namespace reactphysics3d
 #include "plane.h"
 #include "com_model.h"
 #include "studio.h"
-extern struct playermove_s *PM_GetPlayerMove(void);
+extern struct playermove_s* PM_GetPlayerMove(void);
 
 #include <fstream>
 #include <memory>
@@ -42,19 +42,20 @@ constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_VERSION = 104;
 constexpr const unsigned int ENGINE_MODEL_ARRAY_SIZE = 1024;
 const model_t* g_EngineModelArrayPointer = nullptr;
 
-enum NeedLoadFlag {
-	IS_LOADED = 0,		// If set, this brush model is valid and loaded
-	NEEDS_LOADING = 1,	// If set, this brush model still needs to be loaded
-	UNREFERENCED = 2	// If set, this brush model isn't used by the current map
+enum NeedLoadFlag
+{
+	IS_LOADED = 0,  // If set, this brush model is valid and loaded
+	NEEDS_LOADING = 1,  // If set, this brush model still needs to be loaded
+	UNREFERENCED = 2   // If set, this brush model isn't used by the current map
 };
 
 class MyCollisionCallback : public reactphysics3d::CollisionCallback
 {
 public:
-
 	MyCollisionCallback(std::function<void(const CollisionCallbackInfo&)> callback) :
 		m_callback{ callback }
-	{}
+	{
+	}
 
 	virtual void notifyContact(const CollisionCallbackInfo& collisionCallbackInfo) override
 	{
@@ -66,12 +67,12 @@ private:
 };
 
 // Returns a pointer to a model_t instance holding BSP data for the current map - Max Vollmer, 2018-01-21
-const model_t * GetWorldBSPModel()
+const model_t* GetWorldBSPModel()
 {
-	playermove_s *pmove = PM_GetPlayerMove();
+	playermove_s* pmove = PM_GetPlayerMove();
 	if (pmove != nullptr)
 	{
-		for (const physent_t & physent : pmove->physents)
+		for (const physent_t& physent : pmove->physents)
 		{
 			if (physent.info == 0)
 			{
@@ -92,7 +93,7 @@ const model_t* GetEngineModelArray()
 	if (g_EngineModelArrayPointer == nullptr)
 	{
 		// Get the world model and check that it's valid (loaded)
-		const model_t *worldmodel = GetWorldBSPModel();
+		const model_t* worldmodel = GetWorldBSPModel();
 		if (worldmodel != nullptr && worldmodel->needload == 0)
 		{
 			g_EngineModelArrayPointer = worldmodel;
@@ -147,7 +148,7 @@ void* FindStudioModelByName(const char* name)
 */
 
 // Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
-const model_t * GetBSPModel(CBaseEntity *pEntity)
+const model_t* GetBSPModel(CBaseEntity* pEntity)
 {
 	// Check if entity is world
 	if (pEntity->edict() == INDEXENT(0))
@@ -164,7 +165,7 @@ const model_t * GetBSPModel(CBaseEntity *pEntity)
 	return nullptr;
 }
 
-bool IsSolidInPhysicsWorld(CBaseEntity *pEntity)
+bool IsSolidInPhysicsWorld(CBaseEntity* pEntity)
 {
 	return FClassnameIs(pEntity->pev, "func_wall") || FClassnameIs(pEntity->pev, "func_illusionary");
 }
@@ -185,17 +186,15 @@ constexpr const int PHYSICS_STEPS = 30;
 constexpr const int MAX_PHYSICS_STEPS = PHYSICS_STEPS * 1.5;
 constexpr const rp3d::decimal PHYSICS_STEP_TIME = 1. / PHYSICS_STEPS;
 
-constexpr const rp3d::decimal MAX_PHYSICS_TIME_PER_FRAME = 1. / 30.;	// Never drop below 30fps due to physics calculations
+constexpr const rp3d::decimal MAX_PHYSICS_TIME_PER_FRAME = 1. / 30.;  // Never drop below 30fps due to physics calculations
 
 
-void TEMPTODO_RemoveInvalidTriangles(const std::vector<Vector3> & vertices, std::vector<int32_t>& indices)
+void TEMPTODO_RemoveInvalidTriangles(const std::vector<Vector3>& vertices, std::vector<int32_t>& indices)
 {
 	// remove invalid triangles (TODO: Find out where these come from, this shouldn't be happening anymore!)
 	for (uint32_t i = 0; i < indices.size(); i += 3)
 	{
-		if ((vertices[indices[i]] - vertices[indices[i + 1]]).lengthSquare() < EPSILON
-			|| (vertices[indices[i]] - vertices[indices[i + 2]]).lengthSquare() < EPSILON
-			|| (vertices[indices[i + 1]] - vertices[indices[i + 2]]).lengthSquare() < EPSILON)
+		if ((vertices[indices[i]] - vertices[indices[i + 1]]).lengthSquare() < EPSILON || (vertices[indices[i]] - vertices[indices[i + 2]]).lengthSquare() < EPSILON || (vertices[indices[i + 1]] - vertices[indices[i + 2]]).lengthSquare() < EPSILON)
 		{
 #ifdef _DEBUG
 			ALERT(at_console, "(VRPhysicsHelper)Warning: Found invalid triangle at index %i, removed!\n", i);
@@ -209,24 +208,24 @@ void TEMPTODO_RemoveInvalidTriangles(const std::vector<Vector3> & vertices, std:
 }
 
 
-inline Vector3 HLVecToRP3DVec(const Vector & hlVec)
+inline Vector3 HLVecToRP3DVec(const Vector& hlVec)
 {
 	return Vector3{ hlVec.x * HL_TO_RP3D, hlVec.y * HL_TO_RP3D, hlVec.z * HL_TO_RP3D };
 }
 
-inline Vector RP3DVecToHLVec(const Vector3 & rp3dVec)
+inline Vector RP3DVecToHLVec(const Vector3& rp3dVec)
 {
 	return Vector{ float(rp3dVec.x * RP3D_TO_HL), float(rp3dVec.y * RP3D_TO_HL), float(rp3dVec.z * RP3D_TO_HL) };
 }
 
 inline rp3d::Quaternion HLAnglesToRP3DQuaternion(const Vector& angles)
 {
-// up / down
-#define	PITCH	0
+	// up / down
+#define PITCH 0
 // left / right
-#define	YAW		1
+#define YAW 1
 // fall over
-#define	ROLL	2 
+#define ROLL 2
 
 	rp3d::Quaternion rollQuaternion;
 	rollQuaternion.setAllValues(sin(angles[ROLL] * M_PI / 360.), 0.f, 0.f, cos(angles[ROLL] * M_PI / 360.));
@@ -274,13 +273,14 @@ public:
 	}
 };
 
-enum class PlaneMajor {
+enum class PlaneMajor
+{
 	X,
 	Y,
 	Z
 };
 
-inline PlaneMajor PlaneMajorFromNormal(const Vector & normal)
+inline PlaneMajor PlaneMajorFromNormal(const Vector& normal)
 {
 	if (fabs(normal.x) > fabs(normal.y))
 	{
@@ -317,28 +317,22 @@ public:
 class TranslatedPlane
 {
 public:
-	TranslatedPlane(const Vector & vert, const Vector & normal)
-		: normal{ normal }
-		, dist{ DotProduct(normal, vert) }
-		, hash{ intHasher(dist) ^ intHasher(normal.x * 10) ^ intHasher(normal.y * 10) ^ intHasher(normal.z * 10) }
-		, major{ PlaneMajorFromNormal(normal) }
+	TranslatedPlane(const Vector& vert, const Vector& normal) :
+		normal{ normal }, dist{ DotProduct(normal, vert) }, hash{ intHasher(dist) ^ intHasher(normal.x * 10) ^ intHasher(normal.y * 10) ^ intHasher(normal.z * 10) }, major{ PlaneMajorFromNormal(normal) }
 	{
 	}
 
-	inline bool IsCoPlanar(const TranslatedPlane & other) const
+	inline bool IsCoPlanar(const TranslatedPlane& other) const
 	{
-		return fabs(dist - other.dist) < EPSILON
-			&& fabs(normal.x - other.normal.x) < EPSILON
-			&& fabs(normal.y - other.normal.y) < EPSILON
-			&& fabs(normal.z - other.normal.z) < EPSILON;
+		return fabs(dist - other.dist) < EPSILON && fabs(normal.x - other.normal.x) < EPSILON && fabs(normal.y - other.normal.y) < EPSILON && fabs(normal.z - other.normal.z) < EPSILON;
 	}
 
-	inline const Vector & GetNormal() const
+	inline const Vector& GetNormal() const
 	{
 		return normal;
 	}
 
-	inline const PlaneMajor & GetMajor() const
+	inline const PlaneMajor& GetMajor() const
 	{
 		return major;
 	}
@@ -390,14 +384,14 @@ typedef std::unordered_map<TranslatedPlane, std::unordered_map<Vector, VertexMet
 class TranslatedFace
 {
 public:
-	TranslatedFace(const msurface_t & face, const Vector & origin, PlaneVertexMetaDataMap & planeVertexMetaData)
-		: plane{ origin + face.polys->verts[0], FBitSet(face.flags, SURF_PLANEBACK) ? -face.plane->normal : face.plane->normal }
+	TranslatedFace(const msurface_t& face, const Vector& origin, PlaneVertexMetaDataMap& planeVertexMetaData) :
+		plane{ origin + face.polys->verts[0], FBitSet(face.flags, SURF_PLANEBACK) ? -face.plane->normal : face.plane->normal }
 	{
 		for (int i = 0; i < face.polys->numverts; ++i)
 		{
-			Vector & vertexBefore = origin + face.polys->verts[(i > 0) ? (i - 1) : (face.polys->numverts - 1)];
-			Vector & vertex = origin + face.polys->verts[i];
-			Vector & vertexAfter = origin + face.polys->verts[(i < (face.polys->numverts - 1)) ? (i + 1) : 0];
+			Vector& vertexBefore = origin + face.polys->verts[(i > 0) ? (i - 1) : (face.polys->numverts - 1)];
+			Vector& vertex = origin + face.polys->verts[i];
+			Vector& vertexAfter = origin + face.polys->verts[(i < (face.polys->numverts - 1)) ? (i + 1) : 0];
 
 			float vertDot = DotProduct((vertexBefore - vertex).Normalize(), (vertexAfter - vertex).Normalize());
 
@@ -418,13 +412,13 @@ public:
 		}
 	}
 
-	inline const std::vector<Vector> & GetVertices() const
+	inline const std::vector<Vector>& GetVertices() const
 	{
 		return vertices;
 	}
 
 	// Returns those vertices of A and B that enclose a gap between these faces (if one exists)
-	bool GetGapVertices(const TranslatedFace & other, std::vector<Vector> & mergedVertices, PlaneVertexMetaDataMap & planeVertexMetaData) const
+	bool GetGapVertices(const TranslatedFace& other, std::vector<Vector>& mergedVertices, PlaneVertexMetaDataMap& planeVertexMetaData) const
 	{
 		if (vertices.size() < 3 || other.vertices.size() < 3)
 		{
@@ -440,23 +434,21 @@ public:
 		}
 	}
 
-	inline const TranslatedPlane & GetPlane() const
+	inline const TranslatedPlane& GetPlane() const
 	{
 		return plane;
 	}
 
 private:
-	inline bool IsCloseEnough(const TranslatedFace & other) const
+	inline bool IsCloseEnough(const TranslatedFace& other) const
 	{
 		// Since faces in a HL BSP are always maximum 240 units wide,
 		// if any vertex from this face is further than MIN_DISTANCE (240 + player width) units
 		// away from any vertex in the other face, these faces can't have a gap too narrow for a player
-		return fabs(vertices[0].x - other.vertices[0].x) < float(MIN_DISTANCE)
-			&& fabs(vertices[0].y - other.vertices[0].y) < float(MIN_DISTANCE)
-			&& fabs(vertices[0].z - other.vertices[0].z) < float(MIN_DISTANCE);
+		return fabs(vertices[0].x - other.vertices[0].x) < float(MIN_DISTANCE) && fabs(vertices[0].y - other.vertices[0].y) < float(MIN_DISTANCE) && fabs(vertices[0].z - other.vertices[0].z) < float(MIN_DISTANCE);
 	}
 
-	bool GetGapVerticesInPlane(const TranslatedFace & other, std::vector<Vector> & mergedVertices, PlaneVertexMetaDataMap & planeVertexMetaData, const size_t a, const size_t b) const
+	bool GetGapVerticesInPlane(const TranslatedFace& other, std::vector<Vector>& mergedVertices, PlaneVertexMetaDataMap& planeVertexMetaData, const size_t a, const size_t b) const
 	{
 		// We only want the two outermost vertices of each face, since we don't care about overlapping triangles and we don't have to deal with arbitrary shapes this way - also keeps amount of triangles down
 		std::vector<Vector> verticesA, verticesB;
@@ -465,7 +457,7 @@ private:
 		const Vector faceDir = (other.vecAnyPointInside - vecAnyPointInside).Normalize();
 
 		// Loop over all vertices and check if we have a gap
-		for (const Vector & vec : vertices)
+		for (const Vector& vec : vertices)
 		{
 			// Discard vertex if it's completely enclosed by other faces
 			if (CVAR_GET_FLOAT("vr_debug_physics") >= 1.f && planeVertexMetaData[plane][vec].totalCos < (EPSILON - 4.f))
@@ -478,7 +470,7 @@ private:
 				continue;
 			}
 			bool foundOther = false;
-			for (const Vector & vecOther : other.vertices)
+			for (const Vector& vecOther : other.vertices)
 			{
 				// Discard vertex if it's completely enclosed by other faces
 				if (CVAR_GET_FLOAT("vr_debug_physics") >= 2.f && planeVertexMetaData[plane][vecOther].totalCos < (EPSILON - 4.f))
@@ -486,7 +478,7 @@ private:
 					continue;
 				}
 				float distanceSquared = (vec - vecOther).LengthSquared();
-				if (distanceSquared < (EPSILON*EPSILON))
+				if (distanceSquared < (EPSILON * EPSILON))
 				{
 					// If any two vertices are equal (that is: if the faces are touching), we can safely cancel this algorithm,
 					// because of what we know about the simple architecture used throughout Half-Life maps:
@@ -543,7 +535,7 @@ public:
 
 typedef std::unordered_map<TranslatedPlane, std::vector<TranslatedFace>, TranslatedPlane::Hash, TranslatedPlane::Equal> PlaneFacesMap;
 
-size_t CollectFaces(const model_t * model, const Vector & origin, PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData)
+size_t CollectFaces(const model_t* model, const Vector& origin, PlaneFacesMap& planeFaces, PlaneVertexMetaDataMap& planeVertexMetaData)
 {
 	size_t faceCount = 0;
 	if (model != nullptr)
@@ -558,7 +550,7 @@ size_t CollectFaces(const model_t * model, const Vector & origin, PlaneFacesMap 
 	return faceCount;
 }
 
-void TriangulateGapsBetweenCoplanarFaces(const TranslatedFace & faceA, const TranslatedFace & faceB, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<int> & indices)
+void TriangulateGapsBetweenCoplanarFaces(const TranslatedFace& faceA, const TranslatedFace& faceB, PlaneVertexMetaDataMap& planeVertexMetaData, std::vector<Vector3>& vertices, std::vector<int>& indices)
 {
 	std::vector<Vector> mergedVertices;
 	if (faceA.GetGapVertices(faceB, mergedVertices, planeVertexMetaData))
@@ -579,30 +571,38 @@ void TriangulateGapsBetweenCoplanarFaces(const TranslatedFace & faceA, const Tra
 			// Triangulate vertices
 
 			// a-b-c
-			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 1); indices.push_back(indexoffset + 2);
+			indices.push_back(indexoffset + 0);
+			indices.push_back(indexoffset + 1);
+			indices.push_back(indexoffset + 2);
 			// a-c-b
-			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 1);
+			indices.push_back(indexoffset + 0);
+			indices.push_back(indexoffset + 2);
+			indices.push_back(indexoffset + 1);
 
 			if (mergedVertices.size() == 4)
 			{
 				// a-c-d
-				indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 3);
+				indices.push_back(indexoffset + 0);
+				indices.push_back(indexoffset + 2);
+				indices.push_back(indexoffset + 3);
 				// a-d-c
-				indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 3); indices.push_back(indexoffset + 2);
+				indices.push_back(indexoffset + 0);
+				indices.push_back(indexoffset + 3);
+				indices.push_back(indexoffset + 2);
 			}
 		}
 	}
 }
 
-void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<Vector3>* normals, std::vector<int> & indices, bool triangulateGaps)
+void TriangulateBSPFaces(const PlaneFacesMap& planeFaces, PlaneVertexMetaDataMap& planeVertexMetaData, std::vector<Vector3>& vertices, std::vector<Vector3>* normals, std::vector<int>& indices, bool triangulateGaps)
 {
 	for (auto pair : planeFaces)
 	{
-		const TranslatedPlane & plane = pair.first;
-		const std::vector<TranslatedFace> & faces = pair.second;
+		const TranslatedPlane& plane = pair.first;
+		const std::vector<TranslatedFace>& faces = pair.second;
 		for (size_t faceIndexA = 0; faceIndexA < faces.size(); ++faceIndexA)
 		{
-			const TranslatedFace & faceA = faces[faceIndexA];
+			const TranslatedFace& faceA = faces[faceIndexA];
 
 			// Get face vertices
 			std::vector<Vector3> faceVertices;
@@ -644,7 +644,7 @@ void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMa
 			{
 				for (size_t faceIndexB = faceIndexA + 1; faceIndexB < faces.size(); ++faceIndexB)
 				{
-					const TranslatedFace & faceB = faces[faceIndexB];
+					const TranslatedFace& faceB = faces[faceIndexB];
 					TriangulateGapsBetweenCoplanarFaces(faceA, faceB, planeVertexMetaData, vertices, indices);
 				}
 			}
@@ -653,7 +653,7 @@ void TriangulateBSPFaces(const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMa
 }
 
 // Get vertices and indices of world (triangulation of bsp data (map and non-moving solid entities))
-void TriangulateBSPModel(const model_t* model, PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<Vector3>* normals, std::vector<int> & indices, bool triangulateGaps)
+void TriangulateBSPModel(const model_t* model, PlaneFacesMap& planeFaces, PlaneVertexMetaDataMap& planeVertexMetaData, std::vector<Vector3>& vertices, std::vector<Vector3>* normals, std::vector<int>& indices, bool triangulateGaps)
 {
 	// Collect faces of bsp model
 	CollectFaces(model, Vector{}, planeFaces, planeVertexMetaData);
@@ -661,7 +661,7 @@ void TriangulateBSPModel(const model_t* model, PlaneFacesMap & planeFaces, Plane
 	// If world, also collect faces of non-moving solid entities
 	if (model == GetWorldBSPModel())
 	{
-		CBaseEntity *pEnt = nullptr;
+		CBaseEntity* pEnt = nullptr;
 		while (UTIL_FindEntityByFilter(&pEnt, IsSolidInPhysicsWorld))
 		{
 			CollectFaces(GetBSPModel(pEnt), pEnt->pev->origin, planeFaces, planeVertexMetaData);
@@ -672,16 +672,11 @@ void TriangulateBSPModel(const model_t* model, PlaneFacesMap & planeFaces, Plane
 	TriangulateBSPFaces(planeFaces, planeVertexMetaData, vertices, normals, indices, triangulateGaps);
 }
 
-void RaycastPotentialVerticeGaps(CollisionBody * dynamicMap, const Vector3 & checkVertexInPhysSpace, const Vector3 & checkVertexAfterInPhysSpace, const Vector3 & checkDirInPhysSpace, const Vector3 & correctionalOffsetInPhysSpace, std::vector<Vector3> & vertices, std::vector<int> & indices, const size_t vertexIndexOffset)
+void RaycastPotentialVerticeGaps(CollisionBody* dynamicMap, const Vector3& checkVertexInPhysSpace, const Vector3& checkVertexAfterInPhysSpace, const Vector3& checkDirInPhysSpace, const Vector3& correctionalOffsetInPhysSpace, std::vector<Vector3>& vertices, std::vector<int>& indices, const size_t vertexIndexOffset)
 {
 	RaycastInfo raycastInfo1{};
 	RaycastInfo raycastInfo2{};
-	if (dynamicMap->raycast({ checkVertexInPhysSpace, checkVertexInPhysSpace + checkDirInPhysSpace }, raycastInfo1)
-		&& raycastInfo1.hitFraction > 0.
-		&& raycastInfo1.hitFraction < 1.
-		&& dynamicMap->raycast({ checkVertexAfterInPhysSpace, checkVertexAfterInPhysSpace + checkDirInPhysSpace }, raycastInfo2)
-		&& raycastInfo2.hitFraction > 0.
-		&& raycastInfo2.hitFraction < 1.)
+	if (dynamicMap->raycast({ checkVertexInPhysSpace, checkVertexInPhysSpace + checkDirInPhysSpace }, raycastInfo1) && raycastInfo1.hitFraction > 0. && raycastInfo1.hitFraction < 1. && dynamicMap->raycast({ checkVertexAfterInPhysSpace, checkVertexAfterInPhysSpace + checkDirInPhysSpace }, raycastInfo2) && raycastInfo2.hitFraction > 0. && raycastInfo2.hitFraction < 1.)
 	{
 		// Get gap vertices
 		std::vector<Vector3> gapVertices;
@@ -698,35 +693,43 @@ void RaycastPotentialVerticeGaps(CollisionBody * dynamicMap, const Vector3 & che
 		{
 			size_t indexoffset = vertexIndexOffset + vertices.size();
 			vertices.insert(vertices.end(), gapVertices.begin(), gapVertices.end());
-			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 1); indices.push_back(indexoffset + 2);
-			indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 1);
+			indices.push_back(indexoffset + 0);
+			indices.push_back(indexoffset + 1);
+			indices.push_back(indexoffset + 2);
+			indices.push_back(indexoffset + 0);
+			indices.push_back(indexoffset + 2);
+			indices.push_back(indexoffset + 1);
 			if (gapVertices.size() == 4)
 			{
-				indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 2); indices.push_back(indexoffset + 3);
-				indices.push_back(indexoffset + 0); indices.push_back(indexoffset + 3); indices.push_back(indexoffset + 2);
+				indices.push_back(indexoffset + 0);
+				indices.push_back(indexoffset + 2);
+				indices.push_back(indexoffset + 3);
+				indices.push_back(indexoffset + 0);
+				indices.push_back(indexoffset + 3);
+				indices.push_back(indexoffset + 2);
 			}
 		}
 	}
 }
 
-void FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(CollisionBody * dynamicMap, const PlaneFacesMap & planeFaces, PlaneVertexMetaDataMap & planeVertexMetaData, std::vector<Vector3> & vertices, std::vector<int> & indices, const size_t vertexIndexOffset)
+void FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(CollisionBody* dynamicMap, const PlaneFacesMap& planeFaces, PlaneVertexMetaDataMap& planeVertexMetaData, std::vector<Vector3>& vertices, std::vector<int>& indices, const size_t vertexIndexOffset)
 {
 	// There are potential gaps left, that our first algorithm couldn't find.
 	// We marked all potential vertices and can now just loop over them and then use the physics engine to check for remaining gaps.
 	for (auto pair : planeFaces)
 	{
-		const TranslatedPlane & plane = pair.first;
-		for (const TranslatedFace & face : pair.second)
+		const TranslatedPlane& plane = pair.first;
+		for (const TranslatedFace& face : pair.second)
 		{
 			auto vertexMetaDataMap = planeVertexMetaData[plane];
 			for (size_t i = 0; i < face.GetVertices().size(); ++i)
 			{
-				const Vector & vertex = face.GetVertices()[i];
-				const VertexMetaData & vertexMetaData = vertexMetaDataMap[vertex];
-				if (vertexMetaData.totalCos >(EPSILON - 4.f) && !vertexMetaData.handled)
+				const Vector& vertex = face.GetVertices()[i];
+				const VertexMetaData& vertexMetaData = vertexMetaDataMap[vertex];
+				if (vertexMetaData.totalCos > (EPSILON - 4.f) && !vertexMetaData.handled)
 				{
-					const Vector & vertexAfter = face.GetVertices()[(i < face.GetVertices().size() - 1) ? (i + 1) : 0];
-					const VertexMetaData & vertexMetaDataAfter = vertexMetaDataMap[vertexAfter];
+					const Vector& vertexAfter = face.GetVertices()[(i < face.GetVertices().size() - 1) ? (i + 1) : 0];
+					const VertexMetaData& vertexMetaDataAfter = vertexMetaDataMap[vertexAfter];
 					if (vertexMetaDataAfter.totalCos > (EPSILON - 4.f) && !vertexMetaDataAfter.handled)
 					{
 						Vector dir{ vertex - vertexAfter };
@@ -752,9 +755,6 @@ void FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(CollisionBody 
 		}
 	}
 }
-
-
-
 
 
 
@@ -839,18 +839,18 @@ VRPhysicsHelper::~VRPhysicsHelper()
 
 	if (m_worldsSmallestCupPolygonFaces)
 	{
-		delete[] (reactphysics3d::PolygonVertexArray::PolygonFace*)m_worldsSmallestCupPolygonFaces;
+		delete[](reactphysics3d::PolygonVertexArray::PolygonFace*) m_worldsSmallestCupPolygonFaces;
 		m_worldsSmallestCupPolygonFaces = nullptr;
 	}
 }
 
-bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &hlPos2)
+bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector& hlPos1, const Vector& hlPos2)
 {
 	Vector dummy;
 	return CheckIfLineIsBlocked(hlPos1, hlPos2, dummy);
 }
 
-bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &hlPos2, Vector & hlResult)
+bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector& hlPos1, const Vector& hlPos2, Vector& hlResult)
 {
 	if (!CheckWorld())
 	{
@@ -862,7 +862,7 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	Vector3 pos1 = HLVecToRP3DVec(hlPos1);
 	Vector3 pos2 = HLVecToRP3DVec(hlPos2);
 
-	Ray ray{ pos1 , pos2, 1. };
+	Ray ray{ pos1, pos2, 1. };
 	RaycastInfo raycastInfo{};
 
 	bool result = m_bspModelData[m_currentMapName].m_collisionBody->raycast(ray, raycastInfo) && raycastInfo.hitFraction < (1. - EPSILON);
@@ -879,7 +879,7 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector & hlPos1, const Vector &
 	return result;
 }
 
-bool VRPhysicsHelper::GetBSPModelBBox(CBaseEntity *pModel, Vector* bboxMins, Vector* bboxMaxs, Vector* bboxCenter)
+bool VRPhysicsHelper::GetBSPModelBBox(CBaseEntity* pModel, Vector* bboxMins, Vector* bboxMaxs, Vector* bboxCenter)
 {
 	if (!CheckWorld())
 		return false;
@@ -1003,13 +1003,11 @@ bool VRPhysicsHelper::TestCollision(reactphysics3d::CollisionBody* body1, reactp
 
 reactphysics3d::CollisionBody* VRPhysicsHelper::GetHitBoxBody(size_t cacheIndex, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles)
 {
-	if (fabs(bboxMaxs.x - bboxMins.x) < EPSILON
-		|| fabs(bboxMaxs.y - bboxMins.y) < EPSILON
-		|| fabs(bboxMaxs.z - bboxMins.z) < EPSILON)
+	if (fabs(bboxMaxs.x - bboxMins.x) < EPSILON || fabs(bboxMaxs.y - bboxMins.y) < EPSILON || fabs(bboxMaxs.z - bboxMins.z) < EPSILON)
 		return nullptr;
 
 	if (cacheIndex >= m_hitboxCaches.size())
-		m_hitboxCaches.resize(cacheIndex+1);
+		m_hitboxCaches.resize(cacheIndex + 1);
 
 	auto& hitboxCache = m_hitboxCaches[cacheIndex];
 
@@ -1033,7 +1031,7 @@ reactphysics3d::CollisionBody* VRPhysicsHelper::GetHitBoxBody(size_t cacheIndex,
 }
 
 
-bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& capsuleCenter, double radius, double height)
+bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity* pModel, const Vector& capsuleCenter, double radius, double height)
 {
 	if (!CheckWorld())
 		return false;
@@ -1064,9 +1062,9 @@ bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& 
 		m_capsuleShape = nullptr;
 	}
 
-	m_capsuleShape = new CapsuleShape{ (radius) * HL_TO_RP3D, (height) * HL_TO_RP3D };
+	m_capsuleShape = new CapsuleShape{ (radius)*HL_TO_RP3D, (height)*HL_TO_RP3D };
 	m_capsuleProxyShape = m_capsuleBody->addCollisionShape(m_capsuleShape, rp3d::Transform::identity());
-	m_capsuleBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(capsuleCenter), HLAnglesToRP3DQuaternion(Vector{ 0.f, 0.f, 90.f }) });
+	m_capsuleBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(capsuleCenter), HLAnglesToRP3DQuaternion(Vector{0.f, 0.f, 90.f}) });
 
 	bspModelData->second.m_collisionBody->setTransform(rp3d::Transform{ HLVecToRP3DVec(pModel->pev->origin), HLAnglesToRP3DQuaternion(pModel->pev->angles) });
 
@@ -1074,9 +1072,7 @@ bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity *pModel, const Vector& 
 }
 
 bool VRPhysicsHelper::ModelBBoxIntersectsBBox(
-	const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1, const Vector& bboxAngles1,
-	const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2,
-	VRPhysicsHelperModelBBoxIntersectResult* result)
+	const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1, const Vector& bboxAngles1, const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2, VRPhysicsHelperModelBBoxIntersectResult* result)
 {
 	if (!CheckWorld())
 		return false;
@@ -1092,7 +1088,7 @@ bool VRPhysicsHelper::ModelBBoxIntersectsBBox(
 	return TestCollision(bboxBody1, bboxBody2, result);
 }
 
-bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles, VRPhysicsHelperModelBBoxIntersectResult* result)
+bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity* pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles, VRPhysicsHelperModelBBoxIntersectResult* result)
 {
 	if (!CheckWorld())
 		return false;
@@ -1117,7 +1113,7 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bbo
 	else
 	{
 		// Studio model
-		void *pmodel = GET_MODEL_PTR(pModel->edict());
+		void* pmodel = GET_MODEL_PTR(pModel->edict());
 		if (!pmodel)
 		{
 			// Invalid studio model, use bounding box
@@ -1159,12 +1155,11 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity *pModel, const Vector& bbo
 			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles, result);
 		}
 	}
-
 }
 
 constexpr const float LADDER_EPSILON = 4.f;
 
-void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, edict_t* pentIgnore, TraceResult *ptr)
+void VRPhysicsHelper::TraceLine(const Vector& vecStart, const Vector& vecEnd, edict_t* pentIgnore, TraceResult* ptr)
 {
 	UTIL_TraceLine(vecStart, vecEnd, ignore_monsters, dont_ignore_glass, pentIgnore, ptr);
 
@@ -1191,7 +1186,7 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 		}
 
 		// Check ladders as well...
-		CBaseEntity *pEntity = nullptr;
+		CBaseEntity* pEntity = nullptr;
 		while (UTIL_FindAllEntities(&pEntity))
 		{
 			if (FClassnameIs(pEntity->pev, "func_ladder"))
@@ -1199,9 +1194,7 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 				Vector3 ladderSize = HLVecToRP3DVec(pEntity->pev->size);
 				Vector3 ladderPosition = HLVecToRP3DVec(pEntity->pev->absmin);
 
-				if (ladderSize.x <= 0.
-					|| ladderSize.y <= 0.
-					|| ladderSize.z <= 0.)
+				if (ladderSize.x <= 0. || ladderSize.y <= 0. || ladderSize.z <= 0.)
 				{
 					ALERT(at_console, "Warning, found ladder with invalid size: %s (%f %f %f)\n", STRING(pEntity->pev->targetname), pEntity->pev->size.x, pEntity->pev->size.y, pEntity->pev->size.z);
 					continue;
@@ -1216,8 +1209,7 @@ void VRPhysicsHelper::TraceLine(const Vector &vecStart, const Vector &vecEnd, ed
 				{
 					Vector hitPoint = RP3DVecToHLVec(raycastInfo.worldPoint);
 					float distanceToPreviousPoint = (hitPoint - ptr->vecEndPos).Length();
-					if (raycastInfo.hitFraction <= ptr->flFraction
-						|| distanceToPreviousPoint < LADDER_EPSILON)
+					if (raycastInfo.hitFraction <= ptr->flFraction || distanceToPreviousPoint < LADDER_EPSILON)
 					{
 						ptr->vecEndPos = RP3DVecToHLVec(raycastInfo.worldPoint);
 						ptr->vecPlaneNormal = RP3DVecToHLVec(raycastInfo.worldNormal).Normalize();
@@ -1246,7 +1238,7 @@ void VRPhysicsHelper::InitPhysicsWorld()
 	}
 	if (m_dynamicsWorld == nullptr)
 	{
-		m_dynamicsWorld = new DynamicsWorld{ Vector3{ 0, 0, 0 } };
+		m_dynamicsWorld = new DynamicsWorld{ Vector3{0, 0, 0} };
 	}
 }
 
@@ -1273,7 +1265,7 @@ void VRPhysicsHelper::HitBoxModelData::CreateData(CollisionWorld* collisionWorld
 	UpdateTransform(origin, angles);
 }
 
-void VRPhysicsHelper::HitBoxModelData::UpdateTransform(const Vector& origin, const Vector&angles)
+void VRPhysicsHelper::HitBoxModelData::UpdateTransform(const Vector& origin, const Vector& angles)
 {
 	if (!m_hasData)
 		return;
@@ -1325,10 +1317,7 @@ void VRPhysicsHelper::BSPModelData::CreateData(CollisionWorld* collisionWorld)
 	}
 
 	m_triangleVertexArray = new TriangleVertexArray(
-		m_vertices.size(), m_vertices.data(), sizeof(reactphysics3d::Vector3),
-		m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3,
-		TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE,
-		TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+		m_vertices.size(), m_vertices.data(), sizeof(reactphysics3d::Vector3), m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3, TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 	m_triangleMesh = new TriangleMesh;
 	m_triangleMesh->addSubpart(m_triangleVertexArray);
@@ -1396,12 +1385,7 @@ void VRPhysicsHelper::DynamicBSPModelData::CreateData(DynamicsWorld* dynamicsWor
 	}
 
 	m_triangleVertexArray = new TriangleVertexArray(
-		m_vertices.size(), m_vertices.data(), sizeof(reactphysics3d::Vector3),
-		m_normals.data(), sizeof(reactphysics3d::Vector3),
-		m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3,
-		TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE,
-		TriangleVertexArray::NormalDataType::NORMAL_DOUBLE_TYPE,
-		TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+		m_vertices.size(), m_vertices.data(), sizeof(reactphysics3d::Vector3), m_normals.data(), sizeof(reactphysics3d::Vector3), m_indices.size() / 3, m_indices.data(), sizeof(int32_t) * 3, TriangleVertexArray::VertexDataType::VERTEX_DOUBLE_TYPE, TriangleVertexArray::NormalDataType::NORMAL_DOUBLE_TYPE, TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
 
 	m_triangleMesh = new TriangleMesh;
 	m_triangleMesh->addSubpart(m_triangleVertexArray);
@@ -1455,12 +1439,12 @@ void VRPhysicsHelper::DynamicBSPModelData::DeleteData()
 }
 
 
-bool DoesAnyBrushModelNeedLoading(const model_t *const models)
+bool DoesAnyBrushModelNeedLoading(const model_t* const models)
 {
-	CBaseEntity *pEnt = nullptr;
+	CBaseEntity* pEnt = nullptr;
 	while (UTIL_FindEntityByFilter(&pEnt, IsSolidInPhysicsWorld))
 	{
-		const model_t *const model = GetBSPModel(pEnt);
+		const model_t* const model = GetBSPModel(pEnt);
 		if (model == nullptr || model->needload != 0)
 		{
 			return true;
@@ -1469,28 +1453,23 @@ bool DoesAnyBrushModelNeedLoading(const model_t *const models)
 	return false;
 }
 
-bool IsWorldValid(const model_t *world)
+bool IsWorldValid(const model_t* world)
 {
-	return
-		world != nullptr
-		&& world->needload == 0
-		&& world->marksurfaces[0] != nullptr
-		&& world->marksurfaces[0]->polys != nullptr
-		&& !DoesAnyBrushModelNeedLoading(world);
+	return world != nullptr && world->needload == 0 && world->marksurfaces[0] != nullptr && world->marksurfaces[0]->polys != nullptr && !DoesAnyBrushModelNeedLoading(world);
 }
 
-bool CompareWorlds(const model_t *world1, const model_t *worl2)
+bool CompareWorlds(const model_t* world1, const model_t* worl2)
 {
 	return world1 == worl2 && world1 != nullptr && FStrEq(world1->name, worl2->name);
 }
 
-template <typename T>
+template<typename T>
 void WriteBinaryData(std::ofstream& out, const T& value)
 {
 	out.write(reinterpret_cast<const char*>(&value), sizeof(value));
 }
 
-template <typename T>
+template<typename T>
 void ReadBinaryData(std::ifstream& in, T& value)
 {
 	in.read(reinterpret_cast<char*>(&value), sizeof(value));
@@ -1530,8 +1509,12 @@ std::string ReadString(std::ifstream& in)
 
 void ReadVerticesAndIndices(
 	std::ifstream& physicsMapDataFileStream,
-	uint32_t verticesCount, uint32_t normalsCount, uint32_t indicesCount,
-	std::vector<Vector3>& vertices, std::vector<Vector3>* normals, std::vector<int32_t>& indices)
+	uint32_t verticesCount,
+	uint32_t normalsCount,
+	uint32_t indicesCount,
+	std::vector<Vector3>& vertices,
+	std::vector<Vector3>* normals,
+	std::vector<int32_t>& indices)
 {
 	for (unsigned int i = 0; i < verticesCount; ++i)
 	{
@@ -1582,8 +1565,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 			ReadBinaryData(physicsMapDataFileStream, hash);
 
 			// TODO: hash is ignored for now
-			if (magic == HLVR_MAP_PHYSDATA_FILE_MAGIC
-				&& version == HLVR_MAP_PHYSDATA_FILE_VERSION
+			if (magic == HLVR_MAP_PHYSDATA_FILE_MAGIC && version == HLVR_MAP_PHYSDATA_FILE_VERSION
 				/*&& hash == TODO*/)
 			{
 				{
@@ -1608,8 +1590,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 									indicesCount,
 									m_bspModelData[modelname].m_vertices,
 									nullptr,
-									m_bspModelData[modelname].m_indices
-								);
+									m_bspModelData[modelname].m_indices);
 								m_bspModelData[modelname].CreateData(m_collisionWorld);
 							}
 							else
@@ -1646,8 +1627,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 									indicesCount,
 									m_dynamicBSPModelData[modelname].m_vertices,
 									&m_dynamicBSPModelData[modelname].m_normals,
-									m_dynamicBSPModelData[modelname].m_indices
-								);
+									m_dynamicBSPModelData[modelname].m_indices);
 								m_dynamicBSPModelData[modelname].CreateData(m_dynamicsWorld);
 							}
 							else
@@ -1663,7 +1643,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 				}
 
 				char checkeof;
-				if (physicsMapDataFileStream >> checkeof) // this should fail
+				if (physicsMapDataFileStream >> checkeof)  // this should fail
 				{
 					throw std::runtime_error{ "expected eof, but didn't reach eof" };
 				}
@@ -1682,7 +1662,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 			return false;
 		}
 	}
-	catch (const std::runtime_error& e)
+	catch (const std::runtime_error & e)
 	{
 		ALERT(at_console, "Game must recalculate physics data due to error while trying to parse %s: %s\n", physicsMapDataFilePath.c_str(), e.what());
 		m_bspModelData.clear();
@@ -1696,13 +1676,13 @@ void VRPhysicsHelper::StorePhysicsMapDataToFile(const std::string& physicsMapDat
 	std::ofstream physicsMapDataFileStream{ physicsMapDataFilePath, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary };
 	if (!physicsMapDataFileStream.fail())
 	{
-		uint64_t hash = 1337; // TODO!
+		uint64_t hash = 1337;  // TODO!
 
 		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_MAGIC);
 		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_VERSION);
 		WriteBinaryData(physicsMapDataFileStream, hash);
 
-		WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(m_bspModelData.size()));	// bspDataCount
+		WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(m_bspModelData.size()));  // bspDataCount
 		for (auto& bspModelData : m_bspModelData)
 		{
 			WriteBinaryData(physicsMapDataFileStream, static_cast<uint32_t>(bspModelData.second.m_vertices.size()));
@@ -1769,7 +1749,7 @@ void VRPhysicsHelper::GetPhysicsMapDataFromModel()
 	m_dynamicBSPModelData.clear();
 
 	// create bsp data for collision world
-	CBaseEntity *pEntity = nullptr;
+	CBaseEntity* pEntity = nullptr;
 	while (UTIL_FindAllEntities(&pEntity))
 	{
 		const model_t* model = GetBSPModel(pEntity);
@@ -1818,7 +1798,7 @@ void VRPhysicsHelper::GetPhysicsMapDataFromModel()
 
 bool VRPhysicsHelper::CheckWorld()
 {
-	const model_t *world = GetWorldBSPModel();
+	const model_t* world = GetWorldBSPModel();
 
 	if (!CompareWorlds(world, m_hlWorldModel))
 	{
@@ -1855,15 +1835,10 @@ bool VRPhysicsHelper::CheckWorld()
 		}
 	}
 
-	return
-		m_hlWorldModel != nullptr
-		&& m_hlWorldModel == world
-		&& m_collisionWorld != nullptr
-		&& !m_bspModelData.empty()
-		&& m_bspModelData.count(m_currentMapName) > 0;
+	return m_hlWorldModel != nullptr && m_hlWorldModel == world && m_collisionWorld != nullptr && !m_bspModelData.empty() && m_bspModelData.count(m_currentMapName) > 0;
 }
 
-void RotateVectorX(Vector &vecToRotate, const float angle)
+void RotateVectorX(Vector& vecToRotate, const float angle)
 {
 	if (angle != 0.f)
 	{
@@ -1873,12 +1848,12 @@ void RotateVectorX(Vector &vecToRotate, const float angle)
 		float x = vecToRotate.x;
 		float z = vecToRotate.z;
 
-		vecToRotate.x = fCos*x + fSin*z;
-		vecToRotate.z = -fSin*x + fCos*z;
+		vecToRotate.x = fCos * x + fSin * z;
+		vecToRotate.z = -fSin * x + fCos * z;
 	}
 }
 
-void RotateVectorY(Vector &vecToRotate, const float angle)
+void RotateVectorY(Vector& vecToRotate, const float angle)
 {
 	if (angle != 0.f)
 	{
@@ -1888,12 +1863,12 @@ void RotateVectorY(Vector &vecToRotate, const float angle)
 		float x = vecToRotate.x;
 		float y = vecToRotate.y;
 
-		vecToRotate.x = fCos*x - fSin*y;
-		vecToRotate.y = fSin*x + fCos*y;
+		vecToRotate.x = fCos * x - fSin * y;
+		vecToRotate.y = fSin * x + fCos * y;
 	}
 }
 
-void RotateVectorZ(Vector &vecToRotate, const float angle)
+void RotateVectorZ(Vector& vecToRotate, const float angle)
 {
 	if (angle != 0.f)
 	{
@@ -1903,19 +1878,19 @@ void RotateVectorZ(Vector &vecToRotate, const float angle)
 		float y = vecToRotate.y;
 		float z = vecToRotate.z;
 
-		vecToRotate.y = fCos*y - fSin*z;
-		vecToRotate.z = fSin*y + fCos*z;
+		vecToRotate.y = fCos * y - fSin * z;
+		vecToRotate.z = fSin * y + fCos * z;
 	}
 }
 
-Vector VRPhysicsHelper::RotateVectorInline(const Vector &vecToRotate, const Vector &vecAngles, const Vector &vecOffset, const bool reverse)
+Vector VRPhysicsHelper::RotateVectorInline(const Vector& vecToRotate, const Vector& vecAngles, const Vector& vecOffset, const bool reverse)
 {
 	Vector rotatedVector = vecToRotate;
 	RotateVector(rotatedVector, vecAngles, vecOffset, reverse);
 	return rotatedVector;
 }
 
-void VRPhysicsHelper::RotateVector(Vector &vecToRotate, const Vector &vecAngles, const Vector &vecOffset, const bool reverse)
+void VRPhysicsHelper::RotateVector(Vector& vecToRotate, const Vector& vecAngles, const Vector& vecOffset, const bool reverse)
 {
 	if (vecToRotate.Length() != 0)
 	{
@@ -1923,22 +1898,22 @@ void VRPhysicsHelper::RotateVector(Vector &vecToRotate, const Vector &vecAngles,
 
 		if (reverse)
 		{
-			RotateVectorY(vecToRotate, vecAngles.y / 180.*M_PI);
-			RotateVectorX(vecToRotate, vecAngles.x / 180.*M_PI);
-			RotateVectorZ(vecToRotate, vecAngles.z / 180.*M_PI);
+			RotateVectorY(vecToRotate, vecAngles.y / 180. * M_PI);
+			RotateVectorX(vecToRotate, vecAngles.x / 180. * M_PI);
+			RotateVectorZ(vecToRotate, vecAngles.z / 180. * M_PI);
 		}
 		else
 		{
-			RotateVectorZ(vecToRotate, vecAngles.z / 180.*M_PI);
-			RotateVectorX(vecToRotate, vecAngles.x / 180.*M_PI);
-			RotateVectorY(vecToRotate, vecAngles.y / 180.*M_PI);
+			RotateVectorZ(vecToRotate, vecAngles.z / 180. * M_PI);
+			RotateVectorX(vecToRotate, vecAngles.x / 180. * M_PI);
+			RotateVectorY(vecToRotate, vecAngles.y / 180. * M_PI);
 		}
 
 		vecToRotate = vecToRotate + vecOffset;
 	}
 }
 
-Vector VRPhysicsHelper::AngularVelocityToLinearVelocity(const Vector & avelocity, const Vector & pos)
+Vector VRPhysicsHelper::AngularVelocityToLinearVelocity(const Vector& avelocity, const Vector& pos)
 {
 	Vector rotatedPos = pos;
 	RotateVector(rotatedPos, avelocity);
@@ -1967,7 +1942,7 @@ VRPhysicsHelper& VRPhysicsHelper::Instance()
 VRPhysicsHelper* VRPhysicsHelper::m_instance{ nullptr };
 
 
-void VRPhysicsHelper::EnsureWorldsSmallestCupExists(CBaseEntity *pWorldsSmallestCup)
+void VRPhysicsHelper::EnsureWorldsSmallestCupExists(CBaseEntity* pWorldsSmallestCup)
 {
 	if (!m_worldsSmallestCupBody)
 	{
@@ -1988,7 +1963,7 @@ void VRPhysicsHelper::EnsureWorldsSmallestCupExists(CBaseEntity *pWorldsSmallest
 	}
 }
 
-void VRPhysicsHelper::SetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup)
+void VRPhysicsHelper::SetWorldsSmallestCupPosition(CBaseEntity* pWorldsSmallestCup)
 {
 	if (!CheckWorld())
 		return;
@@ -2005,7 +1980,7 @@ void VRPhysicsHelper::SetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestC
 	m_worldsSmallestCupBody->setIsSleeping(false);
 }
 
-void VRPhysicsHelper::GetWorldsSmallestCupPosition(CBaseEntity *pWorldsSmallestCup)
+void VRPhysicsHelper::GetWorldsSmallestCupPosition(CBaseEntity* pWorldsSmallestCup)
 {
 	if (!CheckWorld())
 		return;

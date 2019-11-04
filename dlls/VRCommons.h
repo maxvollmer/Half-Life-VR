@@ -5,11 +5,12 @@
 #include <map>
 #include "vector.h"
 
-typedef int	string_t;
-typedef int	BOOL;
+typedef int string_t;
+typedef int BOOL;
 class CBasePlayer;
 
-enum class VRControllerID : int32_t {
+enum class VRControllerID : int32_t
+{
 	WEAPON = 0,
 	HAND,
 	INVALID

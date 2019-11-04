@@ -36,13 +36,13 @@ private:
 
 	VRTextureHelper() {}
 
-	static VRTextureHelper	instance;
+	static VRTextureHelper instance;
 
-	std::unordered_map<std::string, Texture>						m_textures;
+	std::unordered_map<std::string, Texture> m_textures;
 
-	static const std::unordered_map<std::string, std::string>		m_mapSkyboxNames;
-	static const std::array<std::string, 6>							m_vrMapSkyboxIndices;
-	static const std::array<std::string, 6>							m_hlMapSkyboxIndices;
+	static const std::unordered_map<std::string, std::string> m_mapSkyboxNames;
+	static const std::array<std::string, 6> m_vrMapSkyboxIndices;
+	static const std::array<std::string, 6> m_hlMapSkyboxIndices;
 
-	bool															m_isInitialized{ false };
+	bool m_isInitialized{ false };
 };

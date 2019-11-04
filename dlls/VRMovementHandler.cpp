@@ -59,7 +59,7 @@ Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to)
 
 	// get move direction and distance (length)
 	Vector moveDir = (to - from);
-	moveDir.z = 0.f;	// clear any z (there shouldn't be any z, but still)
+	moveDir.z = 0.f;  // clear any z (there shouldn't be any z, but still)
 	float moveDist = moveDir.Length();
 	moveDir = moveDir.Normalize();
 
@@ -86,10 +86,10 @@ Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to)
 	pmove->iuser1 = 0;
 
 	// set movement input
-	pmove->cmd.buttons &= IN_DUCK;								// keep IN_DUCK, if set
-	pmove->cmd.buttons |= IN_FORWARD;							// set IN_FORWARD
-	pmove->cmd.buttons_ex &= (X_IN_VRDUCK|X_IN_LETLADDERGO);	// keep X_IN_VRDUCK and X_IN_LETLADDERGO, if set
-	pmove->cmd.forwardmove = moveDist * (1000 / (int)VR_MOVEMENT_FAKE_FRAMETIME);	// set velocity to match frametime and moveDist (so movement code calculates the exact moveDist)
+	pmove->cmd.buttons &= IN_DUCK;                                                 // keep IN_DUCK, if set
+	pmove->cmd.buttons |= IN_FORWARD;                                              // set IN_FORWARD
+	pmove->cmd.buttons_ex &= (X_IN_VRDUCK | X_IN_LETLADDERGO);                     // keep X_IN_VRDUCK and X_IN_LETLADDERGO, if set
+	pmove->cmd.forwardmove = moveDist * (1000 / (int)VR_MOVEMENT_FAKE_FRAMETIME);  // set velocity to match frametime and moveDist (so movement code calculates the exact moveDist)
 	pmove->cmd.sidemove = 0.f;
 	pmove->cmd.upmove = 0.f;
 
@@ -110,4 +110,3 @@ Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to)
 	//ALERT(at_console, "DoMovement: from: %f %f %f; to: %f %f %f; result: %f %f %f\n", from.x, from.y, from.z, to.x, to.y, to.z, result.x, result.y, result.z);
 	return result;
 }
-

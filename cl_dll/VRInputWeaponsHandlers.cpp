@@ -12,13 +12,13 @@
 
 namespace
 {
-	WEAPON *g_pHolsteredWeapon{ nullptr };
+	WEAPON* g_pHolsteredWeapon{ nullptr };
 
 #ifndef MAX_COMMAND_SIZE
 #define MAX_COMMAND_SIZE 256
 #endif
 
-}
+}  // namespace
 
 namespace VR
 {
@@ -89,7 +89,7 @@ namespace VR
 				else if (g_pHolsteredWeapon)
 				{
 					// Select holstered weapon
-					extern WEAPON *gpActiveSel;
+					extern WEAPON* gpActiveSel;
 					gpActiveSel = gHUD.m_Ammo.m_pWeapon = g_pHolsteredWeapon;
 					g_pHolsteredWeapon = nullptr;
 					gHUD.m_iKeyBits |= IN_ATTACK;
@@ -146,5 +146,5 @@ namespace VR
 				}
 			}
 		}
-	}
-}
+	}  // namespace Input
+}  // namespace VR

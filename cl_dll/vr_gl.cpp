@@ -27,10 +27,10 @@ PFNHLVRSETCONSOLECALLBACKPROC hlvrSetConsoleCallback = nullptr;
 PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
 PFNGLGENERATEMIPMAPPROC glGenerateMipmap = nullptr;
 
-void* GetOpenGLFuncAddress(const char *name)
+void* GetOpenGLFuncAddress(const char* name)
 {
 #ifdef WIN32
-	void *p = (void *)wglGetProcAddress(name);
+	void* p = (void*)wglGetProcAddress(name);
 	if (p == nullptr ||
 		(p == (void*)0x1) || (p == (void*)0x2) || (p == (void*)0x3) ||
 		(p == (void*)-1))
@@ -65,7 +65,8 @@ inline std::string GLErrorString(GLenum error)
 
 void ClearGLErrors()
 {
-	while (glGetError() != GL_NO_ERROR);
+	while (glGetError() != GL_NO_ERROR)
+		;
 }
 
 void TryTryGLCall(std::function<void()> call, const std::string& name, const std::string& args)
@@ -106,10 +107,11 @@ bool CreateGLTexture(unsigned int* texture, int width, int height)
 		TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		TryGLCall(glBindTexture, GL_TEXTURE_2D, 0);
 	}
-	catch (const OGLErrorException& e)
+	catch (const OGLErrorException & e)
 	{
 		gEngfuncs.Con_DPrintf("%s\n", e.what());
-		std::cerr << e.what() << std::endl << std::flush;
+		std::cerr << e.what() << std::endl
+			<< std::flush;
 		g_vrInput.DisplayErrorPopup(e.what());
 		*texture = 0;
 	}
@@ -140,10 +142,11 @@ bool CreateGLFrameBuffer(unsigned int* framebuffer, unsigned int texture, int wi
 
 		TryGLCall(glBindFramebuffer, GL_FRAMEBUFFER, 0);
 	}
-	catch (const OGLErrorException& e)
+	catch (const OGLErrorException & e)
 	{
 		gEngfuncs.Con_DPrintf("%s\n", e.what());
-		std::cerr << e.what() << std::endl << std::flush;
+		std::cerr << e.what() << std::endl
+			<< std::flush;
 		g_vrInput.DisplayErrorPopup(e.what());
 		*framebuffer = 0;
 		rbo = 0;
@@ -169,8 +172,7 @@ bool InitAdditionalGLFunctions()
 	glActiveTexture = (PFNGLACTIVETEXTUREPROC)GetOpenGLFuncAddress("glActiveTexture");
 	glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)GetOpenGLFuncAddress("glGenerateMipmap");
 
-	return
-		glGenFramebuffers != nullptr &&
+	return glGenFramebuffers != nullptr &&
 		glGenRenderbuffers != nullptr &&
 		glBindFramebuffer != nullptr &&
 		glBindRenderbuffer != nullptr &&
@@ -187,17 +189,15 @@ bool InitGLMatrixOverrideFunctions()
 	hlvrLockGLMatrices = (PFNHLVRLOCKGLMATRICESPROC)GetOpenGLFuncAddress("hlvrLockGLMatrices");
 	hlvrUnlockGLMatrices = (PFNHLVRUNLOCKGLMATRICESPROC)GetOpenGLFuncAddress("hlvrUnlockGLMatrices");
 
-	return
-		hlvrLockGLMatrices != nullptr &&
+	return hlvrLockGLMatrices != nullptr &&
 		hlvrUnlockGLMatrices != nullptr;
-
 }
 
 bool InitGLCallbackFunctions()
 {
 	hlvrSetConsoleCallback = (PFNHLVRSETCONSOLECALLBACKPROC)GetOpenGLFuncAddress("hlvrSetConsoleCallback");
 
-	if (hlvrSetConsoleCallback != nullptr )
+	if (hlvrSetConsoleCallback != nullptr)
 	{
 		hlvrSetConsoleCallback(&HLVRConsoleCallback);
 		return true;

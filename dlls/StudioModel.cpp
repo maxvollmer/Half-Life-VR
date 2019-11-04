@@ -22,14 +22,14 @@ StudioModel::~StudioModel()
 	FreeModel();
 }
 
-bool StudioModel::ExtractTransformedHitbox(int boneIndex, float *bbMins, float *bbMaxs, float(*bbTransform)[4])
+bool StudioModel::ExtractTransformedHitbox(int boneIndex, float* bbMins, float* bbMaxs, float(*bbTransform)[4])
 {
-	mstudiobbox_t *pbboxes = (mstudiobbox_t *)((byte *)m_pstudiohdr + m_pstudiohdr->hitboxindex);
+	mstudiobbox_t* pbboxes = (mstudiobbox_t*)((byte*)m_pstudiohdr + m_pstudiohdr->hitboxindex);
 	if (boneIndex < m_pstudiohdr->numhitboxes)
 	{
 		VectorCopy(pbboxes[boneIndex].bbmin, bbMins);
 		VectorCopy(pbboxes[boneIndex].bbmax, bbMaxs);
-		std::memcpy(bbTransform, m_bonetransform[pbboxes[boneIndex].bone], sizeof(float) * 12);	//3x4 transform matrix
+		std::memcpy(bbTransform, m_bonetransform[pbboxes[boneIndex].bone], sizeof(float) * 12);  //3x4 transform matrix
 		return true;
 	}
 	else
@@ -54,7 +54,7 @@ int StudioModel::GetNumAttachments()
 	return m_pstudiohdr->numattachments;
 }
 
-const char* StudioModel::GetModelName(void *pmodel)
+const char* StudioModel::GetModelName(void* pmodel)
 {
 	return ((studiohdr_t*)pmodel)->name;
 }

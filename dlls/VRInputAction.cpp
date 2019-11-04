@@ -9,4 +9,3 @@
 #include "openvr/openvr.h"
 #include "vr_input.h"
 #include "eiface.h"
-

@@ -23,7 +23,7 @@ namespace
 	std::unordered_map<std::string, std::shared_ptr<char>> gModelNames;
 }
 
-char *GetSafeModelCharPtr(const std::string& model)
+char* GetSafeModelCharPtr(const std::string& model)
 {
 	if (gModelNames.count(model) == 0)
 	{
@@ -40,7 +40,7 @@ char* GetSDModel(const std::string& model)
 	if (model.find("models/") == std::string::npos)
 		return nullptr;
 
-	std::string sdModel = std::regex_replace(model, std::regex{"models/"}, "models/SD/");
+	std::string sdModel = std::regex_replace(model, std::regex{ "models/" }, "models/SD/");
 	std::filesystem::path sdModelPathRelative{ UTIL_GetGameDir() + "/" + sdModel };
 
 	std::filesystem::path sdModelPath = std::filesystem::absolute(sdModelPathRelative);
@@ -116,7 +116,7 @@ int PRECACHE_GENERIC(char* s)
 	return hdModelIndex;
 }
 
-void SET_MODEL(edict_t *e, const char *m)
+void SET_MODEL(edict_t* e, const char* m)
 {
 	if (CVAR_GET_FLOAT("vr_use_hd_models") == 0.f)
 	{
@@ -131,7 +131,7 @@ void SET_MODEL(edict_t *e, const char *m)
 	SET_MODEL2(e, m);
 }
 
-int MODEL_INDEX(const char *m)
+int MODEL_INDEX(const char* m)
 {
 	if (CVAR_GET_FLOAT("vr_use_hd_models") == 0.f)
 	{
