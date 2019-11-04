@@ -1664,12 +1664,6 @@ void UpdateClientData(const struct edict_s* ent, int sendweapons, struct clientd
 		pl = dynamic_cast<CBasePlayer*>(CBaseEntity::Instance(ent));
 	}
 
-	OutputDebugStringA(("ent: " + std::to_string((int)ent) + "\n").data());
-
-	OutputDebugStringA(("ent->pvPrivateData: " + std::to_string((int)ent->pvPrivateData) + "\n").data());
-
-	OutputDebugStringA(("pl: " + std::to_string((int)pl) + "\n").data());
-
 	cd->flags			= ent->v.flags;
 	cd->health			= ent->v.health;
 
@@ -1723,8 +1717,6 @@ void UpdateClientData(const struct edict_s* ent, int sendweapons, struct clientd
 			cd->ammo_rockets	= pl->ammo_rockets;
 			cd->ammo_cells		= pl->ammo_uranium;
 			cd->vuser2.x		= pl->ammo_hornets;
-
-			OutputDebugStringA(("pl->m_pActiveItem: " + std::to_string((int)pl->m_pActiveItem) + "\n").data());
 
 			if (pl->m_pActiveItem)
 			{
