@@ -290,7 +290,7 @@ int CVoiceStatus::VidInit()
 
 	// Figure out the voice head model height.
 	m_VoiceHeadModelHeight = 45;
-	char* pFile = (char*)gEngfuncs.COM_LoadFile("scripts/voicemodel.txt", 5, nullptr);
+	const char* pFile = reinterpret_cast<const char*>(gEngfuncs.COM_LoadFile("scripts/voicemodel.txt", 5, nullptr));
 	if (pFile)
 	{
 		char token[4096];
@@ -373,7 +373,7 @@ void CVoiceStatus::CreateEntities()
 		pEnt->curstate.renderfx = kRenderFxNoDissipation;
 		pEnt->curstate.framerate = 1;
 		pEnt->curstate.frame = 0;
-		pEnt->model = (struct model_s*)gEngfuncs.GetSpritePointer(m_VoiceHeadModel);
+		pEnt->model = const_cast<struct model_s*>(gEngfuncs.GetSpritePointer(m_VoiceHeadModel));
 		pEnt->angles[0] = pEnt->angles[1] = pEnt->angles[2] = 0;
 		pEnt->curstate.scale = 0.5f;
 

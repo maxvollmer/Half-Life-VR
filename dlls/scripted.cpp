@@ -894,7 +894,7 @@ BOOL CBaseMonster::CineCleanup()
 			pev->effects |= EF_NOINTERP;
 		}
 
-		// We should have some animation to put these guys in, but for now it's idle.
+		// We should have some animation to put in, but for now it's idle.
 		// Due to NOINTERP above, there won't be any blending between this anim & the sequence
 		m_Activity = ACT_RESET;
 	}

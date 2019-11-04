@@ -13,6 +13,9 @@
 // Modified to compile with hl.dll - Max Vollmer - 2019-04-07
 
 ////////////////////////////////////////////////////////////////////////
+
+#include <vector>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,69 +43,44 @@ void StudioModel::FreeModel()
 
 studiohdr_t* StudioModel::LoadModel(const char* modelname)
 {
-	FILE* fp;
-	long size;
-	void* buffer;
-
 	if (!modelname)
 		return 0;
 
 	// load the model
-	if ((fp = fopen(modelname, "rb")) == nullptr)
+	FILE* fp = fopen(modelname, "rb");
+	if (!fp)
 		return 0;
 
 	fseek(fp, 0, SEEK_END);
-	size = ftell(fp);
+	long size = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
-	buffer = malloc(size);
-	if (!buffer)
-	{
-		fclose(fp);
-		return 0;
-	}
+	std::vector<char> buffer;
+	buffer.resize(size);
 
-	fread(buffer, size, 1, fp);
+	fread(buffer.data(), size, 1, fp);
 	fclose(fp);
 
-	byte* pin;
-	studiohdr_t* phdr;
-	mstudiotexture_t* ptexture;
-
-	pin = (byte*)buffer;
-	phdr = (studiohdr_t*)pin;
-	ptexture = (mstudiotexture_t*)(pin + phdr->textureindex);
-
-	if (strncmp((const char*)buffer, "IDST", 4) &&
-		strncmp((const char*)buffer, "IDSQ", 4))
+	if (strncmp(buffer.data(), "IDST", 4) && strncmp(buffer.data(), "IDSQ", 4))
 	{
-		free(buffer);
 		return 0;
 	}
 
-	if (!strncmp((const char*)buffer, "IDSQ", 4) && !m_pstudiohdr)
+	if (!strncmp(buffer.data(), "IDSQ", 4) && !m_pstudiohdr)
 	{
-		free(buffer);
 		return 0;
-	}
-
-	if (phdr->textureindex > 0 && phdr->numtextures <= MAXSTUDIOSKINS)
-	{
-		int n = phdr->numtextures;
-		for (int i = 0; i < n; i++)
-		{
-			// strcpy( name, mod->name );
-			// strcpy( name, ptexture[i].name );
-			// UploadTexture(&ptexture[i], pin + ptexture[i].index, pin + ptexture[i].width * ptexture[i].height + ptexture[i].index, g_texnum++);
-		}
 	}
 
 	// UNDONE: free texture memory
 
-	if (!m_pstudiohdr)
-		m_pstudiohdr = (studiohdr_t*)buffer;
+	studiohdr_t* phdr = reinterpret_cast<studiohdr_t*>(buffer.data());
 
-	return (studiohdr_t*)buffer;
+	if (!m_pstudiohdr)
+	{
+		m_pstudiohdr = phdr;
+	}
+
+	return phdr;
 }
 
 
@@ -144,7 +122,7 @@ constexpr const int VR_MAX_VALID_MODEL_SEQUENCE_BBOX_SIZE = 4096;
 
 void StudioModel::ExtractBbox(float* mins, float* maxs)
 {
-	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex);
+	mstudioseqdesc_t* pseqdesc = reinterpret_cast<mstudioseqdesc_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->seqindex);
 
 	mins[0] = pseqdesc[m_sequence].bbmin[0];
 	mins[1] = pseqdesc[m_sequence].bbmin[1];
@@ -172,9 +150,7 @@ void StudioModel::ExtractBbox(float* mins, float* maxs)
 
 void StudioModel::GetSequenceInfo(float* pflFrameRate, float* pflGroundSpeed)
 {
-	mstudioseqdesc_t* pseqdesc;
-
-	pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex) + (int)m_sequence;
+	mstudioseqdesc_t* pseqdesc = reinterpret_cast<mstudioseqdesc_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->seqindex) + (int)m_sequence;
 
 	if (pseqdesc->numframes > 1)
 	{
@@ -208,7 +184,7 @@ int StudioModel::SetBodygroup(int iGroup, int iValue)
 	if (iGroup > m_pstudiohdr->numbodyparts)
 		return -1;
 
-	mstudiobodyparts_t* pbodypart = (mstudiobodyparts_t*)((byte*)m_pstudiohdr + m_pstudiohdr->bodypartindex) + iGroup;
+	mstudiobodyparts_t* pbodypart = reinterpret_cast<mstudiobodyparts_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->bodypartindex) + iGroup;
 
 	int iCurrent = (m_bodynum / pbodypart->base) % pbodypart->nummodels;
 
