@@ -281,8 +281,6 @@ public:
 
 	virtual int UpdateClientData(CBasePlayer* pPlayer) { return 0; }
 
-	virtual CBasePlayerItem* GetWeaponPtr(void) { return nullptr; };
-
 	static ItemInfo ItemInfoArray[MAX_WEAPONS];
 	static AmmoInfo AmmoInfoArray[MAX_AMMO_SLOTS];
 
@@ -401,8 +399,8 @@ public:
 	};  // Return TRUE if you want to add yourself to the player
 
 	// generic "shared" ammo handlers
-	BOOL AddPrimaryAmmo(int iCount, char* szName, int iMaxClip, int iMaxCarry);
-	BOOL AddSecondaryAmmo(int iCount, char* szName, int iMaxCarry);
+	BOOL AddPrimaryAmmo(int iCount, const char* szName, int iMaxClip, int iMaxCarry);
+	BOOL AddSecondaryAmmo(int iCount, const char* szName, int iMaxCarry);
 
 	virtual void UpdateItemInfo(void) {};  // updates HUD state
 
@@ -435,8 +433,6 @@ public:
 	int SecondaryAmmoIndex();
 
 	void PrintState(void);
-
-	virtual CBasePlayerItem* GetWeaponPtr(void) { return (CBasePlayerItem*)this; };
 
 	float m_flPumpTime;
 	int m_fInSpecialReload;         // Are we in the middle of a reload for the shotguns
@@ -534,7 +530,7 @@ class CWeaponBox : public CBaseEntity
 	void Touch(CBaseEntity* pOther);
 	void KeyValue(KeyValueData* pkvd);
 	BOOL IsEmpty(void);
-	int GiveAmmo(int iCount, char* szName, int iMax, int* pIndex = nullptr);
+	int GiveAmmo(int iCount, const char* szName, int iMax, int* pIndex = nullptr);
 	void SetObjectCollisionBox(void);
 
 public:

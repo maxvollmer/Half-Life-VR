@@ -54,7 +54,7 @@ public:
 	void WriteInt(const char* pname, const int* value, int count);               // Save an int
 	void WriteFloat(const char* pname, const float* value, int count);           // Save a float
 	void WriteTime(const char* pname, const float* value, int count);            // Save a float (timevalue)
-	void WriteData(const char* pname, int size, const char* pdata);              // Save a binary data block
+	void WriteData(const char* pname, int size, const void* pdata);              // Save a binary data block
 	void WriteString(const char* pname, const char* pstring);                    // Save a null-terminated string
 	void WriteString(const char* pname, const int* stringId, int count);         // Save a null-terminated string (engine string)
 	void WriteVector(const char* pname, const Vector& value);                    // Save a vector
@@ -63,13 +63,13 @@ public:
 	void WritePositionVector(const char* pname, const float* value, int count);  // array of pos vectors
 	void WriteFunction(const char* pname, const int* value, int count);          // Save a function pointer
 	int WriteEntVars(const char* pname, entvars_t* pev);                         // Save entvars_t (entvars_t)
-	int WriteFields(const char* pname, void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCount);
+	int WriteFields(const char* pname, const void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCount);
 
 private:
-	int DataEmpty(const char* pdata, int size);
-	void BufferField(const char* pname, int size, const char* pdata);
-	void BufferString(char* pdata, int len);
-	void BufferData(const char* pdata, int size);
+	int DataEmpty(const void* pdata, int size);
+	void BufferField(const char* pname, int size, const void* pdata);
+	void BufferString(const char* pdata, int len);
+	void BufferData(const void* pdata, int size);
 	void BufferHeader(const char* pname, int size);
 };
 
@@ -91,18 +91,18 @@ public:
 	}
 	int ReadEntVars(const char* pname, entvars_t* pev);  // entvars_t
 	int ReadFields(const char* pname, void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCount);
-	int ReadField(void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCount, int startField, int size, char* pName, void* pData);
+	int ReadField(void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCount, int startField, int size, const char* pName, const void* pData);
 	int ReadInt(void);
 	short ReadShort(void);
 	int ReadNamedInt(const char* pName);
-	char* ReadNamedString(const char* pName);
+	const char* ReadNamedString(const char* pName);
 	int Empty(void) { return (m_pdata == nullptr) || ((m_pdata->pCurrentData - m_pdata->pBaseData) >= m_pdata->bufferSize); }
 	inline void SetGlobalMode(int global) { m_global = global; }
 	void PrecacheMode(BOOL mode) { m_precache = mode; }
 
 private:
 	char* BufferPointer(void);
-	void BufferReadBytes(char* pOutput, int size);
+	void BufferReadBytes(void* pOutput, int size);
 	void BufferSkipBytes(int bytes);
 	int BufferSkipZString(void);
 	int BufferCheckZString(const char* string);

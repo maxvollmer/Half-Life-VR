@@ -19,6 +19,7 @@
 #include "cbase.h"
 #include "monsters.h"
 #include "squadmonster.h"
+#include "scripted.h"
 
 #define AFLOCK_MAX_RECRUIT_RADIUS 1024
 #define AFLOCK_FLY_SPEED          125

@@ -779,11 +779,10 @@ void CTalkMonster::TalkInit(void)
 // Scan for nearest, visible friend. If fPlayer is true, look for
 // nearest player
 //=========================================================
-CBaseEntity* CTalkMonster::FindNearestFriend(BOOL fPlayer)
+CTalkMonster* CTalkMonster::FindNearestFriend(BOOL fPlayer)
 {
 	CBaseEntity* pFriend = nullptr;
-	CBaseEntity* pNearest = nullptr;
-	float range = 10000000.0;
+	float range = 10000000.f;
 	TraceResult tr;
 	Vector vecStart = pev->origin;
 	Vector vecCheck;
@@ -800,6 +799,7 @@ CBaseEntity* CTalkMonster::FindNearestFriend(BOOL fPlayer)
 
 	// for each type of friend...
 
+	CTalkMonster* pNearest = nullptr;
 	for (i = cfriends - 1; i > -1; i--)
 	{
 		if (fPlayer)
@@ -817,7 +817,7 @@ CBaseEntity* CTalkMonster::FindNearestFriend(BOOL fPlayer)
 				// don't talk to self or dead people
 				continue;
 
-			CBaseMonster* pMonster = dynamic_cast<CBaseMonster*>(pFriend);
+			CTalkMonster* pMonster = dynamic_cast<CTalkMonster*>(pFriend);
 
 			// If not a monster for some reason, or in a script, or prone
 			if (!pMonster || pMonster->m_MonsterState == MONSTERSTATE_SCRIPT || pMonster->m_MonsterState == MONSTERSTATE_PRONE)
@@ -837,7 +837,7 @@ CBaseEntity* CTalkMonster::FindNearestFriend(BOOL fPlayer)
 					// visible and in range, this is the new nearest scientist
 					if ((vecStart - vecCheck).Length() < TALKRANGE_MIN)
 					{
-						pNearest = pFriend;
+						pNearest = pMonster;
 						range = (vecStart - vecCheck).Length();
 					}
 				}
@@ -964,7 +964,7 @@ int CTalkMonster::FIdleHello(void)
 	if (!FBitSet(m_bitsSaid, bit_saidHelloPlayer))
 	{
 		// get a player
-		CBaseEntity* pPlayer = FindNearestFriend(TRUE);
+		CTalkMonster* pPlayer = FindNearestFriend(TRUE);
 
 		if (pPlayer)
 		{
@@ -1083,7 +1083,7 @@ int CTalkMonster::FIdleSpeak(void)
 	}
 
 	// if there is a friend nearby to speak to, play sentence, set friend's response time, return
-	CBaseEntity* pFriend = FindNearestFriend(FALSE);
+	CTalkMonster* pFriend = FindNearestFriend(FALSE);
 
 	if (pFriend && !(pFriend->IsMoving()) && (RANDOM_LONG(0, 99) < 75))
 	{
@@ -1091,10 +1091,9 @@ int CTalkMonster::FIdleSpeak(void)
 		//SENTENCEG_PlayRndSz( ENT(pev), szQuestionGroup, 1.0, ATTN_IDLE, 0, pitch );
 
 		// force friend to answer
-		CTalkMonster* pTalkMonster = (CTalkMonster*)pFriend;
 		m_hTalkTarget = pFriend;
-		pTalkMonster->SetAnswerQuestion(this);  // UNDONE: This is EVIL!!!
-		pTalkMonster->m_flStopTalkTime = m_flStopTalkTime;
+		pFriend->SetAnswerQuestion(this);  // UNDONE: This is EVIL!!!
+		pFriend->m_flStopTalkTime = m_flStopTalkTime;
 
 		m_nSpeak++;
 		return TRUE;
@@ -1104,7 +1103,7 @@ int CTalkMonster::FIdleSpeak(void)
 	if (RANDOM_LONG(0, 1))
 	{
 		//SENTENCEG_PlayRndSz( ENT(pev), szIdleGroup, 1.0, ATTN_IDLE, 0, pitch );
-		CBaseEntity* pFriend = FindNearestFriend(TRUE);
+		CTalkMonster* pFriend = FindNearestFriend(TRUE);
 
 		if (pFriend)
 		{
@@ -1130,7 +1129,11 @@ void CTalkMonster::PlayScriptedSentence(const char* pszSentence, float duration,
 	m_useTime = gpGlobals->time + duration;
 	PlaySentence(pszSentence, duration, volume, attenuation);
 
-	m_hTalkTarget = pListener;
+	CTalkMonster* pTalkListener = dynamic_cast<CTalkMonster*>(pListener);
+	if (pTalkListener)
+	{
+		m_hTalkTarget = pTalkListener;
+	}
 }
 
 void CTalkMonster::PlaySentence(const char* pszSentence, float duration, float volume, float attenuation)
@@ -1172,7 +1175,7 @@ void CTalkMonster::SetAnswerQuestion(CTalkMonster* pSpeaker)
 {
 	if (!m_pCine)
 		ChangeSchedule(slIdleResponse);
-	m_hTalkTarget = (CBaseMonster*)pSpeaker;
+	m_hTalkTarget = pSpeaker;
 }
 
 int CTalkMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
@@ -1182,13 +1185,11 @@ int CTalkMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		// if player damaged this entity, have other friends talk about it
 		if (pevAttacker && m_MonsterState != MONSTERSTATE_PRONE && FBitSet(pevAttacker->flags, FL_CLIENT))
 		{
-			CBaseEntity* pFriend = FindNearestFriend(FALSE);
-
+			CTalkMonster* pFriend = FindNearestFriend(FALSE);
 			if (pFriend && pFriend->IsAlive())
 			{
 				// only if not dead or dying!
-				CTalkMonster* pTalkMonster = (CTalkMonster*)pFriend;
-				pTalkMonster->ChangeSchedule(slIdleStopShooting);
+				pFriend->ChangeSchedule(slIdleStopShooting);
 			}
 		}
 	}

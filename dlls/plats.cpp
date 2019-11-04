@@ -431,7 +431,7 @@ void CFuncPlat::PlatUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 void CFuncPlat::GoDown(void)
 {
 	if (pev->noiseMovement)
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement), m_volume, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMovement), m_volume, ATTN_NORM);
 
 	ASSERT(m_toggle_state == TS_AT_TOP || m_toggle_state == TS_GOING_UP);
 	m_toggle_state = TS_GOING_DOWN;
@@ -446,10 +446,10 @@ void CFuncPlat::GoDown(void)
 void CFuncPlat::HitBottom(void)
 {
 	if (pev->noiseMovement)
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+		STOP_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMovement));
 
 	if (pev->noiseStopMoving)
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
 
 	ASSERT(m_toggle_state == TS_GOING_DOWN);
 	m_toggle_state = TS_AT_BOTTOM;
@@ -462,7 +462,7 @@ void CFuncPlat::HitBottom(void)
 void CFuncPlat::GoUp(void)
 {
 	if (pev->noiseMovement)
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement), m_volume, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMovement), m_volume, ATTN_NORM);
 
 	ASSERT(m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
 	m_toggle_state = TS_GOING_UP;
@@ -477,10 +477,10 @@ void CFuncPlat::GoUp(void)
 void CFuncPlat::HitTop(void)
 {
 	if (pev->noiseMovement)
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+		STOP_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMovement));
 
 	if (pev->noiseStopMoving)
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
 
 	ASSERT(m_toggle_state == TS_GOING_UP);
 	m_toggle_state = TS_AT_TOP;
@@ -501,7 +501,7 @@ void CFuncPlat::Blocked(CBaseEntity* pOther)
 	pOther->TakeDamage(pev, pev, 1, DMG_CRUSH);
 
 	if (pev->noiseMovement)
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+		STOP_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMovement));
 
 	// Send the platform back where it came from
 	ASSERT(m_toggle_state == TS_GOING_UP || m_toggle_state == TS_GOING_DOWN);
@@ -701,7 +701,7 @@ void CFuncTrain::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 		pev->nextthink = 0;
 		pev->velocity = g_vecZero;
 		if (pev->noiseStopMoving)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
 	}
 }
 
@@ -722,9 +722,9 @@ void CFuncTrain::Wait(void)
 		pev->spawnflags |= SF_TRAIN_WAIT_RETRIGGER;
 		// clear the sound channel.
 		if (pev->noiseMovement)
-			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+			STOP_SOUND(edict(), CHAN_STATIC, STRING(pev->noiseMovement));
 		if (pev->noiseStopMoving)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
 		pev->nextthink = 0;
 		return;
 	}
@@ -735,9 +735,9 @@ void CFuncTrain::Wait(void)
 	{  // -1 wait will wait forever!
 		pev->nextthink = pev->ltime + m_flWait;
 		if (pev->noiseMovement)
-			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+			STOP_SOUND(edict(), CHAN_STATIC, STRING(pev->noiseMovement));
 		if (pev->noiseStopMoving)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
 		SetThink(&CFuncTrain::Next);
 	}
 	else
@@ -761,10 +761,10 @@ void CFuncTrain::Next(void)
 	if (!pTarg)
 	{
 		if (pev->noiseMovement)
-			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+			STOP_SOUND(edict(), CHAN_STATIC, STRING(pev->noiseMovement));
 		// Play stop sound
 		if (pev->noiseStopMoving)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
 		return;
 	}
 
@@ -798,9 +798,9 @@ void CFuncTrain::Next(void)
 		// use CHAN_STATIC for their movement sounds to prevent sound field problems.
 		// this is not a hack or temporary fix, this is how things should be. (sjb).
 		if (pev->noiseMovement)
-			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+			STOP_SOUND(edict(), CHAN_STATIC, STRING(pev->noiseMovement));
 		if (pev->noiseMovement)
-			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement), m_volume, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMovement), m_volume, ATTN_NORM);
 		ClearBits(pev->effects, EF_NOINTERP);
 		SetMoveDone(&CFuncTrain::Wait);
 		LinearMove(pTarg->pev->origin - (pev->mins + pev->maxs) * 0.5, pev->speed);
@@ -1101,10 +1101,10 @@ void CFuncTrackTrain::StopSound(void)
 
 		us_encode = us_sound;
 
-		PLAYBACK_EVENT_FULL(FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0, (float*)&g_vecZero, (float*)&g_vecZero, 0.0, 0.0, us_encode, 0, 1, 0);
+		PLAYBACK_EVENT_FULL(FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, us_encode, 0, 1, 0);
 
 		/*
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noise));
+		STOP_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noise));
 		*/
 		EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "plats/ttrain_brake1.wav", m_flVolume, ATTN_NORM, 0, 100);
 	}
@@ -1129,14 +1129,14 @@ void CFuncTrackTrain::UpdateSound(void)
 	{
 		// play startup sound for train
 		EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "plats/ttrain_start1.wav", m_flVolume, ATTN_NORM, 0, 100);
-		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noise), m_flVolume, ATTN_NORM, 0, (int)flpitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, STRING(pev->noise), m_flVolume, ATTN_NORM, 0, (int)flpitch);
 		m_soundPlaying = 1;
 	}
 	else
 	{
 		/*
 		// update pitch
-		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noise), m_flVolume, ATTN_NORM, SND_CHANGE_PITCH, (int) flpitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, STRING(pev->noise), m_flVolume, ATTN_NORM, SND_CHANGE_PITCH, (int) flpitch);
 */
 // volume 0.0 - 1.0 - 6 bits
 // m_sounds 3 bits
@@ -1150,7 +1150,7 @@ void CFuncTrackTrain::UpdateSound(void)
 
 		us_encode = us_sound | us_pitch | us_volume;
 
-		PLAYBACK_EVENT_FULL(FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0, (float*)&g_vecZero, (float*)&g_vecZero, 0.0, 0.0, us_encode, 0, 0, 0);
+		PLAYBACK_EVENT_FULL(FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, us_encode, 0, 0, 0);
 	}
 }
 
@@ -1406,22 +1406,23 @@ void CFuncTrackTrain::Find(void)
 
 void CFuncTrackTrain::NearestPath(void)
 {
-	CBaseEntity* pTrack = nullptr;
-	CBaseEntity* pNearest = nullptr;
-	float dist, closest;
-
-	closest = 1024;
-
-	while ((pTrack = UTIL_FindEntityInSphere(pTrack, pev->origin, 1024)) != nullptr)
+	float closest = 1024;
+	CBaseEntity* pEntity = nullptr;
+	CPathTrack* pNearest = nullptr;
+	while ((pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, 1024)) != nullptr)
 	{
 		// filter out non-tracks
-		if (!(pTrack->pev->flags & (FL_CLIENT | FL_MONSTER)) && FClassnameIs(pTrack->pev, "path_track"))
+		if (!FBitSet(pEntity->pev->flags, FL_CLIENT | FL_MONSTER) && FClassnameIs(pEntity->pev, "path_track"))
 		{
-			dist = (pev->origin - pTrack->pev->origin).Length();
-			if (dist < closest)
+			CPathTrack* pTrack = dynamic_cast<CPathTrack*>(pEntity);
+			if (pTrack)
 			{
-				closest = dist;
-				pNearest = pTrack;
+				float dist = (pev->origin - pEntity->pev->origin).Length();
+				if (dist < closest)
+				{
+					closest = dist;
+					pNearest = pTrack;
+				}
 			}
 		}
 	}
@@ -1434,15 +1435,16 @@ void CFuncTrackTrain::NearestPath(void)
 	}
 
 	ALERT(at_aiconsole, "TRAIN: %s, Nearest track is %s\n", STRING(pev->targetname), STRING(pNearest->pev->targetname));
+
 	// If I'm closer to the next path_track on this path, then it's my real path
-	pTrack = ((CPathTrack*)pNearest)->GetNext();
+	CPathTrack* pTrack = pNearest->GetNext();
 	if (pTrack)
 	{
 		if ((pev->origin - pTrack->pev->origin).Length() < (pev->origin - pNearest->pev->origin).Length())
 			pNearest = pTrack;
 	}
 
-	m_ppath = (CPathTrack*)pNearest;
+	m_ppath = pNearest;
 
 	if (pev->speed != 0)
 	{

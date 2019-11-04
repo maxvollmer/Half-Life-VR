@@ -312,14 +312,14 @@ void UTIL_PrecacheOtherWeapon(const char* szClassname)
 		return;
 	}
 
-	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
+	CBasePlayerItem* pEntity = CBaseEntity::SafeInstance<CBasePlayerItem>(pent);
 
 	if (pEntity)
 	{
 		ItemInfo II;
 		pEntity->Precache();
 		memset(&II, 0, sizeof II);
-		if (((CBasePlayerItem*)pEntity)->GetItemInfo(&II))
+		if (pEntity->GetItemInfo(&II))
 		{
 			CBasePlayerItem::ItemInfoArray[II.iId] = II;
 
@@ -614,7 +614,7 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 {
 	// make a copy of this weapon that is invisible and inaccessible to players (no touch function). The weapon spawn/respawn code
 	// will decide when to make the weapon visible and touchable.
-	CBaseEntity* pNewWeapon = CBaseEntity::Create<CBaseEntity>((char*)STRING(pev->classname), g_pGameRules->VecWeaponRespawnSpot(this), pev->angles, pev->owner);
+	CBaseEntity* pNewWeapon = CBaseEntity::Create<CBaseEntity>(STRING(pev->classname), g_pGameRules->VecWeaponRespawnSpot(this), pev->angles, pev->owner);
 
 	if (pNewWeapon)
 	{
@@ -642,7 +642,9 @@ void CBasePlayerItem::DefaultTouch(CBaseEntity* pOther)
 	if (!pOther->IsPlayer())
 		return;
 
-	CBasePlayer* pPlayer = (CBasePlayer*)pOther;
+	CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pOther);
+	if (!pPlayer)
+		return;
 
 	// can I have this?
 	if (!g_pGameRules->CanHavePlayerItem(pPlayer, this))
@@ -828,15 +830,20 @@ void CBasePlayerItem::AttachToPlayer(CBasePlayer* pPlayer)
 // CALLED THROUGH the newly-touched weapon's instance. The existing player weapon is pOriginal
 int CBasePlayerWeapon::AddDuplicate(CBasePlayerItem* pOriginal)
 {
-	if (m_iDefaultAmmo)
+	CBasePlayerWeapon* pWeapon = dynamic_cast<CBasePlayerWeapon*>(pOriginal);
+	if (pWeapon)
 	{
-		return ExtractAmmo((CBasePlayerWeapon*)pOriginal);
+		if (m_iDefaultAmmo)
+		{
+			return ExtractAmmo(pWeapon);
+		}
+		else
+		{
+			// a dead player dropped this.
+			return ExtractClipAmmo(pWeapon);
+		}
 	}
-	else
-	{
-		// a dead player dropped this.
-		return ExtractClipAmmo((CBasePlayerWeapon*)pOriginal);
-	}
+	return 0;
 }
 
 
@@ -934,7 +941,7 @@ void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 	*/
 }
 
-BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, char* szName, int iMaxClip, int iMaxCarry)
+BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, const char* szName, int iMaxClip, int iMaxCarry)
 {
 	int iIdAmmo;
 
@@ -972,7 +979,7 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, char* szName, int iMaxClip, i
 }
 
 
-BOOL CBasePlayerWeapon::AddSecondaryAmmo(int iCount, char* szName, int iMax)
+BOOL CBasePlayerWeapon::AddSecondaryAmmo(int iCount, const char* szName, int iMax)
 {
 	int iIdAmmo;
 
@@ -1202,13 +1209,13 @@ int CBasePlayerWeapon::ExtractAmmo(CBasePlayerWeapon* pWeapon)
 	{
 		// blindly call with m_iDefaultAmmo. It's either going to be a value or zero. If it is zero,
 		// we only get the ammo in the weapon's clip, which is what we want.
-		iReturn = pWeapon->AddPrimaryAmmo(m_iDefaultAmmo, (char*)pszAmmo1(), iMaxClip(), iMaxAmmo1());
+		iReturn = pWeapon->AddPrimaryAmmo(m_iDefaultAmmo, pszAmmo1(), iMaxClip(), iMaxAmmo1());
 		m_iDefaultAmmo = 0;
 	}
 
 	if (pszAmmo2() != nullptr)
 	{
-		iReturn = pWeapon->AddSecondaryAmmo(0, (char*)pszAmmo2(), iMaxAmmo2());
+		iReturn = pWeapon->AddSecondaryAmmo(0, pszAmmo2(), iMaxAmmo2());
 	}
 
 	return iReturn;
@@ -1230,7 +1237,7 @@ int CBasePlayerWeapon::ExtractClipAmmo(CBasePlayerWeapon* pWeapon)
 		iAmmo = m_iClip;
 	}
 
-	return pWeapon->m_pPlayer->GiveAmmo(iAmmo, (char*)pszAmmo1(), iMaxAmmo1());  // , &m_iPrimaryAmmoType
+	return pWeapon->m_pPlayer->GiveAmmo(iAmmo, pszAmmo1(), iMaxAmmo1());  // , &m_iPrimaryAmmoType
 }
 
 //=========================================================
@@ -1354,20 +1361,21 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 
 	if (!pOther->IsAlive())
 	{
-		// no dead guys.
+		// no dead players.
 		return;
 	}
 
-	CBasePlayer* pPlayer = (CBasePlayer*)pOther;
-	int i;
+	CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pOther);
+	if (!pPlayer)
+		return;
 
 	// dole out ammo
-	for (i = 0; i < MAX_AMMO_SLOTS; i++)
+	for (int i = 0; i < MAX_AMMO_SLOTS; i++)
 	{
 		if (!FStringNull(m_rgiszAmmo[i]))
 		{
 			// there's some ammo of this type.
-			pPlayer->GiveAmmo(m_rgAmmo[i], (char*)STRING(m_rgiszAmmo[i]), MaxAmmoCarry(m_rgiszAmmo[i]));
+			pPlayer->GiveAmmo(m_rgAmmo[i], STRING(m_rgiszAmmo[i]), MaxAmmoCarry(m_rgiszAmmo[i]));
 
 			//ALERT ( at_console, "Gave %d rounds of %s\n", m_rgAmmo[i], STRING(m_rgiszAmmo[i]) );
 
@@ -1380,7 +1388,7 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 	// go through my weapons and try to give the usable ones to the player.
 	// it's important that the player be given ammo first, so the weapons code doesn't refuse
 	// to deploy a better weapon that the player may pick up because they have no ammo for it.
-	for (i = 0; i < MAX_ITEM_TYPES; i++)
+	for (int i = 0; i < MAX_ITEM_TYPES; i++)
 	{
 		if (m_rgpPlayerItems[i])
 		{
@@ -1477,7 +1485,7 @@ BOOL CWeaponBox::PackAmmo(int iszName, int iCount)
 	if (iMaxCarry != -1 && iCount > 0)
 	{
 		//ALERT ( at_console, "Packed %d rounds of %s\n", iCount, STRING(iszName) );
-		GiveAmmo(iCount, (char*)STRING(iszName), iMaxCarry);
+		GiveAmmo(iCount, STRING(iszName), iMaxCarry);
 		return TRUE;
 	}
 
@@ -1487,7 +1495,7 @@ BOOL CWeaponBox::PackAmmo(int iszName, int iCount)
 //=========================================================
 // CWeaponBox - GiveAmmo
 //=========================================================
-int CWeaponBox::GiveAmmo(int iCount, char* szName, int iMax, int* pIndex /* = nullptr*/)
+int CWeaponBox::GiveAmmo(int iCount, const char* szName, int iMax, int* pIndex /* = nullptr*/)
 {
 	int i;
 

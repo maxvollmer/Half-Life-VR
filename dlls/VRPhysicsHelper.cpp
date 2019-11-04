@@ -839,7 +839,7 @@ VRPhysicsHelper::~VRPhysicsHelper()
 
 	if (m_worldsSmallestCupPolygonFaces)
 	{
-		delete[](reactphysics3d::PolygonVertexArray::PolygonFace*) m_worldsSmallestCupPolygonFaces;
+		delete[] static_cast<reactphysics3d::PolygonVertexArray::PolygonFace*>(m_worldsSmallestCupPolygonFaces);
 		m_worldsSmallestCupPolygonFaces = nullptr;
 	}
 }

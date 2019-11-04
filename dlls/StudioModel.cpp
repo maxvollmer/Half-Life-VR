@@ -24,7 +24,7 @@ StudioModel::~StudioModel()
 
 bool StudioModel::ExtractTransformedHitbox(int boneIndex, float* bbMins, float* bbMaxs, float(*bbTransform)[4])
 {
-	mstudiobbox_t* pbboxes = (mstudiobbox_t*)((byte*)m_pstudiohdr + m_pstudiohdr->hitboxindex);
+	mstudiobbox_t* pbboxes = reinterpret_cast<mstudiobbox_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->hitboxindex);
 	if (boneIndex < m_pstudiohdr->numhitboxes)
 	{
 		VectorCopy(pbboxes[boneIndex].bbmin, bbMins);
@@ -56,5 +56,5 @@ int StudioModel::GetNumAttachments()
 
 const char* StudioModel::GetModelName(void* pmodel)
 {
-	return ((studiohdr_t*)pmodel)->name;
+	return static_cast<studiohdr_t*>(pmodel)->name;
 }

@@ -19,6 +19,7 @@
 #include "CWorldsSmallestCup.h"
 #include "VRModelHelper.h"
 #include "VRMovementHandler.h"
+#include "VRControllerModel.h"
 
 #include "VRRotatableEnt.h"
 
@@ -426,17 +427,20 @@ bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer* pPlayer, EHAND
 {
 	if (FClassnameIs(hEntity->pev, "vr_easteregg"))
 	{
-		CWorldsSmallestCup* pWorldsSmallestCup = dynamic_cast<CWorldsSmallestCup*>((CBaseEntity*)hEntity);
-		if (isTouching && controller.IsDragging())
+		EHANDLE<CWorldsSmallestCup> pWorldsSmallestCup = hEntity;
+		if (pWorldsSmallestCup)
 		{
-			pWorldsSmallestCup->m_isBeingDragged.insert(controller.GetID());
-			pWorldsSmallestCup->pev->origin = controller.GetGunPosition();
-			pWorldsSmallestCup->pev->angles = controller.GetAngles();
-			pWorldsSmallestCup->pev->velocity = controller.GetVelocity();
-		}
-		else
-		{
-			pWorldsSmallestCup->m_isBeingDragged.erase(controller.GetID());
+			if (isTouching && controller.IsDragging())
+			{
+				pWorldsSmallestCup->m_isBeingDragged.insert(controller.GetID());
+				pWorldsSmallestCup->pev->origin = controller.GetGunPosition();
+				pWorldsSmallestCup->pev->angles = controller.GetAngles();
+				pWorldsSmallestCup->pev->velocity = controller.GetVelocity();
+			}
+			else
+			{
+				pWorldsSmallestCup->m_isBeingDragged.erase(controller.GetID());
+			}
 		}
 		return true;
 	}
@@ -682,7 +686,7 @@ bool VRControllerInteractionManager::HandleBreakables(CBasePlayer* pPlayer, EHAN
 	if (!FClassnameIs(hEntity->pev, "func_breakable"))
 		return false;
 
-	CBreakable* pBreakable = dynamic_cast<CBreakable*>((CBaseEntity*)hEntity);
+	EHANDLE<CBreakable> pBreakable = hEntity;
 
 	// Make sure breakables that are supposed to immediately break on melee attacks, do break.
 	if (pPlayer->HasWeapons() && pBreakable != nullptr && pBreakable->IsBreakable() && pBreakable->pev->takedamage != DAMAGE_NO && !FBitSet(pBreakable->pev->spawnflags, SF_BREAK_TRIGGER_ONLY) && FBitSet(pBreakable->pev->spawnflags, SF_BREAK_CROWBAR) && isHitting && didHitChange)
@@ -698,7 +702,7 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer* pPlayer, EHAND
 	if (!FClassnameIs(hEntity->pev, "func_pushable"))
 		return false;
 
-	CPushable* pPushable = dynamic_cast<CPushable*>((CBaseEntity*)hEntity);
+	EHANDLE<CPushable> pPushable = hEntity;
 	if (pPushable != nullptr)
 	{
 		if (interaction.touching.isSet)

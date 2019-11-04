@@ -1209,7 +1209,7 @@ void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator)
 	}
 
 	if (!FStringNull(pev->noise))
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noise), 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, STRING(pev->noise), 1, ATTN_NORM);
 
 	// don't trigger again until reset
 	// pev->takedamage = DAMAGE_NO;
@@ -1710,9 +1710,9 @@ int CChangeLevel::ChangeList(LEVELLIST* pLevelList, int maxList)
 		pentChangelevel = FIND_ENTITY_BY_STRING(pentChangelevel, "classname", "trigger_changelevel");
 	}
 
-	if (gpGlobals->pSaveData && ((SAVERESTOREDATA*)gpGlobals->pSaveData)->pTable)
+	if (gpGlobals->pSaveData && (static_cast<SAVERESTOREDATA*>(gpGlobals->pSaveData))->pTable)
 	{
-		CSave saveHelper((SAVERESTOREDATA*)gpGlobals->pSaveData);
+		CSave saveHelper(static_cast<SAVERESTOREDATA*>(gpGlobals->pSaveData));
 
 		for (i = 0; i < count; i++)
 		{
@@ -1926,7 +1926,7 @@ void CTriggerPush::DetectXenJumpPadThink()
 				// Flag trigger_multiple and this trigger_push,
 				// so players can disable xen jump push in VR (then only controller beam will activate the mound)
 				m_isXenJumpTrigger = true;
-				((CBaseTrigger*)pTriggerMultiple)->m_isXenJumpTrigger = true;
+				dynamic_cast<CBaseTrigger*>(pTriggerMultiple)->m_isXenJumpTrigger = true;
 				return;
 			}
 		}
@@ -1994,7 +1994,7 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 		{
 			pOther->pev->velocity.z = max(0.f, pOther->pev->velocity.z);
 			pOther->pev->basevelocity.z = max(0.f, pOther->pev->basevelocity.z);
-			((CBasePlayer*)pOther)->SetCurrentUpwardsTriggerPush(this);
+			dynamic_cast<CBasePlayer*>(pOther)->SetCurrentUpwardsTriggerPush(this);
 		}
 		return;
 	}
@@ -2314,7 +2314,7 @@ public:
 	virtual int ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	static TYPEDESCRIPTION m_SaveData[];
 
-	EHANDLE<CBaseEntity> m_hPlayer;
+	EHANDLE<CBasePlayer> m_hPlayer;
 	EHANDLE<CBaseEntity> m_hTarget;
 	EHANDLE<CBaseEntity> m_pentPath;
 	int m_sPath;
@@ -2495,7 +2495,7 @@ void CTriggerCamera::FollowTarget()
 		if (m_hPlayer->IsAlive())
 		{
 			SET_VIEW(m_hPlayer->edict(), m_hPlayer->edict());
-			((CBasePlayer*)((CBaseEntity*)m_hPlayer))->EnableControl(TRUE);
+			m_hPlayer->EnableControl(TRUE);
 		}
 		SUB_UseTargets(this, USE_TOGGLE, 0);
 		pev->avelocity = Vector(0, 0, 0);

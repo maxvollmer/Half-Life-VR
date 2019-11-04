@@ -211,40 +211,7 @@ void CCineMonster::Blocked(CBaseEntity* pOther)
 
 void CCineMonster::Touch(CBaseEntity* pOther)
 {
-	/*
-	ALERT( at_aiconsole, "Cine Touch\n" );
-	if (m_pentTarget && OFFSET(pOther->pev) == OFFSET(m_pentTarget))
-	{
-		CBaseMonster *pTarget = GetClassPtr((CBaseMonster *)VARS(m_pentTarget));
-		pTarget->m_monsterState == MONSTERSTATE_SCRIPT;
-	}
-*/
 }
-
-
-/*
-	entvars_t *pevOther = VARS( gpGlobals->other );
-
-	if ( !FBitSet ( pevOther->flags , FL_MONSTER ) )
-	{// touched by a non-monster.
-		return;
-	}
-
-	pevOther->origin.z += 1;
-
-	if ( FBitSet ( pevOther->flags, FL_ONGROUND ) )
-	{// clear the onground so physics don't bitch
-		pevOther->flags -= FL_ONGROUND;
-	}
-
-	// toss the monster!
-	pevOther->velocity = pev->movedir * pev->speed;
-	pevOther->velocity.z += m_flHeight;
-
-
-	pev->solid = SOLID_NOT;// kill the trigger for now !!!UNDONE
-}
-*/
 
 
 //

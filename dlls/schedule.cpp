@@ -523,7 +523,7 @@ void CBaseMonster::RunTask(Task_t* pTask)
 		if (m_pCine->m_iDelay <= 0 && gpGlobals->time >= m_pCine->m_startTime)
 		{
 			TaskComplete();
-			m_pCine->StartSequence((CBaseMonster*)this, m_pCine->m_iszPlay, TRUE);
+			m_pCine->StartSequence(this, m_pCine->m_iszPlay, TRUE);
 			if (m_fSequenceFinished)
 				ClearSchedule();
 			pev->framerate = 1.0;
@@ -1251,7 +1251,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	{
 		if (m_pCine->m_iszIdle)
 		{
-			m_pCine->StartSequence((CBaseMonster*)this, m_pCine->m_iszIdle, FALSE);
+			m_pCine->StartSequence(this, m_pCine->m_iszIdle, FALSE);
 			if (FStrEq(STRING(m_pCine->m_iszIdle), STRING(m_pCine->m_iszPlay)))
 			{
 				pev->framerate = 0;

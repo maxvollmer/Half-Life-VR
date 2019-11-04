@@ -1184,7 +1184,7 @@ void CNihilanth::HandleAnimEvent(MonsterEvent_t* pEvent)
 		/*
 	Vector vecSrc, vecAngles;
 	GetAttachment( 0, vecSrc, vecAngles );
-	CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
+	CNihilanthHVR *pEntity = CBaseEntity::Create<CNihilanthHVR>( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
 	pEntity->pev->velocity = Vector ( RANDOM_FLOAT( -0.7, 0.7 ), RANDOM_FLOAT( -0.7, 0.7 ), 1.0 ) * 600.0;
 	pEntity->GreenBallInit( );
 	*/

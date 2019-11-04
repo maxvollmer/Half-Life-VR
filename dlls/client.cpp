@@ -1052,8 +1052,8 @@ void SetupVisibility(edict_t* pViewEntity, edict_t* pClient, unsigned char** pvs
 
 	org = pView->v.origin + pView->v.view_ofs;
 
-	*pvs = ENGINE_SET_PVS((float*)&org);
-	*pas = ENGINE_SET_PAS((float*)&org);
+	*pvs = ENGINE_SET_PVS(org);
+	*pas = ENGINE_SET_PAS(org);
 }
 
 #include "entity_state.h"
@@ -1094,7 +1094,7 @@ int AddToFullPack(struct entity_state_s* state, int e, edict_t* ent, edict_t* ho
 	// If pSet is nullptr, then the test will always succeed and the entity will be added to the update
 	if (ent != host)
 	{
-		if (!ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, pSet))
+		if (!ENGINE_CHECK_VISIBILITY(ent, pSet))
 		{
 			return 0;
 		}
@@ -1351,21 +1351,18 @@ FIXME:  Move to script
 */
 void Entity_Encode(struct delta_s* pFields, const unsigned char* from, const unsigned char* to)
 {
-	entity_state_t* f, * t;
-	int localplayer = 0;
 	static int initialized = 0;
-
 	if (!initialized)
 	{
 		Entity_FieldInit(pFields);
 		initialized = 1;
 	}
 
-	f = (entity_state_t*)from;
-	t = (entity_state_t*)to;
+	const entity_state_t* f = reinterpret_cast<const entity_state_t*>(from);
+	const entity_state_t* t = reinterpret_cast<const entity_state_t*>(to);
 
 	// Never send origin to local player, it's sent with more resolution in clientdata_t structure
-	localplayer = (t->number - 1) == ENGINE_CURRENT_PLAYER();
+	int localplayer = (t->number - 1) == ENGINE_CURRENT_PLAYER();
 	if (localplayer)
 	{
 		DELTA_UNSETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN0].field);
@@ -1422,21 +1419,18 @@ Callback for sending entity_state_t for players info over network.
 */
 void Player_Encode(struct delta_s* pFields, const unsigned char* from, const unsigned char* to)
 {
-	entity_state_t* f, * t;
-	int localplayer = 0;
 	static int initialized = 0;
-
 	if (!initialized)
 	{
 		Player_FieldInit(pFields);
 		initialized = 1;
 	}
 
-	f = (entity_state_t*)from;
-	t = (entity_state_t*)to;
+	const entity_state_t* f = reinterpret_cast<const entity_state_t*>(from);
+	const entity_state_t* t = reinterpret_cast<const entity_state_t*>(to);
 
 	// Never send origin to local player, it's sent with more resolution in clientdata_t structure
-	localplayer = (t->number - 1) == ENGINE_CURRENT_PLAYER();
+	int localplayer = (t->number - 1) == ENGINE_CURRENT_PLAYER();
 	if (localplayer)
 	{
 		DELTA_UNSETBYINDEX(pFields, entity_field_alias[FIELD_ORIGIN0].field);
@@ -1505,20 +1499,17 @@ FIXME:  Move to script
 */
 void Custom_Encode(struct delta_s* pFields, const unsigned char* from, const unsigned char* to)
 {
-	entity_state_t* f, * t;
-	int beamType;
 	static int initialized = 0;
-
 	if (!initialized)
 	{
 		Custom_Entity_FieldInit(pFields);
 		initialized = 1;
 	}
 
-	f = (entity_state_t*)from;
-	t = (entity_state_t*)to;
+	const entity_state_t* f = reinterpret_cast<const entity_state_t*>(from);
+	const entity_state_t* t = reinterpret_cast<const entity_state_t*>(to);
 
-	beamType = t->rendermode & 0x0f;
+	int beamType = t->rendermode & 0x0f;
 
 	if (beamType != BEAM_POINTS && beamType != BEAM_ENTPOINT)
 	{
@@ -1586,11 +1577,11 @@ int GetWeaponData(struct edict_s* player, struct weapon_data_s* info)
 		if (pl->m_rgpPlayerItems[i])
 		{
 			// there's a weapon here. Should I pack it?
-			CBasePlayerItem* pPlayerItem = pl->m_rgpPlayerItems[i];
+			EHANDLE<CBasePlayerItem> pPlayerItem = pl->m_rgpPlayerItems[i];
 
 			while (pPlayerItem)
 			{
-				CBasePlayerWeapon* gun = dynamic_cast<CBasePlayerWeapon*>(pPlayerItem->GetWeaponPtr());
+				EHANDLE<CBasePlayerWeapon> gun = pPlayerItem;
 				if (gun && gun->UseDecrement())
 				{
 					// Get The ID.
@@ -1708,7 +1699,7 @@ void UpdateClientData(const struct edict_s* ent, int sendweapons, struct clientd
 
 			if (pl->m_pActiveItem)
 			{
-				CBasePlayerWeapon* gun = dynamic_cast<CBasePlayerWeapon*>(pl->m_pActiveItem->GetWeaponPtr());
+				EHANDLE<CBasePlayerWeapon> gun = pl->m_pActiveItem;
 				if (gun && gun->UseDecrement())
 				{
 					ItemInfo II;
@@ -1748,7 +1739,7 @@ This is the time to examine the usercmd for anything extra.  This call happens e
 */
 void CmdStart(const edict_t* player, const struct usercmd_s* cmd, unsigned int random_seed)
 {
-	entvars_t* pev = (entvars_t*)&player->v;
+	const entvars_t* pev = &player->v;
 	if (pev->pContainingEntity != player)
 		return;
 
@@ -1774,7 +1765,7 @@ Each cmdstart is exactly matched with a cmd end, clean up any group trace flags,
 */
 void CmdEnd(const edict_t* player)
 {
-	entvars_t* pev = (entvars_t*)&player->v;
+	const entvars_t* pev = &player->v;
 	if (pev->pContainingEntity != player)
 		return;
 

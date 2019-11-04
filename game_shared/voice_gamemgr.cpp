@@ -214,18 +214,16 @@ void CVoiceGameMgr::UpdateMasks()
 
 	for (int iClient = 0; iClient < m_nMaxPlayers; iClient++)
 	{
-		CBaseEntity* pEnt = UTIL_PlayerByIndex(iClient + 1);
-		if (!pEnt || !pEnt->IsPlayer())
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex(iClient + 1);
+		if (!pPlayer)
 			continue;
 
 		// Request the state of their "VModEnable" cvar.
 		if (g_bWantModEnable[iClient])
 		{
-			MESSAGE_BEGIN(MSG_ONE, m_msgRequestState, nullptr, pEnt->pev);
+			MESSAGE_BEGIN(MSG_ONE, m_msgRequestState, nullptr, pPlayer->pev);
 			MESSAGE_END();
 		}
-
-		CBasePlayer* pPlayer = (CBasePlayer*)pEnt;
 
 		CPlayerBitVec gameRulesMask;
 		if (g_PlayerModEnable[iClient])
@@ -233,9 +231,9 @@ void CVoiceGameMgr::UpdateMasks()
 			// Build a mask of who they can hear based on the game rules.
 			for (int iOtherClient = 0; iOtherClient < m_nMaxPlayers; iOtherClient++)
 			{
-				CBaseEntity* pEnt = UTIL_PlayerByIndex(iOtherClient + 1);
+				CBasePlayer* pEnt = UTIL_PlayerByIndex(iOtherClient + 1);
 				if (pEnt && pEnt->IsPlayer() &&
-					(bAllTalk || m_pHelper->CanPlayerHearPlayer(pPlayer, (CBasePlayer*)pEnt)))
+					(bAllTalk || m_pHelper->CanPlayerHearPlayer(pPlayer, pEnt)))
 				{
 					gameRulesMask[iOtherClient] = true;
 				}

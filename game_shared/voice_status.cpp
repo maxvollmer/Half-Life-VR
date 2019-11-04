@@ -175,7 +175,7 @@ CVoiceStatus::~CVoiceStatus()
 			m_BanMgr.SaveState(m_pchGameDir);
 		}
 
-		free(m_pchGameDir);
+		delete[] m_pchGameDir;
 	}
 }
 
@@ -241,7 +241,7 @@ int CVoiceStatus::Init(
 
 	// Cache the game directory for use when we shut down
 	const char* pchGameDirT = gEngfuncs.pfnGetGameDirectory();
-	m_pchGameDir = (char*)malloc(strlen(pchGameDirT) + 1);
+	m_pchGameDir = new char[strlen(pchGameDirT) + 1];
 	strcpy(m_pchGameDir, pchGameDirT);
 
 	return 1;

@@ -172,7 +172,7 @@ typedef struct enginefuncs_s
 	int (*pfnEntOffsetOfPEntity)(const edict_t* pEdict);
 	int (*pfnIndexOfEdict)(const edict_t* pEdict);
 	edict_t* (*pfnPEntityOfEntIndex)(int iEntIndex);
-	edict_t* (*pfnFindEntityByVars)(struct entvars_s* pvars);
+	edict_t* (*pfnFindEntityByVars)(const struct entvars_s* pvars);
 	void* (*pfnGetModelPtr)(edict_t* pEdict);
 	int (*pfnRegUserMsg)(const char* pszName, int iSize);
 	void (*pfnAnimationAutomove)(const edict_t* pEdict, float flTime);
@@ -194,7 +194,7 @@ typedef struct enginefuncs_s
 	void (*pfnSetView)(const edict_t* pClient, const edict_t* pViewent);
 	float (*pfnTime)(void);
 	void (*pfnCrosshairAngle)(const edict_t* pClient, float pitch, float yaw);
-	byte* (*pfnLoadFileForMe)(char* filename, int* pLength);
+	byte* (*pfnLoadFileForMe)(const char* filename, int* pLength);
 	void (*pfnFreeFile)(void* buffer);
 	void (*pfnEndSection)(const char* pszSectionName);  // trigger_endsection
 	int (*pfnCompareFileTime)(char* filename1, char* filename2, int* iCompare);
@@ -312,7 +312,7 @@ struct saverestore_s
 	int bufferSize;                              // Total space for data
 	int tokenSize;                               // Size of the linear list of tokens
 	int tokenCount;                              // Number of elements in the pTokens table
-	char** pTokens;                              // Hash table of entity strings (sparse)
+	const char** pTokens;                        // Hash table of entity strings (sparse)
 	int currentIndex;                            // Holds a global entity table ID
 	int tableCount;                              // Number of elements in the entity table
 	int connectionCount;                         // Number of elements in the levelList[]

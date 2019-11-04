@@ -210,9 +210,9 @@ extern "C"
 		void* (*VGui_GetPanel)();
 		void (*VGui_ViewportPaintBackground)(int extents[4]);
 
-		byte* (*COM_LoadFile)(char* path, int usehunk, int* pLength);
-		char* (*COM_ParseFile)(char* data, char* token);
-		void (*COM_FreeFile)(void* buffer);
+		byte* (*COM_LoadFile)(const char* path, int usehunk, int* pLength);
+		char* (*COM_ParseFile)(const char* data, char* token);
+		void (*COM_FreeFile)(const void* buffer);
 
 		struct triangleapi_s* pTriAPI;
 		struct efx_api_s* pEfxAPI;

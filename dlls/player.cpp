@@ -68,7 +68,7 @@ extern playermove_t* pmove;
 // you somehow need to know which player is CalculateWeaponTimeOffset being called for:
 namespace
 {
-	EHANDLE<CBaseEntity> m_hAnalogFirePlayer;
+	EHANDLE<CBasePlayer> m_hAnalogFirePlayer;
 }
 
 extern DLL_GLOBAL ULONG g_ulModelIndexPlayer;
@@ -675,12 +675,11 @@ void CBasePlayer::PackDeadPlayerItems(void)
 	int iWeaponRules;
 	int iAmmoRules;
 	int i;
-	CBasePlayerWeapon* rgpPackWeapons[20];  // 20 hardcoded for now. How to determine exactly how many weapons we have?
+	EHANDLE<CBasePlayerWeapon> rgpPackWeapons[20];  // 20 hardcoded for now. How to determine exactly how many weapons we have?
 	int iPackAmmo[MAX_AMMO_SLOTS + 1];
 	int iPW = 0;  // index into packweapons array
 	int iPA = 0;  // index into packammo array
 
-	memset(rgpPackWeapons, 0, sizeof(rgpPackWeapons));
 	memset(iPackAmmo, -1, sizeof(iPackAmmo));
 
 	// get the game rules
@@ -700,7 +699,7 @@ void CBasePlayer::PackDeadPlayerItems(void)
 		if (m_rgpPlayerItems[i])
 		{
 			// there's a weapon here. Should I pack it?
-			CBasePlayerItem* pPlayerItem = m_rgpPlayerItems[i];
+			EHANDLE<CBasePlayerItem> pPlayerItem = m_rgpPlayerItems[i];
 
 			while (pPlayerItem)
 			{
@@ -710,12 +709,12 @@ void CBasePlayer::PackDeadPlayerItems(void)
 					if (m_pActiveItem && pPlayerItem == m_pActiveItem)
 					{
 						// this is the active item. Pack it.
-						rgpPackWeapons[iPW++] = (CBasePlayerWeapon*)pPlayerItem;
+						rgpPackWeapons[iPW++] = pPlayerItem;
 					}
 					break;
 
 				case GR_PLR_DROP_GUN_ALL:
-					rgpPackWeapons[iPW++] = (CBasePlayerWeapon*)pPlayerItem;
+					rgpPackWeapons[iPW++] = pPlayerItem;
 					break;
 
 				default:
@@ -2672,19 +2671,13 @@ pt_end:
 	{
 		if (m_rgpPlayerItems[i])
 		{
-			CBasePlayerItem* pPlayerItem = m_rgpPlayerItems[i];
+			EHANDLE<CBasePlayerItem> pPlayerItem = m_rgpPlayerItems[i];
 
 			while (pPlayerItem)
 			{
-				CBasePlayerWeapon* gun;
-
-				gun = (CBasePlayerWeapon*)pPlayerItem->GetWeaponPtr();
-
+				EHANDLE<CBasePlayerWeapon> gun = pPlayerItem;
 				if (gun && gun->UseDecrement())
 				{
-					//gun->m_flNextPrimaryAttack.DecrementTo(-1.0f);
-					//gun->m_flNextSecondaryAttack.DecrementTo(-0.001f);
-					//gun->m_flTimeWeaponIdle.DecrementTo(-0.001f);
 					gun->m_flNextPrimaryAttack = max(gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0f);
 					gun->m_flNextSecondaryAttack = max(gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001f);
 					gun->m_flTimeWeaponIdle = max(gun->m_flTimeWeaponIdle - gpGlobals->frametime, -0.001f);
@@ -2693,14 +2686,7 @@ pt_end:
 					{
 						gun->pev->fuser1 = max(gun->pev->fuser1 - gpGlobals->frametime, -0.001);
 					}
-
-					// Only decrement if not flagged as NO_DECREMENT
-					//					if ( gun->m_flPumpTime != 1000 )
-					//	{
-					//		gun->m_flPumpTime	= max( gun->m_flPumpTime - gpGlobals->frametime, -0.001 );
-					//	}
 				}
-
 				pPlayerItem = pPlayerItem->m_pNext;
 			}
 		}
@@ -3048,7 +3034,7 @@ int CBasePlayer::Restore(CRestore& restore)
 
 	int status = restore.ReadFields("PLAYER", this, m_playerSaveData, ARRAYSIZE(m_playerSaveData)) && restore.ReadFields("PLAYERVROffsetsForLevelchange", &g_vrLevelChangeData, g_vrLevelChangeDataSaveData, ARRAYSIZE(g_vrLevelChangeDataSaveData));
 
-	SAVERESTOREDATA* pSaveData = (SAVERESTOREDATA*)gpGlobals->pSaveData;
+	SAVERESTOREDATA* pSaveData = static_cast<SAVERESTOREDATA*>(gpGlobals->pSaveData);
 	// landmark isn't present.
 	if (!pSaveData->fUseLandmark)
 	{
@@ -3930,7 +3916,7 @@ int CBasePlayer::RemovePlayerItem(CBasePlayerItem* pItem)
 //
 // Returns the unique ID for the ammo, or -1 if error
 //
-int CBasePlayer::GiveAmmo(int iCount, char* szName, int iMax)
+int CBasePlayer::GiveAmmo(int iCount, const char* szName, int iMax)
 {
 	if (!szName)
 	{
@@ -4742,7 +4728,7 @@ void CStripWeapons::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 
 	if (pActivator && pActivator->IsPlayer())
 	{
-		pPlayer = (CBasePlayer*)pActivator;
+		pPlayer = dynamic_cast<CBasePlayer*>(pActivator);
 	}
 	else if (!g_pGameRules->IsDeathmatch())
 	{
@@ -5463,7 +5449,7 @@ float CalculateWeaponTimeOffset(float offset)
 {
 	if (m_hAnalogFirePlayer)
 	{
-		float analogfire = fabs(((CBasePlayer*)(CBaseEntity*)m_hAnalogFirePlayer)->GetAnalogFire());
+		float analogfire = fabs(m_hAnalogFirePlayer->GetAnalogFire());
 		if (analogfire > EPSILON&& analogfire < 1.f)
 		{
 			return offset / analogfire;
@@ -5476,7 +5462,7 @@ float CalculateWeaponTimeOffsetReverse(float offset)
 {
 	if (m_hAnalogFirePlayer)
 	{
-		float analogfire = fabs(((CBasePlayer*)(CBaseEntity*)m_hAnalogFirePlayer)->GetAnalogFire());
+		float analogfire = fabs(m_hAnalogFirePlayer->GetAnalogFire());
 		if (analogfire > EPSILON&& analogfire < 1.f)
 		{
 			return offset * analogfire;

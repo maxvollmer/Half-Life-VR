@@ -99,7 +99,7 @@ class CTalkMonster : public CBaseMonster
 {
 public:
 	void TalkInit(void);
-	CBaseEntity* FindNearestFriend(BOOL fPlayer);
+	CTalkMonster* FindNearestFriend(BOOL fPlayer);
 	float TargetDistance(void);
 	void StopTalking(void) { SentenceStop(); }
 
@@ -169,7 +169,7 @@ public:
 	float m_flLastSaidSmelled;  // last time we talked about something that stinks
 	float m_flStopTalkTime;     // when in the future that I'll be done saying this sentence.
 
-	EHANDLE<CBaseEntity> m_hTalkTarget;  // who to look at while talking
+	EHANDLE<CBaseMonster> m_hTalkTarget;  // who to look at while talking
 	CUSTOM_SCHEDULES;
 };
 

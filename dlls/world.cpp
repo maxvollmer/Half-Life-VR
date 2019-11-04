@@ -316,8 +316,7 @@ void CGlobalState::EntityAdd(string_t globalname, string_t mapName, GLOBALESTATE
 {
 	ASSERT(!Find(globalname));
 
-	globalentity_t* pNewEntity = (globalentity_t*)calloc(sizeof(globalentity_t), 1);
-	ASSERT(pNewEntity != nullptr);
+	globalentity_t* pNewEntity = new globalentity_t{ 0 };
 	pNewEntity->pNext = m_pList;
 	m_pList = pNewEntity;
 	strcpy(pNewEntity->name, STRING(globalname));
@@ -426,7 +425,7 @@ void CGlobalState::ClearStates(void)
 	while (pFree)
 	{
 		globalentity_t* pNext = pFree->pNext;
-		free(pFree);
+		delete pFree;
 		pFree = pNext;
 	}
 	Reset();
@@ -615,13 +614,13 @@ void CWorld::Precache(void)
 	WorldGraph.InitGraph();
 
 	// make sure the .NOD file is newer than the .BSP file.
-	if (!WorldGraph.CheckNODFile((char*)STRING(gpGlobals->mapname)))
+	if (!WorldGraph.CheckNODFile(STRING(gpGlobals->mapname)))
 	{  // NOD file is not present, or is older than the BSP file.
 		WorldGraph.AllocNodes();
 	}
 	else
 	{  // Load the node graph for this level
-		if (!WorldGraph.FLoadGraph((char*)STRING(gpGlobals->mapname)))
+		if (!WorldGraph.FLoadGraph(STRING(gpGlobals->mapname)))
 		{  // couldn't load, so alloc and prepare to build a graph.
 			ALERT(at_console, "*Error opening .NOD file\n");
 			WorldGraph.AllocNodes();

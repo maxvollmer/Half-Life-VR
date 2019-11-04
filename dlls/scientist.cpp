@@ -1390,7 +1390,7 @@ void CSittingScientist::SittingThink(void)
 void CSittingScientist::SetAnswerQuestion(CTalkMonster* pSpeaker)
 {
 	m_flResponseDelay = gpGlobals->time + RANDOM_FLOAT(3, 4);
-	m_hTalkTarget = (CBaseMonster*)pSpeaker;
+	m_hTalkTarget = pSpeaker;
 }
 
 

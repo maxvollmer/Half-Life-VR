@@ -178,17 +178,14 @@ LINK_ENTITY_TO_CLASS(weapon_satchel, CSatchel);
 //=========================================================
 int CSatchel::AddDuplicate(CBasePlayerItem* pOriginal)
 {
-	CSatchel* pSatchel;
-
 #ifdef CLIENT_DLL
 	if (bIsMultiplayer())
 #else
 	if (g_pGameRules->IsMultiplayer())
 #endif
 	{
-		pSatchel = (CSatchel*)pOriginal;
-
-		if (pSatchel->m_chargeReady != 0)
+		CSatchel* pSatchel = dynamic_cast<CSatchel*>(pOriginal);
+		if (pSatchel && pSatchel->m_chargeReady != 0)
 		{
 			// player has some satchels deployed. Refuse to add more.
 			return FALSE;

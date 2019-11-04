@@ -150,7 +150,7 @@ public:
 	{
 	}
 
-	edict_t* Get(void)
+	edict_t* Get(void) const
 	{
 		if (m_pent)
 		{
@@ -181,7 +181,7 @@ public:
 		return dynamic_cast<ENTITY*>(static_cast<CBaseEntity*>(GET_PRIVATE(Get())));
 	};
 
-	operator int()
+	operator int() const
 	{
 		return Get() != nullptr;
 	}
@@ -381,19 +381,6 @@ public:
 	void MakeDormant(void);
 	int IsDormant(void);
 	BOOL IsLockedByMaster(void) { return FALSE; }
-
-	/*
-	inline static CBaseEntity* Instance(const edict_t* pent)
-	{
-		if (!pent)
-			pent = ENT(0);
-		CBaseEntity* pEnt = (CBaseEntity*)GET_PRIVATE(pent);
-		return pEnt;
-	}
-	*/
-
-	//inline static CBaseEntity* Instance(const entvars_t* pev) { return Instance(ENT(pev)); }
-	//inline static CBaseEntity* Instance(int eoffset) { return Instance(ENT(eoffset)); }
 
 
 	inline static CBaseEntity* InstanceOrWorld(const edict_t* pent)

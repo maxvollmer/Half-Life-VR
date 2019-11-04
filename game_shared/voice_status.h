@@ -213,7 +213,7 @@ public:
 	CVoiceLabel m_Labels[MAX_VOICE_SPEAKERS];
 
 	// Cache the game directory for use when we shut down
-	char* m_pchGameDir;
+	char* m_pchGameDir{ nullptr };
 };
 
 

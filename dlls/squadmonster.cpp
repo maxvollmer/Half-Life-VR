@@ -23,6 +23,7 @@
 #include "animation.h"
 #include "saverestore.h"
 #include "squadmonster.h"
+#include "scripted.h"
 #include "plane.h"
 
 //=========================================================
@@ -388,7 +389,7 @@ int CSquadMonster::CheckEnemy(CBaseEntity* pEnemy)
 	iUpdatedLKP = CBaseMonster::CheckEnemy(m_hEnemy);
 
 	// communicate with squad members about the enemy IF this individual has the same enemy as the squad leader.
-	if (InSquad() && (CBaseEntity*)m_hEnemy == MySquadLeader()->m_hEnemy)
+	if (InSquad() && m_hEnemy == MySquadLeader()->m_hEnemy)
 	{
 		if (iUpdatedLKP)
 		{

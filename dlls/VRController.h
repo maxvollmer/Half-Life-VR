@@ -2,6 +2,8 @@
 
 class CBasePlayer;
 class CBaseAnimating;
+class CLaserSpot;
+class CVRControllerModel;
 
 typedef int string_t;
 
@@ -26,7 +28,7 @@ public:
 
 	void Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, VRControllerID id, int weaponId);
 
-	CBaseEntity* GetModel() const;
+	CVRControllerModel* GetModel() const;
 	void PlayWeaponAnimation(int iAnim, int body);
 	void PlayWeaponMuzzleflash();
 
@@ -90,7 +92,7 @@ private:
 	void UpdateHitBoxes();
 	void SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID id);
 
-	EHANDLE<CBaseEntity> m_hPlayer;
+	EHANDLE<CBasePlayer> m_hPlayer;
 
 	VRControllerID m_id{ VRControllerID::INVALID };
 	Vector m_offset;
@@ -109,8 +111,10 @@ private:
 	string_t m_modelName{ 0 };
 	string_t m_bboxModelName{ 0 };
 	int m_bboxModelSequence{ 0 };
-	mutable EHANDLE<CBaseEntity> m_hModel;
-	mutable EHANDLE<CBaseEntity> m_hLaserSpot;
+
+	mutable EHANDLE<CVRControllerModel> m_hModel;
+	mutable EHANDLE<CLaserSpot> m_hLaserSpot;
+
 	mutable std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_touchedEntities;
 	mutable std::unordered_map<EHANDLE<CBaseEntity>, DraggedEntityPositions, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_draggedEntities;
 	mutable std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_hitEntities;

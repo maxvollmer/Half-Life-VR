@@ -186,7 +186,7 @@ void CAmbientGeneric::Spawn(void)
 		m_flAttenuation = ATTN_STATIC;
 	}
 
-	char* szSoundFile = (char*)STRING(pev->message);
+	const char* szSoundFile = STRING(pev->message);
 
 	if (FStringNull(pev->message) || strlen(szSoundFile) < 1)
 	{
@@ -221,7 +221,7 @@ void CAmbientGeneric::Spawn(void)
 
 void CAmbientGeneric::Precache(void)
 {
-	char* szSoundFile = (char*)STRING(pev->message);
+	const char* szSoundFile = STRING(pev->message);
 
 	if (!FStringNull(pev->message) && strlen(szSoundFile) > 1)
 	{
@@ -252,7 +252,7 @@ void CAmbientGeneric::Precache(void)
 
 void CAmbientGeneric::RampThink(void)
 {
-	char* szSoundFile = (char*)STRING(pev->message);
+	const char* szSoundFile = STRING(pev->message);
 	int pitch = m_dpv.pitch;
 	int vol = m_dpv.vol;
 	int flags = 0;
@@ -535,7 +535,7 @@ void CAmbientGeneric::InitModulationParms(void)
 //
 void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	char* szSoundFile = (char*)STRING(pev->message);
+	const char* szSoundFile = STRING(pev->message);
 	float fraction;
 
 	if (useType != USE_TOGGLE)
@@ -1986,7 +1986,7 @@ IMPLEMENT_SAVERESTORE(CSpeaker, CBaseEntity);
 //
 void CSpeaker::Spawn(void)
 {
-	char* szSoundFile = (char*)STRING(pev->message);
+	const char* szSoundFile = STRING(pev->message);
 
 	if (!m_preset && (FStringNull(pev->message) || strlen(szSoundFile) < 1))
 	{
@@ -2018,15 +2018,9 @@ void CSpeaker::Precache(void)
 		// set first announcement time for random n second
 		pev->nextthink = gpGlobals->time + RANDOM_FLOAT(5.0, 15.0);
 }
+
 void CSpeaker::SpeakerThink(void)
 {
-	char* szSoundFile;
-	float flvolume = pev->health * 0.1;
-	float flattenuation = 0.3;
-	int flags = 0;
-	int pitch = 100;
-
-
 	// Wait for the talkmonster to finish first.
 	if (gpGlobals->time <= CTalkMonster::g_talkWaitTime)
 	{
@@ -2034,6 +2028,7 @@ void CSpeaker::SpeakerThink(void)
 		return;
 	}
 
+	const char* szSoundFile = nullptr;
 	if (m_preset)
 	{
 		// go lookup preset text, assign szSoundFile
@@ -2053,8 +2048,16 @@ void CSpeaker::SpeakerThink(void)
 		case 12: szSoundFile = "C3A2_"; break;
 		}
 	}
-	else
-		szSoundFile = (char*)STRING(pev->message);
+
+	if (!szSoundFile)
+	{
+		szSoundFile = STRING(pev->message);
+	}
+
+	float flvolume = pev->health * 0.1;
+	float flattenuation = 0.3;
+	int flags = 0;
+	int pitch = 100;
 
 	if (szSoundFile[0] == '!')
 	{

@@ -24,9 +24,7 @@ void StudioModel::CalcBoneAdj()
 {
 	int i, j;
 	float value;
-	mstudiobonecontroller_t* pbonecontroller;
-
-	pbonecontroller = (mstudiobonecontroller_t*)((byte*)m_pstudiohdr + m_pstudiohdr->bonecontrollerindex);
+	mstudiobonecontroller_t* pbonecontroller = reinterpret_cast<mstudiobonecontroller_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->bonecontrollerindex);
 
 	for (j = 0; j < m_pstudiohdr->numbonecontrollers; j++)
 	{
@@ -89,7 +87,7 @@ void StudioModel::CalcBoneQuaternion(int frame, float s, mstudiobone_t* pbone, m
 		}
 		else
 		{
-			panimvalue = (mstudioanimvalue_t*)((byte*)panim + panim->offset[j + 3]);
+			panimvalue = reinterpret_cast<mstudioanimvalue_t*>(reinterpret_cast<byte*>(panim) + panim->offset[j + 3]);
 			k = frame;
 			while (panimvalue->num.total <= k)
 			{
@@ -159,7 +157,7 @@ void StudioModel::CalcBonePosition(int frame, float s, mstudiobone_t* pbone, mst
 		pos[j] = pbone->value[j];  // default;
 		if (panim->offset[j] != 0)
 		{
-			panimvalue = (mstudioanimvalue_t*)((byte*)panim + panim->offset[j]);
+			panimvalue = reinterpret_cast<mstudioanimvalue_t*>(reinterpret_cast<byte*>(panim) + panim->offset[j]);
 
 			k = frame;
 			// find span of values that includes the frame we want
@@ -215,7 +213,7 @@ void StudioModel::CalcRotations(vec3_t* pos, vec4_t* q, mstudioseqdesc_t* pseqde
 	// add in programatic controllers
 	CalcBoneAdj();
 
-	pbone = (mstudiobone_t*)((byte*)m_pstudiohdr + m_pstudiohdr->boneindex);
+	pbone = reinterpret_cast<mstudiobone_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->boneindex);
 	for (i = 0; i < m_pstudiohdr->numbones; i++, pbone++, panim++)
 	{
 		CalcBoneQuaternion(frame, s, pbone, panim, q[i]);
@@ -233,15 +231,14 @@ void StudioModel::CalcRotations(vec3_t* pos, vec4_t* q, mstudioseqdesc_t* pseqde
 
 mstudioanim_t* StudioModel::GetAnim(mstudioseqdesc_t* pseqdesc)
 {
-	mstudioseqgroup_t* pseqgroup;
-	pseqgroup = (mstudioseqgroup_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqgroupindex) + pseqdesc->seqgroup;
+	mstudioseqgroup_t* pseqgroup = reinterpret_cast<mstudioseqgroup_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->seqgroupindex) + pseqdesc->seqgroup;
 
 	if (pseqdesc->seqgroup == 0)
 	{
-		return (mstudioanim_t*)((byte*)m_pstudiohdr + pseqgroup->data + pseqdesc->animindex);
+		return reinterpret_cast<mstudioanim_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + pseqgroup->data + pseqdesc->animindex);
 	}
 
-	return (mstudioanim_t*)((byte*)m_panimhdr[pseqdesc->seqgroup] + pseqdesc->animindex);
+	return reinterpret_cast<mstudioanim_t*>(reinterpret_cast<byte*>(m_panimhdr[pseqdesc->seqgroup]) + pseqdesc->animindex);
 }
 
 
@@ -278,7 +275,7 @@ void StudioModel::AdvanceFrame(float dt)
 		return;
 
 	mstudioseqdesc_t* pseqdesc;
-	pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex) + m_sequence;
+	pseqdesc = reinterpret_cast<mstudioseqdesc_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->seqindex) + m_sequence;
 
 	if (dt > 0.1)
 		dt = 0.1f;
@@ -305,7 +302,7 @@ int StudioModel::SetFrame(int nFrame)
 		return 0;
 
 	mstudioseqdesc_t* pseqdesc;
-	pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex) + m_sequence;
+	pseqdesc = reinterpret_cast<mstudioseqdesc_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->seqindex) + m_sequence;
 
 	m_frame = nFrame;
 
@@ -348,7 +345,7 @@ void StudioModel::SetUpBones(void)
 		m_sequence = 0;
 	}
 
-	pseqdesc = (mstudioseqdesc_t*)((byte*)m_pstudiohdr + m_pstudiohdr->seqindex) + m_sequence;
+	pseqdesc = reinterpret_cast<mstudioseqdesc_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->seqindex) + m_sequence;
 
 	panim = GetAnim(pseqdesc);
 	CalcRotations(pos, q, pseqdesc, panim, m_frame);
@@ -379,7 +376,7 @@ void StudioModel::SetUpBones(void)
 		}
 	}
 
-	pbones = (mstudiobone_t*)((byte*)m_pstudiohdr + m_pstudiohdr->boneindex);
+	pbones = reinterpret_cast<mstudiobone_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->boneindex);
 
 	for (i = 0; i < m_pstudiohdr->numbones; i++)
 	{
@@ -410,10 +407,10 @@ void StudioModel::SetupModel(int bodypart)
 		bodypart = 0;
 	}
 
-	mstudiobodyparts_t* pbodypart = (mstudiobodyparts_t*)((byte*)m_pstudiohdr + m_pstudiohdr->bodypartindex) + bodypart;
+	mstudiobodyparts_t* pbodypart = reinterpret_cast<mstudiobodyparts_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->bodypartindex) + bodypart;
 
 	index = m_bodynum / pbodypart->base;
 	index = index % pbodypart->nummodels;
 
-	m_pmodel = (mstudiomodel_t*)((byte*)m_pstudiohdr + pbodypart->modelindex) + index;
+	m_pmodel = reinterpret_cast<mstudiomodel_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + pbodypart->modelindex) + index;
 }

@@ -1316,13 +1316,13 @@ ReloadMapCycleFile
 Parses mapcycle.txt file into mapcycle_t structure
 ==============
 */
-int ReloadMapCycleFile(char* filename, mapcycle_t* cycle)
+int ReloadMapCycleFile(const char* filename, mapcycle_t* cycle)
 {
 	char szBuffer[MAX_RULE_BUFFER];
 	char szMap[32];
 	int length;
 	char* pFileList;
-	char* aFileList = pFileList = (char*)LOAD_FILE_FOR_ME(filename, &length);
+	char* aFileList = pFileList = reinterpret_cast<char*>(LOAD_FILE_FOR_ME(filename, &length));
 	int hasbuffer;
 	mapcycle_item_s* item, * newlist = nullptr, * next;
 
@@ -1536,7 +1536,7 @@ void CHalfLifeMultiplay::ChangeLevel(void)
 	BOOL do_cycle = TRUE;
 
 	// find the map to change to
-	char* mapcfile = (char*)CVAR_GET_STRING("mapcyclefile");
+	const char* mapcfile = CVAR_GET_STRING("mapcyclefile");
 	ASSERT(mapcfile != nullptr);
 
 	szCommands[0] = '\0';
@@ -1655,7 +1655,7 @@ void CHalfLifeMultiplay::SendMOTDToClient(edict_t* client)
 	// read from the MOTD.txt file
 	int length, char_count = 0;
 	char* pFileList;
-	char* aFileList = pFileList = (char*)LOAD_FILE_FOR_ME((char*)CVAR_GET_STRING("motdfile"), &length);
+	char* aFileList = pFileList = reinterpret_cast<char*>(LOAD_FILE_FOR_ME(CVAR_GET_STRING("motdfile"), &length));
 
 	// send the server name
 	MESSAGE_BEGIN(MSG_ONE, gmsgServerName, nullptr, client);

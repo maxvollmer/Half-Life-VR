@@ -2457,7 +2457,7 @@ physent_t* PM_Ladder2(void)
 			else if (VRIsLegacyLadderMoveEnabled())
 			{
 				vec3_t test;
-				hull_t* hull = (hull_t*)pmove->PM_HullForBsp(pe, test);
+				hull_t* hull = static_cast<hull_t*>(pmove->PM_HullForBsp(pe, test));
 
 				// Offset the test point appropriately for this hull.
 				// test = origin - test
