@@ -969,7 +969,7 @@ void CController::Move(float flInterval)
 			// Can't move, stop
 			Stop();
 			// Blocking entity is in global trace_ent
-			pBlocker = CBaseEntity::Instance(gpGlobals->trace_ent);
+			pBlocker = CBaseEntity::SafeInstance<CBaseEntity>(gpGlobals->trace_ent);
 			if (pBlocker)
 			{
 				DispatchBlocked(edict(), pBlocker->edict());
@@ -1161,7 +1161,7 @@ void CControllerHeadBall::Spawn(void)
 
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	m_hOwner = Instance(pev->owner);
+	m_hOwner = SafeInstance<CBaseEntity>(pev->owner);
 	pev->dmgtime = gpGlobals->time;
 }
 
@@ -1210,7 +1210,7 @@ void CControllerHeadBall::HuntThink(void)
 
 		UTIL_TraceLine(pev->origin, m_hEnemy->Center(), dont_ignore_monsters, ENT(pev), &tr);
 
-		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+		CBaseEntity* pEntity = CBaseEntity::InstanceOrWorld(tr.pHit);
 		if (pEntity != nullptr && pEntity->pev->takedamage)
 		{
 			ClearMultiDamage();
@@ -1349,7 +1349,7 @@ void CControllerZapBall::Spawn(void)
 	SetThink(&CControllerZapBall::AnimateThink);
 	SetTouch(&CControllerZapBall::ExplodeTouch);
 
-	m_hOwner = Instance(pev->owner);
+	m_hOwner = SafeInstance<CBaseEntity>(pev->owner);
 	pev->dmgtime = gpGlobals->time;  // keep track of when ball spawned
 	pev->nextthink = gpGlobals->time + 0.1;
 }

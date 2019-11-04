@@ -134,7 +134,7 @@ void CStomp::Think(void)
 
 	if (tr.pHit && tr.pHit != pev->owner)
 	{
-		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+		CBaseEntity* pEntity = CBaseEntity::InstanceOrWorld(tr.pHit);
 		entvars_t* pevOwner = pev;
 		if (pev->owner)
 			pevOwner = VARS(pev->owner);
@@ -1041,7 +1041,7 @@ CBaseEntity* CGargantua::GargantuaCheckTraceHullAttack(float flDist, int iDamage
 
 	if (tr.pHit)
 	{
-		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+		CBaseEntity* pEntity = CBaseEntity::InstanceOrWorld(tr.pHit);
 
 		if (iDamage > 0)
 		{

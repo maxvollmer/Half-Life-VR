@@ -204,10 +204,8 @@ void DecalGunshot(TraceResult* pTrace, int iBulletType)
 
 	if (VARS(pTrace->pHit)->solid == SOLID_BSP || VARS(pTrace->pHit)->movetype == MOVETYPE_PUSHSTEP)
 	{
-		CBaseEntity* pEntity = nullptr;
 		// Decal the wall with a gunshot
-		if (!FNullEnt(pTrace->pHit))
-			pEntity = CBaseEntity::Instance(pTrace->pHit);
+		CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pTrace->pHit);
 
 		switch (iBulletType)
 		{
@@ -314,7 +312,7 @@ void UTIL_PrecacheOtherWeapon(const char* szClassname)
 		return;
 	}
 
-	CBaseEntity* pEntity = CBaseEntity::Instance(VARS(pent));
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 
 	if (pEntity)
 	{

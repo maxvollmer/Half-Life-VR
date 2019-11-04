@@ -87,7 +87,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 	if (IS_DEDICATED_SERVER())
 	{
 		// dedicated server
-		char* servercfgfile = (char*)CVAR_GET_STRING("servercfgfile");
+		const char* servercfgfile = CVAR_GET_STRING("servercfgfile");
 
 		if (servercfgfile && servercfgfile[0])
 		{
@@ -101,7 +101,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 	else
 	{
 		// listen server
-		char* lservercfgfile = (char*)CVAR_GET_STRING("lservercfgfile");
+		const char* lservercfgfile = CVAR_GET_STRING("lservercfgfile");
 
 		if (lservercfgfile && lservercfgfile[0])
 		{
@@ -449,9 +449,7 @@ void CHalfLifeMultiplay::InitHUD(CBasePlayer* pl)
 	// loop through all active players and send their score info to the new client
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
-		// FIXME:  Probably don't need to cast this just to read m_iDeaths
-		CBasePlayer* plr = (CBasePlayer*)UTIL_PlayerByIndex(i);
-
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 		if (plr)
 		{
 			MESSAGE_BEGIN(MSG_ONE, gmsgScoreInfo, nullptr, pl->edict());
@@ -477,7 +475,7 @@ void CHalfLifeMultiplay::ClientDisconnected(edict_t* pClient)
 {
 	if (pClient)
 	{
-		CBasePlayer* pPlayer = (CBasePlayer*)CBaseEntity::Instance(pClient);
+		CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pClient);
 
 		if (pPlayer)
 		{
@@ -619,21 +617,18 @@ void CHalfLifeMultiplay::PlayerKilled(CBasePlayer* pVictim, entvars_t* pKiller, 
 
 
 	FireTargets("game_playerdie", pVictim, pVictim, USE_TOGGLE, 0);
-	CBasePlayer* peKiller = nullptr;
-	CBaseEntity* ktmp = CBaseEntity::Instance(pKiller);
-	if (ktmp && (ktmp->Classify() == CLASS_PLAYER))
-		peKiller = (CBasePlayer*)ktmp;
+	CBasePlayer* peKiller = CBaseEntity::SafeInstance<CBasePlayer>(pKiller);
 
 	if (pVictim->pev == pKiller)
 	{  // killed self
 		pKiller->frags -= 1;
 	}
-	else if (ktmp && ktmp->IsPlayer())
+	else if (peKiller)
 	{
 		// if a player dies in a deathmatch game and the killer is a client, award the killer some points
 		pKiller->frags += IPointsForKill(peKiller, pVictim);
 
-		FireTargets("game_playerkill", ktmp, ktmp, USE_TOGGLE, 0);
+		FireTargets("game_playerkill", peKiller, peKiller, USE_TOGGLE, 0);
 	}
 	else
 	{  // killed by the world
@@ -651,11 +646,9 @@ void CHalfLifeMultiplay::PlayerKilled(CBasePlayer* pVictim, entvars_t* pKiller, 
 	MESSAGE_END();
 
 	// killers score, if it's a player
-	CBaseEntity* ep = CBaseEntity::Instance(pKiller);
-	if (ep && ep->Classify() == CLASS_PLAYER)
+	CBasePlayer* PK = CBaseEntity::SafeInstance<CBasePlayer>(pKiller);
+	if (PK)
 	{
-		CBasePlayer* PK = (CBasePlayer*)ep;
-
 		MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
 		WRITE_BYTE(ENTINDEX(PK->edict()));
 		WRITE_SHORT(PK->pev->frags);
@@ -686,7 +679,7 @@ void CHalfLifeMultiplay::PlayerKilled(CBasePlayer* pVictim, entvars_t* pKiller, 
 void CHalfLifeMultiplay::DeathNotice(CBasePlayer* pVictim, entvars_t* pKiller, entvars_t* pevInflictor)
 {
 	// Work out what killed the player, and send a message to all clients about it
-	CBaseEntity* Killer = CBaseEntity::Instance(pKiller);
+	//CBaseEntity* Killer = CBaseEntity::Instance(pKiller);
 
 	const char* killer_weapon_name = "world";  // by default, the player is killed by the world
 	int killer_index = 0;
@@ -704,7 +697,7 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer* pVictim, entvars_t* pKiller, e
 			if (pevInflictor == pKiller)
 			{
 				// If the inflictor is the killer,  then it must be their current weapon doing the damage
-				CBasePlayer* pPlayer = (CBasePlayer*)CBaseEntity::Instance(pKiller);
+				CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pKiller);
 
 				if (pPlayer->m_pActiveItem)
 				{

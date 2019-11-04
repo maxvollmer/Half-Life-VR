@@ -196,7 +196,7 @@ void CTripmineGrenade::PowerupThink(void)
 		if (tr.flFraction < 1.0)
 		{
 			pev->owner = tr.pHit;
-			m_hOwner = CBaseEntity::Instance(pev->owner);
+			m_hOwner = CBaseEntity::SafeInstance<CBaseEntity>(pev->owner);
 			m_posOwner = m_hOwner->pev->origin;
 			m_angleOwner = m_hOwner->pev->angles;
 		}
@@ -289,7 +289,7 @@ void CTripmineGrenade::BeamBreakThink(void)
 	{
 		MakeBeam();
 		if (tr.pHit)
-			m_hOwner = CBaseEntity::Instance(tr.pHit);  // reset owner too
+			m_hOwner = CBaseEntity::SafeInstance<CBaseEntity>(tr.pHit);  // reset owner too
 	}
 
 	if (fabs(m_flBeamLength - tr.flFraction) > 0.001)
@@ -488,7 +488,7 @@ void CTripmine::PrimaryAttack(void)
 
 	if (tr.flFraction < 1.0)
 	{
-		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+		CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(tr.pHit);
 		if (pEntity && !(pEntity->pev->flags & FL_CONVEYOR))
 		{
 			Vector origin = tr.vecEndPos;
@@ -547,7 +547,7 @@ void CTripmine::UpdateGhost()
 	bool hideGhost = true;
 	if (tr.flFraction < 1.0)
 	{
-		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+		CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(tr.pHit);
 		if (pEntity && !(pEntity->pev->flags & FL_CONVEYOR))
 		{
 			Vector origin = tr.vecEndPos;

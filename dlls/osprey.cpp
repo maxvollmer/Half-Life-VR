@@ -284,7 +284,7 @@ CBaseMonster* COsprey::MakeGrunt(Vector vecSrc)
 {
 	TraceResult tr;
 	UTIL_TraceLine(vecSrc, vecSrc + Vector(0, 0, -4096.0), dont_ignore_monsters, ENT(pev), &tr);
-	if (tr.pHit && Instance(tr.pHit)->pev->solid != SOLID_BSP)
+	if (tr.pHit && InstanceOrWorld(tr.pHit)->pev->solid != SOLID_BSP)
 		return nullptr;
 
 	for (int i = 0; i < m_iUnits; i++)
@@ -384,9 +384,12 @@ void COsprey::FlyThink(void)
 
 	if (m_pGoalEnt == nullptr && !FStringNull(pev->target))  // this monster has a target
 	{
-		m_pGoalEnt = CBaseEntity::Instance(FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(pev->target)));
+		m_pGoalEnt = CBaseEntity::SafeInstance<CBaseEntity>(FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(pev->target)));
 		UpdateGoal();
 	}
+
+	if (!m_pGoalEnt)
+		return;
 
 	if (gpGlobals->time > m_startTime + m_dTime)
 	{
@@ -396,8 +399,8 @@ void COsprey::FlyThink(void)
 		}
 		do
 		{
-			m_pGoalEnt = CBaseEntity::Instance(FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(m_pGoalEnt->pev->target)));
-		} while (m_pGoalEnt->pev->speed < 400 && !HasDead());
+			m_pGoalEnt = CBaseEntity::SafeInstance<CBaseEntity>(FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(m_pGoalEnt->pev->target)));
+		} while (m_pGoalEnt && m_pGoalEnt->pev->speed < 400 && !HasDead());
 		UpdateGoal();
 	}
 

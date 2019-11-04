@@ -424,7 +424,7 @@ void CFlockingFlyer::FormFlock(void)
 
 		while ((pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, AFLOCK_MAX_RECRUIT_RADIUS)) != nullptr)
 		{
-			CBaseMonster* pRecruit = pEntity->MyMonsterPointer();
+			CBaseMonster* pRecruit = dynamic_cast<CBaseMonster*>(pEntity);
 
 			if (pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_pCine)
 			{

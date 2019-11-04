@@ -424,7 +424,7 @@ void CFuncTank::ControllerPostFrame(void)
 	if (gpGlobals->time < m_flNextAttack)
 		return;
 
-	if ((m_pController->pev->button & IN_ATTACK) || (m_pController->GetAnalogFire() > 0.f))
+	if (FBitSet(m_pController->pev->button, IN_ATTACK) || (m_pController->GetAnalogFire() > 0.f))
 	{
 		Vector vecForward;
 		UTIL_MakeVectorsPrivate(pev->angles, vecForward, nullptr, nullptr);
@@ -434,8 +434,7 @@ void CFuncTank::ControllerPostFrame(void)
 		Fire(BarrelPosition(), vecForward, m_pController->pev);
 
 		// HACKHACK -- make some noise (that the AI can hear)
-		if (m_pController && m_pController->IsPlayer())
-			((CBasePlayer*)m_pController)->m_iWeaponVolume = LOUD_GUN_VOLUME;
+		m_pController->m_iWeaponVolume = LOUD_GUN_VOLUME;
 
 		m_flNextAttack = gpGlobals->time + (1 / m_fireRate);
 	}
@@ -460,8 +459,12 @@ void CFuncTank::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 			// value == 1337 is hacky way used by CBasePlayer::VRUseOrUnuseTank() to tell us that this is a VR initiated control
 			if (CVAR_GET_FLOAT("vr_legacy_tankcontrols_enabled") != 0.f || value == 1337)
 			{
-				((CBasePlayer*)pActivator)->m_pTank = this;
-				StartControl((CBasePlayer*)pActivator);
+				CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pActivator);
+				if (pPlayer)
+				{
+					pPlayer->m_pTank = this;
+					StartControl(pPlayer);
+				}
 			}
 		}
 		else
@@ -564,8 +567,8 @@ void CFuncTank::TrackTarget(void)
 		{
 			lineOfSight = TRUE;
 
-			CBaseEntity* pInstance = CBaseEntity::Instance(pTarget);
-			if (InRange(range) && pInstance && pInstance->IsAlive())
+			CBaseEntity* pInstance = CBaseEntity::SafeInstance<CBaseEntity>(pTarget);
+			if (pInstance && pInstance->IsAlive())
 			{
 				updateTime = TRUE;
 				m_sightOrigin = UpdateTargetPosition(pInstance);
@@ -744,14 +747,14 @@ void CFuncTank::StartRotSound(void)
 	if (!pev->noise || (pev->spawnflags & SF_TANK_SOUNDON))
 		return;
 	pev->spawnflags |= SF_TANK_SOUNDON;
-	EMIT_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->noise), 0.85, ATTN_NORM);
+	EMIT_SOUND(edict(), CHAN_STATIC, STRING(pev->noise), 0.85, ATTN_NORM);
 }
 
 
 void CFuncTank::StopRotSound(void)
 {
 	if (pev->spawnflags & SF_TANK_SOUNDON)
-		STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->noise));
+		STOP_SOUND(edict(), CHAN_STATIC, STRING(pev->noise));
 	pev->spawnflags &= ~SF_TANK_SOUNDON;
 }
 
@@ -870,8 +873,9 @@ CLaser* CFuncTankLaser::GetLaser(void)
 		// Found the landmark
 		if (FClassnameIs(pentLaser, "env_laser"))
 		{
-			m_pLaser = (CLaser*)CBaseEntity::Instance(pentLaser);
-			break;
+			m_pLaser = CBaseEntity::SafeInstance<CLaser>(pentLaser);
+			if (m_pLaser)
+				break;
 		}
 		else
 			pentLaser = FIND_ENTITY_BY_TARGETNAME(pentLaser, STRING(pev->message));
@@ -1063,7 +1067,7 @@ void CFuncTankControls::Think(void)
 		return;
 	}
 
-	m_pTank = (CFuncTank*)Instance(pTarget);
+	m_pTank = SafeInstance<CFuncTank>(pTarget);
 }
 
 void CFuncTankControls::Spawn(void)

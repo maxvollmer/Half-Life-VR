@@ -251,7 +251,7 @@ void CMultiSource::Register(void)
 
 	while (!FNullEnt(pentTarget) && (m_iTotal < MS_MAX_TARGETS))
 	{
-		CBaseEntity* pTarget = CBaseEntity::Instance(pentTarget);
+		CBaseEntity* pTarget = CBaseEntity::SafeInstance<CBaseEntity>(pentTarget);
 		if (pTarget)
 			m_rgEntities[m_iTotal++] = pTarget;
 
@@ -261,7 +261,7 @@ void CMultiSource::Register(void)
 	pentTarget = FIND_ENTITY_BY_STRING(nullptr, "classname", "multi_manager");
 	while (!FNullEnt(pentTarget) && (m_iTotal < MS_MAX_TARGETS))
 	{
-		CBaseEntity* pTarget = CBaseEntity::Instance(pentTarget);
+		CBaseEntity* pTarget = CBaseEntity::SafeInstance<CBaseEntity>(pentTarget);
 		if (pTarget && pTarget->HasTarget(pev->targetname))
 			m_rgEntities[m_iTotal++] = pTarget;
 
@@ -403,7 +403,7 @@ int CBaseButton::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	// Temporarily disable the touch function, until movement is finished.
 	SetTouch(nullptr);
 
-	m_hActivator = CBaseEntity::Instance(pevAttacker);
+	m_hActivator = CBaseEntity::SafeInstance<CBaseEntity>(pevAttacker);
 	if (m_hActivator == nullptr)
 		return 0;
 
@@ -775,7 +775,7 @@ void CBaseButton::ButtonBackHome(void)
 
 			if (!FClassnameIs(pentTarget, "multisource"))
 				continue;
-			CBaseEntity* pTarget = CBaseEntity::Instance(pentTarget);
+			CBaseEntity* pTarget = CBaseEntity::SafeInstance<CBaseEntity>(pentTarget);
 
 			if (pTarget)
 				pTarget->Use(m_hActivator, this, USE_TOGGLE, 0);
@@ -1241,7 +1241,7 @@ void CMomentaryRotButton::UpdateTarget(float value)
 			pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(pev->target));
 			if (FNullEnt(pentTarget))
 				break;
-			CBaseEntity* pEntity = CBaseEntity::Instance(pentTarget);
+			CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pentTarget);
 			if (pEntity)
 			{
 				pEntity->Use(this, this, USE_SET, value);
@@ -1448,7 +1448,7 @@ int CButtonTarget::ObjectCaps(void)
 
 int CButtonTarget::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
-	Use(Instance(pevAttacker), this, USE_TOGGLE, 0);
-
+	CBaseEntity* pAttacker = CBaseEntity::SafeInstance<CBaseEntity>(pevAttacker);
+	Use(pAttacker ? pAttacker: this, this, USE_TOGGLE, 0);
 	return 1;
 }

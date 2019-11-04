@@ -718,9 +718,7 @@ void CBigMomma::NodeStart(int iszNextNode)
 	if (pev->netname)
 	{
 		edict_t* pentTarget = FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(pev->netname));
-
-		if (!FNullEnt(pentTarget))
-			pTarget = Instance(pentTarget);
+		pTarget = CBaseEntity::SafeInstance<CBaseEntity>(pentTarget);
 	}
 
 

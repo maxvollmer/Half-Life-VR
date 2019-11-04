@@ -370,7 +370,7 @@ void CHalfLifeTeamplay::DeathNotice(CBasePlayer* pVictim, entvars_t* pKiller, en
 
 	if (pVictim && pKiller && pKiller->flags & FL_CLIENT)
 	{
-		CBasePlayer* pk = (CBasePlayer*)CBaseEntity::Instance(pKiller);
+		CBasePlayer* pk = CBaseEntity::SafeInstance<CBasePlayer>(pKiller);
 
 		if (pk)
 		{
@@ -446,7 +446,7 @@ int CHalfLifeTeamplay::PlayerRelationship(CBaseEntity* pPlayer, CBaseEntity* pTa
 BOOL CHalfLifeTeamplay::ShouldAutoAim(CBasePlayer* pPlayer, edict_t* target)
 {
 	// always autoaim, unless target is a teammate
-	CBaseEntity* pTgt = CBaseEntity::Instance(target);
+	CBaseEntity* pTgt = CBaseEntity::SafeInstance<CBaseEntity>(target);
 	if (pTgt && pTgt->IsPlayer())
 	{
 		if (PlayerRelationship(pPlayer, pTgt) == GR_TEAMMATE)

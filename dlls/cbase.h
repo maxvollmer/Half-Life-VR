@@ -277,8 +277,6 @@ public:
 
 	virtual void TraceBleed(float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	virtual BOOL IsTriggered(CBaseEntity* pActivator) { return TRUE; }
-	virtual CBaseMonster* MyMonsterPointer(void) { return nullptr; }
-	virtual CSquadMonster* MySquadMonsterPointer(void) { return nullptr; }
 	virtual int GetToggleState(void) { return TS_AT_TOP; }
 	virtual void AddPoints(int score, BOOL bAllowNegativeScore) {}
 	virtual void AddPointsToTeam(int score, BOOL bAllowNegativeScore) {}
@@ -384,21 +382,36 @@ public:
 	int IsDormant(void);
 	BOOL IsLockedByMaster(void) { return FALSE; }
 
+	/*
 	inline static CBaseEntity* Instance(const edict_t* pent)
 	{
 		if (!pent)
 			pent = ENT(0);
-		CBaseEntity* pEnt = CBaseEntity::SafeInstance<CBaseEntity>(pent);
+		CBaseEntity* pEnt = (CBaseEntity*)GET_PRIVATE(pent);
 		return pEnt;
 	}
+	*/
 
-	inline static CBaseEntity* Instance(const entvars_t* pev) { return Instance(ENT(pev)); }
-	inline static CBaseEntity* Instance(int eoffset) { return Instance(ENT(eoffset)); }
+	//inline static CBaseEntity* Instance(const entvars_t* pev) { return Instance(ENT(pev)); }
+	//inline static CBaseEntity* Instance(int eoffset) { return Instance(ENT(eoffset)); }
+
+
+	inline static CBaseEntity* InstanceOrWorld(const edict_t* pent)
+	{
+		if (!pent || FNullEnt(pent))
+			return static_cast<CBaseEntity*>(GET_PRIVATE(ENT(0)));
+		else
+			return static_cast<CBaseEntity*>(GET_PRIVATE(pent));
+	}
+
+	inline static CBaseEntity* InstanceOrWorld(const entvars_t* pev) { return InstanceOrWorld(ENT(pev)); }
+	inline static CBaseEntity* InstanceOrWorld(int eoffset) { return InstanceOrWorld(ENT(eoffset)); }
+
 
 	template<class T>
 	inline static EHANDLE<T> SafeInstance(const edict_t* pent)
 	{
-		return dynamic_cast<T*>(static_cast<CBaseEntity*>(GET_PRIVATE(pent)));
+		return FNullEnt(pent) ? nullptr : dynamic_cast<T*>(static_cast<CBaseEntity*>(GET_PRIVATE(pent)));
 	}
 
 	template<class T>
@@ -411,21 +424,6 @@ public:
 	inline static EHANDLE<T> SafeInstance(int eoffset)
 	{
 		return SafeInstance<T>(ENT(eoffset));
-	}
-
-	CBaseMonster* GetMonsterPointer(const entvars_t* pevMonster)
-	{
-		CBaseEntity* pEntity = Instance(pevMonster);
-		if (pEntity)
-			return pEntity->MyMonsterPointer();
-		return nullptr;
-	}
-	CBaseMonster* GetMonsterPointer(const edict_t* pentMonster)
-	{
-		CBaseEntity* pEntity = Instance(pentMonster);
-		if (pEntity)
-			return pEntity->MyMonsterPointer();
-		return nullptr;
 	}
 
 
@@ -474,7 +472,7 @@ public:
 	// NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity
 	// will keep a pointer to it after this call.
 	template <class T>
-	static T* Create(char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner = nullptr)
+	static T* Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner = nullptr)
 	{
 		edict_t* pent = CREATE_NAMED_ENTITY(MAKE_STRING(szName));
 		if (FNullEnt(pent))

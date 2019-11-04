@@ -827,7 +827,7 @@ void CGamePlayerEquip::EquipPlayer(CBaseEntity* pEntity)
 
 	if (pEntity->IsPlayer())
 	{
-		pPlayer = (CBasePlayer*)pEntity;
+		pPlayer = dynamic_cast<CBasePlayer*>(pEntity);
 	}
 
 	if (!pPlayer)
@@ -898,11 +898,14 @@ void CGamePlayerTeam::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 
 	if (pActivator->IsPlayer())
 	{
-		const char* pszTargetTeam = TargetTeamName(STRING(pev->target));
-		if (pszTargetTeam)
+		CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pActivator);
+		if (pPlayer)
 		{
-			CBasePlayer* pPlayer = (CBasePlayer*)pActivator;
-			g_pGameRules->ChangePlayerTeam(pPlayer, pszTargetTeam, ShouldKillPlayer(), ShouldGibPlayer());
+			const char* pszTargetTeam = TargetTeamName(STRING(pev->target));
+			if (pszTargetTeam)
+			{
+				g_pGameRules->ChangePlayerTeam(pPlayer, pszTargetTeam, ShouldKillPlayer(), ShouldGibPlayer());
+			}
 		}
 	}
 

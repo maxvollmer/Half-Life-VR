@@ -340,7 +340,7 @@ void CBaseMonster::Look(int iDistance)
 						{
 							CBaseMonster* pClient;
 
-							pClient = pSightEnt->MyMonsterPointer();
+							pClient = dynamic_cast<CBaseMonster*>(pSightEnt);
 							// don't link this client in the list if the monster is wait till seen and the player isn't facing the monster
 							if (pSightEnt && !pClient->FInViewCone(this))
 							{
@@ -1101,7 +1101,7 @@ int CBaseMonster::CheckEnemy(CBaseEntity* pEnemy)
 		iUpdatedLKP = TRUE;
 		m_vecEnemyLKP = pEnemy->pev->origin;
 
-		pEnemyMonster = pEnemy->MyMonsterPointer();
+		pEnemyMonster = dynamic_cast<CBaseMonster*>(pEnemy);
 
 		if (pEnemyMonster)
 		{
@@ -1402,7 +1402,7 @@ float CBaseMonster::OpenDoorAndWait(entvars_t* pevDoor)
 	float flTravelTime = 0;
 
 	//ALERT(at_aiconsole, "A door. ");
-	CBaseEntity* pcbeDoor = CBaseEntity::Instance(pevDoor);
+	CBaseEntity* pcbeDoor = CBaseEntity::SafeInstance<CBaseEntity>(pevDoor);
 	if (pcbeDoor && !pcbeDoor->IsLockedByMaster())
 	{
 		//ALERT(at_aiconsole, "unlocked! ");
@@ -1427,7 +1427,7 @@ float CBaseMonster::OpenDoorAndWait(entvars_t* pevDoor)
 
 					if (FClassnameIs(pentTarget, STRING(pcbeDoor->pev->classname)))
 					{
-						CBaseEntity* pDoor = Instance(pentTarget);
+						CBaseEntity* pDoor = CBaseEntity::SafeInstance<CBaseEntity>(pentTarget);
 						if (pDoor)
 							pDoor->Use(this, this, USE_ON, 0.0);
 					}
@@ -1868,12 +1868,11 @@ void CBaseMonster::Move(float flInterval)
 	flDist = 0;
 	if (CheckLocalMove(pev->origin, pev->origin + vecDir * flCheckDist, pTargetEnt, &flDist) != LOCALMOVE_VALID)
 	{
-		CBaseEntity* pBlocker;
-
 		// Can't move, stop
 		Stop();
+
 		// Blocking entity is in global trace_ent
-		pBlocker = CBaseEntity::Instance(gpGlobals->trace_ent);
+		CBaseEntity* pBlocker = CBaseEntity::SafeInstance<CBaseEntity>(gpGlobals->trace_ent);
 		if (pBlocker)
 		{
 			DispatchBlocked(edict(), pBlocker->edict());
@@ -2097,7 +2096,7 @@ void CBaseMonster::StartMonster(void)
 	if (!FStringNull(pev->target))  // this monster has a target
 	{
 		// Find the monster's initial target entity, stash it
-		m_pGoalEnt = CBaseEntity::Instance(FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(pev->target)));
+		m_pGoalEnt = CBaseEntity::SafeInstance<CBaseEntity>(FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(pev->target)));
 
 		if (!m_pGoalEnt)
 		{
@@ -2924,8 +2923,7 @@ void CBaseMonster::ReportAIState(void)
 			ALERT(level, ": In stopped anim. ");
 	}
 
-	CSquadMonster* pSquadMonster = MySquadMonsterPointer();
-
+	CSquadMonster* pSquadMonster = dynamic_cast<CSquadMonster*>(this);
 	if (pSquadMonster)
 	{
 		if (!pSquadMonster->InSquad())
@@ -3367,7 +3365,7 @@ BOOL CBaseMonster::GetEnemy(void)
 				// if the new enemy has an owner, take that one as well
 				if (pNewEnemy->pev->owner != nullptr)
 				{
-					CBaseEntity* pOwner = GetMonsterPointer(pNewEnemy->pev->owner);
+					CBaseMonster* pOwner = CBaseEntity::SafeInstance<CBaseMonster>(pNewEnemy->pev->owner);
 					if (pOwner && (pOwner->pev->flags & FL_MONSTER) && IRelationship(pOwner) != R_NO)
 						PushEnemy(pOwner, m_vecEnemyLKP);
 				}

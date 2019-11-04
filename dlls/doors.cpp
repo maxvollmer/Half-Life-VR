@@ -133,7 +133,7 @@ void PlayLockSounds(entvars_t* pev, locksound_t* pls, int flocked, int fbutton)
 		if (fplaysound)
 		{
 			// play 'door locked' sound
-			EMIT_SOUND(ENT(pev), CHAN_ITEM, (char*)STRING(pls->sLockedSound), fvol, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, STRING(pls->sLockedSound), fvol, ATTN_NORM);
 			pls->flwaitSound = gpGlobals->time + flsoundwait;
 		}
 
@@ -169,7 +169,7 @@ void PlayLockSounds(entvars_t* pev, locksound_t* pls, int flocked, int fbutton)
 		// play 'door unlocked' sound if set
 		if (fplaysound)
 		{
-			EMIT_SOUND(ENT(pev), CHAN_ITEM, (char*)STRING(pls->sUnlockedSound), fvol, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, STRING(pls->sUnlockedSound), fvol, ATTN_NORM);
 			pls->flwaitSound = gpGlobals->time + flsoundwait;
 		}
 
@@ -569,7 +569,7 @@ void CBaseDoor::DoorGoUp(void)
 	// emit door moving and stop sounds on CHAN_STATIC so that the multicast doesn't
 	// filter them out and leave a client stuck with looping door sounds!
 	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMoving), 1, ATTN_NORM);
 
 	m_toggle_state = TS_GOING_UP;
 
@@ -610,8 +610,8 @@ void CBaseDoor::DoorHitTop(void)
 {
 	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
 	{
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving));
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseArrived), 1, ATTN_NORM);
+		STOP_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMoving));
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseArrived), 1, ATTN_NORM);
 	}
 
 	ASSERT(m_toggle_state == TS_GOING_UP);
@@ -650,7 +650,7 @@ void CBaseDoor::DoorHitTop(void)
 void CBaseDoor::DoorGoDown(void)
 {
 	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMoving), 1, ATTN_NORM);
 
 #ifdef DOOR_ASSERT
 	ASSERT(m_toggle_state == TS_AT_TOP);
@@ -671,8 +671,8 @@ void CBaseDoor::DoorHitBottom(void)
 {
 	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
 	{
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving));
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseArrived), 1, ATTN_NORM);
+		STOP_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMoving));
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseArrived), 1, ATTN_NORM);
 	}
 
 	ASSERT(m_toggle_state == TS_GOING_DOWN);
@@ -948,7 +948,7 @@ bool CRotDoor::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vec
 void CRotDoor::StartVRDragRotation()
 {
 	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMoving), 1, ATTN_NORM);
 }
 
 bool CRotDoor::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta)
@@ -1149,7 +1149,7 @@ void CMomentaryDoor::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 		// This entity only thinks when it moves, so if it's thinking, it's in the process of moving
 		// play the sound when it starts moving
 		if (pev->nextthink < pev->ltime || pev->nextthink == 0)
-			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMoving), 1, ATTN_NORM);
 
 		LinearMove(move, speed);
 	}

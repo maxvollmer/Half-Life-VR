@@ -1541,7 +1541,7 @@ void EMIT_SOUND_DYN(edict_t* entity, int channel, const char* sample, float volu
 	{
 		// Intercept and use female audio files for female NPCs
 		std::string ssample{ sample };
-		if (CBaseEntity::Instance(entity)->IsFemaleNPC())
+		if (CBaseEntity::InstanceOrWorld(entity)->IsFemaleNPC())
 		{
 			ssample = std::regex_replace(ssample, std::regex{ "SC_", std::regex_constants::icase }, "FS_");
 		}
@@ -1559,7 +1559,7 @@ void EMIT_SOUND_DYN(edict_t* entity, int channel, const char* sample, float volu
 	else
 	{
 		std::string ssample{ sample };
-		if (CBaseEntity::Instance(entity)->IsFemaleNPC() && ssample.find("scientist/") == 0)
+		if (CBaseEntity::InstanceOrWorld(entity)->IsFemaleNPC() && ssample.find("scientist/") == 0)
 		{
 			ssample = std::regex_replace(ssample, std::regex{ "scientist/", std::regex_constants::icase }, "fsci/");
 		}
@@ -1785,7 +1785,7 @@ float TEXTURETYPE_PlaySound(TraceResult* ptr, Vector vecSrc, Vector vecEnd, int 
 	if (!g_pGameRules->PlayTextureSounds())
 		return 0.0;
 
-	CBaseEntity* pEntity = CBaseEntity::Instance(ptr->pHit);
+	CBaseEntity* pEntity = CBaseEntity::InstanceOrWorld(ptr->pHit);
 
 	chTextureType = 0;
 

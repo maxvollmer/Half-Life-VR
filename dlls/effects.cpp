@@ -328,7 +328,7 @@ void CBeam::TriggerTouch(CBaseEntity* pOther)
 	{
 		if (pev->owner)
 		{
-			CBaseEntity* pOwner = CBaseEntity::Instance(pev->owner);
+			CBaseEntity* pOwner = CBaseEntity::InstanceOrWorld(pev->owner);
 			pOwner->Use(pOther, this, USE_TOGGLE, 0);
 		}
 		ALERT(at_console, "Firing targets!!!\n");
@@ -627,6 +627,8 @@ void CLightning::StrikeUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TY
 
 int IsPointEntity(CBaseEntity* pEnt)
 {
+	if (!pEnt)
+		return 0;
 	if (!pEnt->pev->modelindex)
 		return 1;
 	if (FClassnameIs(pEnt->pev, "info_target") || FClassnameIs(pEnt->pev, "info_landmark") || FClassnameIs(pEnt->pev, "path_corner"))
@@ -745,7 +747,7 @@ void CBeam::BeamDamage(TraceResult* ptr)
 	RelinkBeam();
 	if (ptr->flFraction != 1.0 && ptr->pHit != nullptr)
 	{
-		CBaseEntity* pHit = CBaseEntity::Instance(ptr->pHit);
+		CBaseEntity* pHit = CBaseEntity::InstanceOrWorld(ptr->pHit);
 		if (pHit)
 		{
 			ClearMultiDamage();
@@ -887,8 +889,8 @@ void CLightning::BeamUpdateVars(void)
 
 	edict_t* pStart = FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(m_iszStartEntity));
 	edict_t* pEnd = FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(m_iszEndEntity));
-	pointStart = IsPointEntity(CBaseEntity::Instance(pStart));
-	pointEnd = IsPointEntity(CBaseEntity::Instance(pEnd));
+	pointStart = IsPointEntity(CBaseEntity::InstanceOrWorld(pStart));
+	pointEnd = IsPointEntity(CBaseEntity::InstanceOrWorld(pEnd));
 
 	pev->skin = 0;
 	pev->sequence = 0;
@@ -2077,7 +2079,7 @@ void CMessage::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useTy
 			pPlayer = pActivator;
 		else
 		{
-			pPlayer = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
+			pPlayer = CBaseEntity::SafeInstance<CBaseEntity>(g_engfuncs.pfnPEntityOfEntIndex(1));
 		}
 		if (pPlayer)
 			UTIL_ShowMessage(STRING(pev->message), pPlayer);

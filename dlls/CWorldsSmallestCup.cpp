@@ -48,7 +48,7 @@ void CWorldsSmallestCup::CupThink()
 
 	if (m_instance && m_instance != this)
 	{
-		((CWorldsSmallestCup*)(CBaseEntity*)m_instance)->m_hAlreadySpokenKleiners.insert(m_hAlreadySpokenKleiners.begin(), m_hAlreadySpokenKleiners.end());
+		m_instance->m_hAlreadySpokenKleiners.insert(m_hAlreadySpokenKleiners.begin(), m_hAlreadySpokenKleiners.end());
 		SetThink(&CBaseEntity::SUB_Remove);
 		return;
 	}
@@ -93,14 +93,13 @@ void CWorldsSmallestCup::CupThink()
 		{
 			if ((gpGlobals->time - m_flKleinerFaceStart) > 0.5f)
 			{
-				CTalkMonster* pKleiner = (CTalkMonster*)(CBaseEntity*)m_hKleiner;
-				if (pKleiner->FOkToSpeak())
+				if (m_hKleiner->FOkToSpeak())
 				{
 					CTalkMonster::g_talkWaitTime = gpGlobals->time + 20;
-					pKleiner->Talk(20);
-					pKleiner->m_hTalkTarget = UTIL_PlayerByIndex(0);
-					EMIT_SOUND_DYN(pKleiner->edict(), CHAN_VOICE, "easteregg/smallestcup.wav", 1, ATTN_NORM, 0, pKleiner->GetVoicePitch());
-					SetBits(pKleiner->m_bitsSaid, bit_saidHelloPlayer);
+					m_hKleiner->Talk(20);
+					m_hKleiner->m_hTalkTarget = UTIL_PlayerByIndex(0);
+					EMIT_SOUND_DYN(m_hKleiner->edict(), CHAN_VOICE, "easteregg/smallestcup.wav", 1, ATTN_NORM, 0, m_hKleiner->GetVoicePitch());
+					SetBits(m_hKleiner->m_bitsSaid, bit_saidHelloPlayer);
 					m_hAlreadySpokenKleiners.insert(m_hKleiner);
 					m_hKleiner = nullptr;
 					m_flKleinerFaceStart = 0.f;
@@ -114,12 +113,15 @@ void CWorldsSmallestCup::CupThink()
 			CBaseEntity* pKleiner = nullptr;
 			while (pKleiner = UTIL_FindEntityInSphere(pKleiner, pev->origin, 256.f))
 			{
-				if (FClassnameIs(pKleiner->pev, "monster_scientist") && !pKleiner->IsFemaleNPC() && pKleiner->pev->body == 0 /*HEAD_GLASSES*/
-					&& m_hAlreadySpokenKleiners.count(EHANDLE<CBaseEntity>{ pKleiner }) == 0 && AmIInKleinersFace(pKleiner))
+				if (FClassnameIs(pKleiner->pev, "monster_scientist") && !pKleiner->IsFemaleNPC() && pKleiner->pev->body == 0 /*HEAD_GLASSES*/)
 				{
-					m_hKleiner = pKleiner;
-					m_flKleinerFaceStart = gpGlobals->time;
-					break;
+					EHANDLE<CTalkMonster> hKleiner = dynamic_cast<CTalkMonster*>(pKleiner);
+					if (hKleiner && m_hAlreadySpokenKleiners.count(hKleiner) == 0 && AmIInKleinersFace(hKleiner))
+					{
+						m_hKleiner = hKleiner;
+						m_flKleinerFaceStart = gpGlobals->time;
+						break;
+					}
 				}
 			}
 		}
@@ -141,7 +143,7 @@ bool CWorldsSmallestCup::IsFallingOutOfWorld()
 	return tr.flFraction == 1.f;
 }
 
-bool CWorldsSmallestCup::AmIInKleinersFace(CBaseEntity* pKleiner)
+bool CWorldsSmallestCup::AmIInKleinersFace(CTalkMonster* pKleiner)
 {
 	if (!pKleiner)
 		return false;
@@ -152,4 +154,4 @@ bool CWorldsSmallestCup::AmIInKleinersFace(CBaseEntity* pKleiner)
 	return UTIL_PointInsideBBox(pev->origin, pos - Vector{ 8.f, 8.f, 8.f }, pos + Vector{ 8.f, 8.f, 8.f });
 }
 
-EHANDLE<CBaseEntity> CWorldsSmallestCup::m_instance{};
+EHANDLE<CWorldsSmallestCup> CWorldsSmallestCup::m_instance{};

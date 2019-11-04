@@ -237,7 +237,7 @@ int CCrowbar::Swing(int fFirst)
 		{
 			// Calculate the point of intersection of the line (or hull) and the object we hit
 			// This is and approximation of the "best" intersection
-			CBaseEntity* pHit = CBaseEntity::Instance(tr.pHit);
+			CBaseEntity* pHit = CBaseEntity::InstanceOrWorld(tr.pHit);
 			if (!pHit || pHit->IsBSPModel())
 				FindHullIntersection(vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict());
 			vecEnd = tr.vecEndPos;  // This is the point on the actual surface (the hull could have hit space)
@@ -245,7 +245,7 @@ int CCrowbar::Swing(int fFirst)
 	}
 #endif
 
-	PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 0.0, (float*)&g_vecZero, (float*)&g_vecZero, 0, 0, 0, 0.0, 0, 0.0);
+	PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usCrowbar, 0.0, g_vecZero, g_vecZero, 0, 0, 0, 0.0, 0, 0.0);
 
 
 	if (tr.flFraction >= 1.0)
@@ -281,7 +281,7 @@ int CCrowbar::Swing(int fFirst)
 
 		// hit
 		fDidHit = TRUE;
-		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+		CBaseEntity* pEntity = CBaseEntity::InstanceOrWorld(tr.pHit);
 
 		ClearMultiDamage();
 

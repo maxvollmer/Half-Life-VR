@@ -614,7 +614,7 @@ void CTalkMonster::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 	if ((pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE)
 	{
 		AlertFriends();
-		LimitFollowers(CBaseEntity::Instance(pevAttacker), 0);
+		LimitFollowers(CBaseEntity::SafeInstance<CBaseEntity>(pevAttacker), 0);
 	}
 
 	m_hTargetEnt = nullptr;
@@ -669,7 +669,7 @@ void CTalkMonster::AlertFriends(void)
 	{
 		while (pFriend = EnumFriends(pFriend, i, TRUE))
 		{
-			CBaseMonster* pMonster = pFriend->MyMonsterPointer();
+			CBaseMonster* pMonster = dynamic_cast<CBaseMonster*>(pFriend);
 			if (pMonster->IsAlive())
 			{
 				// don't provoke a friend that's playing a death animation. They're a goner
@@ -691,7 +691,7 @@ void CTalkMonster::ShutUpFriends(void)
 	{
 		while (pFriend = EnumFriends(pFriend, i, TRUE))
 		{
-			CBaseMonster* pMonster = pFriend->MyMonsterPointer();
+			CBaseMonster* pMonster = dynamic_cast<CBaseMonster*>(pFriend);
 			if (pMonster)
 			{
 				pMonster->SentenceStop();
@@ -714,7 +714,7 @@ void CTalkMonster::LimitFollowers(CBaseEntity* pPlayer, int maxFollowers)
 	{
 		while (pFriend = EnumFriends(pFriend, i, FALSE))
 		{
-			CBaseMonster* pMonster = pFriend->MyMonsterPointer();
+			CBaseMonster* pMonster = dynamic_cast<CBaseMonster*>(pFriend);
 			if (pMonster)
 			{
 				if (pMonster->m_hTargetEnt == pPlayer)
@@ -817,7 +817,7 @@ CBaseEntity* CTalkMonster::FindNearestFriend(BOOL fPlayer)
 				// don't talk to self or dead people
 				continue;
 
-			CBaseMonster* pMonster = pFriend->MyMonsterPointer();
+			CBaseMonster* pMonster = dynamic_cast<CBaseMonster*>(pFriend);
 
 			// If not a monster for some reason, or in a script, or prone
 			if (!pMonster || pMonster->m_MonsterState == MONSTERSTATE_SCRIPT || pMonster->m_MonsterState == MONSTERSTATE_PRONE)

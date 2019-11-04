@@ -185,7 +185,7 @@ void CCineMonster::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE u
 	CBaseMonster* pTarget = nullptr;
 
 	if (pEntity)
-		pTarget = pEntity->MyMonsterPointer();
+		pTarget = dynamic_cast<CBaseMonster*>(pEntity);
 
 	if (pTarget)
 	{
@@ -279,7 +279,7 @@ int CCineMonster::FindEntity(void)
 	{
 		if (FBitSet(VARS(pentTarget)->flags, FL_MONSTER))
 		{
-			pTarget = GetMonsterPointer(pentTarget);
+			pTarget = CBaseEntity::SafeInstance<CBaseMonster>(pentTarget);
 			if (pTarget && pTarget->CanPlaySequence(FCanOverrideState(), SS_INTERRUPT_BY_NAME))
 			{
 				m_hTargetEnt = pTarget;
@@ -300,7 +300,7 @@ int CCineMonster::FindEntity(void)
 			{
 				if (FBitSet(pEntity->pev->flags, FL_MONSTER))
 				{
-					pTarget = pEntity->MyMonsterPointer();
+					pTarget = dynamic_cast<CBaseMonster*>(pEntity);
 					if (pTarget && pTarget->CanPlaySequence(FCanOverrideState(), SS_INTERRUPT_IDLE))
 					{
 						m_hTargetEnt = pTarget;
@@ -321,7 +321,7 @@ void CCineMonster::PossessEntity(void)
 	CBaseEntity* pEntity = m_hTargetEnt;
 	CBaseMonster* pTarget = nullptr;
 	if (pEntity)
-		pTarget = pEntity->MyMonsterPointer();
+		pTarget = dynamic_cast<CBaseMonster*>(pEntity);
 
 	if (pTarget)
 	{
@@ -395,7 +395,7 @@ void CCineAI::PossessEntity(void)
 	CBaseEntity* pEntity = m_hTargetEnt;
 	CBaseMonster* pTarget = nullptr;
 	if (pEntity)
-		pTarget = pEntity->MyMonsterPointer();
+		pTarget = dynamic_cast<CBaseMonster*>(pEntity);
 
 	if (pTarget)
 	{
@@ -720,7 +720,7 @@ void ScriptEntityCancel(edict_t* pentCine)
 		CBaseEntity* pEntity = pCineTarget->m_hTargetEnt;
 		CBaseMonster* pTarget = nullptr;
 		if (pEntity)
-			pTarget = pEntity->MyMonsterPointer();
+			pTarget = dynamic_cast<CBaseMonster*>(pEntity);
 
 		if (pTarget)
 		{
@@ -800,7 +800,7 @@ void CCineMonster::Activate(void)
 	{
 		if (FBitSet(VARS(pentTarget)->flags, FL_MONSTER))
 		{
-			pTarget = GetMonsterPointer(pentTarget);
+			pTarget = CBaseEntity::SafeInstance<CBaseMonster>(pentTarget);
 		}
 		pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(m_iszEntity));
 	}
@@ -811,7 +811,7 @@ void CCineMonster::Activate(void)
 		pentTarget = FIND_ENTITY_BY_CLASSNAME(nullptr, STRING(m_iszEntity));
 		while (!pTarget && !FNullEnt(pentTarget))
 		{
-			pTarget = GetMonsterPointer(pentTarget);
+			pTarget = CBaseEntity::SafeInstance<CBaseMonster>(pentTarget);
 			pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(m_iszEntity));
 		}
 	}
@@ -1168,7 +1168,7 @@ CBaseMonster* CScriptedSentence::FindEntity(void)
 
 	while (!FNullEnt(pentTarget))
 	{
-		pMonster = GetMonsterPointer(pentTarget);
+		pMonster = CBaseEntity::SafeInstance<CBaseMonster>(pentTarget);
 		if (pMonster != nullptr)
 		{
 			if (AcceptableSpeaker(pMonster))
@@ -1185,7 +1185,7 @@ CBaseMonster* CScriptedSentence::FindEntity(void)
 		{
 			if (FBitSet(pEntity->pev->flags, FL_MONSTER))
 			{
-				pMonster = pEntity->MyMonsterPointer();
+				pMonster = dynamic_cast<CBaseMonster*>(pEntity);
 				if (AcceptableSpeaker(pMonster))
 					return pMonster;
 			}

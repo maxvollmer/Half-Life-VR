@@ -142,7 +142,7 @@ typedef struct enginefuncs_s
 	void (*pfnServerExecute)(void);
 	void (*pfnClientCommand)(edict_t* pEdict, char* szFmt, ...);
 	void (*pfnParticleEffect)(const float* org, const float* dir, float color, float count);
-	void (*pfnLightStyle)(int style, char* val);
+	void (*pfnLightStyle)(int style, const char* val);
 	int (*pfnDecalIndex)(const char* name);
 	int (*pfnPointContents)(const float* rgflVector);
 	void (*pfnMessageBegin)(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed);
@@ -224,7 +224,7 @@ typedef struct enginefuncs_s
 	void (*pfnSetPhysicsKeyValue)(const edict_t* pClient, const char* key, const char* value);
 	const char* (*pfnGetPhysicsInfoString)(const edict_t* pClient);
 	unsigned short (*pfnPrecacheEvent)(int type, const char* psz);
-	void (*pfnPlaybackEvent)(int flags, const edict_t* pInvoker, unsigned short eventindex, float delay, float* origin, float* angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2);
+	void (*pfnPlaybackEvent)(int flags, const edict_t* pInvoker, unsigned short eventindex, float delay, const float* origin, const float* angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2);
 
 	unsigned char* (*pfnSetFatPVS)(float* org);
 	unsigned char* (*pfnSetFatPAS)(float* org);

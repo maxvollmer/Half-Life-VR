@@ -109,11 +109,12 @@ void CItem::ItemTouch(CBaseEntity* pOther)
 {
 	// if it's not a player, ignore
 	if (!pOther->IsPlayer())
-	{
 		return;
-	}
 
-	CBasePlayer* pPlayer = (CBasePlayer*)pOther;
+	CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pOther);
+
+	if (!pPlayer)
+		return;
 
 	// ok, a player is touching this item, but can they have it?
 	if (!g_pGameRules->CanHaveItem(pPlayer, this))

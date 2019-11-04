@@ -96,7 +96,7 @@ void CGib::SpawnStickyGibs(entvars_t* pevVictim, Vector vecOrigin, int cGibs)
 			pGib->pev->avelocity.y = RANDOM_FLOAT(250, 400);
 
 			// copy owner's blood color
-			pGib->m_bloodColor = (CBaseEntity::Instance(pevVictim))->BloodColor();
+			pGib->m_bloodColor = (CBaseEntity::InstanceOrWorld(pevVictim))->BloodColor();
 
 			if (pevVictim->health > -50)
 			{
@@ -139,14 +139,14 @@ void CGib::SpawnHeadGib(entvars_t* pevVictim)
 
 	if (pevVictim)
 	{
-		pGib->pev->origin = CBaseEntity::Instance(pevVictim)->EyePosition();
+		pGib->pev->origin = CBaseEntity::InstanceOrWorld(pevVictim)->EyePosition();
 
 		edict_t* pentPlayer = FIND_CLIENT_IN_PVS(pGib->edict());
 
 		// 5% chance head will be thrown at player's face.
 		if (RANDOM_LONG(0, 100) <= 5 && pentPlayer)
 		{
-			pGib->pev->velocity = (CBaseEntity::Instance(pentPlayer)->EyePosition() - pGib->pev->origin).Normalize() * 300;
+			pGib->pev->velocity = (CBaseEntity::InstanceOrWorld(pentPlayer)->EyePosition() - pGib->pev->origin).Normalize() * 300;
 			pGib->pev->velocity.z += 100;
 		}
 		else
@@ -159,7 +159,7 @@ void CGib::SpawnHeadGib(entvars_t* pevVictim)
 		pGib->pev->avelocity.y = RANDOM_FLOAT(100, 300);
 
 		// copy owner's blood color
-		pGib->m_bloodColor = (CBaseEntity::Instance(pevVictim))->BloodColor();
+		pGib->m_bloodColor = (CBaseEntity::InstanceOrWorld(pevVictim))->BloodColor();
 
 		if (pevVictim->health > -50)
 		{
@@ -227,7 +227,7 @@ void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, int human)
 			pGib->pev->avelocity.y = RANDOM_FLOAT(100, 300);
 
 			// copy owner's blood color
-			pGib->m_bloodColor = (CBaseEntity::Instance(pevVictim))->BloodColor();
+			pGib->m_bloodColor = (CBaseEntity::InstanceOrWorld(pevVictim))->BloodColor();
 
 			if (pevVictim->health > -50)
 			{
@@ -606,7 +606,7 @@ void CBaseMonster::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 	SetConditions(bits_COND_LIGHT_DAMAGE);
 
 	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
-	CBaseEntity* pOwner = CBaseEntity::Instance(pev->owner);
+	CBaseEntity* pOwner = CBaseEntity::SafeInstance<CBaseEntity>(pev->owner);
 	if (pOwner)
 	{
 		pOwner->DeathNotice(pev);
@@ -861,7 +861,7 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	vecDir = Vector(0, 0, 0);
 	if (!FNullEnt(pevInflictor))
 	{
-		CBaseEntity* pInflictor = CBaseEntity::Instance(pevInflictor);
+		CBaseEntity* pInflictor = CBaseEntity::SafeInstance<CBaseEntity>(pevInflictor);
 		if (pInflictor)
 		{
 			vecDir = (pInflictor->Center() - Vector(0, 0, 10) - Center()).Normalize();
@@ -978,7 +978,7 @@ int CBaseMonster::DeadTakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker
 	vecDir = Vector(0, 0, 0);
 	if (!FNullEnt(pevInflictor))
 	{
-		CBaseEntity* pInflictor = CBaseEntity::Instance(pevInflictor);
+		CBaseEntity* pInflictor = CBaseEntity::SafeInstance<CBaseEntity>(pevInflictor);
 		if (pInflictor)
 		{
 			vecDir = (pInflictor->Center() - Vector(0, 0, 10) - Center()).Normalize();
@@ -1146,7 +1146,7 @@ CBaseEntity* CBaseMonster::CheckTraceHullAttack(float flDist, int iDamage, int i
 
 	if (tr.pHit)
 	{
-		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+		CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(tr.pHit);
 
 		if (iDamage > 0)
 		{
@@ -1437,7 +1437,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 		// do damage, paint decals
 		if (tr.flFraction != 1.0)
 		{
-			CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+			CBaseEntity* pEntity = CBaseEntity::InstanceOrWorld(tr.pHit);
 
 			if (iDamage)
 			{
@@ -1536,7 +1536,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		// do damage, paint decals
 		if (tr.flFraction != 1.0)
 		{
-			CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+			CBaseEntity* pEntity = CBaseEntity::InstanceOrWorld(tr.pHit);
 
 			if (iDamage)
 			{

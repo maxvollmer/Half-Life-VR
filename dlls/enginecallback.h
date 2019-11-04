@@ -84,12 +84,12 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = nul
 #define WRITE_ENTITY (*g_engfuncs.pfnWriteEntity)
 inline void WRITE_FLOAT(float f)
 {
-	// Hackedihack I'm going to hell - Max Vollmer, 2019-04-13
-	unsigned char* floatbytes = (unsigned char*)(&f);
-	WRITE_BYTE(floatbytes[0]);
-	WRITE_BYTE(floatbytes[1]);
-	WRITE_BYTE(floatbytes[2]);
-	WRITE_BYTE(floatbytes[3]);
+	unsigned char floatbytes[sizeof(float)];
+	memcpy(floatbytes, &f, sizeof(float));
+	for (size_t i = 0; i < sizeof(float); i++)
+	{
+		WRITE_BYTE(floatbytes[i]);
+	}
 }
 inline void WRITE_PRECISE_VECTOR(const float* v)
 {

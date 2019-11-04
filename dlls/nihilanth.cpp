@@ -25,6 +25,8 @@
 #define N_SCALE   15
 #define N_SPHERES 20
 
+class CNihilanthHVR;
+
 class CNihilanth : public CBaseMonster
 {
 public:
@@ -111,7 +113,7 @@ public:
 
 	EHANDLE<CBaseEntity> m_hRecharger;
 
-	EHANDLE<CBaseEntity> m_hSphere[N_SPHERES];
+	EHANDLE<CNihilanthHVR> m_hSphere[N_SPHERES];
 	int m_iActiveSpheres;
 
 	float m_flAdj;
@@ -128,7 +130,7 @@ public:
 	float m_flShootEnd;
 	float m_flShootTime;
 
-	EHANDLE<CBaseEntity> m_hFriend[3];
+	EHANDLE<CBaseMonster> m_hFriend[3];
 };
 
 LINK_ENTITY_TO_CLASS(monster_nihilanth, CNihilanth);
@@ -640,7 +642,7 @@ void CNihilanth::MakeFriend(Vector vecStart)
 		if (m_hFriend[i] != nullptr && !m_hFriend[i]->IsAlive())
 		{
 			if (pev->rendermode == kRenderNormal)  // don't do it if they are already fading
-				m_hFriend[i]->MyMonsterPointer()->FadeMonster();
+				m_hFriend[i]->FadeMonster();
 			m_hFriend[i] = nullptr;
 		}
 
@@ -656,7 +658,7 @@ void CNihilanth::MakeFriend(Vector vecStart)
 					UTIL_TraceHull(node.m_vecOrigin + Vector(0, 0, 32), node.m_vecOrigin + Vector(0, 0, 32), dont_ignore_monsters, large_hull, nullptr, &tr);
 					if (tr.fStartSolid == 0)
 					{
-						m_hFriend[i] = CBaseEntity::Create<CBaseEntity>("monster_alien_controller", node.m_vecOrigin, pev->angles);
+						m_hFriend[i] = CBaseEntity::Create<CBaseMonster>("monster_alien_controller", node.m_vecOrigin, pev->angles);
 					}
 				}
 			}
@@ -670,7 +672,7 @@ void CNihilanth::MakeFriend(Vector vecStart)
 					UTIL_TraceHull(node.m_vecOrigin + Vector(0, 0, 36), node.m_vecOrigin + Vector(0, 0, 36), dont_ignore_monsters, human_hull, nullptr, &tr);
 					if (tr.fStartSolid == 0)
 					{
-						m_hFriend[i] = CBaseEntity::Create<CBaseEntity>("monster_alien_slave", node.m_vecOrigin, pev->angles);
+						m_hFriend[i] = CBaseEntity::Create<CBaseMonster>("monster_alien_slave", node.m_vecOrigin, pev->angles);
 					}
 				}
 			}
@@ -986,8 +988,7 @@ BOOL CNihilanth::AbsorbSphere(void)
 	{
 		if (m_hSphere[i] != nullptr)
 		{
-			CNihilanthHVR* pSphere = (CNihilanthHVR*)((CBaseEntity*)m_hSphere[i]);
-			pSphere->AbsorbInit();
+			m_hSphere[i]->AbsorbInit();
 			m_hSphere[i] = nullptr;
 			m_iActiveSpheres--;
 			return TRUE;
@@ -1029,27 +1030,18 @@ BOOL CNihilanth::EmitSphere(void)
 
 void CNihilanth::TargetSphere(USE_TYPE useType, float value)
 {
-	CBaseMonster* pSphere;
-	int i = 0;
-	for (; i < N_SPHERES; i++)
+	for (int i = 0; i < N_SPHERES; i++)
 	{
-		if (m_hSphere[i] != nullptr)
+		if (m_hSphere[i] != nullptr && m_hSphere[i]->m_hEnemy == nullptr)
 		{
-			pSphere = m_hSphere[i]->MyMonsterPointer();
-			if (pSphere->m_hEnemy == nullptr)
-				break;
+			Vector vecSrc, vecAngles;
+			GetAttachment(2, vecSrc, vecAngles);
+			UTIL_SetOrigin(m_hSphere[i]->pev, vecSrc);
+			m_hSphere[i]->Use(this, this, useType, value);
+			m_hSphere[i]->pev->velocity = m_vecDesired * RANDOM_FLOAT(50, 100) + Vector(RANDOM_FLOAT(-50, 50), RANDOM_FLOAT(-50, 50), RANDOM_FLOAT(-50, 50));
+			return;
 		}
 	}
-	if (i == N_SPHERES)
-	{
-		return;
-	}
-
-	Vector vecSrc, vecAngles;
-	GetAttachment(2, vecSrc, vecAngles);
-	UTIL_SetOrigin(pSphere->pev, vecSrc);
-	pSphere->Use(this, this, useType, value);
-	pSphere->pev->velocity = m_vecDesired * RANDOM_FLOAT(50, 100) + Vector(RANDOM_FLOAT(-50, 50), RANDOM_FLOAT(-50, 50), RANDOM_FLOAT(-50, 50));
 }
 
 
@@ -1471,7 +1463,7 @@ void CNihilanthHVR::ZapThink(void)
 
 		UTIL_TraceLine(pev->origin, m_hEnemy->Center(), dont_ignore_monsters, edict(), &tr);
 
-		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+		CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(tr.pHit);
 		if (pEntity != nullptr && pEntity->pev->takedamage)
 		{
 			ClearMultiDamage();

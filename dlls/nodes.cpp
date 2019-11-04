@@ -207,7 +207,6 @@ entvars_t* CGraph::LinkEntForLink(CLink* pLink, CNode* pNode)
 int CGraph::HandleLinkEnt(int iNode, entvars_t* pevLinkEnt, int afCapMask, NODEQUERY queryType)
 {
 	edict_t* pentWorld;
-	CBaseEntity* pDoor;
 	TraceResult tr;
 
 	if (!m_fGraphPresent || !m_fGraphPointersSet)
@@ -225,43 +224,46 @@ int CGraph::HandleLinkEnt(int iNode, entvars_t* pevLinkEnt, int afCapMask, NODEQ
 
 	// func_door
 	if (FClassnameIs(pevLinkEnt, "func_door") || FClassnameIs(pevLinkEnt, "func_door_rotating"))
-	{  // ent is a door.
+	{
+		// ent is a door.
+		CBaseEntity* pDoor = CBaseEntity::SafeInstance<CBaseEntity>(pevLinkEnt);
 
-		pDoor = (CBaseEntity::Instance(pevLinkEnt));
+		if (pDoor)
+		{
+			if ((pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY))
+			{  // door is use only.
 
-		if ((pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY))
-		{  // door is use only.
+				if ((afCapMask & bits_CAP_OPEN_DOORS))
+				{  // let monster right through if it can open doors
+					return TRUE;
+				}
+				else
+				{
+					// monster should try for it if the door is open and looks as if it will stay that way
+					if (pDoor->GetToggleState() == TS_AT_TOP && (pevLinkEnt->spawnflags & SF_DOOR_NO_AUTO_RETURN))
+					{
+						return TRUE;
+					}
 
-			if ((afCapMask & bits_CAP_OPEN_DOORS))
-			{  // let monster right through if it can open doors
-				return TRUE;
+					return FALSE;
+				}
 			}
 			else
-			{
+			{  // door must be opened with a button or trigger field.
+
 				// monster should try for it if the door is open and looks as if it will stay that way
 				if (pDoor->GetToggleState() == TS_AT_TOP && (pevLinkEnt->spawnflags & SF_DOOR_NO_AUTO_RETURN))
 				{
 					return TRUE;
 				}
+				if ((afCapMask & bits_CAP_OPEN_DOORS))
+				{
+					if (!(pevLinkEnt->spawnflags & SF_DOOR_NOMONSTERS) || queryType == NODEGRAPH_STATIC)
+						return TRUE;
+				}
 
 				return FALSE;
 			}
-		}
-		else
-		{  // door must be opened with a button or trigger field.
-
-			// monster should try for it if the door is open and looks as if it will stay that way
-			if (pDoor->GetToggleState() == TS_AT_TOP && (pevLinkEnt->spawnflags & SF_DOOR_NO_AUTO_RETURN))
-			{
-				return TRUE;
-			}
-			if ((afCapMask & bits_CAP_OPEN_DOORS))
-			{
-				if (!(pevLinkEnt->spawnflags & SF_DOOR_NOMONSTERS) || queryType == NODEGRAPH_STATIC)
-					return TRUE;
-			}
-
-			return FALSE;
 		}
 	}
 	// func_breakable

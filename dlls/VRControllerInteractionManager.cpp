@@ -151,7 +151,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 		return false;
 
 	// Rule out entities too far away
-	CBaseEntity* pWorld = CBaseEntity::Instance(INDEXENT(0));
+	CBaseEntity* pWorld = CBaseEntity::InstanceOrWorld(INDEXENT(0));
 	if (hEntity != pWorld)
 	{
 		Vector entityCenter = hEntity->pev->origin + (hEntity->pev->maxs + hEntity->pev->mins) * 0.5f;
@@ -920,39 +920,39 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, EHANDLE
 bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
 {
 	// Special handling of barneys and scientists that don't hate us (yet)
-	CBaseMonster* pMonster = hEntity->MyMonsterPointer();
-	if (pMonster != nullptr && (FClassnameIs(pMonster->pev, "monster_barney") || FClassnameIs(pMonster->pev, "monster_scientist")) && !pMonster->HasMemory(bits_MEMORY_PROVOKED))
+	EHANDLE<CBaseMonster> hMonster = hEntity;
+	if (hMonster && (FClassnameIs(hMonster->pev, "monster_barney") || FClassnameIs(hMonster->pev, "monster_scientist")) && !hMonster->HasMemory(bits_MEMORY_PROVOKED))
 	{
 		if (isTouching)
 		{
 			// Face player when touched
-			pMonster->MakeIdealYaw(pPlayer->pev->origin);
+			hMonster->MakeIdealYaw(pPlayer->pev->origin);
 		}
 
 		// Make scientists panic and barneys angry if pointing guns at them
-		GetAngryIfAtGunpoint(pPlayer, pMonster, controller);
+		GetAngryIfAtGunpoint(pPlayer, hMonster, controller);
 
 		// Don't do any following/unfollowing if we just hurt the ally somehow
 		if (flHitDamage > 0.f)
 		{
-			pMonster->vr_flStopSignalTime = 0;
-			pMonster->vr_flShoulderTouchTime = 0;
+			hMonster->vr_flStopSignalTime = 0;
+			hMonster->vr_flShoulderTouchTime = 0;
 		}
 
 		// Make scientists and barneys move away if holding weapons in their face, or we hit them
 		if (isTouching && (flHitDamage > 0.f || IsWeapon(controller.GetWeaponId())))
 		{
-			pMonster->vr_flStopSignalTime = 0;
-			pMonster->vr_flShoulderTouchTime = 0;
-			pMonster->SetConditions(bits_COND_CLIENT_PUSH);
-			pMonster->MakeIdealYaw(controller.GetPosition());
-			pMonster->Touch(pPlayer);
+			hMonster->vr_flStopSignalTime = 0;
+			hMonster->vr_flShoulderTouchTime = 0;
+			hMonster->SetConditions(bits_COND_CLIENT_PUSH);
+			hMonster->MakeIdealYaw(controller.GetPosition());
+			hMonster->Touch(pPlayer);
 		}
 
 		// Follow/Unfollow commands
-		if (flHitDamage == 0.f && !pMonster->HasMemory(bits_MEMORY_PROVOKED))
+		if (flHitDamage == 0.f && !hMonster->HasMemory(bits_MEMORY_PROVOKED))
 		{
-			DoFollowUnfollowCommands(pPlayer, pMonster, controller, isTouching);
+			DoFollowUnfollowCommands(pPlayer, hMonster, controller, isTouching);
 		}
 
 		return true;

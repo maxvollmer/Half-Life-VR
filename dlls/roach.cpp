@@ -174,7 +174,7 @@ void CRoach::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 
 	CSoundEnt::InsertSound(bits_SOUND_WORLD, pev->origin, 128, 1);
 
-	CBaseEntity* pOwner = CBaseEntity::Instance(pev->owner);
+	CBaseEntity* pOwner = CBaseEntity::SafeInstance<CBaseEntity>(pev->owner);
 	if (pOwner)
 	{
 		pOwner->DeathNotice(pev);

@@ -460,7 +460,7 @@ int CBasePlayer::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	// go take the damage first
 
 
-	CBaseEntity* pAttacker = CBaseEntity::Instance(pevAttacker);
+	CBaseEntity* pAttacker = CBaseEntity::InstanceOrWorld(pevAttacker);
 
 	if (!g_pGameRules->FPlayerCanTakeDamage(this, pAttacker))
 	{
@@ -1520,13 +1520,14 @@ void CBasePlayer::PlayerUse(void)
 				return;
 			}
 			else
-			{  // Start controlling the train!
-				CBaseEntity* pTrain = CBaseEntity::Instance(pev->groundentity);
-
-				if (pTrain /*&& FBitSet(pev->flags, FL_ONGROUND)*/ && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pTrain->OnControls(pev))
+			{
+				// Check if we are on a train
+				CBaseEntity* pMaybeTrain = CBaseEntity::InstanceOrWorld(pev->groundentity);
+				if (pMaybeTrain && !FBitSet(pMaybeTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) && FBitSet(pMaybeTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) && pMaybeTrain->OnControls(pev))
 				{
+					// Start controlling the train!
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
-					m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
+					m_iTrain = TrainSpeed(pMaybeTrain->pev->speed, pMaybeTrain->pev->impulse);
 					m_iTrain |= TRAIN_NEW;
 					EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM);
 					return;
@@ -1739,18 +1740,18 @@ void CBasePlayer::UpdateStatusBar()
 	{
 		if (!FNullEnt(tr.pHit))
 		{
-			CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+			CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(tr.pHit);
 
-			if (pEntity->Classify() == CLASS_PLAYER)
+			if (pPlayer)
 			{
-				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
+				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pPlayer->edict());
 				strcpy(sbuf1, "1 %p1\n2 Health: %i2%%\n3 Armor: %i3%%");
 
 				// allies and medics get to see the targets health
-				if (g_pGameRules->PlayerRelationship(this, pEntity) == GR_TEAMMATE)
+				if (g_pGameRules->PlayerRelationship(this, pPlayer) == GR_TEAMMATE)
 				{
-					newSBarState[SBAR_ID_TARGETHEALTH] = 100 * (pEntity->pev->health / pEntity->pev->max_health);
-					newSBarState[SBAR_ID_TARGETARMOR] = pEntity->pev->armorvalue;  //No need to get it % based since 100 it's the max.
+					newSBarState[SBAR_ID_TARGETHEALTH] = 100 * (pPlayer->pev->health / pPlayer->pev->max_health);
+					newSBarState[SBAR_ID_TARGETARMOR] = pPlayer->pev->armorvalue;  //No need to get it % based since 100 it's the max.
 				}
 
 				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
@@ -1889,7 +1890,7 @@ void CBasePlayer::PreThink(void)
 	// Train speed control
 	if (m_afPhysicsFlags & PFLAG_ONTRAIN)
 	{
-		CBaseEntity* pTrain = CBaseEntity::Instance(pev->groundentity);
+		CBaseEntity* pTrain = CBaseEntity::InstanceOrWorld(pev->groundentity);
 
 		if (!pTrain)
 		{
@@ -1900,10 +1901,10 @@ void CBasePlayer::PreThink(void)
 			// HACKHACK - Just look for the func_tracktrain classname
 			if (trainTrace.flFraction != 1.0 && trainTrace.pHit)
 			{
-				pTrain = CBaseEntity::Instance(trainTrace.pHit);
+				pTrain = CBaseEntity::InstanceOrWorld(trainTrace.pHit);
 			}
 
-			if (!pTrain || !(pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) || !pTrain->OnControls(pev))
+			if (!pTrain || !FBitSet(pTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) || !pTrain->OnControls(pev))
 			{
 				//ALERT( at_error, "In train mode with no train!\n" );
 				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
@@ -1911,8 +1912,7 @@ void CBasePlayer::PreThink(void)
 				return;
 			}
 		}
-		//else if ( !FBitSet( pev->flags, FL_ONGROUND ) || FBitSet( pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL ) || (pev->button & (IN_MOVELEFT|IN_MOVERIGHT) ) )
-		else if (FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) || !pTrain->OnControls(pev))
+		else if (FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) || !FBitSet(pTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) || !pTrain->OnControls(pev))
 		{
 			// Turn off the train if the train controls go dead or you leave the control area
 			m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
@@ -3454,10 +3454,9 @@ CBaseEntity* FindEntityForward(CBaseEntity* pMe)
 
 	UTIL_MakeVectors(pMe->pev->v_angle);
 	UTIL_TraceLine(pMe->pev->origin + pMe->pev->view_ofs, pMe->pev->origin + pMe->pev->view_ofs + gpGlobals->v_forward * 8192, dont_ignore_monsters, pMe->edict(), &tr);
-	if (tr.flFraction != 1.0 && !FNullEnt(tr.pHit))
+	if (tr.flFraction < 1.f && !FNullEnt(tr.pHit))
 	{
-		CBaseEntity* pHit = CBaseEntity::Instance(tr.pHit);
-		return pHit;
+		return CBaseEntity::SafeInstance<CBaseEntity>(tr.pHit);
 	}
 	return nullptr;
 }
@@ -3721,7 +3720,7 @@ void CBasePlayer::CheatImpulseCommands(int iImpulse)
 		pEntity = FindEntityForward(this);
 		if (pEntity)
 		{
-			CBaseMonster* pMonster = pEntity->MyMonsterPointer();
+			CBaseMonster* pMonster = dynamic_cast<CBaseMonster*>(pEntity);
 			if (pMonster)
 				pMonster->ReportAIState();
 		}
@@ -4189,7 +4188,7 @@ void CBasePlayer::UpdateClientData(void)
 		edict_t* other = pev->dmg_inflictor;
 		if (other)
 		{
-			CBaseEntity* pEntity = CBaseEntity::Instance(other);
+			CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(other);
 			if (pEntity)
 				damageOrigin = pEntity->Center();
 		}
@@ -4747,7 +4746,7 @@ void CStripWeapons::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 	}
 	else if (!g_pGameRules->IsDeathmatch())
 	{
-		pPlayer = (CBasePlayer*)CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
+		pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(g_engfuncs.pfnPEntityOfEntIndex(1));
 	}
 
 	if (pPlayer)
@@ -5178,7 +5177,7 @@ void CBasePlayer::UpdateFlashlight()
 		{
 			TraceResult tr;
 			UTIL_TraceLine(position, dir * 8192., dont_ignore_monsters, edict(), &tr);
-			CBaseMonster* pFlashlightMonster = CBaseEntity::GetMonsterPointer(tr.pHit);
+			CBaseMonster* pFlashlightMonster = CBaseEntity::SafeInstance<CBaseMonster>(tr.pHit);
 			if (pFlashlightMonster != nullptr)
 			{
 				SetBits(pFlashlightMonster->pev->effects, EF_DIMLIGHT);
@@ -5662,10 +5661,10 @@ void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 	edict_t* pent = UTIL_EntitiesInPVS(edict());
 	while (pent && !FNullEnt(pent))
 	{
-		CBaseEntity* pEntity = CBaseEntity::Instance(pent);
+		CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 		if (pEntity)
 		{
-			CTalkMonster* pMonster = dynamic_cast<CTalkMonster*>(pEntity->MyMonsterPointer());
+			CTalkMonster* pMonster = dynamic_cast<CTalkMonster*>(dynamic_cast<CBaseMonster*>(pEntity));
 			if (pMonster)
 			{
 				if (FClassnameIs(pent, "monster_barney") || FClassnameIs(pent, "monster_scientist"))

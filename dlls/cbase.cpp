@@ -287,7 +287,7 @@ void DispatchSave(edict_t* pent, SAVERESTOREDATA* pSaveData)
 CBaseEntity* FindGlobalEntity(string_t classname, string_t globalname)
 {
 	edict_t* pent = FIND_ENTITY_BY_STRING(nullptr, "globalname", STRING(globalname));
-	CBaseEntity* pReturn = CBaseEntity::Instance(pent);
+	CBaseEntity* pReturn = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 	if (pReturn)
 	{
 		if (!FClassnameIs(pReturn->pev, STRING(classname)))
@@ -521,11 +521,12 @@ CBaseEntity* CBaseEntity::GetNextTarget(void)
 {
 	if (FStringNull(pev->target))
 		return nullptr;
+
 	edict_t* pTarget = FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(pev->target));
 	if (FNullEnt(pTarget))
 		return nullptr;
 
-	return Instance(pTarget);
+	return CBaseEntity::SafeInstance<CBaseEntity>(pTarget);
 }
 
 // Global Savedata for Delay
@@ -714,7 +715,7 @@ int DispatchShouldCollide(edict_t* pentTouched, edict_t* pentOther)
 {
 	if (!FNullEnt(pentTouched) && !FNullEnt(pentOther))
 	{
-		return UTIL_ShouldCollide(CBaseEntity::Instance(pentTouched), CBaseEntity::Instance(pentOther));
+		return UTIL_ShouldCollide(CBaseEntity::SafeInstance<CBaseEntity>(pentTouched), CBaseEntity::SafeInstance<CBaseEntity>(pentOther));
 	}
 	else
 	{

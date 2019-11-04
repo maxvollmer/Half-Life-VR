@@ -318,7 +318,7 @@ void Host_Say(edict_t* pEntity, int teamonly)
 		if (g_VoiceGameMgr.PlayerHasBlockedPlayer(client, player))
 			continue;
 
-		if (teamonly && g_pGameRules->PlayerRelationship(client, CBaseEntity::Instance(pEntity)) != GR_TEAMMATE)
+		if (teamonly && g_pGameRules->PlayerRelationship(client, CBaseEntity::InstanceOrWorld(pEntity)) != GR_TEAMMATE)
 			continue;
 
 		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, nullptr, client->pev);
@@ -683,7 +683,7 @@ void ServerActivate(edict_t* pEdictList, int edictCount, int clientMax)
 		if (i < clientMax || !pEdictList[i].pvPrivateData)
 			continue;
 
-		pClass = CBaseEntity::Instance(&pEdictList[i]);
+		pClass = CBaseEntity::SafeInstance<CBaseEntity>(&pEdictList[i]);
 		// Activate this entity if it's got a class & isn't dormant
 		if (pClass && !(pClass->pev->flags & FL_DORMANT))
 		{
@@ -1575,11 +1575,7 @@ int GetWeaponData(struct edict_s* player, struct weapon_data_s* info)
 	if (pev->pContainingEntity != player)
 		return 1;
 
-	CBasePlayer* pl = nullptr;
-	if (player->pvPrivateData != nullptr)
-	{
-		pl = dynamic_cast<CBasePlayer*>(CBaseEntity::Instance(player));
-	}
+	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(player);
 
 	if (!pl)
 		return 1;
@@ -1654,12 +1650,6 @@ void UpdateClientData(const struct edict_s* ent, int sendweapons, struct clientd
 	if (pev->pContainingEntity != ent)
 		return;
 
-	CBasePlayer* pl = nullptr;
-	if (ent->pvPrivateData != nullptr)
-	{
-		pl = dynamic_cast<CBasePlayer*>(CBaseEntity::Instance(ent));
-	}
-
 	cd->flags = ent->v.flags;
 	cd->health = ent->v.health;
 
@@ -1668,6 +1658,8 @@ void UpdateClientData(const struct edict_s* ent, int sendweapons, struct clientd
 	cd->waterlevel = ent->v.waterlevel;
 	cd->watertype = ent->v.watertype;
 	cd->weapons = ent->v.weapons;
+
+	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(ent);
 
 	// Vectors
 	if (pl != nullptr)
@@ -1757,7 +1749,10 @@ This is the time to examine the usercmd for anything extra.  This call happens e
 void CmdStart(const edict_t* player, const struct usercmd_s* cmd, unsigned int random_seed)
 {
 	entvars_t* pev = (entvars_t*)&player->v;
-	CBasePlayer* pl = (CBasePlayer*)CBasePlayer::Instance(pev);
+	if (pev->pContainingEntity != player)
+		return;
+
+	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(pev);
 
 	if (!pl)
 		return;
@@ -1780,7 +1775,10 @@ Each cmdstart is exactly matched with a cmd end, clean up any group trace flags,
 void CmdEnd(const edict_t* player)
 {
 	entvars_t* pev = (entvars_t*)&player->v;
-	CBasePlayer* pl = (CBasePlayer*)CBasePlayer::Instance(pev);
+	if (pev->pContainingEntity != player)
+		return;
+
+	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(pev);
 
 	if (!pl)
 		return;

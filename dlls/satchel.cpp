@@ -497,8 +497,7 @@ void DeactivateSatchels(CBasePlayer* pOwner)
 
 	while (!FNullEnt(pFind))
 	{
-		CBaseEntity* pEnt = CBaseEntity::Instance(pFind);
-		CSatchelCharge* pSatchel = (CSatchelCharge*)pEnt;
+		CSatchelCharge* pSatchel = CBaseEntity::SafeInstance<CSatchelCharge>(pFind);
 
 		if (pSatchel)
 		{

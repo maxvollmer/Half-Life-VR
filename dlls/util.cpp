@@ -423,7 +423,7 @@ int UTIL_EntitiesInBox(CBaseEntity** pList, int listMax, const Vector& mins, con
 			maxs.z < pEdict->v.absmin.z)
 			continue;
 
-		pEntity = CBaseEntity::Instance(pEdict);
+		pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pEdict);
 		if (!pEntity)
 			continue;
 
@@ -484,7 +484,7 @@ int UTIL_MonstersInSphere(CBaseEntity** pList, int listMax, const Vector& center
 		if (distance > radiusSquared)
 			continue;
 
-		pEntity = CBaseEntity::Instance(pEdict);
+		pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pEdict);
 		if (!pEntity)
 			continue;
 
@@ -512,7 +512,7 @@ CBaseEntity* UTIL_FindEntityInSphere(CBaseEntity* pStartEntity, const Vector& ve
 	pentEntity = FIND_ENTITY_IN_SPHERE(pentEntity, vecCenter, flRadius);
 
 	if (!FNullEnt(pentEntity))
-		return CBaseEntity::Instance(pentEntity);
+		return CBaseEntity::SafeInstance<CBaseEntity>(pentEntity);
 	return nullptr;
 }
 
@@ -544,21 +544,21 @@ void UTIL_BatchEntities(EntityCallback batch, EntityFilterCallback filter)
 }
 
 // Loops over all entities - Max Vollmer, 2017-12-28
-bool UTIL_FindAllEntities(CBaseEntity** pEntity)
+bool UTIL_FindAllEntities(CBaseEntity** ppEntity)
 {
-	if (pEntity == nullptr)
+	if (ppEntity == nullptr)
 	{
 		return false;
 	}
 
-	const int startIndex = ((*pEntity) != nullptr) ? ENTINDEX((*pEntity)->edict()) + 1 : 0;
+	const int startIndex = ((*ppEntity) != nullptr) ? ENTINDEX((*ppEntity)->edict()) + 1 : 0;
 
 	for (int index = startIndex; index < gpGlobals->maxEntities; index++)
 	{
-		edict_t* pentEntity = INDEXENT(index);
-		if (pentEntity != nullptr && !pentEntity->free && !FStringNull(pentEntity->v.classname))
+		CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(INDEXENT(index));
+		if (pEntity != nullptr)
 		{
-			(*pEntity) = CBaseEntity::Instance(pentEntity);
+			(*ppEntity) = pEntity;
 			return true;
 		}
 	}
@@ -579,7 +579,7 @@ CBaseEntity* UTIL_FindEntityByString(CBaseEntity* pStartEntity, const char* szKe
 	pentEntity = FIND_ENTITY_BY_STRING(pentEntity, szKeyword, szValue);
 
 	if (!FNullEnt(pentEntity))
-		return CBaseEntity::Instance(pentEntity);
+		return CBaseEntity::SafeInstance<CBaseEntity>(pentEntity);
 	return nullptr;
 }
 
@@ -621,19 +621,13 @@ CBaseEntity* UTIL_FindEntityGeneric(const char* szWhatever, Vector& vecSrc, floa
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns nullptr
 // Index is 1 based
-CBaseEntity* UTIL_PlayerByIndex(int playerIndex)
+CBasePlayer* UTIL_PlayerByIndex(int playerIndex)
 {
-	CBaseEntity* pPlayer = nullptr;
-
+	CBasePlayer* pPlayer = nullptr;
 	if (playerIndex > 0 && playerIndex <= gpGlobals->maxClients)
 	{
-		edict_t* pPlayerEdict = INDEXENT(playerIndex);
-		if (pPlayerEdict && !pPlayerEdict->free)
-		{
-			pPlayer = CBaseEntity::Instance(pPlayerEdict);
-		}
+		pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(INDEXENT(playerIndex));
 	}
-
 	return pPlayer;
 }
 
@@ -1218,7 +1212,7 @@ int UTIL_IsMasterTriggered(string_t sMaster, CBaseEntity* pActivator)
 
 		if (!FNullEnt(pentTarget))
 		{
-			CBaseEntity* pMaster = CBaseEntity::Instance(pentTarget);
+			CBaseEntity* pMaster = CBaseEntity::SafeInstance<CBaseEntity>(pentTarget);
 			if (pMaster && (pMaster->ObjectCaps() & FCAP_MASTER))
 				return pMaster->IsTriggered(pActivator);
 		}
@@ -1674,10 +1668,13 @@ void UTIL_DecalTrace(TraceResult* pTrace, int decalNumber)
 	// Only decal BSP models
 	if (pTrace->pHit)
 	{
-		CBaseEntity* pEntity = CBaseEntity::Instance(pTrace->pHit);
-		if (pEntity && !pEntity->IsBSPModel())
+		CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pTrace->pHit);
+		if (!pEntity)
+			entityIndex = 0;
+		else if (!pEntity->IsBSPModel())
 			return;
-		entityIndex = ENTINDEX(pTrace->pHit);
+		else
+			entityIndex = ENTINDEX(pTrace->pHit);
 	}
 	else
 		entityIndex = 0;
@@ -2052,7 +2049,7 @@ void UTIL_PrecacheOther(const char* szClassname)
 		return;
 	}
 
-	CBaseEntity* pEntity = CBaseEntity::Instance(VARS(pent));
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 	if (pEntity)
 		pEntity->Precache();
 	REMOVE_ENTITY(pent);
@@ -2943,7 +2940,7 @@ int CRestore::ReadField(void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCoun
 						entityIndex = *(int*)pInputData;
 						pent = EntityFromIndex(entityIndex);
 						if (pent)
-							*((EHANDLE<CBaseEntity>*)pOutputData) = CBaseEntity::Instance(pent);
+							*((EHANDLE<CBaseEntity>*)pOutputData) = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 						else
 							*((EHANDLE<CBaseEntity>*)pOutputData) = nullptr;
 						break;

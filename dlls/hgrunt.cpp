@@ -412,16 +412,11 @@ BOOL CHGrunt::FCanCheckAttacks(void)
 //=========================================================
 BOOL CHGrunt::CheckMeleeAttack1(float flDot, float flDist)
 {
-	CBaseMonster* pEnemy;
+	EHANDLE<CBaseMonster> pEnemy = m_hEnemy;
 
-	if (m_hEnemy != nullptr)
+	if (!pEnemy)
 	{
-		pEnemy = m_hEnemy->MyMonsterPointer();
-
-		if (!pEnemy)
-		{
-			return FALSE;
-		}
+		return FALSE;
 	}
 
 	if (flDist <= 64 && flDot >= 0.7 &&
@@ -758,8 +753,7 @@ CBaseEntity* CHGrunt::Kick(void)
 
 	if (tr.pHit)
 	{
-		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
-		return pEntity;
+		return CBaseEntity::SafeInstance<CBaseEntity>(tr.pHit);
 	}
 
 	return nullptr;

@@ -1529,7 +1529,10 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 	pev->dmgtime = gpGlobals->time;
 
 
-	CBaseEntity* pPlayer = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
+	CBaseEntity* pPlayer = CBaseEntity::SafeInstance<CBaseEntity>(g_engfuncs.pfnPEntityOfEntIndex(1));
+	if (!pPlayer)
+		return;
+
 	if (!InTransitionVolume(pPlayer, m_szLandmarkName))
 	{
 		ALERT(at_aiconsole, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName);
@@ -1618,8 +1621,8 @@ int BuildChangeList(LEVELLIST* pLevelList, int maxList)
 
 int CChangeLevel::InTransitionVolume(CBaseEntity* pEntity, char* pVolumeName)
 {
-	edict_t* pentVolume;
-
+	if (!pEntity)
+		return 1;
 
 	if (pEntity->ObjectCaps() & FCAP_FORCE_TRANSITION)
 		return 1;
@@ -1627,22 +1630,30 @@ int CChangeLevel::InTransitionVolume(CBaseEntity* pEntity, char* pVolumeName)
 	// TODO: Always return 1 for players?
 	// Can't think of a situation where a player wouldn't be in the transition volume
 	// when touching a trigger_changelevel
-	if (pEntity->IsPlayer() && ((CBasePlayer*)pEntity)->vr_didJustTeleportThroughChangeLevel)
-		return 1;
+	if (pEntity->IsPlayer())
+	{
+		CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pEntity);
+		if (pPlayer && pPlayer->vr_didJustTeleportThroughChangeLevel)
+			return 1;
+	}
 
 	// If you're following another entity, follow it through the transition (weapons follow the player)
 	if (pEntity->pev->movetype == MOVETYPE_FOLLOW)
 	{
 		if (pEntity->pev->aiment != nullptr)
-			pEntity = CBaseEntity::Instance(pEntity->pev->aiment);
+		{
+			pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pEntity->pev->aiment);
+			if (!pEntity)
+				return 1;
+		}
 	}
 
 	int inVolume = 1;  // Unless we find a trigger_transition, everything is in the volume
 
-	pentVolume = FIND_ENTITY_BY_TARGETNAME(nullptr, pVolumeName);
+	edict_t* pentVolume = FIND_ENTITY_BY_TARGETNAME(nullptr, pVolumeName);
 	while (!FNullEnt(pentVolume))
 	{
-		CBaseEntity* pVolume = CBaseEntity::Instance(pentVolume);
+		CBaseEntity* pVolume = CBaseEntity::SafeInstance<CBaseEntity>(pentVolume);
 
 		if (pVolume && FClassnameIs(pVolume->pev, "trigger_transition"))
 		{
@@ -1715,7 +1726,7 @@ int CChangeLevel::ChangeList(LEVELLIST* pLevelList, int maxList)
 			// Build a list of valid entities in this linked list (we're going to use pent->v.chain again)
 			while (!FNullEnt(pent))
 			{
-				CBaseEntity* pEntity = CBaseEntity::Instance(pent);
+				CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 				if (pEntity)
 				{
 					//					ALERT( at_console, "Trying %s\n", STRING(pEntity->pev->classname) );
@@ -2275,7 +2286,7 @@ void CTriggerChangeTarget::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 	if (pTarget)
 	{
 		pTarget->pev->target = m_iszNewTarget;
-		CBaseMonster* pMonster = pTarget->MyMonsterPointer();
+		CBaseMonster* pMonster = dynamic_cast<CBaseMonster*>(pTarget);
 		if (pMonster)
 		{
 			pMonster->m_pGoalEnt = nullptr;
@@ -2394,12 +2405,15 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 		m_flReturnTime = gpGlobals->time;
 		return;
 	}
-	if (!pActivator || !pActivator->IsPlayer())
-	{
-		pActivator = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
-	}
 
-	m_hPlayer = pActivator;
+	CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pActivator);
+	if (!pPlayer)
+		pPlayer = UTIL_PlayerByIndex(1);
+
+	if (!pPlayer)
+		return;
+
+	m_hPlayer = pPlayer;
 
 	m_flReturnTime = gpGlobals->time + m_flWait;
 	pev->speed = m_initialSpeed;
@@ -2423,12 +2437,12 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 
 	if (FBitSet(pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL))
 	{
-		((CBasePlayer*)pActivator)->EnableControl(FALSE);
+		pPlayer->EnableControl(FALSE);
 	}
 
 	if (m_sPath)
 	{
-		m_pentPath = Instance(FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(m_sPath)));
+		m_pentPath = CBaseEntity::SafeInstance<CBaseEntity>(FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(m_sPath)));
 	}
 	else
 	{
@@ -2447,20 +2461,20 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 	// copy over player information
 	if (FBitSet(pev->spawnflags, SF_CAMERA_PLAYER_POSITION))
 	{
-		UTIL_SetOrigin(pev, pActivator->pev->origin + pActivator->pev->view_ofs);
-		pev->angles.x = -pActivator->pev->angles.x;
-		pev->angles.y = pActivator->pev->angles.y;
+		UTIL_SetOrigin(pev, pPlayer->pev->origin + pPlayer->pev->view_ofs);
+		pev->angles.x = -pPlayer->pev->angles.x;
+		pev->angles.y = pPlayer->pev->angles.y;
 		pev->angles.z = 0;
-		pev->velocity = pActivator->pev->velocity;
+		pev->velocity = pPlayer->pev->velocity;
 	}
 	else
 	{
 		pev->velocity = Vector(0, 0, 0);
 	}
 
-	SET_VIEW(pActivator->edict(), edict());
+	SET_VIEW(pPlayer->edict(), edict());
 
-	SET_MODEL(ENT(pev), STRING(pActivator->pev->model));
+	SET_MODEL(ENT(pev), STRING(pPlayer->pev->model));
 
 	// follow the player down
 	SetThink(&CTriggerCamera::FollowTarget);

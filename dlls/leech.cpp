@@ -692,7 +692,7 @@ void CLeech::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 
 	//ALERT(at_aiconsole, "Leech: killed\n");
 	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
-	CBaseEntity* pOwner = CBaseEntity::Instance(pev->owner);
+	CBaseEntity* pOwner = CBaseEntity::SafeInstance<CBaseEntity>(pev->owner);
 	if (pOwner)
 		pOwner->DeathNotice(pev);
 

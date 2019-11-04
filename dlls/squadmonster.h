@@ -105,8 +105,6 @@ public:
 	BOOL SquadEnemySplit(void);
 	BOOL SquadMemberInRange(const Vector& vecLocation, float flDist);
 
-	virtual CSquadMonster* MySquadMonsterPointer(void) { return this; }
-
 	static TYPEDESCRIPTION m_SaveData[];
 
 	int Save(CSave& save);

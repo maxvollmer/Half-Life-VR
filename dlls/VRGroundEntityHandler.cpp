@@ -73,7 +73,7 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 		// If engine has found a groundentity, take it
 		if (m_pPlayer->pev->groundentity && !m_pPlayer->pev->groundentity->free && !FNullEnt(m_pPlayer->pev->groundentity))
 		{
-			pGroundEntity = CBaseEntity::Instance(m_pPlayer->pev->groundentity);
+			pGroundEntity = CBaseEntity::SafeInstance<CBaseEntity>(m_pPlayer->pev->groundentity);
 		}
 
 		// Try to find a ground entity using PM code
@@ -85,7 +85,7 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 				int entindex = pmove->PM_TestPlayerPosition(m_pPlayer->pev->origin, nullptr);
 				if (entindex > 0)
 				{
-					pGroundEntity = CBaseEntity::Instance(INDEXENT(pmove->physents[entindex].info));
+					pGroundEntity = CBaseEntity::SafeInstance<CBaseEntity>(INDEXENT(pmove->physents[entindex].info));
 					if (IsExcludedAsGroundEntity(pGroundEntity))
 					{
 						pGroundEntity = nullptr;
@@ -180,7 +180,7 @@ bool VRGroundEntityHandler::CheckIfPotentialGroundEntityForPlayer(CBaseEntity* p
 
 bool VRGroundEntityHandler::IsExcludedAsGroundEntity(CBaseEntity* pEntity)
 {
-	if (pEntity->pev->size.x < EPSILON || pEntity->pev->size.y < EPSILON || pEntity->pev->size.z < EPSILON)
+	if (!pEntity || pEntity->pev->size.x < EPSILON || pEntity->pev->size.y < EPSILON || pEntity->pev->size.z < EPSILON)
 		return true;
 
 	if (FClassnameIs(pEntity->pev, "func_door_rotating"))

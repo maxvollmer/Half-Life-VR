@@ -200,7 +200,7 @@ void FireTargets(const char* targetName, CBaseEntity* pActivator, CBaseEntity* p
 		if (FNullEnt(pentTarget))
 			break;
 
-		CBaseEntity* pTarget = CBaseEntity::Instance(pentTarget);
+		CBaseEntity* pTarget = CBaseEntity::SafeInstance<CBaseEntity>(pentTarget);
 		if (pTarget && !(pTarget->pev->flags & FL_KILLME))  // Don't use dying ents
 		{
 			ALERT(at_aiconsole, "Found: %s, firing (%s)\n", STRING(pTarget->pev->classname), targetName);
@@ -267,7 +267,7 @@ void CBaseDelay::SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, float
 		pentKillTarget = FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(m_iszKillTarget));
 		while (!FNullEnt(pentKillTarget))
 		{
-			UTIL_Remove(CBaseEntity::Instance(pentKillTarget));
+			UTIL_Remove(CBaseEntity::SafeInstance<CBaseEntity>(pentKillTarget));
 
 			ALERT(at_aiconsole, "killing %s\n", STRING(pentKillTarget->v.classname));
 			pentKillTarget = FIND_ENTITY_BY_TARGETNAME(pentKillTarget, STRING(m_iszKillTarget));
@@ -322,7 +322,7 @@ void CBaseDelay::DelayThink(void)
 
 	if (pev->owner != nullptr)  // A player activated this on delay
 	{
-		pActivator = CBaseEntity::Instance(pev->owner);
+		pActivator = CBaseEntity::SafeInstance<CBaseEntity>(pev->owner);
 	}
 	// The use type is cached (and stashed) in pev->button
 	SUB_UseTargets(pActivator, (USE_TYPE)pev->button, 0);

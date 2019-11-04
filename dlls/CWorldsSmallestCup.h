@@ -2,6 +2,8 @@
 
 #include "vector.h"
 
+class CTalkMonster;
+
 class CWorldsSmallestCup : public CBaseEntity
 {
 public:
@@ -12,13 +14,13 @@ public:
 	void EXPORT CupThink(void);
 
 private:
-	bool AmIInKleinersFace(CBaseEntity* pKleiner);
+	bool AmIInKleinersFace(CTalkMonster* pKleiner);
 	bool IsFallingOutOfWorld();
 
-	EHANDLE<CBaseEntity> m_hKleiner;
+	EHANDLE<CTalkMonster> m_hKleiner;
 	float m_flKleinerFaceStart{ 0.f };
 
-	std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_hAlreadySpokenKleiners;
+	std::unordered_set<EHANDLE<CTalkMonster>, EHANDLE<CTalkMonster>::Hash, EHANDLE<CTalkMonster>::Equal> m_hAlreadySpokenKleiners;
 
-	static EHANDLE<CBaseEntity> m_instance;
+	static EHANDLE<CWorldsSmallestCup> m_instance;
 };

@@ -477,7 +477,7 @@ void CAGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 		case 2: EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "agrunt/ag_fire3.wav", 1.0, ATTN_NORM, 0, 100); break;
 		}
 
-		CBaseMonster* pHornetMonster = pHornet->MyMonsterPointer();
+		CBaseMonster* pHornetMonster = dynamic_cast<CBaseMonster*>(pHornet);
 
 		if (pHornetMonster)
 		{
@@ -942,6 +942,8 @@ BOOL CAGrunt::CheckRangeAttack1(float flDot, float flDist)
 //=========================================================
 void CAGrunt::StartTask(Task_t* pTask)
 {
+	EHANDLE<CBaseMonster> pEnemyMonsterPtr;
+
 	switch (pTask->iTask)
 	{
 	case TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE:
@@ -964,10 +966,7 @@ void CAGrunt::StartTask(Task_t* pTask)
 		// try to find a spot to throw that gives the smart weapon a good chance of finding the enemy.
 		// ideally, this spot is along a line that is perpendicular to a line drawn from the agrunt to the enemy.
 
-		CBaseMonster* pEnemyMonsterPtr;
-
-		pEnemyMonsterPtr = m_hEnemy->MyMonsterPointer();
-
+		pEnemyMonsterPtr = m_hEnemy;
 		if (pEnemyMonsterPtr)
 		{
 			Vector vecCenter;

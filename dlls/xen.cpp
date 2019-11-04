@@ -249,7 +249,7 @@ void CXenTreeTrigger::Touch(CBaseEntity* pOther)
 {
 	if (pev->owner)
 	{
-		CBaseEntity* pEntity = CBaseEntity::Instance(pev->owner);
+		CBaseEntity* pEntity = CBaseEntity::InstanceOrWorld(pev->owner);
 		pEntity->Touch(pOther);
 	}
 }

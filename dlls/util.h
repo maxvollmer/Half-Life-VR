@@ -160,10 +160,10 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, entv
 #define eoNullEntity 0
 inline BOOL FNullEnt(EOFFSET eoffset)
 {
-	return eoffset == 0;
+	return eoffset == eoNullEntity;
 }
-inline BOOL FNullEnt(const edict_t* pent) { return pent == nullptr || FNullEnt(OFFSET(pent)); }
-inline BOOL FNullEnt(entvars_t* pev) { return pev == nullptr || FNullEnt(OFFSET(pev)); }
+inline BOOL FNullEnt(const edict_t* pent) { return pent == nullptr || pent->free || pent->v.pContainingEntity != pent || FNullEnt(OFFSET(pent)); }
+inline BOOL FNullEnt(entvars_t* pev) { return pev == nullptr || FNullEnt(ENT(pev)); }
 
 // Testing strings for nullity
 #define iStringNull 0
@@ -253,7 +253,8 @@ extern bool UTIL_FindAllEntities(CBaseEntity** pEntity);
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns nullptr
 // Index is 1 based
-extern CBaseEntity* UTIL_PlayerByIndex(int playerIndex);
+class CBasePlayer;
+extern CBasePlayer* UTIL_PlayerByIndex(int playerIndex);
 
 #define UTIL_EntitiesInPVS(pent) (*g_engfuncs.pfnEntitiesInPVS)(pent)
 extern void UTIL_MakeVectors(const Vector& vecAngles);

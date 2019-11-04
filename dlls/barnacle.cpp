@@ -145,7 +145,7 @@ int CBarnacle::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float
 void CBarnacle::BarnacleThink(void)
 {
 	CBaseEntity* pTouchEnt;
-	CBaseMonster* pVictim;
+	EHANDLE<CBaseMonster> pVictim;
 	float flLength;
 
 	pev->nextthink = gpGlobals->time + 0.1;
@@ -203,7 +203,7 @@ void CBarnacle::BarnacleThink(void)
 
 				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "barnacle/bcl_bite3.wav", 1, ATTN_NORM);
 
-				pVictim = m_hEnemy->MyMonsterPointer();
+				pVictim = m_hEnemy;
 
 				m_flKillVictimTime = gpGlobals->time + 10;  // now that the victim is in place, the killing bite will be administered in 10 seconds.
 
@@ -220,7 +220,7 @@ void CBarnacle::BarnacleThink(void)
 		{
 			// prey is lifted fully into feeding position and is dangling there.
 
-			pVictim = m_hEnemy->MyMonsterPointer();
+			pVictim = m_hEnemy;
 
 			if (m_flKillVictimTime != -1 && gpGlobals->time > m_flKillVictimTime)
 			{
@@ -329,15 +329,12 @@ void CBarnacle::BarnacleThink(void)
 //=========================================================
 void CBarnacle::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
-	CBaseMonster* pVictim;
-
 	pev->solid = SOLID_NOT;
 	pev->takedamage = DAMAGE_NO;
 
 	if (m_hEnemy != nullptr)
 	{
-		pVictim = m_hEnemy->MyMonsterPointer();
-
+		EHANDLE<CBaseMonster> pVictim = m_hEnemy;
 		if (pVictim)
 		{
 			pVictim->BarnacleVictimReleased();

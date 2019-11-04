@@ -283,7 +283,7 @@ void CBreakable::MaterialSoundRandom(edict_t* pEdict, Materials soundMaterial, f
 
 void CBreakable::Precache(void)
 {
-	const char* pGibName;
+	const char* pGibName = nullptr;
 
 	switch (m_Material)
 	{
@@ -339,15 +339,18 @@ void CBreakable::Precache(void)
 		PRECACHE_SOUND("debris/bustceiling.wav");
 		break;
 	}
+
 	MaterialSoundPrecache(m_Material);
+
 	if (m_iszGibModel)
 		pGibName = STRING(m_iszGibModel);
 
-	m_idShard = PRECACHE_MODEL(pGibName);
+	if (pGibName)
+		m_idShard = PRECACHE_MODEL(pGibName);
 
 	// Precache the spawn item's data
 	if (m_iszSpawnObject)
-		UTIL_PrecacheOther((char*)STRING(m_iszSpawnObject));
+		UTIL_PrecacheOther(STRING(m_iszSpawnObject));
 }
 
 // play shard sound when func_breakable takes damage.
@@ -754,7 +757,7 @@ void CBreakable::Die(void)
 	SetThink(&CBreakable::SUB_Remove);
 	pev->nextthink = pev->ltime + 0.1;
 	if (m_iszSpawnObject)
-		CBaseEntity::Create<CBaseEntity>((char*)STRING(m_iszSpawnObject), VecBModelOrigin(pev), pev->angles, edict());
+		CBaseEntity::Create<CBaseEntity>(STRING(m_iszSpawnObject), VecBModelOrigin(pev), pev->angles, edict());
 
 
 	if (Explodable())

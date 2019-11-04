@@ -158,13 +158,7 @@ bool VRNotifyStuckEnt(int player, int ent)
 	if (pPlayer == nullptr)
 		return false;
 
-	CBaseEntity* pEntity = nullptr;
-	INDEXENT(ent);
-	edict_t* pent = INDEXENT(ent);
-	if (pent && !pent->free && !FNullEnt(pent))
-	{
-		pEntity = CBaseEntity::Instance(pent);
-	}
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(INDEXENT(ent));
 	if (pEntity == nullptr)
 		return false;
 

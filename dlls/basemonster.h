@@ -120,7 +120,6 @@ public:
 
 	// overrideable Monster member functions
 
-	virtual CBaseMonster* MyMonsterPointer(void) { return this; }
 	virtual void Look(int iDistance);  // basic sight function for monsters
 	virtual void RunAI(void);          // core ai function!
 	void Listen(void);

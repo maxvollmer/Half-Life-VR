@@ -330,17 +330,13 @@ int CSquadMonster::SquadRecruit(int searchRadius, int maxMembers)
 		pEntity = UTIL_FindEntityByString(pEntity, "netname", STRING(pev->netname));
 		while (pEntity)
 		{
-			CSquadMonster* pRecruit = pEntity->MySquadMonsterPointer();
-
-			if (pRecruit)
+			CSquadMonster* pRecruit = dynamic_cast<CSquadMonster*>(pEntity);
+			if (pRecruit &&!pRecruit->InSquad() && pRecruit->Classify() == iMyClass && pRecruit != this)
 			{
-				if (!pRecruit->InSquad() && pRecruit->Classify() == iMyClass && pRecruit != this)
-				{
-					// minimum protection here against user error.in worldcraft.
-					if (!SquadAdd(pRecruit))
-						break;
-					squadCount++;
-				}
+				// minimum protection here against user error.in worldcraft.
+				if (!SquadAdd(pRecruit))
+					break;
+				squadCount++;
 			}
 
 			pEntity = UTIL_FindEntityByString(pEntity, "netname", STRING(pev->netname));
@@ -350,7 +346,7 @@ int CSquadMonster::SquadRecruit(int searchRadius, int maxMembers)
 	{
 		while ((pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, searchRadius)) != nullptr)
 		{
-			CSquadMonster* pRecruit = pEntity->MySquadMonsterPointer();
+			CSquadMonster* pRecruit = dynamic_cast<CSquadMonster*>(pEntity);
 
 			if (pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_pCine)
 			{

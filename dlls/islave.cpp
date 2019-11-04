@@ -174,7 +174,7 @@ void CISlave::CallForHelp(char* szClassname, float flDist, EHANDLE<CBaseEntity> 
 		float d = (pev->origin - pEntity->pev->origin).Length();
 		if (d < flDist)
 		{
-			CBaseMonster* pMonster = pEntity->MyMonsterPointer();
+			CBaseMonster* pMonster = dynamic_cast<CBaseMonster*>(pEntity);
 			if (pMonster)
 			{
 				pMonster->m_afMemory |= bits_MEMORY_PROVOKED;
@@ -581,7 +581,7 @@ void CISlave::Precache()
 int CISlave::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
 	// don't slash one of your own
-	if ((bitsDamageType & DMG_SLASH) && pevAttacker && IRelationship(Instance(pevAttacker)) < R_DL)
+	if ((bitsDamageType & DMG_SLASH) && pevAttacker && IRelationship(InstanceOrWorld(pevAttacker)) < R_DL)
 		return 0;
 
 	m_afMemory |= bits_MEMORY_PROVOKED;
@@ -832,7 +832,7 @@ void CISlave::ZapBeam(int side)
 	m_pBeam[m_iBeams]->SetNoise(20);
 	m_iBeams++;
 
-	pEntity = CBaseEntity::Instance(tr.pHit);
+	pEntity = CBaseEntity::InstanceOrWorld(tr.pHit);
 	if (pEntity != nullptr && pEntity->pev->takedamage)
 	{
 		pEntity->TraceAttack(pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK);
