@@ -107,15 +107,14 @@ typedef int BOOL;
 //
 // Conversion among the three types of "entity", including identity-conversions.
 //
-#ifdef DEBUG
-extern edict_t* DBG_EntOfVars(const entvars_t* pev);
-inline edict_t* ENT(const entvars_t* pev) { return DBG_EntOfVars(pev); }
-#else
 inline edict_t* ENT(const entvars_t* pev)
 {
+	if (!pev->pContainingEntity)
+	{
+		const_cast<entvars_t*>(pev)->pContainingEntity = (*g_engfuncs.pfnFindEntityByVars)(pev);
+	}
 	return pev->pContainingEntity;
 }
-#endif
 inline edict_t* ENT(edict_t* pent)
 {
 	return pent;
