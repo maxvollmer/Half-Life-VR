@@ -762,7 +762,7 @@ void CBasePlayer::PackDeadPlayerItems(void)
 	}
 
 	// create a box to pack the stuff into.
-	CWeaponBox* pWeaponBox = (CWeaponBox*)CBaseEntity::Create("weaponbox", pev->origin, pev->angles, edict());
+	CWeaponBox* pWeaponBox = CBaseEntity::Create<CWeaponBox>("weaponbox", pev->origin, pev->angles, edict());
 
 	pWeaponBox->pev->angles.x = 0;  // don't let weaponbox tilt.
 	pWeaponBox->pev->angles.z = 0;
@@ -3360,7 +3360,7 @@ void CSprayCan::Think(void)
 	int nFrames;
 	CBasePlayer* pPlayer;
 
-	pPlayer = (CBasePlayer*)GET_PRIVATE(pev->owner);
+	pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pev->owner);
 
 	if (pPlayer)
 		nFrames = pPlayer->GetCustomDecalFrames();
@@ -3484,7 +3484,7 @@ void CBasePlayer::FlashlightTurnOn(void)
 		//SetBits(pev->effects, EF_DIMLIGHT);
 		if (!hFlashLight)
 		{
-			hFlashLight = CBaseEntity::Create("info_target", pev->origin, Vector());
+			hFlashLight = CBaseEntity::Create<CBaseEntity>("info_target", pev->origin, Vector());
 			SET_MODEL(hFlashLight->edict(), "sprites/black.spr");
 			UTIL_SetOrigin(hFlashLight->pev, pev->origin);
 			UTIL_SetSize(hFlashLight->pev, Vector(-4, -4, -4), Vector(4, 4, 4));
@@ -3643,7 +3643,7 @@ void CBasePlayer::CheatImpulseCommands(int iImpulse)
 		return;
 	}
 
-	CBaseEntity* pEntity;
+	CBaseEntity* pEntity{ nullptr };
 	TraceResult tr;
 
 	switch (iImpulse)
@@ -3658,7 +3658,7 @@ void CBasePlayer::CheatImpulseCommands(int iImpulse)
 		else
 		{
 			UTIL_MakeVectors(Vector(0, pev->v_angle.y, 0));
-			Create("monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, pev->angles);
+			CBaseEntity::Create<CBaseEntity>("monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, pev->angles);
 		}
 		break;
 	}
@@ -3787,17 +3787,17 @@ void CBasePlayer::CheatImpulseCommands(int iImpulse)
 	break;
 	case 195:  // show shortest paths for entire level to nearest node
 	{
-		Create("node_viewer_fly", pev->origin, pev->angles);
+		CBaseEntity::Create<CBaseEntity>("node_viewer_fly", pev->origin, pev->angles);
 	}
 	break;
 	case 196:  // show shortest paths for entire level to nearest node
 	{
-		Create("node_viewer_large", pev->origin, pev->angles);
+		CBaseEntity::Create<CBaseEntity>("node_viewer_large", pev->origin, pev->angles);
 	}
 	break;
 	case 197:  // show shortest paths for entire level to nearest node
 	{
-		Create("node_viewer_human", pev->origin, pev->angles);
+		CBaseEntity::Create<CBaseEntity>("node_viewer_human", pev->origin, pev->angles);
 	}
 	break;
 	case 199:  // show nearest node and all connections
@@ -4509,7 +4509,7 @@ int CBasePlayer::GetCustomDecalFrames(void)
 // DropPlayerItem - drop the named item, or if no name,
 // the active item.
 //=========================================================
-void CBasePlayer::DropPlayerItem(char* pszItemName)
+void CBasePlayer::DropPlayerItem(const char* pszItemName)
 {
 	if (!g_pGameRules->IsMultiplayer() || (weaponstay.value > 0))
 	{
@@ -4567,7 +4567,7 @@ void CBasePlayer::DropPlayerItem(char* pszItemName)
 
 			pev->weapons &= ~(1 << pWeapon->m_iId);  // take item off hud
 
-			CWeaponBox* pWeaponBox = (CWeaponBox*)CBaseEntity::Create("weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, edict());
+			CWeaponBox* pWeaponBox = CBaseEntity::Create<CWeaponBox>("weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, edict());
 			pWeaponBox->pev->angles.x = 0;
 			pWeaponBox->pev->angles.z = 0;
 			pWeaponBox->PackWeapon(pWeapon);

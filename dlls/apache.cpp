@@ -356,7 +356,7 @@ void CApache::DyingThink(void)
 
 		if (/*!(pev->spawnflags & SF_NOWRECKAGE) && */ (pev->flags & FL_ONGROUND))
 		{
-			CBaseEntity* pWreckage = Create("cycler_wreckage", pev->origin, pev->angles);
+			CBaseEntity* pWreckage = CBaseEntity::Create<CBaseEntity>("cycler_wreckage", pev->origin, pev->angles);
 			// SET_MODEL( ENT(pWreckage->pev), STRING(pev->model) );
 			UTIL_SetSize(pWreckage->pev, Vector(-200, -200, -128), Vector(200, 200, -32));
 			pWreckage->pev->frame = pev->frame;
@@ -771,7 +771,7 @@ void CApache::FireRocket(void)
 	WRITE_BYTE(12);  // framerate
 	MESSAGE_END();
 
-	CBaseEntity* pRocket = CBaseEntity::Create("hvr_rocket", vecSrc, pev->angles, edict());
+	CBaseEntity* pRocket = CBaseEntity::Create<CBaseEntity>("hvr_rocket", vecSrc, pev->angles, edict());
 	if (pRocket)
 		pRocket->pev->velocity = pev->velocity + gpGlobals->v_forward * 100;
 

@@ -1394,7 +1394,7 @@ bool UTIL_BBoxIntersectsBSPModel(const Vector &origin, const Vector &mins, const
 {
 	if (!hFakeMonster)
 	{
-		hFakeMonster = CBaseEntity::Create("info_target", origin, Vector());
+		hFakeMonster = CBaseEntity::Create<CBaseEntity>("info_target", origin, Vector());
 	}
 	CBaseEntity *pFakeMonster = hFakeMonster;
 	if (pFakeMonster != nullptr)

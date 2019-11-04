@@ -141,7 +141,7 @@ void CHgun::PrimaryAttack()
 #ifndef CLIENT_DLL
 	UTIL_MakeVectors(m_pPlayer->GetWeaponViewAngles());
 
-	CBaseEntity* pHornet = CBaseEntity::Create("hornet", m_pPlayer->GetGunPosition(), m_pPlayer->GetAimAngles(), m_pPlayer->edict());
+	CBaseEntity* pHornet = CBaseEntity::Create<CBaseEntity>("hornet", m_pPlayer->GetGunPosition(), m_pPlayer->GetAimAngles(), m_pPlayer->edict());
 	pHornet->pev->velocity = m_pPlayer->GetAutoaimVector() * 300;
 
 	m_flRechargeTime = gpGlobals->time + 0.5;
@@ -231,7 +231,7 @@ void CHgun::SecondaryAttack(void)
 		break;
 	}
 
-	pHornet = CBaseEntity::Create("hornet", vecSrc, m_pPlayer->GetAimAngles(), m_pPlayer->edict());
+	pHornet = CBaseEntity::Create<CBaseEntity>("hornet", vecSrc, m_pPlayer->GetAimAngles(), m_pPlayer->edict());
 	pHornet->pev->velocity = m_pPlayer->GetAutoaimVector() * 1200;
 
 	pHornet->SetThink(&CHornet::StartDart);

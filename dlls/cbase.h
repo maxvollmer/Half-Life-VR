@@ -176,7 +176,7 @@ public:
 		return pent;
 	};
 
-	operator ENTITY*()
+	operator ENTITY* ()
 	{
 		return dynamic_cast<ENTITY*>(static_cast<CBaseEntity*>(GET_PRIVATE(Get())));
 	};
@@ -352,7 +352,7 @@ public:
 	// allow engine to allocate instance data
 	void* operator new(size_t stAllocateBlock, entvars_t* pev)
 	{
-		return (void*)ALLOC_PRIVATE(ENT(pev), stAllocateBlock);
+		return ALLOC_PRIVATE(ENT(pev), stAllocateBlock);
 	};
 
 	// don't use this.
@@ -384,16 +384,34 @@ public:
 	int IsDormant(void);
 	BOOL IsLockedByMaster(void) { return FALSE; }
 
-	static CBaseEntity* Instance(const edict_t* pent)
+	inline static CBaseEntity* Instance(const edict_t* pent)
 	{
 		if (!pent)
 			pent = ENT(0);
-		CBaseEntity* pEnt = (CBaseEntity*)GET_PRIVATE(pent);
+		CBaseEntity* pEnt = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 		return pEnt;
 	}
 
-	static CBaseEntity* Instance(const entvars_t* pev) { return Instance(ENT(pev)); }
-	static CBaseEntity* Instance(int eoffset) { return Instance(ENT(eoffset)); }
+	inline static CBaseEntity* Instance(const entvars_t* pev) { return Instance(ENT(pev)); }
+	inline static CBaseEntity* Instance(int eoffset) { return Instance(ENT(eoffset)); }
+
+	template<class T>
+	inline static EHANDLE<T> SafeInstance(const edict_t* pent)
+	{
+		return dynamic_cast<T*>(static_cast<CBaseEntity*>(GET_PRIVATE(pent)));
+	}
+
+	template<class T>
+	inline static EHANDLE<T> SafeInstance(const entvars_t* pev)
+	{
+		return SafeInstance<T>(ENT(pev));
+	}
+
+	template<class T>
+	inline static EHANDLE<T> SafeInstance(int eoffset)
+	{
+		return SafeInstance<T>(ENT(eoffset));
+	}
 
 	CBaseMonster* GetMonsterPointer(const entvars_t* pevMonster)
 	{
@@ -453,8 +471,40 @@ public:
 	virtual void UpdateOwner(void) { return; };
 
 
-	//
-	static CBaseEntity* Create(char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner = nullptr);
+	// NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity
+	// will keep a pointer to it after this call.
+	template <class T>
+	static T* Create(char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner = nullptr)
+	{
+		edict_t* pent = CREATE_NAMED_ENTITY(MAKE_STRING(szName));
+		if (FNullEnt(pent))
+		{
+			ALERT(at_console, "nullptr pent in Create!\n");
+			return nullptr;
+		}
+
+		CBaseEntity* pEntity = SafeInstance<CBaseEntity>(pent);
+		if (!pEntity)
+		{
+			ALERT(at_console, "nullptr pEntity in Create!\n");
+			REMOVE_ENTITY(pent);
+			return nullptr;
+		}
+
+		T* pTypedEntity = dynamic_cast<T*>(pEntity);
+		if (!pTypedEntity)
+		{
+			ALERT(at_console, "Incompatible class_name and type used in Create!\n");
+			REMOVE_ENTITY(pent);
+			return nullptr;
+		}
+
+		pTypedEntity->pev->owner = pentOwner;
+		pTypedEntity->pev->origin = vecOrigin;
+		pTypedEntity->pev->angles = vecAngles;
+		DispatchSpawn(pTypedEntity->edict());
+		return pTypedEntity;
+	}
 
 	virtual BOOL FBecomeProne(void) { return FALSE; };
 	edict_t* edict() { return ENT(pev); };

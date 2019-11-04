@@ -545,7 +545,7 @@ void CSqueak::Throw()
 				vecThrow = m_pPlayer->GetWeaponVelocity() * 2;
 			}
 
-			CBaseEntity* pSqueak = CBaseEntity::Create("monster_snark", m_pPlayer->GetGunPosition(), m_pPlayer->GetWeaponAngles(), m_pPlayer->edict());
+			CBaseEntity* pSqueak = CBaseEntity::Create<CBaseEntity>("monster_snark", m_pPlayer->GetGunPosition(), m_pPlayer->GetWeaponAngles(), m_pPlayer->edict());
 			pSqueak->pev->velocity = vecThrow;
 #endif
 

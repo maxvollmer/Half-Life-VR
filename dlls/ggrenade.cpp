@@ -121,7 +121,9 @@ void CGrenade::Explode(TraceResult* pTrace, int bitsDamageType)
 	{
 		int sparkCount = RANDOM_LONG(0, 3);
 		for (int i = 0; i < sparkCount; i++)
-			Create("spark_shower", pev->origin, pTrace->vecPlaneNormal, nullptr);
+		{
+			CBaseEntity::Create<CBaseEntity>("spark_shower", pev->origin, pTrace->vecPlaneNormal, nullptr);
+		}
 	}
 }
 

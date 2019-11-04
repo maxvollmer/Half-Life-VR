@@ -537,7 +537,7 @@ void CNihilanth::DyingThink(void)
 	MESSAGE_END();
 
 	GetAttachment(0, vecSrc, vecAngles);
-	CNihilanthHVR* pEntity = (CNihilanthHVR*)Create("nihilanth_energy_ball", vecSrc, pev->angles, edict());
+	CNihilanthHVR* pEntity = CBaseEntity::Create<CNihilanthHVR>("nihilanth_energy_ball", vecSrc, pev->angles, edict());
 	pEntity->pev->velocity = Vector(RANDOM_FLOAT(-0.7, 0.7), RANDOM_FLOAT(-0.7, 0.7), 1.0) * 600.0;
 	pEntity->GreenBallInit();
 
@@ -612,7 +612,7 @@ void CNihilanth::ShootBalls(void)
 				// vecDir = (m_posTarget - vecSrc).Normalize( );
 				vecDir = (m_posTarget - pev->origin).Normalize();
 				vecSrc = vecSrc + vecDir * (gpGlobals->time - m_flShootTime);
-				pEntity = (CNihilanthHVR*)Create("nihilanth_energy_ball", vecSrc, pev->angles, edict());
+				pEntity = CBaseEntity::Create<CNihilanthHVR>("nihilanth_energy_ball", vecSrc, pev->angles, edict());
 				pEntity->pev->velocity = vecDir * 200.0;
 				pEntity->ZapInit(m_hEnemy);
 
@@ -621,7 +621,7 @@ void CNihilanth::ShootBalls(void)
 				// vecDir = (m_posTarget - vecSrc).Normalize( );
 				vecDir = (m_posTarget - pev->origin).Normalize();
 				vecSrc = vecSrc + vecDir * (gpGlobals->time - m_flShootTime);
-				pEntity = (CNihilanthHVR*)Create("nihilanth_energy_ball", vecSrc, pev->angles, edict());
+				pEntity = CBaseEntity::Create<CNihilanthHVR>("nihilanth_energy_ball", vecSrc, pev->angles, edict());
 				pEntity->pev->velocity = vecDir * 200.0;
 				pEntity->ZapInit(m_hEnemy);
 			}
@@ -655,7 +655,9 @@ void CNihilanth::MakeFriend(Vector vecStart)
 					TraceResult tr;
 					UTIL_TraceHull(node.m_vecOrigin + Vector(0, 0, 32), node.m_vecOrigin + Vector(0, 0, 32), dont_ignore_monsters, large_hull, nullptr, &tr);
 					if (tr.fStartSolid == 0)
-						m_hFriend[i] = Create("monster_alien_controller", node.m_vecOrigin, pev->angles);
+					{
+						m_hFriend[i] = CBaseEntity::Create<CBaseEntity>("monster_alien_controller", node.m_vecOrigin, pev->angles);
+					}
 				}
 			}
 			else
@@ -667,7 +669,9 @@ void CNihilanth::MakeFriend(Vector vecStart)
 					TraceResult tr;
 					UTIL_TraceHull(node.m_vecOrigin + Vector(0, 0, 36), node.m_vecOrigin + Vector(0, 0, 36), dont_ignore_monsters, human_hull, nullptr, &tr);
 					if (tr.fStartSolid == 0)
-						m_hFriend[i] = Create("monster_alien_slave", node.m_vecOrigin, pev->angles);
+					{
+						m_hFriend[i] = CBaseEntity::Create<CBaseEntity>("monster_alien_slave", node.m_vecOrigin, pev->angles);
+					}
 				}
 			}
 			if (m_hFriend[i] != nullptr)
@@ -1014,7 +1018,7 @@ BOOL CNihilanth::EmitSphere(void)
 		return FALSE;
 
 	Vector vecSrc = m_hRecharger->pev->origin;
-	CNihilanthHVR* pEntity = (CNihilanthHVR*)Create("nihilanth_energy_ball", vecSrc, pev->angles, edict());
+	CNihilanthHVR* pEntity = CBaseEntity::Create<CNihilanthHVR>("nihilanth_energy_ball", vecSrc, pev->angles, edict());
 	pEntity->pev->velocity = pev->origin - vecSrc;
 	pEntity->CircleInit(this);
 
@@ -1113,7 +1117,7 @@ void CNihilanth::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 				Vector vecSrc, vecAngles;
 				GetAttachment(2, vecSrc, vecAngles);
-				CNihilanthHVR* pEntity = (CNihilanthHVR*)Create("nihilanth_energy_ball", vecSrc, pev->angles, edict());
+				CNihilanthHVR* pEntity = CBaseEntity::Create<CNihilanthHVR>("nihilanth_energy_ball", vecSrc, pev->angles, edict());
 				pEntity->pev->velocity = pev->origin - vecSrc;
 				pEntity->TeleportInit(this, m_hEnemy, pTrigger, pTouch);
 			}
@@ -1179,7 +1183,7 @@ void CNihilanth::HandleAnimEvent(MonsterEvent_t* pEvent)
 		{
 			Vector vecSrc, vecAngles;
 			GetAttachment(2, vecSrc, vecAngles);
-			CNihilanthHVR* pEntity = (CNihilanthHVR*)Create("nihilanth_energy_ball", vecSrc, pev->angles, edict());
+			CNihilanthHVR* pEntity = CBaseEntity::Create<CNihilanthHVR>("nihilanth_energy_ball", vecSrc, pev->angles, edict());
 			pEntity->pev->velocity = pev->origin - vecSrc;
 			pEntity->ZapInit(m_hEnemy);
 		}

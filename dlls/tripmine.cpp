@@ -216,7 +216,7 @@ void CTripmineGrenade::PowerupThink(void)
 		// disable
 		STOP_SOUND(ENT(pev), CHAN_VOICE, "weapons/mine_deploy.wav");
 		STOP_SOUND(ENT(pev), CHAN_BODY, "weapons/mine_charge.wav");
-		CBaseEntity* pMine = Create("weapon_tripmine", pev->origin + m_vecDir * 24, pev->angles);
+		CTripmine* pMine = CBaseEntity::Create<CTripmine>("weapon_tripmine", pev->origin + m_vecDir * 24, pev->angles);
 		pMine->pev->spawnflags |= SF_NORESPAWN;
 
 		SetThink(&CBaseEntity::SUB_Remove);
@@ -493,7 +493,7 @@ void CTripmine::PrimaryAttack(void)
 		{
 			Vector origin = tr.vecEndPos;
 			Vector angles = UTIL_VecToAngles(tr.vecPlaneNormal);
-			CBaseEntity* pEnt = CBaseEntity::Create("monster_tripmine", origin, angles, m_pPlayer->edict());
+			CBaseEntity* pEnt = CBaseEntity::Create<CBaseEntity>("monster_tripmine", origin, angles, m_pPlayer->edict());
 
 			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 

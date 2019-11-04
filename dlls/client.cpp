@@ -166,7 +166,7 @@ void ClientKill(edict_t* pEntity)
 {
 	entvars_t* pev = &pEntity->v;
 
-	CBasePlayer* pl = (CBasePlayer*)CBasePlayer::Instance(pev);
+	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(pev);
 
 	if (pl->m_fNextSuicideTime > gpGlobals->time)
 		return;  // prevent suiciding too ofter
@@ -216,7 +216,6 @@ extern CVoiceGameMgr g_VoiceGameMgr;
 //
 void Host_Say(edict_t* pEntity, int teamonly)
 {
-	CBasePlayer* client;
 	int j;
 	char* p;
 	char text[128];
@@ -240,7 +239,7 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	{
 		if (CMD_ARGC() >= 2)
 		{
-			p = (char*)CMD_ARGS();
+			p = const_cast<char*>(CMD_ARGS());	// TODO: Evil const_cast
 		}
 		else
 		{
@@ -252,12 +251,12 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	{
 		if (CMD_ARGC() >= 2)
 		{
-			sprintf(szTemp, "%s %s", (char*)pcmd, (char*)CMD_ARGS());
+			sprintf_s(szTemp, "%s %s", pcmd, CMD_ARGS());
 		}
 		else
 		{
 			// Just a one word command, use the first word...sigh
-			sprintf(szTemp, "%s", (char*)pcmd);
+			sprintf_s(szTemp, "%s", pcmd);
 		}
 		p = szTemp;
 	}
@@ -284,9 +283,9 @@ void Host_Say(edict_t* pEntity, int teamonly)
 
 	// turn on color set 2  (color on,  no sound)
 	if (teamonly)
-		sprintf(text, "%c(TEAM) %s: ", 2, STRING(pEntity->v.netname));
+		sprintf_s(text, "%c(TEAM) %s: ", 2, STRING(pEntity->v.netname));
 	else
-		sprintf(text, "%c%s: ", 2, STRING(pEntity->v.netname));
+		sprintf_s(text, "%c%s: ", 2, STRING(pEntity->v.netname));
 
 	j = sizeof(text) - 2 - strlen(text);  // -2 for /n and null terminator
 	if ((int)strlen(p) > j)
@@ -303,8 +302,8 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	// This may return the world in single player if the client types something between levels or during spawn
 	// so check it, or it will infinite loop
 
-	client = nullptr;
-	while (((client = (CBasePlayer*)UTIL_FindEntityByClassname(client, "player")) != nullptr) && (!FNullEnt(client->edict())))
+	CBasePlayer* client = nullptr;
+	while (((client = dynamic_cast<CBasePlayer*>(UTIL_FindEntityByClassname(client, "player"))) != nullptr) && (!FNullEnt(client->edict())))
 	{
 		if (!client->pev)
 			continue;
@@ -411,7 +410,7 @@ void ClientCommand(edict_t* pEntity)
 	else if (FStrEq(pcmd, "drop"))
 	{
 		// player is dropping an item.
-		GetClassPtr<CBasePlayer>(pev)->DropPlayerItem((char*)CMD_ARGV(1));
+		GetClassPtr<CBasePlayer>(pev)->DropPlayerItem(CMD_ARGV(1));
 	}
 	else if (FStrEq(pcmd, "fov"))
 	{
@@ -426,7 +425,7 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "use"))
 	{
-		GetClassPtr<CBasePlayer>(pev)->SelectItem((char*)CMD_ARGV(1));
+		GetClassPtr<CBasePlayer>(pev)->SelectItem(CMD_ARGV(1));
 	}
 	else if (((pstr = strstr(pcmd, "weapon_")) != nullptr) && (pstr == pcmd))
 	{
@@ -711,7 +710,7 @@ Called every frame before physics are run
 void PlayerPreThink(edict_t* pEntity)
 {
 	entvars_t* pev = &pEntity->v;
-	CBasePlayer* pPlayer = (CBasePlayer*)GET_PRIVATE(pEntity);
+	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
 
 	if (pPlayer)
 		pPlayer->PreThink();
@@ -727,7 +726,7 @@ Called every frame after physics are run
 void PlayerPostThink(edict_t* pEntity)
 {
 	entvars_t* pev = &pEntity->v;
-	CBasePlayer* pPlayer = (CBasePlayer*)GET_PRIVATE(pEntity);
+	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
 
 	if (pPlayer)
 		pPlayer->PostThink();
@@ -743,7 +742,7 @@ void ParmsNewLevel(void)
 void ParmsChangeLevel(void)
 {
 	// retrieve the pointer to the save data
-	SAVERESTOREDATA* pSaveData = (SAVERESTOREDATA*)gpGlobals->pSaveData;
+	SAVERESTOREDATA* pSaveData = static_cast<SAVERESTOREDATA*>(gpGlobals->pSaveData);
 
 	if (pSaveData)
 		pSaveData->connectionCount = BuildChangeList(pSaveData->levelList, MAX_LEVEL_CONNECTIONS);
@@ -937,7 +936,7 @@ animation right now.
 void PlayerCustomization(edict_t* pEntity, customization_t* pCust)
 {
 	entvars_t* pev = &pEntity->v;
-	CBasePlayer* pPlayer = (CBasePlayer*)GET_PRIVATE(pEntity);
+	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
 
 	if (!pPlayer)
 	{
@@ -977,7 +976,7 @@ A spectator has joined the game
 void SpectatorConnect(edict_t* pEntity)
 {
 	entvars_t* pev = &pEntity->v;
-	CBaseSpectator* pPlayer = (CBaseSpectator*)GET_PRIVATE(pEntity);
+	CBaseSpectator* pPlayer = CBaseEntity::SafeInstance<CBaseSpectator>(pEntity);
 
 	if (pPlayer)
 		pPlayer->SpectatorConnect();
@@ -993,7 +992,7 @@ A spectator has left the game
 void SpectatorDisconnect(edict_t* pEntity)
 {
 	entvars_t* pev = &pEntity->v;
-	CBaseSpectator* pPlayer = (CBaseSpectator*)GET_PRIVATE(pEntity);
+	CBaseSpectator* pPlayer = CBaseEntity::SafeInstance<CBaseSpectator>(pEntity);
 
 	if (pPlayer)
 		pPlayer->SpectatorDisconnect();
@@ -1009,7 +1008,7 @@ A spectator has sent a usercmd
 void SpectatorThink(edict_t* pEntity)
 {
 	entvars_t* pev = &pEntity->v;
-	CBaseSpectator* pPlayer = (CBaseSpectator*)GET_PRIVATE(pEntity);
+	CBaseSpectator* pPlayer = CBaseEntity::SafeInstance<CBaseSpectator>(pEntity);
 
 	if (pPlayer)
 		pPlayer->SpectatorThink();

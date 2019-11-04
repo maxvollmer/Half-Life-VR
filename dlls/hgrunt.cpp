@@ -2370,8 +2370,7 @@ void CHGruntRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 		return nullptr;
 	*/
 
-	CBaseEntity* pEntity = Create("monster_human_grunt", pev->origin, pev->angles);
-	CBaseMonster* pGrunt = pEntity->MyMonsterPointer();
+	CBaseMonster* pGrunt = CBaseEntity::Create<CBaseMonster>("monster_human_grunt", pev->origin, pev->angles);
 	pGrunt->pev->movetype = MOVETYPE_FLY;
 	pGrunt->pev->velocity = Vector(0, 0, RANDOM_FLOAT(-196, -128));
 	pGrunt->SetActivity(ACT_GLIDE);

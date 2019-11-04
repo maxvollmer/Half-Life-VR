@@ -1462,7 +1462,7 @@ void CFuncTrackTrain::OverrideReset(void)
 CFuncTrackTrain* CFuncTrackTrain::Instance(edict_t* pent)
 {
 	if (FClassnameIs(pent, "func_tracktrain"))
-		return (CFuncTrackTrain*)GET_PRIVATE(pent);
+		return CBaseEntity::SafeInstance<CFuncTrackTrain>(pent);
 	return nullptr;
 }
 

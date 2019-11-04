@@ -406,7 +406,7 @@ void CSatchel::Throw(void)
 
 		Vector vecSrc = m_pPlayer->GetGunPosition();
 
-		CBaseEntity* pSatchel = Create("monster_satchel", vecSrc, Vector(0, 0, 0), m_pPlayer->edict());
+		CSatchelCharge* pSatchel = CBaseEntity::Create<CSatchelCharge>("monster_satchel", vecSrc, Vector(0, 0, 0), m_pPlayer->edict());
 		pSatchel->pev->velocity = vecThrow;
 		pSatchel->pev->avelocity.y = 400;
 

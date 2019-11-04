@@ -394,7 +394,7 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer* pPlayer, EHANDLE<CBa
 					if (hSqueak)
 						hSqueak->m_fJustThrown = 1;
 					pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
-					CBaseEntity* pSqueak = CBaseEntity::Create("monster_snark", controller.GetPosition(), controller.GetAngles(), pPlayer->edict());
+					CBaseEntity* pSqueak = CBaseEntity::Create<CBaseEntity>("monster_snark", controller.GetPosition(), controller.GetAngles(), pPlayer->edict());
 					pSqueak->pev->health = -1;
 					pSqueak->Killed(pPlayer->pev, DMG_CRUSH, GIB_ALWAYS);
 					pSqueak = nullptr;

@@ -59,7 +59,6 @@ int CBaseEntity::IsDormant(void) { return 0; }
 BOOL CBaseEntity::IsInWorld(void) { return TRUE; }
 int CBaseEntity::ShouldToggle(USE_TYPE useType, BOOL currentState) { return 0; }
 int	CBaseEntity::DamageDecal(int bitsDamageType) { return -1; }
-CBaseEntity* CBaseEntity::Create(char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner) { return nullptr; }
 void CBaseEntity::SUB_Remove(void) { }
 
 // CBaseDelay Stubs
@@ -303,7 +302,7 @@ Vector CBasePlayer::AutoaimDeflection(Vector& vecSrc, float flDist, float flDelt
 void CBasePlayer::ResetAutoaim() { }
 void CBasePlayer::SetCustomDecalFrames(int nFrames) { }
 int CBasePlayer::GetCustomDecalFrames(void) { return -1; }
-void CBasePlayer::DropPlayerItem(char* pszItemName) { }
+void CBasePlayer::DropPlayerItem(const char* pszItemName) { }
 BOOL CBasePlayer::HasPlayerItem(CBasePlayerItem* pCheckItem) { return FALSE; }
 BOOL CBasePlayer::SwitchWeapon(CBasePlayerItem* pWeapon) { return FALSE; }
 const char* CBasePlayer::TeamID(void) { return ""; }

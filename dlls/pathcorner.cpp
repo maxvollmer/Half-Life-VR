@@ -408,7 +408,7 @@ CPathTrack* CPathTrack::Nearest(Vector origin)
 CPathTrack* CPathTrack::Instance(edict_t* pent)
 {
 	if (FClassnameIs(pent, "path_track"))
-		return (CPathTrack*)GET_PRIVATE(pent);
+		return CBaseEntity::SafeInstance<CPathTrack>(pent);
 	return nullptr;
 }
 

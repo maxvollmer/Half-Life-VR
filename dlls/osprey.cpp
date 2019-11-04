@@ -282,9 +282,6 @@ BOOL COsprey::HasDead()
 
 CBaseMonster* COsprey::MakeGrunt(Vector vecSrc)
 {
-	CBaseEntity* pEntity;
-	CBaseMonster* pGrunt;
-
 	TraceResult tr;
 	UTIL_TraceLine(vecSrc, vecSrc + Vector(0, 0, -4096.0), dont_ignore_monsters, ENT(pev), &tr);
 	if (tr.pHit && Instance(tr.pHit)->pev->solid != SOLID_BSP)
@@ -298,8 +295,7 @@ CBaseMonster* COsprey::MakeGrunt(Vector vecSrc)
 			{
 				m_hGrunt[i]->SUB_StartFadeOut();
 			}
-			pEntity = Create("monster_human_grunt", vecSrc, pev->angles);
-			pGrunt = pEntity->MyMonsterPointer();
+			CBaseMonster* pGrunt = CBaseEntity::Create<CBaseMonster>("monster_human_grunt", vecSrc, pev->angles);
 			pGrunt->pev->movetype = MOVETYPE_FLY;
 			pGrunt->pev->velocity = Vector(0, 0, RANDOM_FLOAT(-196, -128));
 			pGrunt->SetActivity(ACT_GLIDE);

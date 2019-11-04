@@ -405,16 +405,15 @@ void CISlave::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 			if (!trace.fStartSolid)
 			{
-				CBaseEntity* pNew = Create("monster_alien_slave", m_hDead->pev->origin, m_hDead->pev->angles);
-				CBaseMonster* pNewMonster = pNew->MyMonsterPointer();
-				pNew->pev->spawnflags |= 1;
-				WackBeam(-1, pNew);
-				WackBeam(1, pNew);
+				CBaseMonster* pNewMonster = CBaseEntity::Create<CBaseMonster>("monster_alien_slave", m_hDead->pev->origin, m_hDead->pev->angles);
+				pNewMonster->pev->spawnflags |= 1;
+				WackBeam(-1, pNewMonster);
+				WackBeam(1, pNewMonster);
 				UTIL_Remove(m_hDead);
 				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_shoot1.wav", 1, ATTN_NORM, 0, RANDOM_LONG(130, 160));
 
 				/*
-				CBaseEntity *pEffect = Create( "test_effect", pNew->Center(), pev->angles );
+				CBaseEntity *pEffect = Create( "test_effect", pNewMonster->Center(), pev->angles );
 				pEffect->Use( this, this, USE_ON, 1 );
 				*/
 				break;

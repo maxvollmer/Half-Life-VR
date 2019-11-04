@@ -59,16 +59,16 @@ void CWorldItem::Spawn(void)
 	switch (m_iType)
 	{
 	case 44:  // ITEM_BATTERY:
-		pEntity = CBaseEntity::Create("item_battery", pev->origin, pev->angles);
+		pEntity = CBaseEntity::Create<CBaseEntity>("item_battery", pev->origin, pev->angles);
 		break;
 	case 42:  // ITEM_ANTIDOTE:
-		pEntity = CBaseEntity::Create("item_antidote", pev->origin, pev->angles);
+		pEntity = CBaseEntity::Create<CBaseEntity>("item_antidote", pev->origin, pev->angles);
 		break;
 	case 43:  // ITEM_SECURITY:
-		pEntity = CBaseEntity::Create("item_security", pev->origin, pev->angles);
+		pEntity = CBaseEntity::Create<CBaseEntity>("item_security", pev->origin, pev->angles);
 		break;
 	case 45:  // ITEM_SUIT:
-		pEntity = CBaseEntity::Create("item_suit", pev->origin, pev->angles);
+		pEntity = CBaseEntity::Create<CBaseEntity>("item_suit", pev->origin, pev->angles);
 		break;
 	}
 

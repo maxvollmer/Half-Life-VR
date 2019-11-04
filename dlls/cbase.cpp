@@ -132,7 +132,7 @@ extern "C"
 
 int DispatchSpawn(edict_t* pent)
 {
-	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pent);
+	CBaseEntity* pEntity = static_cast<CBaseEntity*>(GET_PRIVATE(pent));
 
 	if (pEntity)
 	{
@@ -145,7 +145,7 @@ int DispatchSpawn(edict_t* pent)
 		// Try to get the pointer again, in case the spawn function deleted the entity.
 		// UNDONE: Spawn() should really return a code to ask that the entity be deleted, but
 		// that would touch too much code for me to do that right now.
-		pEntity = (CBaseEntity*)GET_PRIVATE(pent);
+		pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 
 		if (pEntity)
 		{
@@ -194,7 +194,7 @@ void DispatchKeyValue(edict_t* pentKeyvalue, KeyValueData* pkvd)
 		return;
 
 	// Get the actualy entity object
-	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pentKeyvalue);
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pentKeyvalue);
 
 	if (!pEntity)
 		return;
@@ -211,8 +211,8 @@ void DispatchTouch(edict_t* pentTouched, edict_t* pentOther)
 	if (gTouchDisabled)
 		return;
 
-	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pentTouched);
-	CBaseEntity* pOther = (CBaseEntity*)GET_PRIVATE(pentOther);
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pentTouched);
+	CBaseEntity* pOther = CBaseEntity::SafeInstance<CBaseEntity>(pentOther);
 
 	if (pEntity && pOther && !((pEntity->pev->flags | pOther->pev->flags) & FL_KILLME))
 		pEntity->Touch(pOther);
@@ -221,8 +221,8 @@ void DispatchTouch(edict_t* pentTouched, edict_t* pentOther)
 
 void DispatchUse(edict_t* pentUsed, edict_t* pentOther)
 {
-	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pentUsed);
-	CBaseEntity* pOther = (CBaseEntity*)GET_PRIVATE(pentOther);
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pentUsed);
+	CBaseEntity* pOther = CBaseEntity::SafeInstance<CBaseEntity>(pentOther);
 
 	if (pEntity && !(pEntity->pev->flags & FL_KILLME))
 		pEntity->Use(pOther, pOther, USE_TOGGLE, 0);
@@ -230,7 +230,7 @@ void DispatchUse(edict_t* pentUsed, edict_t* pentOther)
 
 void DispatchThink(edict_t* pent)
 {
-	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pent);
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 	if (pEntity)
 	{
 		if (FBitSet(pEntity->pev->flags, FL_DORMANT))
@@ -242,8 +242,8 @@ void DispatchThink(edict_t* pent)
 
 void DispatchBlocked(edict_t* pentBlocked, edict_t* pentOther)
 {
-	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pentBlocked);
-	CBaseEntity* pOther = (CBaseEntity*)GET_PRIVATE(pentOther);
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pentBlocked);
+	CBaseEntity* pOther = CBaseEntity::SafeInstance<CBaseEntity>(pentOther);
 
 	if (pEntity)
 		pEntity->Blocked(pOther);
@@ -251,7 +251,7 @@ void DispatchBlocked(edict_t* pentBlocked, edict_t* pentOther)
 
 void DispatchSave(edict_t* pent, SAVERESTOREDATA* pSaveData)
 {
-	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pent);
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 
 	if (pEntity && pSaveData)
 	{
@@ -303,7 +303,7 @@ CBaseEntity* FindGlobalEntity(string_t classname, string_t globalname)
 
 int DispatchRestore(edict_t* pent, SAVERESTOREDATA* pSaveData, int globalEntity)
 {
-	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pent);
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 
 	if (pEntity && pSaveData)
 	{
@@ -366,7 +366,7 @@ int DispatchRestore(edict_t* pent, SAVERESTOREDATA* pSaveData, int globalEntity)
 		}
 
 		// Again, could be deleted, get the pointer again.
-		pEntity = (CBaseEntity*)GET_PRIVATE(pent);
+		pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 
 #if 0
 		if (pEntity && pEntity->pev->globalname && globalEntity)
@@ -414,7 +414,7 @@ int DispatchRestore(edict_t* pent, SAVERESTOREDATA* pSaveData, int globalEntity)
 
 void DispatchObjectCollsionBox(edict_t* pent)
 {
-	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pent);
+	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 	if (pEntity)
 	{
 		pEntity->SetObjectCollisionBox();
@@ -584,17 +584,17 @@ void SetObjectCollisionBox(entvars_t* pev)
 		max = 0;
 		for (i = 0; i < 3; i++)
 		{
-			v = fabs(((float*)pev->mins)[i]);
+			v = fabs(pev->mins[i]);
 			if (v > max)
 				max = v;
-			v = fabs(((float*)pev->maxs)[i]);
+			v = fabs(pev->maxs[i]);
 			if (v > max)
 				max = v;
 		}
 		for (i = 0; i < 3; i++)
 		{
-			((float*)pev->absmin)[i] = ((float*)pev->origin)[i] - max;
-			((float*)pev->absmax)[i] = ((float*)pev->origin)[i] + max;
+			pev->absmin[i] = pev->origin[i] - max;
+			pev->absmax[i] = pev->origin[i] + max;
 		}
 	}
 	else
@@ -702,27 +702,6 @@ int CBaseEntity::DamageDecal(int bitsDamageType)
 }
 
 
-
-// NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity
-// will keep a pointer to it after this call.
-CBaseEntity* CBaseEntity::Create(char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner)
-{
-	edict_t* pent;
-	CBaseEntity* pEntity;
-
-	pent = CREATE_NAMED_ENTITY(MAKE_STRING(szName));
-	if (FNullEnt(pent))
-	{
-		ALERT(at_console, "nullptr Ent in Create!\n");
-		return nullptr;
-	}
-	pEntity = Instance(pent);
-	pEntity->pev->owner = pentOwner;
-	pEntity->pev->origin = vecOrigin;
-	pEntity->pev->angles = vecAngles;
-	DispatchSpawn(pEntity->edict());
-	return pEntity;
-}
 
 
 

@@ -209,7 +209,7 @@ public:
 
 	int GetNodePresequence(void)
 	{
-		CInfoBM* pTarget = dynamic_cast<CInfoBM*>((CBaseEntity*)m_hTargetEnt);
+		EHANDLE<CInfoBM> pTarget = m_hTargetEnt;
 		if (pTarget)
 		{
 			return pTarget->m_preSequence;
@@ -600,7 +600,7 @@ int CBigMomma::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float
 
 void CBigMomma::LayHeadcrab(void)
 {
-	CBaseEntity* pChild = CBaseEntity::Create(BIG_CHILDCLASS, pev->origin, pev->angles, edict());
+	CBaseEntity* pChild = CBaseEntity::Create<CBaseEntity>(BIG_CHILDCLASS, pev->origin, pev->angles, edict());
 
 	pChild->pev->spawnflags |= SF_MONSTER_FALL_TO_GROUND;
 
