@@ -37,9 +37,9 @@ public:
 
 
 	// these fields have been added in the process of reworking the state machine. (sjb)
-	EHANDLE m_hEnemy;      // the entity that the monster is fighting.
-	EHANDLE m_hTargetEnt;  // the entity that the monster is trying to reach
-	EHANDLE m_hOldEnemy[MAX_OLD_ENEMIES];
+	EHANDLE<CBaseEntity> m_hEnemy;      // the entity that the monster is fighting.
+	EHANDLE<CBaseEntity> m_hTargetEnt;  // the entity that the monster is trying to reach
+	EHANDLE<CBaseEntity> m_hOldEnemy[MAX_OLD_ENEMIES];
 	Vector m_vecOldEnemy[MAX_OLD_ENEMIES];
 
 	float m_flFieldOfView;   // width of monster's field of view ( dot product )
@@ -105,7 +105,7 @@ public:
 
 	// Scripted sequence Info
 	SCRIPTSTATE m_scriptState;  // internal cinematic state
-	CCineMonster* m_pCine;
+	EHANDLE<CCineMonster> m_pCine;
 
 	virtual int Save(CSave& save);
 	virtual int Restore(CRestore& restore);

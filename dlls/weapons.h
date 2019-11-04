@@ -286,8 +286,8 @@ public:
 	static ItemInfo ItemInfoArray[MAX_WEAPONS];
 	static AmmoInfo AmmoInfoArray[MAX_AMMO_SLOTS];
 
-	CBasePlayer* m_pPlayer;
-	CBasePlayerItem* m_pNext;
+	EHANDLE<CBasePlayer> m_pPlayer;
+	EHANDLE<CBasePlayerItem> m_pNext;
 	int m_iId;  // WEAPON_???
 
 	virtual int iItemSlot(void) { return 0; }  // return 0 to MAX_ITEMS_SLOTS, used in hud
@@ -488,7 +488,7 @@ extern void RadiusDamage(Vector vecSrc, entvars_t* pevInflictor, entvars_t* pevA
 
 typedef struct
 {
-	CBaseEntity* pEntity;
+	EHANDLE<CBaseEntity> pEntity;
 	float amount;
 	int type;
 } MULTIDAMAGE;
@@ -547,7 +547,7 @@ public:
 	BOOL PackWeapon(CBasePlayerItem* pWeapon);
 	BOOL PackAmmo(int iszName, int iCount);
 
-	CBasePlayerItem* m_rgpPlayerItems[MAX_ITEM_TYPES];  // one slot for each
+	EHANDLE<CBasePlayerItem> m_rgpPlayerItems[MAX_ITEM_TYPES];  // one slot for each
 
 	int m_rgiszAmmo[MAX_AMMO_SLOTS];  // ammo names
 	int m_rgAmmo[MAX_AMMO_SLOTS];     // ammo quantities
@@ -812,7 +812,7 @@ public:
 	void UpdateSpot(void);
 	BOOL ShouldWeaponIdle(void) { return TRUE; };
 
-	CLaserSpot* m_pSpot;
+	EHANDLE<CLaserSpot> m_pSpot;
 	int m_fSpotActive;
 	int m_cActiveRockets;  // how many missiles in flight from this launcher right now?
 
@@ -844,7 +844,7 @@ public:
 
 	int m_iTrail;
 	float m_flIgniteTime;
-	CRpg* m_pLauncher;  // pointer back to the launcher that fired me.
+	EHANDLE<CRpg> m_pLauncher;  // pointer back to the launcher that fired me.
 };
 
 class CGauss : public CBasePlayerWeapon
@@ -940,9 +940,9 @@ public:
 		FIRE_WIDE
 	};
 
-	CBeam* m_pBeam;
-	CBeam* m_pNoise;
-	CSprite* m_pSprite;
+	EHANDLE<CBeam> m_pBeam;
+	EHANDLE<CBeam> m_pNoise;
+	EHANDLE<CSprite> m_pSprite;
 
 	virtual BOOL UseDecrement(void)
 	{
@@ -1095,7 +1095,7 @@ private:
 #ifndef CLIENT_DLL
 	// "ghost" tripmine used in VR to show where the mine will be placed
 	void UpdateGhost();
-	EHANDLE m_hGhost;
+	EHANDLE<CBaseEntity> m_hGhost;
 #endif
 };
 

@@ -56,10 +56,10 @@ constexpr const float VR_RETINASCANNER_ACTIVATE_LOOK_TIME = 1.5f;
 #include <algorithm>
 #include <unordered_set>
 #include <unordered_map>
-std::unordered_map<EHANDLE, EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScanners;
-std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScannerButtons;
+std::unordered_map<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScanners;
+std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScannerButtons;
 
-EHANDLE g_vrHRetinaScanner;
+EHANDLE<CBaseEntity> g_vrHRetinaScanner;
 float g_vrRetinaScannerLookTime = 0.f;
 bool g_vrRetinaScannerUsed = false;
 
@@ -104,7 +104,7 @@ bool CheckStopSignal(CBaseMonster* pMonster, const Vector& pos, const Vector& an
 	return false;
 }
 
-bool WasJustThrownByPlayer(CBasePlayer* pPlayer, EHANDLE hEntity)
+bool WasJustThrownByPlayer(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity)
 {
 	if (hEntity->pev->owner != pPlayer->edict())
 		return false;
@@ -115,12 +115,12 @@ bool WasJustThrownByPlayer(CBasePlayer* pPlayer, EHANDLE hEntity)
 	return (gpGlobals->time - hEntity->m_spawnTime) < 2.f;
 }
 
-bool IsUsableDoor(EHANDLE hEntity)
+bool IsUsableDoor(EHANDLE<CBaseEntity> hEntity)
 {
 	return (FClassnameIs(hEntity->pev, "func_door") || FClassnameIs(hEntity->pev, "func_door_rotating")) && FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY);
 }
 
-bool IsNonInteractingEntity(EHANDLE hEntity)
+bool IsNonInteractingEntity(EHANDLE<CBaseEntity> hEntity)
 {
 	return (hEntity->pev->solid == SOLID_NOT && !IsUsableDoor(hEntity)) || FClassnameIs(hEntity->pev, "func_wall") || FClassnameIs(hEntity->pev, "func_illusionary") || FClassnameIs(hEntity->pev, "vr_controllermodel");  // TODO/NOTE: If this mod gets ever patched up for multiplayer, and you want players to be able to crowbar-fight, this should probably be changed
 }
@@ -135,7 +135,7 @@ bool IsReachable(CBasePlayer* pPlayer, const VRController::HitBox& hitbox)
 	return !VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->pev->origin, hitbox.origin);
 }
 
-bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
+bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
 {
 	if (!controller.IsValid())
 		return false;
@@ -185,14 +185,14 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 	return false;
 }
 
-bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE hEntity)
+bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE<CBaseEntity> hEntity)
 {
 	return FClassnameIs(hEntity->pev, "vr_easteregg") || FClassnameIs(hEntity->pev, "func_rot_button") || FClassnameIs(hEntity->pev, "momentary_rot_button") || (FClassnameIs(hEntity->pev, "func_door_rotating") && FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY)) || FClassnameIs(hEntity->pev, "func_pushable") || (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f && FClassnameIs(hEntity->pev, "func_ladder")) || hEntity->IsDraggable();
 }
 
 constexpr const int VR_DRAG_DISTANCE_TOLERANCE = 64;
 
-bool DistanceTooBigForDragging(EHANDLE hEntity, const VRController& controller)
+bool DistanceTooBigForDragging(EHANDLE<CBaseEntity> hEntity, const VRController& controller)
 {
 	Vector entityCenter = hEntity->pev->origin + (hEntity->pev->maxs + hEntity->pev->mins) * 0.5f;
 	float distance = (controller.GetPosition() - entityCenter).Length();
@@ -221,7 +221,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			continue;
 		}
 
-		EHANDLE hEntity = pEntity;
+		EHANDLE<CBaseEntity> hEntity = pEntity;
 
 		VRPhysicsHelperModelBBoxIntersectResult intersectResult;
 		bool isTouching;
@@ -332,7 +332,7 @@ bool IsSoftWeapon(int weaponId)
 	}
 }
 
-float VRControllerInteractionManager::DoDamage(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult)
+float VRControllerInteractionManager::DoDamage(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult)
 {
 	if (hEntity->pev->solid == SOLID_NOT || hEntity->pev->solid == SOLID_TRIGGER)
 		return 0.f;
@@ -376,39 +376,45 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer* pPlayer, EHANDLE hEn
 		// Entities that support being "baseballed" overwrite this method
 		hEntity->BaseBalled(pPlayer, controllerSwingVelocity);
 
-		// If you smack something with an explosive, it might just explode...
-		// 25% chance that charged satchels go off when you smack something with the remote
-		if (controller.GetWeaponId() == WEAPON_SATCHEL && pPlayer->m_pActiveItem->m_chargeReady && RANDOM_LONG(0, 4) == 0)
+		EHANDLE<CBasePlayerWeapon> hWeapon = pPlayer->m_pActiveItem;
+		if (hWeapon)
 		{
-			dynamic_cast<CBasePlayerWeapon*>(pPlayer->m_pActiveItem)->PrimaryAttack();
-		}
-		// 5% chance that an explosive explodes when hitting something
-		else if (IsExplosiveWeapon(controller.GetWeaponId()) && RANDOM_LONG(0, 20) == 0 && pPlayer->m_rgAmmo[pPlayer->m_pActiveItem->PrimaryAmmoIndex()] > 0)
-		{
-			if (controller.GetWeaponId() == WEAPON_SNARK)
+			// If you smack something with an explosive, it might just explode...
+			// 25% chance that charged satchels go off when you smack something with the remote
+			if (controller.GetWeaponId() == WEAPON_SATCHEL && pPlayer->m_pActiveItem->m_chargeReady && RANDOM_LONG(0, 4) == 0)
 			{
-				dynamic_cast<CSqueak*>(pPlayer->m_pActiveItem)->m_fJustThrown = 1;
-				pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
-				CBaseEntity* pSqueak = CBaseEntity::Create("monster_snark", controller.GetPosition(), controller.GetAngles(), pPlayer->edict());
-				pSqueak->pev->health = -1;
-				pSqueak->Killed(pPlayer->pev, DMG_CRUSH, GIB_ALWAYS);
-				pSqueak = nullptr;
+				hWeapon->PrimaryAttack();
 			}
-			else
+			// 5% chance that an explosive explodes when hitting something
+			else if (IsExplosiveWeapon(controller.GetWeaponId()) && RANDOM_LONG(0, 20) == 0 && pPlayer->m_rgAmmo[pPlayer->m_pActiveItem->PrimaryAmmoIndex()] > 0)
 			{
-				ExplosionCreate(controller.GetPosition(), controller.GetAngles(), pPlayer->edict(), pPlayer->m_pActiveItem->pev->dmg, TRUE);
-			}
+				if (controller.GetWeaponId() == WEAPON_SNARK)
+				{
+					EHANDLE<CSqueak> hSqueak = hWeapon;
+					if (hSqueak)
+						hSqueak->m_fJustThrown = 1;
+					pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
+					CBaseEntity* pSqueak = CBaseEntity::Create("monster_snark", controller.GetPosition(), controller.GetAngles(), pPlayer->edict());
+					pSqueak->pev->health = -1;
+					pSqueak->Killed(pPlayer->pev, DMG_CRUSH, GIB_ALWAYS);
+					pSqueak = nullptr;
+				}
+				else
+				{
+					ExplosionCreate(controller.GetPosition(), controller.GetAngles(), pPlayer->edict(), pPlayer->m_pActiveItem->pev->dmg, TRUE);
+				}
 
-			pPlayer->m_rgAmmo[pPlayer->m_pActiveItem->PrimaryAmmoIndex()]--;
-			dynamic_cast<CBasePlayerWeapon*>(pPlayer->m_pActiveItem)->m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
+				pPlayer->m_rgAmmo[pPlayer->m_pActiveItem->PrimaryAmmoIndex()]--;
+				hWeapon->m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3f;
 
-			if (pPlayer->m_rgAmmo[pPlayer->m_pActiveItem->PrimaryAmmoIndex()] > 0)
-			{
-				dynamic_cast<CBasePlayerWeapon*>(pPlayer->m_pActiveItem)->Deploy();
-			}
-			else
-			{
-				dynamic_cast<CBasePlayerWeapon*>(pPlayer->m_pActiveItem)->RetireWeapon();
+				if (pPlayer->m_rgAmmo[pPlayer->m_pActiveItem->PrimaryAmmoIndex()] > 0)
+				{
+					hWeapon->Deploy();
+				}
+				else
+				{
+					hWeapon->RetireWeapon();
+				}
 			}
 		}
 	}
@@ -416,7 +422,7 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer* pPlayer, EHANDLE hEn
 	return damage;
 }
 
-bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
 {
 	if (FClassnameIs(hEntity->pev, "vr_easteregg"))
 	{
@@ -437,7 +443,7 @@ bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer* pPlayer, EHAND
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleRetinaScanners(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleRetinaScanners(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
 {
 	if (g_vrRetinaScanners.count(hEntity) > 0)
 	{
@@ -479,7 +485,7 @@ bool VRControllerInteractionManager::HandleRetinaScanners(CBasePlayer* pPlayer, 
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
+bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction)
 {
 	// Don't touch activate retina scanners
 	if (g_vrRetinaScannerButtons.count(hEntity) > 0)
@@ -604,7 +610,7 @@ bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer* pPlayer,
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleRechargers(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleRechargers(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
 {
 	if (FClassnameIs(hEntity->pev, "func_healthcharger") || FClassnameIs(hEntity->pev, "func_recharge"))
 	{
@@ -618,7 +624,7 @@ bool VRControllerInteractionManager::HandleRechargers(CBasePlayer* pPlayer, EHAN
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleTriggers(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleTriggers(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
 {
 	if (hEntity->pev->solid != SOLID_TRIGGER)
 		return false;
@@ -671,7 +677,7 @@ bool VRControllerInteractionManager::HandleTriggers(CBasePlayer* pPlayer, EHANDL
 	return true;
 }
 
-bool VRControllerInteractionManager::HandleBreakables(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
+bool VRControllerInteractionManager::HandleBreakables(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
 {
 	if (!FClassnameIs(hEntity->pev, "func_breakable"))
 		return false;
@@ -687,7 +693,7 @@ bool VRControllerInteractionManager::HandleBreakables(CBasePlayer* pPlayer, EHAN
 	return true;
 }
 
-bool VRControllerInteractionManager::HandlePushables(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
+bool VRControllerInteractionManager::HandlePushables(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction)
 {
 	if (!FClassnameIs(hEntity->pev, "func_pushable"))
 		return false;
@@ -821,7 +827,7 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer* pPlayer, EHAND
 	return true;
 }
 
-bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
+bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction)
 {
 	if (hEntity->IsDraggable())
 	{
@@ -850,7 +856,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, const Interaction& interaction)
+bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction)
 {
 	if (FClassnameIs(hEntity->pev, "func_ladder") && CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f)
 	{
@@ -911,7 +917,7 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, EHANDLE
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer* pPlayer, EHANDLE hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
+bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
 {
 	// Special handling of barneys and scientists that don't hate us (yet)
 	CBaseMonster* pMonster = hEntity->MyMonsterPointer();

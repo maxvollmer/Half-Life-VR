@@ -76,14 +76,14 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	CSprite* m_pGlow;
+	EHANDLE<CSprite> m_pGlow;
 };
 
 LINK_ENTITY_TO_CLASS(xen_plantlight, CXenPLight);
 
 TYPEDESCRIPTION CXenPLight::m_SaveData[] =
 {
-	DEFINE_FIELD(CXenPLight, m_pGlow, FIELD_CLASSPTR),
+	DEFINE_FIELD(CXenPLight, m_pGlow, FIELD_EHANDLE),
 };
 
 IMPLEMENT_SAVERESTORE(CXenPLight, CActAnimating);
@@ -281,14 +281,14 @@ public:
 	static const char* pAttackMissSounds[];
 
 private:
-	CXenTreeTrigger* m_pTrigger;
+	EHANDLE<CXenTreeTrigger> m_pTrigger;
 };
 
 LINK_ENTITY_TO_CLASS(xen_tree, CXenTree);
 
 TYPEDESCRIPTION CXenTree::m_SaveData[] =
 {
-	DEFINE_FIELD(CXenTree, m_pTrigger, FIELD_CLASSPTR),
+	DEFINE_FIELD(CXenTree, m_pTrigger, FIELD_EHANDLE),
 };
 
 IMPLEMENT_SAVERESTORE(CXenTree, CActAnimating);
@@ -560,7 +560,7 @@ const char* CXenSpore::pModelNames[] =
 
 void CXenSpore::Precache(void)
 {
-	PRECACHE_MODEL((char*)pModelNames[pev->skin]);
+	PRECACHE_MODEL(pModelNames[pev->skin]);
 }
 
 

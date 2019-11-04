@@ -936,7 +936,7 @@ void CFuncTrain::OverrideReset(void)
 
 TYPEDESCRIPTION CFuncTrackTrain::m_SaveData[] =
 {
-	DEFINE_FIELD(CFuncTrackTrain, m_ppath, FIELD_CLASSPTR),
+	DEFINE_FIELD(CFuncTrackTrain, m_ppath, FIELD_EHANDLE),
 	DEFINE_FIELD(CFuncTrackTrain, m_length, FIELD_FLOAT),
 	DEFINE_FIELD(CFuncTrackTrain, m_height, FIELD_FLOAT),
 	DEFINE_FIELD(CFuncTrackTrain, m_speed, FIELD_FLOAT),
@@ -1665,10 +1665,10 @@ public:
 	virtual void OverrideReset(void);
 
 
-	CPathTrack* m_trackTop;
-	CPathTrack* m_trackBottom;
+	EHANDLE<CPathTrack> m_trackTop;
+	EHANDLE<CPathTrack> m_trackBottom;
 
-	CFuncTrackTrain* m_train;
+	EHANDLE<CFuncTrackTrain> m_train;
 
 	int m_trackTopName;
 	int m_trackBottomName;
@@ -1681,9 +1681,9 @@ LINK_ENTITY_TO_CLASS(func_trackchange, CFuncTrackChange);
 
 TYPEDESCRIPTION CFuncTrackChange::m_SaveData[] =
 {
-	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackTop, FIELD_CLASSPTR),
-	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackBottom, FIELD_CLASSPTR),
-	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_train, FIELD_CLASSPTR),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackTop, FIELD_EHANDLE),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackBottom, FIELD_EHANDLE),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_train, FIELD_EHANDLE),
 	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackTopName, FIELD_STRING),
 	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackBottomName, FIELD_STRING),
 	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trainName, FIELD_STRING),

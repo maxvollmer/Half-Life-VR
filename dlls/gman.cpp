@@ -47,8 +47,8 @@ public:
 
 	void PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity* pListener);
 
-	EHANDLE m_hPlayer;
-	EHANDLE m_hTalkTarget;
+	EHANDLE<CBaseEntity> m_hPlayer;
+	EHANDLE<CBaseEntity> m_hTalkTarget;
 	float m_flTalkTime;
 };
 LINK_ENTITY_TO_CLASS(monster_gman, CGMan);

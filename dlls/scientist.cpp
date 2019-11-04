@@ -881,7 +881,7 @@ Schedule_t* CScientist::GetScheduleOfType(int Type)
 
 Schedule_t* CScientist::GetSchedule(void)
 {
-	// so we don't keep calling through the EHANDLE stuff
+	// so we don't keep calling through the EHANDLE<CBaseEntity> stuff
 	CBaseEntity* pEnemy = m_hEnemy;
 
 	if (HasConditions(bits_COND_HEAR_SOUND))

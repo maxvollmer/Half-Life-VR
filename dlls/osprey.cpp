@@ -25,7 +25,7 @@
 typedef struct
 {
 	int isValid;
-	EHANDLE hGrunt;
+	EHANDLE<CBaseEntity> hGrunt;
 	Vector vecOrigin;
 	Vector vecAngles;
 } t_ospreygrunt;
@@ -68,7 +68,7 @@ public:
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	void ShowDamage(void);
 
-	CBaseEntity* m_pGoalEnt;
+	EHANDLE<CBaseEntity> m_pGoalEnt;
 	Vector m_vel1;
 	Vector m_vel2;
 	Vector m_pos1;
@@ -87,9 +87,9 @@ public:
 	float m_flLeftHealth;
 
 	int m_iUnits;
-	EHANDLE m_hGrunt[MAX_CARRY];
+	EHANDLE<CBaseEntity> m_hGrunt[MAX_CARRY];
 	Vector m_vecOrigin[MAX_CARRY];
-	EHANDLE m_hRepel[4];
+	EHANDLE<CBaseEntity> m_hRepel[4];
 
 	int m_iSoundState;
 	int m_iSpriteTexture;
@@ -109,7 +109,7 @@ LINK_ENTITY_TO_CLASS(monster_osprey, COsprey);
 
 TYPEDESCRIPTION COsprey::m_SaveData[] =
 {
-	DEFINE_FIELD(COsprey, m_pGoalEnt, FIELD_CLASSPTR),
+	DEFINE_FIELD(COsprey, m_pGoalEnt, FIELD_EHANDLE),
 	DEFINE_FIELD(COsprey, m_vel1, FIELD_VECTOR),
 	DEFINE_FIELD(COsprey, m_vel2, FIELD_VECTOR),
 	DEFINE_FIELD(COsprey, m_pos1, FIELD_POSITION_VECTOR),

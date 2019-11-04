@@ -90,7 +90,7 @@ public:
 	void Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib);
 	void GibMonster(void);
 
-	CSprite* m_pBall[2];    // hand balls
+	EHANDLE<CSprite> m_pBall[2];    // hand balls
 	int m_iBall[2];         // how bright it should be
 	float m_iBallTime[2];   // when it should be that color
 	int m_iBallCurrent[2];  // current brightness
@@ -105,7 +105,7 @@ LINK_ENTITY_TO_CLASS(monster_alien_controller, CController);
 
 TYPEDESCRIPTION CController::m_SaveData[] =
 {
-	DEFINE_ARRAY(CController, m_pBall, FIELD_CLASSPTR, 2),
+	DEFINE_ARRAY(CController, m_pBall, FIELD_EHANDLE, 2),
 	DEFINE_ARRAY(CController, m_iBall, FIELD_INTEGER, 2),
 	DEFINE_ARRAY(CController, m_iBallTime, FIELD_TIME, 2),
 	DEFINE_ARRAY(CController, m_iBallCurrent, FIELD_INTEGER, 2),
@@ -1130,7 +1130,7 @@ class CControllerHeadBall : public CBaseMonster
 	int m_iTrail;
 	int m_flNextAttack;
 	Vector m_vecIdeal;
-	EHANDLE m_hOwner;
+	EHANDLE<CBaseEntity> m_hOwner;
 };
 LINK_ENTITY_TO_CLASS(controller_head_ball, CControllerHeadBall);
 
@@ -1323,7 +1323,7 @@ class CControllerZapBall : public CBaseMonster
 	void EXPORT AnimateThink(void);
 	void EXPORT ExplodeTouch(CBaseEntity* pOther);
 
-	EHANDLE m_hOwner;
+	EHANDLE<CBaseEntity> m_hOwner;
 };
 LINK_ENTITY_TO_CLASS(controller_energy_ball, CControllerZapBall);
 

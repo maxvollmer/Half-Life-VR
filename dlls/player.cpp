@@ -68,7 +68,7 @@ extern playermove_t* pmove;
 // you somehow need to know which player is CalculateWeaponTimeOffset being called for:
 namespace
 {
-	EHANDLE m_hAnalogFirePlayer;
+	EHANDLE<CBaseEntity> m_hAnalogFirePlayer;
 }
 
 extern DLL_GLOBAL ULONG g_ulModelIndexPlayer;
@@ -126,9 +126,9 @@ TYPEDESCRIPTION CBasePlayer::m_playerSaveData[] =
 	DEFINE_ARRAY(CBasePlayer, m_rgflSuitNoRepeatTime, FIELD_TIME, CSUITNOREPEAT),
 	DEFINE_FIELD(CBasePlayer, m_lastDamageAmount, FIELD_INTEGER),
 
-	DEFINE_ARRAY(CBasePlayer, m_rgpPlayerItems, FIELD_CLASSPTR, MAX_ITEM_TYPES),
-	DEFINE_FIELD(CBasePlayer, m_pActiveItem, FIELD_CLASSPTR),
-	DEFINE_FIELD(CBasePlayer, m_pLastItem, FIELD_CLASSPTR),
+	DEFINE_ARRAY(CBasePlayer, m_rgpPlayerItems, FIELD_EHANDLE, MAX_ITEM_TYPES),
+	DEFINE_FIELD(CBasePlayer, m_pActiveItem, FIELD_EHANDLE),
+	DEFINE_FIELD(CBasePlayer, m_pLastItem, FIELD_EHANDLE),
 
 	DEFINE_ARRAY(CBasePlayer, m_rgAmmo, FIELD_INTEGER, MAX_AMMO_SLOTS),
 	DEFINE_FIELD(CBasePlayer, m_idrowndmg, FIELD_INTEGER),
@@ -5745,14 +5745,14 @@ void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 
 constexpr const int SF_TANK_CANCONTROL = 0x0020;
 
-bool IsValidTankDraggingController(const VRController& controller, EHANDLE hTank)
+bool IsValidTankDraggingController(const VRController& controller, EHANDLE<CBaseEntity> hTank)
 {
 	return controller.IsValid() &&
 		controller.IsDragging() &&
 		((controller.GetPosition() - hTank->pev->origin).Length() < CVAR_GET_FLOAT("vr_tankcontrols_max_distance"));
 }
 
-bool CBasePlayer::IsTankVRControlled(EHANDLE hTank)
+bool CBasePlayer::IsTankVRControlled(EHANDLE<CBaseEntity> hTank)
 {
 	if (CVAR_GET_FLOAT("vr_tankcontrols") == 0.f)
 		return false;

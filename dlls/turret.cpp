@@ -104,7 +104,7 @@ public:
 	float m_flMaxSpin;  // Max time to spin the barrel w/o a target
 	int m_iSpin;
 
-	CSprite* m_pEyeGlow;
+	EHANDLE<CSprite> m_pEyeGlow;
 	int m_eyeBrightness;
 
 	int m_iDeployHeight;
@@ -140,7 +140,7 @@ TYPEDESCRIPTION CBaseTurret::m_SaveData[] =
 	DEFINE_FIELD(CBaseTurret, m_flMaxSpin, FIELD_FLOAT),
 	DEFINE_FIELD(CBaseTurret, m_iSpin, FIELD_INTEGER),
 
-	DEFINE_FIELD(CBaseTurret, m_pEyeGlow, FIELD_CLASSPTR),
+	DEFINE_FIELD(CBaseTurret, m_pEyeGlow, FIELD_EHANDLE),
 	DEFINE_FIELD(CBaseTurret, m_eyeBrightness, FIELD_INTEGER),
 	DEFINE_FIELD(CBaseTurret, m_iDeployHeight, FIELD_INTEGER),
 	DEFINE_FIELD(CBaseTurret, m_iRetractHeight, FIELD_INTEGER),

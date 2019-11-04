@@ -120,35 +120,88 @@ class CSquadMonster;
 #define SF_NORESPAWN (1 << 30)  // !!!set this bit on guns and stuff that should never respawn.
 
 //
-// EHANDLE. Safe way to point to CBaseEntities who may die between frames
+// EHANDLE<CBaseEntity>. Safe way to point to CBaseEntities who may die between frames
 //
+template <class ENTITY>
 class EHANDLE
 {
 private:
-	edict_t* m_pent;
-	int m_serialnumber;
+	edict_t* m_pent{ nullptr };
+	int m_serialnumber{ 0 };
 
 public:
 	EHANDLE()
 	{
-		m_pent = nullptr;
-		m_serialnumber = 0;
 	}
-	EHANDLE(CBaseEntity* pEntity)
+
+	EHANDLE(ENTITY* pEntity)
 	{
-		(operator=)(pEntity);
+		if (pEntity)
+		{
+			m_pent = ENT(pEntity->pev);
+			if (m_pent)
+				m_serialnumber = m_pent->serialnumber;
+		}
 	}
 
-	edict_t* Get(void);
-	edict_t* Set(edict_t* pent);
+	template <class ENTITY2>
+	EHANDLE(EHANDLE<ENTITY2> other) :
+		EHANDLE{ dynamic_cast<ENTITY*>(static_cast<CBaseEntity*>(other.operator ENTITY2* ())) }
+	{
+	}
 
-	operator int();
+	edict_t* Get(void)
+	{
+		if (m_pent)
+		{
+			if (m_pent->serialnumber == m_serialnumber)
+				return m_pent;
+			else
+				return nullptr;
+		}
+		return nullptr;
+	};
 
-	operator CBaseEntity* ();
+	edict_t* Set(edict_t* pent)
+	{
+		m_pent = pent;
+		if (pent)
+		{
+			m_serialnumber = m_pent->serialnumber;
+		}
+		else
+		{
+			m_serialnumber = 0;
+		}
+		return pent;
+	};
 
-	CBaseEntity* operator=(CBaseEntity* pEntity);
-	CBaseEntity* operator->();
-	bool operator==(EHANDLE& other);
+	operator ENTITY*()
+	{
+		return dynamic_cast<ENTITY*>(static_cast<CBaseEntity*>(GET_PRIVATE(Get())));
+	};
+
+	operator int()
+	{
+		return Get() != nullptr;
+	}
+
+	ENTITY* operator->()
+	{
+		return dynamic_cast<ENTITY*>(static_cast<CBaseEntity*>(GET_PRIVATE(Get())));
+	}
+
+	template <class ENTITY2>
+	bool operator==(EHANDLE<ENTITY2>& other)
+	{
+		return m_pent == other.m_pent && m_serialnumber == other.m_serialnumber;
+	}
+
+	template <class ENTITY2>
+	bool operator!=(EHANDLE<ENTITY2>& other)
+	{
+		return !(operator==(other));
+	}
 
 	class Hash
 	{
@@ -172,6 +225,7 @@ public:
 };
 
 
+
 // For real rotation of rotating buttons in VR - Max Vollmer, 2019-05-26
 class VRRotatableEnt;
 
@@ -187,8 +241,8 @@ public:
 	entvars_t* pev;  // Don't need to save/restore this pointer, the engine resets it
 
 	// path corners
-	CBaseEntity* m_pGoalEnt;  // path corner we are heading towards
-	CBaseEntity* m_pLink;     // used for temporary link-list operations.
+	EHANDLE<CBaseEntity> m_pGoalEnt;  // path corner we are heading towards
+	EHANDLE<CBaseEntity> m_pLink;     // used for temporary link-list operations.
 
 	// initialization functions
 	virtual void Spawn(void) { return; }
@@ -551,7 +605,7 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	EHANDLE m_rgEntities[MS_MAX_TARGETS];
+	EHANDLE<CBaseEntity> m_rgEntities[MS_MAX_TARGETS];
 	int m_rgTriggered[MS_MAX_TARGETS];
 
 	int m_iTotal;
@@ -643,7 +697,7 @@ public:
 
 	int m_cTriggersLeft;  // trigger_counter only, # of activations remaining
 	float m_flHeight;
-	EHANDLE m_hActivator;
+	EHANDLE<CBaseEntity> m_hActivator;
 	void (CBaseToggle::* m_pfnCallWhenMoveDone)(void);
 	Vector m_vecFinalDest;
 	Vector m_vecFinalAngle;
@@ -864,15 +918,14 @@ T* GetClassPtr(entvars_t* pev)
 		pev = VARS(CREATE_ENTITY());
 
 	// get the private data
-	T* t = (T*)GET_PRIVATE(ENT(pev));
+	void* privateData = GET_PRIVATE(ENT(pev));
 
-	if (t == nullptr)
-	{
-		// allocate private data
-		t = new (pev) T;
-		t->pev = pev;
-	}
+	if (privateData != nullptr)
+		return dynamic_cast<T*>(static_cast<CBaseEntity*>(privateData));
 
+	// allocate private data
+	T* t = new (pev) T;
+	t->pev = pev;
 	return t;
 }
 

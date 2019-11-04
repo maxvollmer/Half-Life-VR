@@ -109,14 +109,14 @@ public:
 	int m_iLevel;
 	int m_iTeleport;
 
-	EHANDLE m_hRecharger;
+	EHANDLE<CBaseEntity> m_hRecharger;
 
-	EHANDLE m_hSphere[N_SPHERES];
+	EHANDLE<CBaseEntity> m_hSphere[N_SPHERES];
 	int m_iActiveSpheres;
 
 	float m_flAdj;
 
-	CSprite* m_pBall;
+	EHANDLE<CSprite> m_pBall;
 
 	char m_szRechargerTarget[64];
 	char m_szDrawUse[64];
@@ -128,7 +128,7 @@ public:
 	float m_flShootEnd;
 	float m_flShootTime;
 
-	EHANDLE m_hFriend[3];
+	EHANDLE<CBaseEntity> m_hFriend[3];
 };
 
 LINK_ENTITY_TO_CLASS(monster_nihilanth, CNihilanth);
@@ -155,7 +155,7 @@ TYPEDESCRIPTION CNihilanth::m_SaveData[] =
 	DEFINE_ARRAY(CNihilanth, m_hSphere, FIELD_EHANDLE, N_SPHERES),
 	DEFINE_FIELD(CNihilanth, m_iActiveSpheres, FIELD_INTEGER),
 	DEFINE_FIELD(CNihilanth, m_flAdj, FIELD_FLOAT),
-	DEFINE_FIELD(CNihilanth, m_pBall, FIELD_CLASSPTR),
+	DEFINE_FIELD(CNihilanth, m_pBall, FIELD_EHANDLE),
 	DEFINE_ARRAY(CNihilanth, m_szRechargerTarget, FIELD_CHARACTER, 64),
 	DEFINE_ARRAY(CNihilanth, m_szDrawUse, FIELD_CHARACTER, 64),
 	DEFINE_ARRAY(CNihilanth, m_szTeleportUse, FIELD_CHARACTER, 64),
@@ -209,8 +209,8 @@ public:
 
 	float m_flIdealVel;
 	Vector m_vecIdeal;
-	CNihilanth* m_pNihilanth;
-	EHANDLE m_hTouch;
+	EHANDLE<CNihilanth> m_pNihilanth;
+	EHANDLE<CBaseEntity> m_hTouch;
 	int m_nFrames;
 };
 
@@ -221,7 +221,7 @@ TYPEDESCRIPTION CNihilanthHVR::m_SaveData[] =
 {
 	DEFINE_FIELD(CNihilanthHVR, m_flIdealVel, FIELD_FLOAT),
 	DEFINE_FIELD(CNihilanthHVR, m_vecIdeal, FIELD_VECTOR),
-	DEFINE_FIELD(CNihilanthHVR, m_pNihilanth, FIELD_CLASSPTR),
+	DEFINE_FIELD(CNihilanthHVR, m_pNihilanth, FIELD_EHANDLE),
 	DEFINE_FIELD(CNihilanthHVR, m_hTouch, FIELD_EHANDLE),
 	DEFINE_FIELD(CNihilanthHVR, m_nFrames, FIELD_INTEGER),
 };

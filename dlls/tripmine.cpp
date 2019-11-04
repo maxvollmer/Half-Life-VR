@@ -68,8 +68,8 @@ class CTripmineGrenade : public CGrenade
 	Vector m_vecEnd;
 	float m_flBeamLength;
 
-	EHANDLE m_hOwner;
-	EHANDLE m_hBeam;
+	EHANDLE<CBaseEntity> m_hOwner;
+	EHANDLE<CBaseEntity> m_hBeam;
 	Vector m_posOwner;
 	Vector m_angleOwner;
 	edict_t* m_pRealOwner;  // tracelines don't hit PEV->OWNER, which means a player couldn't detonate their own trip mine, so we store the owner here.

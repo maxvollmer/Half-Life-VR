@@ -107,7 +107,7 @@ TYPEDESCRIPTION CBaseMonster::m_SaveData[] =
 	DEFINE_FIELD(CBaseMonster, m_HackedGunPos, FIELD_VECTOR),
 
 	DEFINE_FIELD(CBaseMonster, m_scriptState, FIELD_INTEGER),
-	DEFINE_FIELD(CBaseMonster, m_pCine, FIELD_CLASSPTR),
+	DEFINE_FIELD(CBaseMonster, m_pCine, FIELD_EHANDLE),
 };
 
 //IMPLEMENT_SAVERESTORE( CBaseMonster, CBaseToggle );

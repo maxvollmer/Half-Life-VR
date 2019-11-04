@@ -211,7 +211,7 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	CSprite* m_pSprite;
+	EHANDLE<CSprite> m_pSprite;
 	int m_iszSpriteName;
 	Vector m_firePosition;
 };

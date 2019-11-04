@@ -372,7 +372,7 @@ void VRController::PlayWeaponMuzzleflash()
 	pModel->pev->effects |= EF_MUZZLEFLASH;
 }
 
-bool VRController::AddTouchedEntity(EHANDLE hEntity) const
+bool VRController::AddTouchedEntity(EHANDLE<CBaseEntity> hEntity) const
 {
 	if (m_touchedEntities.count(hEntity) != 0)
 		return false;
@@ -381,7 +381,7 @@ bool VRController::AddTouchedEntity(EHANDLE hEntity) const
 	return true;
 }
 
-bool VRController::RemoveTouchedEntity(EHANDLE hEntity) const
+bool VRController::RemoveTouchedEntity(EHANDLE<CBaseEntity> hEntity) const
 {
 	if (m_touchedEntities.count(hEntity) == 0)
 		return false;
@@ -390,18 +390,18 @@ bool VRController::RemoveTouchedEntity(EHANDLE hEntity) const
 	return true;
 }
 
-bool VRController::AddDraggedEntity(EHANDLE hEntity) const
+bool VRController::AddDraggedEntity(EHANDLE<CBaseEntity> hEntity) const
 {
 	if (m_draggedEntities.count(hEntity) != 0)
 		return false;
 
-	EHANDLE hPlayer = m_hPlayer;  // need copy due to const
+	EHANDLE<CBaseEntity> hPlayer = m_hPlayer;  // need copy due to const
 
-	m_draggedEntities.insert(std::pair<EHANDLE, DraggedEntityPositions>(hEntity, DraggedEntityPositions{ GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin, GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin }));
+	m_draggedEntities.insert(std::pair<EHANDLE<CBaseEntity>, DraggedEntityPositions>(hEntity, DraggedEntityPositions{ GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin, GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin }));
 	return true;
 }
 
-bool VRController::RemoveDraggedEntity(EHANDLE hEntity) const
+bool VRController::RemoveDraggedEntity(EHANDLE<CBaseEntity> hEntity) const
 {
 	if (m_draggedEntities.count(hEntity) == 0)
 		return false;
@@ -410,12 +410,12 @@ bool VRController::RemoveDraggedEntity(EHANDLE hEntity) const
 	return true;
 }
 
-bool VRController::IsDraggedEntity(EHANDLE hEntity) const
+bool VRController::IsDraggedEntity(EHANDLE<CBaseEntity> hEntity) const
 {
 	return m_draggedEntities.count(hEntity) != 0;
 }
 
-bool VRController::GetDraggedEntityPositions(EHANDLE hEntity,
+bool VRController::GetDraggedEntityPositions(EHANDLE<CBaseEntity> hEntity,
 	Vector& controllerStartOffset,
 	Vector& controllerStartPos,
 	Vector& entityStartOrigin,
@@ -439,14 +439,14 @@ bool VRController::GetDraggedEntityPositions(EHANDLE hEntity,
 		draggedEntityData->second.controllerLastOffset = GetOffset();
 		draggedEntityData->second.controllerLastPos = GetPosition();
 		draggedEntityData->second.entityLastOrigin = hEntity->pev->origin;
-		draggedEntityData->second.playerLastOrigin = EHANDLE{ m_hPlayer }
+		draggedEntityData->second.playerLastOrigin = EHANDLE<CBaseEntity>{ m_hPlayer }
 		->pev->origin;
 		return true;
 	}
 	return false;
 }
 
-bool VRController::AddHitEntity(EHANDLE hEntity) const
+bool VRController::AddHitEntity(EHANDLE<CBaseEntity> hEntity) const
 {
 	if (m_hitEntities.count(hEntity) != 0)
 		return false;
@@ -455,7 +455,7 @@ bool VRController::AddHitEntity(EHANDLE hEntity) const
 	return true;
 }
 
-bool VRController::RemoveHitEntity(EHANDLE hEntity) const
+bool VRController::RemoveHitEntity(EHANDLE<CBaseEntity> hEntity) const
 {
 	if (m_hitEntities.count(hEntity) == 0)
 		return false;
@@ -512,7 +512,7 @@ void VRController::DebugDrawHitBoxes(CBasePlayer* pPlayer)
 	size_t numlasers = m_hitboxes.size() * numlinesperbox;
 
 	// Remove any "dead" lasers (levelchange etc.)
-	m_hDebugBBoxes.erase(std::remove_if(m_hDebugBBoxes.begin(), m_hDebugBBoxes.end(), [](EHANDLE& e) { return e.Get() == nullptr; }), m_hDebugBBoxes.end());
+	m_hDebugBBoxes.erase(std::remove_if(m_hDebugBBoxes.begin(), m_hDebugBBoxes.end(), [](EHANDLE<CBaseEntity>& e) { return e.Get() == nullptr; }), m_hDebugBBoxes.end());
 
 	// Remove lasers that are "too much" (happens when switching from model with more hitboxes to model with less hitboxes)
 	while (m_hDebugBBoxes.size() > numlasers)
@@ -531,7 +531,7 @@ void VRController::DebugDrawHitBoxes(CBasePlayer* pPlayer)
 		pBeam->pev->owner = pPlayer->edict();
 		pBeam->SetColor(255, 0, 0);
 		pBeam->SetBrightness(255);
-		m_hDebugBBoxes.push_back(EHANDLE{ pBeam });
+		m_hDebugBBoxes.push_back(EHANDLE<CBaseEntity>{ pBeam });
 	}
 
 	// Update laser positions for each hitbox (8 lasers coming from the origin and going to each of the current bbox's corners

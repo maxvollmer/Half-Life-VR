@@ -297,9 +297,9 @@ void CLeech::Precache(void)
 	PRECACHE_MODEL("models/leech.mdl");
 
 	for (i = 0; i < ARRAYSIZE(pAttackSounds); i++)
-		PRECACHE_SOUND((char*)pAttackSounds[i]);
+		PRECACHE_SOUND(pAttackSounds[i]);
 	for (i = 0; i < ARRAYSIZE(pAlertSounds); i++)
-		PRECACHE_SOUND((char*)pAlertSounds[i]);
+		PRECACHE_SOUND(pAlertSounds[i]);
 }
 
 

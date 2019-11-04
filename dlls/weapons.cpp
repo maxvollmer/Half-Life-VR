@@ -439,7 +439,7 @@ void W_Precache(void)
 	g_sModelIndexBloodSpray = PRECACHE_MODEL("sprites/bloodspray.spr");   // initial blood
 	g_sModelIndexBloodDrop = PRECACHE_MODEL("sprites/blood.spr");        // splattered blood
 
-	g_sModelIndexLaser = PRECACHE_MODEL((char*)g_pModelNameLaser);
+	g_sModelIndexLaser = PRECACHE_MODEL(g_pModelNameLaser);
 	g_sModelIndexLaserDot = PRECACHE_MODEL("sprites/laserdot.spr");
 
 
@@ -469,8 +469,8 @@ void W_Precache(void)
 
 TYPEDESCRIPTION CBasePlayerItem::m_SaveData[] =
 {
-	DEFINE_FIELD(CBasePlayerItem, m_pPlayer, FIELD_CLASSPTR),
-	DEFINE_FIELD(CBasePlayerItem, m_pNext, FIELD_CLASSPTR),
+	DEFINE_FIELD(CBasePlayerItem, m_pPlayer, FIELD_EHANDLE),
+	DEFINE_FIELD(CBasePlayerItem, m_pNext, FIELD_EHANDLE),
 	//DEFINE_FIELD( CBasePlayerItem, m_fKnown, FIELD_INTEGER ),Reset to zero on load
 	DEFINE_FIELD(CBasePlayerItem, m_iId, FIELD_INTEGER),
 	// DEFINE_FIELD( CBasePlayerItem, m_iIdPrimary, FIELD_INTEGER ),
@@ -1265,7 +1265,7 @@ TYPEDESCRIPTION CWeaponBox::m_SaveData[] =
 {
 	DEFINE_ARRAY(CWeaponBox, m_rgAmmo, FIELD_INTEGER, MAX_AMMO_SLOTS),
 	DEFINE_ARRAY(CWeaponBox, m_rgiszAmmo, FIELD_STRING, MAX_AMMO_SLOTS),
-	DEFINE_ARRAY(CWeaponBox, m_rgpPlayerItems, FIELD_CLASSPTR, MAX_ITEM_TYPES),
+	DEFINE_ARRAY(CWeaponBox, m_rgpPlayerItems, FIELD_EHANDLE, MAX_ITEM_TYPES),
 	DEFINE_FIELD(CWeaponBox, m_cAmmoTypes, FIELD_INTEGER),
 };
 
@@ -1606,7 +1606,7 @@ IMPLEMENT_SAVERESTORE(CRpg, CBasePlayerWeapon);
 TYPEDESCRIPTION CRpgRocket::m_SaveData[] =
 {
 	DEFINE_FIELD(CRpgRocket, m_flIgniteTime, FIELD_TIME),
-	DEFINE_FIELD(CRpgRocket, m_pLauncher, FIELD_CLASSPTR),
+	DEFINE_FIELD(CRpgRocket, m_pLauncher, FIELD_EHANDLE),
 };
 IMPLEMENT_SAVERESTORE(CRpgRocket, CGrenade);
 
@@ -1632,9 +1632,9 @@ IMPLEMENT_SAVERESTORE(CGauss, CBasePlayerWeapon);
 
 TYPEDESCRIPTION CEgon::m_SaveData[] =
 {
-	//	DEFINE_FIELD( CEgon, m_pBeam, FIELD_CLASSPTR ),
-	//	DEFINE_FIELD( CEgon, m_pNoise, FIELD_CLASSPTR ),
-	//	DEFINE_FIELD( CEgon, m_pSprite, FIELD_CLASSPTR ),
+	//	DEFINE_FIELD( CEgon, m_pBeam, FIELD_EHANDLE ),
+	//	DEFINE_FIELD( CEgon, m_pNoise, FIELD_EHANDLE ),
+	//	DEFINE_FIELD( CEgon, m_pSprite, FIELD_EHANDLE ),
 	DEFINE_FIELD(CEgon, m_shootTime, FIELD_TIME),
 	DEFINE_FIELD(CEgon, m_fireState, FIELD_INTEGER),
 	DEFINE_FIELD(CEgon, m_fireMode, FIELD_INTEGER),

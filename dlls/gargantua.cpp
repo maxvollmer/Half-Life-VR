@@ -259,8 +259,8 @@ private:
 
 	CBaseEntity* GargantuaCheckTraceHullAttack(float flDist, int iDamage, int iDmgType);
 
-	CSprite* m_pEyeGlow;  // Glow around the eyes
-	CBeam* m_pFlame[4];   // Flame beams
+	EHANDLE<CSprite> m_pEyeGlow;  // Glow around the eyes
+	EHANDLE<CBeam> m_pFlame[4];   // Flame beams
 
 	int m_eyeBrightness;    // Brightness target
 	float m_seeTime;        // Time to attack (when I see the enemy, I set this)
@@ -275,13 +275,13 @@ LINK_ENTITY_TO_CLASS(monster_gargantua, CGargantua);
 
 TYPEDESCRIPTION CGargantua::m_SaveData[] =
 {
-	DEFINE_FIELD(CGargantua, m_pEyeGlow, FIELD_CLASSPTR),
+	DEFINE_FIELD(CGargantua, m_pEyeGlow, FIELD_EHANDLE),
 	DEFINE_FIELD(CGargantua, m_eyeBrightness, FIELD_INTEGER),
 	DEFINE_FIELD(CGargantua, m_seeTime, FIELD_TIME),
 	DEFINE_FIELD(CGargantua, m_flameTime, FIELD_TIME),
 	DEFINE_FIELD(CGargantua, m_streakTime, FIELD_TIME),
 	DEFINE_FIELD(CGargantua, m_painSoundTime, FIELD_TIME),
-	DEFINE_ARRAY(CGargantua, m_pFlame, FIELD_CLASSPTR, 4),
+	DEFINE_ARRAY(CGargantua, m_pFlame, FIELD_EHANDLE, 4),
 	DEFINE_FIELD(CGargantua, m_flameX, FIELD_FLOAT),
 	DEFINE_FIELD(CGargantua, m_flameY, FIELD_FLOAT),
 };
@@ -783,37 +783,37 @@ void CGargantua::Precache()
 	PRECACHE_SOUND(GARG_STOMP_BUZZ_SOUND);
 
 	for (i = 0; i < ARRAYSIZE(pAttackHitSounds); i++)
-		PRECACHE_SOUND((char*)pAttackHitSounds[i]);
+		PRECACHE_SOUND(pAttackHitSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pBeamAttackSounds); i++)
-		PRECACHE_SOUND((char*)pBeamAttackSounds[i]);
+		PRECACHE_SOUND(pBeamAttackSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pAttackMissSounds); i++)
-		PRECACHE_SOUND((char*)pAttackMissSounds[i]);
+		PRECACHE_SOUND(pAttackMissSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pRicSounds); i++)
-		PRECACHE_SOUND((char*)pRicSounds[i]);
+		PRECACHE_SOUND(pRicSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pFootSounds); i++)
-		PRECACHE_SOUND((char*)pFootSounds[i]);
+		PRECACHE_SOUND(pFootSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pIdleSounds); i++)
-		PRECACHE_SOUND((char*)pIdleSounds[i]);
+		PRECACHE_SOUND(pIdleSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pAlertSounds); i++)
-		PRECACHE_SOUND((char*)pAlertSounds[i]);
+		PRECACHE_SOUND(pAlertSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pPainSounds); i++)
-		PRECACHE_SOUND((char*)pPainSounds[i]);
+		PRECACHE_SOUND(pPainSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pAttackSounds); i++)
-		PRECACHE_SOUND((char*)pAttackSounds[i]);
+		PRECACHE_SOUND(pAttackSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pStompSounds); i++)
-		PRECACHE_SOUND((char*)pStompSounds[i]);
+		PRECACHE_SOUND(pStompSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pBreatheSounds); i++)
-		PRECACHE_SOUND((char*)pBreatheSounds[i]);
+		PRECACHE_SOUND(pBreatheSounds[i]);
 }
 
 

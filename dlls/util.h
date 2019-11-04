@@ -627,7 +627,7 @@ void EMIT_GROUPNAME_SUIT(edict_t* entity, const char* groupname);
 
 #define PRECACHE_SOUND_ARRAY(a)                                             \
 	{                                                                       \
-		for (int i = 0; i < ARRAYSIZE(a); i++) PRECACHE_SOUND((char*)a[i]); \
+		for (int i = 0; i < ARRAYSIZE(a); i++) PRECACHE_SOUND(a[i]); \
 	}
 
 #define EMIT_SOUND_ARRAY_DYN(chan, array) \

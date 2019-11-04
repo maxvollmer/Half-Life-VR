@@ -265,7 +265,7 @@ void CBreakable::MaterialSoundPrecache(Materials precacheMaterial)
 
 	for (i = 0; i < soundCount; i++)
 	{
-		PRECACHE_SOUND((char*)pSoundList[i]);
+		PRECACHE_SOUND(pSoundList[i]);
 	}
 }
 
@@ -343,7 +343,7 @@ void CBreakable::Precache(void)
 	if (m_iszGibModel)
 		pGibName = STRING(m_iszGibModel);
 
-	m_idShard = PRECACHE_MODEL((char*)pGibName);
+	m_idShard = PRECACHE_MODEL(pGibName);
 
 	// Precache the spawn item's data
 	if (m_iszSpawnObject)

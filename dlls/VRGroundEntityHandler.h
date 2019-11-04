@@ -27,8 +27,8 @@ private:
 	Vector CalculateNewOrigin();
 	bool CheckIfNewOriginIsValid(const Vector& newOrigin);
 
-	CBasePlayer* m_pPlayer{ nullptr };
-	EHANDLE m_hGroundEntity;
+	EHANDLE<CBasePlayer> m_pPlayer;
+	EHANDLE<CBaseEntity> m_hGroundEntity;
 
 	Vector m_lastGroundEntityOrigin;
 	Vector m_lastGroundEntityAngles;

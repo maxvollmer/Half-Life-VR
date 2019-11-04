@@ -51,7 +51,7 @@ public:
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	BOOL CheckRangeAttack1(float flDot, float flDist);
 	BOOL CheckRangeAttack2(float flDot, float flDist);
-	void CallForHelp(char* szClassname, float flDist, EHANDLE hEnemy, Vector& vecLocation);
+	void CallForHelp(char* szClassname, float flDist, EHANDLE<CBaseEntity> hEnemy, Vector& vecLocation);
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 
@@ -79,14 +79,14 @@ public:
 
 	int m_iBravery;
 
-	CBeam* m_pBeam[ISLAVE_MAX_BEAMS];
+	EHANDLE<CBeam> m_pBeam[ISLAVE_MAX_BEAMS];
 
 	int m_iBeams;
 	float m_flNextAttack;
 
 	int m_voicePitch;
 
-	EHANDLE m_hDead;
+	EHANDLE<CBaseEntity> m_hDead;
 
 	static const char* pAttackHitSounds[];
 	static const char* pAttackMissSounds[];
@@ -101,7 +101,7 @@ TYPEDESCRIPTION CISlave::m_SaveData[] =
 {
 	DEFINE_FIELD(CISlave, m_iBravery, FIELD_INTEGER),
 
-	DEFINE_ARRAY(CISlave, m_pBeam, FIELD_CLASSPTR, ISLAVE_MAX_BEAMS),
+	DEFINE_ARRAY(CISlave, m_pBeam, FIELD_EHANDLE, ISLAVE_MAX_BEAMS),
 	DEFINE_FIELD(CISlave, m_iBeams, FIELD_INTEGER),
 	DEFINE_FIELD(CISlave, m_flNextAttack, FIELD_TIME),
 
@@ -159,7 +159,7 @@ int CISlave::IRelationship(CBaseEntity* pTarget)
 }
 
 
-void CISlave::CallForHelp(char* szClassname, float flDist, EHANDLE hEnemy, Vector& vecLocation)
+void CISlave::CallForHelp(char* szClassname, float flDist, EHANDLE<CBaseEntity> hEnemy, Vector& vecLocation)
 {
 	// ALERT( at_aiconsole, "help " );
 
@@ -560,16 +560,16 @@ void CISlave::Precache()
 	PRECACHE_SOUND("weapons/cbar_miss1.wav");
 
 	for (i = 0; i < ARRAYSIZE(pAttackHitSounds); i++)
-		PRECACHE_SOUND((char*)pAttackHitSounds[i]);
+		PRECACHE_SOUND(pAttackHitSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pAttackMissSounds); i++)
-		PRECACHE_SOUND((char*)pAttackMissSounds[i]);
+		PRECACHE_SOUND(pAttackMissSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pPainSounds); i++)
-		PRECACHE_SOUND((char*)pPainSounds[i]);
+		PRECACHE_SOUND(pPainSounds[i]);
 
 	for (i = 0; i < ARRAYSIZE(pDeathSounds); i++)
-		PRECACHE_SOUND((char*)pDeathSounds[i]);
+		PRECACHE_SOUND(pDeathSounds[i]);
 
 	UTIL_PrecacheOther("test_effect");
 }

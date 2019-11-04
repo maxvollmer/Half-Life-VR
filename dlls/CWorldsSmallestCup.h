@@ -15,10 +15,10 @@ private:
 	bool AmIInKleinersFace(CBaseEntity* pKleiner);
 	bool IsFallingOutOfWorld();
 
-	EHANDLE m_hKleiner;
+	EHANDLE<CBaseEntity> m_hKleiner;
 	float m_flKleinerFaceStart{ 0.f };
 
-	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_hAlreadySpokenKleiners;
+	std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_hAlreadySpokenKleiners;
 
-	static EHANDLE m_instance;
+	static EHANDLE<CBaseEntity> m_instance;
 };

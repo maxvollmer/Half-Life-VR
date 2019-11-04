@@ -86,7 +86,7 @@ class CApache : public CBaseMonster
 	float m_flGoalSpeed;
 
 	int m_iDoSmokePuff;
-	CBeam* m_pBeam;
+	EHANDLE<CBeam> m_pBeam;
 };
 LINK_ENTITY_TO_CLASS(monster_apache, CApache);
 
@@ -107,7 +107,7 @@ TYPEDESCRIPTION CApache::m_SaveData[] =
 	//	DEFINE_FIELD( CApache, m_iSpriteTexture, FIELD_INTEGER ),
 	//	DEFINE_FIELD( CApache, m_iExplode, FIELD_INTEGER ),
 	//	DEFINE_FIELD( CApache, m_iBodyGibs, FIELD_INTEGER ),
-	DEFINE_FIELD(CApache, m_pBeam, FIELD_CLASSPTR),
+	DEFINE_FIELD(CApache, m_pBeam, FIELD_EHANDLE),
 	DEFINE_FIELD(CApache, m_flGoalSpeed, FIELD_FLOAT),
 	DEFINE_FIELD(CApache, m_iDoSmokePuff, FIELD_INTEGER),
 };

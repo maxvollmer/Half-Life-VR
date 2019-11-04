@@ -166,7 +166,7 @@ public:
 	int m_iTrain;    // Train control position
 	BOOL m_fWeapon;  // Set this to FALSE to force a reset of the current weapon HUD info
 
-	EHANDLE m_pTank;    // the tank which the player is currently controlling,  nullptr if no tank
+	EHANDLE<CBaseEntity> m_pTank;    // the tank which the player is currently controlling,  nullptr if no tank
 	float m_fDeadTime;  // the time at which the player died  (used in PlayerDeathThink())
 
 	BOOL m_fNoPlayerSound;  // a debugging feature. Player makes no sound if this is true.
@@ -181,10 +181,10 @@ public:
 	int m_iFOV;        // field of view
 	int m_iClientFOV;  // client's known FOV
 	// usable player items
-	CBasePlayerItem* m_rgpPlayerItems[MAX_ITEM_TYPES]{ nullptr };
-	CBasePlayerItem* m_pActiveItem{ nullptr };
-	CBasePlayerItem* m_pClientActiveItem{ nullptr };  // client version of the active item
-	CBasePlayerItem* m_pLastItem{ nullptr };
+	EHANDLE<CBasePlayerItem> m_rgpPlayerItems[MAX_ITEM_TYPES];
+	EHANDLE<CBasePlayerItem> m_pActiveItem;
+	EHANDLE<CBasePlayerItem> m_pClientActiveItem;  // client version of the active item
+	EHANDLE<CBasePlayerItem> m_pLastItem;
 	// shared ammo slots
 	int m_rgAmmo[MAX_AMMO_SLOTS]{ 0 };
 	int m_rgAmmoLast[MAX_AMMO_SLOTS]{ 0 };
@@ -341,11 +341,11 @@ public:
 private:
 	Vector vr_ClientOriginOffset;  // Must be Vector instead of Vector2D for save/restore. z is not used.
 
-	EHANDLE hFlashLight;
-	EHANDLE hFlashlightMonster;
+	EHANDLE<CBaseEntity> hFlashLight;
+	EHANDLE<CBaseEntity> hFlashlightMonster;
 	bool fFlashlightIsOn = false;
 
-	EHANDLE m_vrHRetinaScanner;
+	EHANDLE<CBaseEntity> m_vrHRetinaScanner;
 	float m_vrRetinaScannerLookTime = 0;
 	bool m_vrHRetinaScannerUsed = false;
 
@@ -358,9 +358,9 @@ private:
 	bool vr_hasSentRestoreYawMsgToClient = false;
 	bool vr_hasSentSpawnYawToClient = false;
 
-	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrInUseButtons;
-	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrLeftMeleeEntities;
-	std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_vrRightMeleeEntities;
+	std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_vrInUseButtons;
+	std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_vrLeftMeleeEntities;
+	std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_vrRightMeleeEntities;
 
 	std::unordered_map<VRControllerID, VRController> m_vrControllers;
 
@@ -381,7 +381,7 @@ private:
 	void UpdateFlashlight();
 	void UpdateVRTele();
 
-	EHANDLE m_hCurrentUpwardsTriggerPush;
+	EHANDLE<CBaseEntity> m_hCurrentUpwardsTriggerPush;
 
 	float vr_analogFire{ 0.f };
 
@@ -393,14 +393,14 @@ private:
 	struct VRLadderGrabbingController
 	{
 		VRControllerID controller;
-		EHANDLE ladder;
+		EHANDLE<CBaseEntity> ladder;
 	};
 	std::vector<VRLadderGrabbingController> m_ladderGrabbingControllers;
 	void ClearLadderGrabbingControllers();
 
 	// Called by PostThink()
 	void VRUseOrUnuseTank();
-	bool IsTankVRControlled(EHANDLE hTank);
+	bool IsTankVRControlled(EHANDLE<CBaseEntity> hTank);
 
 	bool m_vrIsUsingTankWithVRControllers{ false };
 	Vector m_vrTankVRControllerAngles;

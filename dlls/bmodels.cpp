@@ -37,8 +37,8 @@
 #include <algorithm>
 #include <string>
 extern const model_t* GetBSPModel(CBaseEntity* pEntity);
-extern std::unordered_map<EHANDLE, EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScanners;
-extern std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScannerButtons;
+extern std::unordered_map<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScanners;
+extern std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScannerButtons;
 
 
 extern DLL_GLOBAL Vector g_vecAttackDir;
@@ -151,8 +151,8 @@ void CFuncWall::CheckIsSpecialVREntity()
 							Vector buttonScannerCenter = (pButton->pev->absmin + pButton->pev->absmax) / 2.f;
 							if ((buttonScannerCenter - retinaScannerCenter).Length() <= 16.f)
 							{
-								g_vrRetinaScanners[EHANDLE{ this }] = EHANDLE{ pButton };
-								g_vrRetinaScannerButtons.insert(EHANDLE{ pButton });
+								g_vrRetinaScanners[EHANDLE<CBaseEntity>{ this }] = EHANDLE<CBaseEntity>{ pButton };
+								g_vrRetinaScannerButtons.insert(EHANDLE<CBaseEntity>{ pButton });
 								break;
 							}
 						}

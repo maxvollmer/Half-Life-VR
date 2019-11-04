@@ -93,8 +93,8 @@ public:
 	void SquadAdd(CFlockingFlyer* pAdd);
 	void SquadDisband(void);
 
-	CFlockingFlyer* m_pSquadLeader;
-	CFlockingFlyer* m_pSquadNext;
+	EHANDLE<CFlockingFlyer> m_pSquadLeader;
+	EHANDLE<CFlockingFlyer> m_pSquadNext;
 	BOOL m_fTurning;               // is this boid turning?
 	BOOL m_fCourseAdjust;          // followers set this flag TRUE to override flocking while they avoid something
 	BOOL m_fPathBlocked;           // TRUE if there is an obstacle ahead
@@ -111,8 +111,8 @@ LINK_ENTITY_TO_CLASS(monster_flyer_flock, CFlockingFlyerFlock);
 
 TYPEDESCRIPTION CFlockingFlyer::m_SaveData[] =
 {
-	DEFINE_FIELD(CFlockingFlyer, m_pSquadLeader, FIELD_CLASSPTR),
-	DEFINE_FIELD(CFlockingFlyer, m_pSquadNext, FIELD_CLASSPTR),
+	DEFINE_FIELD(CFlockingFlyer, m_pSquadLeader, FIELD_EHANDLE),
+	DEFINE_FIELD(CFlockingFlyer, m_pSquadNext, FIELD_EHANDLE),
 	DEFINE_FIELD(CFlockingFlyer, m_fTurning, FIELD_BOOLEAN),
 	DEFINE_FIELD(CFlockingFlyer, m_fCourseAdjust, FIELD_BOOLEAN),
 	DEFINE_FIELD(CFlockingFlyer, m_fPathBlocked, FIELD_BOOLEAN),
@@ -180,9 +180,8 @@ void CFlockingFlyerFlock::SpawnFlock(void)
 	float R = m_flFlockRadius;
 	int iCount;
 	Vector vecSpot;
-	CFlockingFlyer* pBoid, * pLeader;
-
-	pLeader = pBoid = nullptr;
+	EHANDLE<CFlockingFlyer> pBoid;
+	EHANDLE<CFlockingFlyer> pLeader;
 
 	for (iCount = 0; iCount < m_cFlockSize; iCount++)
 	{
@@ -269,7 +268,7 @@ void CFlockingFlyer::MakeSound(void)
 //=========================================================
 void CFlockingFlyer::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
-	CFlockingFlyer* pSquad = dynamic_cast<CFlockingFlyer*>(m_pSquadLeader);
+	EHANDLE<CFlockingFlyer> pSquad = m_pSquadLeader;
 
 	while (pSquad)
 	{

@@ -17,6 +17,9 @@
 //
 // generic menu handler
 //
+
+#include <string>
+
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
@@ -30,7 +33,7 @@
 char g_szMenuString[MAX_MENU_STRING];
 char g_szPrelocalisedMenuString[MAX_MENU_STRING];
 
-int KB_ConvertString(char* in, char** ppout);
+int KB_ConvertString(const char* in, std::string& ppout);
 
 DECLARE_MESSAGE(m_Menu, ShowMenu);
 
@@ -152,23 +155,23 @@ int CHudMenu::MsgFunc_ShowMenu(const char* pszName, int iSize, void* pbuf)
 	{
 		if (!m_fWaitingForMore)  // this is the start of a new menu
 		{
-			strncpy(g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING);
+			strncpy_s(g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING);
 		}
 		else
 		{  // append to the current menu string
-			strncat(g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING - strlen(g_szPrelocalisedMenuString));
+			strncat_s(g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING - strlen(g_szPrelocalisedMenuString));
 		}
 		g_szPrelocalisedMenuString[MAX_MENU_STRING - 1] = 0;  // ensure null termination (strncat/strncpy does not)
 
 		if (!NeedMore)
 		{  // we have the whole string, so we can localise it now
-			strcpy(g_szMenuString, gHUD.m_TextMessage.BufferedLocaliseTextString(g_szPrelocalisedMenuString));
+			strcpy_s(g_szMenuString, gHUD.m_TextMessage.BufferedLocaliseTextString(g_szPrelocalisedMenuString));
 
 			// Swap in characters
-			if (KB_ConvertString(g_szMenuString, &temp))
+			std::string temp;
+			if (KB_ConvertString(g_szMenuString, temp))
 			{
-				strcpy(g_szMenuString, temp);
-				free(temp);
+				strcpy_s(g_szMenuString, temp.data());
 			}
 		}
 

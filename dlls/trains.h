@@ -66,9 +66,9 @@ public:
 
 	float m_length;
 	string_t m_altName;
-	CPathTrack* m_pnext;
-	CPathTrack* m_pprevious;
-	CPathTrack* m_paltpath;
+	EHANDLE<CPathTrack> m_pnext;
+	EHANDLE<CPathTrack> m_pprevious;
+	EHANDLE<CPathTrack> m_paltpath;
 };
 
 
@@ -106,7 +106,7 @@ public:
 
 	virtual void OverrideReset(void);
 
-	CPathTrack* m_ppath;
+	EHANDLE<CPathTrack> m_ppath;
 	float m_length;
 	float m_height;
 	float m_speed;

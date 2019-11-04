@@ -1387,7 +1387,7 @@ int UTIL_PointContents(const Vector& vec, bool detectSolidEntities, edict_t** pP
 #include "com_model.h"
 
 /*
-EHANDLE hFakeMonster;
+EHANDLE<CBaseEntity> hFakeMonster;
 
 // Returns true if the given bbox intersects with (or is completely enclosed by) something solid - Max Vollmer, 2017-12-27
 bool UTIL_BBoxIntersectsBSPModel(const Vector &origin, const Vector &mins, const Vector &maxs)
@@ -2646,7 +2646,7 @@ void EntvarsKeyvalue(entvars_t* pev, KeyValueData* pkvd)
 
 			default:
 			case FIELD_EVARS:
-			case FIELD_CLASSPTR:
+			case FIELD_CLASSPTR_NOT_SUPPORTED_ANYMORE:
 			case FIELD_EDICT:
 			case FIELD_ENTITY:
 			case FIELD_POINTER:
@@ -2711,7 +2711,7 @@ int CSave::WriteFields(const char* pname, void* pBaseData, TYPEDESCRIPTION* pFie
 		case FIELD_STRING:
 			WriteString(pTest->fieldName, (int*)pOutputData, pTest->fieldSize);
 			break;
-		case FIELD_CLASSPTR:
+		case FIELD_CLASSPTR_NOT_SUPPORTED_ANYMORE:
 		case FIELD_EVARS:
 		case FIELD_EDICT:
 		case FIELD_ENTITY:
@@ -2725,8 +2725,8 @@ int CSave::WriteFields(const char* pname, void* pBaseData, TYPEDESCRIPTION* pFie
 				case FIELD_EVARS:
 					entityArray[j] = EntityIndex(((entvars_t**)pOutputData)[j]);
 					break;
-				case FIELD_CLASSPTR:
-					entityArray[j] = EntityIndex(((CBaseEntity**)pOutputData)[j]);
+				case FIELD_CLASSPTR_NOT_SUPPORTED_ANYMORE:
+					entityArray[j] = 0;
 					break;
 				case FIELD_EDICT:
 					entityArray[j] = EntityIndex(((edict_t**)pOutputData)[j]);
@@ -2735,7 +2735,7 @@ int CSave::WriteFields(const char* pname, void* pBaseData, TYPEDESCRIPTION* pFie
 					entityArray[j] = EntityIndex(((EOFFSET*)pOutputData)[j]);
 					break;
 				case FIELD_EHANDLE:
-					entityArray[j] = EntityIndex((CBaseEntity*)(((EHANDLE*)pOutputData)[j]));
+					entityArray[j] = EntityIndex((CBaseEntity*)(((EHANDLE<CBaseEntity>*)pOutputData)[j]));
 					break;
 				}
 			}
@@ -2908,9 +2908,9 @@ int CRestore::ReadField(void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCoun
 							if (!FStringNull(string) && m_precache)
 							{
 								if (pTest->fieldType == FIELD_MODELNAME)
-									PRECACHE_MODEL((char*)STRING(string));
+									PRECACHE_MODEL(STRING(string));
 								else if (pTest->fieldType == FIELD_SOUNDNAME)
-									PRECACHE_SOUND((char*)STRING(string));
+									PRECACHE_SOUND(STRING(string));
 							}
 						}
 						break;
@@ -2922,12 +2922,14 @@ int CRestore::ReadField(void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCoun
 						else
 							*((entvars_t**)pOutputData) = nullptr;
 						break;
-					case FIELD_CLASSPTR:
+					case FIELD_CLASSPTR_NOT_SUPPORTED_ANYMORE:
+						/*
 						entityIndex = *(int*)pInputData;
 						pent = EntityFromIndex(entityIndex);
 						if (pent)
 							*((CBaseEntity**)pOutputData) = CBaseEntity::Instance(pent);
 						else
+						*/
 							*((CBaseEntity**)pOutputData) = nullptr;
 						break;
 					case FIELD_EDICT:
@@ -2937,13 +2939,13 @@ int CRestore::ReadField(void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCoun
 						break;
 					case FIELD_EHANDLE:
 						// Input and Output sizes are different!
-						pOutputData = (char*)pOutputData + j * (sizeof(EHANDLE) - gSizes[pTest->fieldType]);
+						pOutputData = (char*)pOutputData + j * (sizeof(EHANDLE<CBaseEntity>) - gSizes[pTest->fieldType]);
 						entityIndex = *(int*)pInputData;
 						pent = EntityFromIndex(entityIndex);
 						if (pent)
-							*((EHANDLE*)pOutputData) = CBaseEntity::Instance(pent);
+							*((EHANDLE<CBaseEntity>*)pOutputData) = CBaseEntity::Instance(pent);
 						else
-							*((EHANDLE*)pOutputData) = nullptr;
+							*((EHANDLE<CBaseEntity>*)pOutputData) = nullptr;
 						break;
 					case FIELD_ENTITY:
 						entityIndex = *(int*)pInputData;

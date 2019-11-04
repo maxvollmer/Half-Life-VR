@@ -106,7 +106,7 @@ public:
 
 
 protected:
-	CBasePlayer* m_pController;
+	EHANDLE<CBasePlayer> m_pController;
 	float m_flNextAttack;
 	Vector m_vecControllerUsePos;
 
@@ -164,7 +164,7 @@ TYPEDESCRIPTION CFuncTank::m_SaveData[] =
 	DEFINE_FIELD(CFuncTank, m_bulletType, FIELD_INTEGER),
 	DEFINE_FIELD(CFuncTank, m_sightOrigin, FIELD_VECTOR),
 	DEFINE_FIELD(CFuncTank, m_spread, FIELD_INTEGER),
-	DEFINE_FIELD(CFuncTank, m_pController, FIELD_CLASSPTR),
+	DEFINE_FIELD(CFuncTank, m_pController, FIELD_EHANDLE),
 	DEFINE_FIELD(CFuncTank, m_vecControllerUsePos, FIELD_VECTOR),
 	DEFINE_FIELD(CFuncTank, m_flNextAttack, FIELD_TIME),
 	DEFINE_FIELD(CFuncTank, m_iBulletDamage, FIELD_INTEGER),
@@ -219,12 +219,12 @@ void CFuncTank::Spawn(void)
 void CFuncTank::Precache(void)
 {
 	if (m_iszSpriteSmoke)
-		PRECACHE_MODEL((char*)STRING(m_iszSpriteSmoke));
+		PRECACHE_MODEL(STRING(m_iszSpriteSmoke));
 	if (m_iszSpriteFlash)
-		PRECACHE_MODEL((char*)STRING(m_iszSpriteFlash));
+		PRECACHE_MODEL(STRING(m_iszSpriteFlash));
 
 	if (pev->noise)
-		PRECACHE_SOUND((char*)STRING(pev->noise));
+		PRECACHE_SOUND(STRING(pev->noise));
 }
 
 
@@ -818,14 +818,14 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	CLaser* m_pLaser;
+	EHANDLE<CLaser> m_pLaser;
 	float m_laserTime;
 };
 LINK_ENTITY_TO_CLASS(func_tanklaser, CFuncTankLaser);
 
 TYPEDESCRIPTION CFuncTankLaser::m_SaveData[] =
 {
-	DEFINE_FIELD(CFuncTankLaser, m_pLaser, FIELD_CLASSPTR),
+	DEFINE_FIELD(CFuncTankLaser, m_pLaser, FIELD_EHANDLE),
 	DEFINE_FIELD(CFuncTankLaser, m_laserTime, FIELD_TIME),
 };
 
@@ -1022,13 +1022,13 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	CFuncTank* m_pTank;
+	EHANDLE<CFuncTank> m_pTank;
 };
 LINK_ENTITY_TO_CLASS(func_tankcontrols, CFuncTankControls);
 
 TYPEDESCRIPTION CFuncTankControls::m_SaveData[] =
 {
-	DEFINE_FIELD(CFuncTankControls, m_pTank, FIELD_CLASSPTR),
+	DEFINE_FIELD(CFuncTankControls, m_pTank, FIELD_EHANDLE),
 };
 
 IMPLEMENT_SAVERESTORE(CFuncTankControls, CBaseEntity);

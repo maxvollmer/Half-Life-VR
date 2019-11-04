@@ -121,9 +121,9 @@ void CPathCorner::Touch(CBaseEntity* pOther)
 TYPEDESCRIPTION CPathTrack::m_SaveData[] =
 {
 	DEFINE_FIELD(CPathTrack, m_length, FIELD_FLOAT),
-	DEFINE_FIELD(CPathTrack, m_pnext, FIELD_CLASSPTR),
-	DEFINE_FIELD(CPathTrack, m_paltpath, FIELD_CLASSPTR),
-	DEFINE_FIELD(CPathTrack, m_pprevious, FIELD_CLASSPTR),
+	DEFINE_FIELD(CPathTrack, m_pnext, FIELD_EHANDLE),
+	DEFINE_FIELD(CPathTrack, m_paltpath, FIELD_EHANDLE),
+	DEFINE_FIELD(CPathTrack, m_pprevious, FIELD_EHANDLE),
 	DEFINE_FIELD(CPathTrack, m_altName, FIELD_STRING),
 };
 

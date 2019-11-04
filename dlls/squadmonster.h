@@ -57,8 +57,8 @@ class CSquadMonster : public CBaseMonster
 {
 public:
 	// squad leader info
-	EHANDLE m_hSquadLeader;                         // who is my leader
-	EHANDLE m_hSquadMember[MAX_SQUAD_MEMBERS - 1];  // valid only for leader
+	EHANDLE<CBaseEntity> m_hSquadLeader;                         // who is my leader
+	EHANDLE<CBaseEntity> m_hSquadMember[MAX_SQUAD_MEMBERS - 1];  // valid only for leader
 	int m_afSquadSlots;
 	float m_flLastEnemySightTime;  // last time anyone in the squad saw the enemy
 	BOOL m_fEnemyEluded;

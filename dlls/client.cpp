@@ -891,8 +891,8 @@ void ClientPrecache(void)
 
 	// Clear global VR stuff here - Max Vollmer, 2018-04-02
 	extern GlobalXenMounds gGlobalXenMounds;
-	extern std::unordered_map<EHANDLE, EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScanners;
-	extern std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> g_vrRetinaScannerButtons;
+	extern std::unordered_map<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScanners;
+	extern std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScannerButtons;
 	gGlobalXenMounds.Clear();
 	g_vrRetinaScanners.clear();
 	g_vrRetinaScannerButtons.clear();
@@ -1717,8 +1717,7 @@ void UpdateClientData(const struct edict_s* ent, int sendweapons, struct clientd
 
 			if (pl->m_pActiveItem)
 			{
-				CBasePlayerWeapon* gun;
-				gun = (CBasePlayerWeapon*)pl->m_pActiveItem->GetWeaponPtr();
+				CBasePlayerWeapon* gun = dynamic_cast<CBasePlayerWeapon*>(pl->m_pActiveItem->GetWeaponPtr());
 				if (gun && gun->UseDecrement())
 				{
 					ItemInfo II;
@@ -1734,8 +1733,12 @@ void UpdateClientData(const struct edict_s* ent, int sendweapons, struct clientd
 
 					if (pl->m_pActiveItem->m_iId == WEAPON_RPG)
 					{
-						cd->vuser2.y = ((CRpg*)pl->m_pActiveItem)->m_fSpotActive;
-						cd->vuser2.z = ((CRpg*)pl->m_pActiveItem)->m_cActiveRockets;
+						EHANDLE<CRpg> rpg = pl->m_pActiveItem;
+						if (rpg)
+						{
+							cd->vuser2.y = rpg->m_fSpotActive;
+							cd->vuser2.z = rpg->m_cActiveRockets;
+						}
 					}
 				}
 			}

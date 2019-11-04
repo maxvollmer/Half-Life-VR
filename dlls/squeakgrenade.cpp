@@ -68,7 +68,7 @@ class CSqueakGrenade : public CGrenade
 	float m_flNextHunt;
 	float m_flNextHit;
 	Vector m_posPrev;
-	EHANDLE m_hOwner;
+	EHANDLE<CBaseEntity> m_hOwner;
 	int m_iMyClass;
 };
 

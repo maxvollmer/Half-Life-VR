@@ -169,7 +169,7 @@ public:
 	float m_flLastSaidSmelled;  // last time we talked about something that stinks
 	float m_flStopTalkTime;     // when in the future that I'll be done saying this sentence.
 
-	EHANDLE m_hTalkTarget;  // who to look at while talking
+	EHANDLE<CBaseEntity> m_hTalkTarget;  // who to look at while talking
 	CUSTOM_SCHEDULES;
 };
 

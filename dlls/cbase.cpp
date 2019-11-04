@@ -438,70 +438,6 @@ void SaveReadFields(SAVERESTOREDATA* pSaveData, const char* pname, void* pBaseDa
 }
 
 
-edict_t* EHANDLE::Get(void)
-{
-	if (m_pent)
-	{
-		if (m_pent->serialnumber == m_serialnumber)
-			return m_pent;
-		else
-			return nullptr;
-	}
-	return nullptr;
-};
-
-edict_t* EHANDLE::Set(edict_t* pent)
-{
-	m_pent = pent;
-	if (pent)
-	{
-		m_serialnumber = m_pent->serialnumber;
-	}
-	else
-	{
-		m_serialnumber = 0;
-	}
-	return pent;
-};
-
-
-EHANDLE ::operator CBaseEntity* ()
-{
-	return (CBaseEntity*)GET_PRIVATE(Get());
-};
-
-
-CBaseEntity* EHANDLE ::operator=(CBaseEntity* pEntity)
-{
-	if (pEntity)
-	{
-		m_pent = ENT(pEntity->pev);
-		if (m_pent)
-			m_serialnumber = m_pent->serialnumber;
-	}
-	else
-	{
-		m_pent = nullptr;
-		m_serialnumber = 0;
-	}
-	return pEntity;
-}
-
-EHANDLE ::operator int()
-{
-	return Get() != nullptr;
-}
-
-CBaseEntity* EHANDLE ::operator->()
-{
-	return (CBaseEntity*)GET_PRIVATE(Get());
-}
-
-bool EHANDLE ::operator==(EHANDLE& other)
-{
-	return m_pent == other.m_pent && m_serialnumber == other.m_serialnumber;
-}
-
 // give health
 int CBaseEntity::TakeHealth(float flHealth, int bitsDamageType)
 {
@@ -595,7 +531,7 @@ CBaseEntity* CBaseEntity::GetNextTarget(void)
 // Global Savedata for Delay
 TYPEDESCRIPTION CBaseEntity::m_SaveData[] =
 {
-	DEFINE_FIELD(CBaseEntity, m_pGoalEnt, FIELD_CLASSPTR),
+	DEFINE_FIELD(CBaseEntity, m_pGoalEnt, FIELD_EHANDLE),
 
 	DEFINE_FIELD(CBaseEntity, m_pfnThink, FIELD_FUNCTION),  // UNDONE: Build table of these!!!
 	DEFINE_FIELD(CBaseEntity, m_pfnTouch, FIELD_FUNCTION),
@@ -627,7 +563,7 @@ int CBaseEntity::Restore(CRestore& restore)
 		maxs = pev->maxs;
 
 
-		PRECACHE_MODEL((char*)STRING(pev->model));
+		PRECACHE_MODEL(STRING(pev->model));
 		SET_MODEL(ENT(pev), STRING(pev->model));
 		UTIL_SetSize(pev, mins, maxs);  // Reset them
 	}

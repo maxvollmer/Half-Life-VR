@@ -2303,9 +2303,9 @@ public:
 	virtual int ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	static TYPEDESCRIPTION m_SaveData[];
 
-	EHANDLE m_hPlayer;
-	EHANDLE m_hTarget;
-	CBaseEntity* m_pentPath;
+	EHANDLE<CBaseEntity> m_hPlayer;
+	EHANDLE<CBaseEntity> m_hTarget;
+	EHANDLE<CBaseEntity> m_pentPath;
 	int m_sPath;
 	float m_flWait;
 	float m_flReturnTime;
@@ -2324,7 +2324,7 @@ TYPEDESCRIPTION CTriggerCamera::m_SaveData[] =
 {
 	DEFINE_FIELD(CTriggerCamera, m_hPlayer, FIELD_EHANDLE),
 	DEFINE_FIELD(CTriggerCamera, m_hTarget, FIELD_EHANDLE),
-	DEFINE_FIELD(CTriggerCamera, m_pentPath, FIELD_CLASSPTR),
+	DEFINE_FIELD(CTriggerCamera, m_pentPath, FIELD_EHANDLE),
 	DEFINE_FIELD(CTriggerCamera, m_sPath, FIELD_STRING),
 	DEFINE_FIELD(CTriggerCamera, m_flWait, FIELD_FLOAT),
 	DEFINE_FIELD(CTriggerCamera, m_flReturnTime, FIELD_TIME),

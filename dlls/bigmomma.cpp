@@ -209,7 +209,7 @@ public:
 
 	int GetNodePresequence(void)
 	{
-		CInfoBM* pTarget = (CInfoBM*)(CBaseEntity*)m_hTargetEnt;
+		CInfoBM* pTarget = dynamic_cast<CInfoBM*>((CBaseEntity*)m_hTargetEnt);
 		if (pTarget)
 		{
 			return pTarget->m_preSequence;

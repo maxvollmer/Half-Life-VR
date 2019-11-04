@@ -47,7 +47,7 @@ static CBasePlayer	player;
 // Local version of game .dll global variables ( time, etc. )
 static globalvars_t	Globals;
 
-static CBasePlayerWeapon* g_pWpns[32];
+static EHANDLE<CBasePlayerWeapon> g_pWpns[32];
 
 float g_flApplyVel = 0.0;
 int   g_irunninggausspred = 0;
@@ -851,7 +851,7 @@ void HUD_WeaponsPostThink(local_state_s* from, local_state_s* to, usercmd_t* cmd
 
 	if (player.m_pActiveItem->m_iId == WEAPON_RPG)
 	{
-		CRpg* rpg = dynamic_cast<CRpg*>(player.m_pActiveItem);
+		EHANDLE<CRpg> rpg = player.m_pActiveItem;
 		if (rpg)
 		{
 			rpg->m_fSpotActive = static_cast<int>(from->client.vuser2[1]);
@@ -923,7 +923,7 @@ void HUD_WeaponsPostThink(local_state_s* from, local_state_s* to, usercmd_t* cmd
 
 	if (player.m_pActiveItem->m_iId == WEAPON_RPG)
 	{
-		CRpg* rpg = dynamic_cast<CRpg*>(player.m_pActiveItem);
+		EHANDLE<CRpg> rpg = player.m_pActiveItem;
 		if (rpg)
 		{
 			from->client.vuser2[1] = rpg->m_fSpotActive;

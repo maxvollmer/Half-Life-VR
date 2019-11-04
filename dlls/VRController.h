@@ -52,15 +52,15 @@ public:
 	const Vector GetGunPosition() const;
 	const Vector GetAim() const;
 
-	bool AddTouchedEntity(EHANDLE hEntity) const;
-	bool RemoveTouchedEntity(EHANDLE hEntity) const;
+	bool AddTouchedEntity(EHANDLE<CBaseEntity> hEntity) const;
+	bool RemoveTouchedEntity(EHANDLE<CBaseEntity> hEntity) const;
 
-	bool AddDraggedEntity(EHANDLE hEntity) const;
-	bool RemoveDraggedEntity(EHANDLE hEntity) const;
-	bool IsDraggedEntity(EHANDLE hEntity) const;
+	bool AddDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
+	bool RemoveDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
+	bool IsDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
 
-	bool AddHitEntity(EHANDLE hEntity) const;
-	bool RemoveHitEntity(EHANDLE hEntity) const;
+	bool AddHitEntity(EHANDLE<CBaseEntity> hEntity) const;
+	bool RemoveHitEntity(EHANDLE<CBaseEntity> hEntity) const;
 
 	struct DraggedEntityPositions
 	{
@@ -74,7 +74,7 @@ public:
 		Vector playerLastOrigin;
 	};
 
-	bool GetDraggedEntityPositions(EHANDLE hEntity,
+	bool GetDraggedEntityPositions(EHANDLE<CBaseEntity> hEntity,
 		Vector& controllerStartOffset,
 		Vector& controllerStartPos,
 		Vector& entityStartOrigin,
@@ -90,7 +90,7 @@ private:
 	void UpdateHitBoxes();
 	void SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID id);
 
-	EHANDLE m_hPlayer;
+	EHANDLE<CBaseEntity> m_hPlayer;
 
 	VRControllerID m_id{ VRControllerID::INVALID };
 	Vector m_offset;
@@ -109,11 +109,11 @@ private:
 	string_t m_modelName{ 0 };
 	string_t m_bboxModelName{ 0 };
 	int m_bboxModelSequence{ 0 };
-	mutable EHANDLE m_hModel;
-	mutable EHANDLE m_hLaserSpot;
-	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_touchedEntities;
-	mutable std::unordered_map<EHANDLE, DraggedEntityPositions, EHANDLE::Hash, EHANDLE::Equal> m_draggedEntities;
-	mutable std::unordered_set<EHANDLE, EHANDLE::Hash, EHANDLE::Equal> m_hitEntities;
+	mutable EHANDLE<CBaseEntity> m_hModel;
+	mutable EHANDLE<CBaseEntity> m_hLaserSpot;
+	mutable std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_touchedEntities;
+	mutable std::unordered_map<EHANDLE<CBaseEntity>, DraggedEntityPositions, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_draggedEntities;
+	mutable std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_hitEntities;
 
 	std::vector<HitBox> m_hitboxes;
 	std::vector<Vector> m_attachments;
@@ -135,6 +135,6 @@ private:
 
 #ifdef RENDER_DEBUG_HITBOXES
 	void DebugDrawHitBoxes(CBasePlayer* pPlayer);
-	mutable std::vector<EHANDLE> m_hDebugBBoxes;
+	mutable std::vector<EHANDLE<CBaseEntity>> m_hDebugBBoxes;
 #endif
 };

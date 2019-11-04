@@ -144,26 +144,18 @@ Removes references to +use and replaces them with the keyname in the output stri
 NOTE:  Only works for text with +word in it.
 ============
 */
-int KB_ConvertString(char* in, char** ppout)
+int KB_ConvertString(const char* in, std::string& out)
 {
 	char sz[4096];
-	char binding[64];
-	char* p;
-	char* pOut;
-	char* pEnd;
-	const char* pBinding;
 
-	if (!ppout)
-		return 0;
-
-	*ppout = nullptr;
-	p = in;
-	pOut = sz;
+	const char* p = in;
+	char* pOut = sz;
 	while (*p)
 	{
 		if (*p == '+')
 		{
-			pEnd = binding;
+			char binding[64];
+			char* pEnd = binding;
 			while (*p && (isalnum(*p) || (pEnd == binding)) && ((pEnd - binding) < 63))
 			{
 				*pEnd++ = *p++;
@@ -171,7 +163,7 @@ int KB_ConvertString(char* in, char** ppout)
 
 			*pEnd = '\0';
 
-			pBinding = nullptr;
+			const char* pBinding = nullptr;
 			if (strlen(binding + 1) > 0)
 			{
 				// See if there is a binding for binding?
@@ -206,12 +198,7 @@ int KB_ConvertString(char* in, char** ppout)
 
 	*pOut = '\0';
 
-	pOut = (char*)malloc(strlen(sz) + 1);	// TODO: Evil malloc. Find where we free this, so we can use new and delete
-	if (pOut)
-	{
-		strcpy(pOut, sz);
-	}
-	*ppout = pOut;
+	out = pOut;
 
 	return 1;
 }
@@ -250,10 +237,9 @@ void KB_Add(const char* name, kbutton_t* pkb)
 	if (kb)
 		return;
 
-	kblist_t* p = (kblist_t*)malloc(sizeof(kblist_t));	// TODO: Evil malloc. Find where we free this, so we can use new and delete
+	kblist_t* p = new kblist_t{ 0 };
 	if (p)
 	{
-		memset(p, 0, sizeof(kblist_t));
 		strcpy(p->name, name);
 		p->pkey = pkb;
 		p->next = g_kbkeys;
@@ -286,12 +272,11 @@ Clear kblist
 */
 void KB_Shutdown(void)
 {
-	kblist_t* p, * n;
-	p = g_kbkeys;
+	kblist_t* p = g_kbkeys;
 	while (p)
 	{
-		n = p->next;
-		free(p);
+		kblist_t* n = p->next;
+		delete p;
 		p = n;
 	}
 	g_kbkeys = nullptr;
