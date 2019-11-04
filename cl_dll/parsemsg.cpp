@@ -28,7 +28,7 @@ void BEGIN_READ(void* buf, int size)
 	giRead = 0;
 	giBadRead = 0;
 	giSize = size;
-	gpBuf = (byte*)buf;
+	gpBuf = static_cast<byte*>(buf);
 }
 
 

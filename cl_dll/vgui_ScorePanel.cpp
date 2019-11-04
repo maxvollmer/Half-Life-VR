@@ -327,7 +327,7 @@ void ScorePanel::SortTeams()
 			if (!stricmp(g_PlayerExtraInfo[i].teamname, g_TeamInfo[j].name))
 				break;
 		}
-		if (j > m_iNumTeams)  // player is not in a team, skip to the next guy
+		if (j > m_iNumTeams)  // player is not in a team, skip to the next
 			continue;
 
 		if (!g_TeamInfo[j].scores_overriden)

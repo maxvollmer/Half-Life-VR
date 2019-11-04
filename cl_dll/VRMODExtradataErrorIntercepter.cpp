@@ -17,7 +17,7 @@ namespace
 		std::string text{ _text };
 		if (text == "Mod_Extradata: caching failed")
 		{
-			*((HWND*)lParam) = hwnd;
+			*reinterpret_cast<HWND*>(lParam) = hwnd;
 			return FALSE;
 		}
 		return EnumChildWindows(hwnd, FindMod_ExtradataErrorMessageChildWindow, lParam);

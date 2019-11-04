@@ -534,7 +534,7 @@ BOOL CHGrunt::CheckRangeAttack2(float flDot, float flDist)
 	{
 		if (SquadMemberInRange(vecTarget, 256))
 		{
-			// crap, I might blow my own guy up. Don't throw a grenade and don't check again for a while.
+			// crap, I might blow an ally up. Don't throw a grenade and don't check again for a while.
 			m_flNextGrenadeCheck = gpGlobals->time + 1;  // one full second.
 			m_fThrowGrenade = FALSE;
 		}

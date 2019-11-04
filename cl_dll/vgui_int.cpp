@@ -80,14 +80,14 @@ void VGui_ViewportPaintBackground(int extents[4])
 	gEngfuncs.VGui_ViewportPaintBackground(extents);
 }
 
-void* VGui_GetPanel()
+Panel* VGui_GetPanel()
 {
-	return (Panel*)gEngfuncs.VGui_GetPanel();
+	return static_cast<Panel*>(gEngfuncs.VGui_GetPanel());
 }
 
 void VGui_Startup()
 {
-	Panel* root = (Panel*)VGui_GetPanel();
+	Panel* root = VGui_GetPanel();
 	root->setBgColor(128, 128, 0, 0);
 	//root->setNonPainted(false);
 	//root->setBorder(new LineBorder());

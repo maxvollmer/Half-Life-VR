@@ -140,7 +140,7 @@ void CVoiceGameMgr::ClientConnected(edict_t* pEdict)
 {
 	int index = ENTINDEX(pEdict) - 1;
 
-	// Clear out everything we use for deltas on this guy.
+	// Clear out everything we use for deltas on this client.
 	g_bWantModEnable[index] = true;
 	g_SentGameRulesMasks[index].Init(0);
 	g_SentBanMasks[index].Init(0);

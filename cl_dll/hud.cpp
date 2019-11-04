@@ -394,12 +394,11 @@ void CHud::Init(void)
 	// Clear any old HUD list
 	if (m_pHudList)
 	{
-		HUDLIST* pList;
 		while (m_pHudList)
 		{
-			pList = m_pHudList;
+			HUDLIST* pList = m_pHudList;
 			m_pHudList = m_pHudList->pNext;
-			free(pList);
+			delete pList;
 		}
 		m_pHudList = nullptr;
 	}
@@ -421,7 +420,7 @@ void CHud::Init(void)
 	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
 	m_StatusIcons.Init();
-	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**) & gViewPort);
+	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, reinterpret_cast<vgui::Panel**>(&gViewPort));
 
 	m_Menu.Init();
 
@@ -440,12 +439,11 @@ CHud ::~CHud()
 
 	if (m_pHudList)
 	{
-		HUDLIST* pList;
 		while (m_pHudList)
 		{
-			pList = m_pHudList;
+			HUDLIST* pList = m_pHudList;
 			m_pHudList = m_pHudList->pNext;
-			free(pList);
+			delete pList;
 		}
 		m_pHudList = nullptr;
 	}
@@ -703,18 +701,13 @@ int CHud::MsgFunc_SetFOV(const char* pszName, int iSize, void* pbuf)
 
 void CHud::AddHudElem(CHudBase* phudelem)
 {
-	HUDLIST* pdl, * ptemp;
-
-	//phudelem->Think();
-
 	if (!phudelem)
 		return;
 
-	pdl = (HUDLIST*)malloc(sizeof(HUDLIST));
+	HUDLIST* pdl = new HUDLIST{ 0 };
 	if (!pdl)
 		return;
 
-	memset(pdl, 0, sizeof(HUDLIST));
 	pdl->p = phudelem;
 
 	if (!m_pHudList)
@@ -723,11 +716,9 @@ void CHud::AddHudElem(CHudBase* phudelem)
 		return;
 	}
 
-	ptemp = m_pHudList;
-
+	HUDLIST* ptemp = m_pHudList;
 	while (ptemp->pNext)
 		ptemp = ptemp->pNext;
-
 	ptemp->pNext = pdl;
 }
 

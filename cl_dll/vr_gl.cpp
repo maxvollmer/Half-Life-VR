@@ -27,18 +27,28 @@ PFNHLVRSETCONSOLECALLBACKPROC hlvrSetConsoleCallback = nullptr;
 PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
 PFNGLGENERATEMIPMAPPROC glGenerateMipmap = nullptr;
 
+bool IsValidAddressPointer(void* p)
+{
+	if (p == nullptr)
+		return false;
+
+	int64_t i = reinterpret_cast<int>(p);
+	if (i == -1 || (i >= 0 && i <= 3))
+		return false;
+
+	return true;
+}
+
 void* GetOpenGLFuncAddress(const char* name)
 {
 #ifdef WIN32
-	void* p = (void*)wglGetProcAddress(name);
-	if (p == nullptr ||
-		(p == (void*)0x1) || (p == (void*)0x2) || (p == (void*)0x3) ||
-		(p == (void*)-1))
+	void* p = wglGetProcAddress(name);
+	if (!IsValidAddressPointer(p))
 	{
 		HMODULE module = LoadLibraryA("opengl32.dll");
 		if (module)
 		{
-			p = (void*)GetProcAddress(module, name);
+			p = GetProcAddress(module, name);
 		}
 	}
 	return p;

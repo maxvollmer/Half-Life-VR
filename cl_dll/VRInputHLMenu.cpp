@@ -31,7 +31,7 @@ namespace
 				if (gameUIFactory)
 				{
 					int returnCode;
-					gGameConsole = (IGameConsole*)gameUIFactory(GAMECONSOLE_INTERFACE_VERSION, &returnCode);
+					gGameConsole = dynamic_cast<IGameConsole*>(gameUIFactory(GAMECONSOLE_INTERFACE_VERSION, &returnCode));
 				}
 			}
 		}
@@ -110,7 +110,7 @@ void VRInput::HandleHLMenuInput()
 			break;
 		case vr::VREvent_KeyboardCharInput:
 			//event.data.keyboard.cNewInput
-			gEngfuncs.Con_DPrintf("Input: %s\n", (char*)event.data.keyboard.cNewInput);
+			gEngfuncs.Con_DPrintf("Input: %s\n", event.data.keyboard.cNewInput);
 			break;
 		case vr::VREvent_KeyboardDone:
 		case vr::VREvent_KeyboardClosed:

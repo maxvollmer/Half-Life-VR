@@ -213,7 +213,7 @@ Schedule_t slStopFollowing[] =
 Task_t tlHeal[] =
 {
 	{TASK_MOVE_TO_TARGET_RANGE, (float)50},               // Move within 60 of target ent (client)
-	{TASK_SET_FAIL_SCHEDULE, (float)SCHED_TARGET_CHASE},  // If you fail, catch up with that guy! (change this to put syringe away and then chase)
+	{TASK_SET_FAIL_SCHEDULE, (float)SCHED_TARGET_CHASE},  // If you fail, catch up with the player! (change this to put syringe away and then chase)
 	{TASK_FACE_IDEAL, (float)0},
 	{TASK_SAY_HEAL, (float)0},
 	{TASK_PLAY_SEQUENCE_FACE_TARGET, (float)ACT_ARM},     // Whip out the needle

@@ -387,7 +387,7 @@ void V_CalcNormalRefdef(struct ref_params_s* pparams)
 
 		ofs[0] = ofs[1] = ofs[2] = 0.0;
 
-		CL_CameraOffset((float*)&ofs);
+		CL_CameraOffset(ofs);
 
 		VectorCopy(ofs, camAngles);
 		camAngles[ROLL] = 0;
@@ -404,9 +404,9 @@ void V_CalcNormalRefdef(struct ref_params_s* pparams)
 	VectorAdd(pparams->viewangles, pparams->punchangle, pparams->viewangles);
 
 	// Include client side punch, too
-	VectorAdd(pparams->viewangles, (float*)&ev_punchangle, pparams->viewangles);
+	VectorAdd(pparams->viewangles, ev_punchangle, pparams->viewangles);
 
-	V_DropPunchAngle(pparams->frametime, (float*)&ev_punchangle);
+	V_DropPunchAngle(pparams->frametime, ev_punchangle);
 
 	// smooth out stair step ups
 #if 1
@@ -862,7 +862,7 @@ void V_GetDoubleTargetsCam(cl_entity_t* ent1, cl_entity_t* ent2, float* angle, f
 	InterpolateAngles( newAngle, tempVec, newAngle, 0.5f); */
 }
 
-void V_GetDirectedChasePosition(cl_entity_t* ent1, cl_entity_t* ent2, float* angle, float* origin)
+void V_GetDirectedChasePosition(cl_entity_t* ent1, bool hasent2, cl_entity_t* ent2, float* angle, float* origin)
 {
 	if (v_resetCamera)
 	{
@@ -870,7 +870,7 @@ void V_GetDirectedChasePosition(cl_entity_t* ent1, cl_entity_t* ent2, float* ang
 		// v_cameraMode = CAM_MODE_FOCUS;
 	}
 
-	if ((ent2 == (cl_entity_t*)0xFFFFFFFF) || (ent1->player && (ent1->curstate.solid == SOLID_NOT)))
+	if (!hasent2 || (ent1->player && (ent1->curstate.solid == SOLID_NOT)))
 	{
 		// we have no second target or player just died
 		V_GetSingleTargetCam(ent1, angle, origin);
@@ -938,9 +938,9 @@ void V_GetChasePos(int target, float* cl_angles, float* origin, float* angles)
 	if (gHUD.m_Spectator.m_autoDirector->value)
 	{
 		if (g_iUser3)
-			V_GetDirectedChasePosition(ent, gEngfuncs.GetEntityByIndex(g_iUser3), angles, origin);
+			V_GetDirectedChasePosition(ent, true, gEngfuncs.GetEntityByIndex(g_iUser3), angles, origin);
 		else
-			V_GetDirectedChasePosition(ent, (cl_entity_t*)0xFFFFFFFF, angles, origin);
+			V_GetDirectedChasePosition(ent, false, nullptr, angles, origin);
 	}
 	else
 	{

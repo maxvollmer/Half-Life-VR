@@ -325,7 +325,7 @@ void CSqueakGrenade::SuperBounceTouch(CBaseEntity* pOther)
 
 	TraceResult tr = UTIL_GetGlobalTrace();
 
-	// don't hit the guy that launched this grenade
+	// don't hit the entity that launched this grenade
 	if (pev->owner && pOther->edict() == pev->owner)
 		return;
 

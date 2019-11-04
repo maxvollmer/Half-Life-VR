@@ -276,8 +276,8 @@ void SequencePrecache(void* pmodel, const char* pSequenceName)
 					ALERT(at_error, "Bad sound event %d in sequence %s :: %s (sound is \"%s\")\n", pevent[i].event, pstudiohdr->name, pSequenceName, pevent[i].options);
 				}
 
-				extern int PRECACHE_SOUND(char*);
-				PRECACHE_SOUND((char*)(gpGlobals->pStringBase + ALLOC_STRING(pevent[i].options)));
+				extern int PRECACHE_SOUND(const char*);
+				PRECACHE_SOUND(gpGlobals->pStringBase + ALLOC_STRING(pevent[i].options));
 			}
 		}
 	}

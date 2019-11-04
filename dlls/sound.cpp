@@ -1483,7 +1483,7 @@ private:
 	std::shared_ptr<Holder> root;
 };
 SoundFilePathHolder soundFilePathHolder;
-int PRECACHE_SOUND(char* s)
+int PRECACHE_SOUND(const char* s)
 {
 	std::string ssoundFilePath{ s };
 	if (ssoundFilePath.find("scientist/") == 0)

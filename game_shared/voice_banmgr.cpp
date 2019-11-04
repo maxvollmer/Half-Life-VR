@@ -128,7 +128,7 @@ void CVoiceBanMgr::SetPlayerBan(char const playerID[16], bool bSquelch)
 {
 	if (bSquelch)
 	{
-		// Is this guy already squelched?
+		// Is this player already squelched?
 		if (GetPlayerBan(playerID))
 			return;
 

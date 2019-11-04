@@ -586,25 +586,25 @@ void EMIT_SOUND_DYN(edict_t* entity, int channel, const char* sample, float volu
 void EMIT_AMBIENT_SOUND(edict_t* entity, float* pos, const char* sample, float volume, float attenuation, int flags, int pitch);
 
 #ifdef CLIENT_DLL
-inline int PRECACHE_SOUND(char* s)
+inline int PRECACHE_SOUND(const char* s)
 {
 	return PRECACHE_SOUND2(s);
 }
-inline int PRECACHE_MODEL(char* s) { return PRECACHE_MODEL3(s); }
-inline int PRECACHE_GENERIC(char* s) { return PRECACHE_GENERIC3(s); }
-inline int PRECACHE_MODEL2(char* s) { return PRECACHE_MODEL3(s); }
-inline int PRECACHE_GENERIC2(char* s) { return PRECACHE_GENERIC3(s); }
+inline int PRECACHE_MODEL(const char* s) { return PRECACHE_MODEL3(s); }
+inline int PRECACHE_GENERIC(const char* s) { return PRECACHE_GENERIC3(s); }
+inline int PRECACHE_MODEL2(const char* s) { return PRECACHE_MODEL3(s); }
+inline int PRECACHE_GENERIC2(const char* s) { return PRECACHE_GENERIC3(s); }
 inline void SET_MODEL(edict_t* e, const char* m) { SET_MODEL2(e, m); }
 inline void MODEL_INDEX(const char* m) { MODEL_INDEX2(m); }
 #else
-int PRECACHE_SOUND(char* s);
+int PRECACHE_SOUND(const char* s);
 
 // Intercept model functions to allow usage of SD versions
 // Implemented in VRSDModelHelper.cpp
-int PRECACHE_MODEL(char* s);
-int PRECACHE_GENERIC(char* s);
-int PRECACHE_MODEL2(char* s);
-int PRECACHE_GENERIC2(char* s);
+int PRECACHE_MODEL(const char* s);
+int PRECACHE_GENERIC(const char* s);
+int PRECACHE_MODEL2(const char* s);
+int PRECACHE_GENERIC2(const char* s);
 void SET_MODEL(edict_t* e, const char* m);
 int MODEL_INDEX(const char* m);
 extern bool gSDModelsEnabled;

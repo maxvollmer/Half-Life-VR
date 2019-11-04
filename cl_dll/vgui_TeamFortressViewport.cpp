@@ -660,7 +660,7 @@ int TeamFortressViewport::CreateCommandMenu(char* menuFile, int direction, int y
 
 	// Read Command Menu from the txt file
 	char token[1024];
-	char* pfile = (char*)gEngfuncs.COM_LoadFile(menuFile, 5, nullptr);
+	char* pfile = reinterpret_cast<char*>(gEngfuncs.COM_LoadFile(menuFile, 5, nullptr));
 	if (!pfile)
 	{
 		gEngfuncs.Con_DPrintf("Unable to open %s\n", menuFile);
@@ -1604,7 +1604,7 @@ CMenuPanel* TeamFortressViewport::CreateTextWindow(int iTextToShow)
 			}
 		}
 
-		pfile = (char*)gEngfuncs.COM_LoadFile(sz, 5, nullptr);
+		pfile = reinterpret_cast<char*>(gEngfuncs.COM_LoadFile(sz, 5, nullptr));
 
 		if (!pfile)
 			return nullptr;
@@ -1670,7 +1670,7 @@ CMenuPanel* TeamFortressViewport::CreateTextWindow(int iTextToShow)
 		{
 			sprintf(sz, "classes/long_%s.txt", sTFClassSelection[g_iPlayerClass]);
 		}
-		char* pfile = (char*)gEngfuncs.COM_LoadFile(sz, 5, nullptr);
+		char* pfile = reinterpret_cast<char*>(gEngfuncs.COM_LoadFile(sz, 5, nullptr));
 		if (pfile)
 		{
 			cText = pfile;

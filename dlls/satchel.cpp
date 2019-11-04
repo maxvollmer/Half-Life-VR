@@ -97,7 +97,7 @@ void CSatchelCharge::SatchelSlide(CBaseEntity* pOther)
 {
 	entvars_t* pevOther = pOther->pev;
 
-	// don't hit the guy that launched this grenade
+	// don't hit the entity that launched this grenade
 	if (pOther->edict() == pev->owner)
 		return;
 

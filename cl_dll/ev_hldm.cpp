@@ -876,7 +876,7 @@ EV_StopPreviousGauss
 */
 void EV_StopPreviousGauss(int idx)
 {
-	// Make sure we don't have a gauss spin event in the queue for this guy
+	// Make sure we don't have a gauss spin event in the queue
 	gEngfuncs.pEventAPI->EV_KillEvents(idx, "events/gaussspin.sc");
 	gEngfuncs.pEventAPI->EV_StopSound(idx, CHAN_WEAPON, "ambience/pulsemachine.wav");
 }

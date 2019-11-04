@@ -181,7 +181,7 @@ int KB_ConvertString(char* in, char** ppout)
 			if (pBinding)
 			{
 				*pOut++ = '[';
-				pEnd = (char*)pBinding;
+				pEnd = const_cast<char*>(pBinding);	// TODO: Evil!
 			}
 			else
 			{
@@ -206,8 +206,11 @@ int KB_ConvertString(char* in, char** ppout)
 
 	*pOut = '\0';
 
-	pOut = (char*)malloc(strlen(sz) + 1);
-	strcpy(pOut, sz);
+	pOut = (char*)malloc(strlen(sz) + 1);	// TODO: Evil malloc. Find where we free this, so we can use new and delete
+	if (pOut)
+	{
+		strcpy(pOut, sz);
+	}
 	*ppout = pOut;
 
 	return 1;
@@ -243,22 +246,19 @@ Add a kbutton_t * to the list of pointers the engine can retrieve via KB_Find
 */
 void KB_Add(const char* name, kbutton_t* pkb)
 {
-	kblist_t* p;
-	kbutton_t* kb;
-
-	kb = KB_Find(name);
-
+	kbutton_t* kb = KB_Find(name);
 	if (kb)
 		return;
 
-	p = (kblist_t*)malloc(sizeof(kblist_t));
-	memset(p, 0, sizeof(*p));
-
-	strcpy(p->name, name);
-	p->pkey = pkb;
-
-	p->next = g_kbkeys;
-	g_kbkeys = p;
+	kblist_t* p = (kblist_t*)malloc(sizeof(kblist_t));	// TODO: Evil malloc. Find where we free this, so we can use new and delete
+	if (p)
+	{
+		memset(p, 0, sizeof(kblist_t));
+		strcpy(p->name, name);
+		p->pkey = pkb;
+		p->next = g_kbkeys;
+		g_kbkeys = p;
+	}
 }
 
 /*

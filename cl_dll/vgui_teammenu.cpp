@@ -295,7 +295,7 @@ void CTeamMenuPanel::Update(void)
 			ch = strchr(sz, '.');
 			*ch = '\0';
 			strcat(sz, ".txt");
-			char* pfile = (char*)gEngfuncs.COM_LoadFile(sz, 5, nullptr);
+			char* pfile = reinterpret_cast<char*>(gEngfuncs.COM_LoadFile(sz, 5, nullptr));
 			if (pfile)
 			{
 				m_pBriefing->setText(pfile);

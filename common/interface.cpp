@@ -68,7 +68,7 @@ EXPORT_FUNCTION IBaseInterface* CreateInterface(const char* pName, int* pReturnC
 #ifdef _WIN32
 HINTERFACEMODULE Sys_LoadModule(const char* pModuleName)
 {
-	return (HINTERFACEMODULE)LoadLibrary(pModuleName);
+	return reinterpret_cast<HINTERFACEMODULE>(LoadLibraryA(pModuleName));
 }
 
 #else  // LINUX
@@ -86,7 +86,7 @@ HINTERFACEMODULE Sys_LoadModule(const char* pModuleName)
 
 	sprintf(szAbsoluteLibFilename, "%s/%s", szCwd, pModuleName);
 
-	return (HINTERFACEMODULE)dlopen(szAbsoluteLibFilename, RTLD_NOW);
+	return reinterpret_cast<HINTERFACEMODULE>(dlopen(szAbsoluteLibFilename, RTLD_NOW));
 }
 
 #endif
@@ -98,7 +98,7 @@ void Sys_FreeModule(HINTERFACEMODULE hModule)
 	if (!hModule)
 		return;
 
-	FreeLibrary((HMODULE)hModule);
+	FreeLibrary(reinterpret_cast<HMODULE>(hModule));
 }
 
 #else  // LINUX
@@ -107,7 +107,7 @@ void Sys_FreeModule(HINTERFACEMODULE hModule)
 	if (!hModule)
 		return;
 
-	dlclose((void*)hModule);
+	dlclose(hModule);
 }
 
 #endif
@@ -135,7 +135,7 @@ CreateInterfaceFn Sys_GetFactory(HINTERFACEMODULE hModule)
 	if (!hModule)
 		return nullptr;
 
-	return (CreateInterfaceFn)GetProcAddress((HMODULE)hModule, CREATEINTERFACE_PROCNAME);
+	return reinterpret_cast<CreateInterfaceFn>(GetProcAddress(reinterpret_cast<HMODULE>(hModule), CREATEINTERFACE_PROCNAME));
 }
 
 #else  // LINUX
@@ -144,7 +144,7 @@ CreateInterfaceFn Sys_GetFactory(HINTERFACEMODULE hModule)
 	if (!hModule)
 		return nullptr;
 
-	return (CreateInterfaceFn)dlsym((void*)hModule, CREATEINTERFACE_PROCNAME);
+	return reinterpret_cast<CreateInterfaceFn>(dlsym(hModule, CREATEINTERFACE_PROCNAME));
 }
 
 #endif

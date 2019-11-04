@@ -190,7 +190,7 @@ void CFlockingFlyerFlock::SpawnFlock(void)
 
 		if (!pLeader)
 		{
-			// make this guy the leader.
+			// make this one the leader.
 			pLeader = pBoid;
 
 			pLeader->m_pSquadLeader = pLeader;
@@ -269,14 +269,12 @@ void CFlockingFlyer::MakeSound(void)
 //=========================================================
 void CFlockingFlyer::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
-	CFlockingFlyer* pSquad;
-
-	pSquad = (CFlockingFlyer*)m_pSquadLeader;
+	CFlockingFlyer* pSquad = dynamic_cast<CFlockingFlyer*>(m_pSquadLeader);
 
 	while (pSquad)
 	{
 		pSquad->m_flAlertTime = gpGlobals->time + 15;
-		pSquad = (CFlockingFlyer*)pSquad->m_pSquadNext;
+		pSquad = pSquad->m_pSquadNext;
 	}
 
 	if (m_pSquadLeader)
@@ -431,11 +429,11 @@ void CFlockingFlyer::FormFlock(void)
 
 			if (pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_pCine)
 			{
-				// Can we recruit this guy?
+				// Can we recruit this one?
 				if (FClassnameIs(pRecruit->pev, "monster_flyer"))
 				{
 					squadCount++;
-					SquadAdd((CFlockingFlyer*)pRecruit);
+					SquadAdd(dynamic_cast<CFlockingFlyer*>(pRecruit));
 				}
 			}
 		}
@@ -808,9 +806,8 @@ void CFlockingFlyer::SquadUnlink(void)
 //=========================================================
 void CFlockingFlyer::SquadAdd(CFlockingFlyer* pAdd)
 {
-	ASSERT(pAdd != nullptr);
-	ASSERT(!pAdd->InSquad());
-	ASSERT(this->IsLeader());
+	if (pAdd == nullptr || pAdd->InSquad() || !this->IsLeader())
+		return;
 
 	pAdd->m_pSquadNext = m_pSquadNext;
 	m_pSquadNext = pAdd;

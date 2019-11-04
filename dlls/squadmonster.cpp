@@ -354,7 +354,7 @@ int CSquadMonster::SquadRecruit(int searchRadius, int maxMembers)
 
 			if (pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_pCine)
 			{
-				// Can we recruit this guy?
+				// Can we recruit this one?
 				if (!pRecruit->InSquad() && pRecruit->Classify() == iMyClass &&
 					((iMyClass != CLASS_ALIEN_MONSTER) || FStrEq(STRING(pev->classname), STRING(pRecruit->pev->classname))) &&
 					FStringNull(pRecruit->pev->netname))
@@ -502,7 +502,7 @@ BOOL CSquadMonster::NoFriendlyFire(void)
 				leftPlane.PointInFront(pMember->pev->origin) &&
 				rightPlane.PointInFront(pMember->pev->origin))
 			{
-				// this guy is in the check volume! Don't shoot!
+				// this ally is in the check volume! Don't shoot!
 				return FALSE;
 			}
 		}

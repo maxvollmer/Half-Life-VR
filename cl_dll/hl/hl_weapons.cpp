@@ -12,6 +12,10 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
+#include <memory>
+#include <vector>
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -35,8 +39,7 @@ extern globalvars_t* gpGlobals;
 extern int g_iUser1;
 
 // Pool of client side entities/entvars_t
-static entvars_t	ev[32];
-static int			num_ents = 0;
+static std::vector<std::shared_ptr<entvars_t>> ev;
 
 // The entity we'll use to represent the local client
 static CBasePlayer	player;
@@ -110,21 +113,23 @@ we set up the m_pPlayer field.
 */
 void HUD_PrepEntity(CBaseEntity* pEntity, CBasePlayer* pWeaponOwner)
 {
-	memset(&ev[num_ents], 0, sizeof(entvars_t));
-	pEntity->pev = &ev[num_ents++];
+	auto pev = std::make_shared<entvars_t>();
+	ev.push_back(pev);
+	pEntity->pev = pev.get();
 
 	pEntity->Precache();
 	pEntity->Spawn();
 
 	if (pWeaponOwner)
 	{
-		ItemInfo info;
-
-		((CBasePlayerWeapon*)pEntity)->m_pPlayer = pWeaponOwner;
-
-		((CBasePlayerWeapon*)pEntity)->GetItemInfo(&info);
-
-		g_pWpns[info.iId] = (CBasePlayerWeapon*)pEntity;
+		CBasePlayerWeapon* pWeapon = dynamic_cast<CBasePlayerWeapon*>(pEntity);
+		if (pWeapon)
+		{
+			pWeapon->m_pPlayer = pWeaponOwner;
+			ItemInfo info;
+			pWeapon->GetItemInfo(&info);
+			g_pWpns[info.iId] = pWeapon;
+		}
 	}
 }
 
@@ -520,16 +525,13 @@ For debugging, draw a box around a player made out of particles
 */
 void UTIL_ParticleBox(CBasePlayer* player, float* mins, float* maxs, float life, unsigned char r, unsigned char g, unsigned char b)
 {
-	int i;
-	vec3_t mmin, mmax;
-
-	for (i = 0; i < 3; i++)
+	Vector mmin, mmax;
+	for (int i = 0; i < 3; i++)
 	{
 		mmin[i] = player->pev->origin[i] + mins[i];
 		mmax[i] = player->pev->origin[i] + maxs[i];
 	}
-
-	gEngfuncs.pEfxAPI->R_ParticleBox((float*)&mmin, (float*)&mmax, 5.0, 0, 255, 0);
+	gEngfuncs.pEfxAPI->R_ParticleBox(mmin, mmax, 5.0, 0, 255, 0);
 }
 
 /*
@@ -566,7 +568,7 @@ void UTIL_ParticleBoxes(void)
 			mins = pe->origin + pe->mins;
 			maxs = pe->origin + pe->maxs;
 
-			gEngfuncs.pEfxAPI->R_ParticleBox((float*)&mins, (float*)&maxs, 0, 0, 255, 2.0);
+			gEngfuncs.pEfxAPI->R_ParticleBox(mins, maxs, 0, 0, 255, 2.0);
 		}
 	}
 
@@ -849,8 +851,12 @@ void HUD_WeaponsPostThink(local_state_s* from, local_state_s* to, usercmd_t* cmd
 
 	if (player.m_pActiveItem->m_iId == WEAPON_RPG)
 	{
-		((CRpg*)player.m_pActiveItem)->m_fSpotActive = (int)from->client.vuser2[1];
-		((CRpg*)player.m_pActiveItem)->m_cActiveRockets = (int)from->client.vuser2[2];
+		CRpg* rpg = dynamic_cast<CRpg*>(player.m_pActiveItem);
+		if (rpg)
+		{
+			rpg->m_fSpotActive = static_cast<int>(from->client.vuser2[1]);
+			rpg->m_cActiveRockets = static_cast<int>(from->client.vuser2[2]);
+		}
 	}
 
 	// Don't go firing anything if we have died.
@@ -917,8 +923,12 @@ void HUD_WeaponsPostThink(local_state_s* from, local_state_s* to, usercmd_t* cmd
 
 	if (player.m_pActiveItem->m_iId == WEAPON_RPG)
 	{
-		from->client.vuser2[1] = ((CRpg*)player.m_pActiveItem)->m_fSpotActive;
-		from->client.vuser2[2] = ((CRpg*)player.m_pActiveItem)->m_cActiveRockets;
+		CRpg* rpg = dynamic_cast<CRpg*>(player.m_pActiveItem);
+		if (rpg)
+		{
+			from->client.vuser2[1] = rpg->m_fSpotActive;
+			from->client.vuser2[2] = rpg->m_cActiveRockets;
+		}
 	}
 
 	// Make sure that weapon animation matches what the game .dll is telling us

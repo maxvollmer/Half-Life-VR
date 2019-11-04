@@ -464,7 +464,7 @@ public:
 	{
 		m_pBrowser = browser;
 
-		addInputSignal(new LabelSortInputHandler((ServerBrowserTablePanel*)m_pBrowser, m_szSortKey));
+		addInputSignal(new LabelSortInputHandler(m_pBrowser, m_szSortKey));
 	}
 };
 
@@ -499,17 +499,18 @@ ServerBrowser::ServerBrowser(int x, int y, int wide, int tall) :
 	_headerPanel->setSliderPos(3, CSIZE_CURRENT);
 	_headerPanel->setSliderPos(4, CSIZE_PING);
 
-	_tablePanel = new ServerBrowserTablePanel(0, HEADER_SIZE_Y, wide, tall - HEADER_SIZE_Y, NUM_COLUMNS);
-	_tablePanel->setParent(this);
-	_tablePanel->setHeaderPanel(_headerPanel);
-	_tablePanel->setFgColor(100, 100, 100, 100);
-	_tablePanel->setBgColor(0, 0, 0, 100);
+	ServerBrowserTablePanel* serverBrowserTablePanel = new ServerBrowserTablePanel(0, HEADER_SIZE_Y, wide, tall - HEADER_SIZE_Y, NUM_COLUMNS);
+	serverBrowserTablePanel->setParent(this);
+	serverBrowserTablePanel->setHeaderPanel(_headerPanel);
+	serverBrowserTablePanel->setFgColor(100, 100, 100, 100);
+	serverBrowserTablePanel->setBgColor(0, 0, 0, 100);
+	serverBrowserTablePanel->addInputSignal(new CBrowser_InputSignal(serverBrowserTablePanel));
+	_tablePanel = serverBrowserTablePanel;
 
-	_tablePanel->addInputSignal(new CBrowser_InputSignal((ServerBrowserTablePanel*)_tablePanel));
 
 	for (i = 0; i < 5; i++)
 	{
-		pLabel[i]->setTable((ServerBrowserTablePanel*)_tablePanel);
+		pLabel[i]->setTable(serverBrowserTablePanel);
 	}
 
 	int bw = 80, bh = 15;
@@ -519,47 +520,47 @@ ServerBrowser::ServerBrowser(int x, int y, int wide, int tall) :
 
 	_connectButton = new CommandButton("Connect", btnx, by, bw, bh);
 	_connectButton->setParent(this);
-	_connectButton->addActionSignal(new ConnectHandler((ServerBrowserTablePanel*)_tablePanel));
+	_connectButton->addActionSignal(new ConnectHandler(serverBrowserTablePanel));
 
 	btnx += bw;
 
 	_refreshButton = new CommandButton("Refresh", btnx, by, bw, bh);
 	_refreshButton->setParent(this);
-	_refreshButton->addActionSignal(new RefreshHandler((ServerBrowserTablePanel*)_tablePanel));
+	_refreshButton->addActionSignal(new RefreshHandler(serverBrowserTablePanel));
 
 	/*
 	btnx += bw;
 
 	_broadcastRefreshButton = new CommandButton( "LAN", btnx, by, bw, bh );
 	_broadcastRefreshButton->setParent( this );
-	_broadcastRefreshButton->addActionSignal( new BroadcastRefreshHandler(  (ServerBrowserTablePanel * )_tablePanel ) );
+	_broadcastRefreshButton->addActionSignal( new BroadcastRefreshHandler(  serverBrowserTablePanel ) );
 	*/
 
 	btnx += bw;
 
 	_stopButton = new CommandButton("Stop", btnx, by, bw, bh);
 	_stopButton->setParent(this);
-	_stopButton->addActionSignal(new StopHandler((ServerBrowserTablePanel*)_tablePanel));
+	_stopButton->addActionSignal(new StopHandler(serverBrowserTablePanel));
 
 	/*
 	btnx += bw;
 
 	_pingButton = new CommandButton( "Test", btnx, by, bw, bh );
 	_pingButton->setParent( this );
-	_pingButton->addActionSignal( new PingHandler(  (ServerBrowserTablePanel * )_tablePanel ) );
+	_pingButton->addActionSignal( new PingHandler(  serverBrowserTablePanel ));
 
 	btnx += bw;
 
 	_sortButton = new CommandButton( "Sort", btnx, by, bw, bh );
 	_sortButton->setParent( this );
-	_sortButton->addActionSignal( new SortHandler(  (ServerBrowserTablePanel * )_tablePanel ) );
+	_sortButton->addActionSignal( new SortHandler(  serverBrowserTablePanel ));
 	*/
 
 	btnx += bw;
 
 	_cancelButton = new CommandButton("Close", btnx, by, bw, bh);
 	_cancelButton->setParent(this);
-	_cancelButton->addActionSignal(new CancelHandler((ServerBrowserTablePanel*)_tablePanel));
+	_cancelButton->addActionSignal(new CancelHandler(serverBrowserTablePanel));
 
 	setPaintBorderEnabled(false);
 	setPaintBackgroundEnabled(false);

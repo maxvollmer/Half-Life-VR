@@ -959,7 +959,7 @@ void CController::Move(float flInterval)
 		}
 
 		// !!!BUGBUG - CheckDist should be derived from ground speed.
-		// If this fails, it should be because of some dynamic entity blocking this guy.
+		// If this fails, it should be because of some dynamic entity blocking this monster.
 		// We've already checked this path, so we should wait and time out if the entity doesn't move
 		flDist = 0;
 		if (CheckLocalMove(pev->origin, pev->origin + vecDir * flCheckDist, pTargetEnt, &flDist) != LOCALMOVE_VALID)

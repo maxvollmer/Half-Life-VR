@@ -2815,8 +2815,8 @@ edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
 			pSpot = UTIL_FindEntityByClassname(pSpot, "info_player_deathmatch");
 		} while (pSpot != pFirstSpot);  // loop if we're not back to the start
 
-		// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
-		if (!FNullEnt(pSpot))
+		// we haven't found a place to spawn yet, so kill any player at the first spawn point and spawn there
+		if (pSpot && !FNullEnt(pSpot))
 		{
 			CBaseEntity* ent = nullptr;
 			while ((ent = UTIL_FindEntityInSphere(ent, pSpot->pev->origin, 128)) != nullptr)

@@ -352,7 +352,7 @@ BOOL CBullsquid::CheckRangeAttack1(float flDot, float flDist)
 }
 
 //=========================================================
-// CheckMeleeAttack1 - bullsquid is a big guy, so has a longer
+// CheckMeleeAttack1 - bullsquid is a big monster, so has a longer
 // melee range than most monsters. This is the tailwhip attack
 //=========================================================
 BOOL CBullsquid::CheckMeleeAttack1(float flDot, float flDist)
@@ -365,7 +365,7 @@ BOOL CBullsquid::CheckMeleeAttack1(float flDot, float flDist)
 }
 
 //=========================================================
-// CheckMeleeAttack2 - bullsquid is a big guy, so has a longer
+// CheckMeleeAttack2 - bullsquid is a big monster, so has a longer
 // melee range than most monsters. This is the bite attack.
 // this attack will not be performed if the tailwhip attack
 // is valid.

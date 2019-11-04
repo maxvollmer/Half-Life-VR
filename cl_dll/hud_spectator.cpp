@@ -891,7 +891,7 @@ bool CHudSpectator::ParseOverviewFile()
 
 	sprintf(filename, "overviews/%s.txt", levelname);
 
-	pfile = (char*)gEngfuncs.COM_LoadFile(filename, 5, nullptr);
+	pfile = reinterpret_cast<char*>(gEngfuncs.COM_LoadFile(filename, 5, nullptr));
 
 	if (!pfile)
 	{
@@ -1032,7 +1032,7 @@ void CHudSpectator::DrawOverviewLayer()
 	int ix, iy, i, xTiles, yTiles, frame;
 
 	qboolean hasMapImage = m_MapSprite ? TRUE : FALSE;
-	model_t* dummySprite = (struct model_s*)gEngfuncs.GetSpritePointer(m_hsprUnkownMap);
+	const model_t* dummySprite = gEngfuncs.GetSpritePointer(m_hsprUnkownMap);
 
 	if (hasMapImage)
 	{
@@ -1153,7 +1153,6 @@ void CHudSpectator::DrawOverviewLayer()
 void CHudSpectator::DrawOverviewEntities()
 {
 	int i, ir, ig, ib;
-	struct model_s* hSpriteModel;
 	vec3_t origin, angles, point, forward, right, left, up, world, screen, offset;
 	float x, y, z, r, g, b, sizeScale = 4.0f;
 	cl_entity_t* ent;
@@ -1180,7 +1179,7 @@ void CHudSpectator::DrawOverviewEntities()
 		if (!m_OverviewEntities[i].hSprite)
 			continue;
 
-		hSpriteModel = (struct model_s*)gEngfuncs.GetSpritePointer(m_OverviewEntities[i].hSprite);
+		const model_t* hSpriteModel = gEngfuncs.GetSpritePointer(m_OverviewEntities[i].hSprite);
 		ent = m_OverviewEntities[i].entity;
 
 		gEngfuncs.pTriAPI->SpriteTexture(hSpriteModel, 0);
@@ -1232,7 +1231,7 @@ void CHudSpectator::DrawOverviewEntities()
 
 		gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
 
-		hSpriteModel = (struct model_s*)gEngfuncs.GetSpritePointer(m_hsprBeam);
+		hSpriteModel = gEngfuncs.GetSpritePointer(m_hsprBeam);
 		gEngfuncs.pTriAPI->SpriteTexture(hSpriteModel, 0);
 
 		gEngfuncs.pTriAPI->Color4f(r, g, b, 0.3);
@@ -1316,7 +1315,7 @@ void CHudSpectator::DrawOverviewEntities()
 
 	angles[0] = 0;  // always show horizontal camera sprite
 
-	hSpriteModel = (struct model_s*)gEngfuncs.GetSpritePointer(m_hsprCamera);
+	const model_t* hSpriteModel = gEngfuncs.GetSpritePointer(m_hsprCamera);
 	gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
 	gEngfuncs.pTriAPI->SpriteTexture(hSpriteModel, 0);
 

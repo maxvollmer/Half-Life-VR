@@ -95,7 +95,7 @@ int CHudOverview::Draw(float flTime)
 			}
 
 			// set the current texture
-			gEngfuncs.pTriAPI->SpriteTexture((struct model_s*)gEngfuncs.GetSpritePointer(m_hsprPlayer), 0);
+			gEngfuncs.pTriAPI->SpriteTexture(gEngfuncs.GetSpritePointer(m_hsprPlayer), 0);
 
 			// additive render mode
 			gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);

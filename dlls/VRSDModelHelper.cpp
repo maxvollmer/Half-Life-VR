@@ -66,7 +66,7 @@ const char* GetHDModel(const char* model)
 
 extern const char* GetAnimatedWeaponModelName(const char* modelName);
 
-int PRECACHE_MODEL2(char* s)
+int PRECACHE_MODEL2(const char* s)
 {
 	const char* anims = GetAnimatedWeaponModelName(s);
 	if (anims != s)
@@ -74,7 +74,7 @@ int PRECACHE_MODEL2(char* s)
 	return PRECACHE_MODEL3(s);
 }
 
-int PRECACHE_GENERIC2(char* s)
+int PRECACHE_GENERIC2(const char* s)
 {
 	const char* anims = GetAnimatedWeaponModelName(s);
 	if (anims != s)
@@ -82,7 +82,7 @@ int PRECACHE_GENERIC2(char* s)
 	return PRECACHE_GENERIC3(s);
 }
 
-int PRECACHE_MODEL(char* s)
+int PRECACHE_MODEL(const char* s)
 {
 	int sdModelIndex = -1;
 	int hdModelIndex = PRECACHE_MODEL2(s);
@@ -99,7 +99,7 @@ int PRECACHE_MODEL(char* s)
 	return hdModelIndex;
 }
 
-int PRECACHE_GENERIC(char* s)
+int PRECACHE_GENERIC(const char* s)
 {
 	int sdModelIndex = -1;
 	int hdModelIndex = PRECACHE_GENERIC2(s);

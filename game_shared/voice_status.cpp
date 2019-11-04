@@ -426,7 +426,7 @@ void CVoiceStatus::UpdateSpeakerStatus(int entindex, qboolean bTalking)
 			m_VoicePlayers[iClient] = true;
 			m_VoiceEnabledPlayers[iClient] = true;
 
-			// If we don't have a label for this guy yet, then create one.
+			// If we don't have a label for this player yet, then create one.
 			if (!pLabel)
 			{
 				if (pLabel = GetFreeVoiceLabel())
@@ -464,7 +464,7 @@ void CVoiceStatus::UpdateSpeakerStatus(int entindex, qboolean bTalking)
 		{
 			m_VoicePlayers[iClient] = false;
 
-			// If we have a label for this guy, kill it.
+			// If we have a label for this player, kill it.
 			if (pLabel)
 			{
 				pLabel->m_pBackground->setVisible(false);

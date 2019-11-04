@@ -99,8 +99,8 @@ typedef struct
 // Engine hands this to DLLs for functionality callbacks
 typedef struct enginefuncs_s
 {
-	int (*pfnPrecacheModel3)(char* s);
-	int (*pfnPrecacheSound2)(char* s);
+	int (*pfnPrecacheModel3)(const char* s);
+	int (*pfnPrecacheSound2)(const char* s);
 	void (*pfnSetModel2)(edict_t* e, const char* m);
 	int (*pfnModelIndex2)(const char* m);
 	int (*pfnModelFrames)(int modelIndex);
@@ -211,7 +211,7 @@ typedef struct enginefuncs_s
 	void (*pfnSetClientKeyValue)(int clientIndex, char* infobuffer, char* key, char* value);
 	int (*pfnIsMapValid)(char* filename);
 	void (*pfnStaticDecal)(const float* origin, int decalIndex, int entityIndex, int modelIndex);
-	int (*pfnPrecacheGeneric3)(char* s);
+	int (*pfnPrecacheGeneric3)(const char* s);
 	int (*pfnGetPlayerUserId)(edict_t* e);  // returns the server assigned userid for this player.  useful for logging frags, etc.  returns -1 if the edict couldn't be found in the list of clients
 	void (*pfnBuildSoundMsg)(edict_t* entity, int channel, const char* sample, /*int*/ float volume, float attenuation, int fFlags, int pitch, int msg_dest, int msg_type, const float* pOrigin, edict_t* ed);
 	int (*pfnIsDedicatedServer)(void);  // is this a dedicated server?

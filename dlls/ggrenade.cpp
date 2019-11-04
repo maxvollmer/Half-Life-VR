@@ -218,7 +218,7 @@ void CGrenade::DangerSoundThink(void)
 
 void CGrenade::BounceTouch(CBaseEntity* pOther)
 {
-	// don't hit the guy that launched this grenade
+	// don't hit the entity that launched this grenade
 	if (pOther->edict() == pev->owner)
 		return;
 
@@ -280,7 +280,7 @@ void CGrenade::BounceTouch(CBaseEntity* pOther)
 
 void CGrenade::SlideTouch(CBaseEntity* pOther)
 {
-	// don't hit the guy that launched this grenade
+	// don't hit the entity that launched this grenade
 	if (pOther->edict() == pev->owner)
 		return;
 
