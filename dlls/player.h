@@ -326,19 +326,23 @@ public:
 	float m_flNextChatTime;
 
 
-	// Methods and members for VR stuff - Max Vollmer, 2017-08-18
+/*
+*  Methods and members for VR stuff - Max Vollmer, 2017-08-18
+*/
+
+// private VR members:
 private:
+	// for immersive ladder climbing
+	struct VRLadderGrabbingController
+	{
+		VRControllerID controller;
+		EHANDLE<CBaseEntity> ladder;
+	};
+
 	Vector vr_lastHMDOffset;
 	int vr_hmdLastUpdateClienttime = 0;
 	float vr_hmdLastUpdateServertime = 0;
 
-	//public for gamerules.cpp
-public:
-	float vr_spawnYaw{ 0.f };
-	bool vr_IsJustSpawned{ false };
-	bool vr_IsJustRestored{ false };
-
-private:
 	Vector vr_ClientOriginOffset;  // Must be Vector instead of Vector2D for save/restore. z is not used.
 
 	EHANDLE<CBaseEntity> hFlashLight;
@@ -368,18 +372,13 @@ private:
 	VRControllerInteractionManager m_vrControllerInteractionManager;
 	VRGroundEntityHandler m_vrGroundEntityHandler{ this };
 
-	void GetTeleporterPose(Vector& position, Vector& dir);
 	bool m_vrHasTeleporterPose{ false };
 	Vector m_vrTeleporterOffset;
 	Vector m_vrTeleporterAngles;
 
-	void GetFlashlightPose(Vector& position, Vector& dir);
 	bool m_vrHasFlashlightPose{ false };
 	Vector m_vrFlashlightOffset;
 	Vector m_vrFlashlightAngles;
-
-	void UpdateFlashlight();
-	void UpdateVRTele();
 
 	EHANDLE<CBaseEntity> m_hCurrentUpwardsTriggerPush;
 
@@ -389,23 +388,42 @@ private:
 	Vector vr_trainControlPosition;
 	float vr_trainControlYaw;
 
-	// for immersive ladder climbing
-	struct VRLadderGrabbingController
-	{
-		VRControllerID controller;
-		EHANDLE<CBaseEntity> ladder;
-	};
 	std::vector<VRLadderGrabbingController> m_ladderGrabbingControllers;
+
+	bool m_vrIsUsingTankWithVRControllers{ false };
+	Vector m_vrTankVRControllerAngles;
+
+// public VR members:
+public:
+	float vr_spawnYaw{ 0.f };
+	bool vr_IsJustSpawned{ false };
+	bool vr_IsJustRestored{ false };
+
+	Vector m_vrLedgeTargetPosition;
+	Vector m_vrLedgePullStartPosition;
+	float m_vrLedgePullSpeed{ 0.f };
+	float m_vrLedgePullStartTime{ 0.f };
+	bool m_vrIsPullingOnLedge{ false };
+	bool m_vrWasPullingOnLedge{ false };
+
+
+// private VR methods:
+private:
+
+	void GetTeleporterPose(Vector& position, Vector& dir);
+	void GetFlashlightPose(Vector& position, Vector& dir);
+
+	void UpdateFlashlight();
+	void UpdateVRTele();
+
 	void ClearLadderGrabbingControllers();
 
 	// Called by PostThink()
 	void VRUseOrUnuseTank();
 	bool IsTankVRControlled(EHANDLE<CBaseEntity> hTank);
 
-	bool m_vrIsUsingTankWithVRControllers{ false };
-	Vector m_vrTankVRControllerAngles;
-	//std::unordered_map<VRControllerID, Vector>			m_vrTankVRControllerStartOffsets;
 
+// public VR methods:
 public:
 	void StartVRTele();
 	void StopVRTele();
@@ -460,13 +478,6 @@ public:
 
 	void StartPullingLedge(const Vector& ledgeTargetPosition, float speed);
 	void StopPullingLedge();
-
-	Vector m_vrLedgeTargetPosition;
-	Vector m_vrLedgePullStartPosition;
-	float m_vrLedgePullSpeed{ 0.f };
-	float m_vrLedgePullStartTime{ 0.f };
-	bool m_vrIsPullingOnLedge{ false };
-	bool m_vrWasPullingOnLedge{ false };
 
 	void HandleSpeechCommand(VRSpeechCommand command);
 

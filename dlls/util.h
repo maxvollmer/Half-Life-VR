@@ -109,10 +109,14 @@ typedef int BOOL;
 //
 inline edict_t* ENT(const entvars_t* pev)
 {
-	if (!pev->pContainingEntity)
+	if (!pev)
+		return nullptr;
+
+	if (!pev->pContainingEntity || &pev->pContainingEntity->v != pev)
 	{
 		const_cast<entvars_t*>(pev)->pContainingEntity = (*g_engfuncs.pfnFindEntityByVars)(pev);
 	}
+
 	return pev->pContainingEntity;
 }
 inline edict_t* ENT(edict_t* pent)

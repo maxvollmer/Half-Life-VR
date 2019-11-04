@@ -36,6 +36,7 @@ int stub_PrecacheSound(const char* s);
 unsigned short stub_PrecacheEvent(int type, const char* s);
 const char* stub_NameForFunction(unsigned long function);
 void stub_SetModel(struct edict_s* e, const char* m);
+edict_t* stub_FindEntityByVars(const struct entvars_s* pvars);
 
 
 extern cvar_t* cl_lw;

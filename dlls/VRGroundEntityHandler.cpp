@@ -33,6 +33,9 @@ namespace
 
 void VRGroundEntityHandler::HandleMovingWithSolidGroundEntities()
 {
+	if (!m_pPlayer)
+		return;
+
 	DetectAndSetGroundEntity();
 	SendGroundEntityToClient();
 	MoveWithGroundEntity();

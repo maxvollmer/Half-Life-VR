@@ -136,7 +136,7 @@ public:
 
 	EHANDLE(ENTITY* pEntity)
 	{
-		if (pEntity)
+		if (pEntity && pEntity->pev)
 		{
 			m_pent = ENT(pEntity->pev);
 			if (m_pent)

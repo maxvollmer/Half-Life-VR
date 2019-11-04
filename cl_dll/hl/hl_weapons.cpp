@@ -42,7 +42,7 @@ extern int g_iUser1;
 static std::vector<std::shared_ptr<entvars_t>> ev;
 
 // The entity we'll use to represent the local client
-static CBasePlayer	player;
+static CBasePlayer player;
 
 // Local version of game .dll global variables ( time, etc. )
 static globalvars_t	Globals;
@@ -631,6 +631,7 @@ void HUD_InitClientWeapons(void)
 	g_engfuncs.pfnNameForFunction = stub_NameForFunction;
 	g_engfuncs.pfnSetModel2 = stub_SetModel;
 	g_engfuncs.pfnSetClientMaxspeed = HUD_SetMaxSpeed;
+	g_engfuncs.pfnFindEntityByVars = stub_FindEntityByVars;
 
 	// Handled locally
 	g_engfuncs.pfnPlaybackEvent = HUD_PlaybackEvent;
