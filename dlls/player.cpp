@@ -1838,7 +1838,7 @@ void CBasePlayer::PreThink(void)
 	// VR: We are MOVETYPE_NOCLIP, so the engine doesn't handle collisions with solid entities for various reasons (getting stuck, pushables not working nicely in VR etc.)
 	// This also means that trains and elevators just move through us. To avoid this, we do appropriate movement handling here.
 	// P.S. In pm_shared.cpp we do some modified normal movement as if we were MOVETYPE_WALK
-	m_vrGroundEntityHandler.HandleMovingWithSolidGroundEntities();
+	GetGroundEntityHandler().HandleMovingWithSolidGroundEntities();
 
 	UTIL_MakeVectors(pev->v_angle);  // is this still used?
 

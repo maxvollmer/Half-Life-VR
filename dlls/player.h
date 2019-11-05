@@ -370,7 +370,7 @@ private:
 
 	VRControllerTeleporter m_vrControllerTeleporter;
 	VRControllerInteractionManager m_vrControllerInteractionManager;
-	VRGroundEntityHandler m_vrGroundEntityHandler{ this };
+	std::unique_ptr<VRGroundEntityHandler> m_vrGroundEntityHandler;
 
 	bool m_vrHasTeleporterPose{ false };
 	Vector m_vrTeleporterOffset;
@@ -421,6 +421,15 @@ private:
 	// Called by PostThink()
 	void VRUseOrUnuseTank();
 	bool IsTankVRControlled(EHANDLE<CBaseEntity> hTank);
+
+	VRGroundEntityHandler& GetGroundEntityHandler()
+	{
+		if (!m_vrGroundEntityHandler)
+		{
+			m_vrGroundEntityHandler = std::make_unique<VRGroundEntityHandler>(this);
+		}
+		return *m_vrGroundEntityHandler;
+	}
 
 
 // public VR methods:

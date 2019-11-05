@@ -152,12 +152,9 @@ public:
 
 	edict_t* Get(void) const
 	{
-		if (m_pent)
+		if ((FWorldEnt(m_pent) || !FNullEnt(m_pent)) && m_pent->serialnumber == m_serialnumber)
 		{
-			if (m_pent->serialnumber == m_serialnumber)
-				return m_pent;
-			else
-				return nullptr;
+			return m_pent;
 		}
 		return nullptr;
 	};
