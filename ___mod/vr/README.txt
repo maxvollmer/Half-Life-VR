@@ -19,7 +19,7 @@ Half-Life: VR
 Author: Max Vollmer and team
 github: https://github.com/maxvollmer/Half-Life-VR
 
-VERSION 0.5.9-beta
+VERSION 0.6.0-beta
 
 Release date: 2019-10-23
 
