@@ -191,11 +191,9 @@ called each time a player is spawned
 */
 void ClientPutInServer(edict_t* pEntity)
 {
-	CBasePlayer* pPlayer;
-
 	entvars_t* pev = &pEntity->v;
 
-	pPlayer = GetClassPtr<CBasePlayer>(pev);
+	CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 	pPlayer->SetCustomDecalFrames(-1);  // Assume none;
 
 	// Allocate a CBasePlayer for pev, and call spawn
@@ -203,6 +201,9 @@ void ClientPutInServer(edict_t* pEntity)
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;
+
+	pPlayer->pev->iuser1 = 0;	// disable any spec modes
+	pPlayer->pev->iuser2 = 0;
 }
 
 #include "voice_gamemgr.h"
@@ -641,7 +642,8 @@ void ClientUserInfoChanged(edict_t* pEntity, char* infobuffer)
 		}
 	}
 
-	g_pGameRules->ClientUserInfoChanged(GetClassPtr<CBasePlayer>(&pEntity->v), infobuffer);
+	if (g_pGameRules)
+		g_pGameRules->ClientUserInfoChanged(GetClassPtr<CBasePlayer>(&pEntity->v), infobuffer);
 }
 
 static int g_serveractive = 0;
@@ -709,9 +711,10 @@ Called every frame before physics are run
 */
 void PlayerPreThink(edict_t* pEntity)
 {
-	entvars_t* pev = &pEntity->v;
-	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
+	if (!pEntity->pvPrivateData)
+		ClientPutInServer(pEntity);
 
+	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
 	if (pPlayer)
 		pPlayer->PreThink();
 }
@@ -725,9 +728,7 @@ Called every frame after physics are run
 */
 void PlayerPostThink(edict_t* pEntity)
 {
-	entvars_t* pev = &pEntity->v;
 	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
-
 	if (pPlayer)
 		pPlayer->PostThink();
 }
