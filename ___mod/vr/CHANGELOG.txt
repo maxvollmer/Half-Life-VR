@@ -1,3 +1,6 @@
+0.6.1-beta
+* Fixed bug that broke moving with trains and other entities
+
 0.6.0-beta - 2019-11-05
 * Fixed several crash bugs and improved general code stability
 * Implemented version checks for loading a savegame (prevents loading savegames from vanilla HL, which aren't compatible)
