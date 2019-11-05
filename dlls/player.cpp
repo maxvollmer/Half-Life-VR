@@ -1829,7 +1829,8 @@ void CBasePlayer::PreThink(void)
 	m_afButtonPressed = buttonsChanged & pev->button;     // The changed ones still down are "pressed"
 	m_afButtonReleased = buttonsChanged & (~pev->button);  // The ones not down are "released"
 
-	g_pGameRules->PlayerThink(this);
+	if (g_pGameRules)
+		g_pGameRules->PlayerThink(this);
 
 	if (g_fGameOver)
 		return;  // intermission or finale
@@ -2636,7 +2637,7 @@ void CBasePlayer::PostThink()
 
 	if (FBitSet(pev->flags, FL_ONGROUND))
 	{
-		if (m_flFallVelocity > 64 && !g_pGameRules->IsMultiplayer())
+ 		if (m_flFallVelocity > 64 && !(g_pGameRules && g_pGameRules->IsMultiplayer()))
 		{
 			CSoundEnt::InsertSound(bits_SOUND_PLAYER, pev->origin, m_flFallVelocity, 0.2);
 			// ALERT( at_console, "fall %f\n", m_flFallVelocity );
@@ -2903,8 +2904,11 @@ void CBasePlayer::Spawn(void)
 	// dont let uninitialized value here hurt the player
 	m_flFallVelocity = 0;
 
-	g_pGameRules->SetDefaultPlayerTeam(this);
-	g_pGameRules->GetPlayerSpawnSpot(this);
+	if (g_pGameRules)
+	{
+		g_pGameRules->SetDefaultPlayerTeam(this);
+		g_pGameRules->GetPlayerSpawnSpot(this);
+	}
 
 	SET_MODEL(ENT(pev), "models/player.mdl");
 	g_ulModelIndexPlayer = pev->modelindex;
@@ -2944,7 +2948,8 @@ void CBasePlayer::Spawn(void)
 
 	m_flNextChatTime = gpGlobals->time;
 
-	g_pGameRules->PlayerSpawn(this);
+	if (g_pGameRules)
+		g_pGameRules->PlayerSpawn(this);
 
 	vr_IsJustSpawned = true;
 	vr_hasSentRestoreYawMsgToClient = false;
@@ -4096,7 +4101,7 @@ void CBasePlayer::UpdateClientData(void)
 		WRITE_BYTE(0);
 		MESSAGE_END();
 
-		if (!m_fGameHUDInitialized)
+		if (!m_fGameHUDInitialized && g_pGameRules)
 		{
 			MESSAGE_BEGIN(MSG_ONE, gmsgInitHUD, nullptr, pev);
 			MESSAGE_END();
@@ -5418,7 +5423,7 @@ void CBasePlayer::GetTeleporterPose(Vector& position, Vector& dir)
 
 void CBasePlayer::RestartCurrentMap()
 {
-	ALERT(at_console, "RestartCurrentMap not implemented yet, sorry!\n");
+	ALERT(at_notice, "RestartCurrentMap not implemented yet, sorry!\n");
 }
 
 

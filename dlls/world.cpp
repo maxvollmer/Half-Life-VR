@@ -368,16 +368,36 @@ TYPEDESCRIPTION gGlobalEntitySaveData[] =
 };
 
 
+// Marks the current save version of the mod. Prevents loading incompatible savegames.
+// Not to be confused with the mod version itself.
+// Incremented every time the savedata of entities is changed.
+// The mod is not compatible with savegames from vanilla HL, so this protects us from that as well.
+struct HLVRSaveVersionMarker
+{
+public:
+	int magic = 'HLVR';
+	int version = 1;
+};
+
+const HLVRSaveVersionMarker g_hlvrSaveVersionMarker;
+
+TYPEDESCRIPTION g_hlvrSaveVersionMarkerSaveData[] =
+{
+	DEFINE_FIELD(HLVRSaveVersionMarker, magic, FIELD_INTEGER),
+	DEFINE_FIELD(HLVRSaveVersionMarker, version, FIELD_INTEGER),
+};
+
+
 int CGlobalState::Save(CSave& save)
 {
-	int i;
-	globalentity_t* pEntity;
+	if (!save.WriteFields("HLVRSaveVersionMarker", &g_hlvrSaveVersionMarker, g_hlvrSaveVersionMarkerSaveData, ARRAYSIZE(g_hlvrSaveVersionMarkerSaveData)))
+		return 0;
 
 	if (!save.WriteFields("GLOBAL", this, m_SaveData, ARRAYSIZE(m_SaveData)))
 		return 0;
 
-	pEntity = m_pList;
-	for (i = 0; i < m_listCount && pEntity; i++)
+	globalentity_t* pEntity = m_pList;
+	for (int i = 0; i < m_listCount && pEntity; i++)
 	{
 		if (!save.WriteFields("GENT", pEntity, gGlobalEntitySaveData, ARRAYSIZE(gGlobalEntitySaveData)))
 			return 0;
@@ -390,23 +410,27 @@ int CGlobalState::Save(CSave& save)
 
 int CGlobalState::Restore(CRestore& restore)
 {
-	int i, listCount;
-	globalentity_t tmpEntity;
-
+	HLVRSaveVersionMarker hlvrSaveVersionMarker;
+	int status = restore.ReadFields("HLVRSaveVersionMarker", &hlvrSaveVersionMarker, g_hlvrSaveVersionMarkerSaveData, ARRAYSIZE(g_hlvrSaveVersionMarkerSaveData));
+	if (!status || hlvrSaveVersionMarker.magic != g_hlvrSaveVersionMarker.magic || hlvrSaveVersionMarker.version != g_hlvrSaveVersionMarker.version)
+	{
+		return -1;
+	}
 
 	ClearStates();
 	if (!restore.ReadFields("GLOBAL", this, m_SaveData, ARRAYSIZE(m_SaveData)))
 		return 0;
 
-	listCount = m_listCount;  // Get new list count
-	m_listCount = 0;            // Clear loaded data
-
-	for (i = 0; i < listCount; i++)
+	int listCount = m_listCount;  // Get new list count
+	m_listCount = 0;              // Clear loaded data
+	for (int i = 0; i < listCount; i++)
 	{
+		globalentity_t tmpEntity;
 		if (!restore.ReadFields("GENT", &tmpEntity, gGlobalEntitySaveData, ARRAYSIZE(gGlobalEntitySaveData)))
 			return 0;
 		EntityAdd(MAKE_STRING(tmpEntity.name), MAKE_STRING(tmpEntity.levelName), tmpEntity.state);
 	}
+
 	return 1;
 }
 
@@ -438,11 +462,35 @@ void SaveGlobalState(SAVERESTOREDATA* pSaveData)
 	gGlobalState.Save(saveHelper);
 }
 
+bool g_didRestoreSaveGameFail = false;	// Initially false
+bool g_didRestoreSaveGameFail_MapChangedToSafety = false;
 
 void RestoreGlobalState(SAVERESTOREDATA* pSaveData)
 {
 	CRestore restoreHelper(pSaveData);
-	gGlobalState.Restore(restoreHelper);
+	int result = gGlobalState.Restore(restoreHelper);
+
+	if (result < 0)
+	{
+		// if result is negative, we couldn't load the savegame.
+		// the engine doesn't support canceling loads, so we do it in a bit of a hacky way:
+		// we set this global flag and check it in several places:
+		//  - cbase.cpp DispatchSpawn
+		//  - cbase.cpp DispatchRestore
+		//  - client.cpp ClientConnect
+		//  - client.cpp StartFrame
+		g_didRestoreSaveGameFail = result < 0;
+		g_didRestoreSaveGameFail_MapChangedToSafety = false;
+
+		// Inform user
+		g_engfuncs.pfnServerPrint("COULDN'T LOAD SAVEGAME, SAVE FILE IS INCOMPATIBLE WITH HALF-LIFE: VR!\n");
+		ALERT(at_error, "COULDN'T LOAD SAVEGAME, SAVE FILE IS INCOMPATIBLE WITH HALF-LIFE: VR!\n");
+	}
+	else
+	{
+		g_didRestoreSaveGameFail = false;
+		g_didRestoreSaveGameFail_MapChangedToSafety = false;
+	}
 }
 
 

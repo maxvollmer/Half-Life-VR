@@ -132,6 +132,11 @@ extern "C"
 
 int DispatchSpawn(edict_t* pent)
 {
+	// Don't spawn entities in game loaded from invalid savegame (see world.cpp RestoreGlobalState)
+	extern bool g_didRestoreSaveGameFail;
+	if (g_didRestoreSaveGameFail)
+		return -1;
+
 	CBaseEntity* pEntity = static_cast<CBaseEntity*>(GET_PRIVATE(pent));
 
 	if (pEntity)
@@ -303,6 +308,11 @@ CBaseEntity* FindGlobalEntity(string_t classname, string_t globalname)
 
 int DispatchRestore(edict_t* pent, SAVERESTOREDATA* pSaveData, int globalEntity)
 {
+	// Don't restore entities in game loaded from invalid savegame (see world.cpp RestoreGlobalState)
+	extern bool g_didRestoreSaveGameFail;
+	if (g_didRestoreSaveGameFail)
+		return -1;
+
 	CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 
 	if (pEntity && pSaveData)
@@ -354,26 +364,18 @@ int DispatchRestore(edict_t* pent, SAVERESTOREDATA* pSaveData, int globalEntity)
 			}
 		}
 
+		pEntity->Restore(restoreHelper);
 		if (pEntity->ObjectCaps() & FCAP_MUST_SPAWN)
 		{
-			pEntity->Restore(restoreHelper);
 			pEntity->Spawn();
 		}
 		else
 		{
-			pEntity->Restore(restoreHelper);
 			pEntity->Precache();
 		}
 
 		// Again, could be deleted, get the pointer again.
 		pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
-
-#if 0
-		if (pEntity && pEntity->pev->globalname && globalEntity)
-		{
-			ALERT(at_console, "Global %s is %s\n", STRING(pEntity->pev->globalname), STRING(pEntity->pev->model));
-		}
-#endif
 
 		// Is this an overriding global entity (coming over the transition), or one restoring in a level
 		if (globalEntity)
@@ -408,6 +410,7 @@ int DispatchRestore(edict_t* pent, SAVERESTOREDATA* pSaveData, int globalEntity)
 			}
 		}
 	}
+
 	return 0;
 }
 

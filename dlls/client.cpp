@@ -65,6 +65,9 @@ void LinkUserMessages(void);
  */
 void set_suicide_frame(entvars_t* pev)
 {
+	if (FNullEnt(pev))
+		return;
+
 	if (!FStrEq(STRING(pev->model), "models/player.mdl"))
 		return;  // allready gibbed
 
@@ -85,6 +88,20 @@ called when a player connects to a server
 */
 BOOL ClientConnect(edict_t* pEntity, const char* pszName, const char* pszAddress, char szRejectReason[128])
 {
+	// Don't restore entities in game loaded from invalid savegame (see world.cpp RestoreGlobalState)
+	extern bool g_didRestoreSaveGameFail;
+	if (g_didRestoreSaveGameFail)
+		return FALSE;
+
+	if (!pEntity->pvPrivateData)
+		ClientPutInServer(pEntity);
+
+	if (FNullEnt(pEntity))
+		return FALSE;
+
+	if (!g_pGameRules)
+		return TRUE;
+
 	return g_pGameRules->ClientConnected(pEntity, pszName, pszAddress, szRejectReason);
 
 	// a client connecting during an intermission can cause problems
@@ -104,6 +121,9 @@ GLOBALS ASSUMED SET:  g_fGameOver
 */
 void ClientDisconnect(edict_t* pEntity)
 {
+	if (FNullEnt(pEntity))
+		return;
+
 	if (g_fGameOver)
 		return;
 
@@ -129,13 +149,17 @@ void ClientDisconnect(edict_t* pEntity)
 	pEntity->v.solid = SOLID_NOT;  // nonsolid
 	UTIL_SetOrigin(&pEntity->v, pEntity->v.origin);
 
-	g_pGameRules->ClientDisconnected(pEntity);
+	if (g_pGameRules)
+		g_pGameRules->ClientDisconnected(pEntity);
 }
 
 
 // called by ClientKill and DeadThink
 void respawn(entvars_t* pev, BOOL fCopyCorpse)
 {
+	if (FNullEnt(pev))
+		return;
+
 	if (gpGlobals->coop || gpGlobals->deathmatch)
 	{
 		if (fCopyCorpse)
@@ -145,7 +169,9 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 		}
 
 		// respawn player
-		GetClassPtr<CBasePlayer>(pev)->Spawn();
+		CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pev);
+		if (pPlayer)
+			pPlayer->Spawn();
 	}
 	else
 	{  // restart the entire server
@@ -164,9 +190,12 @@ GLOBALS ASSUMED SET:  g_ulModelIndexPlayer
 */
 void ClientKill(edict_t* pEntity)
 {
-	entvars_t* pev = &pEntity->v;
+	if (FNullEnt(pEntity))
+		return;
 
-	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(pev);
+	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
+	if (!pl)
+		return;
 
 	if (pl->m_fNextSuicideTime > gpGlobals->time)
 		return;  // prevent suiciding too ofter
@@ -174,12 +203,8 @@ void ClientKill(edict_t* pEntity)
 	pl->m_fNextSuicideTime = gpGlobals->time + 1;  // don't let them suicide for 5 seconds after suiciding
 
 	// have the player kill themself
-	pev->health = 0;
-	pl->Killed(pev, DMG_GENERIC, GIB_NEVER);
-
-	//	pev->modelindex = g_ulModelIndexPlayer;
-	//	pev->frags -= 2;		// extra penalty
-	//	respawn( pev );
+	pl->pev->health = 0;
+	pl->Killed(pl->pev, DMG_GENERIC, GIB_NEVER);
 }
 
 /*
@@ -191,9 +216,15 @@ called each time a player is spawned
 */
 void ClientPutInServer(edict_t* pEntity)
 {
-	entvars_t* pev = &pEntity->v;
+	if (!FNullEnt(pEntity))
+	{
+		ALERT(at_console, "ClientPutInServer: Got a player that already spawned!\n");
+		g_engfuncs.pfnFreeEntPrivateData(pEntity);
+		pEntity->pvPrivateData = nullptr;
+		pEntity->v.pContainingEntity = pEntity;
+	}
 
-	CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
+	CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(&pEntity->v);
 	pPlayer->SetCustomDecalFrames(-1);  // Assume none;
 
 	// Allocate a CBasePlayer for pev, and call spawn
@@ -217,6 +248,21 @@ extern CVoiceGameMgr g_VoiceGameMgr;
 //
 void Host_Say(edict_t* pEntity, int teamonly)
 {
+	if (FNullEnt(pEntity))
+		return;
+
+	// We can get a raw string now, without the "say " prepended
+	if (CMD_ARGC() == 0)
+		return;
+
+	CBasePlayer* player = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
+	if (!player)
+		return;
+
+	//Not yet.
+	if (player->m_flNextChatTime > gpGlobals->time)
+		return;
+
 	int j;
 	char* p;
 	char text[128];
@@ -224,17 +270,6 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	const char* cpSay = "say";
 	const char* cpSayTeam = "say_team";
 	const char* pcmd = CMD_ARGV(0);
-
-	// We can get a raw string now, without the "say " prepended
-	if (CMD_ARGC() == 0)
-		return;
-
-	entvars_t* pev = &pEntity->v;
-	CBasePlayer* player = GetClassPtr<CBasePlayer>(pev);
-
-	//Not yet.
-	if (player->m_flNextChatTime > gpGlobals->time)
-		return;
 
 	if (!stricmp(pcmd, cpSay) || !stricmp(pcmd, cpSayTeam))
 	{
@@ -379,13 +414,14 @@ extern bool AreCheatsEnabled();
 void ClientCommand(edict_t* pEntity)
 {
 	const char* pcmd = CMD_ARGV(0);
-	const char* pstr;
 
 	// Is the client spawned yet?
-	if (!pEntity->pvPrivateData)
+	if (FNullEnt(pEntity))
 		return;
 
-	entvars_t* pev = &pEntity->v;
+	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
+	if (!pPlayer)
+		return;
 
 	if (FStrEq(pcmd, "say"))
 	{
@@ -397,55 +433,52 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "fullupdate"))
 	{
-		GetClassPtr<CBasePlayer>(pev)->ForceClientDllUpdate();
+		pPlayer->ForceClientDllUpdate();
 	}
 	else if (FStrEq(pcmd, "give"))
 	{
 		if (AreCheatsEnabled())
 		{
 			int iszItem = ALLOC_STRING(CMD_ARGV(1));  // Make a copy of the classname
-			GetClassPtr<CBasePlayer>(pev)->GiveNamedItem(STRING(iszItem));
+			pPlayer->GiveNamedItem(STRING(iszItem));
 		}
 	}
 
 	else if (FStrEq(pcmd, "drop"))
 	{
 		// player is dropping an item.
-		GetClassPtr<CBasePlayer>(pev)->DropPlayerItem(CMD_ARGV(1));
+		pPlayer->DropPlayerItem(CMD_ARGV(1));
 	}
 	else if (FStrEq(pcmd, "fov"))
 	{
 		if (AreCheatsEnabled() && CMD_ARGC() > 1)
 		{
-			GetClassPtr<CBasePlayer>(pev)->m_iFOV = atoi(CMD_ARGV(1));
+			pPlayer->m_iFOV = atoi(CMD_ARGV(1));
 		}
 		else
 		{
-			CLIENT_PRINTF(pEntity, print_console, UTIL_VarArgs("\"fov\" is \"%d\"\n", GetClassPtr<CBasePlayer>(pev)->m_iFOV));
+			CLIENT_PRINTF(pEntity, print_console, UTIL_VarArgs("\"fov\" is \"%d\"\n", pPlayer->m_iFOV));
 		}
 	}
 	else if (FStrEq(pcmd, "use"))
 	{
-		GetClassPtr<CBasePlayer>(pev)->SelectItem(CMD_ARGV(1));
+		pPlayer->SelectItem(CMD_ARGV(1));
 	}
-	else if (((pstr = strstr(pcmd, "weapon_")) != nullptr) && (pstr == pcmd))
+	else if (strstr(pcmd, "weapon_") == pcmd)
 	{
-		GetClassPtr<CBasePlayer>(pev)->SelectItem(pcmd);
+		pPlayer->SelectItem(pcmd);
 	}
 	else if (FStrEq(pcmd, "lastinv"))
 	{
-		GetClassPtr<CBasePlayer>(pev)->SelectLastItem();
+		pPlayer->SelectLastItem();
 	}
-	else if (FStrEq(pcmd, "spectate") && (pev->flags & FL_PROXY))  // added for proxy support
+	else if (FStrEq(pcmd, "spectate") && (pPlayer->pev->flags & FL_PROXY))  // added for proxy support
 	{
-		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
-
 		edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot(pPlayer);
-		pPlayer->StartObserver(pev->origin, VARS(pentSpawnSpot)->angles);
+		pPlayer->StartObserver(pPlayer->pev->origin, VARS(pentSpawnSpot)->angles);
 	}
 	else if (FStrEq(pcmd, "vr_flashlight"))
 	{
-		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		if (atoi(CMD_ARGV(1)))
 		{
 			Vector offset(atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4)));
@@ -459,7 +492,6 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "vr_teleporter"))
 	{
-		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		if (atoi(CMD_ARGV(1)))
 		{
 			Vector offset(atof(CMD_ARGV(2)), atof(CMD_ARGV(3)), atof(CMD_ARGV(4)));
@@ -473,29 +505,24 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "vr_anlgfire"))
 	{
-		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		pPlayer->SetAnalogFire(atof(CMD_ARGV(1)));
 	}
 	else if (FStrEq(pcmd, "vr_lngjump"))
 	{
-		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		pPlayer->DoLongJump();
 	}
 	else if (FStrEq(pcmd, "vr_restartmap"))
 	{
-		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		pPlayer->RestartCurrentMap();
 	}
 	else if (FStrEq(pcmd, "vr_wpnanim"))  // Client side weapon animations are now sent to the server - Max Vollmer, 2019-04-13
 	{
-		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		int sequence = atoi(CMD_ARGV(1));
 		int body = atoi(CMD_ARGV(2));
 		pPlayer->PlayVRWeaponAnimation(sequence, body);
 	}
 	else if (FStrEq(pcmd, "vr_muzzleflash"))  // Client side weapon animations are now sent to the server - Max Vollmer, 2019-04-13
 	{
-		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		pPlayer->PlayVRWeaponMuzzleflash();
 	}
 	else if (FStrEq(pcmd, "vrupd_hmd"))  // Client sends update for VR related data - Max Vollmer, 2017-08-18
@@ -503,7 +530,6 @@ void ClientCommand(edict_t* pEntity)
 		int size = CMD_ARGC();
 		if (size == 10)
 		{
-			CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 			int timestamp = atoi(CMD_ARGV(1));
 			Vector2D offset(atof(CMD_ARGV(2)), atof(CMD_ARGV(3)));
 			Vector2D yawOffsetDelta(atof(CMD_ARGV(4)), atof(CMD_ARGV(5)));
@@ -525,7 +551,6 @@ void ClientCommand(edict_t* pEntity)
 		int size = CMD_ARGC();
 		if (size == 15)
 		{
-			CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 			int timestamp = atoi(CMD_ARGV(1));
 			bool isValid = atoi(CMD_ARGV(2)) != 0;
 			VRControllerID id = VRControllerID(atoi(CMD_ARGV(3)));
@@ -545,7 +570,6 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "vrtele"))
 	{
-		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		if (atoi(CMD_ARGV(1)))
 		{
 			pPlayer->StartVRTele();
@@ -557,10 +581,9 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "vrspeech"))
 	{
-		CBasePlayer* pPlayer = GetClassPtr<CBasePlayer>(pev);
 		pPlayer->HandleSpeechCommand(VRSpeechCommand(atoi(CMD_ARGV(1))));
 	}
-	else if (g_pGameRules->ClientCommand(GetClassPtr<CBasePlayer>(pev), pcmd))
+	else if (g_pGameRules && g_pGameRules->ClientCommand(pPlayer, pcmd))
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
 	}
@@ -592,7 +615,7 @@ it gets sent into the rest of the engine.
 void ClientUserInfoChanged(edict_t* pEntity, char* infobuffer)
 {
 	// Is the client spawned yet?
-	if (!pEntity->pvPrivateData)
+	if (FNullEnt(pEntity))
 		return;
 
 	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
@@ -642,8 +665,9 @@ void ClientUserInfoChanged(edict_t* pEntity, char* infobuffer)
 		}
 	}
 
-	if (g_pGameRules)
-		g_pGameRules->ClientUserInfoChanged(GetClassPtr<CBasePlayer>(&pEntity->v), infobuffer);
+	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(&pEntity->v);
+	if (g_pGameRules && pPlayer)
+		g_pGameRules->ClientUserInfoChanged(pPlayer, infobuffer);
 }
 
 static int g_serveractive = 0;
@@ -667,16 +691,18 @@ void ServerDeactivate(void)
 
 void ServerActivate(edict_t* pEdictList, int edictCount, int clientMax)
 {
-	VRPhysicsHelper::CreateInstance();
+	// Don't activate the server if we loaded from invalid savegame (see world.cpp RestoreGlobalState)
+	extern bool g_didRestoreSaveGameFail;
+	if (g_didRestoreSaveGameFail)
+		return;
 
-	int i;
-	CBaseEntity* pClass;
+	VRPhysicsHelper::CreateInstance();
 
 	// Every call to ServerActivate should be matched by a call to ServerDeactivate
 	g_serveractive = 1;
 
 	// Clients have not been initialized yet
-	for (i = 0; i < edictCount; i++)
+	for (int i = 0; i < edictCount; i++)
 	{
 		if (pEdictList[i].free)
 			continue;
@@ -685,7 +711,7 @@ void ServerActivate(edict_t* pEdictList, int edictCount, int clientMax)
 		if (i < clientMax || !pEdictList[i].pvPrivateData)
 			continue;
 
-		pClass = CBaseEntity::SafeInstance<CBaseEntity>(&pEdictList[i]);
+		CBaseEntity*  pClass = CBaseEntity::SafeInstance<CBaseEntity>(&pEdictList[i]);
 		// Activate this entity if it's got a class & isn't dormant
 		if (pClass && !(pClass->pev->flags & FL_DORMANT))
 		{
@@ -755,6 +781,20 @@ void ParmsChangeLevel(void)
 //
 void StartFrame(void)
 {
+	// Don't think in game loaded from invalid savegame (see world.cpp RestoreGlobalState)
+	extern bool g_didRestoreSaveGameFail;
+	if (g_didRestoreSaveGameFail)
+	{
+		// We cannot shut down a server, but we can switch to crossfire
+		extern bool g_didRestoreSaveGameFail_MapChangedToSafety;
+		if (!g_didRestoreSaveGameFail_MapChangedToSafety)
+		{
+			g_engfuncs.pfnChangeLevel("crossfire", nullptr);
+			g_didRestoreSaveGameFail_MapChangedToSafety = true;
+		}
+		return;
+	}
+
 	UTIL_UpdateSDModels();
 
 	VRPhysicsHelper::Instance().StartFrame();
@@ -910,7 +950,7 @@ const char* GetGameDescription()
 	if (g_pGameRules)  // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		return "Half-Life: VR";
 }
 
 /*
@@ -936,9 +976,7 @@ animation right now.
 */
 void PlayerCustomization(edict_t* pEntity, customization_t* pCust)
 {
-	entvars_t* pev = &pEntity->v;
 	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
-
 	if (!pPlayer)
 	{
 		ALERT(at_console, "PlayerCustomization:  Couldn't get player!\n");
@@ -976,9 +1014,7 @@ A spectator has joined the game
 */
 void SpectatorConnect(edict_t* pEntity)
 {
-	entvars_t* pev = &pEntity->v;
 	CBaseSpectator* pPlayer = CBaseEntity::SafeInstance<CBaseSpectator>(pEntity);
-
 	if (pPlayer)
 		pPlayer->SpectatorConnect();
 }
@@ -992,9 +1028,7 @@ A spectator has left the game
 */
 void SpectatorDisconnect(edict_t* pEntity)
 {
-	entvars_t* pev = &pEntity->v;
 	CBaseSpectator* pPlayer = CBaseEntity::SafeInstance<CBaseSpectator>(pEntity);
-
 	if (pPlayer)
 		pPlayer->SpectatorDisconnect();
 }
@@ -1008,9 +1042,7 @@ A spectator has sent a usercmd
 */
 void SpectatorThink(edict_t* pEntity)
 {
-	entvars_t* pev = &pEntity->v;
 	CBaseSpectator* pPlayer = CBaseEntity::SafeInstance<CBaseSpectator>(pEntity);
-
 	if (pPlayer)
 		pPlayer->SpectatorThink();
 }
@@ -1035,24 +1067,17 @@ NOTE:  Do not cache the values of pas and pvs, as they depend on reusable memory
 */
 void SetupVisibility(edict_t* pViewEntity, edict_t* pClient, unsigned char** pvs, unsigned char** pas)
 {
-	Vector org;
-	edict_t* pView = pClient;
-
 	// Find the client's PVS
-	if (pViewEntity)
-	{
-		pView = pViewEntity;
-	}
+	edict_t* pView = !FNullEnt(pViewEntity) ? pViewEntity : pClient;
 
-	if (pClient->v.flags & FL_PROXY)
+	if (FNullEnt(pView) || pClient->v.flags & FL_PROXY)
 	{
 		*pvs = nullptr;  // the spectator proxy sees
 		*pas = nullptr;  // and hears everything
 		return;
 	}
 
-	org = pView->v.origin + pView->v.view_ofs;
-
+	Vector org = pView->v.origin + pView->v.view_ofs;
 	*pvs = ENGINE_SET_PVS(org);
 	*pas = ENGINE_SET_PAS(org);
 }
@@ -1559,12 +1584,7 @@ int GetWeaponData(struct edict_s* player, struct weapon_data_s* info)
 	memset(info, 0, 32 * sizeof(weapon_data_t));
 
 #if defined(CLIENT_WEAPONS)
-	if (!player)
-		return 1;
-
-	const entvars_t* pev = &player->v;
-
-	if (pev->pContainingEntity != player)
+	if (FNullEnt(player))
 		return 1;
 
 	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(player);
@@ -1634,12 +1654,7 @@ engine sets cd to 0 before calling.
 
 void UpdateClientData(const struct edict_s* ent, int sendweapons, struct clientdata_s* cd)
 {
-	if (!ent)
-		return;
-
-	const entvars_t* pev = &ent->v;
-
-	if (pev->pContainingEntity != ent)
+	if (FNullEnt(ent))
 		return;
 
 	cd->flags = ent->v.flags;
@@ -1740,11 +1755,10 @@ This is the time to examine the usercmd for anything extra.  This call happens e
 */
 void CmdStart(const edict_t* player, const struct usercmd_s* cmd, unsigned int random_seed)
 {
-	const entvars_t* pev = &player->v;
-	if (pev->pContainingEntity != player)
+	if (FNullEnt(player))
 		return;
 
-	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(pev);
+	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(player);
 
 	if (!pl)
 		return;
@@ -1766,11 +1780,10 @@ Each cmdstart is exactly matched with a cmd end, clean up any group trace flags,
 */
 void CmdEnd(const edict_t* player)
 {
-	const entvars_t* pev = &player->v;
-	if (pev->pContainingEntity != player)
+	if (FNullEnt(player))
 		return;
 
-	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(pev);
+	CBasePlayer* pl = CBaseEntity::SafeInstance<CBasePlayer>(player);
 
 	if (!pl)
 		return;
@@ -1857,16 +1870,6 @@ to be created during play ( e.g., grenades, ammo packs, projectiles, corpses, et
 */
 void CreateInstancedBaselines(void)
 {
-	int iret = 0;
-	entity_state_t state;
-
-	memset(&state, 0, sizeof(state));
-
-	// Create any additional baselines here for things like grendates, etc.
-	// iret = ENGINE_INSTANCE_BASELINE( pc->pev->classname, &state );
-
-	// Destroy objects.
-	//UTIL_Remove( pc );
 }
 
 /*

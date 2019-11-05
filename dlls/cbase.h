@@ -385,7 +385,7 @@ public:
 
 	inline static CBaseEntity* InstanceOrWorld(const edict_t* pent)
 	{
-		if (!pent || FNullEnt(pent))
+		if (FNullEnt(pent))
 			return static_cast<CBaseEntity*>(GET_PRIVATE(ENT(0)));
 		else
 			return static_cast<CBaseEntity*>(GET_PRIVATE(pent));
@@ -398,7 +398,14 @@ public:
 	template<class T>
 	inline static EHANDLE<T> SafeInstance(const edict_t* pent)
 	{
-		return FNullEnt(pent) ? nullptr : dynamic_cast<T*>(static_cast<CBaseEntity*>(GET_PRIVATE(pent)));
+		if (FNullEnt(pent) && !FWorldEnt(pent))
+		{
+			return nullptr;
+		}
+		else
+		{
+			return dynamic_cast<T*>(static_cast<CBaseEntity*>(GET_PRIVATE(pent)));
+		}
 	}
 
 	template<class T>
@@ -958,12 +965,17 @@ T* GetClassPtr(entvars_t* pev)
 	void* privateData = GET_PRIVATE(ENT(pev));
 
 	if (privateData != nullptr)
+	{
+		// return existing private data
 		return dynamic_cast<T*>(static_cast<CBaseEntity*>(privateData));
-
-	// allocate private data
-	T* t = new (pev) T;
-	t->pev = pev;
-	return t;
+	}
+	else
+	{
+		// allocate new private data
+		T* t = new (pev) T;
+		t->pev = pev;
+		return t;
+	}
 }
 
 

@@ -265,8 +265,10 @@ void CBaseMonster::Listen(void)
 			m_iAudibleList = iSound;
 		}
 
-		//		iSound = g_pSoundEnt->m_SoundPool[ iSound ].m_iNext;
-		iSound = pCurrentSound->m_iNext;
+		if (iSound != pCurrentSound->m_iNext)
+			iSound = pCurrentSound->m_iNext;
+		else
+			break;
 	}
 }
 
