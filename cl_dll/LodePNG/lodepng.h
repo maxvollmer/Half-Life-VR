@@ -23,6 +23,16 @@ freely, subject to the following restrictions:
     distribution.
 */
 
+/*
+**
+** 2019-11-06 MODIFIED BY MAX VOLLMER FOR HALF-LIFE: VR:
+**  - Suppress warnings for unitialized member variabls in Visual Studio
+**
+*/
+
+#pragma warning( push )
+#pragma warning( disable : 26495)
+
 #ifndef LODEPNG_H
 #define LODEPNG_H
 
@@ -1928,3 +1938,5 @@ Account: lode dot vandevenne.
 
 Copyright (c) 2005-2019 Lode Vandevenne
 */
+
+#pragma warning( pop )

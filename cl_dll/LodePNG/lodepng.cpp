@@ -25,7 +25,9 @@ freely, subject to the following restrictions:
 
 /*
 **
-** 2019-11-06 MODIFIED BY MAX VOLLMER FOR HALF-LIFE: VR: Prevent dereferencing nullptr (line 5308/5309)
+** 2019-11-06 MODIFIED BY MAX VOLLMER FOR HALF-LIFE: VR:
+**  - Prevent potential dereferencing of nullptr (line 5308/5309)
+**  - Default initialized member variables (everywhere)
 **
 */
 
@@ -2784,7 +2786,7 @@ index for a color. It's like an octree, but because the alpha channel is used to
 node has 16 instead of 8 children.
 */
 struct ColorTree {
-  ColorTree* children[16]; /*up to 16 pointers to ColorTree of next level*/
+	ColorTree* children[16] = { 0 }; /*up to 16 pointers to ColorTree of next level*/
   int index = 0; /*the payload. Only has a meaningful value if this is in the last level*/
 };
 

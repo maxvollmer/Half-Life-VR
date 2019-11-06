@@ -24,6 +24,13 @@
 #include "animation.h"
 #include "doors.h"
 
+// This code is a mess. I am not going to touch this for now, so I just suppress the warnings...
+// - Max Vollmer, 2019-06-11
+#pragma warning( push )
+#pragma warning( disable : 6011 )
+#pragma warning( disable : 6387 )
+#pragma warning( disable : 6385 )
+
 #define HULL_STEP_SIZE 16  // how far the test hull moves on each step
 #define NODE_HEIGHT    8   // how high to lift nodes off the ground after we drop them all (make stair/ramp mapping easier)
 
@@ -2806,8 +2813,6 @@ void CGraph::BuildRegionTables(void)
 		m_pNodes[i].m_Region[2] = CALC_RANGE(m_pNodes[i].m_vecOrigin.z, m_RegionMin[2], m_RegionMax[2]);
 	}
 
-#pragma disable warning(6011)
-
 	for (int i = 0; i < 3; i++)
 	{
 		for (int j = 0; j < NUM_RANGES; j++)
@@ -3532,3 +3537,6 @@ void CNodeViewer::DrawThink(void)
 		m_iDraw++;
 	}
 }
+
+#pragma warning( pop )
+
