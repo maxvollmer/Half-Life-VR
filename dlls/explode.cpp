@@ -93,8 +93,8 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_iMagnitude;   // how large is the fireball? how much damage?
-	int m_spriteScale;  // what's the exact fireball sprite scale?
+	int m_iMagnitude = 0;   // how large is the fireball? how much damage?
+	int m_spriteScale = 0;  // what's the exact fireball sprite scale?
 };
 
 TYPEDESCRIPTION CEnvExplosion::m_SaveData[] =
@@ -130,7 +130,7 @@ void CEnvExplosion::Spawn(void)
 	}
 	*/
 
-	float flSpriteScale;
+	float flSpriteScale = 0.f;
 	flSpriteScale = (m_iMagnitude - 50) * 0.6;
 
 	/*

@@ -29,10 +29,10 @@ class CVoiceStatus;
 class CVoiceLabel
 {
 public:
-	vgui::Label* m_pLabel;
-	vgui::Label* m_pBackground;
-	vgui::ImagePanel* m_pIcon;  // Voice icon next to player name.
-	int m_clientindex;          // Client index of the speaker. -1 if this label isn't being used.
+	vgui::Label* m_pLabel = nullptr;
+	vgui::Label* m_pBackground = nullptr;
+	vgui::ImagePanel* m_pIcon = nullptr;  // Voice icon next to player name.
+	int m_clientindex = 0;          // Client index of the speaker. -1 if this label isn't being used.
 };
 
 
@@ -153,10 +153,10 @@ public:
 		MAX_VOICE_SPEAKERS = 7
 	};
 
-	float m_LastUpdateServerState;  // Last time we called this function.
-	int m_bServerModEnable;         // What we've sent to the server about our "voice_modenable" cvar.
+	float m_LastUpdateServerState = 0.f;  // Last time we called this function.
+	int m_bServerModEnable = 0;         // What we've sent to the server about our "voice_modenable" cvar.
 
-	vgui::Panel** m_pParentPanel;
+	vgui::Panel** m_pParentPanel = nullptr;
 	CPlayerBitVec m_VoicePlayers;  // Who is currently talking. Indexed by client index.
 
 	// This is the gamerules-defined list of players that you can hear. It is based on what teams people are on
@@ -170,47 +170,47 @@ public:
 	// It is checked periodically, and the server is told to squelch or unsquelch the appropriate players.
 	CPlayerBitVec m_ServerBannedPlayers;
 
-	cl_entity_s m_VoiceHeadModels[VOICE_MAX_PLAYERS];  // These aren't necessarily in the order of players. They are just
+	cl_entity_s m_VoiceHeadModels[VOICE_MAX_PLAYERS] = { 0 };  // These aren't necessarily in the order of players. They are just
 													   // a place for it to put data in during CreateEntities.
 
-	IVoiceStatusHelper* m_pHelper;  // Each mod provides an implementation of this.
+	IVoiceStatusHelper* m_pHelper = nullptr;  // Each mod provides an implementation of this.
 
 
 	// Scoreboard icons.
-	double m_BlinkTimer;  // Blink scoreboard icons..
-	vgui::BitmapTGA* m_pScoreboardNeverSpoken;
-	vgui::BitmapTGA* m_pScoreboardNotSpeaking;
-	vgui::BitmapTGA* m_pScoreboardSpeaking;
-	vgui::BitmapTGA* m_pScoreboardSpeaking2;
-	vgui::BitmapTGA* m_pScoreboardSquelch;
-	vgui::BitmapTGA* m_pScoreboardBanned;
+	double m_BlinkTimer = 0.0;  // Blink scoreboard icons..
+	vgui::BitmapTGA* m_pScoreboardNeverSpoken = nullptr;
+	vgui::BitmapTGA* m_pScoreboardNotSpeaking = nullptr;
+	vgui::BitmapTGA* m_pScoreboardSpeaking = nullptr;
+	vgui::BitmapTGA* m_pScoreboardSpeaking2 = nullptr;
+	vgui::BitmapTGA* m_pScoreboardSquelch = nullptr;
+	vgui::BitmapTGA* m_pScoreboardBanned = nullptr;
 
-	vgui::Label* m_pBanButtons[VOICE_MAX_PLAYERS];  // scoreboard buttons.
+	vgui::Label* m_pBanButtons[VOICE_MAX_PLAYERS] = { 0 };  // scoreboard buttons.
 
 	// Squelch mode stuff.
-	bool m_bInSquelchMode;
+	bool m_bInSquelchMode = false;
 
 	HSPRITE_VALVE m_VoiceHeadModel;  // Voice head model (goes above players who are speaking).
-	float m_VoiceHeadModelHeight;    // Height above their head to place the model.
+	float m_VoiceHeadModelHeight = 0.f;    // Height above their head to place the model.
 
-	vgui::Image* m_pSpeakerLabelIcon;  // Icon next to speaker labels.
+	vgui::Image* m_pSpeakerLabelIcon = nullptr;  // Icon next to speaker labels.
 
 	// Lower-right icons telling when the local player is talking..
-	vgui::BitmapTGA* m_pLocalBitmap;  // Represents the local client talking.
-	vgui::BitmapTGA* m_pAckBitmap;    // Represents the server ack'ing the client talking.
-	vgui::ImagePanel* m_pLocalLabel;  // Represents the local client talking.
+	vgui::BitmapTGA* m_pLocalBitmap = nullptr;  // Represents the local client talking.
+	vgui::BitmapTGA* m_pAckBitmap = nullptr;    // Represents the server ack'ing the client talking.
+	vgui::ImagePanel* m_pLocalLabel = nullptr;  // Represents the local client talking.
 
-	bool m_bTalking;      // Set to true when the client thinks it's talking.
-	bool m_bServerAcked;  // Set to true when the server knows the client is talking.
+	bool m_bTalking = false;      // Set to true when the client thinks it's talking.
+	bool m_bServerAcked = false;  // Set to true when the server knows the client is talking.
 
 public:
 	CVoiceBanMgr m_BanMgr;  // Tracks which users we have squelched and don't want to hear.
 
 public:
-	bool m_bBanMgrInitialized;
+	bool m_bBanMgrInitialized = false;
 
 	// Labels telling who is speaking.
-	CVoiceLabel m_Labels[MAX_VOICE_SPEAKERS];
+	CVoiceLabel m_Labels[MAX_VOICE_SPEAKERS] = { 0 };
 
 	// Cache the game directory for use when we shut down
 	char* m_pchGameDir{ nullptr };

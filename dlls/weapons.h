@@ -55,7 +55,7 @@ public:
 	virtual void BounceSound(void);
 	virtual void Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib);
 
-	BOOL m_fRegisteredSound;  // whether or not this grenade has issued its DANGER sound to the world sound list yet.
+	BOOL m_fRegisteredSound = FALSE;  // whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };
 
 
@@ -198,23 +198,23 @@ typedef enum
 
 typedef struct
 {
-	int iSlot;
-	int iPosition;
-	const char* pszAmmo1;  // ammo 1 type
-	int iMaxAmmo1;         // max ammo 1
-	const char* pszAmmo2;  // ammo 2 type
-	int iMaxAmmo2;         // max ammo 2
-	const char* pszName;
-	int iMaxClip;
-	int iId;
-	int iFlags;
-	int iWeight;  // this value used to determine this weapon's importance in autoselection.
+	int iSlot = 0;
+	int iPosition = 0;
+	const char* pszAmmo1 = nullptr;  // ammo 1 type
+	int iMaxAmmo1 = 0;         // max ammo 1
+	const char* pszAmmo2 = nullptr;  // ammo 2 type
+	int iMaxAmmo2 = 0;         // max ammo 2
+	const char* pszName = nullptr;
+	int iMaxClip = 0;
+	int iId = 0;
+	int iFlags = 0;
+	int iWeight = 0;  // this value used to determine this weapon's importance in autoselection.
 } ItemInfo;
 
 typedef struct
 {
-	const char* pszName;
-	int iId;
+	const char* pszName = nullptr;
+	int iId = 0;
 } AmmoInfo;
 
 inline bool IsWeaponWithRange(int iId)
@@ -286,7 +286,7 @@ public:
 
 	EHANDLE<CBasePlayer> m_pPlayer;
 	EHANDLE<CBasePlayerItem> m_pNext;
-	int m_iId;  // WEAPON_???
+	int m_iId = 0;  // WEAPON_???
 
 	virtual int iItemSlot(void) { return 0; }  // return 0 to MAX_ITEMS_SLOTS, used in hud
 
@@ -300,8 +300,8 @@ public:
 	int iWeight(void) { return ItemInfoArray[m_iId].iWeight; }
 	int iFlags(void) { return ItemInfoArray[m_iId].iFlags; }
 
-	// int		m_iIdPrimary;										// Unique Id for primary ammo
-	// int		m_iIdSecondary;										// Unique Id for secondary ammo
+	// int		m_iIdPrimary = 0;										// Unique Id for primary ammo
+	// int		m_iIdSecondary = 0;										// Unique Id for secondary ammo
 };
 
 
@@ -404,8 +404,8 @@ public:
 
 	virtual void UpdateItemInfo(void) {};  // updates HUD state
 
-	int m_iPlayEmptySound;
-	int m_fFireOnEmpty;  // True when the gun is empty and the player is still holding down the
+	int m_iPlayEmptySound = 0;
+	int m_fFireOnEmpty = 0;  // True when the gun is empty and the player is still holding down the
 						 // attack key(s)
 	virtual BOOL PlayEmptySound(void);
 	virtual void ResetEmptySound(void);
@@ -434,19 +434,19 @@ public:
 
 	void PrintState(void);
 
-	float m_flPumpTime;
-	int m_fInSpecialReload;         // Are we in the middle of a reload for the shotguns
-	float m_flNextPrimaryAttack;    // soonest time ItemPostFrame will call PrimaryAttack
-	float m_flNextSecondaryAttack;  // soonest time ItemPostFrame will call SecondaryAttack
-	float m_flTimeWeaponIdle;       // soonest time ItemPostFrame will call WeaponIdle
-	int m_iPrimaryAmmoType;         // "primary" ammo index into players m_rgAmmo[]
-	int m_iSecondaryAmmoType;       // "secondary" ammo index into players m_rgAmmo[]
-	int m_iClip;                    // number of shots left in the primary weapon clip, -1 it not used
-	int m_iClientClip;              // the last version of m_iClip sent to hud dll
-	int m_iClientWeaponState;       // the last version of the weapon state sent to hud dll (is current weapon, is on target)
-	int m_fInReload;                // Are we in the middle of a reload;
+	float m_flPumpTime = 0.f;
+	int m_fInSpecialReload = 0;         // Are we in the middle of a reload for the shotguns
+	float m_flNextPrimaryAttack = 0.f;    // soonest time ItemPostFrame will call PrimaryAttack
+	float m_flNextSecondaryAttack = 0.f;  // soonest time ItemPostFrame will call SecondaryAttack
+	float m_flTimeWeaponIdle = 0.f;       // soonest time ItemPostFrame will call WeaponIdle
+	int m_iPrimaryAmmoType = 0;         // "primary" ammo index into players m_rgAmmo[]
+	int m_iSecondaryAmmoType = 0;       // "secondary" ammo index into players m_rgAmmo[]
+	int m_iClip = 0;                    // number of shots left in the primary weapon clip, -1 it not used
+	int m_iClientClip = 0;              // the last version of m_iClip sent to hud dll
+	int m_iClientWeaponState = 0;       // the last version of the weapon state sent to hud dll (is current weapon, is on target)
+	int m_fInReload = 0;                // Are we in the middle of a reload;
 
-	int m_iDefaultAmmo;  // how much ammo you get when you pick up this weapon as placed by a level designer.
+	int m_iDefaultAmmo = 0;  // how much ammo you get when you pick up this weapon as placed by a level designer.
 };
 
 
@@ -485,8 +485,8 @@ extern void RadiusDamage(Vector vecSrc, entvars_t* pevInflictor, entvars_t* pevA
 typedef struct
 {
 	EHANDLE<CBaseEntity> pEntity;
-	float amount;
-	int type;
+	float amount = 0.f;
+	int type = 0;
 } MULTIDAMAGE;
 
 extern MULTIDAMAGE gMultiDamage;
@@ -545,10 +545,10 @@ public:
 
 	EHANDLE<CBasePlayerItem> m_rgpPlayerItems[MAX_ITEM_TYPES];  // one slot for each
 
-	int m_rgiszAmmo[MAX_AMMO_SLOTS];  // ammo names
-	int m_rgAmmo[MAX_AMMO_SLOTS];     // ammo quantities
+	int m_rgiszAmmo[MAX_AMMO_SLOTS] = { 0 };  // ammo names
+	int m_rgAmmo[MAX_AMMO_SLOTS] = { 0 };     // ammo quantities
 
-	int m_cAmmoTypes;  // how many ammo types packed into this box (if packed by a level designer)
+	int m_cAmmoTypes = 0;  // how many ammo types packed into this box (if packed by a level designer)
 };
 
 #ifdef CLIENT_DLL
@@ -581,11 +581,11 @@ public:
 	}
 
 private:
-	int m_iShell;
+	int m_iShell = 0;
 
 
-	unsigned short m_usFireGlock1;
-	unsigned short m_usFireGlock2;
+	unsigned short m_usFireGlock1 = 0;
+	unsigned short m_usFireGlock2 = 0;
 };
 
 
@@ -608,7 +608,7 @@ public:
 	int Swing(int fFirst);
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
-	int m_iSwing;
+	int m_iSwing = 0;
 	TraceResult m_trHit;
 
 	virtual BOOL UseDecrement(void)
@@ -621,7 +621,7 @@ public:
 	}
 
 private:
-	unsigned short m_usCrowbar;
+	unsigned short m_usCrowbar = 0;
 
 #ifndef CLIENT_DLL
 	// Stuff for VR swinging
@@ -644,9 +644,9 @@ public:
 	void Holster(int skiplocal = 0);
 	void Reload(void);
 	void WeaponIdle(void);
-	float m_flSoundDelay;
+	float m_flSoundDelay = 0.f;
 
-	BOOL m_fInZoom;  // don't save this.
+	BOOL m_fInZoom = FALSE;  // don't save this.
 
 	virtual BOOL UseDecrement(void)
 	{
@@ -658,7 +658,7 @@ public:
 	}
 
 private:
-	unsigned short m_usFirePython;
+	unsigned short m_usFirePython = 0;
 };
 
 class CMP5 : public CBasePlayerWeapon
@@ -676,8 +676,8 @@ public:
 	BOOL Deploy(void);
 	void Reload(void);
 	void WeaponIdle(void);
-	float m_flNextAnimTime;
-	int m_iShell;
+	float m_flNextAnimTime = 0.f;
+	int m_iShell = 0;
 
 	virtual BOOL UseDecrement(void)
 	{
@@ -689,8 +689,8 @@ public:
 	}
 
 private:
-	unsigned short m_usMP5;
-	unsigned short m_usMP52;
+	unsigned short m_usMP5 = 0;
+	unsigned short m_usMP52 = 0;
 };
 
 class CCrossbow : public CBasePlayerWeapon
@@ -724,8 +724,8 @@ public:
 	}
 
 private:
-	unsigned short m_usCrossbow;
-	unsigned short m_usCrossbow2;
+	unsigned short m_usCrossbow = 0;
+	unsigned short m_usCrossbow2 = 0;
 };
 
 class CShotgun : public CBasePlayerWeapon
@@ -749,9 +749,9 @@ public:
 	BOOL Deploy();
 	void Reload(void);
 	void WeaponIdle(void);
-	int m_fInReload;
-	float m_flNextReload;
-	int m_iShell;
+	int m_fInReload = 0;
+	float m_flNextReload = 0.f;
+	int m_iShell = 0;
 
 	virtual BOOL UseDecrement(void)
 	{
@@ -763,8 +763,8 @@ public:
 	}
 
 private:
-	unsigned short m_usDoubleFire;
-	unsigned short m_usSingleFire;
+	unsigned short m_usDoubleFire = 0;
+	unsigned short m_usSingleFire = 0;
 };
 
 class CLaserSpot : public CBaseEntity
@@ -809,8 +809,8 @@ public:
 	BOOL ShouldWeaponIdle(void) { return TRUE; };
 
 	EHANDLE<CLaserSpot> m_pSpot;
-	int m_fSpotActive;
-	int m_cActiveRockets;  // how many missiles in flight from this launcher right now?
+	int m_fSpotActive = 0;
+	int m_cActiveRockets = 0;  // how many missiles in flight from this launcher right now?
 
 	virtual BOOL UseDecrement(void)
 	{
@@ -822,7 +822,7 @@ public:
 	}
 
 private:
-	unsigned short m_usRpg;
+	unsigned short m_usRpg = 0;
 };
 
 class CRpgRocket : public CGrenade
@@ -838,8 +838,8 @@ public:
 	void EXPORT RocketTouch(CBaseEntity* pOther);
 	static CRpgRocket* CreateRpgRocket(Vector vecOrigin, Vector vecAngles, CBaseEntity* pOwner, CRpg* pLauncher);
 
-	int m_iTrail;
-	float m_flIgniteTime;
+	int m_iTrail = 0;
+	float m_flIgniteTime = 0.f;
 	EHANDLE<CRpg> m_pLauncher;  // pointer back to the launcher that fired me.
 };
 
@@ -868,14 +868,14 @@ public:
 	void StartFire(void);
 	void Fire(Vector vecOrigSrc, Vector vecDirShooting, float flDamage);
 	float GetFullChargeTime(void);
-	int m_iBalls;
-	int m_iGlow;
-	int m_iBeam;
-	int m_iSoundState;  // don't save this
+	int m_iBalls = 0;
+	int m_iGlow = 0;
+	int m_iBeam = 0;
+	int m_iSoundState = 0;  // don't save this
 
 	// was this weapon just fired primary or secondary?
 	// we need to know so we can pick the right set of effects.
-	BOOL m_fPrimaryFire;
+	BOOL m_fPrimaryFire = FALSE;
 
 	virtual BOOL UseDecrement(void)
 	{
@@ -887,8 +887,8 @@ public:
 	}
 
 private:
-	unsigned short m_usGaussFire;
-	unsigned short m_usGaussSpin;
+	unsigned short m_usGaussFire = 0;
+	unsigned short m_usGaussSpin = 0;
 };
 
 class CEgon : public CBasePlayerWeapon
@@ -919,7 +919,7 @@ public:
 	void PrimaryAttack(void);
 	void WeaponIdle(void);
 
-	float m_flAmmoUseTime;  // since we use < 1 point of ammo per update, we subtract ammo on a timer.
+	float m_flAmmoUseTime = 0.f;  // since we use < 1 point of ammo per update, we subtract ammo on a timer.
 
 	float GetPulseInterval(void);
 	float GetDischargeInterval(void);
@@ -949,15 +949,15 @@ public:
 #endif
 	}
 
-	unsigned short m_usEgonStop;
+	unsigned short m_usEgonStop = 0;
 
 private:
-	float m_shootTime;
-	EGON_FIREMODE m_fireMode;
-	float m_shakeTime;
-	BOOL m_deployed;
+	float m_shootTime = 0.f;
+	EGON_FIREMODE m_fireMode = FIRE_NARROW;
+	float m_shakeTime = 0.f;
+	BOOL m_deployed = FALSE;
 
-	unsigned short m_usEgonFire;
+	unsigned short m_usEgonFire = 0;
 };
 
 class CHgun : public CBasePlayerWeapon
@@ -976,11 +976,11 @@ public:
 	void Holster(int skiplocal = 0);
 	void Reload(void);
 	void WeaponIdle(void);
-	float m_flNextAnimTime;
+	float m_flNextAnimTime = 0.f;
 
-	float m_flRechargeTime;
+	float m_flRechargeTime = 0.f;
 
-	int m_iFirePhase;  // don't save me.
+	int m_iFirePhase = 0;  // don't save me.
 
 	virtual BOOL UseDecrement(void)
 	{
@@ -992,7 +992,7 @@ public:
 	}
 
 private:
-	unsigned short m_usHornetFire;
+	unsigned short m_usHornetFire = 0;
 };
 
 
@@ -1086,7 +1086,7 @@ public:
 	}
 
 private:
-	unsigned short m_usTripFire;
+	unsigned short m_usTripFire = 0;
 
 #ifndef CLIENT_DLL
 	// "ghost" tripmine used in VR to show where the mine will be placed
@@ -1108,7 +1108,7 @@ public:
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
 	void WeaponIdle(void);
-	int m_fJustThrown;
+	int m_fJustThrown = 0;
 
 	void Throw();
 
@@ -1122,7 +1122,7 @@ public:
 	}
 
 private:
-	unsigned short m_usSnarkFire;
+	unsigned short m_usSnarkFire = 0;
 };
 
 

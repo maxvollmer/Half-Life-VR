@@ -40,12 +40,12 @@ extern "C"
 
 	typedef struct SCREENINFO_s
 	{
-		int iSize;
-		int iWidth;
-		int iHeight;
-		int iFlags;
-		int iCharHeight;
-		short charWidths[256];
+		int iSize = 0;
+		int iWidth = 0;
+		int iHeight = 0;
+		int iFlags = 0;
+		int iCharHeight = 0;
+		short charWidths[256] = { 0 };
 	} SCREENINFO;
 
 
@@ -56,47 +56,47 @@ extern "C"
 
 		// fields that can be changed by the cldll
 		vec3_t viewangles;
-		int iWeaponBits;
-		float fov;  // field of view
+		int iWeaponBits = 0;
+		float fov = 0.f;  // field of view
 	} client_data_t;
 
 	typedef struct client_sprite_s
 	{
-		char szName[64];
-		char szSprite[64];
-		int hspr;
-		int iRes;
+		char szName[64] = { 0 };
+		char szSprite[64] = { 0 };
+		int hspr = 0;
+		int iRes = 0;
 		wrect_t rc;
 	} client_sprite_t;
 
 	typedef struct client_textmessage_s
 	{
-		int effect;
-		byte r1, g1, b1, a1;  // 2 colors for effects
-		byte r2, g2, b2, a2;
-		float x;
-		float y;
-		float fadein;
-		float fadeout;
-		float holdtime;
-		float fxtime;
-		const char* pName;
-		const char* pMessage;
+		int effect = 0;
+		byte r1 = 0, g1 = 0, b1 = 0, a1 = 0;  // 2 colors for effects
+		byte r2 = 0, g2 = 0, b2 = 0, a2 = 0;
+		float x = 0.f;
+		float y = 0.f;
+		float fadein = 0.f;
+		float fadeout = 0.f;
+		float holdtime = 0.f;
+		float fxtime = 0.f;
+		const char* pName = nullptr;
+		const char* pMessage = nullptr;
 	} client_textmessage_t;
 
 	typedef struct hud_player_info_s
 	{
-		char* name;
-		short ping;
-		byte thisplayer;  // TRUE if this is the calling player
+		char* name = nullptr;
+		short ping = 0;
+		byte thisplayer = 0;  // TRUE if this is the calling player
 
 		// stuff that's unused at the moment,  but should be done
-		byte spectator;
-		byte packetloss;
+		byte spectator = 0;
+		byte packetloss = 0;
 
-		char* model;
-		short topcolor;
-		short bottomcolor;
+		char* model = nullptr;
+		short topcolor = 0;
+		short bottomcolor = 0;
 
 	} hud_player_info_t;
 

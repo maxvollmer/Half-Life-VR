@@ -22,7 +22,7 @@
 class CBaseMonster : public CBaseToggle
 {
 private:
-	int m_afConditions;
+	int m_afConditions = 0;
 
 public:
 	typedef enum
@@ -42,69 +42,69 @@ public:
 	EHANDLE<CBaseEntity> m_hOldEnemy[MAX_OLD_ENEMIES];
 	Vector m_vecOldEnemy[MAX_OLD_ENEMIES];
 
-	float m_flFieldOfView;   // width of monster's field of view ( dot product )
-	float m_flWaitFinished;  // if we're told to wait, this is the time that the wait will be over.
-	float m_flMoveWaitFinished;
+	float m_flFieldOfView = 0.f;   // width of monster's field of view ( dot product )
+	float m_flWaitFinished = 0.f;  // if we're told to wait, this is the time that the wait will be over.
+	float m_flMoveWaitFinished = 0.f;
 
-	Activity m_Activity;       // what the monster is doing (animation)
-	Activity m_IdealActivity;  // monster should switch to this activity
+	Activity m_Activity = ACT_RESET;       // what the monster is doing (animation)
+	Activity m_IdealActivity = ACT_RESET;  // monster should switch to this activity
 
-	int m_LastHitGroup;  // the last body region that took damage
+	int m_LastHitGroup = 0;  // the last body region that took damage
 
-	MONSTERSTATE m_MonsterState;       // monster's current state
-	MONSTERSTATE m_IdealMonsterState;  // monster should change to this state
+	MONSTERSTATE m_MonsterState = MONSTERSTATE_NONE;       // monster's current state
+	MONSTERSTATE m_IdealMonsterState = MONSTERSTATE_NONE;  // monster should change to this state
 
-	int m_iTaskStatus;
-	Schedule_t* m_pSchedule;
-	int m_iScheduleIndex;
+	int m_iTaskStatus = 0;
+	Schedule_t* m_pSchedule = nullptr;
+	int m_iScheduleIndex = 0;
 
 	WayPoint_t m_Route[ROUTE_SIZE];  // Positions of movement
-	int m_movementGoal;              // Goal that defines route
-	int m_iRouteIndex;               // index into m_Route[]
-	float m_moveWaitTime;            // How long I should wait for something to move
+	int m_movementGoal = 0;              // Goal that defines route
+	int m_iRouteIndex = 0;               // index into m_Route[]
+	float m_moveWaitTime = 0.f;            // How long I should wait for something to move
 
 	Vector m_vecMoveGoal;         // kept around for node graph moves, so we know our ultimate goal
-	Activity m_movementActivity;  // When moving, set this activity
+	Activity m_movementActivity = ACT_RESET;  // When moving, set this activity
 
-	int m_iAudibleList;  // first index of a linked list of sounds that the monster can hear.
-	int m_afSoundTypes;
+	int m_iAudibleList = 0;  // first index of a linked list of sounds that the monster can hear.
+	int m_afSoundTypes = 0;
 
 	Vector m_vecLastPosition;  // monster sometimes wants to return to where it started after an operation.
 
-	int m_iHintNode;  // this is the hint node that the monster is moving towards or performing active idle on.
+	int m_iHintNode = 0;  // this is the hint node that the monster is moving towards or performing active idle on.
 
-	int m_afMemory;
+	int m_afMemory = 0;
 
-	int m_iMaxHealth;  // keeps track of monster's maximum health value (for re-healing, etc)
+	int m_iMaxHealth = 0;  // keeps track of monster's maximum health value (for re-healing, etc)
 
 	Vector m_vecEnemyLKP;  // last known position of enemy. (enemy's origin)
 
-	int m_cAmmoLoaded;  // how much ammo is in the weapon (used to trigger reload anim sequences)
+	int m_cAmmoLoaded = 0;  // how much ammo is in the weapon (used to trigger reload anim sequences)
 
-	int m_afCapability;  // tells us what a monster can/can't do.
+	int m_afCapability = 0;  // tells us what a monster can/can't do.
 
-	float m_flNextAttack;  // cannot attack again until this time
+	float m_flNextAttack = 0.f;  // cannot attack again until this time
 
-	int m_bitsDamageType;  // what types of damage has monster (player) taken
-	BYTE m_rgbTimeBasedDamage[CDMG_TIMEBASED];
+	int m_bitsDamageType = 0;  // what types of damage has monster (player) taken
+	BYTE m_rgbTimeBasedDamage[CDMG_TIMEBASED] = { 0 };
 
-	int m_lastDamageAmount;  // how much damage did monster (player) last take
+	int m_lastDamageAmount = 0;  // how much damage did monster (player) last take
 							 // time based damage counters, decr. 1 per 2 seconds
 
-	int m_failSchedule;  // Schedule type to choose if current schedule fails
+	int m_failSchedule = 0;  // Schedule type to choose if current schedule fails
 
-	float m_flHungryTime;  // set this is a future time to stop the monster from eating for a while.
+	float m_flHungryTime = 0.f;  // set this is a future time to stop the monster from eating for a while.
 
-	float m_flDistTooFar;  // if enemy farther away than this, bits_COND_ENEMY_TOOFAR set in CheckEnemy
-	float m_flDistLook;    // distance monster sees (Default 2048)
+	float m_flDistTooFar = 0.f;  // if enemy farther away than this, bits_COND_ENEMY_TOOFAR set in CheckEnemy
+	float m_flDistLook = 0.f;    // distance monster sees (Default 2048)
 
-	int m_iTriggerCondition;      // for scripted AI, this is the condition that will cause the activation of the monster's TriggerTarget
-	string_t m_iszTriggerTarget;  // name of target that should be fired.
+	int m_iTriggerCondition = 0;      // for scripted AI, this is the condition that will cause the activation of the monster's TriggerTarget
+	string_t m_iszTriggerTarget = iStringNull;  // name of target that should be fired.
 
 	Vector m_HackedGunPos;  // HACK until we can query end of gun
 
 	// Scripted sequence Info
-	SCRIPTSTATE m_scriptState;  // internal cinematic state
+	SCRIPTSTATE m_scriptState = SCRIPT_PLAYING;  // internal cinematic state
 	EHANDLE<CCineMonster> m_pCine;
 
 	virtual int Save(CSave& save);

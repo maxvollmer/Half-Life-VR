@@ -104,82 +104,82 @@ class CFuncTank;
 class CBasePlayer : public CBaseMonster
 {
 public:
-	int random_seed;  // See that is shared between client & server for shared weapons code
+	int random_seed = 0;  // See that is shared between client & server for shared weapons code
 
-	int m_iPlayerSound;      // the index of the sound list slot reserved for this player
-	int m_iTargetVolume;     // ideal sound volume.
-	int m_iWeaponVolume;     // how loud the player's weapon is right now.
-	int m_iExtraSoundTypes;  // additional classification for this weapon's sound
-	int m_iWeaponFlash;      // brightness of the weapon flash
-	float m_flStopExtraSoundTime;
+	int m_iPlayerSound = 0;      // the index of the sound list slot reserved for this player
+	int m_iTargetVolume = 0;     // ideal sound volume.
+	int m_iWeaponVolume = 0;     // how loud the player's weapon is right now.
+	int m_iExtraSoundTypes = 0;  // additional classification for this weapon's sound
+	int m_iWeaponFlash = 0;      // brightness of the weapon flash
+	float m_flStopExtraSoundTime = 0.f;
 
-	float m_flFlashLightTime;  // Time until next battery draw/Recharge
-	int m_iFlashBattery;       // Flashlight Battery Draw
+	float m_flFlashLightTime = 0.f;  // Time until next battery draw/Recharge
+	int m_iFlashBattery = 0;       // Flashlight Battery Draw
 
-	int m_afButtonLast;
-	int m_afButtonPressed;
-	int m_afButtonReleased;
+	int m_afButtonLast = 0;
+	int m_afButtonPressed = 0;
+	int m_afButtonReleased = 0;
 
 	edict_t* m_pentSndLast;  // last sound entity to modify player room type
-	float m_flSndRoomtype;   // last roomtype set by sound entity
-	float m_flSndRange;      // dist from player to sound entity
+	float m_flSndRoomtype = 0.f;   // last roomtype set by sound entity
+	float m_flSndRange = 0.f;      // dist from player to sound entity
 
-	float m_flFallVelocity;
+	float m_flFallVelocity = 0.f;
 
 	int m_rgItems[MAX_ITEMS];
-	int m_fKnownItem;  // True when a new item needs to be added
-	int m_fNewAmmo;    // True when a new item has been added
+	int m_fKnownItem = 0;  // True when a new item needs to be added
+	int m_fNewAmmo = 0;    // True when a new item has been added
 
-	unsigned int m_afPhysicsFlags;  // physics flags - set when 'normal' physics should be revisited or overriden
-	float m_fNextSuicideTime;       // the time after which the player can next use the suicide command
+	unsigned int m_afPhysicsFlags = 0;  // physics flags - set when 'normal' physics should be revisited or overriden
+	float m_fNextSuicideTime = 0.f;       // the time after which the player can next use the suicide command
 
 
 	// these are time-sensitive things that we keep track of
-	float m_flTimeStepSound;   // when the last stepping sound was made
-	float m_flTimeWeaponIdle;  // when to play another weapon idle animation.
-	float m_flSwimTime;        // how long player has been underwater
-	float m_flDuckTime;        // how long we've been ducking
-	float m_flWallJumpTime;    // how long until next walljump
+	float m_flTimeStepSound = 0.f;   // when the last stepping sound was made
+	float m_flTimeWeaponIdle = 0.f;  // when to play another weapon idle animation.
+	float m_flSwimTime = 0.f;        // how long player has been underwater
+	float m_flDuckTime = 0.f;        // how long we've been ducking
+	float m_flWallJumpTime = 0.f;    // how long until next walljump
 
-	float m_flSuitUpdate;                         // when to play next suit update
+	float m_flSuitUpdate = 0.f;                         // when to play next suit update
 	int m_rgSuitPlayList[CSUITPLAYLIST];          // next sentencenum to play for suit update
-	int m_iSuitPlayNext;                          // next sentence slot for queue storage;
+	int m_iSuitPlayNext = 0;                          // next sentence slot for queue storage;
 	int m_rgiSuitNoRepeat[CSUITNOREPEAT];         // suit sentence no repeat list
 	float m_rgflSuitNoRepeatTime[CSUITNOREPEAT];  // how long to wait before allowing repeat
-	int m_lastDamageAmount;                       // Last damage taken
-	float m_tbdPrev;                              // Time-based damage timer
+	int m_lastDamageAmount = 0;                       // Last damage taken
+	float m_tbdPrev = 0.f;                              // Time-based damage timer
 
-	float m_flgeigerRange;  // range to nearest radiation source
-	float m_flgeigerDelay;  // delay per update of range msg to client
-	int m_igeigerRangePrev;
-	int m_iStepLeft;                         // alternate left/right foot stepping sound
+	float m_flgeigerRange = 0.f;  // range to nearest radiation source
+	float m_flgeigerDelay = 0.f;  // delay per update of range msg to client
+	int m_igeigerRangePrev = 0;
+	int m_iStepLeft = 0;                         // alternate left/right foot stepping sound
 	char m_szTextureName[CBTEXTURENAMEMAX];  // current texture name we're standing on
 	char m_chTextureType;                    // current texture type
 
-	int m_idrowndmg;       // track drowning damage taken
-	int m_idrownrestored;  // track drowning damage restored
+	int m_idrowndmg = 0;       // track drowning damage taken
+	int m_idrownrestored = 0;  // track drowning damage restored
 
-	int m_bitsHUDDamage;  // Damage bits for the current fame. These get sent to
+	int m_bitsHUDDamage = 0;  // Damage bits for the current fame. These get sent to
 						  // the hude via the DAMAGE message
-	BOOL m_fInitHUD;      // True when deferred HUD restart msg needs to be sent
-	BOOL m_fGameHUDInitialized;
-	int m_iTrain;    // Train control position
-	BOOL m_fWeapon;  // Set this to FALSE to force a reset of the current weapon HUD info
+	BOOL m_fInitHUD = FALSE;      // True when deferred HUD restart msg needs to be sent
+	BOOL m_fGameHUDInitialized = FALSE;
+	int m_iTrain = 0;    // Train control position
+	BOOL m_fWeapon = FALSE;  // Set this to FALSE to force a reset of the current weapon HUD info
 
 	EHANDLE<CBaseEntity> m_pTank;    // the tank which the player is currently controlling,  nullptr if no tank
-	float m_fDeadTime;  // the time at which the player died  (used in PlayerDeathThink())
+	float m_fDeadTime = 0.f;  // the time at which the player died  (used in PlayerDeathThink())
 
-	BOOL m_fNoPlayerSound;  // a debugging feature. Player makes no sound if this is true.
-	BOOL m_fLongJump;       // does this player have the longjump module?
+	BOOL m_fNoPlayerSound = FALSE;  // a debugging feature. Player makes no sound if this is true.
+	BOOL m_fLongJump = FALSE;       // does this player have the longjump module?
 
-	float m_tSneaking;
-	int m_iUpdateTime;     // stores the number of frame ticks before sending HUD update messages
-	int m_iClientHealth;   // the health currently known by the client.  If this changes, send a new
-	int m_iClientBattery;  // the Battery currently known by the client.  If this changes, send a new
-	int m_iHideHUD;        // the players hud weapon info is to be hidden
-	int m_iClientHideHUD;
-	int m_iFOV;        // field of view
-	int m_iClientFOV;  // client's known FOV
+	float m_tSneaking = 0.f;
+	int m_iUpdateTime = 0;     // stores the number of frame ticks before sending HUD update messages
+	int m_iClientHealth = 0;   // the health currently known by the client.  If this changes, send a new
+	int m_iClientBattery = 0;  // the Battery currently known by the client.  If this changes, send a new
+	int m_iHideHUD = 0;        // the players hud weapon info is to be hidden
+	int m_iClientHideHUD = 0;
+	int m_iFOV = 0;        // field of view
+	int m_iClientFOV = 0;  // client's known FOV
 	// usable player items
 	EHANDLE<CBasePlayerItem> m_rgpPlayerItems[MAX_ITEM_TYPES];
 	EHANDLE<CBasePlayerItem> m_pActiveItem;
@@ -194,8 +194,8 @@ public:
 
 	int m_lastx, m_lasty;  // These are the previous update's crosshair angles, DON"T SAVE/RESTORE
 
-	int m_nCustomSprayFrames;  // Custom clan logo frames for this player
-	float m_flNextDecalTime;   // next time this player can spray a decal
+	int m_nCustomSprayFrames = 0;  // Custom clan logo frames for this player
+	float m_flNextDecalTime = 0.f;   // next time this player can spray a decal
 
 	char m_szTeamName[TEAM_NAME_LENGTH];
 
@@ -309,21 +309,21 @@ public:
 
 	void CBasePlayer::TabulateAmmo(void);
 
-	float m_flStartCharge;
-	float m_flAmmoStartCharge;
-	float m_flPlayAftershock;
-	float m_flNextAmmoBurn;  // while charging, when to absorb another unit of player's ammo?
+	float m_flStartCharge = 0.f;
+	float m_flAmmoStartCharge = 0.f;
+	float m_flPlayAftershock = 0.f;
+	float m_flNextAmmoBurn = 0.f;  // while charging, when to absorb another unit of player's ammo?
 
 	//Player ID
 	void InitStatusBar(void);
 	void UpdateStatusBar(void);
 	int m_izSBarState[SBAR_END];
-	float m_flNextSBarUpdateTime;
-	float m_flStatusBarDisappearDelay;
+	float m_flNextSBarUpdateTime = 0.f;
+	float m_flStatusBarDisappearDelay = 0.f;
 	char m_SbarString0[SBAR_STRING_SIZE];
 	char m_SbarString1[SBAR_STRING_SIZE];
 
-	float m_flNextChatTime;
+	float m_flNextChatTime = 0.f;
 
 
 /*
@@ -386,7 +386,7 @@ private:
 
 	// For VR suitable display of train controls
 	Vector vr_trainControlPosition;
-	float vr_trainControlYaw;
+	float vr_trainControlYaw = 0.f;
 
 	std::vector<VRLadderGrabbingController> m_ladderGrabbingControllers;
 

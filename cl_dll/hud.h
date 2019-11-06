@@ -38,7 +38,7 @@
 
 typedef struct
 {
-	int x, y;
+	int x = 0, y = 0;
 } POSITION;
 
 enum
@@ -50,7 +50,7 @@ enum
 
 typedef struct
 {
-	unsigned char r, g, b, a;
+	unsigned char r = 0, g = 0, b = 0, a = 0;
 } RGBA;
 
 typedef struct cvar_s cvar_t;
@@ -70,8 +70,8 @@ class CHudBase
 {
 public:
 	POSITION m_pos;
-	int m_type;
-	int m_iFlags;  // active, moving,
+	int m_type = 0;
+	int m_iFlags = 0;  // active, moving,
 	virtual ~CHudBase() {}
 	virtual int Init(void) { return 0; }
 	virtual int VidInit(void) { return 0; }
@@ -142,10 +142,10 @@ public:
 	WEAPON* m_pWeapon = nullptr;
 
 private:
-	float m_fFade;
+	float m_fFade = 0.f;
 	RGBA m_rgba;
-	int m_HUD_bucket0;
-	int m_HUD_selection;
+	int m_HUD_bucket0 = 0;
+	int m_HUD_selection = 0;
 };
 
 //
@@ -169,9 +169,9 @@ private:
 		MAX_SEC_AMMO_VALUES = 4
 	};
 
-	int m_HUD_ammoicon;  // sprite indices
-	int m_iAmmoAmounts[MAX_SEC_AMMO_VALUES];
-	float m_fFade;
+	int m_HUD_ammoicon = 0;  // sprite indices
+	int m_iAmmoAmounts[MAX_SEC_AMMO_VALUES] = { 0 };
+	float m_fFade = 0.f;
 };
 
 
@@ -193,7 +193,7 @@ public:
 	int MsgFunc_Geiger(const char* pszName, int iSize, void* pbuf);
 
 private:
-	int m_iGeigerRange;
+	int m_iGeigerRange = 0;
 };
 
 //
@@ -210,7 +210,7 @@ public:
 	int m_iPos{ 0 };
 
 private:
-	HSPRITE_VALVE m_hSprite;
+	HSPRITE_VALVE m_hSprite = 0;
 };
 
 //
@@ -230,10 +230,10 @@ public:
 	int MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf );
 
 protected:
-	static int MOTD_DISPLAY_TIME;
+	static int MOTD_DISPLAY_TIME = 0;
 	char m_szMOTD[ MAX_MOTD_LENGTH ];
-	float m_flActiveRemaining;
-	int m_iLines;
+	float m_flActiveRemaining = 0.f;
+	int m_iLines = 0;
 };
 */
 
@@ -260,14 +260,14 @@ protected:
 		MAX_STATUSBAR_LINES = 2,
 	};
 
-	char m_szStatusText[MAX_STATUSBAR_LINES][MAX_STATUSTEXT_LENGTH];  // a text string describing how the status bar is to be drawn
-	char m_szStatusBar[MAX_STATUSBAR_LINES][MAX_STATUSTEXT_LENGTH];   // the constructed bar that is drawn
-	int m_iStatusValues[MAX_STATUSBAR_VALUES];                        // an array of values for use in the status bar
+	char m_szStatusText[MAX_STATUSBAR_LINES][MAX_STATUSTEXT_LENGTH] = { 0 };  // a text string describing how the status bar is to be drawn
+	char m_szStatusBar[MAX_STATUSBAR_LINES][MAX_STATUSTEXT_LENGTH] = { 0 };   // the constructed bar that is drawn
+	int m_iStatusValues[MAX_STATUSBAR_VALUES] = { 0 };                        // an array of values for use in the status bar
 
-	int m_bReparseString;  // set to TRUE whenever the m_szStatusBar needs to be recalculated
+	int m_bReparseString = 0;  // set to TRUE whenever the m_szStatusBar needs to be recalculated
 
 	// an array of colors...one color for each line
-	float* m_pflNameColors[MAX_STATUSBAR_LINES];
+	float* m_pflNameColors[MAX_STATUSBAR_LINES] = { 0 };
 };
 
 //
@@ -291,12 +291,12 @@ public:
 	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
 	void DeathMsg( int killer, int victim );
 
-	int m_iNumTeams;
+	int m_iNumTeams = 0;
 
-	int m_iLastKilledBy;
-	int m_fLastKillTime;
-	int m_iPlayerNum;
-	int m_iShowscoresHeld;
+	int m_iLastKilledBy = 0;
+	int m_fLastKillTime = 0;
+	int m_iPlayerNum = 0;
+	int m_iShowscoresHeld = 0;
 
 	void GetAllPlayersInfo( void );
 private:
@@ -307,25 +307,25 @@ private:
 
 struct extra_player_info_t
 {
-	short frags;
-	short deaths;
-	short playerclass;
-	short teamnumber;
-	char teamname[MAX_TEAM_NAME];
+	short frags = 0;
+	short deaths = 0;
+	short playerclass = 0;
+	short teamnumber = 0;
+	char teamname[MAX_TEAM_NAME] = { 0 };
 };
 
 struct team_info_t
 {
-	char name[MAX_TEAM_NAME];
-	short frags;
-	short deaths;
-	short ping;
-	short packetloss;
-	short ownteam;
-	short players;
-	int already_drawn;
-	int scores_overriden;
-	int teamnumber;
+	char name[MAX_TEAM_NAME] = { 0 };
+	short frags = 0;
+	short deaths = 0;
+	short ping = 0;
+	short packetloss = 0;
+	short ownteam = 0;
+	short players = 0;
+	int already_drawn = 0;
+	int scores_overriden = 0;
+	int teamnumber = 0;
 };
 
 extern hud_player_info_t g_PlayerInfoList[MAX_PLAYERS + 1];     // player info from the engine
@@ -347,7 +347,7 @@ public:
 	int MsgFunc_DeathMsg(const char* pszName, int iSize, void* pbuf);
 
 private:
-	int m_HUD_d_skull;  // sprite index of skull icon
+	int m_HUD_d_skull = 0;  // sprite index of skull icon
 };
 
 //
@@ -365,10 +365,10 @@ public:
 
 	void SelectMenuItem(int menu_item);
 
-	int m_fMenuDisplayed;
-	int m_bitsValidSlots;
-	float m_flShutoffTime;
-	int m_fWaitingForMore;
+	int m_fMenuDisplayed = 0;
+	int m_bitsValidSlots = 0;
+	float m_flShutoffTime = 0.f;
+	int m_fWaitingForMore = 0;
 };
 
 //
@@ -387,8 +387,8 @@ public:
 	friend class CHudSpectator;
 
 private:
-	struct cvar_s* m_HUD_saytext;
-	struct cvar_s* m_HUD_saytext_time;
+	struct cvar_s* m_HUD_saytext = nullptr;
+	struct cvar_s* m_HUD_saytext_time = nullptr;
 };
 
 //
@@ -403,13 +403,13 @@ public:
 	int MsgFunc_Battery(const char* pszName, int iSize, void* pbuf);
 
 private:
-	HSPRITE_VALVE m_hSprite1;
-	HSPRITE_VALVE m_hSprite2;
-	wrect_t* m_prc1;
-	wrect_t* m_prc2;
-	int m_iBat;
-	float m_fFade;
-	int m_iHeight;  // width of the battery innards
+	HSPRITE_VALVE m_hSprite1 = 0;
+	HSPRITE_VALVE m_hSprite2 = 0;
+	wrect_t* m_prc1 = nullptr;
+	wrect_t* m_prc2 = nullptr;
+	int m_iBat = 0;
+	float m_fFade = 0.f;
+	int m_iHeight = 0;  // width of the battery innards
 };
 
 
@@ -428,17 +428,17 @@ public:
 	bool IsOn() const { return m_fOn != 0; }
 
 private:
-	HSPRITE_VALVE m_hSprite1;
-	HSPRITE_VALVE m_hSprite2;
-	HSPRITE_VALVE m_hBeam;
-	wrect_t* m_prc1;
-	wrect_t* m_prc2;
-	wrect_t* m_prcBeam;
-	float m_flBat;
-	int m_iBat;
-	int m_fOn;
-	float m_fFade;
-	int m_iWidth;  // width of the battery innards
+	HSPRITE_VALVE m_hSprite1 = 0;
+	HSPRITE_VALVE m_hSprite2 = 0;
+	HSPRITE_VALVE m_hBeam = 0;
+	wrect_t* m_prc1 = nullptr;
+	wrect_t* m_prc2 = nullptr;
+	wrect_t* m_prcBeam = nullptr;
+	float m_flBat = 0.f;
+	int m_iBat = 0;
+	int m_fOn = 0;
+	float m_fFade = 0.f;
+	int m_iWidth = 0;  // width of the battery innards
 };
 
 //
@@ -447,19 +447,19 @@ private:
 const int maxHUDMessages = 16;
 struct message_parms_t
 {
-	client_textmessage_t* pMessage;
-	float time;
-	int x, y;
-	int totalWidth, totalHeight;
-	int width;
-	int lines;
-	int lineLength;
-	int length;
-	int r, g, b;
-	int text;
-	int fadeBlend;
-	float charTime;
-	float fadeTime;
+	client_textmessage_t* pMessage = nullptr;
+	float time = 0.f;
+	int x = 0, y = 0;
+	int totalWidth = 0, totalHeight = 0;
+	int width = 0;
+	int lines = 0;
+	int lineLength = 0;
+	int length = 0;
+	int r = 0, g = 0, b = 0;
+	int text = 0;
+	int fadeBlend = 0;
+	float charTime = 0.f;
+	float fadeTime = 0.f;
 };
 
 //
@@ -501,14 +501,14 @@ public:
 	void Reset(void);
 
 private:
-	client_textmessage_t* m_pMessages[maxHUDMessages];
-	float m_startTime[maxHUDMessages];
+	client_textmessage_t* m_pMessages[maxHUDMessages] = { 0 };
+	float m_startTime[maxHUDMessages] = { 0 };
 	message_parms_t m_parms;
-	float m_gameTitleTime;
-	client_textmessage_t* m_pGameTitle;
+	float m_gameTitleTime = 0.f;
+	client_textmessage_t* m_pGameTitle = nullptr;
 
-	int m_HUD_title_life;
-	int m_HUD_title_half;
+	int m_HUD_title_life = 0;
+	int m_HUD_title_half = 0;
 };
 
 //
@@ -540,13 +540,13 @@ public:
 private:
 	typedef struct
 	{
-		char szSpriteName[MAX_ICONSPRITENAME_LENGTH];
-		HSPRITE_VALVE spr;
+		char szSpriteName[MAX_ICONSPRITENAME_LENGTH] = { 0 };
+		HSPRITE_VALVE spr = 0;
 		wrect_t rc;
-		unsigned char r, g, b;
+		unsigned char r = 0, g = 0, b = 0;
 	} icon_sprite_t;
 
-	icon_sprite_t m_IconList[MAX_ICONSPRITES];
+	icon_sprite_t m_IconList[MAX_ICONSPRITES] = { 0 };
 };
 
 //
@@ -568,13 +568,13 @@ struct ControllerEntData
 class CHud
 {
 private:
-	HUDLIST* m_pHudList;
-	HSPRITE_VALVE m_hsprLogo;
-	int m_iLogo;
-	client_sprite_t* m_pSpriteList;
-	int m_iSpriteCount;
-	int m_iSpriteCountAllRes;
-	int m_iConcussionEffect;
+	HUDLIST* m_pHudList = nullptr;
+	HSPRITE_VALVE m_hsprLogo = 0;
+	int m_iLogo = 0;
+	client_sprite_t* m_pSpriteList = nullptr;
+	int m_iSpriteCount = 0;
+	int m_iSpriteCountAllRes = 0;
+	int m_iConcussionEffect = 0;
 
 	int m_iGroundEntIndex{ 0 };
 	Vector m_trainControlPosition;
@@ -587,21 +587,21 @@ public:
 	int m_vrGrabbedLadderEntIndex{ -1 };
 	bool m_vrIsPullingOnLedge{ false };
 
-	HSPRITE_VALVE m_hsprCursor;
-	float m_flTime;        // the current client time
-	float m_fOldTime;      // the time at which the HUD was last redrawn
-	double m_flTimeDelta;  // the difference between flTime and fOldTime
+	HSPRITE_VALVE m_hsprCursor = 0;
+	float m_flTime = 0.f;        // the current client time
+	float m_fOldTime = 0.f;      // the time at which the HUD was last redrawn
+	float m_flTimeDelta = 0.f;  // the difference between flTime and fOldTime
 	Vector m_vecOrigin;
 	Vector m_vecAngles;
-	int m_iKeyBits;
-	int m_iHideHUDDisplay;
-	int m_iFOV;
-	int m_Teamplay;
-	int m_iRes;
-	cvar_t* m_pCvarStealMouse;
-	cvar_t* m_pCvarDraw;
+	int m_iKeyBits = 0;
+	int m_iHideHUDDisplay = 0;
+	int m_iFOV = 0;
+	int m_Teamplay = 0;
+	int m_iRes = 0;
+	cvar_t* m_pCvarStealMouse = nullptr;
+	cvar_t* m_pCvarDraw = nullptr;
 
-	int m_iFontHeight;
+	int m_iFontHeight = 0;
 	int DrawHudNumber(int x, int y, int iFlags, int iNumber, int r, int g, int b);
 	int DrawHudString(int x, int y, int iMaxX, char* szString, int r, int g, int b);
 	int DrawHudStringReverse(int xpos, int ypos, int iMinX, char* szString, int r, int g, int b);
@@ -611,11 +611,11 @@ public:
 private:
 	// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
 	// freed in ~CHud()
-	HSPRITE_VALVE* m_rghSprites; /*[HUD_SPRITE_COUNT]*/  // the sprites loaded from hud.txt
-	wrect_t* m_rgrcRects;                                /*[HUD_SPRITE_COUNT]*/
-	char* m_rgszSpriteNames;                             /*[HUD_SPRITE_COUNT][MAX_SPRITE_NAME_LENGTH]*/
+	HSPRITE_VALVE* m_rghSprites = nullptr; /*[HUD_SPRITE_COUNT]*/  // the sprites loaded from hud.txt
+	wrect_t* m_rgrcRects = nullptr;                                /*[HUD_SPRITE_COUNT]*/
+	char* m_rgszSpriteNames = nullptr;                             /*[HUD_SPRITE_COUNT][MAX_SPRITE_NAME_LENGTH]*/
 
-	struct cvar_s* default_fov;
+	cvar_t* default_fov = nullptr;
 
 public:
 	HSPRITE_VALVE GetSprite(int index)
@@ -676,12 +676,12 @@ public:
 	// Screen information
 	SCREENINFO m_scrinfo;
 
-	int m_iWeaponBits;
-	int m_fPlayerDead;
-	int m_iIntermission;
+	int m_iWeaponBits = 0;
+	int m_fPlayerDead = 0;
+	int m_iIntermission = 0;
 
 	// sprite indexes
-	int m_HUD_number_0;
+	int m_HUD_number_0 = 0;
 
 
 	void AddHudElem(CHudBase* p);

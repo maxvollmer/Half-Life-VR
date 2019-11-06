@@ -101,37 +101,37 @@ public:
 	int MoveTurret(void);
 	virtual void Shoot(Vector& vecSrc, Vector& vecDirToEnemy) {};
 
-	float m_flMaxSpin;  // Max time to spin the barrel w/o a target
-	int m_iSpin;
+	float m_flMaxSpin = 0.f;  // Max time to spin the barrel w/o a target
+	int m_iSpin = 0;
 
 	EHANDLE<CSprite> m_pEyeGlow;
-	int m_eyeBrightness;
+	int m_eyeBrightness = 0;
 
-	int m_iDeployHeight;
-	int m_iRetractHeight;
-	int m_iMinPitch;
+	int m_iDeployHeight = 0;
+	int m_iRetractHeight = 0;
+	int m_iMinPitch = 0;
 
-	int m_iBaseTurnRate;  // angles per second
-	float m_fTurnRate;    // actual turn rate
-	int m_iOrientation;   // 0 = floor, 1 = Ceiling
-	int m_iOn;
-	int m_fBeserk;     // Sometimes this bitch will just freak out
-	int m_iAutoStart;  // true if the turret auto deploys when a target
+	int m_iBaseTurnRate = 0;  // angles per second
+	float m_fTurnRate = 0.f;    // actual turn rate
+	int m_iOrientation = 0;   // 0 = floor, 1 = Ceiling
+	int m_iOn = 0;
+	int m_fBeserk = 0;     // Sometimes this bitch will just freak out
+	int m_iAutoStart = 0;  // true if the turret auto deploys when a target
 					   // enters its range
 
 	Vector m_vecLastSight;
-	float m_flLastSight;  // Last time we saw a target
-	float m_flMaxWait;    // Max time to seach w/o a target
-	int m_iSearchSpeed;   // Not Used!
+	float m_flLastSight = 0.f;  // Last time we saw a target
+	float m_flMaxWait = 0.f;    // Max time to seach w/o a target
+	int m_iSearchSpeed = 0;   // Not Used!
 
 	// movement
-	float m_flStartYaw;
+	float m_flStartYaw = 0.f;
 	Vector m_vecCurAngles;
 	Vector m_vecGoalAngles;
 
 
-	float m_flPingTime;    // Time until the next ping, used when searching
-	float m_flSpinUpTime;  // Amount of time until the barrel should spin down when searching
+	float m_flPingTime = 0.f;    // Time until the next ping, used when searching
+	float m_flSpinUpTime = 0.f;  // Amount of time until the barrel should spin down when searching
 };
 
 
@@ -187,7 +187,7 @@ public:
 	void Shoot(Vector& vecSrc, Vector& vecDirToEnemy);
 
 private:
-	int m_iStartSpin;
+	int m_iStartSpin = 0;
 };
 TYPEDESCRIPTION CTurret::m_SaveData[] =
 {

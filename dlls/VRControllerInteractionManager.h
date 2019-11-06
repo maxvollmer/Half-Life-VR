@@ -40,7 +40,7 @@ private:
 		const InteractionInfo touching;
 		const InteractionInfo dragging;
 		const InteractionInfo hitting;
-		const float hitDamage;
+		const float hitDamage = 0.f;
 		const Vector intersectPoint;
 	};
 

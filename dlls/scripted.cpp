@@ -943,15 +943,15 @@ public:
 
 
 private:
-	int m_iszSentence;   // string index for idle animation
-	int m_iszEntity;     // entity that is wanted for this sentence
-	float m_flRadius;    // range to search
-	float m_flDuration;  // How long the sentence lasts
-	float m_flRepeat;    // repeat rate
-	float m_flAttenuation;
-	float m_flVolume;
-	BOOL m_active;
-	int m_iszListener;  // name of entity to look at while talking
+	int m_iszSentence = 0;   // string index for idle animation
+	int m_iszEntity = 0;     // entity that is wanted for this sentence
+	float m_flRadius = 0.f;    // range to search
+	float m_flDuration = 0.f;  // How long the sentence lasts
+	float m_flRepeat = 0.f;    // repeat rate
+	float m_flAttenuation = 0.f;
+	float m_flVolume = 0.f;
+	BOOL m_active = FALSE;
+	int m_iszListener = 0;  // name of entity to look at while talking
 };
 
 #define SF_SENTENCE_ONCE       0x0001
@@ -1112,7 +1112,7 @@ BOOL CScriptedSentence::AcceptableSpeaker(CBaseMonster* pMonster)
 			if (pMonster->m_hTargetEnt == nullptr || !FClassnameIs(pMonster->m_hTargetEnt->pev, "player"))
 				return FALSE;
 		}
-		BOOL override;
+		BOOL override = FALSE;
 		if (pev->spawnflags & SF_SENTENCE_INTERRUPT)
 			override = TRUE;
 		else

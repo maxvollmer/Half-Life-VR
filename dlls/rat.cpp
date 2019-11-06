@@ -51,7 +51,7 @@ int CRat::Classify(void)
 //=========================================================
 void CRat::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{

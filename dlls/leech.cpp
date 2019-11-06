@@ -121,18 +121,18 @@ public:
 
 private:
 	// UNDONE: Remove unused boid vars, do group behavior
-	float m_flTurning;    // is this boid turning?
-	BOOL m_fPathBlocked;  // TRUE if there is an obstacle ahead
-	float m_flAccelerate;
-	float m_obstacle;
-	float m_top;
-	float m_bottom;
-	float m_height;
-	float m_waterTime;
-	float m_sideTime;  // Timer to randomly check clearance on sides
-	float m_zTime;
-	float m_stateTime;
-	float m_attackSoundTime;
+	float m_flTurning = 0.f;    // is this boid turning?
+	BOOL m_fPathBlocked = FALSE;  // TRUE if there is an obstacle ahead
+	float m_flAccelerate = 0.f;
+	float m_obstacle = 0.f;
+	float m_top = 0.f;
+	float m_bottom = 0.f;
+	float m_height = 0.f;
+	float m_waterTime = 0.f;
+	float m_sideTime = 0.f;  // Timer to randomly check clearance on sides
+	float m_zTime = 0.f;
+	float m_stateTime = 0.f;
+	float m_attackSoundTime = 0.f;
 
 #if DEBUG_BEAMS
 	CBeam* m_pb;
@@ -291,7 +291,7 @@ void CLeech::AlertSound(void)
 
 void CLeech::Precache(void)
 {
-	int i;
+	int i = 0;
 
 	//PRECACHE_MODEL("models/icky.mdl");
 	PRECACHE_MODEL("models/leech.mdl");
@@ -556,9 +556,9 @@ void CLeech::UpdateMotion(void)
 void CLeech::SwimThink(void)
 {
 	TraceResult tr;
-	float flLeftSide;
-	float flRightSide;
-	float targetSpeed;
+	float flLeftSide = 0.f;
+	float flRightSide = 0.f;
+	float targetSpeed = 0.f;
 	float targetYaw = 0;
 	CBaseEntity* pTarget;
 

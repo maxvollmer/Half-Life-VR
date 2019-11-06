@@ -666,9 +666,9 @@ fields in this header file.*/
 typedef struct LodePNGColorProfile {
   unsigned colored; /*not grayscale*/
   unsigned key; /*image is not opaque and color key is possible instead of full alpha*/
-  unsigned short key_r; /*key values, always as 16-bit, in 8-bit case the byte is duplicated, e.g. 65535 means 255*/
-  unsigned short key_g;
-  unsigned short key_b;
+  unsigned short key_r = 0; /*key values, always as 16-bit, in 8-bit case the byte is duplicated, e.g. 65535 means 255*/
+  unsigned short key_g = 0;
+  unsigned short key_b = 0;
   unsigned alpha; /*image is not opaque and alpha channel or alpha palette required*/
   unsigned numcolors; /*amount of colors, up to 257. Not valid if bits == 16.*/
   unsigned char palette[1024]; /*Remembers up to the first 256 RGBA colors, in no particular order*/

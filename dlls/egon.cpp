@@ -181,7 +181,7 @@ void CEgon::Attack(void)
 	Vector vecAiming = m_pPlayer->GetAutoaimVector();  //gpGlobals->v_forward;
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 
-	int flags;
+	int flags = 0;
 #if defined(CLIENT_WEAPONS)
 	flags = FEV_NOTHOST;
 #else
@@ -504,7 +504,7 @@ void CEgon::WeaponIdle(void)
 	if (m_fireState != FIRE_OFF)
 		EndAttack();
 
-	int iAnim;
+	int iAnim = 0;
 
 	float flRand = RANDOM_FLOAT(0, 1);
 

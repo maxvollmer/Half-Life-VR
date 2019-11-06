@@ -81,7 +81,7 @@ namespace vgui
 				m_pListBox->setPixelScroll(-value);
 			}
 
-			vgui::CListBox* m_pListBox;
+			vgui::CListBox* m_pListBox = nullptr;
 		};
 
 

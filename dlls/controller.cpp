@@ -69,10 +69,10 @@ public:
 	BOOL ShouldAdvanceRoute(float flWaypointDist);
 	int LookupFloat();
 
-	float m_flNextFlinch;
+	float m_flNextFlinch = 0.f;
 
-	float m_flShootTime;
-	float m_flShootEnd;
+	float m_flShootTime = 0.f;
+	float m_flShootEnd = 0.f;
 
 	void PainSound(void);
 	void AlertSound(void);
@@ -91,14 +91,14 @@ public:
 	void GibMonster(void);
 
 	EHANDLE<CSprite> m_pBall[2];    // hand balls
-	int m_iBall[2];         // how bright it should be
-	float m_iBallTime[2];   // when it should be that color
-	int m_iBallCurrent[2];  // current brightness
+	int m_iBall[2] = { 0 };         // how bright it should be
+	float m_iBallTime[2] = { 0 };   // when it should be that color
+	int m_iBallCurrent[2] = { 0 };  // current brightness
 
 	Vector m_vecEstVelocity;
 
 	Vector m_velocity;
-	int m_fInCombat;
+	int m_fInCombat = 0;
 };
 
 LINK_ENTITY_TO_CLASS(monster_alien_controller, CController);
@@ -166,7 +166,7 @@ int CController::Classify(void)
 //=========================================================
 void CController::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	ys = 120;
 
@@ -545,7 +545,7 @@ Vector Intersect(Vector vecSrc, Vector vecDst, Vector vecMove, float flSpeed)
 	float b = 0 * DotProduct(vecTo, vecMove);  // why does this work?
 	float c = DotProduct(vecTo, vecTo);
 
-	float t;
+	float t = 0.f;
 	if (a == 0)
 	{
 		t = c / (flSpeed * flSpeed);
@@ -881,10 +881,10 @@ void CController::Stop(void)
 #define DIST_TO_CHECK 200
 void CController::Move(float flInterval)
 {
-	float flWaypointDist;
-	float flCheckDist;
-	float flDist;  // how far the lookahead check got before hitting an object.
-	float flMoveDist;
+	float flWaypointDist = 0.f;
+	float flCheckDist = 0.f;
+	float flDist = 0.f;  // how far the lookahead check got before hitting an object.
+	float flMoveDist = 0.f;
 	Vector vecDir;
 	Vector vecApex;
 	CBaseEntity* pTargetEnt;
@@ -1127,8 +1127,8 @@ class CControllerHeadBall : public CBaseMonster
 	void EXPORT BounceTouch(CBaseEntity* pOther);
 	void MovetoTarget(Vector vecTarget);
 	void Crawl(void);
-	int m_iTrail;
-	int m_flNextAttack;
+	int m_iTrail = 0;
+	int m_flNextAttack = 0;
 	Vector m_vecIdeal;
 	EHANDLE<CBaseEntity> m_hOwner;
 };

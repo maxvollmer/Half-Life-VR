@@ -45,7 +45,7 @@ protected:
 	BOOL CanFireForActivator(CBaseEntity* pActivator);
 
 private:
-	string_t m_iszMaster;
+	string_t m_iszMaster = iStringNull;
 };
 
 TYPEDESCRIPTION CRuleEntity::m_SaveData[] =
@@ -363,8 +363,8 @@ public:
 private:
 	BOOL TeamMatch(CBaseEntity* pActivator);
 
-	int m_teamIndex;
-	USE_TYPE triggerType;
+	int m_teamIndex = 0;
+	USE_TYPE triggerType = USE_OFF;
 };
 
 LINK_ENTITY_TO_CLASS(game_team_master, CGameTeamMaster);
@@ -509,10 +509,10 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	string_t m_iszInTarget;
-	string_t m_iszOutTarget;
-	string_t m_iszInCount;
-	string_t m_iszOutCount;
+	string_t m_iszInTarget = iStringNull;
+	string_t m_iszOutTarget = iStringNull;
+	string_t m_iszInCount = iStringNull;
+	string_t m_iszOutCount = iStringNull;
 };
 
 LINK_ENTITY_TO_CLASS(game_zone_player, CGamePlayerZone);
@@ -568,7 +568,7 @@ void CGamePlayerZone::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 		if (pPlayer)
 		{
 			TraceResult trace;
-			int hullNumber;
+			int hullNumber = 0;
 
 			hullNumber = human_hull;
 			if (pPlayer->pev->flags & FL_DUCKING)
@@ -778,8 +778,8 @@ public:
 private:
 	void EquipPlayer(CBaseEntity* pPlayer);
 
-	string_t m_weaponNames[MAX_EQUIP];
-	int m_weaponCount[MAX_EQUIP];
+	string_t m_weaponNames[MAX_EQUIP] = { 0 };
+	int m_weaponCount[MAX_EQUIP] = { 0 };
 };
 
 LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip);

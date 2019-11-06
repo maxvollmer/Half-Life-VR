@@ -68,30 +68,30 @@ typedef enum
 // Returned by TraceLine
 typedef struct
 {
-	int fAllSolid;    // if true, plane is not valid
-	int fStartSolid;  // if true, the initial point was in a solid area
-	int fInOpen;
-	int fInWater;
-	float flFraction;  // time completed, 1.0 = didn't hit anything
+	int fAllSolid = 0;    // if true, plane is not valid
+	int fStartSolid = 0;  // if true, the initial point was in a solid area
+	int fInOpen = 0;
+	int fInWater = 0;
+	float flFraction = 0.f;  // time completed, 1.0 = didn't hit anything
 	vec3_t vecEndPos;  // final position
-	float flPlaneDist;
+	float flPlaneDist = 0.f;
 	vec3_t vecPlaneNormal;  // surface normal at impact
-	edict_t* pHit;          // entity the surface is on
-	int iHitgroup;          // 0 == generic, non zero is specific body part
+	edict_t* pHit = nullptr;          // entity the surface is on
+	int iHitgroup = 0;          // 0 == generic, non zero is specific body part
 } TraceResult;
 
 // CD audio status
 typedef struct
 {
-	int fPlaying;     // is sound playing right now?
-	int fWasPlaying;  // if not, CD is paused if WasPlaying is true.
-	int fInitialized;
-	int fEnabled;
-	int fPlayLooping;
-	float cdvolume;
+	int fPlaying = 0;     // is sound playing right now?
+	int fWasPlaying = 0;  // if not, CD is paused if WasPlaying is true.
+	int fInitialized = 0;
+	int fEnabled = 0;
+	int fPlayLooping = 0;
+	float cdvolume = 0.f;
 	//BYTE 	remap[100];
-	int fCDRom;
-	int fPlayTrack;
+	int fCDRom = 0;
+	int fPlayTrack = 0;
 } CDStatus;
 
 #include "../common/crc.h"
@@ -275,21 +275,21 @@ typedef struct KeyValueData_s
 
 typedef struct
 {
-	char mapName[32];
-	char landmarkName[32];
-	edict_t* pentLandmark;
+	char mapName[32] = { 0 };
+	char landmarkName[32] = { 0 };
+	edict_t* pentLandmark = nullptr;
 	vec3_t vecLandmarkOrigin;
 } LEVELLIST;
 #define MAX_LEVEL_CONNECTIONS 16  // These are encoded in the lower 16bits of ENTITYTABLE->flags
 
 typedef struct
 {
-	int id;         // Ordinal ID of this entity (used for entity <--> pointer conversions)
+	int id = 0;         // Ordinal ID of this entity (used for entity <--> pointer conversions)
 	edict_t* pent;  // Pointer to the in-game entity
 
-	int location;        // Offset from the base data of this entity
-	int size;            // Byte size of this entity's data
-	int flags;           // This could be a short -- bit mask of transitions that this entity is in the PVS of
+	int location = 0;        // Offset from the base data of this entity
+	int size = 0;            // Byte size of this entity's data
+	int flags = 0;           // This could be a short -- bit mask of transitions that this entity is in the PVS of
 	string_t classname;  // entity class name
 
 } ENTITYTABLE;
@@ -308,22 +308,22 @@ struct saverestore_s
 {
 	char* pBaseData;                             // Start of all entity save data
 	char* pCurrentData;                          // Current buffer pointer for sequential access
-	int size;                                    // Current data size
-	int bufferSize;                              // Total space for data
-	int tokenSize;                               // Size of the linear list of tokens
-	int tokenCount;                              // Number of elements in the pTokens table
+	int size = 0;                                    // Current data size
+	int bufferSize = 0;                              // Total space for data
+	int tokenSize = 0;                               // Size of the linear list of tokens
+	int tokenCount = 0;                              // Number of elements in the pTokens table
 	const char** pTokens;                        // Hash table of entity strings (sparse)
-	int currentIndex;                            // Holds a global entity table ID
-	int tableCount;                              // Number of elements in the entity table
-	int connectionCount;                         // Number of elements in the levelList[]
+	int currentIndex = 0;                            // Holds a global entity table ID
+	int tableCount = 0;                              // Number of elements in the entity table
+	int connectionCount = 0;                         // Number of elements in the levelList[]
 	ENTITYTABLE* pTable;                         // Array of ENTITYTABLE elements (1 for each entity)
 	LEVELLIST levelList[MAX_LEVEL_CONNECTIONS];  // List of connections from this level
 
 	// smooth transition
-	int fUseLandmark;
+	int fUseLandmark = 0;
 	char szLandmarkName[20];   // landmark we'll spawn near in next level
 	vec3_t vecLandmarkOffset;  // for landmark transitions
-	float time;
+	float time = 0.f;
 	char szCurrentMapName[32];  // To check global entities
 
 }
@@ -377,9 +377,9 @@ typedef struct
 {
 	FIELDTYPE fieldType;
 	char* fieldName;
-	int fieldOffset;
-	short fieldSize;
-	short flags;
+	int fieldOffset = 0;
+	short fieldSize = 0;
+	short flags = 0;
 } TYPEDESCRIPTION;
 
 

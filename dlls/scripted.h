@@ -77,22 +77,22 @@ public:
 	void AllowInterrupt(BOOL fAllow);
 	int IgnoreConditions(void);
 
-	int m_iszIdle;    // string index for idle animation
-	int m_iszPlay;    // string index for scripted animation
-	int m_iszEntity;  // entity that is wanted for this script
-	int m_fMoveTo;
-	int m_iFinishSchedule;
-	float m_flRadius;  // range to search
-	float m_flRepeat;  // repeat rate
+	int m_iszIdle = 0;    // string index for idle animation
+	int m_iszPlay = 0;    // string index for scripted animation
+	int m_iszEntity = 0;  // entity that is wanted for this script
+	int m_fMoveTo = 0;
+	int m_iFinishSchedule = 0;
+	float m_flRadius = 0.f;  // range to search
+	float m_flRepeat = 0.f;  // repeat rate
 
-	int m_iDelay;
-	float m_startTime;
+	int m_iDelay = 0;
+	float m_startTime = 0.f;
 
-	int m_saved_movetype;
-	int m_saved_solid;
-	int m_saved_effects;
+	int m_saved_movetype = 0;
+	int m_saved_solid = 0;
+	int m_saved_effects = 0;
 	//	Vector m_vecOrigOrigin;
-	BOOL m_interruptable;
+	BOOL m_interruptable = FALSE;
 };
 
 class CCineAI : public CCineMonster

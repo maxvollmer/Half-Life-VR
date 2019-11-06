@@ -82,7 +82,7 @@ void VRRenderer::DrawScreenFade()
 	glPushMatrix();
 	glLoadIdentity();
 
-	float fadealpha;
+	float fadealpha = 0.f;
 	if (screenfade.fadeFlags & FFADE_STAYOUT)
 	{
 		fadealpha = screenfade.fadealpha;

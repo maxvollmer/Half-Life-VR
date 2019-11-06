@@ -153,7 +153,7 @@ void CHgun::PrimaryAttack()
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
 
-	int flags;
+	int flags = 0;
 #if defined(CLIENT_WEAPONS)
 	flags = FEV_NOTHOST;
 #else
@@ -239,7 +239,7 @@ void CHgun::SecondaryAttack(void)
 	m_flRechargeTime = gpGlobals->time + 0.5;
 #endif
 
-	int flags;
+	int flags = 0;
 #if defined(CLIENT_WEAPONS)
 	flags = FEV_NOTHOST;
 #else
@@ -281,7 +281,7 @@ void CHgun::WeaponIdle(void)
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
-	int iAnim;
+	int iAnim = 0;
 	float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
 	if (flRand <= 0.75)
 	{

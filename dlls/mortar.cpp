@@ -45,12 +45,12 @@ public:
 
 	void EXPORT FieldUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 
-	int m_iszXController;
-	int m_iszYController;
-	float m_flSpread;
-	float m_flDelay;
-	int m_iCount;
-	int m_fControl;
+	int m_iszXController = 0;
+	int m_iszYController = 0;
+	float m_flSpread = 0.f;
+	float m_flDelay = 0.f;
+	int m_iCount = 0;
+	int m_fControl = 0;
 };
 
 LINK_ENTITY_TO_CLASS(func_mortar_field, CFuncMortarField);
@@ -198,7 +198,7 @@ public:
 
 	void EXPORT MortarExplode(void);
 
-	int m_spriteTexture;
+	int m_spriteTexture = 0;
 };
 
 LINK_ENTITY_TO_CLASS(monster_mortar, CMortar);

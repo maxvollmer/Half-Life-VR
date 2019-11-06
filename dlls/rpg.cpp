@@ -460,7 +460,7 @@ void CRpg::PrimaryAttack()
 		// firing RPG no longer turns on the designator. ALT fire is a toggle switch for the LTD.
 		// Ken signed up for this as a global change (sjb)
 
-		int flags;
+		int flags = 0;
 #if defined(CLIENT_WEAPONS)
 		flags = FEV_NOTHOST;
 #else
@@ -509,7 +509,7 @@ void CRpg::WeaponIdle(void)
 
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType])
 	{
-		int iAnim;
+		int iAnim = 0;
 		float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
 		if (flRand <= 0.75 || m_fSpotActive)
 		{
@@ -578,7 +578,7 @@ class CRpgAmmo : public CBasePlayerAmmo
 	}
 	BOOL AddAmmo(CBaseEntity* pOther)
 	{
-		int iGive;
+		int iGive = 0;
 
 #ifdef CLIENT_DLL
 		if (bIsMultiplayer())

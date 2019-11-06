@@ -65,17 +65,17 @@ public:
 	void EXPORT DoorHitTop(void);
 	void EXPORT DoorHitBottom(void);
 
-	BYTE m_bHealthValue;  // some doors are medi-kit doors, they give players health
+	BYTE m_bHealthValue = 0;  // some doors are medi-kit doors, they give players health
 
-	BYTE m_bMoveSnd;  // sound a door makes while moving
-	BYTE m_bStopSnd;  // sound a door makes when it stops
+	BYTE m_bMoveSnd = 0;  // sound a door makes while moving
+	BYTE m_bStopSnd = 0;  // sound a door makes when it stops
 
 	locksound_t m_ls;  // door lock sounds
 
-	BYTE m_bLockedSound;  // ordinals from entity selection
-	BYTE m_bLockedSentence;
-	BYTE m_bUnlockedSound;
-	BYTE m_bUnlockedSentence;
+	BYTE m_bLockedSound = 0;  // ordinals from entity selection
+	BYTE m_bLockedSentence = 0;
+	BYTE m_bUnlockedSound = 0;
+	BYTE m_bUnlockedSentence = 0;
 };
 
 
@@ -111,7 +111,7 @@ void PlayLockSounds(entvars_t* pev, locksound_t* pls, int flocked, int fbutton)
 
 	// CONSIDER: consolidate the locksound_t struct (all entries are duplicates for lock/unlock)
 	// CONSIDER: and condense this code.
-	float flsoundwait;
+	float flsoundwait = 0.f;
 
 	if (fbutton)
 		flsoundwait = BUTTON_SOUNDWAIT;
@@ -122,7 +122,7 @@ void PlayLockSounds(entvars_t* pev, locksound_t* pls, int flocked, int fbutton)
 	{
 		int fplaysound = (pls->sLockedSound && gpGlobals->time > pls->flwaitSound);
 		int fplaysentence = (pls->sLockedSentence && !pls->bEOFLocked && gpGlobals->time > pls->flwaitSentence);
-		float fvol;
+		float fvol = 0.f;
 
 		if (fplaysound && fplaysentence)
 			fvol = 0.25;
@@ -158,7 +158,7 @@ void PlayLockSounds(entvars_t* pev, locksound_t* pls, int flocked, int fbutton)
 
 		int fplaysound = (pls->sUnlockedSound && gpGlobals->time > pls->flwaitSound);
 		int fplaysentence = (pls->sUnlockedSentence && !pls->bEOFUnlocked && gpGlobals->time > pls->flwaitSentence);
-		float fvol;
+		float fvol = 0.f;
 
 		// if playing both sentence and sound, lower sound volume so we hear sentence
 		if (fplaysound && fplaysentence)
@@ -1022,7 +1022,7 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	BYTE m_bMoveSnd;  // sound a door makes while moving
+	BYTE m_bMoveSnd = 0;  // sound a door makes while moving
 };
 
 LINK_ENTITY_TO_CLASS(momentary_door, CMomentaryDoor);

@@ -612,10 +612,10 @@ Jyrki Katajainen, Alistair Moffat, Andrew Turpin, 1995.*/
 
 /*chain node for boundary package merge*/
 typedef struct BPMNode {
-  int weight; /*the sum of all weights in this chain*/
+  int weight = 0; /*the sum of all weights in this chain*/
   unsigned index; /*index of this leaf node (called "count" in the paper)*/
   struct BPMNode* tail; /*the next nodes in this chain (null if last)*/
-  int in_use;
+  int in_use = 0;
 } BPMNode;
 
 /*lists of chains*/
@@ -2785,17 +2785,17 @@ node has 16 instead of 8 children.
 */
 struct ColorTree {
   ColorTree* children[16]; /*up to 16 pointers to ColorTree of next level*/
-  int index; /*the payload. Only has a meaningful value if this is in the last level*/
+  int index = 0; /*the payload. Only has a meaningful value if this is in the last level*/
 };
 
 static void color_tree_init(ColorTree* tree) {
-  int i;
+  int i = 0;
   for(i = 0; i != 16; ++i) tree->children[i] = 0;
   tree->index = -1;
 }
 
 static void color_tree_cleanup(ColorTree* tree) {
-  int i;
+  int i = 0;
   for(i = 0; i != 16; ++i) {
     if(tree->children[i]) {
       color_tree_cleanup(tree->children[i]);
@@ -2825,7 +2825,7 @@ static int color_tree_has(ColorTree* tree, unsigned char r, unsigned char g, uns
 Index should be >= 0 (it's signed to be compatible with using -1 for "doesn't exist")*/
 static void color_tree_add(ColorTree* tree,
                            unsigned char r, unsigned char g, unsigned char b, unsigned char a, unsigned index) {
-  int bit;
+  int bit = 0;
   for(bit = 0; bit < 8; ++bit) {
     int i = 8 * ((r >> bit) & 1) + 4 * ((g >> bit) & 1) + 2 * ((b >> bit) & 1) + 1 * ((a >> bit) & 1);
     if(!tree->children[i]) {

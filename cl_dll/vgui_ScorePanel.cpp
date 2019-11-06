@@ -48,7 +48,7 @@ class SBColumnInfo
 {
 public:
 	char* m_pTitle;  // If null, ignore, if starts with #, it's localized, otherwise use the string directly.
-	int m_Width;     // Based on 640 width. Scaled to fit other resolutions.
+	int m_Width = 0;     // Based on 640 width. Scaled to fit other resolutions.
 	Label::Alignment m_Alignment;
 };
 
@@ -417,7 +417,7 @@ void ScorePanel::SortPlayers(int iTeam, char* team)
 		// Find the top ranking player
 		int highest_frags = -99999;
 		int lowest_deaths = 99999;
-		int best_player;
+		int best_player = 0;
 		best_player = 0;
 
 		for (int i = 1; i < MAX_PLAYERS; i++)

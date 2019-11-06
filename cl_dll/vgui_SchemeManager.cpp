@@ -47,25 +47,25 @@ public:
 	};
 
 	// name
-	char schemeName[SCHEME_NAME_LENGTH];
+	char schemeName[SCHEME_NAME_LENGTH] = { 0 };
 
 	// font
-	char fontName[FONT_NAME_LENGTH];
+	char fontName[FONT_NAME_LENGTH] = { 0 };
 
-	int fontSize;
-	int fontWeight;
+	int fontSize = 0;
+	int fontWeight = 0;
 
-	vgui::Font* font;
-	int ownFontPointer;  // true if the font is ours to delete
+	vgui::Font* font = nullptr;
+	int ownFontPointer = 0;  // true if the font is ours to delete
 
 	// scheme
-	byte fgColor[4];
-	byte bgColor[4];
-	byte armedFgColor[4];
-	byte armedBgColor[4];
-	byte mousedownFgColor[4];
-	byte mousedownBgColor[4];
-	byte borderColor[4];
+	byte fgColor[4] = { 0 };
+	byte bgColor[4] = { 0 };
+	byte armedFgColor[4] = { 0 };
+	byte armedBgColor[4] = { 0 };
+	byte mousedownFgColor[4] = { 0 };
+	byte mousedownBgColor[4] = { 0 };
+	byte borderColor[4] = { 0 };
 
 	// construction/destruction
 	CScheme();
@@ -171,7 +171,7 @@ CSchemeManager::CSchemeManager(int xRes, int yRes)
 	char* pFileStart = pFile;
 
 	byte* pFontData;
-	int fontFileLength;
+	int fontFileLength = 0;
 	char fontFilename[512];
 
 	//

@@ -88,8 +88,8 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 	static CSprite* SpriteCreate(const char* pSpriteName, const Vector& origin, BOOL animate);
 
-	float m_lastTime;
-	float m_maxFrame;
+	float m_lastTime = 0.f;
+	float m_maxFrame = 0.f;
 
 	bool m_fSetAnimtime{ false };
 };
@@ -212,7 +212,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	EHANDLE<CSprite> m_pSprite;
-	int m_iszSpriteName;
+	int m_iszSpriteName = 0;
 	Vector m_firePosition;
 };
 

@@ -39,7 +39,7 @@ int g_teamplay = 0;
 //=========================================================
 BOOL CGameRules::CanHaveAmmo(CBasePlayer* pPlayer, const char* pszAmmoName, int iMaxCarry)
 {
-	int iAmmoIndex;
+	int iAmmoIndex = 0;
 
 	if (pszAmmoName)
 	{
@@ -113,7 +113,7 @@ BOOL CGameRules::CanHavePlayerItem(CBasePlayer* pPlayer, CBasePlayerItem* pWeapo
 //=========================================================
 void CGameRules::RefreshSkillData(void)
 {
-	int iSkill;
+	int iSkill = 0;
 
 	iSkill = (int)CVAR_GET_FLOAT("skill");
 	g_iSkillLevel = iSkill;

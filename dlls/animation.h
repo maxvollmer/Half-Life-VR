@@ -49,7 +49,7 @@ struct StudioHitBox
 	vec3_t angles;
 	vec3_t mins;
 	vec3_t maxs;
-	int hitgroup;
+	int hitgroup = 0;
 };
 struct StudioAttachment
 {

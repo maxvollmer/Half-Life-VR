@@ -405,16 +405,16 @@ extern int UTIL_DamageTypeFromWeapon(int iId);
 
 typedef struct hudtextparms_s
 {
-	float x;
-	float y;
-	int effect;
-	byte r1, g1, b1, a1;
-	byte r2, g2, b2, a2;
-	float fadeinTime;
-	float fadeoutTime;
-	float holdTime;
-	float fxTime;
-	int channel;
+	float x = 0.f;
+	float y = 0.f;
+	int effect = 0;
+	byte r1 = 0, g1 = 0, b1 = 0, a1 = 0;
+	byte r2 = 0, g2 = 0, b2 = 0, a2 = 0;
+	float fadeinTime = 0.f;
+	float fadeoutTime = 0.f;
+	float holdTime = 0.f;
+	float fxTime = 0.f;
+	int channel = 0;
 } hudtextparms_t;
 
 // prints as transparent 'title' to the HUD

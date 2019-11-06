@@ -81,7 +81,7 @@ TYPEDESCRIPTION CBaseMonster::m_SaveData[] =
 	DEFINE_FIELD(CBaseMonster, m_vecMoveGoal, FIELD_POSITION_VECTOR),
 	DEFINE_FIELD(CBaseMonster, m_movementActivity, FIELD_INTEGER),
 
-	//		int					m_iAudibleList; // first index of a linked list of sounds that the monster can hear.
+	//		int					m_iAudibleList = 0; // first index of a linked list of sounds that the monster can hear.
 	//	DEFINE_FIELD( CBaseMonster, m_afSoundTypes, FIELD_INTEGER ),
 	DEFINE_FIELD(CBaseMonster, m_vecLastPosition, FIELD_POSITION_VECTOR),
 	DEFINE_FIELD(CBaseMonster, m_iHintNode, FIELD_INTEGER),
@@ -198,9 +198,9 @@ void CBaseMonster::BarnacleVictimReleased(void)
 //=========================================================
 void CBaseMonster::Listen(void)
 {
-	int iSound;
-	int iMySounds;
-	float hearingSensitivity;
+	int iSound = 0;
+	int iMySounds = 0;
+	float hearingSensitivity = 0.f;
 
 	m_iAudibleList = SOUNDLIST_EMPTY;
 	ClearConditions(bits_COND_HEAR_SOUND | bits_COND_SMELL | bits_COND_SMELL_FOOD);
@@ -412,10 +412,10 @@ int CBaseMonster::ISoundMask(void)
 //=========================================================
 CSound* CBaseMonster::PBestSound(void)
 {
-	int iThisSound;
+	int iThisSound = 0;
 	int iBestSound = -1;
 	float flBestDist = 8192;  // so first nearby sound will become best so far.
-	float flDist;
+	float flDist = 0.f;
 
 	iThisSound = m_iAudibleList;
 
@@ -464,10 +464,10 @@ CSound* CBaseMonster::PBestSound(void)
 //=========================================================
 CSound* CBaseMonster::PBestScent(void)
 {
-	int iThisScent;
+	int iThisScent = 0;
 	int iBestScent = -1;
 	float flBestDist = 8192;  // so first nearby smell will become best so far.
-	float flDist;
+	float flDist = 0.f;
 	CSound* pSound;
 
 	iThisScent = m_iAudibleList;  // smells are in the sound list.
@@ -529,7 +529,7 @@ void CBaseMonster::MonsterThink(void)
 											  // perhaps MaintainActivity() or a ShiftAnimationOverTime() or something.
 	if (m_MonsterState != MONSTERSTATE_SCRIPT && m_MonsterState != MONSTERSTATE_DEAD && m_Activity == ACT_IDLE && m_fSequenceFinished)
 	{
-		int iSequence;
+		int iSequence = 0;
 
 		if (m_fSequenceLoops)
 		{
@@ -638,8 +638,8 @@ BOOL CBaseMonster::FRouteClear(void)
 BOOL CBaseMonster::FRefreshRoute(void)
 {
 	CBaseEntity* pPathCorner;
-	int i;
-	BOOL returnCode;
+	int i = 0;
+	BOOL returnCode = FALSE;
 
 	RouteNew();
 
@@ -741,7 +741,7 @@ BOOL CBaseMonster::MoveToNode(Activity movementAct, float waitTime, const Vector
 #ifdef _DEBUG
 void DrawRoute(entvars_t* pev, WayPoint_t* m_Route, int m_iRouteIndex, int r, int g, int b)
 {
-	int i;
+	int i = 0;
 
 	if (m_Route[m_iRouteIndex].iType == 0)
 	{
@@ -1000,7 +1000,7 @@ BOOL CBaseMonster::CheckMeleeAttack2(float flDot, float flDist)
 void CBaseMonster::CheckAttacks(CBaseEntity* pTarget, float flDist)
 {
 	Vector2D vec2LOS;
-	float flDot;
+	float flDot = 0.f;
 
 	UTIL_MakeVectors(pev->angles);
 
@@ -1059,8 +1059,15 @@ BOOL CBaseMonster::FCanCheckAttacks(void)
 //=========================================================
 int CBaseMonster::CheckEnemy(CBaseEntity* pEnemy)
 {
-	float flDistToEnemy;
-	int iUpdatedLKP;  // set this to TRUE if you update the EnemyLKP in this function.
+	if (!pEnemy)
+	{
+		SetConditions(bits_COND_ENEMY_DEAD);
+		ClearConditions(bits_COND_SEE_ENEMY | bits_COND_ENEMY_OCCLUDED);
+		return FALSE;
+	}
+
+	float flDistToEnemy = 0.f;
+	int iUpdatedLKP = 0;  // set this to TRUE if you update the EnemyLKP in this function.
 
 	iUpdatedLKP = FALSE;
 	ClearConditions(bits_COND_ENEMY_FACING_ME);
@@ -1099,13 +1106,10 @@ int CBaseMonster::CheckEnemy(CBaseEntity* pEnemy)
 
 	if (HasConditions(bits_COND_SEE_ENEMY))
 	{
-		CBaseMonster* pEnemyMonster;
-
 		iUpdatedLKP = TRUE;
 		m_vecEnemyLKP = pEnemy->pev->origin;
 
-		pEnemyMonster = dynamic_cast<CBaseMonster*>(pEnemy);
-
+		CBaseMonster* pEnemyMonster = dynamic_cast<CBaseMonster*>(pEnemy);
 		if (pEnemyMonster)
 		{
 			if (pEnemyMonster->FInViewCone(this))
@@ -1173,7 +1177,7 @@ int CBaseMonster::CheckEnemy(CBaseEntity* pEnemy)
 //=========================================================
 void CBaseMonster::PushEnemy(CBaseEntity* pEnemy, Vector& vecLastKnownPos)
 {
-	int i;
+	int i = 0;
 
 	if (pEnemy == nullptr)
 		return;
@@ -1224,7 +1228,7 @@ BOOL CBaseMonster::PopEnemy()
 //=========================================================
 void CBaseMonster::SetActivity(Activity NewActivity)
 {
-	int iSequence;
+	int iSequence = 0;
 
 	iSequence = LookupActivity(NewActivity);
 
@@ -1260,7 +1264,7 @@ void CBaseMonster::SetActivity(Activity NewActivity)
 //=========================================================
 void CBaseMonster::SetSequenceByName(char* szSequence)
 {
-	int iSequence;
+	int iSequence = 0;
 
 	iSequence = LookupSequence(szSequence);
 
@@ -1301,10 +1305,10 @@ void CBaseMonster::SetSequenceByName(char* szSequence)
 int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, CBaseEntity* pTarget, float* pflDist)
 {
 	Vector vecStartPos;  // record monster's position before trying the move
-	float flYaw;
-	float flDist;
+	float flYaw = 0.f;
+	float flDist = 0.f;
 	float flStep, stepSize;
-	int iReturn;
+	int iReturn = 0;
 
 	vecStartPos = pev->origin;
 
@@ -1475,7 +1479,7 @@ void CBaseMonster::AdvanceRoute(float distance)
 				int iSrcNode = WorldGraph.FindNearestNode(m_Route[m_iRouteIndex].vecLocation, this);
 				int iDestNode = WorldGraph.FindNearestNode(m_Route[m_iRouteIndex + 1].vecLocation, this);
 
-				int iLink;
+				int iLink = 0;
 				WorldGraph.HashSearch(iSrcNode, iDestNode, iLink);
 
 				if (iLink >= 0 && WorldGraph.m_pLinkPool[iLink].m_pLinkEnt != nullptr)
@@ -1509,7 +1513,7 @@ void CBaseMonster::AdvanceRoute(float distance)
 
 int CBaseMonster::RouteClassify(int iMoveFlag)
 {
-	int movementGoal;
+	int movementGoal = 0;
 
 	movementGoal = MOVEGOAL_NONE;
 
@@ -1532,9 +1536,9 @@ int CBaseMonster::RouteClassify(int iMoveFlag)
 //=========================================================
 BOOL CBaseMonster::BuildRoute(const Vector& vecGoal, int iMoveFlag, CBaseEntity* pTarget)
 {
-	float flDist;
+	float flDist = 0.f;
 	Vector vecApex;
-	int iLocalMove;
+	int iLocalMove = 0;
 
 	RouteNew();
 	m_movementGoal = RouteClassify(iMoveFlag);
@@ -1630,7 +1634,7 @@ BOOL CBaseMonster::FTriangulate(const Vector& vecStart, const Vector& vecEnd, fl
 	Vector vecTop;      // the spot we'll try to triangulate to on the top
 	Vector vecBottom;   // the spot we'll try to triangulate to on the bottom
 	Vector vecFarSide;  // the spot that we'll move to after hitting the triangulated point, before moving on to our normal goal.
-	int i;
+	int i = 0;
 	float sizeX, sizeZ;
 
 	// If the hull width is less than 24, use 24 because CheckLocalMove uses a min of
@@ -1795,9 +1799,9 @@ BOOL CBaseMonster::FTriangulate(const Vector& vecStart, const Vector& vecEnd, fl
 
 void CBaseMonster::Move(float flInterval)
 {
-	float flWaypointDist;
-	float flCheckDist;
-	float flDist;  // how far the lookahead check got before hitting an object.
+	float flWaypointDist = 0.f;
+	float flCheckDist = 0.f;
+	float flDist = 0.f;  // how far the lookahead check got before hitting an object.
 	Vector vecDir;
 	Vector vecApex;
 	CBaseEntity* pTargetEnt;
@@ -1982,7 +1986,7 @@ void CBaseMonster::MoveExecute(CBaseEntity* pTargetEnt, const Vector& vecDir, fl
 		m_IdealActivity = m_movementActivity;
 
 	float flTotal = m_flGroundSpeed * pev->framerate * flInterval;
-	float flStep;
+	float flStep = 0.f;
 	while (flTotal > 0.001)
 	{
 		// don't walk more than 16 units or stairs stop working
@@ -2230,11 +2234,11 @@ int CBaseMonster::IRelationship(CBaseEntity* pTarget)
 
 BOOL CBaseMonster::FindCover(Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist)
 {
-	int i;
-	int iMyHullIndex;
-	int iMyNode;
-	int iThreatNode;
-	float flDist;
+	int i = 0;
+	int iMyHullIndex = 0;
+	int iMyNode = 0;
+	int iThreatNode = 0;
+	float flDist = 0.f;
 	Vector vecLookersOffset;
 	TraceResult tr;
 
@@ -2336,10 +2340,10 @@ BOOL CBaseMonster::FindCover(Vector vecThreat, Vector vecViewOffset, float flMin
 //=========================================================
 BOOL CBaseMonster::BuildNearestRoute(Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist)
 {
-	int i;
-	int iMyHullIndex;
-	int iMyNode;
-	float flDist;
+	int i = 0;
+	int iMyHullIndex = 0;
+	int iMyNode = 0;
+	float flDist = 0.f;
 	Vector vecLookersOffset;
 	TraceResult tr;
 
@@ -2425,9 +2429,9 @@ CBaseEntity* CBaseMonster::BestVisibleEnemy(void)
 {
 	CBaseEntity* pReturn;
 	CBaseEntity* pNextEnt;
-	int iNearest;
-	int iDist;
-	int iBestRelationship;
+	int iNearest = 0;
+	int iDist = 0;
+	int iBestRelationship = 0;
 
 	iNearest = 8192;  // so first visible entity will become the closest.
 	pNextEnt = m_pLink;
@@ -2508,7 +2512,7 @@ void CBaseMonster::MakeIdealYaw(Vector vecTarget)
 //=========================================================
 float CBaseMonster::FlYawDiff(void)
 {
-	float flCurrentYaw;
+	float flCurrentYaw = 0.f;
 
 	flCurrentYaw = UTIL_AngleMod(pev->angles.y);
 
@@ -2753,9 +2757,9 @@ BOOL CBaseMonster::FGetNodeRoute(Vector vecDest)
 {
 	int iPath[MAX_PATH_SIZE];
 	int iSrcNode, iDestNode;
-	int iResult;
-	int i;
-	int iNumToCopy;
+	int iResult = 0;
+	int i = 0;
+	int iNumToCopy = 0;
 
 	iSrcNode = WorldGraph.FindNearestNode(pev->origin, this);
 	iDestNode = WorldGraph.FindNearestNode(vecDest, this);
@@ -2834,7 +2838,7 @@ BOOL CBaseMonster::FGetNodeRoute(Vector vecDest)
 //=========================================================
 int CBaseMonster::FindHintNode(void)
 {
-	int i;
+	int i = 0;
 	TraceResult tr;
 
 	if (!WorldGraph.m_fGraphPresent)
@@ -2988,7 +2992,7 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 //=========================================================
 BOOL CBaseMonster::FCheckAITrigger(void)
 {
-	BOOL fFireTarget;
+	BOOL fFireTarget = FALSE;
 
 	if (m_iTriggerCondition == AITRIGGER_NONE)
 	{
@@ -3131,7 +3135,7 @@ BOOL CBaseMonster::FindLateralCover(const Vector& vecThreat, const Vector& vecVi
 	Vector vecLeftTest;
 	Vector vecRightTest;
 	Vector vecStepRight;
-	int i;
+	int i = 0;
 
 	UTIL_MakeVectors(pev->angles);
 	vecStepRight = gpGlobals->v_right * COVER_DELTA;
@@ -3295,8 +3299,8 @@ BOOL CBaseMonster::BBoxFlat(void)
 	TraceResult tr;
 	Vector vecPoint;
 	float flXSize, flYSize;
-	float flLength;
-	float flLength2;
+	float flLength = 0.f;
+	float flLength2 = 0.f;
 
 	flXSize = pev->size.x / 2;
 	flYSize = pev->size.y / 2;

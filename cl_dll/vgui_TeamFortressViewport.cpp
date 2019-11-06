@@ -56,11 +56,11 @@
 #include "vgui_SpectatorPanel.h"
 
 class CCommandMenu;
-int g_iPlayerClass;
-int g_iTeamNumber;
-int g_iUser1;
-int g_iUser2;
-int g_iUser3;
+int g_iPlayerClass = 0;
+int g_iTeamNumber = 0;
+int g_iUser1 = 0;
+int g_iUser2 = 0;
+int g_iUser3 = 0;
 
 // Scoreboard positions
 #define SBOARD_INDENT_X XRES(104)
@@ -165,7 +165,7 @@ int sTFValidClassInts[] =
 // Get the name of TGA file, based on GameDir
 char* GetVGUITGAName(const char* pszName)
 {
-	int i;
+	int i = 0;
 	char sz[256];
 	static char gd[256];
 	const char* gamedir;
@@ -349,7 +349,7 @@ bool CCommandMenu::RecalculateVisibles(int iYOffset, bool bHideAll)
 // Make sure all submenus can fit on the screen
 void CCommandMenu::RecalculatePositions(int iYOffset)
 {
-	int iTop;
+	int iTop = 0;
 	int iAdjust = 0;
 
 	m_iYOffset += iYOffset;
@@ -477,7 +477,7 @@ void* TeamFortressViewport::operator new(size_t stAllocateBlock)
 class CViewPortInputHandler : public InputSignal
 {
 public:
-	bool bPressed;
+	bool bPressed = false;
 
 	CViewPortInputHandler()
 	{
@@ -696,7 +696,7 @@ int TeamFortressViewport::CreateCommandMenu(char* menuFile, int direction, int y
 				int iCustom = false;
 				int iTeamOnly = -1;
 				int iToggle = 0;
-				int iButtonY;
+				int iButtonY = 0;
 				bool bGetExtraToken = true;
 				CommandButton* pButton = nullptr;
 

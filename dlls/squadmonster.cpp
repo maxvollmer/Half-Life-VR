@@ -52,9 +52,9 @@ IMPLEMENT_SAVERESTORE(CSquadMonster, CBaseMonster);
 //=========================================================
 BOOL CSquadMonster::OccupySlot(int iDesiredSlots)
 {
-	int i;
-	int iMask;
-	int iSquadSlots;
+	int i = 0;
+	int iMask = 0;
+	int iSquadSlots = 0;
 
 	if (!InSquad())
 	{
@@ -308,7 +308,7 @@ int CSquadMonster::SquadCount(void)
 //=========================================================
 int CSquadMonster::SquadRecruit(int searchRadius, int maxMembers)
 {
-	int squadCount;
+	int squadCount = 0;
 	int iMyClass = Classify();  // cache this monster's class
 
 
@@ -384,7 +384,7 @@ int CSquadMonster::SquadRecruit(int searchRadius, int maxMembers)
 //=========================================================
 int CSquadMonster::CheckEnemy(CBaseEntity* pEnemy)
 {
-	int iUpdatedLKP;
+	int iUpdatedLKP = 0;
 
 	iUpdatedLKP = CBaseMonster::CheckEnemy(m_hEnemy);
 
@@ -514,7 +514,7 @@ BOOL CSquadMonster::NoFriendlyFire(void)
 //=========================================================
 MONSTERSTATE CSquadMonster::GetIdealState(void)
 {
-	int iConditions;
+	int iConditions = 0;
 
 	iConditions = IScheduleFlags();
 

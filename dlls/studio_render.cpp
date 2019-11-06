@@ -23,7 +23,7 @@
 void StudioModel::CalcBoneAdj()
 {
 	int i, j;
-	float value;
+	float value = 0.f;
 	mstudiobonecontroller_t* pbonecontroller = reinterpret_cast<mstudiobonecontroller_t*>(reinterpret_cast<byte*>(m_pstudiohdr) + m_pstudiohdr->bonecontrollerindex);
 
 	for (j = 0; j < m_pstudiohdr->numbonecontrollers; j++)
@@ -202,10 +202,10 @@ void StudioModel::CalcBonePosition(int frame, float s, mstudiobone_t* pbone, mst
 
 void StudioModel::CalcRotations(vec3_t* pos, vec4_t* q, mstudioseqdesc_t* pseqdesc, mstudioanim_t* panim, float f)
 {
-	int i;
-	int frame;
+	int i = 0;
+	int frame = 0;
 	mstudiobone_t* pbone;
-	float s;
+	float s = 0.f;
 
 	frame = (int)f;
 	s = (f - frame);
@@ -244,9 +244,9 @@ mstudioanim_t* StudioModel::GetAnim(mstudioseqdesc_t* pseqdesc)
 
 void StudioModel::SlerpBones(vec4_t q1[], vec3_t pos1[], vec4_t q2[], vec3_t pos2[], float s)
 {
-	int i;
+	int i = 0;
 	vec4_t q3;
-	float s1;
+	float s1 = 0.f;
 
 	if (s < 0)
 		s = 0;
@@ -322,7 +322,7 @@ int StudioModel::SetFrame(int nFrame)
 
 void StudioModel::SetUpBones(void)
 {
-	int i;
+	int i = 0;
 
 	mstudiobone_t* pbones;
 	mstudioseqdesc_t* pseqdesc;
@@ -352,7 +352,7 @@ void StudioModel::SetUpBones(void)
 
 	if (pseqdesc->numblends > 1)
 	{
-		float s;
+		float s = 0.f;
 
 		panim += m_pstudiohdr->numbones;
 		CalcRotations(pos2, q2, pseqdesc, panim, m_frame);
@@ -399,7 +399,7 @@ void StudioModel::SetUpBones(void)
 
 void StudioModel::SetupModel(int bodypart)
 {
-	int index;
+	int index = 0;
 
 	if (bodypart > m_pstudiohdr->numbodyparts)
 	{

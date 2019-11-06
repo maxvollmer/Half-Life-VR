@@ -28,15 +28,15 @@ DECLARE_MESSAGE(m_DeathNotice, DeathMsg);
 
 struct DeathNoticeItem
 {
-	char szKiller[MAX_PLAYER_NAME_LENGTH * 2];
-	char szVictim[MAX_PLAYER_NAME_LENGTH * 2];
-	int iId;  // the index number of the associated sprite
-	int iSuicide;
-	int iTeamKill;
-	int iNonPlayerKill;
-	float flDisplayTime;
-	float* KillerColor;
-	float* VictimColor;
+	char szKiller[MAX_PLAYER_NAME_LENGTH * 2] = { 0 };
+	char szVictim[MAX_PLAYER_NAME_LENGTH * 2] = { 0 };
+	int iId = 0;  // the index number of the associated sprite
+	int iSuicide = 0;
+	int iTeamKill = 0;
+	int iNonPlayerKill = 0;
+	float flDisplayTime = 0.f;
+	float* KillerColor = nullptr;
+	float* VictimColor = nullptr;
 };
 
 #define MAX_DEATHNOTICES 4

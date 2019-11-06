@@ -34,7 +34,7 @@ class CAirtank : public CGrenade
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_state;
+	int m_state = 0;
 };
 
 

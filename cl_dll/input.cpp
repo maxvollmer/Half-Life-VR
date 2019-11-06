@@ -289,7 +289,7 @@ KeyDown
 */
 void KeyDown(kbutton_t* b)
 {
-	int k;
+	int k = 0;
 	char* c;
 
 	c = gEngfuncs.Cmd_Argv(1);
@@ -323,7 +323,7 @@ KeyUp
 */
 void KeyUp(kbutton_t* b)
 {
-	int k;
+	int k = 0;
 	char* c;
 
 	c = gEngfuncs.Cmd_Argv(1);
@@ -593,7 +593,7 @@ if active == 1 then we are 1) not playing back demos ( where our commands are ig
 */
 void DLLEXPORT CL_CreateMove(float frametime, struct usercmd_s* cmd, int active)
 {
-	float spd;
+	float spd = 0.f;
 
 	if (active)
 	{

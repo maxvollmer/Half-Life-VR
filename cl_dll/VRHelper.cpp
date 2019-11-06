@@ -489,7 +489,7 @@ bool VRHelper::UpdatePositions()
 	if (vrSystem != nullptr && vrCompositor != nullptr)
 	{
 		vrCompositor->SetTrackingSpace(isVRRoomScale ? vr::TrackingUniverseStanding : vr::TrackingUniverseSeated);
-		vrCompositor->WaitGetPoses(positions.m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
+		vrCompositor->WaitGetPoses(positions.m_rTrackedDevicePose.data(), vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
 		if (positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bDeviceIsConnected && positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid && positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].eTrackingResult == vr::TrackingResult_Running_OK)
 		{
@@ -670,7 +670,7 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	extern playermove_t* pmove;
 	if (pmove)
 	{
-		float playerViewPosHeight;
+		float playerViewPosHeight = 0.f;
 		if (pmove->flags & FL_DUCKING)
 		{
 			playerViewPosHeight = m_viewOfs.z - VEC_DUCK_HULL_MIN.z;

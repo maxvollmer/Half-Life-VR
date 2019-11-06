@@ -48,7 +48,7 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_preSequence;
+	int m_preSequence = 0;
 };
 
 LINK_ENTITY_TO_CLASS(info_bigmomma, CInfoBM);
@@ -112,7 +112,7 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_maxFrame;
+	int m_maxFrame = 0;
 };
 
 LINK_ENTITY_TO_CLASS(bmortar, CBMortar);
@@ -306,11 +306,11 @@ public:
 	CUSTOM_SCHEDULES;
 
 private:
-	float m_nodeTime;
-	float m_crabTime;
-	float m_mortarTime;
-	float m_painSoundTime;
-	int m_crabCount;
+	float m_nodeTime = 0.f;
+	float m_crabTime = 0.f;
+	float m_mortarTime = 0.f;
+	float m_painSoundTime = 0.f;
+	int m_crabCount = 0;
 };
 LINK_ENTITY_TO_CLASS(monster_bigmomma, CBigMomma);
 
@@ -415,7 +415,7 @@ int CBigMomma::Classify(void)
 //=========================================================
 void CBigMomma::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{
@@ -942,7 +942,7 @@ void CBigMomma::StartTask(Task_t* pTask)
 	case TASK_PLAY_NODE_PRESEQUENCE:
 	case TASK_PLAY_NODE_SEQUENCE:
 	{
-		int sequence;
+		int sequence = 0;
 		if (pTask->iTask == TASK_PLAY_NODE_SEQUENCE)
 			sequence = GetNodeSequence();
 		else
@@ -1027,7 +1027,7 @@ void CBigMomma::RunTask(Task_t* pTask)
 	{
 	case TASK_MOVE_TO_NODE_RANGE:
 	{
-		float distance;
+		float distance = 0.f;
 
 		if (m_hTargetEnt == nullptr)
 			TaskFail();
@@ -1198,7 +1198,7 @@ CBMortar* CBMortar::Shoot(edict_t* pOwner, Vector vecStart, Vector vecVelocity)
 void CBMortar::Touch(CBaseEntity* pOther)
 {
 	TraceResult tr;
-	int iPitch;
+	int iPitch = 0;
 
 	// splat sound
 	iPitch = RANDOM_FLOAT(90, 110);

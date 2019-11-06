@@ -263,7 +263,7 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	if (player->m_flNextChatTime > gpGlobals->time)
 		return;
 
-	int j;
+	int j = 0;
 	char* p;
 	char text[128];
 	char szTemp[256];
@@ -1099,7 +1099,7 @@ we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to. 
 */
 int AddToFullPack(struct entity_state_s* state, int e, edict_t* ent, edict_t* host, int hostflags, int player, unsigned char* pSet)
 {
-	int i;
+	int i = 0;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
 	if ((ent->v.effects == EF_NODRAW) &&
@@ -1337,7 +1337,7 @@ void CreateBaseline(int player, int eindex, struct entity_state_s* baseline, str
 typedef struct
 {
 	char name[32];
-	int field;
+	int field = 0;
 } entity_field_alias_t;
 
 #define FIELD_ORIGIN0 0

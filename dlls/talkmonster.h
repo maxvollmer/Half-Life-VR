@@ -158,16 +158,16 @@ public:
 	static char* m_szFriends[TLK_CFRIENDS];  // array of friend names
 	static float g_talkWaitTime;
 
-	int m_bitsSaid;                    // set bits for sentences we don't want repeated
-	int m_nSpeak;                      // number of times initiated talking
-	int m_voicePitch;                  // pitch of voice for this head
-	const char* m_szGrp[TLK_CGROUPS];  // sentence group names
-	float m_useTime;                   // Don't allow +USE until this time
-	int m_iszUse;                      // Custom +USE sentence group (follow)
-	int m_iszUnUse;                    // Custom +USE sentence group (stop following)
+	int m_bitsSaid = 0;                    // set bits for sentences we don't want repeated
+	int m_nSpeak = 0;                      // number of times initiated talking
+	int m_voicePitch = 0;                  // pitch of voice for this head
+	const char* m_szGrp[TLK_CGROUPS] = { 0 };  // sentence group names
+	float m_useTime = 0.f;                   // Don't allow +USE until this time
+	int m_iszUse = 0;                      // Custom +USE sentence group (follow)
+	int m_iszUnUse = 0;                    // Custom +USE sentence group (stop following)
 
-	float m_flLastSaidSmelled;  // last time we talked about something that stinks
-	float m_flStopTalkTime;     // when in the future that I'll be done saying this sentence.
+	float m_flLastSaidSmelled = 0.f;  // last time we talked about something that stinks
+	float m_flStopTalkTime = 0.f;     // when in the future that I'll be done saying this sentence.
 
 	EHANDLE<CBaseMonster> m_hTalkTarget;  // who to look at while talking
 	CUSTOM_SCHEDULES;

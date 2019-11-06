@@ -201,19 +201,19 @@ enum
 // an array of schedules is a schedule list
 struct Task_t
 {
-	int iTask;
-	float flData;
+	int iTask = 0;
+	float flData = 0.f;
 };
 
 struct Schedule_t
 {
 	Task_t* pTasklist;
-	int cTasks;
-	int iInterruptMask;  // a bit mask of conditions that can interrupt this schedule
+	int cTasks = 0;
+	int iInterruptMask = 0;  // a bit mask of conditions that can interrupt this schedule
 
 	// a more specific mask that indicates which TYPES of sounds will interrupt the schedule in the
 	// event that the schedule is broken by COND_HEAR_SOUND
-	int iSoundMask;
+	int iSoundMask = 0;
 	const char* pName;
 };
 
@@ -222,7 +222,7 @@ struct Schedule_t
 struct WayPoint_t
 {
 	Vector vecLocation;
-	int iType;
+	int iType = 0;
 };
 
 // these MoveFlag values are assigned to a WayPoint's TYPE in order to demonstrate the

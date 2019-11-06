@@ -78,7 +78,7 @@ UTIL_SharedRandomLong
 */
 int UTIL_SharedRandomLong(unsigned int seed, int low, int high)
 {
-	unsigned int range;
+	unsigned int range = 0;
 
 	U_Srand((int)seed + low + high);
 
@@ -89,8 +89,8 @@ int UTIL_SharedRandomLong(unsigned int seed, int low, int high)
 	}
 	else
 	{
-		int offset;
-		int rnum;
+		int offset = 0;
+		int rnum = 0;
 
 		rnum = U_Random();
 
@@ -342,7 +342,7 @@ float UTIL_AngleMod(float a)
 
 float UTIL_AngleDiff(float destAngle, float srcAngle)
 {
-	float delta;
+	float delta = 0.f;
 
 	delta = destAngle - srcAngle;
 	if (destAngle > srcAngle)
@@ -379,7 +379,7 @@ int UTIL_EntitiesInBox(CBaseEntity** pList, int listMax, const Vector& mins, con
 {
 	edict_t* pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
 	CBaseEntity* pEntity;
-	int count;
+	int count = 0;
 
 	count = 0;
 
@@ -421,7 +421,7 @@ int UTIL_MonstersInSphere(CBaseEntity** pList, int listMax, const Vector& center
 {
 	edict_t* pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
 	CBaseEntity* pEntity;
-	int count;
+	int count = 0;
 	float distance, delta;
 
 	count = 0;
@@ -631,7 +631,7 @@ void UTIL_MakeInvVectors(const Vector& vec, globalvars_t* pgv)
 {
 	MAKE_VECTORS(vec);
 
-	float tmp;
+	float tmp = 0.f;
 	pgv->v_right = pgv->v_right * -1;
 
 	SWAP(pgv->v_forward.y, pgv->v_right.x, tmp);
@@ -650,7 +650,7 @@ void UTIL_EmitAmbientSound(edict_t* entity, const Vector& vecOrigin, const char*
 
 static unsigned short FixedUnsigned16(float value, float scale)
 {
-	int output;
+	int output = 0;
 
 	output = value * scale;
 	if (output < 0)
@@ -663,7 +663,7 @@ static unsigned short FixedUnsigned16(float value, float scale)
 
 static short FixedSigned16(float value, float scale)
 {
-	int output;
+	int output = 0;
 
 	output = value * scale;
 
@@ -683,8 +683,8 @@ static short FixedSigned16(float value, float scale)
 // UNDONE: Affect user controls?
 void UTIL_ScreenShake(const Vector& center, float amplitude, float frequency, float duration, float radius)
 {
-	int i;
-	float localAmplitude;
+	int i = 0;
+	float localAmplitude = 0.f;
 	ScreenShake shake;
 
 	shake.duration = FixedUnsigned16(duration, 1 << 12);  // 4.12 fixed
@@ -766,7 +766,7 @@ void UTIL_ScreenFadeWrite(const ScreenFade& fade, CBaseEntity* pEntity)
 
 void UTIL_ScreenFadeAll(const Vector& color, float fadeTime, float fadeHold, int alpha, int flags)
 {
-	int i;
+	int i = 0;
 	ScreenFade fade;
 
 
@@ -836,7 +836,7 @@ void UTIL_HudMessage(CBaseEntity* pEntity, const hudtextparms_t& textparms, cons
 
 void UTIL_HudMessageAll(const hudtextparms_t& textparms, const char* pMessage)
 {
-	int i;
+	int i = 0;
 
 	for (i = 1; i <= gpGlobals->maxClients; i++)
 	{
@@ -945,7 +945,7 @@ void UTIL_ShowMessage(const char* pString, CBaseEntity* pEntity)
 
 void UTIL_ShowMessageAll(const char* pString)
 {
-	int i;
+	int i = 0;
 
 	// loop through all players
 
@@ -1481,7 +1481,7 @@ bool UTIL_RotatedBBoxIntersectsBBox(const Vector & bboxCenter, const Vector & bb
 // Copied from studio_util.cpp (note: expects radians!)
 void UTIL_AngleQuaternion(const Vector& angles, float quaternion[4])
 {
-	float angle;
+	float angle = 0.f;
 	float sr, sp, sy, cr, cp, cy;
 
 	// FIXME: rescale the inputs to 1/2 angle
@@ -1629,9 +1629,9 @@ void UTIL_BloodDecalTrace(TraceResult* pTrace, int bloodColor)
 
 void UTIL_DecalTrace(TraceResult* pTrace, int decalNumber)
 {
-	short entityIndex;
-	int index;
-	int message;
+	short entityIndex = 0;
+	int index = 0;
+	int message = 0;
 
 	if (decalNumber < 0)
 		return;
@@ -1699,7 +1699,7 @@ if the custom can't be loaded.
 */
 void UTIL_PlayerDecalTrace(TraceResult* pTrace, int playernum, int decalNumber, BOOL bIsCustom)
 {
-	int index;
+	int index = 0;
 
 	if (!bIsCustom)
 	{
@@ -1793,7 +1793,7 @@ BOOL UTIL_TeamsMatch(const char* pTeamName1, const char* pTeamName2)
 void UTIL_StringToVector(float* pVector, const char* pString)
 {
 	char* pstr, * pfront, tempString[128];
-	int j;
+	int j = 0;
 
 	strcpy_s(tempString, pString);
 	pstr = pfront = tempString;
@@ -1824,7 +1824,7 @@ void UTIL_StringToVector(float* pVector, const char* pString)
 void UTIL_StringToIntArray(int* pVector, int count, const char* pString)
 {
 	char* pstr, * pfront, tempString[128];
-	int j;
+	int j = 0;
 
 	strcpy_s(tempString, pString);
 	pstr = pfront = tempString;
@@ -2315,7 +2315,7 @@ int CSaveRestoreBuffer::EntityIndex(edict_t* pentLookup)
 	if (!m_pdata || pentLookup == nullptr)
 		return -1;
 
-	int i;
+	int i = 0;
 	ENTITYTABLE* pTable;
 
 	for (i = 0; i < m_pdata->tableCount; i++)
@@ -2333,7 +2333,7 @@ edict_t* CSaveRestoreBuffer::EntityFromIndex(int entityIndex)
 	if (!m_pdata || entityIndex < 0)
 		return nullptr;
 
-	int i;
+	int i = 0;
 	ENTITYTABLE* pTable;
 
 	for (i = 0; i < m_pdata->tableCount; i++)
@@ -2470,7 +2470,7 @@ void CSave::WriteFloat(const char* pname, const float* data, int count)
 
 void CSave::WriteTime(const char* pname, const float* data, int count)
 {
-	int i;
+	int i = 0;
 	Vector tmp, input;
 
 	BufferHeader(pname, sizeof(float) * count);
@@ -2556,7 +2556,7 @@ void CSave::WritePositionVector(const char* pname, const Vector& value)
 
 void CSave::WritePositionVector(const char* pname, const float* value, int count)
 {
-	int i;
+	int i = 0;
 	Vector tmp, input;
 
 	BufferHeader(pname, sizeof(float) * 3 * count);
@@ -2587,7 +2587,7 @@ void CSave::WriteFunction(const char* pname, const int* data, int count)
 
 void EntvarsKeyvalue(entvars_t* pev, KeyValueData* pkvd)
 {
-	int i;
+	int i = 0;
 	TYPEDESCRIPTION* pField;
 
 	for (i = 0; i < ENTVARS_COUNT; i++)
@@ -3109,7 +3109,7 @@ void CRestore::BufferSkipBytes(int bytes)
 int CRestore::BufferSkipZString(void)
 {
 	char* pszSearch;
-	int len;
+	int len = 0;
 
 	if (!m_pdata)
 		return 0;

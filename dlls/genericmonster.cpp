@@ -55,7 +55,7 @@ int CGenericMonster::Classify(void)
 //=========================================================
 void CGenericMonster::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{

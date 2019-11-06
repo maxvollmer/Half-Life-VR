@@ -44,7 +44,7 @@ enum
 	TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE,
 };
 
-int iAgruntMuzzleFlash;
+int iAgruntMuzzleFlash = 0;
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -112,15 +112,15 @@ public:
 	static const char* pIdleSounds[];
 	static const char* pAlertSounds[];
 
-	BOOL m_fCanHornetAttack;
-	float m_flNextHornetAttackCheck;
+	BOOL m_fCanHornetAttack = FALSE;
+	float m_flNextHornetAttackCheck = 0.f;
 
-	float m_flNextPainTime;
+	float m_flNextPainTime = 0.f;
 
 	// three hacky fields for speech stuff. These don't really need to be saved.
-	float m_flNextSpeakTime;
-	float m_flNextWordTime;
-	int m_iLastWord;
+	float m_flNextSpeakTime = 0.f;
+	float m_flNextWordTime = 0.f;
+	int m_iLastWord = 0;
 };
 LINK_ENTITY_TO_CLASS(monster_alien_grunt, CAGrunt);
 
@@ -394,7 +394,7 @@ int CAGrunt::Classify(void)
 //=========================================================
 void CAGrunt::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{
@@ -955,7 +955,7 @@ void CAGrunt::StartTask(Task_t* pTask)
 		{
 			Vector vecCenter;
 			TraceResult tr;
-			BOOL fSkip;
+			BOOL fSkip = FALSE;
 
 			fSkip = FALSE;
 			vecCenter = Center();

@@ -208,7 +208,7 @@ Matrix4& Matrix4::invertEuclidean()
 	// | R^T | 0 |
 	// | ----+-- |
 	// |  0  | 1 |
-	float tmp;
+	float tmp = 0.f;
 	tmp = m[1];
 	m[1] = m[4];
 	m[4] = tmp;

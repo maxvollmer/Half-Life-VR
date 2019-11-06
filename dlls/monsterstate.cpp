@@ -117,7 +117,7 @@ void CBaseMonster::RunAI(void)
 //=========================================================
 MONSTERSTATE CBaseMonster::GetIdealState(void)
 {
-	int iConditions;
+	int iConditions = 0;
 
 	iConditions = IScheduleFlags();
 

@@ -32,7 +32,7 @@ double VectorLength(vec3_t v)
 
 int VectorCompare(vec3_t v1, vec3_t v2)
 {
-	int i;
+	int i = 0;
 
 	for (i = 0; i < 3; i++)
 		if (fabsf(v1[i] - v2[i]) > EQUAL_EPSILON)
@@ -75,7 +75,7 @@ void ClearBounds(vec3_t mins, vec3_t maxs)
 
 void AddPointToBounds(vec3_t v, vec3_t mins, vec3_t maxs)
 {
-	int i;
+	int i = 0;
 	vec_t val;
 
 	for (i = 0; i < 3; i++)
@@ -129,7 +129,7 @@ void VectorTransform(const vec3_t in1, const float in2[3][4], vec3_t out)
 
 void AngleQuaternion(const vec3_t angles, vec4_t quaternion)
 {
-	float angle;
+	float angle = 0.f;
 	float sr, sp, sy, cr, cp, cy;
 
 	// FIXME: rescale the inputs to 1/2 angle
@@ -166,7 +166,7 @@ void QuaternionMatrix(const vec4_t quaternion, float(*matrix)[4])
 
 void QuaternionSlerp(const vec4_t p, vec4_t q, float t, vec4_t qt)
 {
-	int i;
+	int i = 0;
 	float omega, cosom, sinom, sclp, sclq;
 
 	// decide if one of the quaternions is backwards

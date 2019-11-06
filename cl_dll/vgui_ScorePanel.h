@@ -214,8 +214,8 @@ public:
 
 private:
 	CTextImage2* _dualImage;
-	int _row;
-	int _gap;
+	int _row = 0;
+	int _gap = 0;
 	int _offset[2];
 	bool _useFgColorAsImageColor;
 };
@@ -253,7 +253,7 @@ private:
 	CGrid m_HeaderGrid;
 	CLabelHeader m_HeaderLabels[NUM_COLUMNS];  // Labels above the
 	CLabelHeader* m_pCurrentHighlightLabel;
-	int m_iHighlightRow;
+	int m_iHighlightRow = 0;
 
 	vgui::CListBox m_PlayerList;
 	CGrid m_PlayerGrids[NUM_ROWS];                        // The grid with player and team info.
@@ -264,16 +264,16 @@ private:
 	CLabelHeader* GetPlayerEntry(int x, int y) { return &m_PlayerEntries[x][y]; }
 
 public:
-	int m_iNumTeams;
-	int m_iPlayerNum;
-	int m_iShowscoresHeld;
+	int m_iNumTeams = 0;
+	int m_iPlayerNum = 0;
+	int m_iShowscoresHeld = 0;
 
-	int m_iRows;
+	int m_iRows = 0;
 	int m_iSortedRows[NUM_ROWS];
 	int m_iIsATeam[NUM_ROWS];
 	bool m_bHasBeenSorted[MAX_PLAYERS];
-	int m_iLastKilledBy;
-	int m_fLastKillTime;
+	int m_iLastKilledBy = 0;
+	int m_fLastKillTime = 0;
 
 
 public:

@@ -49,7 +49,7 @@ public:
 
 	EHANDLE<CBaseEntity> m_hPlayer;
 	EHANDLE<CBaseEntity> m_hTalkTarget;
-	float m_flTalkTime;
+	float m_flTalkTime = 0.f;
 };
 LINK_ENTITY_TO_CLASS(monster_gman, CGMan);
 
@@ -77,7 +77,7 @@ int CGMan::Classify(void)
 //=========================================================
 void CGMan::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{

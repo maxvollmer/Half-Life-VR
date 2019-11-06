@@ -23,6 +23,12 @@
 *                                                                               *
 ********************************************************************************/
 
+/*
+**
+** 2019-11-06 MODIFIED BY MAX VOLLMER FOR HALF-LIFE: VR: Initialized uninitialized member variables.
+**
+*/
+
 #ifndef REACTPHYSICS3D_CONSTRAINT_SOLVER_H
 #define REACTPHYSICS3D_CONSTRAINT_SOLVER_H
 
@@ -65,9 +71,14 @@ struct ConstraintSolverData {
         bool isWarmStartingActive;
 
         /// Constructor
-        ConstraintSolverData() :linearVelocities(nullptr), angularVelocities(nullptr),
-                                positions(nullptr), orientations(nullptr) {
-
+        ConstraintSolverData() :
+			timeStep(0.0),
+			linearVelocities(nullptr),
+			angularVelocities(nullptr),
+			positions(nullptr),
+			orientations(nullptr),
+			isWarmStartingActive(false)
+		{
         }
 
 };

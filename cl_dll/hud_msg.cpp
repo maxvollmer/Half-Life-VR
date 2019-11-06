@@ -82,8 +82,8 @@ int CHud::MsgFunc_Damage(const char* pszName, int iSize, void* pbuf)
 {
 	int armor, blood;
 	Vector from;
-	int i;
-	float count;
+	int i = 0;
+	float count = 0.f;
 
 	BEGIN_READ(pbuf, iSize);
 	armor = READ_BYTE();

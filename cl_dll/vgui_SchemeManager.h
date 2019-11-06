@@ -42,11 +42,11 @@ public:
 
 private:
 	class CScheme;
-	CScheme* m_pSchemeList;
-	int m_iNumSchemes;
+	CScheme* m_pSchemeList = nullptr;
+	int m_iNumSchemes = 0;
 
 	// Resolution we were initted at.
-	int m_xRes;
+	int m_xRes = 0;
 
 	CScheme* getSafeScheme(SchemeHandle_t schemeHandle);
 };

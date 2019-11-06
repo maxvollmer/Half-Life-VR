@@ -99,7 +99,7 @@ void CCrowbar::Holster(int skiplocal /* = 0 */)
 void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* mins, float* maxs, edict_t* pIgnoreEntity)
 {
 	int i, j, k;
-	float distance;
+	float distance = 0.f;
 	float* minmaxs[2] = { mins, maxs };
 	TraceResult tmpTrace;
 	Vector vecHullEnd = tr.vecEndPos;

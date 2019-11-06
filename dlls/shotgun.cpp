@@ -140,7 +140,7 @@ void CShotgun::PrimaryAttack()
 
 	m_iClip--;
 
-	int flags;
+	int flags = 0;
 #if defined(CLIENT_WEAPONS)
 	flags = FEV_NOTHOST;
 #else
@@ -212,7 +212,7 @@ void CShotgun::SecondaryAttack(void)
 	m_iClip -= 2;
 
 
-	int flags;
+	int flags = 0;
 #if defined(CLIENT_WEAPONS)
 	flags = FEV_NOTHOST;
 #else
@@ -349,7 +349,7 @@ void CShotgun::WeaponIdle(void)
 		}
 		else
 		{
-			int iAnim;
+			int iAnim = 0;
 			float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
 			if (flRand <= 0.8)
 			{

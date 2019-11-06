@@ -42,7 +42,7 @@
 #include "effects.h"
 #include "customentity.h"
 
-int g_fGruntQuestion;  // true if an idle grunt asked a question. Cleared when someone answers.
+int g_fGruntQuestion = 0;  // true if an idle grunt asked a question. Cleared when someone answers.
 
 extern DLL_GLOBAL int g_iSkillLevel;
 
@@ -166,23 +166,23 @@ public:
 
 	// checking the feasibility of a grenade toss is kind of costly, so we do it every couple of seconds,
 	// not every server frame.
-	float m_flNextGrenadeCheck;
-	float m_flNextPainTime;
-	float m_flLastEnemySightTime;
+	float m_flNextGrenadeCheck = 0.f;
+	float m_flNextPainTime = 0.f;
+	float m_flLastEnemySightTime = 0.f;
 
 	Vector m_vecTossVelocity;
 
-	BOOL m_fThrowGrenade;
-	BOOL m_fStanding;
-	BOOL m_fFirstEncounter;  // only put on the handsign show in the squad's first encounter.
-	int m_cClipSize;
+	BOOL m_fThrowGrenade = FALSE;
+	BOOL m_fStanding = FALSE;
+	BOOL m_fFirstEncounter = FALSE;  // only put on the handsign show in the squad's first encounter.
+	int m_cClipSize = 0;
 
-	int m_voicePitch;
+	int m_voicePitch = 0;
 
-	int m_iBrassShell;
-	int m_iShotgunShell;
+	int m_iBrassShell = 0;
+	int m_iShotgunShell = 0;
 
-	int m_iSentence;
+	int m_iSentence = 0;
 
 	static const char* pGruntSentences[];
 };
@@ -637,7 +637,7 @@ int CHGrunt::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float f
 //=========================================================
 void CHGrunt::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{
@@ -2336,7 +2336,7 @@ public:
 	void Spawn(void);
 	void Precache(void);
 	void EXPORT RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	int m_iSpriteTexture;  // Don't save, precache
+	int m_iSpriteTexture = 0;  // Don't save, precache
 };
 
 LINK_ENTITY_TO_CLASS(monster_grunt_repel, CHGruntRepel);
@@ -2394,7 +2394,7 @@ public:
 
 	void KeyValue(KeyValueData* pkvd);
 
-	int m_iPose;  // which sequence to display	-- temporary, don't need to save
+	int m_iPose = 0;  // which sequence to display	-- temporary, don't need to save
 	static char* m_szPoses[3];
 };
 

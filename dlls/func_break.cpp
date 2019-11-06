@@ -359,8 +359,8 @@ void CBreakable::Precache(void)
 
 void CBreakable::DamageSound(void)
 {
-	int pitch;
-	float fvol;
+	int pitch = 0;
+	float fvol = 0.f;
 	char* rgpsz[6]{ 0 };
 	int i = 0;
 	int material = m_Material;
@@ -433,7 +433,7 @@ void CBreakable::DamageSound(void)
 
 void CBreakable::BreakTouch(CBaseEntity* pOther)
 {
-	float flDamage;
+	float flDamage = 0.f;
 	entvars_t* pevToucher = pOther->pev;
 
 	// only players can break these right now
@@ -586,8 +586,8 @@ void CBreakable::Die(void)
 	Vector vecVelocity;  // shard velocity
 	CBaseEntity* pEntity = nullptr;
 	char cFlag = 0;
-	int pitch;
-	float fvol;
+	int pitch = 0;
+	float fvol = 0.f;
 
 	pitch = 95 + RANDOM_LONG(0, 29);
 
@@ -924,7 +924,7 @@ void CPushable::Move(CBaseEntity* pOther, int push)
 		playerTouch = 1;
 	}
 
-	float factor;
+	float factor = 0.f;
 
 	if (playerTouch)
 	{

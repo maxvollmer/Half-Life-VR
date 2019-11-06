@@ -193,7 +193,7 @@ StudioCalcBoneAdj
 void CStudioModelRenderer::StudioCalcBoneAdj(float dadt, float* adj, const byte* pcontroller1, const byte* pcontroller2, byte mouthopen)
 {
 	int i, j;
-	float value;
+	float value = 0.f;
 	mstudiobonecontroller_t* pbonecontroller = reinterpret_cast<mstudiobonecontroller_t*>(reinterpret_cast<byte*>(m_pStudioHeader) + m_pStudioHeader->bonecontrollerindex);
 
 	for (j = 0; j < m_pStudioHeader->numbonecontrollers; j++)
@@ -414,9 +414,9 @@ StudioSlerpBones
 */
 void CStudioModelRenderer::StudioSlerpBones(vec4_t q1[], float pos1[][3], vec4_t q2[], float pos2[][3], float s)
 {
-	int i;
+	int i = 0;
 	vec4_t q3;
-	float s1;
+	float s1 = 0.f;
 
 	if (s < 0)
 		s = 0;
@@ -508,7 +508,7 @@ StudioSetUpTransform
 */
 void CStudioModelRenderer::StudioSetUpTransform(int trivial_accept)
 {
-	int i;
+	int i = 0;
 	vec3_t angles;
 	vec3_t modelpos;
 
@@ -530,7 +530,7 @@ void CStudioModelRenderer::StudioSetUpTransform(int trivial_accept)
 	if (m_pCurrentEntity->curstate.movetype == MOVETYPE_STEP)
 	{
 		float f = 0;
-		float d;
+		float d = 0.f;
 
 		// don't do it if the goalstarttime hasn't updated in a while.
 
@@ -664,13 +664,13 @@ StudioCalcRotations
 */
 void CStudioModelRenderer::StudioCalcRotations(float pos[][3], vec4_t* q, mstudioseqdesc_t* pseqdesc, mstudioanim_t* panim, float f)
 {
-	int i;
-	int frame;
+	int i = 0;
+	int frame = 0;
 	mstudiobone_t* pbone;
 
-	float s;
+	float s = 0.f;
 	float adj[MAXSTUDIOCONTROLLERS];
-	float dadt;
+	float dadt = 0.f;
 
 	if (f > pseqdesc->numframes - 1)
 	{
@@ -753,7 +753,7 @@ void CStudioModelRenderer::StudioFxTransform(cl_entity_t* ent, float transform[3
 		}
 		else if (gEngfuncs.pfnRandomLong(0, 49) == 0)
 		{
-			float offset;
+			float offset = 0.f;
 			int axis = gEngfuncs.pfnRandomLong(0, 1);
 			if (axis == 1)  // Choose between x & z
 				axis = 2;
@@ -763,7 +763,7 @@ void CStudioModelRenderer::StudioFxTransform(cl_entity_t* ent, float transform[3
 		break;
 	case kRenderFxExplode:
 	{
-		float scale;
+		float scale = 0.f;
 
 		scale = 1.0f + (m_clTime - ent->curstate.animtime) * 10.0f;
 		if (scale > 2)  // Don't blow up more than 200%
@@ -857,8 +857,8 @@ StudioSetupBonesInline
 */
 void CStudioModelRenderer::StudioSetupBonesInline(float bonetransform[MAXSTUDIOBONES][3][4], float lighttransform[MAXSTUDIOBONES][3][4], float* overrideFrame)
 {
-	int i;
-	float f;
+	int i = 0;
+	float f = 0.f;
 
 	mstudiobone_t* pbones;
 	mstudioseqdesc_t* pseqdesc;
@@ -889,8 +889,8 @@ void CStudioModelRenderer::StudioSetupBonesInline(float bonetransform[MAXSTUDIOB
 
 	if (pseqdesc->numblends > 1)
 	{
-		float s;
-		float dadt;
+		float s = 0.f;
+		float dadt = 0.f;
 
 		panim += m_pStudioHeader->numbones;
 		StudioCalcRotations(pos2, q2, pseqdesc, panim, f);
@@ -924,7 +924,7 @@ void CStudioModelRenderer::StudioSetupBonesInline(float bonetransform[MAXSTUDIOB
 		// blend from last sequence
 		static float pos1b[MAXSTUDIOBONES][3];
 		static vec4_t q1b[MAXSTUDIOBONES];
-		float s;
+		float s = 0.f;
 
 		pseqdesc = reinterpret_cast<mstudioseqdesc_t*>(reinterpret_cast<byte*>(m_pStudioHeader) + m_pStudioHeader->seqindex) + m_pCurrentEntity->latched.prevsequence;
 		panim = StudioGetAnim(m_pRenderModel, pseqdesc);
@@ -1098,7 +1098,7 @@ StudioMergeBones
 void CStudioModelRenderer::StudioMergeBones(model_t* m_pSubModel)
 {
 	int i, j;
-	float f;
+	float f = 0.f;
 	int do_hunt = true;
 
 	mstudiobone_t* pbones;
@@ -1237,8 +1237,8 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 	{
 		entity_state_t deadplayer;
 
-		int result;
-		int save_interp;
+		int result = 0;
+		int save_interp = 0;
 
 		if (m_pCurrentEntity->curstate.renderamt <= 0 || m_pCurrentEntity->curstate.renderamt > gEngfuncs.GetMaxClients())
 			return 0;
@@ -1416,7 +1416,7 @@ StudioEstimateGait
 */
 void CStudioModelRenderer::StudioEstimateGait(entity_state_t* pplayer)
 {
-	float dt;
+	float dt = 0.f;
 	vec3_t est_velocity;
 
 	dt = (m_clTime - m_clOldTime);
@@ -1488,9 +1488,9 @@ StudioProcessGait
 void CStudioModelRenderer::StudioProcessGait(entity_state_t* pplayer)
 {
 	mstudioseqdesc_t* pseqdesc;
-	float dt;
-	int iBlend;
-	float flYaw;  // view direction relative to movement
+	float dt = 0.f;
+	int iBlend = 0;
+	float flYaw = 0.f;  // view direction relative to movement
 
 	if (m_pCurrentEntity->curstate.sequence >= m_pStudioHeader->numseq)
 	{
@@ -1756,7 +1756,7 @@ StudioCalcAttachments
 */
 void CStudioModelRenderer::StudioCalcAttachments(void)
 {
-	int i;
+	int i = 0;
 	mstudioattachment_t* pattachment;
 
 	if (m_pStudioHeader->numattachments > 4)
@@ -1819,7 +1819,7 @@ StudioRenderFinal_Software
 */
 void CStudioModelRenderer::StudioRenderFinal_Software(void)
 {
-	int i;
+	int i = 0;
 
 	// Note, rendermode set here has effect in SW
 	IEngineStudio.SetupRenderer(0);
@@ -1864,8 +1864,8 @@ StudioRenderFinal_Hardware
 */
 void CStudioModelRenderer::StudioRenderFinal_Hardware(void)
 {
-	int i;
-	int rendermode;
+	int i = 0;
+	int rendermode = 0;
 
 	rendermode = IEngineStudio.GetForceFaceFlags() ? kRenderTransAdd : m_pCurrentEntity->curstate.rendermode;
 	IEngineStudio.SetupRenderer(rendermode);

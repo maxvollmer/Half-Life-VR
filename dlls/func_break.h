@@ -80,12 +80,12 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	Materials m_Material;
-	Explosions m_Explosion;
-	int m_idShard;
-	float m_angle;
-	int m_iszGibModel;
-	int m_iszSpawnObject;
+	Materials m_Material = matGlass;
+	Explosions m_Explosion = expRandom;
+	int m_idShard = 0;
+	float m_angle = 0.f;
+	int m_iszGibModel = 0;
+	int m_iszSpawnObject = 0;
 };
 
 class CPushable : public CBreakable
@@ -112,9 +112,9 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	static char* m_soundNames[3];
-	int m_lastSound;  // no need to save/restore, just keeps the same sound from playing twice in a row
-	float m_maxSpeed;
-	float m_soundTime;
+	int m_lastSound = 0;  // no need to save/restore, just keeps the same sound from playing twice in a row
+	float m_maxSpeed = 0.f;
+	float m_soundTime = 0.f;
 
 	int m_usehull{ 0 };
 };

@@ -23,34 +23,34 @@
 
 struct WEAPON
 {
-	char szName[MAX_WEAPON_NAME];
-	int iAmmoType;
-	int iAmmo2Type;
-	int iMax1;
-	int iMax2;
-	int iSlot;
-	int iSlotPos;
-	int iFlags;
-	int iId;
-	int iClip;
+	char szName[MAX_WEAPON_NAME] = { 0 };
+	int iAmmoType = 0;
+	int iAmmo2Type = 0;
+	int iMax1 = 0;
+	int iMax2 = 0;
+	int iSlot = 0;
+	int iSlotPos = 0;
+	int iFlags = 0;
+	int iId = 0;
+	int iClip = 0;
 
-	int iCount;  // # of itesm in plist
+	int iCount = 0;  // # of itesm in plist
 
-	HSPRITE_VALVE hActive;
+	HSPRITE_VALVE hActive = 0;
 	wrect_t rcActive;
-	HSPRITE_VALVE hInactive;
+	HSPRITE_VALVE hInactive = 0;
 	wrect_t rcInactive;
-	HSPRITE_VALVE hAmmo;
+	HSPRITE_VALVE hAmmo = 0;
 	wrect_t rcAmmo;
-	HSPRITE_VALVE hAmmo2;
+	HSPRITE_VALVE hAmmo2 = 0;
 	wrect_t rcAmmo2;
-	HSPRITE_VALVE hCrosshair;
+	HSPRITE_VALVE hCrosshair = 0;
 	wrect_t rcCrosshair;
-	HSPRITE_VALVE hAutoaim;
+	HSPRITE_VALVE hAutoaim = 0;
 	wrect_t rcAutoaim;
-	HSPRITE_VALVE hZoomedCrosshair;
+	HSPRITE_VALVE hZoomedCrosshair = 0;
 	wrect_t rcZoomedCrosshair;
-	HSPRITE_VALVE hZoomedAutoaim;
+	HSPRITE_VALVE hZoomedAutoaim = 0;
 	wrect_t rcZoomedAutoaim;
 };
 

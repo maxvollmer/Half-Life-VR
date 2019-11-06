@@ -63,16 +63,16 @@ class CTripmineGrenade : public CGrenade
 	void MakeBeam(void);
 	void KillBeam(void);
 
-	float m_flPowerUp;
+	float m_flPowerUp = 0.f;
 	Vector m_vecDir;
 	Vector m_vecEnd;
-	float m_flBeamLength;
+	float m_flBeamLength = 0.f;
 
 	EHANDLE<CBaseEntity> m_hOwner;
 	EHANDLE<CBaseEntity> m_hBeam;
 	Vector m_posOwner;
 	Vector m_angleOwner;
-	edict_t* m_pRealOwner;  // tracelines don't hit PEV->OWNER, which means a player couldn't detonate their own trip mine, so we store the owner here.
+	edict_t* m_pRealOwner = nullptr;  // tracelines don't hit PEV->OWNER, which means a player couldn't detonate their own trip mine, so we store the owner here.
 };
 
 LINK_ENTITY_TO_CLASS(monster_tripmine, CTripmineGrenade);
@@ -459,7 +459,7 @@ void CTripmine::PrimaryAttack(void)
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		return;
 
-	int flags;
+	int flags = 0;
 #ifdef CLIENT_WEAPONS
 	flags = FEV_NOTHOST;
 #else
@@ -474,7 +474,7 @@ void CTripmine::PrimaryAttack(void)
 
 	TraceResult tr;
 
-	float distance;
+	float distance = 0.f;
 	if (CVAR_GET_FLOAT("vr_weapon_grenade_mode") != 0.f)
 	{
 		distance = 128.f;
@@ -527,7 +527,7 @@ void CTripmine::UpdateGhost()
 		return;
 	}
 
-	float distance;
+	float distance = 0.f;
 	if (CVAR_GET_FLOAT("vr_weapon_grenade_mode") != 0.f)
 	{
 		distance = 128.f;
@@ -593,7 +593,7 @@ void CTripmine::WeaponIdle(void)
 		return;
 	}
 
-	int iAnim;
+	int iAnim = 0;
 	float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
 	if (flRand <= 0.25)
 	{

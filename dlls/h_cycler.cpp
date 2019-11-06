@@ -50,7 +50,7 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_animate;
+	int m_animate = 0;
 };
 
 TYPEDESCRIPTION CCycler::m_SaveData[] =
@@ -229,9 +229,9 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	inline int ShouldAnimate(void) { return m_animate && m_maxFrame > 1.0; }
-	int m_animate;
-	float m_lastTime;
-	float m_maxFrame;
+	int m_animate = 0;
+	float m_lastTime = 0.f;
+	float m_maxFrame = 0.f;
 };
 
 LINK_ENTITY_TO_CLASS(cycler_sprite, CCyclerSprite);
@@ -311,8 +311,8 @@ public:
 	void SecondaryAttack(void);
 	BOOL Deploy(void);
 	void Holster(int skiplocal = 0);
-	int m_iszModel;
-	int m_iModel;
+	int m_iszModel = 0;
+	int m_iModel = 0;
 };
 LINK_ENTITY_TO_CLASS(cycler_weapon, CWeaponCycler);
 
@@ -392,7 +392,7 @@ class CWreckage : public CBaseMonster
 	void Precache(void);
 	void Think(void);
 
-	int m_flStartTime;
+	int m_flStartTime = 0;
 };
 TYPEDESCRIPTION CWreckage::m_SaveData[] =
 {

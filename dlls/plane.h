@@ -36,8 +36,8 @@ public:
 	BOOL PointInFront(const Vector& vecPoint);
 
 	Vector m_vecNormal;
-	float m_flDist;
-	BOOL m_fInitialized;
+	float m_flDist = 0.f;
+	BOOL m_fInitialized = FALSE;
 };
 
 #endif  // PLANE_H

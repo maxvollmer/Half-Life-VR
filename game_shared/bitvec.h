@@ -25,7 +25,7 @@ class CBitVecAccessor
 
 	private:
 	unsigned long* m_pDWords;
-	int m_iBit;
+	int m_iBit = 0;
 };
 
 
@@ -60,7 +60,7 @@ class CBitVec
 	{
 		NUM_DWORDS = NUM_BITS / 32 + !!(NUM_BITS & 31)
 	};
-	unsigned long m_DWords[NUM_DWORDS];
+	unsigned long m_DWords[NUM_DWORDS] = { 0 };
 };
 
 

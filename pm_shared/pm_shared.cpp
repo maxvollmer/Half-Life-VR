@@ -202,7 +202,7 @@ float PM_GetStepHeight(playermove_t* pmove, float origin[3])
 
 #ifdef CLIENT_DLL
 // Spectator Mode
-int iJumpSpectator;
+int iJumpSpectator = 0;
 float vJumpOrigin[3];
 float vJumpAngles[3];
 #endif
@@ -397,7 +397,7 @@ void PM_InitTextureTypes()
 char PM_FindTextureType(char* name)
 {
 	int left, right, pivot;
-	int val;
+	int val = 0;
 
 	assert(pm_shared_initialized);
 
@@ -429,7 +429,7 @@ char PM_FindTextureType(char* name)
 void PM_PlayStepSound(int step, float fvol)
 {
 	static int iSkipStep = 0;
-	int irand;
+	int irand = 0;
 	vec3_t hvel;
 
 	pmove->iStepLeft = !pmove->iStepLeft;
@@ -632,18 +632,18 @@ void PM_CatagorizeTextureType(void)
 
 void PM_UpdateStepSound(void)
 {
-	int fWalking;
-	float fvol;
+	int fWalking = 0;
+	float fvol = 0.f;
 	vec3_t knee;
 	vec3_t feet;
 	vec3_t center;
-	float height;
-	float speed;
-	float velrun;
-	float velwalk;
-	float flduck;
-	int fLadder;
-	int step;
+	float height = 0.f;
+	float speed = 0.f;
+	float velrun = 0.f;
+	float velwalk = 0.f;
+	float flduck = 0.f;
+	int fLadder = 0;
+	int step = 0;
 
 	if (pmove->flTimeStepSound > 0)
 		return;
@@ -777,7 +777,7 @@ Add's the trace result to touch list, if contact is not already in list.
 */
 qboolean PM_AddToTouched(pmtrace_t tr, vec3_t impactvelocity)
 {
-	int i;
+	int i = 0;
 
 	for (i = 0; i < pmove->numtouch; i++)
 	{
@@ -805,7 +805,7 @@ See if the player has a bogus velocity value.
 */
 void PM_CheckVelocity()
 {
-	int i;
+	int i = 0;
 
 	//
 	// bound velocity
@@ -850,9 +850,9 @@ returns the blocked flags:
 */
 int PM_ClipVelocity(vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 {
-	float backoff;
-	float change;
-	float angle;
+	float backoff = 0.f;
+	float change = 0.f;
+	float angle = 0.f;
 	int i, blocked;
 
 	angle = normal[2];
@@ -899,7 +899,7 @@ bool IsInWaterAndIsGravityDisabled()
 
 void PM_AddCorrectGravity()
 {
-	float ent_gravity;
+	float ent_gravity = 0.f;
 
 	if (pmove->waterjumptime)
 		return;
@@ -926,7 +926,7 @@ void PM_AddCorrectGravity()
 
 void PM_FixupGravityVelocity()
 {
-	float ent_gravity;
+	float ent_gravity = 0.f;
 
 	if (pmove->waterjumptime)
 		return;
@@ -966,8 +966,8 @@ int PM_FlyMove(void)
 {
 	int bumpcount, numbumps;
 	vec3_t dir;
-	float d;
-	int numplanes;
+	float d = 0.f;
+	int numplanes = 0;
 	vec3_t planes[MAX_CLIP_PLANES];
 	vec3_t primal_velocity, original_velocity;
 	vec3_t new_velocity;
@@ -975,7 +975,7 @@ int PM_FlyMove(void)
 	pmtrace_t trace;
 	vec3_t end;
 	float time_left, allFraction;
-	int blocked;
+	int blocked = 0;
 
 	numbumps = 4;  // Bump up to four times
 
@@ -1161,7 +1161,7 @@ PM_Accelerate
 */
 void PM_Accelerate(vec3_t wishdir, float wishspeed, float accel)
 {
-	int i;
+	int i = 0;
 	float addspeed, accelspeed, currentspeed;
 
 	// Dead player's don't accelerate
@@ -1213,15 +1213,15 @@ Only used by players.  Moves along the ground when player is a MOVETYPE_WALK.
 */
 void PM_WalkMove()
 {
-	int			clip;
-	int			oldonground;
-	int i;
+	int			clip = 0;
+	int			oldonground = 0;
+	int i = 0;
 
 	vec3_t		wishvel;
-	float       spd;
+	float       spd = 0.f;
 	float		fmove, smove;
 	vec3_t		wishdir;
-	float		wishspeed;
+	float		wishspeed = 0.f;
 
 	vec3_t dest, start;
 	vec3_t original, originalvel;
@@ -1383,8 +1383,8 @@ void PM_Friction(void)
 {
 	float* vel;
 	float speed, newspeed, control;
-	float friction;
-	float drop;
+	float friction = 0.f;
+	float drop = 0.f;
 	vec3_t newvel;
 
 	// If we are in water jump cycle, don't apply friction
@@ -1467,7 +1467,7 @@ void PM_Friction(void)
 
 void PM_AirAccelerate(vec3_t wishdir, float wishspeed, float accel)
 {
-	int i;
+	int i = 0;
 	float addspeed, accelspeed, currentspeed, wishspd = wishspeed;
 
 	if (pmove->dead)
@@ -1509,9 +1509,9 @@ PM_WaterMove
 */
 void PM_WaterMove(void)
 {
-	int i;
+	int i = 0;
 	vec3_t wishvel;
-	float wishspeed;
+	float wishspeed = 0.f;
 	vec3_t wishdir;
 	vec3_t start, dest;
 	vec3_t temp;
@@ -1624,11 +1624,11 @@ PM_AirMove
 */
 void PM_AirMove(void)
 {
-	int i;
+	int i = 0;
 	vec3_t wishvel;
 	float fmove, smove;
 	vec3_t wishdir;
-	float wishspeed;
+	float wishspeed = 0.f;
 
 	// Copy movement amounts
 	fmove = pmove->cmd.forwardmove;
@@ -1683,10 +1683,10 @@ Sets pmove->waterlevel and pmove->watertype values.
 qboolean PM_CheckWater()
 {
 	vec3_t point;
-	int cont;
-	int truecont;
-	float height;
-	float heightover2;
+	int cont = 0;
+	int truecont = 0;
+	float height = 0.f;
+	float heightover2 = 0.f;
 
 	// Pick a spot just above the players feet.
 	point[0] = pmove->origin[0] + (pmove->player_mins[pmove->usehull][0] + pmove->player_maxs[pmove->usehull][0]) * 0.5f;
@@ -1821,7 +1821,7 @@ Grab a test offset for the player based on a passed in index
 int PM_GetRandomStuckOffsets(int nIndex, int server, vec3_t offset)
 {
 	// Last time we did a full
-	int idx;
+	int idx = 0;
 	idx = rgStuckLast[nIndex][server]++;
 
 	VectorCopy(rgv3tStuckTable[idx % 54], offset);
@@ -1850,10 +1850,10 @@ int PM_CheckStuck(void)
 	vec3_t base;
 	vec3_t offset;
 	vec3_t test;
-	int hitent;
-	int idx;
-	float fTime;
-	int i;
+	int hitent = 0;
+	int idx = 0;
+	float fTime = 0.f;
+	int i = 0;
 	pmtrace_t traceresult;
 
 	static float rgStuckCheckTime[MAX_CLIENTS][2];  // Last time we did a full
@@ -1975,11 +1975,11 @@ void PM_SpectatorMove(void)
 	float speed, drop, friction, control, newspeed;
 	//float   accel;
 	float currentspeed, addspeed, accelspeed;
-	int i;
+	int i = 0;
 	vec3_t wishvel;
 	float fmove, smove;
 	vec3_t wishdir;
-	float wishspeed;
+	float wishspeed = 0.f;
 	// this routine keeps track of the spectators psoition
 	// there a two different main move types : track player or moce freely (OBS_ROAMING)
 	// doesn't need excate track position, only to generate PVS, so just copy
@@ -2066,7 +2066,7 @@ void PM_SpectatorMove(void)
 	{
 		// all other modes just track some kind of target, so spectator PVS = target PVS
 
-		int target;
+		int target = 0;
 
 		// no valid target ?
 		if (pmove->iuser2 <= 0)
@@ -2093,7 +2093,7 @@ void PM_SpectatorMove(void)
 
 void PM_UnDuck(void)
 {
-	int i;
+	int i = 0;
 	pmtrace_t trace;
 	vec3_t newOrigin;
 
@@ -2137,8 +2137,8 @@ void PM_UnDuck(void)
 
 void PM_FixPlayerCrouchStuck(int direction, int maxdistance = 36)
 {
-	int hitent;
-	int i;
+	int hitent = 0;
+	int i = 0;
 	vec3_t test;
 
 	hitent = pmove->PM_TestPlayerPosition(pmove->origin, nullptr);
@@ -2520,7 +2520,7 @@ PM_AddGravity
 */
 void PM_AddGravity()
 {
-	float ent_gravity;
+	float ent_gravity = 0.f;
 
 	if (pmove->gravity)
 		ent_gravity = pmove->gravity;
@@ -2572,7 +2572,7 @@ void PM_Physics_Toss()
 {
 	pmtrace_t trace;
 	vec3_t move;
-	float backoff;
+	float backoff = 0.f;
 
 	PM_CheckWater();
 
@@ -2636,7 +2636,7 @@ void PM_Physics_Toss()
 	// stop if on ground
 	if (trace.plane.normal[2] > 0.7)
 	{
-		float vel;
+		float vel = 0.f;
 		vec3_t base;
 
 		VectorClear(base);
@@ -2688,7 +2688,7 @@ PM_NoClip
 #define VR_UNSTUCK_DISTANCE 32
 void PM_NoClip(bool unstuckMove = false)
 {
-	int i;
+	int i = 0;
 	vec3_t wishvel;
 	float fmove, smove;
 	//	float		currentspeed, addspeed, accelspeed;
@@ -2929,11 +2929,11 @@ void PM_YesClip(physent_t* pLadder)
 void PM_PreventMegaBunnyJumping(void)
 {
 	// Current player speed
-	float spd;
+	float spd = 0.f;
 	// If we have to crop, apply this cropping fraction to velocity
-	float fraction;
+	float fraction = 0.f;
 	// Speed at which bunny jumping is limited
-	float maxscaledspeed;
+	float maxscaledspeed = 0.f;
 
 	maxscaledspeed = BUNNYJUMP_MAX_SPEED_FACTOR * pmove->maxspeed;
 
@@ -2958,7 +2958,7 @@ PM_Jump
 */
 void PM_Jump(void)
 {
-	int i;
+	int i = 0;
 	qboolean tfc = false;
 
 	qboolean cansuperjump = false;
@@ -3104,9 +3104,9 @@ void PM_CheckWaterJump(void)
 	vec3_t vecStart, vecEnd;
 	vec3_t flatforward;
 	vec3_t flatvelocity;
-	float curspeed;
+	float curspeed = 0.f;
 	pmtrace_t tr;
-	int savehull;
+	int savehull = 0;
 
 	// Already water jumping.
 	if (pmove->waterjumptime)
@@ -3273,9 +3273,9 @@ PM_CalcRoll
 */
 float PM_CalcRoll(vec3_t angles, vec3_t velocity, float rollangle, float rollspeed)
 {
-	float sign;
-	float side;
-	float value;
+	float sign = 0.f;
+	float side = 0.f;
+	float value = 0.f;
 	vec3_t forward, right, up;
 
 	AngleVectors(angles, forward, right, up);
@@ -3308,7 +3308,7 @@ PM_DropPunchAngle
 */
 void PM_DropPunchAngle(vec3_t punchangle)
 {
-	float len;
+	float len = 0.f;
 
 	len = VectorNormalize(punchangle);
 	len -= (10.0 + len * 0.5) * pmove->frametime;
@@ -3324,8 +3324,8 @@ PM_CheckParamters
 */
 void PM_CheckParamters(void)
 {
-	float spd;
-	float maxspeed;
+	float spd = 0.f;
+	float maxspeed = 0.f;
 
 	spd = (pmove->cmd.forwardmove * pmove->cmd.forwardmove) +
 		(pmove->cmd.sidemove * pmove->cmd.sidemove) +
@@ -3680,8 +3680,8 @@ void PM_PlayerMove(qboolean server)
 void PM_CreateStuckTable(void)
 {
 	float x, y, z;
-	int idx;
-	int i;
+	int idx = 0;
+	int i = 0;
 	float zi[3];
 
 	memset(rgv3tStuckTable, 0, 54 * sizeof(vec3_t));

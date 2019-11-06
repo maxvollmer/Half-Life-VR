@@ -44,6 +44,9 @@
     <Filter Include="VR\vr_shared">
       <UniqueIdentifier>{a3f7ece5-bbda-460a-b072-dcf6ce0b2e2d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\stuff\Matrices">
+      <UniqueIdentifier>{4cad011d-4d4d-464f-b9b3-74283d6386ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dlls\crossbow.cpp">
@@ -283,9 +286,6 @@
     <ClCompile Include="view.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Matrices.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\pm_shared\pm_shared.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -354,6 +354,9 @@
     </ClCompile>
     <ClCompile Include="VRSettings.cpp">
       <Filter>VR\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrices.cpp">
+      <Filter>VR\stuff\Matrices</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -486,9 +489,6 @@
     <ClInclude Include="wrect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Matrices.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Vectors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -533,6 +533,9 @@
     </ClInclude>
     <ClInclude Include="..\vr_shared\VRShared.h">
       <Filter>VR\vr_shared</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrices.h">
+      <Filter>VR\stuff\Matrices</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

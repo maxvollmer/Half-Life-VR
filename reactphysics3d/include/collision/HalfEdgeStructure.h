@@ -23,6 +23,12 @@
 *                                                                               *
 ********************************************************************************/
 
+/*
+**
+** 2019-11-06 MODIFIED BY MAX VOLLMER FOR HALF-LIFE: VR: Initialized uninitialized member variables.
+**
+*/
+
 #ifndef REACTPHYSICS3D_HALF_EDGE_STRUCTURE_MESH_H
 #define REACTPHYSICS3D_HALF_EDGE_STRUCTURE_MESH_H
 
@@ -57,10 +63,16 @@ class HalfEdgeStructure {
             List<uint> faceVertices;	// Index of the vertices of the face
 
             /// Constructor
-            Face(MemoryAllocator& allocator) : faceVertices(allocator) {}
+            Face(MemoryAllocator& allocator) :
+				edgeIndex(0),
+				faceVertices(allocator)
+			{}
 
             /// Constructor
-            Face(List<uint> vertices) : faceVertices(vertices) {}
+            Face(List<uint> vertices) :
+				edgeIndex(0),
+				faceVertices(vertices)
+			{}
         };
 
         /// Vertex
@@ -69,7 +81,10 @@ class HalfEdgeStructure {
             uint edgeIndex;         // Index of one edge emanting from this vertex
 
             /// Constructor
-            Vertex(uint vertexCoordsIndex) : vertexPointIndex(vertexCoordsIndex) { }
+            Vertex(uint vertexCoordsIndex) :
+				vertexPointIndex(vertexCoordsIndex),
+				edgeIndex(0)
+			{}
         };
 
     private:

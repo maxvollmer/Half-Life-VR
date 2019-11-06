@@ -44,7 +44,7 @@ public:
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	int IgnoreConditions(void);
 
-	float m_flNextFlinch;
+	float m_flNextFlinch = 0.f;
 
 	void PainSound(void);
 	void AlertSound(void);
@@ -121,7 +121,7 @@ int CZombie::Classify(void)
 //=========================================================
 void CZombie::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	ys = 120;
 
@@ -297,7 +297,7 @@ void CZombie::Spawn()
 //=========================================================
 void CZombie::Precache()
 {
-	int i;
+	int i = 0;
 
 	PRECACHE_MODEL("models/zombie.mdl");
 

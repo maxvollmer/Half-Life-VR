@@ -71,7 +71,7 @@ void COM_Log(char* pszFile, char* fmt, ...)
 
 // remember the current animation for the view model, in case we get out of sync with
 //  server.
-static int g_currentanim;
+static int g_currentanim = 0;
 
 /*
 =====================
@@ -187,7 +187,7 @@ UTIL_SharedRandomLong
 */
 int UTIL_SharedRandomLong(unsigned int seed, int low, int high)
 {
-	unsigned int range;
+	unsigned int range = 0;
 
 	U_Srand((int)seed + low + high);
 
@@ -198,8 +198,8 @@ int UTIL_SharedRandomLong(unsigned int seed, int low, int high)
 	}
 	else
 	{
-		int offset;
-		int rnum;
+		int offset = 0;
+		int rnum = 0;
 
 		rnum = U_Random();
 

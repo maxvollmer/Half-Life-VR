@@ -77,14 +77,14 @@ public:
 	void ZapBeam(int side);
 	void BeamGlow(void);
 
-	int m_iBravery;
+	int m_iBravery = 0;
 
 	EHANDLE<CBeam> m_pBeam[ISLAVE_MAX_BEAMS];
 
-	int m_iBeams;
-	float m_flNextAttack;
+	int m_iBeams = 0;
+	float m_flNextAttack = 0.f;
 
-	int m_voicePitch;
+	int m_voicePitch = 0;
 
 	EHANDLE<CBaseEntity> m_hDead;
 
@@ -279,7 +279,7 @@ void CISlave::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 //=========================================================
 void CISlave::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{
@@ -546,7 +546,7 @@ void CISlave::Spawn()
 //=========================================================
 void CISlave::Precache()
 {
-	int i;
+	int i = 0;
 
 	PRECACHE_MODEL("models/islave.mdl");
 	PRECACHE_MODEL("sprites/lgtning.spr");

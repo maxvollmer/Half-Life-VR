@@ -47,10 +47,10 @@ public:
 	virtual int ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_density;
-	int m_frequency;
-	int m_bubbleModel;
-	int m_state;
+	int m_density = 0;
+	int m_frequency = 0;
+	int m_bubbleModel = 0;
+	int m_state = 0;
 };
 
 LINK_ENTITY_TO_CLASS(env_bubbles, CBubbling);
@@ -397,20 +397,20 @@ public:
 
 	void BeamUpdateVars(void);
 
-	int m_active;
-	int m_iszStartEntity;
-	int m_iszEndEntity;
-	float m_life;
-	int m_boltWidth;
-	int m_noiseAmplitude;
-	int m_brightness;
-	int m_speed;
-	float m_restrike;
-	int m_spriteTexture;
-	int m_iszSpriteName;
-	int m_frameStart;
+	int m_active = 0;
+	int m_iszStartEntity = 0;
+	int m_iszEndEntity = 0;
+	float m_life = 0.f;
+	int m_boltWidth = 0;
+	int m_noiseAmplitude = 0;
+	int m_brightness = 0;
+	int m_speed = 0;
+	float m_restrike = 0.f;
+	int m_spriteTexture = 0;
+	int m_iszSpriteName = 0;
+	int m_frameStart = 0;
 
-	float m_radius;
+	float m_radius = 0.f;
 };
 
 LINK_ENTITY_TO_CLASS(env_lightning, CLightning);
@@ -884,7 +884,7 @@ void CLightning::RandomPoint(Vector& vecSrc)
 
 void CLightning::BeamUpdateVars(void)
 {
-	int beamType;
+	int beamType = 0;
 	int pointStart, pointEnd;
 
 	edict_t* pStart = FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(m_iszStartEntity));
@@ -1122,8 +1122,8 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	float m_lastTime;
-	float m_maxFrame;
+	float m_lastTime = 0.f;
+	float m_maxFrame = 0.f;
 };
 
 LINK_ENTITY_TO_CLASS(env_glow, CGlow);
@@ -1363,13 +1363,13 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_iGibs;
-	int m_iGibCapacity;
-	int m_iGibMaterial;
-	int m_iGibModelIndex;
-	float m_flGibVelocity;
-	float m_flVariance;
-	float m_flGibLife;
+	int m_iGibs = 0;
+	int m_iGibCapacity = 0;
+	int m_iGibMaterial = 0;
+	int m_iGibModelIndex = 0;
+	float m_flGibVelocity = 0.f;
+	float m_flVariance = 0.f;
+	float m_flGibLife = 0.f;
 };
 
 TYPEDESCRIPTION CGibShooter::m_SaveData[] =
@@ -1624,11 +1624,11 @@ public:
 	void EXPORT TestThink(void);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 
-	int m_iLoop;
-	int m_iBeam;
+	int m_iLoop = 0;
+	int m_iBeam = 0;
 	EHANDLE<CBeam> m_pBeam[24];
-	float m_flBeamTime[24];
-	float m_flStartTime;
+	float m_flBeamTime[24] = { 0 };
+	float m_flStartTime = 0.f;
 };
 
 
@@ -1646,7 +1646,7 @@ void CTestEffect::Precache(void)
 
 void CTestEffect::TestThink(void)
 {
-	int i;
+	int i = 0;
 	float t = (gpGlobals->time - m_flStartTime);
 
 	if (m_iBeam < 24)
@@ -2106,7 +2106,7 @@ public:
 	void Precache(void);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 
-	int m_iSprite;  // Don't save, precache
+	int m_iSprite = 0;  // Don't save, precache
 };
 
 void CEnvFunnel::Precache(void)

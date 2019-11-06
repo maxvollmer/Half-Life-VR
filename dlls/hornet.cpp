@@ -26,8 +26,8 @@
 #include "gamerules.h"
 
 
-int iHornetTrail;
-int iHornetPuff;
+int iHornetTrail = 0;
+int iHornetPuff = 0;
 
 LINK_ENTITY_TO_CLASS(hornet, CHornet);
 
@@ -245,7 +245,7 @@ void CHornet::TrackTarget(void)
 {
 	Vector vecFlightDir;
 	Vector vecDirToEnemy;
-	float flDelta;
+	float flDelta = 0.f;
 
 	StudioFrameAdvance();
 

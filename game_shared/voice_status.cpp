@@ -95,7 +95,7 @@ int __MsgFunc_ReqState(const char* pszName, int iSize, void* pbuf)
 }
 
 
-int g_BannedPlayerPrintCount;
+int g_BannedPlayerPrintCount = 0;
 void ForEachBannedPlayer(char id[16])
 {
 	char str[256];

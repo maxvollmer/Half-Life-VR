@@ -66,7 +66,7 @@ void CHudMessage::Reset(void)
 float CHudMessage::FadeBlend(float fadein, float fadeout, float hold, float localTime)
 {
 	float fadeTime = fadein + hold;
-	float fadeBlend;
+	float fadeBlend = 0.f;
 
 	if (localTime < 0)
 		return 0;
@@ -91,7 +91,7 @@ float CHudMessage::FadeBlend(float fadein, float fadeout, float hold, float loca
 
 int CHudMessage::XPosition(float x, int width, int totalWidth)
 {
-	int xPos;
+	int xPos = 0;
 
 	if (x == -1)
 	{
@@ -116,7 +116,7 @@ int CHudMessage::XPosition(float x, int width, int totalWidth)
 
 int CHudMessage::YPosition(float y, int height)
 {
-	int yPos;
+	int yPos = 0;
 
 	if (y == -1)  // Centered?
 		yPos = (ScreenHeight - height) * 0.5;
@@ -141,7 +141,7 @@ int CHudMessage::YPosition(float y, int height)
 void CHudMessage::MessageScanNextChar(void)
 {
 	int srcRed, srcGreen, srcBlue, destRed, destGreen, destBlue;
-	int blend;
+	int blend = 0;
 
 	srcRed = m_parms.pMessage->r1;
 	srcGreen = m_parms.pMessage->g1;
@@ -327,7 +327,7 @@ int CHudMessage::Draw(float fTime)
 	if (m_gameTitleTime > 0)
 	{
 		float localTime = gHUD.m_flTime - m_gameTitleTime;
-		float brightness;
+		float brightness = 0.f;
 
 		// Maybe timer isn't set yet
 		if (m_gameTitleTime > gHUD.m_flTime)

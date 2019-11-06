@@ -172,7 +172,7 @@ void CMP5::PrimaryAttack()
 		vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
 	}
 
-	int flags;
+	int flags = 0;
 #if defined(CLIENT_WEAPONS)
 	flags = FEV_NOTHOST;
 #else
@@ -225,7 +225,7 @@ void CMP5::SecondaryAttack(void)
 	// we don't add in player velocity anymore.
 	CGrenade::ShootContact(m_pPlayer->pev, m_pPlayer->GetGunPosition(), m_pPlayer->GetAutoaimVector() * 800);
 
-	int flags;
+	int flags = 0;
 #if defined(CLIENT_WEAPONS)
 	flags = FEV_NOTHOST;
 #else
@@ -261,7 +261,7 @@ void CMP5::WeaponIdle(void)
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
-	int iAnim;
+	int iAnim = 0;
 	switch (RANDOM_LONG(0, 1))
 	{
 	case 0:

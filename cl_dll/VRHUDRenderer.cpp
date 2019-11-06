@@ -64,8 +64,8 @@ namespace
 
 	struct HUDSpriteSize
 	{
-		int width;
-		int height;
+		int width = 0;
+		int height = 0;
 	};
 	std::unordered_map<std::string, HUDSpriteSize> g_hudSpriteResolutions = {
 		{std::string{"sprites/640hud1.spr"}, HUDSpriteSize{256, 256}},
@@ -227,7 +227,7 @@ float GetVRHudSpriteScale(const VRHUDRenderType hudRenderType)
 	if (hudRenderType == VRHUDRenderType::TRAINCONTROLS)
 		return VR_HUD_TRAINCONTROLS_SPRITE_SCALE;
 
-	float scale;
+	float scale = 0.f;
 	if (GetHUDRenderMode() == HUDRenderMode::ACTUAL_HUD_IN_VIEW)
 	{
 		scale = VR_HUD_ACTUALHUD_SPRITE_SCALE;

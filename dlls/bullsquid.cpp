@@ -29,7 +29,7 @@
 
 #define SQUID_SPRINT_DIST 256  // how close the squid has to get before starting to sprint and refusing to swerve
 
-int iSquidSpitSprite;
+int iSquidSpitSprite = 0;
 
 
 //=========================================================
@@ -69,7 +69,7 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_maxFrame;
+	int m_maxFrame = 0;
 };
 
 LINK_ENTITY_TO_CLASS(squidspit, CSquidSpit);
@@ -128,7 +128,7 @@ void CSquidSpit::Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity)
 void CSquidSpit::Touch(CBaseEntity* pOther)
 {
 	TraceResult tr;
-	int iPitch;
+	int iPitch = 0;
 
 	// splat sound
 	iPitch = RANDOM_FLOAT(90, 110);
@@ -219,10 +219,10 @@ public:
 	CUSTOM_SCHEDULES;
 	static TYPEDESCRIPTION m_SaveData[];
 
-	BOOL m_fCanThreatDisplay;  // this is so the squid only does the "I see a headcrab!" dance one time.
+	BOOL m_fCanThreatDisplay = FALSE;  // this is so the squid only does the "I see a headcrab!" dance one time.
 
-	float m_flLastHurtTime;  // we keep track of this, because if something hurts a squid, it will forget about its love of headcrabs for a while.
-	float m_flNextSpitTime;  // last time the bullsquid used the spit attack.
+	float m_flLastHurtTime = 0.f;  // we keep track of this, because if something hurts a squid, it will forget about its love of headcrabs for a while.
+	float m_flNextSpitTime = 0.f;  // last time the bullsquid used the spit attack.
 };
 LINK_ENTITY_TO_CLASS(monster_bullchicken, CBullsquid);
 
@@ -283,7 +283,7 @@ int CBullsquid::IRelationship(CBaseEntity* pTarget)
 //=========================================================
 int CBullsquid::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
-	float flDist;
+	float flDist = 0.f;
 	Vector vecApex;
 
 	// if the squid is running, has an enemy, was hurt by the enemy, hasn't been hurt in the last 3 seconds, and isn't too close to the enemy,
@@ -499,7 +499,7 @@ void CBullsquid::AlertSound(void)
 //=========================================================
 void CBullsquid::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	ys = 0;
 
@@ -618,7 +618,7 @@ void CBullsquid::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 	case BSQUID_AE_THROW:
 	{
-		int iPitch;
+		int iPitch = 0;
 
 		// squid throws its prey IF the prey is a client.
 		CBaseEntity* pHurt = CheckTraceHullAttack(70, 0, 0);
@@ -1221,7 +1221,7 @@ void CBullsquid::RunTask(Task_t* pTask)
 //=========================================================
 MONSTERSTATE CBullsquid::GetIdealState(void)
 {
-	int iConditions;
+	int iConditions = 0;
 
 	iConditions = IScheduleFlags();
 

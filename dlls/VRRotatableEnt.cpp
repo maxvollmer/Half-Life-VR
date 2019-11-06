@@ -112,7 +112,7 @@ void VRRotatableEnt::VRRotate(CBaseEntity* pPlayer, const Vector& pos, bool fSta
 {
 	Vector angleStart;
 	Vector angleEnd;
-	float maxRotSpeed;
+	float maxRotSpeed = 0.f;
 	if (CanDoVRDragRotation(pPlayer, angleStart, angleEnd, maxRotSpeed))
 	{
 		if (fStart)

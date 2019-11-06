@@ -169,7 +169,7 @@ public:
 	inline float Length2D(void) const { return sqrtf(x * x + y * y); }
 
 	// Members
-	vec_t x, y, z;
+	vec_t x = 0.f, y = 0.f, z = 0.f;
 };
 inline Vector operator*(float fl, const Vector& v) { return v * fl; }
 inline float DotProduct(const Vector& a, const Vector& b) { return (a.x * b.x + a.y * b.y + a.z * b.z); }

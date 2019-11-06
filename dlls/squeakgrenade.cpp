@@ -63,13 +63,13 @@ class CSqueakGrenade : public CGrenade
 	static float m_flNextBounceSoundTime;
 
 	// CBaseEntity *m_pTarget;
-	float m_flDie;
+	float m_flDie = 0.f;
 	Vector m_vecTarget;
-	float m_flNextHunt;
-	float m_flNextHit;
+	float m_flNextHunt = 0.f;
+	float m_flNextHit = 0.f;
 	Vector m_posPrev;
 	EHANDLE<CBaseEntity> m_hOwner;
-	int m_iMyClass;
+	int m_iMyClass = 0;
 };
 
 float CSqueakGrenade::m_flNextBounceSoundTime = 0;
@@ -321,7 +321,7 @@ void CSqueakGrenade::HuntThink(void)
 
 void CSqueakGrenade::SuperBounceTouch(CBaseEntity* pOther)
 {
-	float flpitch;
+	float flpitch = 0.f;
 
 	TraceResult tr = UTIL_GetGlobalTrace();
 
@@ -520,7 +520,7 @@ void CSqueak::Throw()
 		// find place to toss monster
 		//UTIL_TraceLine( trace_origin + gpGlobals->v_forward * 20, trace_origin + gpGlobals->v_forward * 64, dont_ignore_monsters, nullptr, &tr );
 
-		int flags;
+		int flags = 0;
 #ifdef CLIENT_WEAPONS
 		flags = FEV_NOTHOST;
 #else
@@ -607,7 +607,7 @@ void CSqueak::WeaponIdle(void)
 		return;
 	}
 
-	int iAnim;
+	int iAnim = 0;
 	float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
 	if (flRand <= 0.75)
 	{

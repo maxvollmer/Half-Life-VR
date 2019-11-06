@@ -47,12 +47,12 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	float m_flAltitude;
-	float m_flKillVictimTime;
-	int m_cGibs;  // barnacle loads up on gibs each time it kills something.
-	BOOL m_fTongueExtended;
-	BOOL m_fLiftingPrey;
-	float m_flTongueAdj;
+	float m_flAltitude = 0.f;
+	float m_flKillVictimTime = 0.f;
+	int m_cGibs = 0;  // barnacle loads up on gibs each time it kills something.
+	BOOL m_fTongueExtended = FALSE;
+	BOOL m_fLiftingPrey = FALSE;
+	float m_flTongueAdj = 0.f;
 };
 LINK_ENTITY_TO_CLASS(monster_barnacle, CBarnacle);
 
@@ -146,7 +146,7 @@ void CBarnacle::BarnacleThink(void)
 {
 	CBaseEntity* pTouchEnt;
 	EHANDLE<CBaseMonster> pVictim;
-	float flLength;
+	float flLength = 0.f;
 
 	pev->nextthink = gpGlobals->time + 0.1;
 
@@ -178,13 +178,13 @@ void CBarnacle::BarnacleThink(void)
 			vecNewEnemyOrigin.y = pev->origin.y;
 
 			// guess as to where their neck is
-			vecNewEnemyOrigin.x -= 6 * cos(m_hEnemy->pev->angles.y * M_PI / 180.0);
-			vecNewEnemyOrigin.y -= 6 * sin(m_hEnemy->pev->angles.y * M_PI / 180.0);
+			vecNewEnemyOrigin.x -= 6 * cosf(m_hEnemy->pev->angles.y * M_PI / 180.f);
+			vecNewEnemyOrigin.y -= 6 * sinf(m_hEnemy->pev->angles.y * M_PI / 180.f);
 
 			m_flAltitude -= BARNACLE_PULL_SPEED;
 			vecNewEnemyOrigin.z += BARNACLE_PULL_SPEED;
 
-			float eyeHeightOffset;
+			float eyeHeightOffset = 0.f;
 			if (m_hEnemy->IsPlayer())
 			{
 				// RL crouching/ducking/lying down can put view offset so far down that barnacle doesn't detect the player correctly.
@@ -400,7 +400,7 @@ void CBarnacle::Precache()
 CBaseEntity* CBarnacle::TongueTouchEnt(float* pflLength)
 {
 	TraceResult tr;
-	float length;
+	float length = 0.f;
 
 	// trace once to hit architecture and see if the tongue needs to change position.
 	UTIL_TraceLine(pev->origin, pev->origin - Vector(0, 0, 2048), ignore_monsters, ENT(pev), &tr);

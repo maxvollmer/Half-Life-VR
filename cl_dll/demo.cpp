@@ -28,7 +28,7 @@ int g_demosniper = 0;
 int g_demosniperdamage = 0;
 float g_demosniperorg[3];
 float g_demosniperangles[3];
-float g_demozoom;
+float g_demozoom = 0.f;
 
 extern "C"
 {

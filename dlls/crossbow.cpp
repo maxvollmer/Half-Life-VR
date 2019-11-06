@@ -41,7 +41,7 @@ class CCrossbowBolt : public CBaseEntity
 	void EXPORT BoltTouch(CBaseEntity* pOther);
 	void EXPORT ExplodeThink(void);
 
-	int m_iTrail;
+	int m_iTrail = 0;
 
 public:
 	static CCrossbowBolt* BoltCreate(void);
@@ -184,7 +184,7 @@ void CCrossbowBolt::BubbleThink(void)
 void CCrossbowBolt::ExplodeThink(void)
 {
 	int iContents = UTIL_PointContents(pev->origin);
-	int iScale;
+	int iScale = 0;
 
 	pev->dmg = 40;
 	iScale = 10;
@@ -378,7 +378,7 @@ void CCrossbow::FireSniperBolt()
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 	m_iClip--;
 
-	int flags;
+	int flags = 0;
 #if defined(CLIENT_WEAPONS)
 	flags = FEV_NOTHOST;
 #else
@@ -420,7 +420,7 @@ void CCrossbow::FireBolt()
 
 	m_iClip--;
 
-	int flags;
+	int flags = 0;
 #if defined(CLIENT_WEAPONS)
 	flags = FEV_NOTHOST;
 #else

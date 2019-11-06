@@ -18,7 +18,7 @@
 #include <string.h>
 #include <winsock.h>
 
-static int context_id;
+static int context_id = 0;
 
 // Default master server address in case we can't read any from woncomm.lst file
 #define VALVE_MASTER_ADDRESS "half-life.east.won.net"
@@ -705,14 +705,14 @@ Loads the master server addresses from file and into the passed in array
 */
 int CHudServers::LoadMasterAddresses(int maxservers, int* count, netadr_t* padr)
 {
-	int i;
+	int i = 0;
 	char szMaster[256];
 	char szMasterFile[256];
 	char* pbuffer = nullptr;
 	char* pstart = nullptr;
 	netadr_t adr;
 	char szAdr[64];
-	int nPort;
+	int nPort = 0;
 	int nCount = 0;
 	bool bIgnore;
 

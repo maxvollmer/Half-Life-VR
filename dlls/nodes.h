@@ -36,27 +36,27 @@ class CNode
 public:
 	Vector m_vecOrigin;      // location of this node in space
 	Vector m_vecOriginPeek;  // location of this node (LAND nodes are NODE_HEIGHT higher).
-	BYTE m_Region[3];        // Which of 256 regions do each of the coordinate belong?
-	int m_afNodeInfo;        // bits that tell us more about this location
+	BYTE m_Region[3] = { 0 };        // Which of 256 regions do each of the coordinate belong?
+	int m_afNodeInfo = 0;        // bits that tell us more about this location
 
-	int m_cNumLinks;   // how many links this node has
-	int m_iFirstLink;  // index of this node's first link in the link pool.
+	int m_cNumLinks = 0;   // how many links this node has
+	int m_iFirstLink = 0;  // index of this node's first link in the link pool.
 
 	// Where to start looking in the compressed routing table (offset into m_pRouteInfo).
 	// (4 hull sizes -- smallest to largest + fly/swim), and secondly, door capability.
 	//
-	int m_pNextBestNode[MAX_NODE_HULLS][2];
+	int m_pNextBestNode[MAX_NODE_HULLS][2] = { 0 };
 
 	// Used in finding the shortest path. m_fClosestSoFar is -1 if not visited.
 	// Then it is the distance to the source. If another path uses this node
 	// and has a closer distance, then m_iPreviousNode is also updated.
 	//
-	float m_flClosestSoFar;  // Used in finding the shortest path.
-	int m_iPreviousNode;
+	float m_flClosestSoFar = 0.f;  // Used in finding the shortest path.
+	int m_iPreviousNode = 0;
 
-	short m_sHintType;      // there is something interesting in the world at this node's position
-	short m_sHintActivity;  // there is something interesting in the world at this node's position
-	float m_flHintYaw;      // monster on this node should face this yaw to face the hint.
+	short m_sHintType = 0;      // there is something interesting in the world at this node's position
+	short m_sHintActivity = 0;  // there is something interesting in the world at this node's position
+	float m_flHintYaw = 0.f;      // monster on this node should face this yaw to face the hint.
 };
 
 //=========================================================
@@ -76,50 +76,50 @@ public:
 class CLink
 {
 public:
-	int m_iSrcNode;   // the node that 'owns' this link ( keeps us from having to make reverse lookups )
-	int m_iDestNode;  // the node on the other end of the link.
+	int m_iSrcNode = 0;   // the node that 'owns' this link ( keeps us from having to make reverse lookups )
+	int m_iDestNode = 0;  // the node on the other end of the link.
 
-	entvars_t* m_pLinkEnt;  // the entity that blocks this connection (doors, etc)
+	entvars_t* m_pLinkEnt = nullptr;  // the entity that blocks this connection (doors, etc)
 
 	// m_szLinkEntModelname is not necessarily nullptr terminated (so we can store it in a more alignment-friendly 4 bytes)
-	char m_szLinkEntModelname[4];  // the unique name of the brush model that blocks the connection (this is kept for save/restore)
+	char m_szLinkEntModelname[4] = { 0 };  // the unique name of the brush model that blocks the connection (this is kept for save/restore)
 
-	int m_afLinkInfo;  // information about this link
-	float m_flWeight;  // length of the link line segment
+	int m_afLinkInfo = 0;  // information about this link
+	float m_flWeight = 0.f;  // length of the link line segment
 };
 
 
 typedef struct
 {
-	int m_SortedBy[3];
-	int m_CheckedEvent;
+	int m_SortedBy[3] = { 0 };
+	int m_CheckedEvent = 0;
 } DIST_INFO;
 
 typedef struct
 {
 	Vector v;
-	short n;  // Nearest node or -1 if no node found.
+	short n = 0;  // Nearest node or -1 if no node found.
 } CACHE_ENTRY;
 
 //=========================================================
 // CGraph
 //=========================================================
-#define GRAPH_VERSION (int)16  // !!!increment this whever graph/node/link classes change, to obsolesce older disk files.
+#define GRAPH_VERSION (int)17  // !!!increment this whever graph/node/link classes change, to obsolesce older disk files.
 class CGraph
 {
 public:
 	// the graph has two flags, and should not be accessed unless both flags are TRUE!
-	BOOL m_fGraphPresent;      // is the graph in memory?
-	BOOL m_fGraphPointersSet;  // are the entity pointers for the graph all set?
-	BOOL m_fRoutingComplete;   // are the optimal routes computed, yet?
+	BOOL m_fGraphPresent = FALSE;      // is the graph in memory?
+	BOOL m_fGraphPointersSet = FALSE;  // are the entity pointers for the graph all set?
+	BOOL m_fRoutingComplete = FALSE;   // are the optimal routes computed, yet?
 
-	CNode* m_pNodes;     // pointer to the memory block that contains all node info
-	CLink* m_pLinkPool;  // big list of all node connections
-	char* m_pRouteInfo;  // compressed routing information the nodes use.
+	CNode* m_pNodes = nullptr;     // pointer to the memory block that contains all node info
+	CLink* m_pLinkPool = nullptr;  // big list of all node connections
+	char* m_pRouteInfo = nullptr;  // compressed routing information the nodes use.
 
-	int m_cNodes;      // total number of nodes
-	int m_cLinks;      // total number of links
-	int m_nRouteInfo;  // size of m_pRouteInfo in bytes.
+	int m_cNodes = 0;      // total number of nodes
+	int m_cLinks = 0;      // total number of links
+	int m_nRouteInfo = 0;  // size of m_pRouteInfo in bytes.
 
 	// Tables for making nearest node lookup faster. SortedBy provided nodes in a
 	// order of a particular coordinate. Instead of doing a binary search, RangeStart
@@ -132,30 +132,30 @@ public:
 	//
 #define CACHE_SIZE 128
 #define NUM_RANGES 256
-	DIST_INFO* m_di;  // This is m_cNodes long, but the entries don't correspond to CNode entries.
-	int m_RangeStart[3][NUM_RANGES];
-	int m_RangeEnd[3][NUM_RANGES];
-	float m_flShortest;
-	int m_iNearest;
-	int m_minX, m_minY, m_minZ, m_maxX, m_maxY, m_maxZ;
-	int m_minBoxX, m_minBoxY, m_minBoxZ, m_maxBoxX, m_maxBoxY, m_maxBoxZ;
-	int m_CheckedCounter;
-	float m_RegionMin[3], m_RegionMax[3];  // The range of nodes.
+	DIST_INFO* m_di = nullptr;  // This is m_cNodes long, but the entries don't correspond to CNode entries.
+	int m_RangeStart[3][NUM_RANGES] = { 0 };
+	int m_RangeEnd[3][NUM_RANGES] = { 0 };
+	float m_flShortest = 0.f;
+	int m_iNearest = 0;
+	int m_minX = 0, m_minY = 0, m_minZ = 0, m_maxX = 0, m_maxY = 0, m_maxZ = 0;
+	int m_minBoxX = 0, m_minBoxY = 0, m_minBoxZ = 0, m_maxBoxX = 0, m_maxBoxY = 0, m_maxBoxZ = 0;
+	int m_CheckedCounter = 0;
+	float m_RegionMin[3] = { 0 }, m_RegionMax[3] = { 0 };  // The range of nodes.
 	CACHE_ENTRY m_Cache[CACHE_SIZE];
 
 
-	int m_HashPrimes[16];
-	short* m_pHashLinks;
-	int m_nHashLinks;
+	int m_HashPrimes[16] = { 0 };
+	short* m_pHashLinks = nullptr;
+	int m_nHashLinks = 0;
 
 
 	// kinda sleazy. In order to allow variety in active idles for monster groups in a room with more than one node,
 	// we keep track of the last node we searched from and store it here. Subsequent searches by other monsters will pick
 	// up where the last search stopped.
-	int m_iLastActiveIdleSearch;
+	int m_iLastActiveIdleSearch = 0;
 
 	// another such system used to track the search for cover nodes, helps greatly with two monsters trying to get to the same node.
-	int m_iLastCoverSearch;
+	int m_iLastCoverSearch = 0;
 
 	// functions to create the graph
 	int LinkVisibleNodes(CLink* pLinkPool, FILE* file, int* piBadNode);
@@ -268,8 +268,8 @@ class CNodeEnt : public CBaseEntity
 	void KeyValue(KeyValueData* pkvd);
 	virtual int ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
-	short m_sHintType;
-	short m_sHintActivity;
+	short m_sHintType = 0;
+	short m_sHintActivity = 0;
 };
 
 
@@ -288,8 +288,8 @@ public:
 	void CopyToArray(int* piArray);
 
 private:
-	int m_stack[MAX_STACK_NODES];
-	int m_level;
+	int m_stack[MAX_STACK_NODES] = { 0 };
+	int m_level = 0;
 };
 
 
@@ -308,14 +308,14 @@ public:
 	int Remove(float&);
 
 private:
-	int m_cSize;
+	int m_cSize = 0;
 	struct tag_QUEUE_NODE
 	{
-		int Id;
-		float Priority;
+		int Id = 0;
+		float Priority = 0.f;
 	} m_queue[MAX_STACK_NODES];
-	int m_head;
-	int m_tail;
+	int m_head = 0;
+	int m_tail = 0;
 };
 
 //=========================================================
@@ -334,11 +334,11 @@ public:
 	int Remove(float&);
 
 private:
-	int m_cSize;
+	int m_cSize = 0;
 	struct tag_HEAP_NODE
 	{
-		int Id;
-		float Priority;
+		int Id = 0;
+		float Priority = 0.f;
 	} m_heap[MAX_STACK_NODES];
 	void Heap_SiftDown(int);
 	void Heap_SiftUp(void);

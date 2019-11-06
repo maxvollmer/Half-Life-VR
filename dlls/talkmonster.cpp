@@ -560,7 +560,7 @@ void CTalkMonster::RunTask(Task_t* pTask)
 
 	case TASK_WALK_PATH_FOR_UNITS:
 	{
-		float distance;
+		float distance = 0.f;
 
 		distance = (m_vecLastPosition - pev->origin).Length2D();
 
@@ -662,7 +662,7 @@ CBaseEntity* CTalkMonster::EnumFriends(CBaseEntity* pPrevious, int listNumber, B
 void CTalkMonster::AlertFriends(void)
 {
 	CBaseEntity* pFriend = nullptr;
-	int i;
+	int i = 0;
 
 	// for each friend in this bsp...
 	for (i = 0; i < TLK_CFRIENDS; i++)
@@ -684,7 +684,7 @@ void CTalkMonster::AlertFriends(void)
 void CTalkMonster::ShutUpFriends(void)
 {
 	CBaseEntity* pFriend = nullptr;
-	int i;
+	int i = 0;
 
 	// for each friend in this bsp...
 	for (i = 0; i < TLK_CFRIENDS; i++)
@@ -786,9 +786,9 @@ CTalkMonster* CTalkMonster::FindNearestFriend(BOOL fPlayer)
 	TraceResult tr;
 	Vector vecStart = pev->origin;
 	Vector vecCheck;
-	int i;
+	int i = 0;
 	char* pszFriend;
-	int cfriends;
+	int cfriends = 0;
 
 	vecStart.z = pev->absmax.z;
 
@@ -1012,10 +1012,10 @@ void CTalkMonster::IdleHeadTurn(Vector& vecFriend)
 int CTalkMonster::FIdleSpeak(void)
 {
 	// try to start a conversation, or make statement
-	int pitch;
+	int pitch = 0;
 	const char* szIdleGroup;
 	const char* szQuestionGroup;
-	float duration;
+	float duration = 0.f;
 
 	if (!FOkToSpeak())
 		return FALSE;

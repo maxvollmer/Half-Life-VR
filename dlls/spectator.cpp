@@ -63,7 +63,7 @@ void CBaseSpectator::SpectatorImpulseCommand(void)
 	static edict_t* pGoal = nullptr;
 	edict_t* pPreviousGoal;
 	edict_t* pCurrentGoal;
-	BOOL bFound;
+	BOOL bFound = FALSE;
 
 	switch (pev->impulse)
 	{

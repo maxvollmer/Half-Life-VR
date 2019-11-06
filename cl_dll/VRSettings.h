@@ -30,7 +30,7 @@ private:
 	bool WasAnyCVARChanged();
 
 	std::unordered_map<std::string, std::string> m_cvarCache;
-	void* m_watchVRFolderHandle;
+	void* m_watchVRFolderHandle{ nullptr };
 	RetryMode m_needsRetry{ RetryMode::NONE };
 	long long m_lastSettingsFileChangedTime{ 0 };
 	long long m_nextSettingCheckTime{ 0 };

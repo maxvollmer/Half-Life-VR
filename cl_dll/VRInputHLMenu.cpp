@@ -30,7 +30,7 @@ namespace
 				CreateInterfaceFn gameUIFactory = Sys_GetFactory(gameuiModule);
 				if (gameUIFactory)
 				{
-					int returnCode;
+					int returnCode = 0;
 					gGameConsole = dynamic_cast<IGameConsole*>(gameUIFactory(GAMECONSOLE_INTERFACE_VERSION, &returnCode));
 				}
 			}

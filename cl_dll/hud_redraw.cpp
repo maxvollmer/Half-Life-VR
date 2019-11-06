@@ -35,7 +35,7 @@ extern cvar_t* sensitivity;
 // Think
 void CHud::Think(void)
 {
-	int newfov;
+	int newfov = 0;
 	HUDLIST* pList = m_pHudList;
 
 	while (pList)
@@ -71,7 +71,7 @@ int CHud::Redraw(float flTime, int intermission)
 {
 	m_fOldTime = m_flTime;  // save time of previous redraw
 	m_flTime = flTime;
-	m_flTimeDelta = (double)m_flTime - m_fOldTime;
+	m_flTimeDelta = m_flTime - m_fOldTime;
 	static float m_flShotTime = 0;
 
 	// Clock was reset, reset delta
@@ -218,7 +218,7 @@ int CHud::DrawHudStringReverse(int xpos, int ypos, int iMinX, char* szString, in
 int CHud::DrawHudNumber(int x, int y, int iFlags, int iNumber, int r, int g, int b)
 {
 	int iWidth = GetSpriteRect(m_HUD_number_0).right - GetSpriteRect(m_HUD_number_0).left;
-	int k;
+	int k = 0;
 
 	if (iNumber > 0)
 	{

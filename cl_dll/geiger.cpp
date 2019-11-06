@@ -64,10 +64,10 @@ int CHudGeiger::Draw(float flTime)
 {
 	if (m_iGeigerRange <= 800 && m_iGeigerRange > 0)
 	{
-		int pct;
-		float flvol;
+		int pct = 0;
+		float flvol = 0.f;
 		int rg[3];
-		int i;
+		int i = 0;
 
 		// peicewise linear is better than continuous formula for this
 		if (m_iGeigerRange > 600)

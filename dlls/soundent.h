@@ -48,11 +48,11 @@ public:
 	void Reset(void);
 
 	Vector m_vecOrigin;    // sound's location in space
-	int m_iType;           // what type of sound this is
-	int m_iVolume;         // how loud the sound is
-	float m_flExpireTime;  // when the sound should be purged from the list
-	int m_iNext;           // index of next sound in this list ( Active or Free )
-	int m_iNextAudible;    // temporary link that monsters use to build a list of audible sounds
+	int m_iType = 0;           // what type of sound this is
+	int m_iVolume = 0;         // how loud the sound is
+	float m_flExpireTime = 0.f;  // when the sound should be purged from the list
+	int m_iNext = 0;           // index of next sound in this list ( Active or Free )
+	int m_iNextAudible = 0;    // temporary link that monsters use to build a list of audible sounds
 
 	BOOL FIsSound(void);
 	BOOL FIsScent(void);
@@ -83,10 +83,10 @@ public:
 	int IAllocSound(void);
 	virtual int ObjectCaps(void) { return FCAP_DONT_SAVE; }
 
-	int m_iFreeSound;         // index of the first sound in the free sound list
-	int m_iActiveSound;       // indes of the first sound in the active sound list
-	int m_cLastActiveSounds;  // keeps track of the number of active sounds at the last update. (for diagnostic work)
-	BOOL m_fShowReport;       // if true, dump information about free/active sounds.
+	int m_iFreeSound = 0;         // index of the first sound in the free sound list
+	int m_iActiveSound = 0;       // indes of the first sound in the active sound list
+	int m_cLastActiveSounds = 0;  // keeps track of the number of active sounds at the last update. (for diagnostic work)
+	BOOL m_fShowReport = FALSE;       // if true, dump information about free/active sounds.
 
 private:
 	CSound m_SoundPool[MAX_WORLD_SOUNDS];

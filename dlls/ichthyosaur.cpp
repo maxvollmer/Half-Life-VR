@@ -93,20 +93,20 @@ public:
 	float ChangePitch(int speed);
 
 	Vector m_SaveVelocity;
-	float m_idealDist;
+	float m_idealDist = 0.f;
 
-	float m_flBlink;
+	float m_flBlink = 0.f;
 
-	float m_flEnemyTouched;
-	BOOL m_bOnAttack;
+	float m_flEnemyTouched = 0.f;
+	BOOL m_bOnAttack = FALSE;
 
-	float m_flMaxSpeed;
-	float m_flMinSpeed;
-	float m_flMaxDist;
+	float m_flMaxSpeed = 0.f;
+	float m_flMinSpeed = 0.f;
+	float m_flMaxDist = 0.f;
 
 	EHANDLE<CBeam> m_pBeam;
 
-	float m_flNextAlert;
+	float m_flNextAlert = 0.f;
 
 	static const char* pIdleSounds[];
 	static const char* pAlertSounds[];
@@ -741,7 +741,7 @@ void CIchthyosaur::RunTask(Task_t* pTask)
 
 float CIchthyosaur::VectorToPitch(const Vector& vec)
 {
-	float pitch;
+	float pitch = 0.f;
 	if (vec.z == 0 && vec.x == 0)
 		pitch = 0;
 	else
@@ -761,8 +761,8 @@ void CIchthyosaur::Move(float flInterval)
 
 float CIchthyosaur::FlPitchDiff(void)
 {
-	float flPitchDiff;
-	float flCurrentPitch;
+	float flPitchDiff = 0.f;
+	float flCurrentPitch = 0.f;
 
 	flCurrentPitch = UTIL_AngleMod(pev->angles.z);
 
@@ -1011,7 +1011,7 @@ void CIchthyosaur::Swim()
 	pev->angles.z -= turn;
 	pev->angles.y = fmod((pev->angles.y + 360.0), 360.0);
 
-	static float yaw_adj;
+	static float yaw_adj = 0.f;
 
 	yaw_adj = yaw_adj * 0.8 + turn;
 
@@ -1064,7 +1064,7 @@ void CIchthyosaur::Swim()
 Vector CIchthyosaur::DoProbe(const Vector& Probe)
 {
 	Vector WallNormal = Vector(0, 0, -1);  // WATER normal is Straight Down for fish.
-	float frac;
+	float frac = 0.f;
 	BOOL bBumpedSomething = ProbeZ(pev->origin, Probe, &frac);
 
 	TraceResult tr;

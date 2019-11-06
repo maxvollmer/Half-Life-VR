@@ -88,21 +88,21 @@ public:
 	int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	float m_flLastShot;
-	float m_flDiviation;
+	float m_flLastShot = 0.f;
+	float m_flDiviation = 0.f;
 
-	float m_flNextJump;
+	float m_flNextJump = 0.f;
 	Vector m_vecJumpVelocity;
 
-	float m_flNextGrenadeCheck;
+	float m_flNextGrenadeCheck = 0.f;
 	Vector m_vecTossVelocity;
-	BOOL m_fThrowGrenade;
+	BOOL m_fThrowGrenade = FALSE;
 
-	int m_iTargetRanderamt;
+	int m_iTargetRanderamt = 0;
 
-	int m_iFrustration;
+	int m_iFrustration = 0;
 
-	int m_iShell;
+	int m_iShell = 0;
 };
 LINK_ENTITY_TO_CLASS(monster_human_assassin, CHAssassin);
 
@@ -168,7 +168,7 @@ int CHAssassin::Classify(void)
 //=========================================================
 void CHAssassin::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{

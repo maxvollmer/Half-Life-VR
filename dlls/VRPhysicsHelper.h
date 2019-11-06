@@ -222,8 +222,8 @@ private:
 	reactphysics3d::SphereShape* m_worldsSmallestCupBottomSphereShape{ nullptr };
 	reactphysics3d::ProxyShape* m_worldsSmallestCupTopProxyShape{ nullptr };
 	reactphysics3d::ProxyShape* m_worldsSmallestCupBottomProxyShape{ nullptr };
-	float vertices[24];
-	int indices[24];
+	float vertices[24] = { 0 };
+	int indices[24] = { 0 };
 
 	static VRPhysicsHelper* m_instance;
 };

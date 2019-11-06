@@ -32,10 +32,10 @@
 extern "C"
 {
 	float vecNewViewAngles[3];
-	int iHasNewViewAngles;
+	int iHasNewViewAngles = 0;
 	float vecNewViewOrigin[3];
-	int iHasNewViewOrigin;
-	int iIsSpectator;
+	int iHasNewViewOrigin = 0;
+	int iIsSpectator = 0;
 }
 
 #ifndef M_PI
@@ -67,7 +67,7 @@ void VectorAngles(const float* forward, float* angles);
 // copied from pm_math
 void NormalizeAngles(float* angles)
 {
-	int i;
+	int i = 0;
 	// Normalize angles
 	for (i = 0; i < 3; i++)
 	{
@@ -142,15 +142,15 @@ cvar_t v_iyaw_level = { "v_iyaw_level", "0.3", 0, 0.3 };
 cvar_t v_iroll_level = { "v_iroll_level", "0.1", 0, 0.1 };
 cvar_t v_ipitch_level = { "v_ipitch_level", "0.3", 0, 0.3 };
 
-float v_idlescale;  // used by TFC for concussion grenade effect
+float v_idlescale = 0.f;  // used by TFC for concussion grenade effect
 
 // Quakeworld bob code, this fixes jitters in the mutliplayer since the clock (pparams->time) isn't quite linear
 float V_CalcBob(struct ref_params_s* pparams)
 {
-	static float bobtime;
-	static float bob;
-	float cycle;
-	static float lasttime;
+	static float bobtime = 0.f;
+	static float bob = 0.f;
+	float cycle = 0.f;
+	static float lasttime = 0.f;
 	vec3_t vel;
 
 
@@ -204,7 +204,7 @@ V_CalcIntermissionRefdef
 void V_CalcIntermissionRefdef(struct ref_params_s* pparams)
 {
 	cl_entity_t* ent, * view;
-	float old;
+	float old = 0.f;
 
 	// ent is the player model ( visible when out of body )
 	ent = gEngfuncs.GetLocalPlayer();
@@ -243,14 +243,14 @@ void V_CalcIntermissionRefdef(struct ref_params_s* pparams)
 
 typedef struct
 {
-	float Origins[ORIGIN_BACKUP][3];
-	float OriginTime[ORIGIN_BACKUP];
+	float Origins[ORIGIN_BACKUP][3] = { 0 };
+	float OriginTime[ORIGIN_BACKUP] = { 0 };
 
-	float Angles[ORIGIN_BACKUP][3];
-	float AngleTime[ORIGIN_BACKUP];
+	float Angles[ORIGIN_BACKUP][3] = { 0 };
+	float AngleTime[ORIGIN_BACKUP] = { 0 };
 
-	int CurrentOrigin;
-	int CurrentAngle;
+	int CurrentOrigin = 0;
+	int CurrentAngle = 0;
 } viewinterp_t;
 
 /*
@@ -262,13 +262,13 @@ V_CalcRefdef
 void V_CalcNormalRefdef(struct ref_params_s* pparams)
 {
 	cl_entity_t* ent;
-	int i;
+	int i = 0;
 	vec3_t angles;
 	float bob, waterOffset;
 	static viewinterp_t ViewInterp;
 
 	static float oldz = 0;
-	static float lasttime;
+	static float lasttime = 0.f;
 
 	vec3_t camAngles, camForward, camRight, camUp;
 	cl_entity_t* pwater;
@@ -412,7 +412,7 @@ void V_CalcNormalRefdef(struct ref_params_s* pparams)
 #if 1
 	if (!pparams->smoothing && pparams->onground && pparams->simorg[2] - oldz > 0)
 	{
-		float steptime;
+		float steptime = 0.f;
 
 		steptime = pparams->time - lasttime;
 		if (steptime < 0)
@@ -452,9 +452,9 @@ void V_CalcNormalRefdef(struct ref_params_s* pparams)
 	if (cl_vsmoothing && cl_vsmoothing->value &&
 		(pparams->smoothing && (pparams->maxclients > 1)))
 	{
-		int foundidx;
-		int i;
-		float t;
+		int foundidx = 0;
+		int i = 0;
+		float t = 0.f;
 
 		if (cl_vsmoothing->value < 0.0)
 		{
@@ -1325,7 +1325,7 @@ V_DropPunchAngle
 */
 void V_DropPunchAngle(float frametime, float* ev_punchangle)
 {
-	float len;
+	float len = 0.f;
 
 	len = VectorNormalize(ev_punchangle);
 	len -= (10.0 + len * 0.5) * frametime;

@@ -26,7 +26,7 @@ void VRTextureHelper::PreloadAllTextures(const std::filesystem::path& path)
 			}
 			else
 			{
-				unsigned int dummy;
+				unsigned int dummy = 0;
 				GetTextureInternal(p.path(), dummy, dummy);
 			}
 		}
@@ -194,7 +194,7 @@ unsigned int VRTextureHelper::GetTexture(const std::string& name, unsigned int& 
 
 unsigned int VRTextureHelper::GetTexture(const std::string& name)
 {
-	unsigned int dummy;
+	unsigned int dummy = 0;
 	return GetTexture(name, dummy, dummy);
 }
 

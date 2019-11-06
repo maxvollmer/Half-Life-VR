@@ -120,7 +120,7 @@ void CGlock::GlockFire(float flSpread, float flCycleTime, BOOL fUseAutoAim)
 
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
-	int flags;
+	int flags = 0;
 
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
@@ -169,7 +169,7 @@ void CGlock::Reload(void)
 	if (m_pPlayer->ammo_9mm <= 0)
 		return;
 
-	int iResult;
+	int iResult = 0;
 
 	if (m_iClip == 0)
 		iResult = DefaultReload(17, GLOCK_RELOAD, 1.5);
@@ -196,7 +196,7 @@ void CGlock::WeaponIdle(void)
 	// only idle if the slid isn't back
 	if (m_iClip != 0)
 	{
-		int iAnim;
+		int iAnim = 0;
 		float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0.0, 1.0);
 
 		if (flRand <= 0.3 + 0 * 0.75)

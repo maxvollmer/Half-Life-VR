@@ -77,13 +77,13 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	BOOL m_fGunDrawn;
-	float m_painTime;
-	float m_checkAttackTime;
-	BOOL m_lastAttackCheck;
+	BOOL m_fGunDrawn = FALSE;
+	float m_painTime = 0.f;
+	float m_checkAttackTime = 0.f;
+	BOOL m_lastAttackCheck = FALSE;
 
 	// UNDONE: What is this for?  It isn't used?
-	float m_flPlayerDamage;  // how much pain has the player inflicted on me?
+	float m_flPlayerDamage = 0.f;  // how much pain has the player inflicted on me?
 
 	CUSTOM_SCHEDULES;
 };
@@ -272,7 +272,7 @@ void CBarney::AlertSound(void)
 //=========================================================
 void CBarney::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	ys = 0;
 
@@ -769,7 +769,7 @@ public:
 
 	void KeyValue(KeyValueData* pkvd);
 
-	int m_iPose;  // which sequence to display	-- temporary, don't need to save
+	int m_iPose = 0;  // which sequence to display	-- temporary, don't need to save
 	static char* m_szPoses[3];
 };
 

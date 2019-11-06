@@ -64,8 +64,8 @@ public:
 	void EXPORT Sparkle(void);
 #endif
 
-	float m_length;
-	string_t m_altName;
+	float m_length = 0.f;
+	string_t m_altName = iStringNull;
 	EHANDLE<CPathTrack> m_pnext;
 	EHANDLE<CPathTrack> m_pprevious;
 	EHANDLE<CPathTrack> m_paltpath;
@@ -107,21 +107,21 @@ public:
 	virtual void OverrideReset(void);
 
 	EHANDLE<CPathTrack> m_ppath;
-	float m_length;
-	float m_height;
-	float m_speed;
-	float m_dir;
-	float m_startSpeed;
+	float m_length = 0.f;
+	float m_height = 0.f;
+	float m_speed = 0.f;
+	float m_dir = 0.f;
+	float m_startSpeed = 0.f;
 	Vector m_controlMins;
 	Vector m_controlMaxs;
-	int m_soundPlaying;
-	int m_sounds;
-	float m_flVolume;
-	float m_flBank;
-	float m_oldSpeed;
+	int m_soundPlaying = 0;
+	int m_sounds = 0;
+	float m_flVolume = 0.f;
+	float m_flBank = 0.f;
+	float m_oldSpeed = 0.f;
 
 private:
-	unsigned short m_usAdjustPitch;
+	unsigned short m_usAdjustPitch = 0;
 };
 
 #endif

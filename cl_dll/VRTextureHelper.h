@@ -29,9 +29,9 @@ private:
 
 	struct Texture
 	{
-		unsigned int texnum;
-		unsigned int width;
-		unsigned int height;
+		unsigned int texnum = 0;
+		unsigned int width = 0;
+		unsigned int height = 0;
 	};
 
 	VRTextureHelper() {}

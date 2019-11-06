@@ -35,7 +35,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	float m_flWait;
+	float m_flWait = 0.f;
 };
 
 LINK_ENTITY_TO_CLASS(path_corner, CPathCorner);
@@ -146,7 +146,7 @@ void CPathTrack::KeyValue(KeyValueData* pkvd)
 
 void CPathTrack::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	int on;
+	int on = 0;
 
 	// Use toggles between two paths
 	if (m_paltpath)
@@ -369,7 +369,7 @@ CPathTrack* CPathTrack::LookAhead(Vector* origin, float dist, int move)
 // Assumes this is ALWAYS enabled
 CPathTrack* CPathTrack::Nearest(Vector origin)
 {
-	int deadCount;
+	int deadCount = 0;
 	float minDist, dist;
 	Vector delta;
 	CPathTrack* ppath, * pnearest;

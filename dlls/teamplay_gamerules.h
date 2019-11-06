@@ -50,8 +50,8 @@ private:
 	void RecountTeams(bool bResendInfo = FALSE);
 	const char* TeamWithFewestPlayers(void);
 
-	BOOL m_DisableDeathMessages;
-	BOOL m_DisableDeathPenalty;
-	BOOL m_teamLimit;  // This means the server set only some teams as valid
+	BOOL m_DisableDeathMessages = FALSE;
+	BOOL m_DisableDeathPenalty = FALSE;
+	BOOL m_teamLimit = FALSE;  // This means the server set only some teams as valid
 	char m_szTeamList[TEAMPLAY_TEAMLISTLENGTH];
 };

@@ -235,7 +235,7 @@ class CBaseEntity
 public:
 	// Constructor.  Set engine to use C/C++ callback functions
 	// pointers to engine data
-	entvars_t* pev;  // Don't need to save/restore this pointer, the engine resets it
+	entvars_t* pev = nullptr;  // Don't need to save/restore this pointer, the engine resets it
 
 	// path corners
 	EHANDLE<CBaseEntity> m_pGoalEnt;  // path corner we are heading towards
@@ -314,10 +314,10 @@ public:
 	virtual CBaseEntity* GetNextTarget(void);
 
 	// fundamental callbacks
-	void (CBaseEntity ::* m_pfnThink)(void);
-	void (CBaseEntity ::* m_pfnTouch)(CBaseEntity* pOther);
-	void (CBaseEntity ::* m_pfnUse)(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	void (CBaseEntity ::* m_pfnBlocked)(CBaseEntity* pOther);
+	void (CBaseEntity ::* m_pfnThink)(void) = nullptr;
+	void (CBaseEntity ::* m_pfnTouch)(CBaseEntity* pOther) = nullptr;
+	void (CBaseEntity ::* m_pfnUse)(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) = nullptr;
+	void (CBaseEntity ::* m_pfnBlocked)(CBaseEntity* pOther) = nullptr;
 
 	virtual void Think(void)
 	{
@@ -513,26 +513,26 @@ public:
 	virtual BOOL FVisible(const Vector& vecOrigin);
 
 	//We use this variables to store each ammo count.
-	int ammo_9mm;
-	int ammo_357;
-	int ammo_bolts;
-	int ammo_buckshot;
-	int ammo_rockets;
-	int ammo_uranium;
-	int ammo_hornets;
-	int ammo_argrens;
+	int ammo_9mm = 0;
+	int ammo_357 = 0;
+	int ammo_bolts = 0;
+	int ammo_buckshot = 0;
+	int ammo_rockets = 0;
+	int ammo_uranium = 0;
+	int ammo_hornets = 0;
+	int ammo_argrens = 0;
 	//Special stuff for grenades and satchels.
-	float m_flStartThrow;
-	float m_flReleaseThrow;
-	int m_chargeReady;
-	int m_fInAttack;
+	float m_flStartThrow = 0.f;
+	float m_flReleaseThrow = 0.f;
+	int m_chargeReady = 0;
+	int m_fInAttack = 0;
 
 	enum EGON_FIRESTATE
 	{
 		FIRE_OFF,
 		FIRE_CHARGE
 	};
-	int m_fireState;
+	int m_fireState = 0;
 
 
 	// For easy detection of female NPCs to change audio files in sound.cpp - Max Vollmer, 2018-11-23
@@ -609,18 +609,18 @@ private:
 
 typedef struct locksounds  // sounds that doors and buttons make when locked/unlocked
 {
-	string_t sLockedSound;       // sound a door makes when it's locked
-	string_t sLockedSentence;    // sentence group played when door is locked
-	string_t sUnlockedSound;     // sound a door makes when it's unlocked
-	string_t sUnlockedSentence;  // sentence group played when door is unlocked
+	string_t sLockedSound = iStringNull;       // sound a door makes when it's locked
+	string_t sLockedSentence = iStringNull;    // sentence group played when door is locked
+	string_t sUnlockedSound = iStringNull;     // sound a door makes when it's unlocked
+	string_t sUnlockedSentence = iStringNull;  // sentence group played when door is unlocked
 
-	int iLockedSentence;    // which sentence in sentence group to play next
-	int iUnlockedSentence;  // which sentence in sentence group to play next
+	int iLockedSentence = 0;    // which sentence in sentence group to play next
+	int iUnlockedSentence = 0;  // which sentence in sentence group to play next
 
-	float flwaitSound;     // time delay between playing consecutive 'locked/unlocked' sounds
-	float flwaitSentence;  // time delay between playing consecutive sentences
-	BYTE bEOFLocked;       // true if hit end of list of locked sentences
-	BYTE bEOFUnlocked;     // true if hit end of list of unlocked sentences
+	float flwaitSound = 0.f;     // time delay between playing consecutive 'locked/unlocked' sounds
+	float flwaitSentence = 0.f;  // time delay between playing consecutive sentences
+	BYTE bEOFLocked = 0;       // true if hit end of list of locked sentences
+	BYTE bEOFUnlocked = 0;     // true if hit end of list of unlocked sentences
 } locksound_t;
 
 void PlayLockSounds(entvars_t* pev, locksound_t* pls, int flocked, int fbutton);
@@ -647,10 +647,10 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	EHANDLE<CBaseEntity> m_rgEntities[MS_MAX_TARGETS];
-	int m_rgTriggered[MS_MAX_TARGETS];
+	int m_rgTriggered[MS_MAX_TARGETS] = { 0 };
 
-	int m_iTotal;
-	string_t m_globalstate;
+	int m_iTotal = 0;
+	string_t m_globalstate = iStringNull;
 };
 
 
@@ -660,8 +660,8 @@ public:
 class CBaseDelay : public CBaseEntity
 {
 public:
-	float m_flDelay;
-	int m_iszKillTarget;
+	float m_flDelay = 0.f;
+	int m_iszKillTarget = 0;
 
 	virtual void KeyValue(KeyValueData* pkvd);
 	virtual int Save(CSave& save);
@@ -705,11 +705,11 @@ public:
 	void SetSequenceBox(void);
 
 	// animation needs
-	float m_flFrameRate;       // computed FPS for current sequence
-	float m_flGroundSpeed;     // computed linear movement rate for current sequence
-	float m_flLastEventCheck;  // last time the event list was checked
-	BOOL m_fSequenceFinished;  // flag set when StudioAdvanceFrame moves across a frame boundry
-	BOOL m_fSequenceLoops;     // true if the sequence loops
+	float m_flFrameRate = 0.f;       // computed FPS for current sequence
+	float m_flGroundSpeed = 0.f;     // computed linear movement rate for current sequence
+	float m_flLastEventCheck = 0.f;  // last time the event list was checked
+	BOOL m_fSequenceFinished = FALSE;  // flag set when StudioAdvanceFrame moves across a frame boundry
+	BOOL m_fSequenceLoops = FALSE;     // true if the sequence loops
 };
 
 
@@ -723,27 +723,27 @@ class CBaseToggle : public CBaseAnimating
 public:
 	void KeyValue(KeyValueData* pkvd);
 
-	TOGGLE_STATE m_toggle_state;
-	float m_flActivateFinished;  //like attack_finished, but for doors
-	float m_flMoveDistance;      // how far a door should slide or rotate
-	float m_flWait;
-	float m_flLip;
-	float m_flTWidth;   // for plats
-	float m_flTLength;  // for plats
+	TOGGLE_STATE m_toggle_state = TS_AT_TOP;
+	float m_flActivateFinished = 0.f;  //like attack_finished, but for doors
+	float m_flMoveDistance = 0.f;      // how far a door should slide or rotate
+	float m_flWait = 0.f;
+	float m_flLip = 0.f;
+	float m_flTWidth = 0.f;   // for plats
+	float m_flTLength = 0.f;  // for plats
 
 	Vector m_vecPosition1;
 	Vector m_vecPosition2;
 	Vector m_vecAngle1;
 	Vector m_vecAngle2;
 
-	int m_cTriggersLeft;  // trigger_counter only, # of activations remaining
-	float m_flHeight;
+	int m_cTriggersLeft = 0;  // trigger_counter only, # of activations remaining
+	float m_flHeight = 0.f;
 	EHANDLE<CBaseEntity> m_hActivator;
-	void (CBaseToggle::* m_pfnCallWhenMoveDone)(void);
+	void (CBaseToggle::* m_pfnCallWhenMoveDone)(void) = nullptr;
 	Vector m_vecFinalDest;
 	Vector m_vecFinalAngle;
 
-	int m_bitsDamageInflict;  // DMG_ damage type that the door or tigger does
+	int m_bitsDamageInflict = 0;  // DMG_ damage type that the door or tigger does
 
 	virtual int Save(CSave& save);
 	virtual int Restore(CRestore& restore);
@@ -764,7 +764,7 @@ public:
 	static void AxisDir(entvars_t* pev);
 	static float AxisDelta(int flags, const Vector& angle1, const Vector& angle2);
 
-	string_t m_sMaster;  // If this button has a master switch, this is the targetname.
+	string_t m_sMaster = iStringNull;  // If this button has a master switch, this is the targetname.
 						 // A master switch must be of the multisource type. If all
 						 // of the switches in the multisource have been triggered, then
 						 // the button will be allowed to operate. Otherwise, it will be
@@ -925,20 +925,20 @@ public:
 	// Buttons that don't take damage can be IMPULSE used
 	virtual int ObjectCaps(void) { return (CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | (pev->takedamage ? 0 : FCAP_IMPULSE_USE); }
 
-	BOOL m_fStayPushed;  // button stays pushed in until touched again?
-	BOOL m_fRotating;    // a rotating button?  default is a sliding button.
+	BOOL m_fStayPushed = FALSE;  // button stays pushed in until touched again?
+	BOOL m_fRotating = FALSE;    // a rotating button?  default is a sliding button.
 
-	string_t m_strChangeTarget;  // if this field is not null, this is an index into the engine string array.
+	string_t m_strChangeTarget = iStringNull;  // if this field is not null, this is an index into the engine string array.
 								 // when this button is touched, it's target entity's TARGET field will be set
 								 // to the button's ChangeTarget. This allows you to make a func_train switch paths, etc.
 
 	locksound_t m_ls;  // door lock sounds
 
-	BYTE m_bLockedSound;  // ordinals from entity selection
-	BYTE m_bLockedSentence;
-	BYTE m_bUnlockedSound;
-	BYTE m_bUnlockedSentence;
-	int m_sounds;
+	BYTE m_bLockedSound = 0;  // ordinals from entity selection
+	BYTE m_bLockedSentence = 0;
+	BYTE m_bUnlockedSound = 0;
+	BYTE m_bUnlockedSentence = 0;
+	int m_sounds = 0;
 };
 
 //

@@ -92,8 +92,8 @@ void CSoundEnt::Spawn(void)
 //=========================================================
 void CSoundEnt::Think(void)
 {
-	int iSound;
-	int iPreviousSound;
+	int iSound = 0;
+	int iPreviousSound = 0;
 
 	pev->nextthink = gpGlobals->time + 0.3;  // how often to check the sound list.
 
@@ -169,7 +169,7 @@ void CSoundEnt::FreeSound(int iSound, int iPrevious)
 //=========================================================
 int CSoundEnt::IAllocSound(void)
 {
-	int iNewSound;
+	int iNewSound = 0;
 
 	if (m_iFreeSound == SOUNDLIST_EMPTY)
 	{
@@ -198,7 +198,7 @@ int CSoundEnt::IAllocSound(void)
 //=========================================================
 void CSoundEnt::InsertSound(int iType, const Vector& vecOrigin, int iVolume, float flDuration)
 {
-	int iThisSound;
+	int iThisSound = 0;
 
 	if (!pSoundEnt)
 	{
@@ -226,8 +226,8 @@ void CSoundEnt::InsertSound(int iType, const Vector& vecOrigin, int iVolume, flo
 //=========================================================
 void CSoundEnt::Initialize(void)
 {
-	int i;
-	int iSound;
+	int i = 0;
+	int iSound = 0;
 
 	m_cLastActiveSounds;
 	m_iFreeSound = 0;

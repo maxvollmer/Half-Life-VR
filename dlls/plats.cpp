@@ -44,9 +44,9 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	BYTE m_bMoveSnd;  // sound a plat makes while moving
-	BYTE m_bStopSnd;  // sound a plat makes when it stops
-	float m_volume;   // Sound volume
+	BYTE m_bMoveSnd = 0;  // sound a plat makes while moving
+	BYTE m_bStopSnd = 0;  // sound a plat makes when it stops
+	float m_volume = 0.f;   // Sound volume
 };
 
 TYPEDESCRIPTION CBasePlatTrain::m_SaveData[] =
@@ -251,7 +251,7 @@ public:
 	virtual int ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE; }
 	void SpawnInsideTrigger(CFuncPlat* pPlatform);
 	void Touch(CBaseEntity* pOther);
-	CFuncPlat* m_pPlatform;
+	EHANDLE<CFuncPlat> m_pPlatform;
 };
 
 
@@ -644,16 +644,16 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	entvars_t* m_pevCurrentTarget;
-	int m_sounds;
-	BOOL m_activated;
+	EHANDLE<CBaseEntity> m_pCurrentTarget;
+	int m_sounds = 0;
+	BOOL m_activated = FALSE;
 };
 
 LINK_ENTITY_TO_CLASS(func_train, CFuncTrain);
 TYPEDESCRIPTION CFuncTrain::m_SaveData[] =
 {
 	DEFINE_FIELD(CFuncTrain, m_sounds, FIELD_INTEGER),
-	DEFINE_FIELD(CFuncTrain, m_pevCurrentTarget, FIELD_EVARS),
+	DEFINE_FIELD(CFuncTrain, m_pCurrentTarget, FIELD_EHANDLE),
 	DEFINE_FIELD(CFuncTrain, m_activated, FIELD_BOOLEAN),
 };
 
@@ -709,15 +709,15 @@ void CFuncTrain::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 void CFuncTrain::Wait(void)
 {
 	// Fire the pass target if there is one
-	if (m_pevCurrentTarget->message)
+	if (m_pCurrentTarget->pev->message)
 	{
-		FireTargets(STRING(m_pevCurrentTarget->message), this, this, USE_TOGGLE, 0);
-		if (FBitSet(m_pevCurrentTarget->spawnflags, SF_CORNER_FIREONCE))
-			m_pevCurrentTarget->message = 0;
+		FireTargets(STRING(m_pCurrentTarget->pev->message), this, this, USE_TOGGLE, 0);
+		if (FBitSet(m_pCurrentTarget->pev->spawnflags, SF_CORNER_FIREONCE))
+			m_pCurrentTarget->pev->message = 0;
 	}
 
 	// need pointer to LAST target.
-	if (FBitSet(m_pevCurrentTarget->spawnflags, SF_TRAIN_WAIT_RETRIGGER) || (pev->spawnflags & SF_TRAIN_WAIT_RETRIGGER))
+	if (FBitSet(m_pCurrentTarget->pev->spawnflags, SF_TRAIN_WAIT_RETRIGGER) || (pev->spawnflags & SF_TRAIN_WAIT_RETRIGGER))
 	{
 		pev->spawnflags |= SF_TRAIN_WAIT_RETRIGGER;
 		// clear the sound channel.
@@ -752,11 +752,8 @@ void CFuncTrain::Wait(void)
 //
 void CFuncTrain::Next(void)
 {
-	CBaseEntity* pTarg;
-
-
 	// now find our next target
-	pTarg = GetNextTarget();
+	CBaseEntity* pTarg = GetNextTarget();
 
 	if (!pTarg)
 	{
@@ -774,16 +771,16 @@ void CFuncTrain::Next(void)
 	pev->target = pTarg->pev->target;
 	m_flWait = pTarg->GetDelay();
 
-	if (m_pevCurrentTarget && m_pevCurrentTarget->speed != 0)
+	if (m_pCurrentTarget && m_pCurrentTarget->pev->speed != 0)
 	{  // don't copy speed from target if it is 0 (uninitialized)
-		pev->speed = m_pevCurrentTarget->speed;
+		pev->speed = m_pCurrentTarget->pev->speed;
 		ALERT(at_aiconsole, "Train %s speed to %4.2f\n", STRING(pev->targetname), pev->speed);
 	}
-	m_pevCurrentTarget = pTarg->pev;  // keep track of this since path corners change our target for us.
+	m_pCurrentTarget = pTarg;  // keep track of this since path corners change our target for us.
 
 	pev->enemy = pTarg->edict();  //hack
 
-	if (FBitSet(m_pevCurrentTarget->spawnflags, SF_CORNER_TELEPORT))
+	if (FBitSet(m_pCurrentTarget->pev->spawnflags, SF_CORNER_TELEPORT))
 	{
 		// Path corner has indicated a teleport to the next corner.
 		SetBits(pev->effects, EF_NOINTERP);
@@ -814,12 +811,14 @@ void CFuncTrain::Activate(void)
 	if (!m_activated)
 	{
 		m_activated = TRUE;
-		entvars_t* pevTarg = VARS(FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(pev->target)));
+		CBaseEntity* pTarg = UTIL_FindEntityByTargetname(nullptr, STRING(pev->target));
 
-		pev->target = pevTarg->target;
-		m_pevCurrentTarget = pevTarg;  // keep track of this since path corners change our target for us.
-
-		UTIL_SetOrigin(pev, pevTarg->origin - (pev->mins + pev->maxs) * 0.5);
+		if (pTarg)
+		{
+			pev->target = pTarg->pev->target;
+			UTIL_SetOrigin(pev, pTarg->pev->origin - (pev->mins + pev->maxs) * 0.5);
+			m_pCurrentTarget = pTarg;  // keep track of this since path corners change our target for us.
+		}
 
 		if (FStringNull(pev->targetname))
 		{  // not triggered, so start immediately
@@ -1096,7 +1095,7 @@ void CFuncTrackTrain::StopSound(void)
 	// if sound playing, stop it
 	if (m_soundPlaying && pev->noise)
 	{
-		unsigned short us_encode;
+		unsigned short us_encode = 0;
 		unsigned short us_sound = ((unsigned short)(m_sounds) & 0x0007) << 12;
 
 		us_encode = us_sound;
@@ -1118,7 +1117,7 @@ void CFuncTrackTrain::StopSound(void)
 
 void CFuncTrackTrain::UpdateSound(void)
 {
-	float flpitch;
+	float flpitch = 0.f;
 
 	if (!pev->noise)
 		return;
@@ -1143,7 +1142,7 @@ void CFuncTrackTrain::UpdateSound(void)
 // flpitch = 6 bits
 // 15 bits total
 
-		unsigned short us_encode;
+		unsigned short us_encode = 0;
 		unsigned short us_sound = ((unsigned short)(m_sounds) & 0x0007) << 12;
 		unsigned short us_pitch = ((unsigned short)(flpitch / 10.0) & 0x003f) << 6;
 		unsigned short us_volume = ((unsigned short)(m_flVolume * 40.0) & 0x003f);
@@ -1672,12 +1671,12 @@ public:
 
 	EHANDLE<CFuncTrackTrain> m_train;
 
-	int m_trackTopName;
-	int m_trackBottomName;
-	int m_trainName;
-	TRAIN_CODE m_code;
-	int m_targetState;
-	int m_use;
+	int m_trackTopName = 0;
+	int m_trackBottomName = 0;
+	int m_trainName = 0;
+	TRAIN_CODE m_code = TRAIN_SAFE;
+	int m_targetState = 0;
+	int m_use = 0;
 };
 LINK_ENTITY_TO_CLASS(func_trackchange, CFuncTrackChange);
 
@@ -2145,7 +2144,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	BOOL m_on;
+	BOOL m_on = FALSE;
 };
 
 

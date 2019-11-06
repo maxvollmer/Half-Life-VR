@@ -91,10 +91,10 @@ private:
 	struct ActionSet
 	{
 	public:
-		vr::VRActionSetHandle_t handle;
+		vr::VRActionSetHandle_t handle{ vr::k_ulInvalidActionSetHandle };
 		std::unordered_map<std::string, VRInputAction> actions;
 		std::unordered_map<std::string, vr::VRActionHandle_t> feedbackActions;
-		bool handleWhenNotInGame;
+		bool handleWhenNotInGame{ false };
 	};
 
 	struct CustomAction

@@ -85,9 +85,9 @@ public:
 
 	// x_teleattack1.wav	the looping sound of the teleport attack ball.
 
-	float m_flForce;
+	float m_flForce = 0.f;
 
-	float m_flNextPainSound;
+	float m_flNextPainSound = 0.f;
 
 	Vector m_velocity;
 	Vector m_avelocity;
@@ -98,37 +98,37 @@ public:
 	Vector m_vecDesired;
 	Vector m_posDesired;
 
-	float m_flMinZ;
-	float m_flMaxZ;
+	float m_flMinZ = 0.f;
+	float m_flMaxZ = 0.f;
 
 	Vector m_vecGoal;
 
-	float m_flLastSeen;
-	float m_flPrevSeen;
+	float m_flLastSeen = 0.f;
+	float m_flPrevSeen = 0.f;
 
-	int m_irritation;
+	int m_irritation = 0;
 
-	int m_iLevel;
-	int m_iTeleport;
+	int m_iLevel = 0;
+	int m_iTeleport = 0;
 
 	EHANDLE<CBaseEntity> m_hRecharger;
 
 	EHANDLE<CNihilanthHVR> m_hSphere[N_SPHERES];
-	int m_iActiveSpheres;
+	int m_iActiveSpheres = 0;
 
-	float m_flAdj;
+	float m_flAdj = 0.f;
 
 	EHANDLE<CSprite> m_pBall;
 
-	char m_szRechargerTarget[64];
-	char m_szDrawUse[64];
-	char m_szTeleportUse[64];
-	char m_szTeleportTouch[64];
-	char m_szDeadUse[64];
-	char m_szDeadTouch[64];
+	char m_szRechargerTarget[64] = { 0 };
+	char m_szDrawUse[64] = { 0 };
+	char m_szTeleportUse[64] = { 0 };
+	char m_szTeleportTouch[64] = { 0 };
+	char m_szDeadUse[64] = { 0 };
+	char m_szDeadTouch[64] = { 0 };
 
-	float m_flShootEnd;
-	float m_flShootTime;
+	float m_flShootEnd = 0.f;
+	float m_flShootTime = 0.f;
 
 	EHANDLE<CBaseMonster> m_hFriend[3];
 };
@@ -209,11 +209,11 @@ public:
 	void Zap(void);
 	void Teleport(void);
 
-	float m_flIdealVel;
+	float m_flIdealVel = 0.f;
 	Vector m_vecIdeal;
 	EHANDLE<CNihilanth> m_pNihilanth;
 	EHANDLE<CBaseEntity> m_hTouch;
-	int m_nFrames;
+	int m_nFrames = 0;
 };
 
 LINK_ENTITY_TO_CLASS(nihilanth_energy_ball, CNihilanthHVR);
@@ -635,7 +635,7 @@ void CNihilanth::ShootBalls(void)
 
 void CNihilanth::MakeFriend(Vector vecStart)
 {
-	int i;
+	int i = 0;
 
 	for (i = 0; i < 3; i++)
 	{

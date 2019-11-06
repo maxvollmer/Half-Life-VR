@@ -74,7 +74,7 @@ namespace
 extern DLL_GLOBAL ULONG g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL g_fGameOver;
 extern DLL_GLOBAL BOOL g_fDrawLines;
-int gEvilImpulse101;
+int gEvilImpulse101 = 0;
 extern DLL_GLOBAL int g_iSkillLevel, gDisplayTitle;
 
 
@@ -292,7 +292,7 @@ LINK_ENTITY_TO_CLASS(player, CBasePlayer);
 
 void CBasePlayer::Pain(void)
 {
-	float flRndSound;  //sound randomizer
+	float flRndSound = 0.f;  //sound randomizer
 
 	flRndSound = RANDOM_FLOAT(0, 1);
 
@@ -437,12 +437,12 @@ int CBasePlayer::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	// have suit diagnose the problem - ie: report damage type
 	int bitsDamage = bitsDamageType;
 	int ffound = TRUE;
-	int fmajor;
-	int fcritical;
-	int fTookDamage;
-	int ftrivial;
-	float flRatio;
-	float flBonus;
+	int fmajor = 0;
+	int fcritical = 0;
+	int fTookDamage = 0;
+	int ftrivial = 0;
+	float flRatio = 0.f;
+	float flBonus = 0.f;
 	float flHealthPrev = pev->health;
 
 	flBonus = ARMOR_BONUS;
@@ -476,7 +476,7 @@ int CBasePlayer::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	{
 		float flNew = flDamage * flRatio;
 
-		float flArmor;
+		float flArmor = 0.f;
 
 		flArmor = (flDamage - flNew) * flBonus;
 
@@ -672,9 +672,9 @@ int CBasePlayer::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 //=========================================================
 void CBasePlayer::PackDeadPlayerItems(void)
 {
-	int iWeaponRules;
-	int iAmmoRules;
-	int i;
+	int iWeaponRules = 0;
+	int iAmmoRules = 0;
+	int i = 0;
 	EHANDLE<CBasePlayerWeapon> rgpPackWeapons[20];  // 20 hardcoded for now. How to determine exactly how many weapons we have?
 	int iPackAmmo[MAX_AMMO_SLOTS + 1];
 	int iPW = 0;  // index into packweapons array
@@ -805,7 +805,7 @@ void CBasePlayer::RemoveAllItems(BOOL removeSuit)
 
 	m_pLastItem = nullptr;
 
-	int i;
+	int i = 0;
 	CBasePlayerItem* pPendingItem;
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
@@ -1025,8 +1025,8 @@ void CBasePlayer::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 // Set the activity based on an event or current state
 void CBasePlayer::SetAnimation(PLAYER_ANIM playerAnim)
 {
-	int animDesired;
-	float speed;
+	int animDesired = 0;
+	float speed = 0.f;
 	char szAnim[64];
 
 	speed = pev->velocity.Length2D();
@@ -1222,7 +1222,7 @@ WaterMove
 
 void CBasePlayer::WaterMove()
 {
-	int air;
+	int air = 0;
 
 	/*
 	if (pev->movetype == MOVETYPE_NOCLIP)
@@ -1347,7 +1347,7 @@ void CBasePlayer::PlayerDeathThink(void)
 	ClearLadderGrabbingControllers();
 	StopPullingLedge();
 
-	float flForward;
+	float flForward = 0.f;
 
 	if (FBitSet(pev->flags, FL_ONGROUND))
 	{
@@ -1432,7 +1432,7 @@ void CBasePlayer::PlayerDeathThink(void)
 void CBasePlayer::StartDeathCam(void)
 {
 	edict_t* pSpot, * pNewSpot;
-	int iRand;
+	int iRand = 0;
 
 	if (pev->view_ofs == g_vecZero)
 	{
@@ -1539,7 +1539,7 @@ void CBasePlayer::PlayerUse(void)
 	CBaseEntity* pClosest = nullptr;
 	Vector vecLOS;
 	float flMaxDot = VIEW_FIELD_NARROW;
-	float flDot;
+	float flDot = 0.f;
 
 	UTIL_MakeVectors(pev->v_angle);  // so we know which way we are facing
 
@@ -2057,7 +2057,7 @@ void CBasePlayer::PreThink(void)
 
 void CBasePlayer::CheckTimeBasedDamage()
 {
-	int i;
+	int i = 0;
 	BYTE bDuration = 0;
 
 	static float gtbdPrev = 0.0;
@@ -2264,7 +2264,7 @@ Play suit update if it's time
 
 void CBasePlayer::CheckSuitUpdate()
 {
-	int i;
+	int i = 0;
 	int isentence = 0;
 	int isearch = m_iSuitPlayNext;
 
@@ -2326,8 +2326,8 @@ void CBasePlayer::CheckSuitUpdate()
 
 void CBasePlayer::SetSuitUpdate(char* name, int fgroup, int iNoRepeatTime)
 {
-	int i;
-	int isentence;
+	int i = 0;
+	int isentence = 0;
 	int iempty = -1;
 
 
@@ -2441,8 +2441,8 @@ CheckPowerups(entvars_t* pev)
 //=========================================================
 void CBasePlayer::UpdatePlayerSound(void)
 {
-	int iBodyVolume;
-	int iVolume;
+	int iBodyVolume = 0;
+	int iVolume = 0;
 	CSound* pSound;
 
 	pSound = CSoundEnt::SoundPointerForIndex(CSoundEnt::ClientSoundIndex(edict()));
@@ -3290,7 +3290,7 @@ void CBasePlayer::SelectLastItem(void)
 //==============================================
 BOOL CBasePlayer::HasWeapons(void)
 {
-	int i;
+	int i = 0;
 
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
@@ -3347,8 +3347,8 @@ void CSprayCan::Spawn(entvars_t* pevOwner)
 void CSprayCan::Think(void)
 {
 	TraceResult tr;
-	int playernum;
-	int nFrames;
+	int playernum = 0;
+	int nFrames = 0;
 	CBasePlayer* pPlayer;
 
 	pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pev->owner);
@@ -3561,7 +3561,7 @@ void CBasePlayer::ImpulseCommands()
 	{
 	case 99:
 	{
-		int iOn;
+		int iOn = 0;
 
 		if (!gmsgLogo)
 		{
@@ -4040,7 +4040,7 @@ int CBasePlayer::AmmoInventory(int iAmmoIndex)
 
 int CBasePlayer::GetAmmoIndex(const char* psz)
 {
-	int i;
+	int i = 0;
 
 	if (!psz)
 		return -1;
@@ -4277,7 +4277,7 @@ void CBasePlayer::UpdateClientData(void)
 		// ????		Icons
 
 		// Send ALL the weapon info now
-		int i;
+		int i = 0;
 
 		for (i = 0; i < MAX_WEAPONS; i++)
 		{
@@ -4516,7 +4516,7 @@ void CBasePlayer::DropPlayerItem(const char* pszItemName)
 	}
 
 	CBasePlayerItem* pWeapon;
-	int i;
+	int i = 0;
 
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
@@ -4564,7 +4564,7 @@ void CBasePlayer::DropPlayerItem(const char* pszItemName)
 			pWeaponBox->pev->velocity = gpGlobals->v_forward * 300 + gpGlobals->v_forward * 100;
 
 			// drop half of the ammo for this weapon.
-			int iAmmoIndex;
+			int iAmmoIndex = 0;
 
 			iAmmoIndex = GetAmmoIndex(pWeapon->pszAmmo1());  // ???
 
@@ -4615,7 +4615,7 @@ BOOL CBasePlayer::HasPlayerItem(CBasePlayerItem* pCheckItem)
 BOOL CBasePlayer::HasNamedPlayerItem(const char* pszItemName)
 {
 	CBasePlayerItem* pItem;
-	int i;
+	int i = 0;
 
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
@@ -4668,7 +4668,7 @@ public:
 
 	void KeyValue(KeyValueData* pkvd);
 
-	int m_iPose;  // which sequence to display	-- temporary, don't need to save
+	int m_iPose = 0;  // which sequence to display	-- temporary, don't need to save
 	static char* m_szPoses[4];
 };
 
@@ -4768,8 +4768,8 @@ public:
 	inline void SetLoadTime(float time) { m_loadTime = time; }
 
 private:
-	float m_messageTime;
-	float m_loadTime;
+	float m_messageTime = 0.f;
+	float m_loadTime = 0.f;
 };
 
 LINK_ENTITY_TO_CLASS(player_loadsaved, CRevertSaved);

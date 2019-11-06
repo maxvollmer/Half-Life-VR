@@ -40,15 +40,15 @@ extern int gEvilImpulse101;
 
 #define NOT_USED 255
 
-DLL_GLOBAL short g_sModelIndexLaser;  // holds the index for the laser beam
+DLL_GLOBAL short g_sModelIndexLaser = 0;  // holds the index for the laser beam
 DLL_GLOBAL const char* g_pModelNameLaser = "sprites/laserbeam.spr";
-DLL_GLOBAL short g_sModelIndexLaserDot;    // holds the index for the laser beam dot
-DLL_GLOBAL short g_sModelIndexFireball;    // holds the index for the fireball
-DLL_GLOBAL short g_sModelIndexSmoke;       // holds the index for the smoke cloud
-DLL_GLOBAL short g_sModelIndexWExplosion;  // holds the index for the underwater explosion
-DLL_GLOBAL short g_sModelIndexBubbles;     // holds the index for the bubbles model
-DLL_GLOBAL short g_sModelIndexBloodDrop;   // holds the sprite index for the initial blood
-DLL_GLOBAL short g_sModelIndexBloodSpray;  // holds the sprite index for splattered blood
+DLL_GLOBAL short g_sModelIndexLaserDot = 0;    // holds the index for the laser beam dot
+DLL_GLOBAL short g_sModelIndexFireball = 0;    // holds the index for the fireball
+DLL_GLOBAL short g_sModelIndexSmoke = 0;       // holds the index for the smoke cloud
+DLL_GLOBAL short g_sModelIndexWExplosion = 0;  // holds the index for the underwater explosion
+DLL_GLOBAL short g_sModelIndexBubbles = 0;     // holds the index for the bubbles model
+DLL_GLOBAL short g_sModelIndexBloodDrop = 0;   // holds the sprite index for the initial blood
+DLL_GLOBAL short g_sModelIndexBloodSpray = 0;  // holds the sprite index for splattered blood
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
@@ -943,7 +943,7 @@ void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 
 BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, const char* szName, int iMaxClip, int iMaxCarry)
 {
-	int iIdAmmo;
+	int iIdAmmo = 0;
 
 	if (iMaxClip < 1)
 	{
@@ -952,7 +952,7 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, const char* szName, int iMaxC
 	}
 	else if (m_iClip == 0)
 	{
-		int i;
+		int i = 0;
 		i = min(m_iClip + iCount, iMaxClip) - m_iClip;
 		m_iClip += i;
 		iIdAmmo = m_pPlayer->GiveAmmo(iCount - i, szName, iMaxCarry);
@@ -981,7 +981,7 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, const char* szName, int iMaxC
 
 BOOL CBasePlayerWeapon::AddSecondaryAmmo(int iCount, const char* szName, int iMax)
 {
-	int iIdAmmo;
+	int iIdAmmo = 0;
 
 	iIdAmmo = m_pPlayer->GiveAmmo(iCount, szName, iMax);
 
@@ -1226,7 +1226,7 @@ int CBasePlayerWeapon::ExtractAmmo(CBasePlayerWeapon* pWeapon)
 //=========================================================
 int CBasePlayerWeapon::ExtractClipAmmo(CBasePlayerWeapon* pWeapon)
 {
-	int iAmmo;
+	int iAmmo = 0;
 
 	if (m_iClip == WEAPON_NOCLIP)
 	{
@@ -1323,7 +1323,7 @@ void CWeaponBox::Spawn(void)
 void CWeaponBox::Kill(void)
 {
 	CBasePlayerItem* pWeapon;
-	int i;
+	int i = 0;
 
 	// destroy the weapons
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
@@ -1471,7 +1471,7 @@ BOOL CWeaponBox::PackWeapon(CBasePlayerItem* pWeapon)
 //=========================================================
 BOOL CWeaponBox::PackAmmo(int iszName, int iCount)
 {
-	int iMaxCarry;
+	int iMaxCarry = 0;
 
 	if (FStringNull(iszName))
 	{
@@ -1497,7 +1497,7 @@ BOOL CWeaponBox::PackAmmo(int iszName, int iCount)
 //=========================================================
 int CWeaponBox::GiveAmmo(int iCount, const char* szName, int iMax, int* pIndex /* = nullptr*/)
 {
-	int i;
+	int i = 0;
 
 	for (i = 1; i < MAX_AMMO_SLOTS && !FStringNull(m_rgiszAmmo[i]); i++)
 	{
@@ -1555,7 +1555,7 @@ BOOL CWeaponBox::HasWeapon(CBasePlayerItem* pCheckItem)
 //=========================================================
 BOOL CWeaponBox::IsEmpty(void)
 {
-	int i;
+	int i = 0;
 
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{

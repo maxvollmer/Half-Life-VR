@@ -62,10 +62,10 @@ VRModelInfo::VRModelInfo(CBaseEntity* pModel) :
 				{
 					Vector mins;
 					Vector maxs;
-					float framerate;
-					int numFrames;
+					float framerate = 0.f;
+					int numFrames = 0;
 					bool isLooping;
-					float dummy;
+					float dummy = 0.f;
 					if (ExtractBbox(pmodel, sequence, mins, maxs) && GetSequenceInfo(pmodel, sequence, &dummy, &dummy, &framerate, &numFrames, &isLooping))
 					{
 						m_sequences.emplace_back(mins, maxs, framerate, numFrames, isLooping);
@@ -120,7 +120,7 @@ std::vector<TransformedBBox> VRModelHelper::GetTransformedBBoxesForModel(CBaseEn
 	auto& studioModel = m_studioModels[modelInfo.m_name];
 
 	// Extract integer and fractional part of frame
-	float frame;
+	float frame = 0.f;
 	float advanceFrame = modf(pModel->pev->frame, &frame);
 
 	// Setup studio model

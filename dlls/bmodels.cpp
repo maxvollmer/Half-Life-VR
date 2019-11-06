@@ -381,11 +381,11 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	float m_flFanFriction;
-	float m_flAttenuation;
-	float m_flVolume;
-	float m_pitch;
-	int m_sounds;
+	float m_flFanFriction = 0.f;
+	float m_flAttenuation = 0.f;
+	float m_flVolume = 0.f;
+	float m_pitch = 0.f;
+	int m_sounds = 0;
 };
 
 TYPEDESCRIPTION CFuncRotating::m_SaveData[] =
@@ -633,10 +633,10 @@ void CFuncRotating::RampPitchVol(int fUp)
 	Vector vecAVel = pev->avelocity;
 	vec_t vecCur;
 	vec_t vecFinal;
-	float fpct;
-	float fvol;
-	float fpitch;
-	int pitch;
+	float fpct = 0.f;
+	float fvol = 0.f;
+	float fpitch = 0.f;
+	int pitch = 0;
 
 	// get current angular velocity
 
@@ -822,12 +822,12 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	float m_accel;     // Acceleration
-	float m_distance;  //
-	float m_time;
-	float m_damp;
-	float m_maxSpeed;
-	float m_dampSpeed;
+	float m_accel = 0.f;     // Acceleration
+	float m_distance = 0.f;  //
+	float m_time = 0.f;
+	float m_damp = 0.f;
+	float m_maxSpeed = 0.f;
+	float m_dampSpeed = 0.f;
 	vec3_t m_center;
 	vec3_t m_start;
 };
@@ -912,7 +912,7 @@ void CPendulum::PendulumUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 	{
 		if (FBitSet(pev->spawnflags, SF_PENDULUM_AUTO_RETURN))
 		{
-			float delta;
+			float delta = 0.f;
 
 			delta = CBaseToggle::AxisDelta(pev->spawnflags, pev->angles, m_start);
 

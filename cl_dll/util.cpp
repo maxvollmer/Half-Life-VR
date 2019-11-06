@@ -36,8 +36,8 @@ double sqrt(double x);
 
 float Length(const float* v)
 {
-	int i;
-	float length;
+	int i = 0;
+	float length = 0.f;
 
 	length = 0;
 	for (i = 0; i < 3; i++)
@@ -117,7 +117,7 @@ void VectorMA(const float* veca, float scale, const float* vecb, float* vecc)
 
 HSPRITE_VALVE LoadSprite(const char* pszName)
 {
-	int i;
+	int i = 0;
 	char sz[256];
 
 	if (ScreenWidth < 640)

@@ -23,11 +23,11 @@ class WeaponsResource
 {
 private:
 	// Information about weapons & ammo
-	WEAPON rgWeapons[MAX_WEAPONS];  // Weapons Array
+	WEAPON rgWeapons[MAX_WEAPONS] = { 0 };  // Weapons Array
 
 	// counts of weapons * ammo
-	WEAPON* rgSlots[MAX_WEAPON_SLOTS + 1][MAX_WEAPON_POSITIONS + 1];  // The slots currently in use by weapons.  The value is a pointer to the weapon;  if it's nullptr, no weapon is there
-	int riAmmo[MAX_AMMO_TYPES];                                       // count of each ammo type
+	WEAPON* rgSlots[MAX_WEAPON_SLOTS + 1][MAX_WEAPON_POSITIONS + 1] = { 0 };  // The slots currently in use by weapons.  The value is a pointer to the weapon;  if it's nullptr, no weapon is there
+	int riAmmo[MAX_AMMO_TYPES] = { 0 };                                       // count of each ammo type
 
 public:
 	void Init(void)
@@ -44,7 +44,7 @@ public:
 	}
 
 	///// WEAPON /////
-	int iOldWeaponBits;
+	int iOldWeaponBits = 0;
 
 	WEAPON* GetWeapon(int iId) { return &rgWeapons[iId]; }
 	void AddWeapon(WEAPON* wp)
@@ -109,10 +109,10 @@ class HistoryResource
 private:
 	struct HIST_ITEM
 	{
-		int type;
-		float DisplayTime;  // the time at which this item should be removed from the history
-		int iCount;
-		int iId;
+		int type = 0;
+		float DisplayTime = 0.f;  // the time at which this item should be removed from the history
+		int iCount = 0;
+		int iId = 0;
 	};
 
 	HIST_ITEM rgAmmoHistory[MAX_HISTORY];
@@ -128,8 +128,8 @@ public:
 		memset(rgAmmoHistory, 0, sizeof rgAmmoHistory);
 	}
 
-	int iHistoryGap;
-	int iCurrentHistorySlot;
+	int iHistoryGap = 0;
+	int iCurrentHistorySlot = 0;
 
 	void AddToHistory(int iType, int iId, int iCount = 0);
 	void AddToHistory(int iType, const char* szName, int iCount = 0);

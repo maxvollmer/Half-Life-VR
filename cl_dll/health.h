@@ -90,9 +90,10 @@
 
 typedef struct
 {
-	float fExpire;
-	float fBaseline;
-	int x, y;
+	float fExpire = 0.f;
+	float fBaseline = 0.f;
+	int x = 0;
+	int y = 0;
 } DAMAGE_IMAGE;
 
 //
@@ -107,21 +108,21 @@ public:
 	virtual void Reset(void);
 	int MsgFunc_Health(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_Damage(const char* pszName, int iSize, void* pbuf);
-	int m_iHealth;
-	int m_HUD_dmg_bio;
-	int m_HUD_cross;
-	float m_fAttackFront, m_fAttackRear, m_fAttackLeft, m_fAttackRight;
+	int m_iHealth = 0;
+	int m_HUD_dmg_bio = 0;
+	int m_HUD_cross = 0;
+	float m_fAttackFront = 0.f, m_fAttackRear = 0.f, m_fAttackLeft = 0.f, m_fAttackRight = 0.f;
 	void GetPainColor(int& r, int& g, int& b);
-	float m_fFade;
+	float m_fFade = 0.f;
 	bool m_healthLost = false;
 	bool m_healthGained = false;
-	int m_bitsDamage;
+	int m_bitsDamage = 0;
 
 private:
-	HSPRITE_VALVE m_hSprite;
-	HSPRITE_VALVE m_hDamage;
+	HSPRITE_VALVE m_hSprite = 0;
+	HSPRITE_VALVE m_hDamage = 0;
 
-	DAMAGE_IMAGE m_dmg[NUM_DMG_TYPES];
+	DAMAGE_IMAGE m_dmg[NUM_DMG_TYPES] = { 0 };
 	int DrawPain(float fTime);
 	int DrawDamage(float fTime);
 	void CalcDamageDirection(vec3_t vecFrom);

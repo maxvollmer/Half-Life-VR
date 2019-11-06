@@ -541,7 +541,7 @@ For debugging, draw boxes for other collidable players
 */
 void UTIL_ParticleBoxes(void)
 {
-	int idx;
+	int idx = 0;
 	physent_t* pe;
 	cl_entity_t* player;
 	vec3_t mins, maxs;
@@ -670,12 +670,12 @@ Run Weapon firing code on client
 */
 void HUD_WeaponsPostThink(local_state_s* from, local_state_s* to, usercmd_t* cmd, double time, unsigned int random_seed)
 {
-	int i;
-	int buttonsChanged;
+	int i = 0;
+	int buttonsChanged = 0;
 	CBasePlayerWeapon* pWeapon = nullptr;
 	CBasePlayerWeapon* pCurrent;
 	weapon_data_t nulldata, * pfrom, * pto;
-	static int lasthealth;
+	static int lasthealth = 0;
 
 	memset(&nulldata, 0, sizeof(nulldata));
 

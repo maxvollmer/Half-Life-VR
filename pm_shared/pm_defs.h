@@ -44,40 +44,40 @@
 // physent_t
 typedef struct physent_s
 {
-	char name[32];  // Name of model, or "player" or "world".
-	int player;
+	char name[32] = { 0 };  // Name of model, or "player" or "world".
+	int player = 0;
 	vec3_t origin;                // Model's origin in world coordinates.
-	struct model_s* model;        // only for bsp models
-	struct model_s* studiomodel;  // SOLID_BBOX, but studio clip intersections.
+	struct model_s* model = nullptr;        // only for bsp models
+	struct model_s* studiomodel = nullptr;  // SOLID_BBOX, but studio clip intersections.
 	vec3_t mins, maxs;            // only for non-bsp models
-	int info;                     // For client or server to use to identify (index into edicts or cl_entities)
+	int info = 0;                     // For client or server to use to identify (index into edicts or cl_entities)
 	vec3_t angles;                // rotated entities need this info for hull testing to work.
 
-	int solid;       // Triggers and func_door type WATER brushes are SOLID_NOT
-	int skin;        // BSP Contents for such things like fun_door water brushes.
-	int rendermode;  // So we can ignore glass
+	int solid = 0;       // Triggers and func_door type WATER brushes are SOLID_NOT
+	int skin = 0;        // BSP Contents for such things like fun_door water brushes.
+	int rendermode = 0;  // So we can ignore glass
 
 	// Complex collision detection.
-	float frame;
-	int sequence;
-	byte controller[4];
-	byte blending[2];
+	float frame = 0.f;
+	int sequence = 0;
+	byte controller[4] = { 0 };
+	byte blending[2] = { 0 };
 
-	int movetype;
-	int takedamage;
-	int blooddecal;
-	int team;
-	int classnumber;
+	int movetype = 0;
+	int takedamage = 0;
+	int blooddecal = 0;
+	int team = 0;
+	int classnumber = 0;
 
 	// For mods
-	int iuser1;
-	int iuser2;
-	int iuser3;
-	int iuser4;
-	float fuser1;
-	float fuser2;
-	float fuser3;
-	float fuser4;
+	int iuser1 = 0;
+	int iuser2 = 0;
+	int iuser3 = 0;
+	int iuser4 = 0;
+	float fuser1 = 0.f;
+	float fuser2 = 0.f;
+	float fuser3 = 0.f;
+	float fuser4 = 0.f;
 	vec3_t vuser1;
 	vec3_t vuser2;
 	vec3_t vuser3;
@@ -87,12 +87,12 @@ typedef struct physent_s
 
 typedef struct playermove_s
 {
-	int player_index;  // So we don't try to run the PM_CheckStuck nudging too quickly.
-	qboolean server;   // For debugging, are we running physics code on server side?
+	int player_index = 0;  // So we don't try to run the PM_CheckStuck nudging too quickly.
+	qboolean server = 0;   // For debugging, are we running physics code on server side?
 
-	qboolean multiplayer;  // 1 == multiplayer server
-	float time;            // realtime on host, for reckoning duck timing
-	float frametime;       // Duration of this frame
+	qboolean multiplayer = 0;  // 1 == multiplayer server
+	float time = 0.f;            // realtime on host, for reckoning duck timing
+	float frametime = 0.f;       // Duration of this frame
 
 	vec3_t forward, right, up;  // Vectors for angles
 	// player state
@@ -105,82 +105,82 @@ typedef struct playermove_s
 
 	// For ducking/dead
 	vec3_t view_ofs;   // Our eye position.
-	float flDuckTime;  // Time we started duck
-	qboolean bInDuck;  // In process of ducking or ducked already?
+	float flDuckTime = 0.f;  // Time we started duck
+	qboolean bInDuck = 0;  // In process of ducking or ducked already?
 
 	// For walking/falling
-	int flTimeStepSound;  // Next time we can play a step sound
-	int iStepLeft;
+	int flTimeStepSound = 0;  // Next time we can play a step sound
+	int iStepLeft = 0;
 
-	float flFallVelocity;
+	float flFallVelocity = 0.f;
 	vec3_t punchangle;
 
-	float flSwimTime;
+	float flSwimTime = 0.f;
 
-	float flNextPrimaryAttack;
+	float flNextPrimaryAttack = 0.f;
 
-	int effects;  // MUZZLE FLASH, e.g.
+	int effects = 0;  // MUZZLE FLASH, e.g.
 
-	int flags;      // FL_ONGROUND, FL_DUCKING, etc.
-	int usehull;    // 0 = regular player hull, 1 = ducked player hull, 2 = point hull
-	float gravity;  // Our current gravity and friction.
-	float friction;
-	int oldbuttons;       // Buttons last usercmd
-	float waterjumptime;  // Amount of time left in jumping out of water cycle.
-	qboolean dead;        // Are we a dead player?
-	int deadflag;
-	int spectator;  // Should we use spectator physics model?
-	int movetype;   // Our movement type, NOCLIP, WALK, FLY
+	int flags = 0;      // FL_ONGROUND, FL_DUCKING, etc.
+	int usehull = 0;    // 0 = regular player hull, 1 = ducked player hull, 2 = point hull
+	float gravity = 0.f;  // Our current gravity and friction.
+	float friction = 0.f;
+	int oldbuttons = 0;       // Buttons last usercmd
+	float waterjumptime = 0.f;  // Amount of time left in jumping out of water cycle.
+	qboolean dead = 0;        // Are we a dead player?
+	int deadflag = 0;
+	int spectator = 0;  // Should we use spectator physics model?
+	int movetype = 0;   // Our movement type, NOCLIP, WALK, FLY
 
-	int onground;
-	int waterlevel;
-	int watertype;
-	int oldwaterlevel;
+	int onground = 0;
+	int waterlevel = 0;
+	int watertype = 0;
+	int oldwaterlevel = 0;
 
-	char sztexturename[256];
-	char chtexturetype;
+	char sztexturename[256] = { 0 };
+	char chtexturetype = 0;
 
-	float maxspeed;
-	float clientmaxspeed;  // Player specific maxspeed
+	float maxspeed = 0.f;
+	float clientmaxspeed = 0.f;  // Player specific maxspeed
 
 	// For mods
-	int iuser1;
-	int iuser2;
-	int iuser3;
-	int iuser4;
-	float fuser1;
-	float fuser2;
-	float fuser3;
-	float fuser4;
+	int iuser1 = 0;
+	int iuser2 = 0;
+	int iuser3 = 0;
+	int iuser4 = 0;
+	float fuser1 = 0.f;
+	float fuser2 = 0.f;
+	float fuser3 = 0.f;
+	float fuser4 = 0.f;
 	vec3_t vuser1;
 	vec3_t vuser2;
 	vec3_t vuser3;
 	vec3_t vuser4;
 	// world state
 	// Number of entities to clip against.
-	int numphysent;
-	physent_t physents[MAX_PHYSENTS];
+	int numphysent = 0;
+	physent_t physents[MAX_PHYSENTS] = { 0 };
 	// Number of momvement entities (ladders)
-	int nummoveent;
+	int nummoveent = 0;
 	// just a list of ladders
-	physent_t moveents[MAX_MOVEENTS];
+	physent_t moveents[MAX_MOVEENTS] = { 0 };
 
 	// All things being rendered, for tracing against things you don't actually collide with
-	int numvisent;
-	physent_t visents[MAX_PHYSENTS];
+	int numvisent = 0;
+	physent_t visents[MAX_PHYSENTS] = { 0 };
 
 	// input to run through physics.
 	usercmd_t cmd;
 
 	// Trace results for objects we collided with.
-	int numtouch;
-	pmtrace_t touchindex[MAX_PHYSENTS];
+	int numtouch = 0;
+	pmtrace_t touchindex[MAX_PHYSENTS] = { 0 };
 
-	char physinfo[MAX_PHYSINFO_STRING];  // Physics info string
+	char physinfo[MAX_PHYSINFO_STRING] = { 0 };  // Physics info string
 
-	struct movevars_s* movevars;
-	vec3_t player_mins[4];
-	vec3_t player_maxs[4];
+	struct movevars_s* movevars = nullptr;
+	vec3_t player_mins[4] = { 0 };
+	vec3_t player_maxs[4] = { 0 };
 
 	// Common functions
 	const char* (*PM_Info_ValueForKey)(const char* s, const char* key);

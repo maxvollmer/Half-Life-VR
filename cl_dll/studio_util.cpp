@@ -20,7 +20,7 @@ AngleMatrix
 */
 void AngleMatrix(const float* angles, float(*matrix)[4])
 {
-	float angle;
+	float angle = 0.f;
 	float sr, sp, sy, cr, cp, cy;
 
 	angle = angles[YAW] * (M_PI * 2 / 360);
@@ -56,7 +56,7 @@ VectorCompare
 */
 int VectorCompare(const float* v1, const float* v2)
 {
-	int i;
+	int i = 0;
 
 	for (i = 0; i < 3; i++)
 		if (v1[i] != v2[i])
@@ -135,7 +135,7 @@ AngleQuaternion
 */
 void AngleQuaternion(float* angles, vec4_t quaternion)
 {
-	float angle;
+	float angle = 0.f;
 	float sr, sp, sy, cr, cp, cy;
 
 	// FIXME: rescale the inputs to 1/2 angle
@@ -163,7 +163,7 @@ QuaternionSlerp
 */
 void QuaternionSlerp(vec4_t p, vec4_t q, float t, vec4_t qt)
 {
-	int i;
+	int i = 0;
 	float omega, cosom, sinom, sclp, sclq;
 
 	// decide if one of the quaternions is backwards

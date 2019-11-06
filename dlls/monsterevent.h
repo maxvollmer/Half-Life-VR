@@ -17,7 +17,7 @@
 
 typedef struct
 {
-	int event;
+	int event = 0;
 	char* options;
 } MonsterEvent_t;
 

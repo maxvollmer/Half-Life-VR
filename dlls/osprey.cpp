@@ -24,7 +24,7 @@
 
 typedef struct
 {
-	int isValid;
+	int isValid = 0;
 	EHANDLE<CBaseEntity> hGrunt;
 	Vector vecOrigin;
 	Vector vecAngles;
@@ -75,34 +75,34 @@ public:
 	Vector m_pos2;
 	Vector m_ang1;
 	Vector m_ang2;
-	float m_startTime;
-	float m_dTime;
+	float m_startTime = 0.f;
+	float m_dTime = 0.f;
 
 	Vector m_velocity;
 
-	float m_flIdealtilt;
-	float m_flRotortilt;
+	float m_flIdealtilt = 0.f;
+	float m_flRotortilt = 0.f;
 
-	float m_flRightHealth;
-	float m_flLeftHealth;
+	float m_flRightHealth = 0.f;
+	float m_flLeftHealth = 0.f;
 
-	int m_iUnits;
+	int m_iUnits = 0;
 	EHANDLE<CBaseEntity> m_hGrunt[MAX_CARRY];
 	Vector m_vecOrigin[MAX_CARRY];
 	EHANDLE<CBaseEntity> m_hRepel[4];
 
-	int m_iSoundState;
-	int m_iSpriteTexture;
+	int m_iSoundState = 0;
+	int m_iSpriteTexture = 0;
 
-	int m_iPitch;
+	int m_iPitch = 0;
 
-	int m_iExplode;
-	int m_iTailGibs;
-	int m_iBodyGibs;
-	int m_iEngineGibs;
+	int m_iExplode = 0;
+	int m_iTailGibs = 0;
+	int m_iBodyGibs = 0;
+	int m_iEngineGibs = 0;
 
-	int m_iDoLeftSmokePuff;
-	int m_iDoRightSmokePuff;
+	int m_iDoLeftSmokePuff = 0;
+	int m_iDoRightSmokePuff = 0;
 };
 
 LINK_ENTITY_TO_CLASS(monster_osprey, COsprey);
@@ -320,7 +320,7 @@ CBaseMonster* COsprey::MakeGrunt(Vector vecSrc)
 
 void COsprey::HoverThink(void)
 {
-	int i;
+	int i = 0;
 	for (i = 0; i < 4; i++)
 	{
 		if (m_hRepel[i] != nullptr && m_hRepel[i]->pev->health > 0 && !(m_hRepel[i]->pev->flags & FL_ONGROUND))

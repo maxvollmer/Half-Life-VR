@@ -39,7 +39,7 @@ float anglemod(float a)
 
 void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 {
-	float angle;
+	float angle = 0.f;
 	float sr, sp, sy, cr, cp, cy;
 
 	angle = angles[YAW] * (M_PI * 2 / 360);
@@ -74,7 +74,7 @@ void AngleVectors(const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 
 void AngleVectorsTranspose(const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 {
-	float angle;
+	float angle = 0.f;
 	float sr, sp, sy, cr, cp, cy;
 
 	angle = angles[YAW] * (M_PI * 2 / 360);
@@ -110,7 +110,7 @@ void AngleVectorsTranspose(const vec3_t angles, vec3_t forward, vec3_t right, ve
 
 void AngleMatrix(const vec3_t angles, float(*matrix)[4])
 {
-	float angle;
+	float angle = 0.f;
 	float sr, sp, sy, cr, cp, cy;
 
 	angle = angles[YAW] * (M_PI * 2 / 360);
@@ -140,7 +140,7 @@ void AngleMatrix(const vec3_t angles, float(*matrix)[4])
 
 void AngleIMatrix(const vec3_t angles, float matrix[3][4])
 {
-	float angle;
+	float angle = 0.f;
 	float sr, sp, sy, cr, cp, cy;
 
 	angle = angles[YAW] * (M_PI * 2 / 360);
@@ -170,7 +170,7 @@ void AngleIMatrix(const vec3_t angles, float matrix[3][4])
 
 void NormalizeAngles(float* angles)
 {
-	int i;
+	int i = 0;
 	// Normalize angles
 	for (i = 0; i < 3; i++)
 	{
@@ -196,9 +196,9 @@ Frac is 0.0 to 1.0 ( i.e., should probably be clamped, but doesn't have to be )
 */
 void InterpolateAngles(float* start, float* end, float* output, float frac)
 {
-	int i;
+	int i = 0;
 	float ang1, ang2;
-	float d;
+	float d = 0.f;
 
 	NormalizeAngles(start);
 	NormalizeAngles(end);
@@ -233,7 +233,7 @@ AngleBetweenVectors
 */
 float AngleBetweenVectors(const vec3_t v1, const vec3_t v2)
 {
-	float angle;
+	float angle = 0.f;
 	float l1 = Length(v1);
 	float l2 = Length(v2);
 
@@ -257,7 +257,7 @@ void VectorTransform(const vec3_t in1, float in2[3][4], vec3_t out)
 
 int VectorCompare(const vec3_t v1, const vec3_t v2)
 {
-	int i;
+	int i = 0;
 
 	for (i = 0; i < 3; i++)
 		if (v1[i] != v2[i])
@@ -311,7 +311,7 @@ double sqrt(double x);
 
 float Length(const vec3_t v)
 {
-	int i;
+	int i = 0;
 	float length = 0.0f;
 
 	for (i = 0; i < 3; i++)

@@ -38,42 +38,42 @@ typedef struct dynpitchvol
 {
 	// NOTE: do not change the order of these parameters
 	// NOTE: unless you also change order of rgdpvpreset array elements!
-	int preset;
+	int preset = 0;
 
-	int pitchrun;    // pitch shift % when sound is running 0 - 255
-	int pitchstart;  // pitch shift % when sound stops or starts 0 - 255
-	int spinup;      // spinup time 0 - 100
-	int spindown;    // spindown time 0 - 100
+	int pitchrun = 0;    // pitch shift % when sound is running 0 - 255
+	int pitchstart = 0;  // pitch shift % when sound stops or starts 0 - 255
+	int spinup = 0;      // spinup time 0 - 100
+	int spindown = 0;    // spindown time 0 - 100
 
-	int volrun;    // volume change % when sound is running 0 - 10
-	int volstart;  // volume change % when sound stops or starts 0 - 10
-	int fadein;    // volume fade in time 0 - 100
-	int fadeout;   // volume fade out time 0 - 100
+	int volrun = 0;    // volume change % when sound is running 0 - 10
+	int volstart = 0;  // volume change % when sound stops or starts 0 - 10
+	int fadein = 0;    // volume fade in time 0 - 100
+	int fadeout = 0;   // volume fade out time 0 - 100
 
 	// Low Frequency Oscillator
-	int lfotype;  // 0) off 1) square 2) triangle 3) random
-	int lforate;  // 0 - 1000, how fast lfo osciallates
+	int lfotype = 0;  // 0) off 1) square 2) triangle 3) random
+	int lforate = 0;  // 0 - 1000, how fast lfo osciallates
 
-	int lfomodpitch;  // 0-100 mod of current pitch. 0 is off.
-	int lfomodvol;    // 0-100 mod of current volume. 0 is off.
+	int lfomodpitch = 0;  // 0-100 mod of current pitch. 0 is off.
+	int lfomodvol = 0;    // 0-100 mod of current volume. 0 is off.
 
-	int cspinup;  // each trigger hit increments counter and spinup pitch
+	int cspinup = 0;  // each trigger hit increments counter and spinup pitch
 
 
-	int cspincount;
+	int cspincount = 0;
 
-	int pitch;
-	int spinupsav;
-	int spindownsav;
-	int pitchfrac;
+	int pitch = 0;
+	int spinupsav = 0;
+	int spindownsav = 0;
+	int pitchfrac = 0;
 
-	int vol;
-	int fadeinsav;
-	int fadeoutsav;
-	int volfrac;
+	int vol = 0;
+	int fadeinsav = 0;
+	int fadeoutsav = 0;
+	int volfrac = 0;
 
-	int lfofrac;
-	int lfomult;
+	int lfofrac = 0;
+	int lfomult = 0;
 
 
 } dynpitchvol_t;
@@ -128,11 +128,11 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 	virtual int ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
 
-	float m_flAttenuation;  // attenuation value
+	float m_flAttenuation = 0.f;  // attenuation value
 	dynpitchvol_t m_dpv;
 
-	BOOL m_fActive;   // only TRUE when the entity is playing a looping sound
-	BOOL m_fLooping;  // TRUE when the sound played will loop
+	BOOL m_fActive = FALSE;   // only TRUE when the entity is playing a looping sound
+	BOOL m_fLooping = FALSE;  // TRUE when the sound played will loop
 };
 
 LINK_ENTITY_TO_CLASS(ambient_generic, CAmbientGeneric);
@@ -257,7 +257,7 @@ void CAmbientGeneric::RampThink(void)
 	int vol = m_dpv.vol;
 	int flags = 0;
 	int fChanged = 0;  // FALSE if pitch and vol remain unchanged this round
-	int prev;
+	int prev = 0;
 
 	if (!m_dpv.spinup && !m_dpv.spindown && !m_dpv.fadein && !m_dpv.fadeout && !m_dpv.lfotype)
 		return;  // no ramps or lfo, stop thinking
@@ -353,7 +353,7 @@ void CAmbientGeneric::RampThink(void)
 	// ===================
 	if (m_dpv.lfotype)
 	{
-		int pos;
+		int pos = 0;
 
 		if (m_dpv.lfofrac > 0x6fffffff)
 			m_dpv.lfofrac = 0;
@@ -449,7 +449,7 @@ void CAmbientGeneric::RampThink(void)
 
 void CAmbientGeneric::InitModulationParms(void)
 {
-	int pitchinc;
+	int pitchinc = 0;
 
 	m_dpv.volrun = pev->health * 10;  // 0 - 100
 	if (m_dpv.volrun > 100)
@@ -536,7 +536,7 @@ void CAmbientGeneric::InitModulationParms(void)
 void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
 	const char* szSoundFile = STRING(pev->message);
-	float fraction;
+	float fraction = 0.f;
 
 	if (useType != USE_TOGGLE)
 	{
@@ -575,7 +575,7 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 
 			if (m_dpv.cspincount <= m_dpv.cspinup)
 			{
-				int pitchinc;
+				int pitchinc = 0;
 
 				// start a new spinup
 				m_dpv.cspincount++;
@@ -832,8 +832,8 @@ public:
 	virtual int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	float m_flRadius;
-	float m_flRoomtype;
+	float m_flRadius = 0.f;
+	float m_flRoomtype = 0.f;
 };
 
 LINK_ENTITY_TO_CLASS(env_sound, CEnvSound);
@@ -869,7 +869,7 @@ BOOL FEnvSoundInRange(entvars_t* pev, entvars_t* pevTarget, float* pflRange)
 	Vector vecSpot1 = pev->origin + pev->view_ofs;
 	Vector vecSpot2 = pevTarget->origin + pevTarget->view_ofs;
 	Vector vecRange;
-	float flRange;
+	float flRange = 0.f;
 	TraceResult tr;
 
 	UTIL_TraceLine(vecSpot1, vecSpot2, ignore_monsters, ENT(pev), &tr);
@@ -916,7 +916,7 @@ void CEnvSound::Think(void)
 		goto env_sound_Think_slow;  // no player in pvs of sound entity, slow it down
 
 	pPlayer = GetClassPtr<CBasePlayer>(VARS(pentPlayer));
-	float flRange;
+	float flRange = 0.f;
 
 	// check to see if this is the sound entity that is
 	// currently affecting this player
@@ -1017,9 +1017,9 @@ void CEnvSound::Spawn()
 
 typedef struct sentenceg
 {
-	char szgroupname[CBSENTENCENAME_MAX];
-	int count;
-	unsigned char rgblru[CSENTENCE_LRU_MAX];
+	char szgroupname[CBSENTENCENAME_MAX] = { 0 };
+	int count = 0;
+	unsigned char rgblru[CSENTENCE_LRU_MAX] = { 0 };
 
 } SENTENCEG;
 
@@ -1165,7 +1165,7 @@ int USENTENCEG_Pick(int isentenceg, char* szfound, int szfoundsize)
 
 int SENTENCEG_GetIndex(const char* szgroupname)
 {
-	int i;
+	int i = 0;
 
 	if (!fSentencesInit || !szgroupname)
 		return -1;
@@ -1191,7 +1191,7 @@ int SENTENCEG_GetIndex(const char* szgroupname)
 int SENTENCEG_PlayRndI(edict_t* entity, int isentenceg, float volume, float attenuation, int flags, int pitch)
 {
 	char name[64];
-	int ipick;
+	int ipick = 0;
 
 	if (!fSentencesInit)
 		return -1;
@@ -1209,8 +1209,8 @@ int SENTENCEG_PlayRndI(edict_t* entity, int isentenceg, float volume, float atte
 int SENTENCEG_PlayRndSz(edict_t* entity, const char* szgroupname, float volume, float attenuation, int flags, int pitch)
 {
 	char name[64];
-	int ipick;
-	int isentenceg;
+	int ipick = 0;
+	int isentenceg = 0;
 
 	if (!fSentencesInit)
 		return -1;
@@ -1236,8 +1236,8 @@ int SENTENCEG_PlayRndSz(edict_t* entity, const char* szgroupname, float volume, 
 int SENTENCEG_PlaySequentialSz(edict_t* entity, const char* szgroupname, float volume, float attenuation, int flags, int pitch, int ipick, int freset)
 {
 	char name[64];
-	int ipicknext;
-	int isentenceg;
+	int ipicknext = 0;
+	int isentenceg = 0;
 
 	if (!fSentencesInit)
 		return -1;
@@ -1286,7 +1286,7 @@ void SENTENCEG_Init()
 	char buffer[512];
 	char szgroup[64];
 	int i, j;
-	int isentencegs;
+	int isentencegs = 0;
 
 	if (fSentencesInit)
 		return;
@@ -1407,7 +1407,7 @@ int SENTENCEG_Lookup(const char* sample, char* sentencenum, int sentencenumsize)
 {
 	char sznum[8];
 
-	int i;
+	int i = 0;
 	// this is a sentence name; lookup sentence number
 	// and give to engine as string.
 	for (i = 0; i < gcallsentences; i++)
@@ -1578,7 +1578,7 @@ void EMIT_SOUND_DYN(edict_t* entity, int channel, const char* sample, float volu
 
 void EMIT_SOUND_SUIT(edict_t* entity, const char* sample)
 {
-	float fvol;
+	float fvol = 0.f;
 	int pitch = PITCH_NORM;
 
 	fvol = CVAR_GET_FLOAT("suitvolume");
@@ -1593,7 +1593,7 @@ void EMIT_SOUND_SUIT(edict_t* entity, const char* sample)
 
 void EMIT_GROUPID_SUIT(edict_t* entity, int isentenceg)
 {
-	float fvol;
+	float fvol = 0.f;
 	int pitch = PITCH_NORM;
 
 	fvol = CVAR_GET_FLOAT("suitvolume");
@@ -1608,7 +1608,7 @@ void EMIT_GROUPID_SUIT(edict_t* entity, int isentenceg)
 
 void EMIT_GROUPNAME_SUIT(edict_t* entity, const char* groupname)
 {
-	float fvol;
+	float fvol = 0.f;
 	int pitch = PITCH_NORM;
 
 	fvol = CVAR_GET_FLOAT("suitvolume");
@@ -1780,14 +1780,14 @@ float TEXTURETYPE_PlaySound(TraceResult* ptr, Vector vecSrc, Vector vecEnd, int 
 	// hit the world, try to play sound based on texture material type
 
 	char chTextureType;
-	float fvol;
-	float fvolbar;
+	float fvol = 0.f;
+	float fvolbar = 0.f;
 	char szbuffer[64];
 	const char* pTextureName;
 	float rgfl1[3];
 	float rgfl2[3];
 	char* rgsz[4];
-	int cnt;
+	int cnt = 0;
 	float fattn = ATTN_NORM;
 
 	if (!g_pGameRules->PlayTextureSounds())
@@ -1978,7 +1978,7 @@ public:
 
 	virtual int ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
 
-	int m_preset;  // preset number
+	int m_preset = 0;  // preset number
 };
 
 LINK_ENTITY_TO_CLASS(speaker, CSpeaker);

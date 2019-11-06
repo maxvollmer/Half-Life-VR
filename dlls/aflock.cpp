@@ -46,8 +46,8 @@ public:
 	// Sounds are shared by the flock
 	static void PrecacheFlockSounds(void);
 
-	int m_cFlockSize;
-	float m_flFlockRadius;
+	int m_cFlockSize = 0;
+	float m_flFlockRadius = 0.f;
 };
 
 TYPEDESCRIPTION CFlockingFlyerFlock::m_SaveData[] =
@@ -96,16 +96,16 @@ public:
 
 	EHANDLE<CFlockingFlyer> m_pSquadLeader;
 	EHANDLE<CFlockingFlyer> m_pSquadNext;
-	BOOL m_fTurning;               // is this boid turning?
-	BOOL m_fCourseAdjust;          // followers set this flag TRUE to override flocking while they avoid something
-	BOOL m_fPathBlocked;           // TRUE if there is an obstacle ahead
+	BOOL m_fTurning = FALSE;               // is this boid turning?
+	BOOL m_fCourseAdjust = FALSE;          // followers set this flag TRUE to override flocking while they avoid something
+	BOOL m_fPathBlocked = FALSE;           // TRUE if there is an obstacle ahead
 	Vector m_vecReferencePoint;    // last place we saw leader
 	Vector m_vecAdjustedVelocity;  // adjusted velocity (used when fCourseAdjust is TRUE)
-	float m_flGoalSpeed;
-	float m_flLastBlockedTime;
-	float m_flFakeBlockedTime;
-	float m_flAlertTime;
-	float m_flFlockNextSoundTime;
+	float m_flGoalSpeed = 0.f;
+	float m_flLastBlockedTime = 0.f;
+	float m_flFakeBlockedTime = 0.f;
+	float m_flAlertTime = 0.f;
+	float m_flFlockNextSoundTime = 0.f;
 };
 LINK_ENTITY_TO_CLASS(monster_flyer, CFlockingFlyer);
 LINK_ENTITY_TO_CLASS(monster_flyer_flock, CFlockingFlyerFlock);
@@ -179,7 +179,7 @@ void CFlockingFlyerFlock::PrecacheFlockSounds(void)
 void CFlockingFlyerFlock::SpawnFlock(void)
 {
 	float R = m_flFlockRadius;
-	int iCount;
+	int iCount = 0;
 	Vector vecSpot;
 	EHANDLE<CFlockingFlyer> pBoid;
 	EHANDLE<CFlockingFlyer> pLeader;
@@ -449,7 +449,7 @@ void CFlockingFlyer::FormFlock(void)
 void CFlockingFlyer::SpreadFlock()
 {
 	Vector vecDir;
-	float flSpeed;  // holds vector magnitude while we fiddle with the direction
+	float flSpeed = 0.f;  // holds vector magnitude while we fiddle with the direction
 
 	CFlockingFlyer* pList = m_pSquadLeader;
 	while (pList)
@@ -504,7 +504,7 @@ BOOL CFlockingFlyer::FPathBlocked()
 	TraceResult tr;
 	Vector vecDist;  // used for general measurements
 	Vector vecDir;   // used for general measurements
-	BOOL fBlocked;
+	BOOL fBlocked = FALSE;
 
 	if (m_flFakeBlockedTime > gpGlobals->time)
 	{
@@ -560,8 +560,8 @@ void CFlockingFlyer::FlockLeaderThink(void)
 	Vector vecDist;      // used for general measurements
 	Vector vecDir;       // used for general measurements
 	int cProcessed = 0;  // keep track of how many other boids we've processed
-	float flLeftSide;
-	float flRightSide;
+	float flLeftSide = 0.f;
+	float flRightSide = 0.f;
 
 
 	pev->nextthink = gpGlobals->time + 0.1;
@@ -667,7 +667,7 @@ void CFlockingFlyer::FlockFollowerThink(void)
 	Vector vecDist;
 	Vector vecDir;
 	Vector vecDirToLeader;
-	float flDistToLeader;
+	float flDistToLeader = 0.f;
 
 	pev->nextthink = gpGlobals->time + 0.1;
 

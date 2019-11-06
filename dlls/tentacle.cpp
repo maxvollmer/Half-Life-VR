@@ -79,29 +79,29 @@ public:
 	int MyLevel(void);
 	float MyHeight(void);
 
-	float m_flInitialYaw;
-	int m_iGoalAnim;
-	int m_iLevel;
-	int m_iDir;
-	float m_flFramerateAdj;
-	float m_flSoundYaw;
-	int m_iSoundLevel;
-	float m_flSoundTime;
-	float m_flSoundRadius;
-	int m_iHitDmg;
-	float m_flHitTime;
+	float m_flInitialYaw = 0.f;
+	int m_iGoalAnim = 0;
+	int m_iLevel = 0;
+	int m_iDir = 0;
+	float m_flFramerateAdj = 0.f;
+	float m_flSoundYaw = 0.f;
+	int m_iSoundLevel = 0;
+	float m_flSoundTime = 0.f;
+	float m_flSoundRadius = 0.f;
+	int m_iHitDmg = 0;
+	float m_flHitTime = 0.f;
 
-	float m_flTapRadius;
+	float m_flTapRadius = 0.f;
 
-	float m_flNextSong;
+	float m_flNextSong = 0.f;
 	static int g_fFlySound;
 	static int g_fSquirmSound;
 
-	float m_flMaxYaw;
-	int m_iTapSound;
+	float m_flMaxYaw = 0.f;
+	int m_iTapSound = 0;
 
 	Vector m_vecPrevSound;
-	float m_flPrevSoundTime;
+	float m_flPrevSoundTime = 0.f;
 
 	static const char* pHitSilo[];
 	static const char* pHitDirt[];
@@ -776,7 +776,7 @@ void CTentacle::DieThink(void)
 		}
 		ResetSequenceInfo();
 
-		float dy;
+		float dy = 0.f;
 		switch (pev->sequence)
 		{
 		case TENTACLE_ANIM_Floor_Rear:

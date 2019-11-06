@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include "openvr/openvr.h"
 
 #include "Matrices.h"
@@ -11,7 +13,7 @@ extern void VectorAngles(const float* forward, float* angles);
 class Positions
 {
 public:
-	vr::TrackedDevicePose_t m_rTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
+	std::array<vr::TrackedDevicePose_t, vr::k_unMaxTrackedDeviceCount> m_rTrackedDevicePose = {{ 0 }};
 
 	Matrix4 m_mat4LeftProjection;
 	Matrix4 m_mat4RightProjection;

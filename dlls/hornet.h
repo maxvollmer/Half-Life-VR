@@ -51,7 +51,7 @@ public:
 
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 
-	float m_flStopAttack;
-	int m_iHornetType;
-	float m_flFlySpeed;
+	float m_flStopAttack = 0.f;
+	int m_iHornetType = 0;
+	float m_flFlySpeed = 0.f;
 };

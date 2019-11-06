@@ -46,15 +46,15 @@ public:
 	void EXPORT Touch(CBaseEntity* pOther);
 	void Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib);
 
-	float m_flLastLightLevel;
-	float m_flNextSmellTime;
+	float m_flLastLightLevel = 0.f;
+	float m_flNextSmellTime = 0.f;
 	int Classify(void);
 	void Look(int iDistance);
 	int ISoundMask(void);
 
 	// UNDONE: These don't necessarily need to be save/restored, but if we add more data, it may
-	BOOL m_fLightHacked;
-	int m_iMode;
+	BOOL m_fLightHacked = FALSE;
+	int m_iMode = 0;
 	// -----------------------------
 };
 LINK_ENTITY_TO_CLASS(monster_cockroach, CRoach);
@@ -106,7 +106,7 @@ void CRoach::Touch(CBaseEntity* pOther)
 //=========================================================
 void CRoach::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	ys = 120;
 
@@ -297,7 +297,7 @@ void CRoach::PickNewDest(int iCondition)
 {
 	Vector vecNewDir;
 	Vector vecDest;
-	float flDist;
+	float flDist = 0.f;
 
 	m_iMode = iCondition;
 
@@ -349,7 +349,7 @@ void CRoach::PickNewDest(int iCondition)
 //=========================================================
 void CRoach::Move(float flInterval)
 {
-	float flWaypointDist;
+	float flWaypointDist = 0.f;
 	Vector vecApex;
 
 	// local move to waypoint.

@@ -26,7 +26,7 @@ unsigned short CL_ButtonBits(bool);
 void CL_ResetButtonBits(int bits);
 
 extern float v_idlescale;
-float in_fov;
+float in_fov = 0.f;
 extern void HUD_SetCmdBits(int bits);
 
 int CHud::UpdateClientData(client_data_t* cdata, float time)

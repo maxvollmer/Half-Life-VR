@@ -534,15 +534,15 @@ struct LAYERPLANEDESCRIPTOR
 };
 struct GLYPHMETRICSFLOAT
 {
-	float gmfBlackBoxX;
-	float gmfBlackBoxY;
+	float gmfBlackBoxX = 0.f;
+	float gmfBlackBoxY = 0.f;
 	struct
 	{
-		float x;
-		float y;
+		float x = 0.f;
+		float y = 0.f;
 	} gmfptGlyphOrigin;
-	float gmfCellIncX;
-	float gmfCellIncY;
+	float gmfCellIncX = 0.f;
+	float gmfCellIncY = 0.f;
 };
 struct WGLSWAP
 {

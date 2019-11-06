@@ -15,13 +15,16 @@
 //
 //  parsemsg.cpp
 //
+
+#include <algorithm>
+
 typedef unsigned char byte;
 #define true 1
 
 static byte* gpBuf;
-static int giSize;
-static int giRead;
-static int giBadRead;
+static int giSize = 0;
+static int giRead = 0;
+static int giBadRead = 0;
 
 void BEGIN_READ(void* buf, int size)
 {
@@ -34,7 +37,7 @@ void BEGIN_READ(void* buf, int size)
 
 int READ_CHAR(void)
 {
-	int c;
+	int c = 0;
 
 	if (giRead + 1 > giSize)
 	{
@@ -50,7 +53,7 @@ int READ_CHAR(void)
 
 int READ_BYTE(void)
 {
-	int c;
+	int c = 0;
 
 	if (giRead + 1 > giSize)
 	{
@@ -66,7 +69,7 @@ int READ_BYTE(void)
 
 int READ_SHORT(void)
 {
-	int c;
+	int c = 0;
 
 	if (giRead + 2 > giSize)
 	{
@@ -89,7 +92,7 @@ int READ_WORD(void)
 
 int READ_LONG(void)
 {
-	int c;
+	int c = 0;
 
 	if (giRead + 4 > giSize)
 	{
@@ -106,22 +109,14 @@ int READ_LONG(void)
 
 float READ_FLOAT(void)
 {
-	union
+	byte b[sizeof(float)];
+	for (size_t i = 0; i < sizeof(float); i++)
 	{
-		byte b[4];
-		float f;
-		int l;
-	} dat;
-
-	dat.b[0] = gpBuf[giRead];
-	dat.b[1] = gpBuf[giRead + 1];
-	dat.b[2] = gpBuf[giRead + 2];
-	dat.b[3] = gpBuf[giRead + 3];
-	giRead += 4;
-
-	//	dat.l = LittleLong (dat.l);
-
-	return dat.f;
+		b[i] = gpBuf[giRead + i];
+	}
+	float result = 0.f;
+	std::memcpy(&result, b, sizeof(float));
+	return result;
 }
 
 char* READ_STRING(void)

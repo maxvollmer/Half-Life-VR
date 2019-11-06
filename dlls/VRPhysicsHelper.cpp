@@ -228,13 +228,13 @@ inline rp3d::Quaternion HLAnglesToRP3DQuaternion(const Vector& angles)
 #define ROLL 2
 
 	rp3d::Quaternion rollQuaternion;
-	rollQuaternion.setAllValues(sin(angles[ROLL] * M_PI / 360.), 0.f, 0.f, cos(angles[ROLL] * M_PI / 360.));
+	rollQuaternion.setAllValues(sin(double(angles[ROLL]) * M_PI / 360.), 0., 0., cos(double(angles[ROLL]) * M_PI / 360.));
 
 	rp3d::Quaternion pitchQuaternion;
-	pitchQuaternion.setAllValues(0.f, sin(angles[PITCH] * M_PI / 360.), 0.f, cos(angles[PITCH] * M_PI / 360.));
+	pitchQuaternion.setAllValues(0., sin(double(angles[PITCH]) * M_PI / 360.), 0., cos(double(angles[PITCH]) * M_PI / 360.));
 
 	rp3d::Quaternion yawQuaternion;
-	yawQuaternion.setAllValues(0.f, 0.f, sin(angles[YAW] * M_PI / 360.), cos(angles[YAW] * M_PI / 360.));
+	yawQuaternion.setAllValues(0., 0., sin(double(angles[YAW]) * M_PI / 360.), cos(double(angles[YAW]) * M_PI / 360.));
 
 	return yawQuaternion * pitchQuaternion * rollQuaternion;
 }
@@ -374,7 +374,7 @@ public:
 
 private:
 	const Vector normal;
-	const float dist;
+	const float dist = 0.f;
 	const std::size_t hash;
 	const PlaneMajor major;
 };

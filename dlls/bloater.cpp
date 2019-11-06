@@ -66,7 +66,7 @@ int CBloater::Classify(void)
 //=========================================================
 void CBloater::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	ys = 120;
 

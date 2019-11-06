@@ -493,7 +493,7 @@ int FindTransition(void* pmodel, int iEndingAnim, int iGoalAnim, int* piDir)
 		return iGoalAnim;
 	}
 
-	int iEndNode;
+	int iEndNode = 0;
 
 	// ALERT( at_console, "from %d to %d: ", pEndNode->iEndNode, pGoalNode->iStartNode );
 
@@ -519,7 +519,7 @@ int FindTransition(void* pmodel, int iEndingAnim, int iGoalAnim, int* piDir)
 	if (iInternNode == 0)
 		return iGoalAnim;
 
-	int i;
+	int i = 0;
 
 	// look for someone going
 	for (i = 0; i < pstudiohdr->numseq; i++)
@@ -604,7 +604,7 @@ namespace
 	void StudioCalcBoneAdj(studiohdr_t* pstudiohdr, float* adj, const byte* pcontroller)
 	{
 		int i, j;
-		float value;
+		float value = 0.f;
 		mstudiobonecontroller_t* pbonecontroller = reinterpret_cast<mstudiobonecontroller_t*>(reinterpret_cast<byte*>(pstudiohdr) + pstudiohdr->bonecontrollerindex);
 
 		for (j = 0; j < pstudiohdr->numbonecontrollers; j++)
@@ -649,7 +649,7 @@ namespace
 	}
 	int VectorCompare(const float* v1, const float* v2)
 	{
-		int i;
+		int i = 0;
 
 		for (i = 0; i < 3; i++)
 			if (v1[i] != v2[i])
@@ -797,12 +797,12 @@ namespace
 	}
 	void StudioCalcRotations(entvars_t* pev, studiohdr_t* pstudiohdr, float pos[][3], vec4_t* q, mstudioseqdesc_t* pseqdesc, mstudioanim_t* panim, float f)
 	{
-		int i;
-		int frame;
+		int i = 0;
+		int frame = 0;
 
-		float s;
+		float s = 0.f;
 		float adj[MAXSTUDIOCONTROLLERS];
-		float dadt;
+		float dadt = 0.f;
 
 		if (f > pseqdesc->numframes - 1)
 		{
@@ -862,9 +862,9 @@ namespace
 	}
 	void StudioSlerpBones(studiohdr_t* pstudiohdr, vec4_t q1[], float pos1[][3], vec4_t q2[], float pos2[][3], float s)
 	{
-		int i;
+		int i = 0;
 		vec4_t q3;
-		float s1;
+		float s1 = 0.f;
 
 		if (s < 0)
 			s = 0;
@@ -887,7 +887,7 @@ namespace
 	}
 	void AngleMatrix(const float* angles, float(*matrix)[4])
 	{
-		float angle;
+		float angle = 0.f;
 		float sr, sp, sy, cr, cp, cy;
 
 		angle = angles[YAW] * (M_PI * 2 / 360);
@@ -998,7 +998,7 @@ namespace
 		float modeltransform[3][4];
 		StudioSetUpTransform(pev, &modeltransform);
 
-		int i;
+		int i = 0;
 
 		static float pos[MAXSTUDIOBONES][3];
 		static vec4_t q[MAXSTUDIOBONES];
@@ -1037,7 +1037,7 @@ namespace
 
 		if (pseqdesc->numblends > 1)
 		{
-			float s;
+			float s = 0.f;
 
 			panim += pstudiohdr->numbones;
 			StudioCalcRotations(pev, pstudiohdr, pos2, q2, pseqdesc, panim, frame);

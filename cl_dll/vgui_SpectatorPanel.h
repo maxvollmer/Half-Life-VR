@@ -49,29 +49,29 @@ public:
 	void ShowMenu(bool isVisible);
 
 
-	ColorButton* m_OptionButton;
-	//	CommandButton     *	m_HideButton;
-	ColorButton* m_PrevPlayerButton;
-	ColorButton* m_NextPlayerButton;
-	ColorButton* m_CamButton;
+	ColorButton* m_OptionButton = nullptr;
+	//	CommandButton     *	m_HideButton = nullptr;
+	ColorButton* m_PrevPlayerButton = nullptr;
+	ColorButton* m_NextPlayerButton = nullptr;
+	ColorButton* m_CamButton = nullptr;
 
-	CTransparentPanel* m_TopBorder;
-	CTransparentPanel* m_BottomBorder;
+	CTransparentPanel* m_TopBorder = nullptr;
+	CTransparentPanel* m_BottomBorder = nullptr;
 
-	ColorButton* m_InsetViewButton;
+	ColorButton* m_InsetViewButton = nullptr;
 
-	Label* m_BottomMainLabel;
-	CImageLabel* m_TimerImage;
-	Label* m_CurrentTime;
-	Label* m_ExtraInfo;
-	Panel* m_Separator;
+	Label* m_BottomMainLabel = nullptr;
+	CImageLabel* m_TimerImage = nullptr;
+	Label* m_CurrentTime = nullptr;
+	Label* m_ExtraInfo = nullptr;
+	Panel* m_Separator = nullptr;
 
-	Label* m_TeamScores[TEAM_NUMBER];
+	Label* m_TeamScores[TEAM_NUMBER] = { 0 };
 
-	CImageLabel* m_TopBanner;
+	CImageLabel* m_TopBanner = nullptr;
 
-	bool m_menuVisible;
-	bool m_insetVisible;
+	bool m_menuVisible = false;
+	bool m_insetVisible = false;
 };
 
 
@@ -79,8 +79,8 @@ public:
 class CSpectatorHandler_Command : public ActionSignal
 {
 private:
-	SpectatorPanel* m_pFather;
-	int m_cmd;
+	SpectatorPanel* m_pFather = nullptr;
+	int m_cmd = 0;
 
 public:
 	CSpectatorHandler_Command(SpectatorPanel* panel, int cmd)

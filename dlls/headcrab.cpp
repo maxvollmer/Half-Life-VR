@@ -183,7 +183,7 @@ Vector CHeadCrab::BodyTarget(const Vector& posSrc)
 //=========================================================
 void CHeadCrab::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{

@@ -41,7 +41,7 @@ void CPlane::InitializePlane(const Vector& vecNormal, const Vector& vecPoint)
 //=========================================================
 BOOL CPlane::PointInFront(const Vector& vecPoint)
 {
-	float flFace;
+	float flFace = 0.f;
 
 	if (!m_fInitialized)
 	{

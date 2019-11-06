@@ -71,7 +71,7 @@ namespace
 	{
 	private:
 		Label* m_pLabel;
-		int m_nMouseOverRow;
+		int m_nMouseOverRow = 0;
 
 	public:
 		ServerBrowserTablePanel(int x, int y, int wide, int tall, int columnCount) :
@@ -147,7 +147,7 @@ namespace
 
 		virtual int getRowCount()
 		{
-			int rowcount;
+			int rowcount = 0;
 			int height, width;
 
 			getSize(width, height);
@@ -471,7 +471,7 @@ public:
 ServerBrowser::ServerBrowser(int x, int y, int wide, int tall) :
 	CTransparentPanel(100, x, y, wide, tall)
 {
-	int i;
+	int i = 0;
 
 	_headerPanel = new HeaderPanel(0, 0, wide, HEADER_SIZE_Y);
 	_headerPanel->setParent(this);

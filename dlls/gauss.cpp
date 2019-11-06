@@ -308,7 +308,7 @@ void CGauss::SecondaryAttack()
 //=========================================================
 void CGauss::StartFire(void)
 {
-	float flDamage;
+	float flDamage = 0.f;
 
 	UTIL_MakeVectors(m_pPlayer->GetWeaponViewAngles());
 	Vector vecAiming = m_pPlayer->GetAutoaimVector();  //gpGlobals->v_forward;
@@ -435,7 +435,7 @@ void CGauss::Fire(Vector vecOrigSrc, Vector vecDir, float flDamage)
 
 		if (pEntity->ReflectGauss())
 		{
-			float n;
+			float n = 0.f;
 
 			pentIgnore = nullptr;
 
@@ -494,7 +494,7 @@ void CGauss::Fire(Vector vecOrigSrc, Vector vecDir, float flDamage)
 
 							// exit blast damage
 							//m_pPlayer->RadiusDamage( beam_tr.vecEndPos + vecDir * 8, pev, m_pPlayer->pev, flDamage, CLASS_NONE, DMG_BLAST );
-							float damage_radius;
+							float damage_radius = 0.f;
 
 
 							if (g_pGameRules->IsMultiplayer())
@@ -569,7 +569,7 @@ void CGauss::WeaponIdle(void)
 	}
 	else
 	{
-		int iAnim;
+		int iAnim = 0;
 		float flRand = RANDOM_FLOAT(0, 1);
 		if (flRand <= 0.5)
 		{

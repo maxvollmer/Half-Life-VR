@@ -52,7 +52,7 @@ bool CVoiceBanMgr::Init(char const* pGameDir)
 	fopen_s(&fp, filename, "rb");
 	if (fp)
 	{
-		int version;
+		int version = 0;
 		fread(&version, 1, sizeof(version), fp);
 		if (version == BANMGR_FILEVERSION)
 		{

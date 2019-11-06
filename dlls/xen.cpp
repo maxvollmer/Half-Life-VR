@@ -36,7 +36,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	Activity m_Activity;
+	Activity m_Activity = ACT_RESET;
 };
 
 TYPEDESCRIPTION CActAnimating::m_SaveData[] =

@@ -919,7 +919,7 @@ bool CHudAmmo::IsCurrentWeaponLastWeapon()
 int CHudAmmo::Draw(float flTime)
 {
 	int a, x, y, r, g, b;
-	int AmmoWidth;
+	int AmmoWidth = 0;
 
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
 		return 1;
@@ -1110,7 +1110,7 @@ int CHudAmmo::DrawWList(float flTime)
 	if (!gpActiveSel)
 		return 0;
 
-	int iActiveSlot;
+	int iActiveSlot = 0;
 
 	if (gpActiveSel == &g_menuBar)
 		iActiveSlot = -1;  // current slot has no weapons
@@ -1134,7 +1134,7 @@ int CHudAmmo::DrawWList(float flTime)
 	// Draw top line
 	for (i = 0; i < MAX_WEAPON_SLOTS; i++)
 	{
-		int iWidth;
+		int iWidth = 0;
 
 		UnpackRGB(r, g, b, RGB_YELLOWISH);
 

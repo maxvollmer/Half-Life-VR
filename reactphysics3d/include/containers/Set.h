@@ -23,6 +23,12 @@
 *                                                                               *
 ********************************************************************************/
 
+/*
+**
+** 2019-11-06 MODIFIED BY MAX VOLLMER FOR HALF-LIFE: VR: Initialized uninitialized member variables.
+**
+*/
+
 #ifndef REACTPHYSICS3D_SET_H
 #define REACTPHYSICS3D_SET_H
 
@@ -56,6 +62,7 @@ class Set {
 
             /// Constructor
             Entry() {
+				hashCode = 0;
                 next = -1;
                 value = nullptr;
             }

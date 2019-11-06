@@ -74,8 +74,8 @@ extern CVoiceGameMgr g_VoiceGameMgr;
 void CHalfLifeTeamplay::Think(void)
 {
 	///// Check game rules /////
-	static int last_frags;
-	static int last_time;
+	static int last_frags = 0;
+	static int last_time = 0;
 
 	int frags_remaining = 0;
 	int time_remaining = 0;
@@ -102,7 +102,7 @@ void CHalfLifeTeamplay::Think(void)
 	if (flFragLimit)
 	{
 		int bestfrags = 9999;
-		int remain;
+		int remain = 0;
 
 		// check if any team is over the frag limit
 		for (int i = 0; i < num_teams; i++)
@@ -210,7 +210,7 @@ const char* CHalfLifeTeamplay::SetDefaultPlayerTeam(CBasePlayer* pPlayer)
 //=========================================================
 void CHalfLifeTeamplay::InitHUD(CBasePlayer* pPlayer)
 {
-	int i;
+	int i = 0;
 
 	SetDefaultPlayerTeam(pPlayer);
 	CHalfLifeMultiplay::InitHUD(pPlayer);
@@ -519,7 +519,7 @@ BOOL CHalfLifeTeamplay::IsValidTeam(const char* pTeamName)
 
 const char* CHalfLifeTeamplay::TeamWithFewestPlayers(void)
 {
-	int i;
+	int i = 0;
 	int minPlayers = MAX_TEAMS;
 	int teamCount[MAX_TEAMS];
 	char* pTeamName = nullptr;

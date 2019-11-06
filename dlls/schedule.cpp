@@ -207,7 +207,7 @@ BOOL CBaseMonster::FScheduleValid(void)
 void CBaseMonster::MaintainSchedule(void)
 {
 	Schedule_t* pNewSchedule;
-	int i;
+	int i = 0;
 
 	// UNDONE: Tune/fix this 10... This is just here so infinite loops are impossible
 	for (i = 0; i < 10; i++)
@@ -408,7 +408,7 @@ void CBaseMonster::RunTask(Task_t* pTask)
 	}
 	case TASK_MOVE_TO_TARGET_RANGE:
 	{
-		float distance;
+		float distance = 0.f;
 
 		if (m_hTargetEnt == nullptr)
 			TaskFail();
@@ -549,7 +549,7 @@ void CBaseMonster::RunTask(Task_t* pTask)
 //=========================================================
 void CBaseMonster::SetTurnActivity(void)
 {
-	float flYD;
+	float flYD = 0.f;
 	flYD = FlYawDiff();
 
 	if (flYD <= -45 && LookupActivity(ACT_TURN_RIGHT) != ACTIVITY_NOT_AVAILABLE)
@@ -573,7 +573,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	{
 	case TASK_TURN_RIGHT:
 	{
-		float flCurrentYaw;
+		float flCurrentYaw = 0.f;
 
 		flCurrentYaw = UTIL_AngleMod(pev->angles.y);
 		pev->ideal_yaw = UTIL_AngleMod(flCurrentYaw - pTask->flData);
@@ -582,7 +582,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	}
 	case TASK_TURN_LEFT:
 	{
-		float flCurrentYaw;
+		float flCurrentYaw = 0.f;
 
 		flCurrentYaw = UTIL_AngleMod(pev->angles.y);
 		pev->ideal_yaw = UTIL_AngleMod(flCurrentYaw + pTask->flData);

@@ -22,8 +22,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 struct Vector2
 {
-	float x;
-	float y;
+	float x = 0.f;
+	float y = 0.f;
 
 	// ctors
 	Vector2() :
@@ -68,9 +68,9 @@ struct Vector2
 ///////////////////////////////////////////////////////////////////////////////
 struct Vector3
 {
-	float x;
-	float y;
-	float z;
+	float x = 0.f;
+	float y = 0.f;
+	float z = 0.f;
 
 	// ctors
 	Vector3() :
@@ -116,10 +116,10 @@ struct Vector3
 ///////////////////////////////////////////////////////////////////////////////
 struct Vector4
 {
-	float x;
-	float y;
-	float z;
-	float w;
+	float x = 0.f;
+	float y = 0.f;
+	float z = 0.f;
+	float w = 0.f;
 
 	// ctors
 	Vector4() :

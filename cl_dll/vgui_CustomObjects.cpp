@@ -46,7 +46,7 @@ char* sArrowFilenames[] =
 // Get the name of TGA file, without a gamedir
 char* GetTGANameForRes(const char* pszName)
 {
-	int i;
+	int i = 0;
 	char sz[256];
 	static char gd[256];
 	if (ScreenWidth < 640)

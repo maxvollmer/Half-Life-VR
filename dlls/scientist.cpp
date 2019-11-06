@@ -117,9 +117,9 @@ public:
 	bool IsFemaleNPC() override { return m_fIsFemale; }
 
 private:
-	float m_painTime;
-	float m_healTime;
-	float m_fearTime;
+	float m_painTime = 0.f;
+	float m_healTime = 0.f;
+	float m_fearTime = 0.f;
 
 protected:
 	BOOL m_fIsFemale{ FALSE };
@@ -525,7 +525,7 @@ void CScientist::RunTask(Task_t* pTask)
 		}
 		else
 		{
-			float distance;
+			float distance = 0.f;
 
 			distance = (m_vecMoveGoal - pev->origin).Length2D();
 			// Re-evaluate when you think your finished, or the target has moved too far
@@ -586,7 +586,7 @@ int CScientist::Classify(void)
 //=========================================================
 void CScientist::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	ys = 90;
 
@@ -813,7 +813,7 @@ void CScientist::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 
 void CScientist::SetActivity(Activity newActivity)
 {
-	int iSequence;
+	int iSequence = 0;
 
 	iSequence = LookupActivity(newActivity);
 
@@ -1097,7 +1097,7 @@ public:
 	int Classify(void) { return CLASS_HUMAN_PASSIVE; }
 
 	void KeyValue(KeyValueData* pkvd);
-	int m_iPose;  // which sequence to display
+	int m_iPose = 0;  // which sequence to display
 	static char* m_szPoses[7];
 
 	// For easy detection of female NPCs to change audio files in sound.cpp - Max Vollmer, 2018-11-23
@@ -1188,9 +1188,9 @@ public:
 	int FriendNumber(int arrayNumber);
 
 	int FIdleSpeak(void);
-	int m_baseSequence;
-	int m_headTurn;
-	float m_flResponseDelay;
+	int m_baseSequence = 0;
+	int m_headTurn = 0;
+	float m_flResponseDelay = 0.f;
 };
 
 LINK_ENTITY_TO_CLASS(monster_sitting_scientist, CSittingScientist);
@@ -1401,7 +1401,7 @@ void CSittingScientist::SetAnswerQuestion(CTalkMonster* pSpeaker)
 int CSittingScientist::FIdleSpeak(void)
 {
 	// try to start a conversation, or make statement
-	int pitch;
+	int pitch = 0;
 
 	if (!FOkToSpeak())
 		return FALSE;

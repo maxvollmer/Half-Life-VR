@@ -59,12 +59,12 @@ public:
 	// squad leader info
 	EHANDLE<CSquadMonster> m_hSquadLeader;                         // who is my leader
 	EHANDLE<CSquadMonster> m_hSquadMember[MAX_SQUAD_MEMBERS - 1];  // valid only for leader
-	int m_afSquadSlots;
-	float m_flLastEnemySightTime;  // last time anyone in the squad saw the enemy
-	BOOL m_fEnemyEluded;
+	int m_afSquadSlots = 0;
+	float m_flLastEnemySightTime = 0.f;  // last time anyone in the squad saw the enemy
+	BOOL m_fEnemyEluded = FALSE;
 
 	// squad member info
-	int m_iMySlot;  // this is the behaviour slot that the monster currently holds in the squad.
+	int m_iMySlot = 0;  // this is the behaviour slot that the monster currently holds in the squad.
 
 	int CheckEnemy(CBaseEntity* pEnemy);
 	void StartMonster(void);

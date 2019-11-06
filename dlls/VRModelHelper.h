@@ -17,9 +17,9 @@ public:
 		SequenceInfo(Vector mins, Vector maxs, float framerate, int numFrames, bool isLooping);
 		const Vector bboxMins;
 		const Vector bboxMaxs;
-		const float bboxRadius;
-		const float framerate;
-		const int numFrames;
+		const float bboxRadius = 0.f;
+		const float framerate = 0.f;
+		const int numFrames = 0;
 		const bool isLooping;
 	};
 
@@ -30,7 +30,7 @@ public:
 
 	string_t m_hlName;
 	std::string m_name;
-	int m_numSequences;
+	int m_numSequences = 0;
 	std::vector<SequenceInfo> m_sequences;
 
 	static const VRModelInfo INVALID;

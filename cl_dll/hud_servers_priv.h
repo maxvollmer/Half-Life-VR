@@ -18,7 +18,7 @@ public:
 	{
 		struct request_s* next;
 		netadr_t remote_address;
-		int context;
+		int context = 0;
 	} request_t;
 
 	typedef struct server_s
@@ -26,7 +26,7 @@ public:
 		struct server_s* next;
 		netadr_t remote_address;
 		char* info;
-		int ping;
+		int ping = 0;
 	} server_t;
 
 	CHudServers();
@@ -73,26 +73,26 @@ private:
 	server_t* GetServer(int server);
 
 	//
-	char m_szToken[1024];
-	int m_nRequesting;
-	int m_nDone;
+	char m_szToken[1024] = { 0 };
+	int m_nRequesting = 0;
+	int m_nDone = 0;
 
-	double m_dStarted;
+	double m_dStarted = 0.0;
 
-	request_t* m_pServerList;
-	request_t* m_pActiveList;
+	request_t* m_pServerList = nullptr;
+	request_t* m_pActiveList = nullptr;
 
-	server_t* m_pServers;
+	server_t* m_pServers = nullptr;
 
-	int m_nServerCount;
+	int m_nServerCount = 0;
 
-	int m_nActiveQueries;
-	int m_nQuerying;
-	double m_fElapsed;
+	int m_nActiveQueries = 0;
+	int m_nQuerying = 0;
+	double m_fElapsed = 0.0;
 
-	request_t* m_pPingRequest;
-	request_t* m_pRulesRequest;
-	request_t* m_pPlayersRequest;
+	request_t* m_pPingRequest = nullptr;
+	request_t* m_pRulesRequest = nullptr;
+	request_t* m_pPlayersRequest = nullptr;
 };
 
 #endif  // HUD_SERVERS_PRIVH

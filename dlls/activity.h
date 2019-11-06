@@ -101,7 +101,7 @@ typedef enum
 
 typedef struct
 {
-	int type;
+	int type = 0;
 	char* name;
 } activity_map_t;
 

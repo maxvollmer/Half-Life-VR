@@ -50,9 +50,9 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	string_t m_globalstate;
-	int m_triggermode;
-	int m_initialstate;
+	string_t m_globalstate = iStringNull;
+	int m_triggermode = 0;
+	int m_initialstate = 0;
 };
 
 TYPEDESCRIPTION CEnvGlobal::m_SaveData[] =
@@ -1005,12 +1005,12 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_lastUsed;
-	int m_direction;
-	float m_returnSpeed;
+	int m_lastUsed = 0;
+	int m_direction = 0;
+	float m_returnSpeed = 0.f;
 	vec3_t m_start;
 	vec3_t m_end;
-	int m_sounds;
+	int m_sounds = 0;
 
 	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed) override;
 	virtual void StartVRDragRotation() override;
@@ -1311,7 +1311,7 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	float m_flDelay;
+	float m_flDelay = 0.f;
 };
 
 

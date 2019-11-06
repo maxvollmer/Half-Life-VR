@@ -212,7 +212,7 @@ void CHandGrenade::WeaponIdle(void)
 
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType])
 	{
-		int iAnim;
+		int iAnim = 0;
 		float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0, 1);
 		if (flRand <= 0.75)
 		{

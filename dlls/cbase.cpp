@@ -554,7 +554,7 @@ int CBaseEntity::Save(CSave& save)
 
 int CBaseEntity::Restore(CRestore& restore)
 {
-	int status;
+	int status = 0;
 
 	status = restore.ReadEntVars("ENTVARS", pev);
 	if (status)
@@ -583,7 +583,7 @@ void SetObjectCollisionBox(entvars_t* pev)
 		(pev->angles.x || pev->angles.y || pev->angles.z))
 	{  // expand for rotation
 		float max, v;
-		int i;
+		int i = 0;
 
 		max = 0;
 		for (i = 0; i < 3; i++)

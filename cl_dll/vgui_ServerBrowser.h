@@ -27,17 +27,17 @@ class CommandButton;
 class ServerBrowser : public CTransparentPanel
 {
 private:
-	HeaderPanel* _headerPanel;
-	TablePanel* _tablePanel;
+	HeaderPanel* _headerPanel = nullptr;
+	TablePanel* _tablePanel = nullptr;
 
-	CommandButton* _connectButton;
-	CommandButton* _refreshButton;
-	CommandButton* _broadcastRefreshButton;
-	CommandButton* _stopButton;
-	CommandButton* _sortButton;
-	CommandButton* _cancelButton;
+	CommandButton* _connectButton = nullptr;
+	CommandButton* _refreshButton = nullptr;
+	CommandButton* _broadcastRefreshButton = nullptr;
+	CommandButton* _stopButton = nullptr;
+	CommandButton* _sortButton = nullptr;
+	CommandButton* _cancelButton = nullptr;
 
-	CommandButton* _pingButton;
+	CommandButton* _pingButton = nullptr;
 
 public:
 	ServerBrowser(int x, int y, int wide, int tall);

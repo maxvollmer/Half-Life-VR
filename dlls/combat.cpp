@@ -55,7 +55,7 @@ void CGib::LimitVelocity(void)
 
 void CGib::SpawnStickyGibs(entvars_t* pevVictim, Vector vecOrigin, int cGibs)
 {
-	int i;
+	int i = 0;
 
 	if (g_Language == LANGUAGE_GERMAN)
 	{
@@ -179,7 +179,7 @@ void CGib::SpawnHeadGib(entvars_t* pevVictim)
 
 void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, int human)
 {
-	int cSplat;
+	int cSplat = 0;
 
 	for (cSplat = 0; cSplat < cGibs; cSplat++)
 	{
@@ -345,8 +345,8 @@ void CBaseMonster::GibMonster(void)
 Activity CBaseMonster::GetDeathActivity(void)
 {
 	Activity deathActivity;
-	BOOL fTriedDirection;
-	float flDot;
+	BOOL fTriedDirection = FALSE;
+	float flDot = 0.f;
 	TraceResult tr;
 	Vector vecSrc;
 
@@ -466,8 +466,8 @@ Activity CBaseMonster::GetDeathActivity(void)
 Activity CBaseMonster::GetSmallFlinchActivity(void)
 {
 	Activity flinchActivity;
-	BOOL fTriedDirection;
-	float flDot;
+	BOOL fTriedDirection = FALSE;
+	float flDot = 0.f;
 
 	fTriedDirection = FALSE;
 	UTIL_MakeVectors(pev->angles);
@@ -735,7 +735,7 @@ void CGib::BounceGibTouch(CBaseEntity* pOther)
 
 		if (m_material != matNone && RANDOM_LONG(0, 2) == 0)
 		{
-			float volume;
+			float volume = 0.f;
 			float zvel = fabs(pev->velocity.z);
 
 			volume = 0.8 * min(1.0, ((float)zvel) / 450.0);
@@ -834,7 +834,7 @@ GLOBALS ASSUMED SET:  g_iSkillLevel
 */
 int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
-	float flTake;
+	float flTake = 0.f;
 	Vector vecDir;
 
 	if (!pev->takedamage)
@@ -1168,7 +1168,7 @@ CBaseEntity* CBaseMonster::CheckTraceHullAttack(float flDist, int iDamage, int i
 BOOL CBaseMonster::FInViewCone(CBaseEntity* pEntity)
 {
 	Vector2D vec2LOS;
-	float flDot;
+	float flDot = 0.f;
 
 	UTIL_MakeVectors(pev->angles);
 
@@ -1195,7 +1195,7 @@ BOOL CBaseMonster::FInViewCone(CBaseEntity* pEntity)
 BOOL CBaseMonster::FInViewCone(Vector* pOrigin)
 {
 	Vector2D vec2LOS;
-	float flDot;
+	float flDot = 0.f;
 
 	UTIL_MakeVectors(pev->angles);
 
@@ -1369,8 +1369,8 @@ This version is used by Monsters.
 */
 void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t* pevAttacker)
 {
-	static int tracerCount;
-	int tracer;
+	static int tracerCount = 0;
+	int tracer = 0;
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
@@ -1501,7 +1501,7 @@ This version is used by Players, uses the random seed generator to sync client a
 */
 Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t* pevAttacker, int shared_rand)
 {
-	static int tracerCount;
+	static int tracerCount = 0;
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
@@ -1592,9 +1592,9 @@ void CBaseEntity::TraceBleed(float flDamage, Vector vecDir, TraceResult* ptr, in
 	// make blood decal on the wall!
 	TraceResult Bloodtr;
 	Vector vecTraceDir;
-	float flNoise;
-	int cCount;
-	int i;
+	float flNoise = 0.f;
+	int cCount = 0;
+	int i = 0;
 
 	/*
 	if ( !IsAlive() )
@@ -1652,7 +1652,7 @@ void CBaseMonster::MakeDamageBloodDecal(int cCount, float flNoise, TraceResult* 
 	// make blood decal on the wall!
 	TraceResult Bloodtr;
 	Vector vecTraceDir;
-	int i;
+	int i = 0;
 
 	if (!IsAlive())
 	{

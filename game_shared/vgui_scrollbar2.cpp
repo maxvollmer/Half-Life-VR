@@ -40,7 +40,7 @@ namespace
 	{
 	public:
 		ScrollBar2* _scrollBar;
-		int _buttonIndex;
+		int _buttonIndex = 0;
 
 	public:
 		FooDefaultButtonSignal(ScrollBar2* scrollBar, int buttonIndex)

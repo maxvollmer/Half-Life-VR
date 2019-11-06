@@ -202,7 +202,7 @@ void CPython::PrimaryAttack()
 	Vector vecDir;
 	vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed);
 
-	int flags;
+	int flags = 0;
 #if defined(CLIENT_WEAPONS)
 	flags = FEV_NOTHOST;
 #else
@@ -261,7 +261,7 @@ void CPython::WeaponIdle(void)
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
-	int iAnim;
+	int iAnim = 0;
 	float flRand = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 	if (flRand <= 0.5)
 	{

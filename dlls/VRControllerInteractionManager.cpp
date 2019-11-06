@@ -800,7 +800,7 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer* pPlayer, EHAND
 					moveDir.y = 0.f;
 				}
 
-				float wishspeed;
+				float wishspeed = 0.f;
 				if (isDragging)
 				{
 					wishspeed = moveDir.Length() / gpGlobals->frametime;  // when dragging, wishspeed is simply set to get there immediately this frame

@@ -105,9 +105,9 @@ public:
 	CUSTOM_SCHEDULES;
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_iSpriteTexture;
-	BOOL m_fAsleep;          // some houndeyes sleep in idle mode if this is set, the houndeye is lying down
-	BOOL m_fDontBlink;       // don't try to open/close eye if this bit is set!
+	int m_iSpriteTexture = 0;
+	BOOL m_fAsleep = FALSE;          // some houndeyes sleep in idle mode if this is set, the houndeye is lying down
+	BOOL m_fDontBlink = FALSE;       // don't try to open/close eye if this bit is set!
 	Vector m_vecPackCenter;  // the center of the pack. The leader maintains this by averaging the origins of all pack members.
 };
 LINK_ENTITY_TO_CLASS(monster_houndeye, CHoundeye);
@@ -136,7 +136,7 @@ int CHoundeye::Classify(void)
 //=========================================================
 BOOL CHoundeye::FValidateHintType(short sHint)
 {
-	int i;
+	int i = 0;
 
 	static short sHoundHints[] =
 	{
@@ -206,7 +206,7 @@ BOOL CHoundeye::CheckRangeAttack1(float flDot, float flDist)
 //=========================================================
 void CHoundeye::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	ys = 90;
 
@@ -238,7 +238,7 @@ void CHoundeye::SetYawSpeed(void)
 //=========================================================
 void CHoundeye::SetActivity(Activity NewActivity)
 {
-	int iSequence;
+	int iSequence = 0;
 
 	if (NewActivity == m_Activity)
 		return;
@@ -557,8 +557,8 @@ void CHoundeye::WriteBeamColor(void)
 //=========================================================
 void CHoundeye::SonicAttack(void)
 {
-	float flAdjustedDamage;
-	float flDist;
+	float flAdjustedDamage = 0.f;
+	float flDist = 0.f;
 
 	switch (RANDOM_LONG(0, 2))
 	{
@@ -810,7 +810,7 @@ void CHoundeye::RunTask(Task_t* pTask)
 		MakeIdealYaw(m_vecEnemyLKP);
 		ChangeYaw(pev->yaw_speed);
 
-		float life;
+		float life = 0.f;
 		life = ((255 - pev->frame) / (pev->framerate * m_flFrameRate));
 		if (life < 0.1)
 			life = 0.1;

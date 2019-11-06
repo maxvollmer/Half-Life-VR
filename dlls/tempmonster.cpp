@@ -53,7 +53,7 @@ int	CMyMonster::Classify(void)
 //=========================================================
 void CMyMonster::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{

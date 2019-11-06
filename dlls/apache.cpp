@@ -61,9 +61,9 @@ class CApache : public CBaseMonster
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 
-	int m_iRockets;
-	float m_flForce;
-	float m_flNextRocket;
+	int m_iRockets = 0;
+	float m_flForce = 0.f;
+	float m_flNextRocket = 0.f;
 
 	Vector m_vecTarget;
 	Vector m_posTarget;
@@ -74,18 +74,18 @@ class CApache : public CBaseMonster
 	Vector m_vecGoal;
 
 	Vector m_angGun;
-	float m_flLastSeen;
-	float m_flPrevSeen;
+	float m_flLastSeen = 0.f;
+	float m_flPrevSeen = 0.f;
 
-	int m_iSoundState;  // don't save this
+	int m_iSoundState = 0;  // don't save this
 
-	int m_iSpriteTexture;
-	int m_iExplode;
-	int m_iBodyGibs;
+	int m_iSpriteTexture = 0;
+	int m_iExplode = 0;
+	int m_iBodyGibs = 0;
 
-	float m_flGoalSpeed;
+	float m_flGoalSpeed = 0.f;
 
-	int m_iDoSmokePuff;
+	int m_iDoSmokePuff = 0;
 	EHANDLE<CBeam> m_pBeam;
 };
 LINK_ENTITY_TO_CLASS(monster_apache, CApache);
@@ -744,7 +744,7 @@ void CApache::Flight(void)
 void CApache::FireRocket(void)
 {
 	static float side = 1.0;
-	static int count;
+	static int count = 0;
 
 	if (m_iRockets <= 0)
 		return;
@@ -831,7 +831,7 @@ BOOL CApache::FireGun()
 		FireBullets(1, posGun, vecGun, VECTOR_CONE_4DEGREES, 8192, BULLET_MONSTER_12MM, 1);
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "turret/tu_fire1.wav", 1, 0.3);
 #else
-		static float flNext;
+		static float flNext = 0.f;
 		TraceResult tr;
 		UTIL_TraceLine(posGun, posGun + vecGun * 8192, dont_ignore_monsters, ENT(pev), &tr);
 
@@ -944,7 +944,7 @@ class CApacheHVR : public CGrenade
 	int Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_iTrail;
+	int m_iTrail = 0;
 	Vector m_vecForward;
 };
 LINK_ENTITY_TO_CLASS(hvr_rocket, CApacheHVR);

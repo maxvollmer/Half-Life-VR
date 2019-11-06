@@ -120,84 +120,84 @@ public:
 	float m_clOldTime = 0.f;
 
 	// Do interpolation?
-	int m_fDoInterp;
+	int m_fDoInterp = 0;
 	// Do gait estimation?
-	int m_fGaitEstimation;
+	int m_fGaitEstimation = 0;
 
 	// Current render frame #
-	int m_nFrameCount;
+	int m_nFrameCount = 0;
 
 	// Cvars that studio model code needs to reference
 	//
 	// Use high quality models?
-	cvar_t* m_pCvarHiModels;
+	cvar_t* m_pCvarHiModels = nullptr;
 	// Developer debug output desired?
-	cvar_t* m_pCvarDeveloper;
+	cvar_t* m_pCvarDeveloper = nullptr;
 	// Draw entities bone hit boxes, etc?
-	cvar_t* m_pCvarDrawEntities;
+	cvar_t* m_pCvarDrawEntities = nullptr;
 
 	// The entity which we are currently rendering.
-	cl_entity_t* m_pCurrentEntity;
+	cl_entity_t* m_pCurrentEntity = nullptr;
 
 	// The model for the entity being rendered
-	model_t* m_pRenderModel;
+	model_t* m_pRenderModel = nullptr;
 
 	// Player info for current player, if drawing a player
-	player_info_t* m_pPlayerInfo;
+	player_info_t* m_pPlayerInfo = nullptr;
 
 	// The index of the player being drawn
-	int m_nPlayerIndex;
+	int m_nPlayerIndex = 0;
 
 	// The player's gait movement
-	float m_flGaitMovement;
+	float m_flGaitMovement = 0.f;
 
 	// Pointer to header block for studio model data
-	studiohdr_t* m_pStudioHeader;
+	studiohdr_t* m_pStudioHeader = nullptr;
 
 	// Pointers to current body part and submodel
-	mstudiobodyparts_t* m_pBodyPart;
-	mstudiomodel_t* m_pSubModel;
+	mstudiobodyparts_t* m_pBodyPart = nullptr;
+	mstudiomodel_t* m_pSubModel = nullptr;
 
 	// Palette substition for top and bottom of model
-	int m_nTopColor;
-	int m_nBottomColor;
+	int m_nTopColor = 0;
+	int m_nBottomColor = 0;
 
 	//
 	// Sprite model used for drawing studio model chrome
-	model_t* m_pChromeSprite;
+	model_t* m_pChromeSprite = nullptr;
 
 	// Caching
 	// Number of bones in bone cache
-	int m_nCachedBones;
+	int m_nCachedBones = 0;
 	// Names of cached bones
-	char m_nCachedBoneNames[MAXSTUDIOBONES][32];
+	char m_nCachedBoneNames[MAXSTUDIOBONES][32] = { 0 };
 	// Cached bone & light transformation matrices
-	float m_rgCachedBoneTransform[MAXSTUDIOBONES][3][4];
-	float m_rgCachedLightTransform[MAXSTUDIOBONES][3][4];
+	float m_rgCachedBoneTransform[MAXSTUDIOBONES][3][4] = { 0 };
+	float m_rgCachedLightTransform[MAXSTUDIOBONES][3][4] = { 0 };
 
 	// Software renderer scale factors
-	float m_fSoftwareXScale, m_fSoftwareYScale;
+	float m_fSoftwareXScale = 0.f, m_fSoftwareYScale = 0.f;
 
 	// Current view vectors and render origin
-	float m_vUp[3];
-	float m_vRight[3];
-	float m_vNormal[3];
+	float m_vUp[3] = { 0 };
+	float m_vRight[3] = { 0 };
+	float m_vNormal[3] = { 0 };
 
-	float m_vRenderOrigin[3];
+	float m_vRenderOrigin[3] = { 0 };
 
 	// Model render counters ( from engine )
-	int* m_pStudioModelCount;
-	int* m_pModelsDrawn;
+	int* m_pStudioModelCount = nullptr;
+	int* m_pModelsDrawn = nullptr;
 
 	// Matrices
 	// Model to world transformation
-	float(*m_protationmatrix)[3][4];
+	float(*m_protationmatrix)[3][4] = nullptr;
 	// Model to view transformation
-	float(*m_paliastransform)[3][4];
+	float(*m_paliastransform)[3][4] = nullptr;
 
 	// Concatenated bone and light transforms
-	float(*m_pbonetransform)[MAXSTUDIOBONES][3][4];
-	float(*m_plighttransform)[MAXSTUDIOBONES][3][4];
+	float(*m_pbonetransform)[MAXSTUDIOBONES][3][4] = nullptr;
+	float(*m_plighttransform)[MAXSTUDIOBONES][3][4] = nullptr;
 };
 
 #endif  // STUDIOMODELRENDERER_H

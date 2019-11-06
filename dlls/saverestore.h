@@ -75,9 +75,9 @@ private:
 
 typedef struct
 {
-	unsigned short size;
-	unsigned short token;
-	char* pData;
+	unsigned short size = 0;
+	unsigned short token = 0;
+	char* pData = nullptr;
 } HEADER;
 
 class CRestore : public CSaveRestoreBuffer
@@ -109,8 +109,8 @@ private:
 
 	void BufferReadHeader(HEADER* pheader);
 
-	int m_global;  // Restoring a global entity?
-	BOOL m_precache;
+	int m_global = 0;  // Restoring a global entity?
+	BOOL m_precache = FALSE;
 };
 
 #define MAX_ENTITYARRAY 64
@@ -172,7 +172,7 @@ public:
 private:
 	globalentity_t* Find(string_t globalname);
 	globalentity_t* m_pList;
-	int m_listCount;
+	int m_listCount = 0;
 };
 
 extern CGlobalState gGlobalState;

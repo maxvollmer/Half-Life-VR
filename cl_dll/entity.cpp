@@ -306,7 +306,7 @@ void DLLEXPORT HUD_TempEntUpdate(
 	void (*Callback_TempEntPlaySound)(TEMPENTITY* pTemp, float damp))
 {
 	static int gTempEntFrame = 0;
-	int i;
+	int i = 0;
 	TEMPENTITY* pTemp, * pnext, * pprev;
 	float freq, gravity, gravitySlow, life, fastFreq;
 
@@ -361,7 +361,7 @@ void DLLEXPORT HUD_TempEntUpdate(
 	{
 		g_curFrameTempEnts.insert(&pTemp->entity);
 
-		int active;
+		int active = 0;
 
 		active = 1;
 

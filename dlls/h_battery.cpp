@@ -42,11 +42,11 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	float m_flNextCharge;
-	int m_iReactivate;  // DeathMatch Delay until reactvated
-	int m_iJuice;
-	int m_iOn;  // 0 = off, 1 = startup, 2 = going
-	float m_flSoundTime;
+	float m_flNextCharge = 0.f;
+	int m_iReactivate = 0;  // DeathMatch Delay until reactvated
+	int m_iJuice = 0;
+	int m_iOn = 0;  // 0 = off, 1 = startup, 2 = going
+	float m_flSoundTime = 0.f;
 };
 
 TYPEDESCRIPTION CRecharge::m_SaveData[] =

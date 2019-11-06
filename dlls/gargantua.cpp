@@ -262,13 +262,13 @@ private:
 	EHANDLE<CSprite> m_pEyeGlow;  // Glow around the eyes
 	EHANDLE<CBeam> m_pFlame[4];   // Flame beams
 
-	int m_eyeBrightness;    // Brightness target
-	float m_seeTime;        // Time to attack (when I see the enemy, I set this)
-	float m_flameTime;      // Time of next flame attack
-	float m_painSoundTime;  // Time of next pain sound
-	float m_streakTime;     // streak timer (don't send too many)
-	float m_flameX;         // Flame thrower aim
-	float m_flameY;
+	int m_eyeBrightness = 0;    // Brightness target
+	float m_seeTime = 0.f;        // Time to attack (when I see the enemy, I set this)
+	float m_flameTime = 0.f;      // Time of next flame attack
+	float m_painSoundTime = 0.f;  // Time of next pain sound
+	float m_streakTime = 0.f;     // streak timer (don't send too many)
+	float m_flameX = 0.f;         // Flame thrower aim
+	float m_flameY = 0.f;
 };
 
 LINK_ENTITY_TO_CLASS(monster_gargantua, CGargantua);
@@ -485,7 +485,7 @@ void CGargantua::StompAttack(void)
 
 void CGargantua::FlameCreate(void)
 {
-	int i;
+	int i = 0;
 	Vector posGun, angleGun;
 	TraceResult trace;
 
@@ -545,7 +545,7 @@ void CGargantua::FlameControls(float angleX, float angleY)
 
 void CGargantua::FlameUpdate(void)
 {
-	int i;
+	int i = 0;
 	static float offset[2] = { 60, -60 };
 	TraceResult trace;
 	Vector vecStart, angleGun;
@@ -603,7 +603,7 @@ void CGargantua::FlameDamage(Vector vecStart, Vector vecEnd, entvars_t* pevInfli
 {
 	CBaseEntity* pEntity = nullptr;
 	TraceResult tr;
-	float flAdjustedDamage;
+	float flAdjustedDamage = 0.f;
 	Vector vecSpot;
 
 	Vector vecMid = (vecStart + vecEnd) * 0.5;
@@ -670,7 +670,7 @@ void CGargantua::FlameDamage(Vector vecStart, Vector vecEnd, entvars_t* pevInfli
 
 void CGargantua::FlameDestroy(void)
 {
-	int i;
+	int i = 0;
 
 	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, pBeamAttackSounds[0], 1.0, ATTN_NORM, 0, PITCH_NORM);
 	for (i = 0; i < 4; i++)
@@ -713,7 +713,7 @@ int CGargantua::Classify(void)
 //=========================================================
 void CGargantua::SetYawSpeed(void)
 {
-	int ys;
+	int ys = 0;
 
 	switch (m_Activity)
 	{
@@ -772,7 +772,7 @@ void CGargantua::Spawn()
 //=========================================================
 void CGargantua::Precache()
 {
-	int i;
+	int i = 0;
 
 	PRECACHE_MODEL("models/garg.mdl");
 	PRECACHE_MODEL(GARG_EYE_SPRITE_NAME);
@@ -874,7 +874,7 @@ int CGargantua::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 
 void CGargantua::DeathEffect(void)
 {
-	int i;
+	int i = 0;
 	UTIL_MakeVectors(pev->angles);
 	Vector deathPos = pev->origin + gpGlobals->v_forward * 100;
 
@@ -1119,7 +1119,7 @@ void CGargantua::RunTask(Task_t* pTask)
 			StopAnimation();
 			pev->nextthink = gpGlobals->time + 0.15;
 			SetThink(&CGargantua::SUB_Remove);
-			int i;
+			int i = 0;
 			int parts = MODEL_FRAMES(gGargGibModel);
 			for (i = 0; i < 10; i++)
 			{

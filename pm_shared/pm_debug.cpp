@@ -77,7 +77,7 @@ void PM_ShowClipBox(void)
 	PM_ParticleLine(org, org, pmove->server ? 132 : 0, 0.1, 5.0);
 	/*
 		{
-			int i;
+			int i = 0;
 			for ( i = 0; i < pmove->numphysent; i++ )
 			{
 				if ( pmove->physents[ i ].info >= 1 && pmove->physents[ i ].info <= 4 )
@@ -99,11 +99,11 @@ PM_ParticleLine(vec3_t start, vec3_t end, int color, float life)
 void PM_ParticleLine(vec3_t start, vec3_t end, int pcolor, float life, float vert)
 {
 	float linestep = 2.0f;
-	float curdist;
-	float len;
+	float curdist = 0.f;
+	float len = 0.f;
 	vec3_t curpos;
 	vec3_t diff;
-	int i;
+	int i = 0;
 	// Determine distance;
 
 	VectorSubtract(end, start, diff);
@@ -145,7 +145,7 @@ void PM_DrawPhysEntBBox(int num, int pcolor, float life)
 {
 	physent_t* pe;
 	vec3_t org;
-	int j;
+	int j = 0;
 	vec3_t tmp;
 	vec3_t p[8];
 	float gap = BOX_GAP;
@@ -234,7 +234,7 @@ PM_DrawBBox(vec3_t mins, vec3_t maxs, vec3_t origin, int pcolor, float life)
 */
 void PM_DrawBBox(vec3_t mins, vec3_t maxs, vec3_t origin, int pcolor, float life)
 {
-	int j;
+	int j = 0;
 
 	vec3_t tmp;
 	vec3_t p[8];
@@ -281,10 +281,10 @@ void PM_ViewEntity(void)
 	float raydist = 256.0f;
 	vec3_t origin;
 	vec3_t end;
-	int i;
+	int i = 0;
 	pmtrace_t trace;
 	int pcolor = 77;
-	float fup;
+	float fup = 0.f;
 
 #if 0
 	if (!pm_showclip.value)

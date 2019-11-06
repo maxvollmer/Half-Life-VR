@@ -31,7 +31,7 @@ void StudioModel::FreeModel()
 
 	m_pstudiohdr = 0;
 
-	int i;
+	int i = 0;
 	for (i = 0; i < 32; i++)
 	{
 		if (m_panimhdr[i])

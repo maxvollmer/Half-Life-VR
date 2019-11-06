@@ -36,7 +36,7 @@ class CWorldItem : public CBaseEntity
 public:
 	void KeyValue(KeyValueData* pkvd);
 	void Spawn(void);
-	int m_iType;
+	int m_iType = 0;
 };
 
 LINK_ENTITY_TO_CLASS(world_items, CWorldItem);
@@ -226,7 +226,7 @@ class CItemBattery : public CItem
 		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
 			(pPlayer->pev->weapons & (1 << WEAPON_SUIT)))
 		{
-			int pct;
+			int pct = 0;
 			char szcharge[64];
 
 			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;

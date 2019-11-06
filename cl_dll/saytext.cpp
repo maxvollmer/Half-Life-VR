@@ -275,7 +275,7 @@ void CHudSayText::EnsureTextFitsInOneLineAndWrapIfHaveTo(int line)
 				x = last_break;
 
 				// find an empty string slot
-				int j;
+				int j = 0;
 				do
 				{
 					for (j = 0; j < MAX_LINES; j++)

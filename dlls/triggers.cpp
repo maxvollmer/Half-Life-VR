@@ -53,7 +53,7 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	float m_frictionFraction;  // Sorry, couldn't resist this name :)
+	float m_frictionFraction = 0.f;  // Sorry, couldn't resist this name :)
 };
 
 LINK_ENTITY_TO_CLASS(func_friction, CFrictionModifier);
@@ -128,8 +128,8 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	int m_globalstate;
-	USE_TYPE triggerType;
+	int m_globalstate = 0;
+	USE_TYPE triggerType = USE_OFF;
 };
 LINK_ENTITY_TO_CLASS(trigger_auto, CAutoTrigger);
 
@@ -210,7 +210,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	USE_TYPE triggerType;
+	USE_TYPE triggerType = USE_OFF;
 };
 LINK_ENTITY_TO_CLASS(trigger_relay, CTriggerRelay);
 
@@ -289,11 +289,11 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_cTargets;                            // the total number of targets in this manager's fire list.
-	int m_index;                               // Current target
-	float m_startTime;                         // Time we started firing
-	int m_iTargetName[MAX_MULTI_TARGETS];      // list if indexes into global string array
-	float m_flTargetDelay[MAX_MULTI_TARGETS];  // delay (in seconds) from time of manager fire to target fire
+	int m_cTargets = 0;                            // the total number of targets in this manager's fire list.
+	int m_index = 0;                               // Current target
+	float m_startTime = 0.f;                         // Time we started firing
+	int m_iTargetName[MAX_MULTI_TARGETS] = { 0 };      // list if indexes into global string array
+	float m_flTargetDelay[MAX_MULTI_TARGETS] = { 0 };  // delay (in seconds) from time of manager fire to target fire
 private:
 	inline BOOL IsClone(void) { return (pev->spawnflags & SF_MULTIMAN_CLONE) ? TRUE : FALSE; }
 	inline BOOL ShouldClone(void)
@@ -394,7 +394,7 @@ BOOL CMultiManager::HasTarget(string_t targetname)
 // so I changed it to use the standard target fire code, made it a little simpler.
 void CMultiManager::ManagerThink(void)
 {
-	float time;
+	float time = 0.f;
 
 	time = gpGlobals->time - m_startTime;
 	while (m_index < m_cTargets && m_flTargetDelay[m_index] <= time)
@@ -459,7 +459,7 @@ void CMultiManager::ManagerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 #if _DEBUG
 void CMultiManager::ManagerReport(void)
 {
-	int cIndex;
+	int cIndex = 0;
 
 	for (cIndex = 0; cIndex < m_cTargets; cIndex++)
 	{
@@ -849,7 +849,7 @@ void CTriggerHurt::RadiationThink(void)
 {
 	edict_t* pentPlayer;
 	CBasePlayer* pPlayer = nullptr;
-	float flRange;
+	float flRange = 0.f;
 	entvars_t* pevTarget;
 	Vector vecSpot1;
 	Vector vecSpot2;
@@ -921,7 +921,7 @@ void CBaseTrigger::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 // When touched, a hurt trigger does DMG points of damage each half-second
 void CBaseTrigger::HurtTouch(CBaseEntity* pOther)
 {
-	float fldmg;
+	float fldmg = 0.f;
 
 	if (!pOther->pev->takedamage)
 		return;
@@ -1392,10 +1392,10 @@ public:
 
 	static TYPEDESCRIPTION m_SaveData[];
 
-	char m_szMapName[cchMapNameMost];       // trigger_changelevel only:  next map
-	char m_szLandmarkName[cchMapNameMost];  // trigger_changelevel only:  landmark on next map
-	int m_changeTarget;
-	float m_changeTargetDelay;
+	char m_szMapName[cchMapNameMost] = { 0 };       // trigger_changelevel only:  next map
+	char m_szLandmarkName[cchMapNameMost] = { 0 };  // trigger_changelevel only:  landmark on next map
+	int m_changeTarget = 0;
+	float m_changeTargetDelay = 0.f;
 };
 LINK_ENTITY_TO_CLASS(trigger_changelevel, CChangeLevel);
 
@@ -1595,7 +1595,7 @@ void CChangeLevel::TouchChangeLevel(CBaseEntity* pOther)
 // (a designer may have placed multiple trigger_changelevels with the same landmark)
 int CChangeLevel::AddTransitionToList(LEVELLIST* pLevelList, int listCount, const char* pMapName, const char* pLandmarkName, edict_t* pentLandmark)
 {
-	int i;
+	int i = 0;
 
 	if (!pLevelList || !pMapName || !pLandmarkName || !pentLandmark)
 		return 0;
@@ -2252,7 +2252,7 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 private:
-	int m_iszNewTarget;
+	int m_iszNewTarget = 0;
 };
 LINK_ENTITY_TO_CLASS(trigger_changetarget, CTriggerChangeTarget);
 
@@ -2317,16 +2317,16 @@ public:
 	EHANDLE<CBasePlayer> m_hPlayer;
 	EHANDLE<CBaseEntity> m_hTarget;
 	EHANDLE<CBaseEntity> m_pentPath;
-	int m_sPath;
-	float m_flWait;
-	float m_flReturnTime;
-	float m_flStopTime;
-	float m_moveDistance;
-	float m_targetSpeed;
-	float m_initialSpeed;
-	float m_acceleration;
-	float m_deceleration;
-	int m_state;
+	int m_sPath = 0;
+	float m_flWait = 0.f;
+	float m_flReturnTime = 0.f;
+	float m_flStopTime = 0.f;
+	float m_moveDistance = 0.f;
+	float m_targetSpeed = 0.f;
+	float m_initialSpeed = 0.f;
+	float m_acceleration = 0.f;
+	float m_deceleration = 0.f;
+	int m_state = 0;
 };
 LINK_ENTITY_TO_CLASS(trigger_camera, CTriggerCamera);
 

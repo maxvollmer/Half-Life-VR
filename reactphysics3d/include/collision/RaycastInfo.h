@@ -23,6 +23,12 @@
 *                                                                               *
 ********************************************************************************/
 
+/*
+**
+** 2019-11-06 MODIFIED BY MAX VOLLMER FOR HALF-LIFE: VR: Initialized uninitialized member variables.
+**
+*/
+
 #ifndef REACTPHYSICS3D_RAYCAST_INFO_H
 #define REACTPHYSICS3D_RAYCAST_INFO_H
 
@@ -75,8 +81,13 @@ struct RaycastInfo {
         // -------------------- Methods -------------------- //
 
         /// Constructor
-        RaycastInfo() : meshSubpart(-1), triangleIndex(-1), body(nullptr), proxyShape(nullptr) {
-
+        RaycastInfo() :
+			hitFraction(0),
+			meshSubpart(-1),
+			triangleIndex(-1),
+			body(nullptr),
+			proxyShape(nullptr)
+		{
         }
 
         /// Destructor

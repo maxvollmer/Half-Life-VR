@@ -174,7 +174,7 @@ public:
 
 private:
 	const Vector normal;
-	const float dist;
+	const float dist = 0.f;
 	const std::size_t hash;
 	const PlaneMajor major;
 };

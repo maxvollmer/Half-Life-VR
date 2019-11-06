@@ -159,10 +159,10 @@ public:
 	static void SpawnRandomGibs(entvars_t* pevVictim, int cGibs, int human);
 	static void SpawnStickyGibs(entvars_t* pevVictim, Vector vecOrigin, int cGibs);
 
-	int m_bloodColor;
-	int m_cBloodDecals;
-	int m_material;
-	float m_lifeTime;
+	int m_bloodColor = 0;
+	int m_cBloodDecals = 0;
+	int m_material = 0;
+	float m_lifeTime = 0.f;
 };
 
 

@@ -943,7 +943,7 @@ Schedule_t* CBaseMonster::ScheduleFromName(const char* pName)
 
 Schedule_t* CBaseMonster::ScheduleInList(const char* pName, Schedule_t** pList, int listCount)
 {
-	int i;
+	int i = 0;
 
 	if (!pName)
 	{

@@ -95,12 +95,12 @@ float EV_HLDM_PlayTextureSound(int idx, pmtrace_t* ptr, float* vecSrc, float* ve
 {
 	// hit the world, try to play sound based on texture material type
 	char chTextureType = CHAR_TEX_CONCRETE;
-	float fvol;
-	float fvolbar;
+	float fvol = 0.f;
+	float fvolbar = 0.f;
 	char* rgsz[4];
-	int cnt;
+	int cnt = 0;
 	float fattn = ATTN_NORM;
-	int entity;
+	int entity = 0;
 	char texname[64];
 	char szbuffer[64];
 
@@ -241,7 +241,7 @@ float EV_HLDM_PlayTextureSound(int idx, pmtrace_t* ptr, float* vecSrc, float* ve
 char* EV_HLDM_DamageDecal(physent_t* pe)
 {
 	static char decalname[32];
-	int idx;
+	int idx = 0;
 
 	if (pe->classnumber == 1)
 	{
@@ -262,7 +262,7 @@ char* EV_HLDM_DamageDecal(physent_t* pe)
 
 void EV_HLDM_GunshotDecalTrace(pmtrace_t* pTrace, char* decalName)
 {
-	int iRand;
+	int iRand = 0;
 	physent_t* pe;
 
 	gEngfuncs.pEfxAPI->R_BulletImpactParticles(pTrace->endpos);
@@ -324,7 +324,7 @@ void EV_HLDM_DecalGunshot(pmtrace_t* pTrace, int iBulletType)
 int EV_HLDM_CheckTracer(int idx, float* vecSrc, float* end, float* forward, float* right, int iBulletType, int iTracerFreq, int* tracerCount)
 {
 	int tracer = 0;
-	int i;
+	int i = 0;
 	qboolean player = idx >= 1 && idx <= gEngfuncs.GetMaxClients() ? true : false;
 
 	if (iTracerFreq != 0 && ((*tracerCount)++ % iTracerFreq) == 0)
@@ -374,10 +374,10 @@ Go to the trouble of combining multiple pellets into a single damage call.
 */
 void EV_HLDM_FireBullets(int idx, float* forward, float* right, float* up, int cShots, float* vecSrc, float* vecDirShooting, float flDistance, int iBulletType, int iTracerFreq, int* tracerCount, float flSpreadX, float flSpreadY)
 {
-	int i;
+	int i = 0;
 	pmtrace_t tr;
-	int iShot;
-	int tracer;
+	int iShot = 0;
+	int tracer = 0;
 
 	for (iShot = 1; iShot <= cShots; iShot++)
 	{
@@ -465,15 +465,15 @@ void EV_HLDM_FireBullets(int idx, float* forward, float* right, float* up, int c
 //======================
 void EV_FireGlock1(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t velocity;
-	int empty;
+	int empty = 0;
 
 	vec3_t ShellVelocity;
 	vec3_t ShellOrigin;
-	int shell;
+	int shell = 0;
 	vec3_t vecSrc, vecAiming;
 	vec3_t up, right, forward;
 
@@ -515,14 +515,14 @@ void EV_FireGlock1(event_args_t* args)
 
 void EV_FireGlock2(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t velocity;
 
 	vec3_t ShellVelocity;
 	vec3_t ShellOrigin;
-	int shell;
+	int shell = 0;
 	vec3_t vecSrc, vecAiming;
 	vec3_t vecSpread;
 	vec3_t up, right, forward;
@@ -568,15 +568,15 @@ void EV_FireGlock2(event_args_t* args)
 //======================
 void EV_FireShotGunDouble(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t velocity;
 
-	int j;
+	int j = 0;
 	vec3_t ShellVelocity;
 	vec3_t ShellOrigin;
-	int shell;
+	int shell = 0;
 	vec3_t vecSrc, vecAiming;
 	vec3_t vecSpread;
 	vec3_t up, right, forward;
@@ -628,14 +628,14 @@ void EV_FireShotGunDouble(event_args_t* args)
 
 void EV_FireShotGunSingle(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t velocity;
 
 	vec3_t ShellVelocity;
 	vec3_t ShellOrigin;
-	int shell;
+	int shell = 0;
 	vec3_t vecSrc, vecAiming;
 	vec3_t vecSpread;
 	vec3_t up, right, forward;
@@ -688,14 +688,14 @@ void EV_FireShotGunSingle(event_args_t* args)
 //======================
 void EV_FireMP5(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t velocity;
 
 	vec3_t ShellVelocity;
 	vec3_t ShellOrigin;
-	int shell;
+	int shell = 0;
 	vec3_t vecSrc, vecAiming;
 	vec3_t up, right, forward;
 	float flSpread = 0.01;
@@ -750,7 +750,7 @@ void EV_FireMP5(event_args_t* args)
 // The grenade is still launched from the server.
 void EV_FireMP52(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 
 	idx = args->entindex;
@@ -786,7 +786,7 @@ void EV_FireMP52(event_args_t* args)
 //======================
 void EV_FirePython(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t velocity;
@@ -843,13 +843,13 @@ void EV_FirePython(event_args_t* args)
 
 void EV_SpinGauss(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t velocity;
 	int iSoundState = 0;
 
-	int pitch;
+	int pitch = 0;
 
 	idx = args->entindex;
 
@@ -885,7 +885,7 @@ extern float g_flApplyVel;
 
 void EV_FireGauss(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t velocity;
@@ -1008,7 +1008,7 @@ void EV_FireGauss(event_args_t* args)
 
 		if (pEntity->solid == SOLID_BSP)
 		{
-			float n;
+			float n = 0.f;
 
 			pentIgnore = nullptr;
 
@@ -1077,7 +1077,7 @@ void EV_FireGauss(event_args_t* args)
 					if (!beam_tr.allsolid)
 					{
 						vec3_t delta;
-						float n;
+						float n = 0.f;
 
 						// trace backwards to find exit point
 
@@ -1170,13 +1170,13 @@ enum crowbar_e
 	CROWBAR_ATTACK3HIT
 };
 
-int g_iSwing;
+int g_iSwing = 0;
 
 //Only predict the miss sounds, hit sounds are still played
 //server side, so players don't get the wrong idea.
 void EV_Crowbar(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t velocity;
@@ -1251,7 +1251,7 @@ void EV_FireCrossbow2(event_args_t* args)
 	vec3_t up, right, forward;
 	pmtrace_t tr;
 
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t velocity;
@@ -1338,7 +1338,7 @@ void EV_FireCrossbow2(event_args_t* args)
 //TODO: Fully predict the fliying bolt.
 void EV_FireCrossbow(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 
 	idx = args->entindex;
@@ -1385,7 +1385,7 @@ enum rpg_e
 
 void EV_FireRpg(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 
 	idx = args->entindex;
@@ -1559,7 +1559,7 @@ void EV_UpdateEgon(const Vector& beamStartPos, const Vector& beamEndPos)
 
 void EV_EgonStop(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 
 	idx = args->entindex;
@@ -1656,7 +1656,7 @@ enum tripmine_e
 //and if it is, then we play the animation. Server still places it.
 void EV_TripmineFire(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t vecSrc, angles, view_ofs, forward;
 	pmtrace_t tr;
 
@@ -1707,7 +1707,7 @@ enum squeak_e
 
 void EV_SnarkFire(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t vecSrc, angles, view_ofs, forward;
 	pmtrace_t tr;
 
@@ -1745,14 +1745,14 @@ void EV_SnarkFire(event_args_t* args)
 
 void EV_TrainPitchAdjust(event_args_t* args)
 {
-	int idx;
+	int idx = 0;
 	vec3_t origin;
 
-	unsigned short us_params;
-	int noise;
-	float m_flVolume;
-	int pitch;
-	int stop;
+	unsigned short us_params = 0;
+	int noise = 0;
+	float m_flVolume = 0.f;
+	int pitch = 0;
+	int stop = 0;
 
 	char sz[256];
 

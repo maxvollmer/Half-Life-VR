@@ -189,8 +189,8 @@ void CHalfLifeMultiplay::Think(void)
 	g_VoiceGameMgr.Update(gpGlobals->frametime);
 
 	///// Check game rules /////
-	static int last_frags;
-	static int last_time;
+	static int last_frags = 0;
+	static int last_time = 0;
 
 	int frags_remaining = 0;
 	int time_remaining = 0;
@@ -231,7 +231,7 @@ void CHalfLifeMultiplay::Think(void)
 	if (flFragLimit)
 	{
 		int bestfrags = 9999;
-		int remain;
+		int remain = 0;
 
 		// check if any player is over the frag limit
 		for (int i = 1; i <= gpGlobals->maxClients; i++)
@@ -329,8 +329,8 @@ BOOL CHalfLifeMultiplay::GetNextBestWeapon(CBasePlayer* pPlayer, CBasePlayerItem
 {
 	CBasePlayerItem* pCheck;
 	CBasePlayerItem* pBest;  // this will be used in the event that we don't find a weapon in the same category.
-	int iBestWeight;
-	int i;
+	int iBestWeight = 0;
+	int i = 0;
 
 	iBestWeight = -1;  // no weapon lower than -1 can be autoswitched to
 	pBest = nullptr;
@@ -551,7 +551,7 @@ void CHalfLifeMultiplay::PlayerThink(CBasePlayer* pPlayer)
 //=========================================================
 void CHalfLifeMultiplay::PlayerSpawn(CBasePlayer* pPlayer)
 {
-	BOOL addDefault;
+	BOOL addDefault = FALSE;
 	CBaseEntity* pWeaponEntity = nullptr;
 
 	pPlayer->pev->weapons |= (1 << WEAPON_SUIT);
@@ -1215,8 +1215,8 @@ Parse a token out of a string
 */
 char* COM_Parse(char* data)
 {
-	int c;
-	int len;
+	int c = 0;
+	int len = 0;
 
 	len = 0;
 	com_token[0] = 0;
@@ -1320,10 +1320,10 @@ int ReloadMapCycleFile(const char* filename, mapcycle_t* cycle)
 {
 	char szBuffer[MAX_RULE_BUFFER];
 	char szMap[32];
-	int length;
+	int length = 0;
 	char* pFileList;
 	char* aFileList = pFileList = reinterpret_cast<char*>(LOAD_FILE_FOR_ME(filename, &length));
-	int hasbuffer;
+	int hasbuffer = 0;
 	mapcycle_item_s* item, * newlist = nullptr, * next;
 
 	if (pFileList && length)
@@ -1532,7 +1532,7 @@ void CHalfLifeMultiplay::ChangeLevel(void)
 	int minplayers = 0, maxplayers = 0;
 	strcpy_s(szFirstMapInList, "hldm1");  // the absolute default level is hldm1
 
-	int curplayers;
+	int curplayers = 0;
 	BOOL do_cycle = TRUE;
 
 	// find the map to change to

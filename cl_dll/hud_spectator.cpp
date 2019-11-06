@@ -173,7 +173,7 @@ int CHudSpectator::Init()
 void UTIL_StringToVector(float* pVector, const char* pString)
 {
 	char* pstr, * pfront, tempString[128];
-	int j;
+	int j = 0;
 
 	strcpy_s(tempString, pString);
 	pstr = pfront = tempString;
@@ -378,7 +378,7 @@ int CHudSpectator::VidInit()
 //-----------------------------------------------------------------------------
 int CHudSpectator::Draw(float flTime)
 {
-	int lx;
+	int lx = 0;
 
 	char string[256];
 	float* color;
@@ -454,7 +454,7 @@ int CHudSpectator::Draw(float flTime)
 
 void CHudSpectator::DirectorMessage(int iSize, void* pbuf)
 {
-	float value;
+	float value = 0.f;
 	char* string;
 
 	BEGIN_READ(pbuf, iSize);
@@ -594,7 +594,7 @@ void CHudSpectator::FindNextPlayer(bool bReverse)
 	// MOD AUTHORS: Modify the logic of this function if you want to restrict the observer to watching
 	//				only a subset of the players. e.g. Make it check the target's team.
 
-	int iStart;
+	int iStart = 0;
 	cl_entity_t* pEnt = nullptr;
 
 	// if we are NOT in HLTV mode, spectator targets are set on server
@@ -864,7 +864,7 @@ bool CHudSpectator::ParseOverviewFile()
 	char filename[255];
 	char levelname[255];
 	char token[1024];
-	float height;
+	float height = 0.f;
 
 	char* pfile = nullptr;
 

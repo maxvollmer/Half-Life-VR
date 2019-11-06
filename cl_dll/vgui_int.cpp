@@ -30,7 +30,7 @@ namespace
 	class TexturePanel : public Panel, public ActionSignal
 	{
 	private:
-		int _bindIndex;
+		int _bindIndex = 0;
 		TextEntry* _textEntry;
 
 	public:

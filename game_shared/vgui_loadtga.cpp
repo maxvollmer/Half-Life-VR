@@ -74,8 +74,8 @@ public:
 	}
 
 	uchar* m_pData;
-	int m_DataLen;
-	int m_ReadPos;
+	int m_DataLen = 0;
+	int m_ReadPos = 0;
 };
 
 vgui::BitmapTGA* vgui_LoadTGA(char const* pFilename)
