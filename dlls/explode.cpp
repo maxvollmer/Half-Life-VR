@@ -261,7 +261,7 @@ void ExplosionCreate(const Vector& center, const Vector& angles, edict_t* pOwner
 	char buf[128];
 
 	CBaseEntity* pExplosion = CBaseEntity::Create<CBaseEntity>("env_explosion", center, angles, pOwner);
-	sprintf(buf, "%3d", magnitude);
+	sprintf_s(buf, "%3d", magnitude);
 	kvd.szKeyName = "iMagnitude";
 	kvd.szValue = buf;
 	pExplosion->KeyValue(&kvd);

@@ -1233,7 +1233,7 @@ Task_t tlGruntFail[] =
 Schedule_t slGruntFail[] =
 {
 	{tlGruntFail,
-	 ARRAYSIZE(tlGruntFail),
+	 (int)std::size(tlGruntFail),
 	 bits_COND_CAN_RANGE_ATTACK1 |
 		 bits_COND_CAN_RANGE_ATTACK2 |
 		 bits_COND_CAN_MELEE_ATTACK1 |
@@ -1256,7 +1256,7 @@ Task_t tlGruntCombatFail[] =
 Schedule_t slGruntCombatFail[] =
 {
 	{tlGruntCombatFail,
-	 ARRAYSIZE(tlGruntCombatFail),
+	 (int)std::size(tlGruntCombatFail),
 	 bits_COND_CAN_RANGE_ATTACK1 |
 		 bits_COND_CAN_RANGE_ATTACK2,
 	 0,
@@ -1281,7 +1281,7 @@ Task_t tlGruntVictoryDance[] =
 Schedule_t slGruntVictoryDance[] =
 {
 	{tlGruntVictoryDance,
-	 ARRAYSIZE(tlGruntVictoryDance),
+	 (int)std::size(tlGruntVictoryDance),
 	 bits_COND_NEW_ENEMY |
 		 bits_COND_LIGHT_DAMAGE |
 		 bits_COND_HEAVY_DAMAGE,
@@ -1305,7 +1305,7 @@ Task_t tlGruntEstablishLineOfFire[] =
 Schedule_t slGruntEstablishLineOfFire[] =
 {
 	{tlGruntEstablishLineOfFire,
-	 ARRAYSIZE(tlGruntEstablishLineOfFire),
+	 (int)std::size(tlGruntEstablishLineOfFire),
 	 bits_COND_NEW_ENEMY |
 		 bits_COND_ENEMY_DEAD |
 		 bits_COND_CAN_RANGE_ATTACK1 |
@@ -1332,7 +1332,7 @@ Task_t tlGruntFoundEnemy[] =
 Schedule_t slGruntFoundEnemy[] =
 {
 	{tlGruntFoundEnemy,
-	 ARRAYSIZE(tlGruntFoundEnemy),
+	 (int)std::size(tlGruntFoundEnemy),
 	 bits_COND_HEAR_SOUND,
 
 	 bits_SOUND_DANGER,
@@ -1354,7 +1354,7 @@ Task_t tlGruntCombatFace1[] =
 Schedule_t slGruntCombatFace[] =
 {
 	{tlGruntCombatFace1,
-	 ARRAYSIZE(tlGruntCombatFace1),
+	 (int)std::size(tlGruntCombatFace1),
 	 bits_COND_NEW_ENEMY |
 		 bits_COND_ENEMY_DEAD |
 		 bits_COND_CAN_RANGE_ATTACK1 |
@@ -1392,7 +1392,7 @@ Task_t tlGruntSignalSuppress[] =
 Schedule_t slGruntSignalSuppress[] =
 {
 	{tlGruntSignalSuppress,
-	 ARRAYSIZE(tlGruntSignalSuppress),
+	 (int)std::size(tlGruntSignalSuppress),
 	 bits_COND_ENEMY_DEAD |
 		 bits_COND_LIGHT_DAMAGE |
 		 bits_COND_HEAVY_DAMAGE |
@@ -1427,7 +1427,7 @@ Task_t tlGruntSuppress[] =
 Schedule_t slGruntSuppress[] =
 {
 	{tlGruntSuppress,
-	 ARRAYSIZE(tlGruntSuppress),
+	 (int)std::size(tlGruntSuppress),
 	 bits_COND_ENEMY_DEAD |
 		 bits_COND_LIGHT_DAMAGE |
 		 bits_COND_HEAVY_DAMAGE |
@@ -1455,7 +1455,7 @@ Task_t tlGruntWaitInCover[] =
 Schedule_t slGruntWaitInCover[] =
 {
 	{tlGruntWaitInCover,
-	 ARRAYSIZE(tlGruntWaitInCover),
+	 (int)std::size(tlGruntWaitInCover),
 	 bits_COND_NEW_ENEMY |
 		 bits_COND_HEAR_SOUND |
 		 bits_COND_CAN_RANGE_ATTACK1 |
@@ -1487,7 +1487,7 @@ Task_t tlGruntTakeCover1[] =
 Schedule_t slGruntTakeCover[] =
 {
 	{tlGruntTakeCover1,
-	 ARRAYSIZE(tlGruntTakeCover1),
+	 (int)std::size(tlGruntTakeCover1),
 	 0,
 	 0,
 	 "TakeCover"},
@@ -1511,7 +1511,7 @@ Task_t tlGruntGrenadeCover1[] =
 Schedule_t slGruntGrenadeCover[] =
 {
 	{tlGruntGrenadeCover1,
-	 ARRAYSIZE(tlGruntGrenadeCover1),
+	 (int)std::size(tlGruntGrenadeCover1),
 	 0,
 	 0,
 	 "GrenadeCover"},
@@ -1531,7 +1531,7 @@ Task_t tlGruntTossGrenadeCover1[] =
 Schedule_t slGruntTossGrenadeCover[] =
 {
 	{tlGruntTossGrenadeCover1,
-	 ARRAYSIZE(tlGruntTossGrenadeCover1),
+	 (int)std::size(tlGruntTossGrenadeCover1),
 	 0,
 	 0,
 	 "TossGrenadeCover"},
@@ -1554,7 +1554,7 @@ Task_t tlGruntTakeCoverFromBestSound[] =
 Schedule_t slGruntTakeCoverFromBestSound[] =
 {
 	{tlGruntTakeCoverFromBestSound,
-	 ARRAYSIZE(tlGruntTakeCoverFromBestSound),
+	 (int)std::size(tlGruntTakeCoverFromBestSound),
 	 0,
 	 0,
 	 "GruntTakeCoverFromBestSound"},
@@ -1578,7 +1578,7 @@ Task_t tlGruntHideReload[] =
 Schedule_t slGruntHideReload[] =
 {
 	{tlGruntHideReload,
-	 ARRAYSIZE(tlGruntHideReload),
+	 (int)std::size(tlGruntHideReload),
 	 bits_COND_HEAVY_DAMAGE |
 		 bits_COND_HEAR_SOUND,
 
@@ -1599,7 +1599,7 @@ Task_t tlGruntSweep[] =
 Schedule_t slGruntSweep[] =
 {
 	{tlGruntSweep,
-	 ARRAYSIZE(tlGruntSweep),
+	 (int)std::size(tlGruntSweep),
 
 	 bits_COND_NEW_ENEMY |
 		 bits_COND_LIGHT_DAMAGE |
@@ -1639,7 +1639,7 @@ Task_t tlGruntRangeAttack1A[] =
 Schedule_t slGruntRangeAttack1A[] =
 {
 	{tlGruntRangeAttack1A,
-	 ARRAYSIZE(tlGruntRangeAttack1A),
+	 (int)std::size(tlGruntRangeAttack1A),
 	 bits_COND_NEW_ENEMY |
 		 bits_COND_ENEMY_DEAD |
 		 bits_COND_HEAVY_DAMAGE |
@@ -1677,7 +1677,7 @@ Task_t tlGruntRangeAttack1B[] =
 Schedule_t slGruntRangeAttack1B[] =
 {
 	{tlGruntRangeAttack1B,
-	 ARRAYSIZE(tlGruntRangeAttack1B),
+	 (int)std::size(tlGruntRangeAttack1B),
 	 bits_COND_NEW_ENEMY |
 		 bits_COND_ENEMY_DEAD |
 		 bits_COND_HEAVY_DAMAGE |
@@ -1705,7 +1705,7 @@ Task_t tlGruntRangeAttack2[] =
 Schedule_t slGruntRangeAttack2[] =
 {
 	{tlGruntRangeAttack2,
-	 ARRAYSIZE(tlGruntRangeAttack2),
+	 (int)std::size(tlGruntRangeAttack2),
 	 0,
 	 0,
 	 "RangeAttack2"},
@@ -1725,7 +1725,7 @@ Task_t tlGruntRepel[] =
 Schedule_t slGruntRepel[] =
 {
 	{tlGruntRepel,
-	 ARRAYSIZE(tlGruntRepel),
+	 (int)std::size(tlGruntRepel),
 	 bits_COND_SEE_ENEMY |
 		 bits_COND_NEW_ENEMY |
 		 bits_COND_LIGHT_DAMAGE |
@@ -1752,7 +1752,7 @@ Task_t tlGruntRepelAttack[] =
 Schedule_t slGruntRepelAttack[] =
 {
 	{tlGruntRepelAttack,
-	 ARRAYSIZE(tlGruntRepelAttack),
+	 (int)std::size(tlGruntRepelAttack),
 	 bits_COND_ENEMY_OCCLUDED,
 	 0,
 	 "Repel Attack"},
@@ -1774,7 +1774,7 @@ Task_t tlGruntRepelLand[] =
 Schedule_t slGruntRepelLand[] =
 {
 	{tlGruntRepelLand,
-	 ARRAYSIZE(tlGruntRepelLand),
+	 (int)std::size(tlGruntRepelLand),
 	 bits_COND_SEE_ENEMY |
 		 bits_COND_NEW_ENEMY |
 		 bits_COND_LIGHT_DAMAGE |

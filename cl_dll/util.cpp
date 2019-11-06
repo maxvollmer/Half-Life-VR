@@ -125,7 +125,7 @@ HSPRITE_VALVE LoadSprite(const char* pszName)
 	else
 		i = 640;
 
-	sprintf(sz, pszName, i);
+	sprintf_s(sz, pszName, i);
 
 	return SPR_Load(sz);
 }

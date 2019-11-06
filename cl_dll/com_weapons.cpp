@@ -45,7 +45,6 @@ void COM_Log(char* pszFile, char* fmt, ...)
 {
 	va_list argptr;
 	char string[1024];
-	FILE* fp;
 	char* pfilename;
 
 	if (!pszFile)
@@ -58,13 +57,14 @@ void COM_Log(char* pszFile, char* fmt, ...)
 	}
 
 	va_start(argptr, fmt);
-	vsprintf(string, fmt, argptr);
+	vsprintf_s(string, fmt, argptr);
 	va_end(argptr);
 
-	fp = fopen(pfilename, "a+t");
+	FILE* fp = nullptr;
+	fopen_s(&fp, pfilename, "a+t");
 	if (fp)
 	{
-		fprintf(fp, "%s", string);
+		fprintf_s(fp, "%s", string);
 		fclose(fp);
 	}
 }

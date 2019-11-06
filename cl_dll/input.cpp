@@ -216,7 +216,7 @@ struct kbutton_s DLLEXPORT* KB_Find(const char* name)
 	p = g_kbkeys;
 	while (p)
 	{
-		if (!stricmp(name, p->name))
+		if (!_stricmp(name, p->name))
 			return p->pkey;
 
 		p = p->next;
@@ -240,7 +240,7 @@ void KB_Add(const char* name, kbutton_t* pkb)
 	kblist_t* p = new kblist_t{ 0 };
 	if (p)
 	{
-		strcpy(p->name, name);
+		strcpy_s(p->name, name);
 		p->pkey = pkb;
 		p->next = g_kbkeys;
 		g_kbkeys = p;

@@ -43,7 +43,7 @@ CHalfLifeTeamplay::CHalfLifeTeamplay()
 	m_szTeamList[0] = 0;
 
 	// Cache this because the team code doesn't want to deal with changing this in the middle of a game
-	strncpy(m_szTeamList, teamlist.string, TEAMPLAY_TEAMLISTLENGTH);
+	strncpy_s(m_szTeamList, teamlist.string, TEAMPLAY_TEAMLISTLENGTH);
 
 	edict_t* pWorld = INDEXENT(0);
 	if (pWorld && pWorld->v.team)
@@ -53,7 +53,7 @@ CHalfLifeTeamplay::CHalfLifeTeamplay()
 			const char* pTeamList = STRING(pWorld->v.team);
 			if (pTeamList && strlen(pTeamList))
 			{
-				strncpy(m_szTeamList, pTeamList, TEAMPLAY_TEAMLISTLENGTH);
+				strncpy_s(m_szTeamList, pTeamList, TEAMPLAY_TEAMLISTLENGTH);
 			}
 		}
 	}
@@ -181,7 +181,7 @@ const char* CHalfLifeTeamplay::SetDefaultPlayerTeam(CBasePlayer* pPlayer)
 {
 	// copy out the team name from the model
 	char* mdls = g_engfuncs.pfnInfoKeyValue(g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "model");
-	strncpy(pPlayer->m_szTeamName, mdls, TEAM_NAME_LENGTH);
+	strncpy_s(pPlayer->m_szTeamName, mdls, TEAM_NAME_LENGTH);
 
 	RecountTeams();
 
@@ -198,7 +198,7 @@ const char* CHalfLifeTeamplay::SetDefaultPlayerTeam(CBasePlayer* pPlayer)
 		{
 			pTeamName = TeamWithFewestPlayers();
 		}
-		strncpy(pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH);
+		strncpy_s(pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH);
 	}
 
 	return pPlayer->m_szTeamName;
@@ -231,11 +231,11 @@ void CHalfLifeTeamplay::InitHUD(CBasePlayer* pPlayer)
 	char text[1024];
 	if (!strcmp(mdls, pPlayer->m_szTeamName))
 	{
-		sprintf(text, "* you are on team \'%s\'\n", pPlayer->m_szTeamName);
+		sprintf_s(text, "* you are on team \'%s\'\n", pPlayer->m_szTeamName);
 	}
 	else
 	{
-		sprintf(text, "* assigned to team %s\n", pPlayer->m_szTeamName);
+		sprintf_s(text, "* assigned to team %s\n", pPlayer->m_szTeamName);
 	}
 
 	ChangePlayerTeam(pPlayer, pPlayer->m_szTeamName, FALSE, FALSE);
@@ -286,7 +286,7 @@ void CHalfLifeTeamplay::ChangePlayerTeam(CBasePlayer* pPlayer, const char* pTeam
 	}
 
 	// copy out the team name from the model
-	strncpy(pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH);
+	strncpy_s(pPlayer->m_szTeamName, pTeamName, TEAM_NAME_LENGTH);
 
 	g_engfuncs.pfnSetClientKeyValue(clientIndex, g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "model", pPlayer->m_szTeamName);
 	g_engfuncs.pfnSetClientKeyValue(clientIndex, g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "team", pPlayer->m_szTeamName);
@@ -317,7 +317,7 @@ void CHalfLifeTeamplay::ClientUserInfoChanged(CBasePlayer* pPlayer, char* infobu
 	// prevent skin/color/model changes
 	char* mdls = g_engfuncs.pfnInfoKeyValue(infobuffer, "model");
 
-	if (!stricmp(mdls, pPlayer->m_szTeamName))
+	if (!_stricmp(mdls, pPlayer->m_szTeamName))
 		return;
 
 	if (defaultteam.value)
@@ -326,7 +326,7 @@ void CHalfLifeTeamplay::ClientUserInfoChanged(CBasePlayer* pPlayer, char* infobu
 
 		g_engfuncs.pfnSetClientKeyValue(clientIndex, g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "model", pPlayer->m_szTeamName);
 		g_engfuncs.pfnSetClientKeyValue(clientIndex, g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "team", pPlayer->m_szTeamName);
-		sprintf(text, "* Not allowed to change teams in this game!\n");
+		sprintf_s(text, "* Not allowed to change teams in this game!\n");
 		UTIL_SayText(text, pPlayer);
 		return;
 	}
@@ -336,14 +336,14 @@ void CHalfLifeTeamplay::ClientUserInfoChanged(CBasePlayer* pPlayer, char* infobu
 		int clientIndex = pPlayer->entindex();
 
 		g_engfuncs.pfnSetClientKeyValue(clientIndex, g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "model", pPlayer->m_szTeamName);
-		sprintf(text, "* Can't change team to \'%s\'\n", mdls);
+		sprintf_s(text, "* Can't change team to \'%s\'\n", mdls);
 		UTIL_SayText(text, pPlayer);
-		sprintf(text, "* Server limits teams to \'%s\'\n", m_szTeamList);
+		sprintf_s(text, "* Server limits teams to \'%s\'\n", m_szTeamList);
 		UTIL_SayText(text, pPlayer);
 		return;
 	}
 	// notify everyone of the team change
-	sprintf(text, "* %s has changed to team \'%s\'\n", STRING(pPlayer->pev->netname), mdls);
+	sprintf_s(text, "* %s has changed to team \'%s\'\n", STRING(pPlayer->pev->netname), mdls);
 	UTIL_SayTextAll(text, pPlayer);
 
 	UTIL_LogPrintf("\"%s<%i><%s><%s>\" joined team \"%s\"\n",
@@ -433,7 +433,7 @@ int CHalfLifeTeamplay::PlayerRelationship(CBaseEntity* pPlayer, CBaseEntity* pTa
 	if (!pPlayer || !pTarget || !pTarget->IsPlayer())
 		return GR_NOTTEAMMATE;
 
-	if ((*GetTeamID(pPlayer) != '\0') && (*GetTeamID(pTarget) != '\0') && !stricmp(GetTeamID(pPlayer), GetTeamID(pTarget)))
+	if ((*GetTeamID(pPlayer) != '\0') && (*GetTeamID(pTarget) != '\0') && !_stricmp(GetTeamID(pPlayer), GetTeamID(pTarget)))
 	{
 		return GR_TEAMMATE;
 	}
@@ -491,7 +491,7 @@ int CHalfLifeTeamplay::GetTeamIndex(const char* pTeamName)
 		// try to find existing team
 		for (int tm = 0; tm < num_teams; tm++)
 		{
-			if (!stricmp(team_names[tm], pTeamName))
+			if (!_stricmp(team_names[tm], pTeamName))
 				return tm;
 		}
 	}
@@ -557,7 +557,6 @@ const char* CHalfLifeTeamplay::TeamWithFewestPlayers(void)
 //=========================================================
 void CHalfLifeTeamplay::RecountTeams(bool bResendInfo)
 {
-	char* pName;
 	char teamlist[TEAMPLAY_TEAMLISTLENGTH];
 
 	// loop through all teams, recounting everything
@@ -565,17 +564,17 @@ void CHalfLifeTeamplay::RecountTeams(bool bResendInfo)
 
 	// Copy all of the teams from the teamlist
 	// make a copy because strtok is destructive
-	strcpy(teamlist, m_szTeamList);
-	pName = teamlist;
-	pName = strtok(pName, ";");
+	strcpy_s(teamlist, m_szTeamList);
+	char* context = nullptr;
+	char* pName = strtok_s(teamlist, ";", &context);
 	while (pName != nullptr && *pName)
 	{
 		if (GetTeamIndex(pName) < 0)
 		{
-			strcpy(team_names[num_teams], pName);
+			strcpy_s(team_names[num_teams], pName);
 			num_teams++;
 		}
-		pName = strtok(nullptr, ";");
+		pName = strtok_s(nullptr, ";", &context);
 	}
 
 	if (num_teams < 2)
@@ -606,7 +605,7 @@ void CHalfLifeTeamplay::RecountTeams(bool bResendInfo)
 					tm = num_teams;
 					num_teams++;
 					team_scores[tm] = 0;
-					strncpy(team_names[tm], pTeamName, MAX_TEAMNAME_LENGTH);
+					strncpy_s(team_names[tm], pTeamName, MAX_TEAMNAME_LENGTH);
 				}
 			}
 

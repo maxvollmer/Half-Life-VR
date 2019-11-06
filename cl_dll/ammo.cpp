@@ -123,7 +123,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 	pWeapon->hAmmo = 0;
 	pWeapon->hAmmo2 = 0;
 
-	sprintf(sz, "sprites/%s.txt", pWeapon->szName);
+	sprintf_s(sz, "sprites/%s.txt", pWeapon->szName);
 	client_sprite_t* pList = SPR_GetList(sz, &i);
 
 	if (!pList)
@@ -134,7 +134,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 	p = GetSpriteList(pList, "crosshair", iRes, i);
 	if (p)
 	{
-		sprintf(sz, "sprites/%s.spr", p->szSprite);
+		sprintf_s(sz, "sprites/%s.spr", p->szSprite);
 		pWeapon->hCrosshair = SPR_Load(sz);
 		pWeapon->rcCrosshair = p->rc;
 	}
@@ -144,7 +144,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 	p = GetSpriteList(pList, "autoaim", iRes, i);
 	if (p)
 	{
-		sprintf(sz, "sprites/%s.spr", p->szSprite);
+		sprintf_s(sz, "sprites/%s.spr", p->szSprite);
 		pWeapon->hAutoaim = SPR_Load(sz);
 		pWeapon->rcAutoaim = p->rc;
 	}
@@ -154,7 +154,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 	p = GetSpriteList(pList, "zoom", iRes, i);
 	if (p)
 	{
-		sprintf(sz, "sprites/%s.spr", p->szSprite);
+		sprintf_s(sz, "sprites/%s.spr", p->szSprite);
 		pWeapon->hZoomedCrosshair = SPR_Load(sz);
 		pWeapon->rcZoomedCrosshair = p->rc;
 	}
@@ -167,7 +167,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 	p = GetSpriteList(pList, "zoom_autoaim", iRes, i);
 	if (p)
 	{
-		sprintf(sz, "sprites/%s.spr", p->szSprite);
+		sprintf_s(sz, "sprites/%s.spr", p->szSprite);
 		pWeapon->hZoomedAutoaim = SPR_Load(sz);
 		pWeapon->rcZoomedAutoaim = p->rc;
 	}
@@ -180,7 +180,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 	p = GetSpriteList(pList, "weapon", iRes, i);
 	if (p)
 	{
-		sprintf(sz, "sprites/%s.spr", p->szSprite);
+		sprintf_s(sz, "sprites/%s.spr", p->szSprite);
 		pWeapon->hInactive = SPR_Load(sz);
 		pWeapon->rcInactive = p->rc;
 
@@ -192,7 +192,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 	p = GetSpriteList(pList, "weapon_s", iRes, i);
 	if (p)
 	{
-		sprintf(sz, "sprites/%s.spr", p->szSprite);
+		sprintf_s(sz, "sprites/%s.spr", p->szSprite);
 		pWeapon->hActive = SPR_Load(sz);
 		pWeapon->rcActive = p->rc;
 	}
@@ -202,7 +202,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 	p = GetSpriteList(pList, "ammo", iRes, i);
 	if (p)
 	{
-		sprintf(sz, "sprites/%s.spr", p->szSprite);
+		sprintf_s(sz, "sprites/%s.spr", p->szSprite);
 		pWeapon->hAmmo = SPR_Load(sz);
 		pWeapon->rcAmmo = p->rc;
 
@@ -214,7 +214,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 	p = GetSpriteList(pList, "ammo2", iRes, i);
 	if (p)
 	{
-		sprintf(sz, "sprites/%s.spr", p->szSprite);
+		sprintf_s(sz, "sprites/%s.spr", p->szSprite);
 		pWeapon->hAmmo2 = SPR_Load(sz);
 		pWeapon->rcAmmo2 = p->rc;
 
@@ -670,7 +670,7 @@ int CHudAmmo::MsgFunc_WeaponList(const char* pszName, int iSize, void* pbuf)
 
 	WEAPON Weapon;
 
-	strcpy(Weapon.szName, READ_STRING());
+	strcpy_s(Weapon.szName, READ_STRING());
 	Weapon.iAmmoType = (int)READ_CHAR();
 
 	Weapon.iMax1 = READ_BYTE();

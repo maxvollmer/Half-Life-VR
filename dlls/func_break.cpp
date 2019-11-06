@@ -65,9 +65,9 @@ void CBreakable::KeyValue(KeyValueData* pkvd)
 	// UNDONE_WC: explicitly ignoring these fields, but they shouldn't be in the map file!
 	if (FStrEq(pkvd->szKeyName, "explosion"))
 	{
-		if (!stricmp(pkvd->szValue, "directed"))
+		if (!_stricmp(pkvd->szValue, "directed"))
 			m_Explosion = expDirected;
-		else if (!stricmp(pkvd->szValue, "random"))
+		else if (!_stricmp(pkvd->szValue, "random"))
 			m_Explosion = expRandom;
 		else
 			m_Explosion = expRandom;
@@ -104,7 +104,7 @@ void CBreakable::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "spawnobject"))
 	{
 		int object = atoi(pkvd->szValue);
-		if (object > 0 && object < ARRAYSIZE(pSpawnObjects))
+		if (object > 0 && object < (int)std::size(pSpawnObjects))
 			m_iszSpawnObject = MAKE_STRING(pSpawnObjects[object]);
 		pkvd->fHandled = TRUE;
 	}
@@ -221,28 +221,28 @@ const char** CBreakable::MaterialSoundList(Materials precacheMaterial, int& soun
 	{
 	case matWood:
 		pSoundList = pSoundsWood;
-		soundCount = ARRAYSIZE(pSoundsWood);
+		soundCount = (int)std::size(pSoundsWood);
 		break;
 	case matFlesh:
 		pSoundList = pSoundsFlesh;
-		soundCount = ARRAYSIZE(pSoundsFlesh);
+		soundCount = (int)std::size(pSoundsFlesh);
 		break;
 	case matComputer:
 	case matUnbreakableGlass:
 	case matGlass:
 		pSoundList = pSoundsGlass;
-		soundCount = ARRAYSIZE(pSoundsGlass);
+		soundCount = (int)std::size(pSoundsGlass);
 		break;
 
 	case matMetal:
 		pSoundList = pSoundsMetal;
-		soundCount = ARRAYSIZE(pSoundsMetal);
+		soundCount = (int)std::size(pSoundsMetal);
 		break;
 
 	case matCinderBlock:
 	case matRocks:
 		pSoundList = pSoundsConcrete;
-		soundCount = ARRAYSIZE(pSoundsConcrete);
+		soundCount = (int)std::size(pSoundsConcrete);
 		break;
 
 

@@ -319,8 +319,8 @@ void CGlobalState::EntityAdd(string_t globalname, string_t mapName, GLOBALESTATE
 	globalentity_t* pNewEntity = new globalentity_t{ 0 };
 	pNewEntity->pNext = m_pList;
 	m_pList = pNewEntity;
-	strcpy(pNewEntity->name, STRING(globalname));
-	strcpy(pNewEntity->levelName, STRING(mapName));
+	strcpy_s(pNewEntity->name, STRING(globalname));
+	strcpy_s(pNewEntity->levelName, STRING(mapName));
 	pNewEntity->state = state;
 	m_listCount++;
 }
@@ -390,16 +390,16 @@ TYPEDESCRIPTION g_hlvrSaveVersionMarkerSaveData[] =
 
 int CGlobalState::Save(CSave& save)
 {
-	if (!save.WriteFields("HLVRSaveVersionMarker", &g_hlvrSaveVersionMarker, g_hlvrSaveVersionMarkerSaveData, ARRAYSIZE(g_hlvrSaveVersionMarkerSaveData)))
+	if (!save.WriteFields("HLVRSaveVersionMarker", &g_hlvrSaveVersionMarker, g_hlvrSaveVersionMarkerSaveData, (int)std::size(g_hlvrSaveVersionMarkerSaveData)))
 		return 0;
 
-	if (!save.WriteFields("GLOBAL", this, m_SaveData, ARRAYSIZE(m_SaveData)))
+	if (!save.WriteFields("GLOBAL", this, m_SaveData, (int)std::size(m_SaveData)))
 		return 0;
 
 	globalentity_t* pEntity = m_pList;
 	for (int i = 0; i < m_listCount && pEntity; i++)
 	{
-		if (!save.WriteFields("GENT", pEntity, gGlobalEntitySaveData, ARRAYSIZE(gGlobalEntitySaveData)))
+		if (!save.WriteFields("GENT", pEntity, gGlobalEntitySaveData, (int)std::size(gGlobalEntitySaveData)))
 			return 0;
 
 		pEntity = pEntity->pNext;
@@ -411,14 +411,14 @@ int CGlobalState::Save(CSave& save)
 int CGlobalState::Restore(CRestore& restore)
 {
 	HLVRSaveVersionMarker hlvrSaveVersionMarker;
-	int status = restore.ReadFields("HLVRSaveVersionMarker", &hlvrSaveVersionMarker, g_hlvrSaveVersionMarkerSaveData, ARRAYSIZE(g_hlvrSaveVersionMarkerSaveData));
+	int status = restore.ReadFields("HLVRSaveVersionMarker", &hlvrSaveVersionMarker, g_hlvrSaveVersionMarkerSaveData, (int)std::size(g_hlvrSaveVersionMarkerSaveData));
 	if (!status || hlvrSaveVersionMarker.magic != g_hlvrSaveVersionMarker.magic || hlvrSaveVersionMarker.version != g_hlvrSaveVersionMarker.version)
 	{
 		return -1;
 	}
 
 	ClearStates();
-	if (!restore.ReadFields("GLOBAL", this, m_SaveData, ARRAYSIZE(m_SaveData)))
+	if (!restore.ReadFields("GLOBAL", this, m_SaveData, (int)std::size(m_SaveData)))
 		return 0;
 
 	int listCount = m_listCount;  // Get new list count
@@ -426,7 +426,7 @@ int CGlobalState::Restore(CRestore& restore)
 	for (int i = 0; i < listCount; i++)
 	{
 		globalentity_t tmpEntity;
-		if (!restore.ReadFields("GENT", &tmpEntity, gGlobalEntitySaveData, ARRAYSIZE(gGlobalEntitySaveData)))
+		if (!restore.ReadFields("GENT", &tmpEntity, gGlobalEntitySaveData, (int)std::size(gGlobalEntitySaveData)))
 			return 0;
 		EntityAdd(MAKE_STRING(tmpEntity.name), MAKE_STRING(tmpEntity.levelName), tmpEntity.state);
 	}
@@ -439,7 +439,7 @@ void CGlobalState::EntityUpdate(string_t globalname, string_t mapname)
 	globalentity_t* pEnt = Find(globalname);
 
 	if (pEnt)
-		strcpy(pEnt->levelName, STRING(mapname));
+		strcpy_s(pEnt->levelName, STRING(mapname));
 }
 
 
@@ -655,7 +655,7 @@ void CWorld::Precache(void)
 	// 63 testing
 	LIGHT_STYLE(63, "a");
 
-	for (int i = 0; i < ARRAYSIZE(gDecals); i++)
+	for (int i = 0; i < (int)std::size(gDecals); i++)
 		gDecals[i].index = DECAL_INDEX(gDecals[i].name);
 
 	// init the WorldGraph.

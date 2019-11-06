@@ -128,7 +128,7 @@ void ClientDisconnect(edict_t* pEntity)
 		return;
 
 	char text[256];
-	sprintf(text, "- %s has left the game\n", STRING(pEntity->v.netname));
+	sprintf_s(text, "- %s has left the game\n", STRING(pEntity->v.netname));
 	MESSAGE_BEGIN(MSG_ALL, gmsgSayText, nullptr);
 	WRITE_BYTE(ENTINDEX(pEntity));
 	WRITE_STRING(text);
@@ -271,7 +271,7 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	const char* cpSayTeam = "say_team";
 	const char* pcmd = CMD_ARGV(0);
 
-	if (!stricmp(pcmd, cpSay) || !stricmp(pcmd, cpSayTeam))
+	if (!_stricmp(pcmd, cpSay) || !_stricmp(pcmd, cpSayTeam))
 	{
 		if (CMD_ARGC() >= 2)
 		{
@@ -327,8 +327,8 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	if ((int)strlen(p) > j)
 		p[j] = 0;
 
-	strcat(text, p);
-	strcat(text, "\n");
+	strcat_s(text, p);
+	strcat_s(text, "\n");
 
 
 	player->m_flNextChatTime = gpGlobals->time + CHAT_INTERVAL;
@@ -594,7 +594,7 @@ void ClientCommand(edict_t* pEntity)
 
 		// check the length of the command (prevents crash)
 		// max total length is 192 ...and we're adding a string below ("Unknown command: %s\n")
-		strncpy(command, pcmd, 127);
+		strncpy_s(command, pcmd, 127);
 		command[127] = '\0';
 
 		// tell the user they entered an unknown command
@@ -623,7 +623,7 @@ void ClientUserInfoChanged(edict_t* pEntity, char* infobuffer)
 	{
 		char sName[256];
 		char* pName = g_engfuncs.pfnInfoKeyValue(infobuffer, "name");
-		strncpy(sName, pName, sizeof(sName) - 1);
+		strncpy_s(sName, pName, sizeof(sName) - 1);
 		sName[sizeof(sName) - 1] = '\0';
 
 		// First parse the name and remove any %'s
@@ -638,7 +638,7 @@ void ClientUserInfoChanged(edict_t* pEntity, char* infobuffer)
 		g_engfuncs.pfnSetClientKeyValue(ENTINDEX(pEntity), infobuffer, "name", sName);
 
 		char text[256];
-		sprintf(text, "* %s changed name to %s\n", STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue(infobuffer, "name"));
+		sprintf_s(text, "* %s changed name to %s\n", STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue(infobuffer, "name"));
 		MESSAGE_BEGIN(MSG_ALL, gmsgSayText, nullptr);
 		WRITE_BYTE(ENTINDEX(pEntity));
 		WRITE_STRING(text);
@@ -1688,7 +1688,7 @@ void UpdateClientData(const struct edict_s* ent, int sendweapons, struct clientd
 	cd->flSwimTime = ent->v.flSwimTime;
 	cd->waterjumptime = ent->v.teleport_time;
 
-	strcpy(cd->physinfo, ENGINE_GETPHYSINFO(ent));
+	strcpy_s(cd->physinfo, ENGINE_GETPHYSINFO(ent));
 
 	cd->maxspeed = ent->v.maxspeed;
 	cd->fov = ent->v.fov;
@@ -1887,7 +1887,7 @@ int InconsistentFile(const edict_t* player, const char* filename, char* disconne
 		return 0;
 
 	// Default behavior is to kick the player
-	sprintf(disconnect_message, "Server is enforcing file consistency for %s\n", filename);
+	sprintf_s(disconnect_message, 256, "Server is enforcing file consistency for %s\n", filename);
 
 	// Kick now with specified disconnect message.
 	return 1;

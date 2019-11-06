@@ -84,7 +84,7 @@ HINTERFACEMODULE Sys_LoadModule(const char* pModuleName)
 	if (szCwd[strlen(szCwd) - 1] == '/')
 		szCwd[strlen(szCwd) - 1] = 0;
 
-	sprintf(szAbsoluteLibFilename, "%s/%s", szCwd, pModuleName);
+	sprintf_s(szAbsoluteLibFilename, "%s/%s", szCwd, pModuleName);
 
 	return reinterpret_cast<HINTERFACEMODULE>(dlopen(szAbsoluteLibFilename, RTLD_NOW));
 }

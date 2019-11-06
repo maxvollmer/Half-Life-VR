@@ -94,7 +94,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 			char szCommand[256];
 
 			ALERT(at_console, "Executing dedicated server config file\n");
-			sprintf(szCommand, "exec %s\n", servercfgfile);
+			sprintf_s(szCommand, "exec %s\n", servercfgfile);
 			SERVER_COMMAND(szCommand);
 		}
 	}
@@ -108,7 +108,7 @@ CHalfLifeMultiplay::CHalfLifeMultiplay()
 			char szCommand[256];
 
 			ALERT(at_console, "Executing listen server config file\n");
-			sprintf(szCommand, "exec %s\n", lservercfgfile);
+			sprintf_s(szCommand, "exec %s\n", lservercfgfile);
 			SERVER_COMMAND(szCommand);
 		}
 	}
@@ -848,9 +848,9 @@ void CHalfLifeMultiplay::DeathNotice(CBasePlayer* pVictim, entvars_t* pKiller, e
 	{
 		strcpy ( szText, STRING( pKiller->netname ) );
 
-		strcat( szText, " : " );
-		strcat( szText, killer_weapon_name );
-		strcat( szText, " : " );
+		strcat_s( szText, " : " );
+		strcat_s( szText, killer_weapon_name );
+		strcat_s( szText, " : " );
 
 		strcat ( szText, STRING( pVictim->pev->netname ) );
 		strcat ( szText, "\n" );
@@ -1338,7 +1338,7 @@ int ReloadMapCycleFile(const char* filename, mapcycle_t* cycle)
 			if (strlen(com_token) <= 0)
 				break;
 
-			strcpy(szMap, com_token);
+			strcpy_s(szMap, com_token);
 
 			// Any more tokens on this line?
 			if (COM_TokenWaiting(pFileList))
@@ -1347,7 +1347,7 @@ int ReloadMapCycleFile(const char* filename, mapcycle_t* cycle)
 				if (strlen(com_token) > 0)
 				{
 					hasbuffer = 1;
-					strcpy(szBuffer, com_token);
+					strcpy_s(szBuffer, com_token);
 				}
 			}
 
@@ -1359,7 +1359,7 @@ int ReloadMapCycleFile(const char* filename, mapcycle_t* cycle)
 
 				item = new mapcycle_item_s;
 
-				strcpy(item->mapname, szMap);
+				strcpy_s(item->mapname, szMap);
 
 				item->minplayers = 0;
 				item->maxplayers = 0;
@@ -1388,7 +1388,7 @@ int ReloadMapCycleFile(const char* filename, mapcycle_t* cycle)
 					g_engfuncs.pfnInfo_RemoveKey(szBuffer, "minplayers");
 					g_engfuncs.pfnInfo_RemoveKey(szBuffer, "maxplayers");
 
-					strcpy(item->rulebuffer, szBuffer);
+					strcpy_s(item->rulebuffer, szBuffer);
 				}
 
 				item->next = cycle->items;
@@ -1466,7 +1466,7 @@ Parse commands/key value pairs to issue right after map xxx command is issued on
  level transition
 ==============
 */
-void ExtractCommandString(char* s, char* szCommand)
+void ExtractCommandString(char* s, char* szCommand, int iCommandSize)
 {
 	// Now make rules happen
 	char pkey[512];
@@ -1499,13 +1499,13 @@ void ExtractCommandString(char* s, char* szCommand)
 		}
 		*o = 0;
 
-		strcat(szCommand, pkey);
+		strcat_s(szCommand, iCommandSize, pkey);
 		if (strlen(value) > 0)
 		{
-			strcat(szCommand, " ");
-			strcat(szCommand, value);
+			strcat_s(szCommand, iCommandSize, " ");
+			strcat_s(szCommand, iCommandSize, value);
 		}
-		strcat(szCommand, "\n");
+		strcat_s(szCommand, iCommandSize, "\n");
 
 		if (!*s)
 			return;
@@ -1530,7 +1530,7 @@ void CHalfLifeMultiplay::ChangeLevel(void)
 	char szCommands[1500];
 	char szRules[1500];
 	int minplayers = 0, maxplayers = 0;
-	strcpy(szFirstMapInList, "hldm1");  // the absolute default level is hldm1
+	strcpy_s(szFirstMapInList, "hldm1");  // the absolute default level is hldm1
 
 	int curplayers;
 	BOOL do_cycle = TRUE;
@@ -1545,9 +1545,9 @@ void CHalfLifeMultiplay::ChangeLevel(void)
 	curplayers = CountPlayers();
 
 	// Has the map cycle filename changed?
-	if (stricmp(mapcfile, szPreviousMapCycleFile))
+	if (_stricmp(mapcfile, szPreviousMapCycleFile))
 	{
-		strcpy(szPreviousMapCycleFile, mapcfile);
+		strcpy_s(szPreviousMapCycleFile, mapcfile);
 
 		DestroyMapCycle(&mapcycle);
 
@@ -1565,8 +1565,8 @@ void CHalfLifeMultiplay::ChangeLevel(void)
 		mapcycle_item_s* item;
 
 		// Assume current map
-		strcpy(szNextMap, STRING(gpGlobals->mapname));
-		strcpy(szFirstMapInList, STRING(gpGlobals->mapname));
+		strcpy_s(szNextMap, STRING(gpGlobals->mapname));
+		strcpy_s(szFirstMapInList, STRING(gpGlobals->mapname));
 
 		// Traverse list
 		for (item = mapcycle.next_item; item->next != mapcycle.next_item; item = item->next)
@@ -1617,15 +1617,15 @@ void CHalfLifeMultiplay::ChangeLevel(void)
 		mapcycle.next_item = item->next;
 
 		// Perform logic on current item
-		strcpy(szNextMap, item->mapname);
+		strcpy_s(szNextMap, item->mapname);
 
-		ExtractCommandString(item->rulebuffer, szCommands);
-		strcpy(szRules, item->rulebuffer);
+		ExtractCommandString(item->rulebuffer, szCommands, 1500);
+		strcpy_s(szRules, item->rulebuffer);
 	}
 
 	if (!IS_MAP_VALID(szNextMap))
 	{
-		strcpy(szNextMap, szFirstMapInList);
+		strcpy_s(szNextMap, szFirstMapInList);
 	}
 
 	g_fGameOver = TRUE;
@@ -1671,11 +1671,11 @@ void CHalfLifeMultiplay::SendMOTDToClient(edict_t* client)
 
 		if (strlen(pFileList) < MAX_MOTD_CHUNK)
 		{
-			strcpy(chunk, pFileList);
+			strcpy_s(chunk, pFileList);
 		}
 		else
 		{
-			strncpy(chunk, pFileList, MAX_MOTD_CHUNK);
+			strncpy_s(chunk, pFileList, MAX_MOTD_CHUNK);
 			chunk[MAX_MOTD_CHUNK] = 0;  // strncpy doesn't always append the null terminator
 		}
 

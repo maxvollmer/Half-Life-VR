@@ -537,7 +537,7 @@ void CStudioModelRenderer::StudioSetUpTransform(int trivial_accept)
 		// NOTE:  Because we need to interpolate multiplayer characters, the interpolation time limit
 		//  was increased to 1.0f s., which is 2x the max lag we are accounting for.
 
-		if ((m_clTime < m_pCurrentEntity->curstate.animtime + 1.0f) &&
+		if ((m_clTime < m_pCurrentEntity->curstate.animtime + 1.f) &&
 			(m_pCurrentEntity->curstate.animtime != m_pCurrentEntity->latched.prevanimtime))
 		{
 			f = (m_clTime - m_pCurrentEntity->curstate.animtime) / (m_pCurrentEntity->curstate.animtime - m_pCurrentEntity->latched.prevanimtime);
@@ -685,13 +685,6 @@ void CStudioModelRenderer::StudioCalcRotations(float pos[][3], vec4_t* q, mstudi
 	}
 
 	frame = (int)f;
-
-	// Con_DPrintf("%d %.4f %.4f %.4f %.4f %d\n", m_pCurrentEntity->curstate.sequence, m_clTime, m_pCurrentEntity->animtime, m_pCurrentEntity->frame, f, frame );
-
-	// Con_DPrintf( "%f %f %f\n", m_pCurrentEntity->angles[ROLL], m_pCurrentEntity->angles[PITCH], m_pCurrentEntity->angles[YAW] );
-
-	// Con_DPrintf("frame %d %d\n", frame1, frame2 );
-
 
 	dadt = StudioEstimateInterpolant();
 	s = (f - frame);
@@ -925,7 +918,7 @@ void CStudioModelRenderer::StudioSetupBonesInline(float bonetransform[MAXSTUDIOB
 
 	if (m_fDoInterp &&
 		m_pCurrentEntity->latched.sequencetime &&
-		(m_pCurrentEntity->latched.sequencetime + 0.2 > m_clTime) &&
+		(m_pCurrentEntity->latched.sequencetime + 0.2f > m_clTime) &&
 		(m_pCurrentEntity->latched.prevsequence < m_pStudioHeader->numseq))
 	{
 		// blend from last sequence
@@ -962,7 +955,7 @@ void CStudioModelRenderer::StudioSetupBonesInline(float bonetransform[MAXSTUDIOB
 			}
 		}
 
-		s = 1.0f - (m_clTime - m_pCurrentEntity->latched.sequencetime) / 0.2;
+		s = 1.0f - (m_clTime - m_pCurrentEntity->latched.sequencetime) / 0.2f;
 		StudioSlerpBones(q, pos, q1b, pos1b, s);
 	}
 	else
@@ -1089,7 +1082,7 @@ void CStudioModelRenderer::StudioSaveBones(void)
 
 	for (int i = 0; i < m_pStudioHeader->numbones; i++)
 	{
-		strcpy(m_nCachedBoneNames[i], pbones[i].name);
+		strcpy_s(m_nCachedBoneNames[i], pbones[i].name);
 		MatrixCopy((*m_pbonetransform)[i], m_rgCachedBoneTransform[i]);
 		MatrixCopy((*m_plighttransform)[i], m_rgCachedLightTransform[i]);
 	}
@@ -1140,7 +1133,7 @@ void CStudioModelRenderer::StudioMergeBones(model_t* m_pSubModel)
 	{
 		for (j = 0; j < m_nCachedBones; j++)
 		{
-			if (stricmp(pbones[i].name, m_nCachedBoneNames[j]) == 0)
+			if (_stricmp(pbones[i].name, m_nCachedBoneNames[j]) == 0)
 			{
 				MatrixCopy(m_rgCachedBoneTransform[j], (*m_pbonetransform)[i]);
 				MatrixCopy(m_rgCachedLightTransform[j], (*m_plighttransform)[i]);
@@ -1236,7 +1229,7 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 		}
 	}
 
-	IEngineStudio.GetTimes(&m_nFrameCount, &m_clTime, &m_clOldTime);
+	GetTimes();
 	IEngineStudio.GetViewInfo(m_vRenderOrigin, m_vUp, m_vRight, m_vNormal);
 	IEngineStudio.GetAliasScale(&m_fSoftwareXScale, &m_fSoftwareYScale);
 
@@ -1478,11 +1471,11 @@ void CStudioModelRenderer::StudioEstimateGait(entity_state_t* pplayer)
 	}
 	else
 	{
-		m_pPlayerInfo->gaityaw = (atan2(est_velocity[1], est_velocity[0]) * 180 / M_PI);
-		if (m_pPlayerInfo->gaityaw > 180)
-			m_pPlayerInfo->gaityaw = 180;
-		if (m_pPlayerInfo->gaityaw < -180)
-			m_pPlayerInfo->gaityaw = -180;
+		m_pPlayerInfo->gaityaw = atan2(est_velocity[1], est_velocity[0]) * 180.f / M_PI;
+		if (m_pPlayerInfo->gaityaw > 180.f)
+			m_pPlayerInfo->gaityaw = 180.f;
+		if (m_pPlayerInfo->gaityaw < -180.f)
+			m_pPlayerInfo->gaityaw = -180.f;
 	}
 }
 
@@ -1596,7 +1589,7 @@ int CStudioModelRenderer::StudioDrawPlayer(int flags, entity_state_t* pplayer)
 	vec3_t dir;
 
 	m_pCurrentEntity = IEngineStudio.GetCurrentEntity();
-	IEngineStudio.GetTimes(&m_nFrameCount, &m_clTime, &m_clOldTime);
+	GetTimes();
 	IEngineStudio.GetViewInfo(m_vRenderOrigin, m_vUp, m_vRight, m_vNormal);
 	IEngineStudio.GetAliasScale(&m_fSoftwareXScale, &m_fSoftwareYScale);
 
@@ -1753,6 +1746,7 @@ int CStudioModelRenderer::StudioDrawPlayer(int flags, entity_state_t* pplayer)
 
 	return 1;
 }
+
 
 /*
 ====================

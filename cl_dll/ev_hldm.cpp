@@ -124,7 +124,7 @@ float EV_HLDM_PlayTextureSound(int idx, pmtrace_t* ptr, float* vecSrc, float* ve
 
 		if (pTextureName)
 		{
-			strcpy(texname, pTextureName);
+			strcpy_s(texname, pTextureName);
 			pTextureName = texname;
 
 			// strip leading '-0' or '+0~' or '{' or '!'
@@ -139,7 +139,7 @@ float EV_HLDM_PlayTextureSound(int idx, pmtrace_t* ptr, float* vecSrc, float* ve
 			}
 
 			// '}}'
-			strcpy(szbuffer, pTextureName);
+			strcpy_s(szbuffer, pTextureName);
 			szbuffer[CBTEXTURENAMEMAX - 1] = 0;
 
 			// get texture type
@@ -246,16 +246,16 @@ char* EV_HLDM_DamageDecal(physent_t* pe)
 	if (pe->classnumber == 1)
 	{
 		idx = gEngfuncs.pfnRandomLong(0, 2);
-		sprintf(decalname, "{break%i", idx + 1);
+		sprintf_s(decalname, "{break%i", idx + 1);
 	}
 	else if (pe->rendermode != kRenderNormal)
 	{
-		sprintf(decalname, "{bproof1");
+		sprintf_s(decalname, "{bproof1");
 	}
 	else
 	{
 		idx = gEngfuncs.pfnRandomLong(0, 4);
-		sprintf(decalname, "{shot%i", idx + 1);
+		sprintf_s(decalname, "{shot%i", idx + 1);
 	}
 	return decalname;
 }
@@ -1449,8 +1449,6 @@ enum EGON_FIREMODE
 #define EGON_SOUND_RUN      "weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP  "weapons/egon_windup2.wav"
 
-#define ARRAYSIZE(p) (sizeof(p) / sizeof(p[0]))
-
 BEAM* pBeam{ nullptr };
 BEAM* pBeam2{ nullptr };
 
@@ -1774,15 +1772,15 @@ void EV_TrainPitchAdjust(event_args_t* args)
 
 	switch (noise)
 	{
-	case 1: strcpy(sz, "plats/ttrain1.wav"); break;
-	case 2: strcpy(sz, "plats/ttrain2.wav"); break;
-	case 3: strcpy(sz, "plats/ttrain3.wav"); break;
-	case 4: strcpy(sz, "plats/ttrain4.wav"); break;
-	case 5: strcpy(sz, "plats/ttrain6.wav"); break;
-	case 6: strcpy(sz, "plats/ttrain7.wav"); break;
+	case 1: strcpy_s(sz, "plats/ttrain1.wav"); break;
+	case 2: strcpy_s(sz, "plats/ttrain2.wav"); break;
+	case 3: strcpy_s(sz, "plats/ttrain3.wav"); break;
+	case 4: strcpy_s(sz, "plats/ttrain4.wav"); break;
+	case 5: strcpy_s(sz, "plats/ttrain6.wav"); break;
+	case 6: strcpy_s(sz, "plats/ttrain7.wav"); break;
 	default:
 		// no sound
-		strcpy(sz, "");
+		strcpy_s(sz, "");
 		return;
 	}
 

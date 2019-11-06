@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include <vector>
+#include <string>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,7 +48,8 @@ studiohdr_t* StudioModel::LoadModel(const char* modelname)
 		return 0;
 
 	// load the model
-	FILE* fp = fopen(modelname, "rb");
+	FILE* fp = nullptr;
+	fopen_s(&fp, modelname, "rb");
 	if (!fp)
 		return 0;
 
@@ -92,12 +94,9 @@ bool StudioModel::PostLoadModel(const char* modelname)
 	{
 		for (int i = 1; i < m_pstudiohdr->numseqgroups; i++)
 		{
-			char seqgroupname[256];
-
-			strcpy(seqgroupname, modelname);
-			sprintf(&seqgroupname[strlen(seqgroupname) - 4], "%02d.mdl", i);
-
-			m_panimhdr[i] = LoadModel(seqgroupname);
+			std::string seqgroupname = modelname;
+			seqgroupname = seqgroupname.substr(0, seqgroupname.size() - 4) + std::to_string(i) + ".mdl";
+			m_panimhdr[i] = LoadModel(seqgroupname.data());
 			if (!m_panimhdr[i])
 			{
 				FreeModel();

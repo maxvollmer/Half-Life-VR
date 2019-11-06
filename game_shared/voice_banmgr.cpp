@@ -45,10 +45,11 @@ bool CVoiceBanMgr::Init(char const* pGameDir)
 	Term();
 
 	char filename[512];
-	_snprintf(filename, sizeof(filename), "%s/%s", pGameDir, g_pBanMgrFilename);
+	_snprintf_s(filename, sizeof(filename), "%s/%s", pGameDir, g_pBanMgrFilename);
 
 	// Load in the squelch file.
-	FILE* fp = fopen(filename, "rb");
+	FILE* fp = nullptr;
+	fopen_s(&fp, filename, "rb");
 	if (fp)
 	{
 		int version;
@@ -96,9 +97,10 @@ void CVoiceBanMgr::SaveState(char const* pGameDir)
 {
 	// Save the file out.
 	char filename[512];
-	_snprintf(filename, sizeof(filename), "%s/%s", pGameDir, g_pBanMgrFilename);
+	_snprintf_s(filename, sizeof(filename), "%s/%s", pGameDir, g_pBanMgrFilename);
 
-	FILE* fp = fopen(filename, "wb");
+	FILE* fp = nullptr;
+	fopen_s(&fp, filename, "wb");
 	if (fp)
 	{
 		int version = BANMGR_FILEVERSION;

@@ -312,17 +312,17 @@ void CNihilanth::Spawn(void)
 	m_iTeleport = 1;
 
 	if (m_szRechargerTarget[0] == '\0')
-		strcpy(m_szRechargerTarget, "n_recharger");
+		strcpy_s(m_szRechargerTarget, "n_recharger");
 	if (m_szDrawUse[0] == '\0')
-		strcpy(m_szDrawUse, "n_draw");
+		strcpy_s(m_szDrawUse, "n_draw");
 	if (m_szTeleportUse[0] == '\0')
-		strcpy(m_szTeleportUse, "n_leaving");
+		strcpy_s(m_szTeleportUse, "n_leaving");
 	if (m_szTeleportTouch[0] == '\0')
-		strcpy(m_szTeleportTouch, "n_teleport");
+		strcpy_s(m_szTeleportTouch, "n_teleport");
 	if (m_szDeadUse[0] == '\0')
-		strcpy(m_szDeadUse, "n_dead");
+		strcpy_s(m_szDeadUse, "n_dead");
 	if (m_szDeadTouch[0] == '\0')
-		strcpy(m_szDeadTouch, "n_ending");
+		strcpy_s(m_szDeadTouch, "n_ending");
 
 	// near death
 	/*
@@ -732,7 +732,7 @@ void CNihilanth::NextActivity()
 		CBaseEntity* pRecharger = nullptr;
 		float flDist = 8192;
 
-		sprintf(szName, "%s%d", m_szRechargerTarget, m_iLevel);
+		sprintf_s(szName, "%s%d", m_szRechargerTarget, m_iLevel);
 
 		while ((pEnt = UTIL_FindEntityByTargetname(pEnt, szName)) != nullptr)
 		{
@@ -776,7 +776,7 @@ void CNihilanth::NextActivity()
 			{
 				char szText[64];
 
-				sprintf(szText, "%s%d", m_szDrawUse, m_iLevel);
+				sprintf_s(szText, "%s%d", m_szDrawUse, m_iLevel);
 				FireTargets(szText, this, this, USE_ON, 1.0);
 
 				ALERT(at_console, "fireing %s\n", szText);
@@ -824,10 +824,10 @@ void CNihilanth::NextActivity()
 				{
 					char szText[64];
 
-					sprintf(szText, "%s%d", m_szTeleportTouch, m_iTeleport);
+					sprintf_s(szText, "%s%d", m_szTeleportTouch, m_iTeleport);
 					CBaseEntity* pTouch = UTIL_FindEntityByTargetname(nullptr, szText);
 
-					sprintf(szText, "%s%d", m_szTeleportUse, m_iTeleport);
+					sprintf_s(szText, "%s%d", m_szTeleportUse, m_iTeleport);
 					CBaseEntity* pTrigger = UTIL_FindEntityByTargetname(nullptr, szText);
 
 					if (pTrigger != nullptr || pTouch != nullptr)
@@ -1097,10 +1097,10 @@ void CNihilanth::HandleAnimEvent(MonsterEvent_t* pEvent)
 		{
 			char szText[32];
 
-			sprintf(szText, "%s%d", m_szTeleportTouch, m_iTeleport);
+			sprintf_s(szText, "%s%d", m_szTeleportTouch, m_iTeleport);
 			CBaseEntity* pTouch = UTIL_FindEntityByTargetname(nullptr, szText);
 
-			sprintf(szText, "%s%d", m_szTeleportUse, m_iTeleport);
+			sprintf_s(szText, "%s%d", m_szTeleportUse, m_iTeleport);
 			CBaseEntity* pTrigger = UTIL_FindEntityByTargetname(nullptr, szText);
 
 			if (pTrigger != nullptr || pTouch != nullptr)

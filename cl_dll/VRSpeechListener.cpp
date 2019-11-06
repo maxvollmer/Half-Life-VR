@@ -1,7 +1,7 @@
 #include "VRSpeechListener.h"
 
 #include <windows.h>
-#include <sphelper.h>
+#include <sperror.h>
 #include <sapi.h>
 #include <comdef.h>
 

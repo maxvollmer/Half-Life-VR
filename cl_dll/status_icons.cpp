@@ -109,7 +109,7 @@ void CHudStatusIcons::EnableIcon(char* pszIconName, unsigned char red, unsigned 
 	int i = 0;
 	for (; i < MAX_ICONSPRITES; i++)
 	{
-		if (!stricmp(m_IconList[i].szSpriteName, pszIconName))
+		if (!_stricmp(m_IconList[i].szSpriteName, pszIconName))
 			break;
 	}
 
@@ -137,7 +137,7 @@ void CHudStatusIcons::EnableIcon(char* pszIconName, unsigned char red, unsigned 
 	m_IconList[i].r = red;
 	m_IconList[i].g = green;
 	m_IconList[i].b = blue;
-	strcpy(m_IconList[i].szSpriteName, pszIconName);
+	strcpy_s(m_IconList[i].szSpriteName, pszIconName);
 
 	// Hack: Play Timer sound when a grenade icon is played (in 0.8 seconds)
 	if (strstr(m_IconList[i].szSpriteName, "grenade"))
@@ -152,7 +152,7 @@ void CHudStatusIcons::DisableIcon(char* pszIconName)
 	// find the sprite is in the current list
 	for (int i = 0; i < MAX_ICONSPRITES; i++)
 	{
-		if (!stricmp(m_IconList[i].szSpriteName, pszIconName))
+		if (!_stricmp(m_IconList[i].szSpriteName, pszIconName))
 		{
 			// clear the item from the list
 			memset(&m_IconList[i], 0, sizeof icon_sprite_t);

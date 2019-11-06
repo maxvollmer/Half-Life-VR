@@ -285,7 +285,7 @@ void AddAmmoNameToAmmoRegistry(const char* szAmmoname)
 		if (!CBasePlayerItem::AmmoInfoArray[i].pszName)
 			continue;
 
-		if (stricmp(CBasePlayerItem::AmmoInfoArray[i].pszName, szAmmoname) == 0)
+		if (_stricmp(CBasePlayerItem::AmmoInfoArray[i].pszName, szAmmoname) == 0)
 			return;  // ammo already in registry, just quite
 	}
 
@@ -1053,7 +1053,7 @@ BOOL CBasePlayerWeapon::DefaultDeploy(char* szViewModel, char* szWeaponModel, in
 	m_pPlayer->TabulateAmmo();
 	m_pPlayer->pev->viewmodel = MAKE_STRING(szViewModel);
 	m_pPlayer->pev->weaponmodel = MAKE_STRING(szWeaponModel);
-	strcpy(m_pPlayer->m_szAnimExtention, szAnimExt);
+	strcpy_s(m_pPlayer->m_szAnimExtention, szAnimExt);
 	SendWeaponAnim(iAnim, skiplocal, body);
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
@@ -1501,7 +1501,7 @@ int CWeaponBox::GiveAmmo(int iCount, const char* szName, int iMax, int* pIndex /
 
 	for (i = 1; i < MAX_AMMO_SLOTS && !FStringNull(m_rgiszAmmo[i]); i++)
 	{
-		if (stricmp(szName, STRING(m_rgiszAmmo[i])) == 0)
+		if (_stricmp(szName, STRING(m_rgiszAmmo[i])) == 0)
 		{
 			if (pIndex)
 				*pIndex = i;

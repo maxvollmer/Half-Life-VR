@@ -181,7 +181,7 @@ static Vector gTankSpread[] =
 	Vector(0.1, 0.1, 0.1),        // large cone
 	Vector(0.25, 0.25, 0.25),     // extra-large cone
 };
-#define MAX_FIRING_SPREADS ARRAYSIZE(gTankSpread)
+#define MAX_FIRING_SPREADS (int)std::size(gTankSpread)
 
 
 void CFuncTank::Spawn(void)

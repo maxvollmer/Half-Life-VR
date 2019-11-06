@@ -55,6 +55,8 @@ void PM_CheckFalling(void);
 void PM_PlayWaterSounds(void);
 void PM_Jump(void);
 
+
+#if 0
 float PM_GetStepHeight(playermove_t* pmove, vec3_t start, const float origdisttofloor, const float factor)
 {
 	vec3_t infdown;
@@ -190,6 +192,12 @@ float PM_GetStepHeight(playermove_t* pmove, float origin[3])
 
 	return highestStepHeight;
 }
+#endif
+
+float PM_GetStepHeight(playermove_t* pmove, float origin[3])
+{
+	return 0.f;
+}
 
 
 #ifdef CLIENT_DLL
@@ -284,16 +292,15 @@ int g_onladder = 0;
 
 void PM_SwapTextures(int i, int j)
 {
-	char chTemp;
 	char szTemp[CBTEXTURENAMEMAX];
 
-	strcpy(szTemp, grgszTextureName[i]);
-	chTemp = grgchTextureType[i];
+	strcpy_s(szTemp, grgszTextureName[i]);
+	char chTemp = grgchTextureType[i];
 
-	strcpy(grgszTextureName[i], grgszTextureName[j]);
+	strcpy_s(grgszTextureName[i], grgszTextureName[j]);
 	grgchTextureType[i] = grgchTextureType[j];
 
-	strcpy(grgszTextureName[j], szTemp);
+	strcpy_s(grgszTextureName[j], szTemp);
 	grgchTextureType[j] = chTemp;
 }
 
@@ -307,7 +314,7 @@ void PM_SortTextures(void)
 	{
 		for (j = i + 1; j < gcTextures; j++)
 		{
-			if (stricmp(grgszTextureName[i], grgszTextureName[j]) > 0)
+			if (_stricmp(grgszTextureName[i], grgszTextureName[j]) > 0)
 			{
 				// Swap
 				//
@@ -376,7 +383,7 @@ void PM_InitTextureTypes()
 		// null-terminate name and save in sentences array
 		j = min(j, CBTEXTURENAMEMAX - 1 + i);
 		buffer[j] = 0;
-		strcpy(&(grgszTextureName[gcTextures++][0]), &(buffer[i]));
+		strcpy_s(grgszTextureName[gcTextures++], &(buffer[i]));
 	}
 
 	// Must use engine to free since we are in a .dll
@@ -401,7 +408,7 @@ char PM_FindTextureType(char* name)
 	{
 		pivot = (left + right) / 2;
 
-		val = strnicmp(name, grgszTextureName[pivot], CBTEXTURENAMEMAX - 1);
+		val = _strnicmp(name, grgszTextureName[pivot], CBTEXTURENAMEMAX - 1);
 		if (val == 0)
 		{
 			return grgchTextureType[pivot];
@@ -616,7 +623,7 @@ void PM_CatagorizeTextureType(void)
 		pTextureName++;
 	// '}}'
 
-	strcpy(pmove->sztexturename, pTextureName);
+	strcpy_s(pmove->sztexturename, pTextureName);
 	pmove->sztexturename[CBTEXTURENAMEMAX - 1] = 0;
 
 	// get texture type

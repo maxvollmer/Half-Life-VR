@@ -188,7 +188,7 @@ int CHud::DrawHudString(int xpos, int ypos, int iMaxX, char* szIt, int r, int g,
 int CHud::DrawHudNumberString(int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b)
 {
 	char szString[32];
-	sprintf(szString, "%d", iNumber);
+	sprintf_s(szString, "%d", iNumber);
 	return DrawHudStringReverse(xpos, ypos, iMinX, szString, r, g, b);
 }
 

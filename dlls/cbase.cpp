@@ -547,7 +547,7 @@ TYPEDESCRIPTION CBaseEntity::m_SaveData[] =
 int CBaseEntity::Save(CSave& save)
 {
 	if (save.WriteEntVars("ENTVARS", pev))
-		return save.WriteFields("BASE", this, m_SaveData, ARRAYSIZE(m_SaveData));
+		return save.WriteFields("BASE", this, m_SaveData, (int)std::size(m_SaveData));
 
 	return 0;
 }
@@ -558,7 +558,7 @@ int CBaseEntity::Restore(CRestore& restore)
 
 	status = restore.ReadEntVars("ENTVARS", pev);
 	if (status)
-		status = restore.ReadFields("BASE", this, m_SaveData, ARRAYSIZE(m_SaveData));
+		status = restore.ReadFields("BASE", this, m_SaveData, (int)std::size(m_SaveData));
 
 	if (pev->modelindex != 0 && !FStringNull(pev->model))
 	{

@@ -51,6 +51,11 @@ enum class VRControllerID : int32_t
 	HAND
 };
 
+float VRGetSmoothStepsSetting()
+{
+	return CVAR_GET_FLOAT("vr_smooth_steps");
+}
+
 VRHelper::VRHelper()
 {
 }
@@ -676,7 +681,10 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 		}
 		float originalHeight = hlTransform[13];
 		float newHeight = (std::min)(hlTransform[13] * GetVRToHL().y, playerViewPosHeight) / GetVRToHL().y;
-		newHeight += GetStepHeight();
+		if (VRGetSmoothStepsSetting() != 0.f)
+		{
+			newHeight += GetStepHeight() / GetVRToHL().y;
+		}
 		hlTransform[13] = newHeight;
 		m_hmdHeightOffset = newHeight - originalHeight;
 	}
@@ -762,6 +770,13 @@ Matrix4 VRHelper::GetAbsoluteControllerTransform(vr::TrackedDeviceIndex_t contro
 
 float VRHelper::GetStepHeight()
 {
+	if (VRGetSmoothStepsSetting() == 0.f)
+	{
+		m_stepHeightOrigin = Vector{};
+		m_stepHeight = 0.f;
+		return 0.f;
+	}
+
 	cl_entity_t* localPlayer = SaveGetLocalPlayer();
 	extern playermove_t* pmove;
 	if (localPlayer && pmove)
@@ -778,6 +793,7 @@ float VRHelper::GetStepHeight()
 		m_stepHeightOrigin = Vector{};
 		m_stepHeight = 0.f;
 	}
+
 	return m_stepHeight;
 }
 
@@ -788,7 +804,10 @@ void VRHelper::GetViewOrg(float* origin)
 	if (localPlayer)
 	{
 		viewOrg.z = (std::min)(viewOrg.z, localPlayer->curstate.origin.z + m_viewOfs.z);
-		viewOrg.z += GetStepHeight();
+		if (VRGetSmoothStepsSetting() != 0.f)
+		{
+			viewOrg.z += GetStepHeight();
+		}
 	}
 	viewOrg.CopyToArray(origin);
 }
@@ -1548,10 +1567,6 @@ bool VRIsAutoDuckingEnabled(int player)
 	return CVAR_GET_FLOAT("vr_autocrouch_enabled") != 0.f;
 }
 
-float VRGetSmoothStepsSetting()
-{
-	return CVAR_GET_FLOAT("vr_smooth_steps");
-}
 
 
 void __stdcall HLVRConsoleCallback(char* msg)

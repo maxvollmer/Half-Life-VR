@@ -171,8 +171,8 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char* pszName, int iSize, void* pbuf
 	int victim = READ_BYTE();
 
 	char killedwith[32];
-	strcpy(killedwith, "d_");
-	strncat(killedwith, READ_STRING(), 32);
+	strcpy_s(killedwith, "d_");
+	strncat_s(killedwith, READ_STRING(), 32);
 
 	if (gViewPort)
 		gViewPort->DeathMsg(killer, victim);
@@ -203,7 +203,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char* pszName, int iSize, void* pbuf
 	else
 	{
 		rgDeathNoticeList[i].KillerColor = GetClientColor(killer);
-		strncpy(rgDeathNoticeList[i].szKiller, killer_name, MAX_PLAYER_NAME_LENGTH);
+		strncpy_s(rgDeathNoticeList[i].szKiller, killer_name, MAX_PLAYER_NAME_LENGTH);
 		rgDeathNoticeList[i].szKiller[MAX_PLAYER_NAME_LENGTH - 1] = 0;
 	}
 
@@ -220,7 +220,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char* pszName, int iSize, void* pbuf
 	else
 	{
 		rgDeathNoticeList[i].VictimColor = GetClientColor(victim);
-		strncpy(rgDeathNoticeList[i].szVictim, victim_name, MAX_PLAYER_NAME_LENGTH);
+		strncpy_s(rgDeathNoticeList[i].szVictim, victim_name, MAX_PLAYER_NAME_LENGTH);
 		rgDeathNoticeList[i].szVictim[MAX_PLAYER_NAME_LENGTH - 1] = 0;
 	}
 
@@ -230,7 +230,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char* pszName, int iSize, void* pbuf
 		rgDeathNoticeList[i].iNonPlayerKill = TRUE;
 
 		// Store the object's name in the Victim slot (skip the d_ bit)
-		strcpy(rgDeathNoticeList[i].szVictim, killedwith + 2);
+		strcpy_s(rgDeathNoticeList[i].szVictim, killedwith + 2);
 	}
 	else
 	{
@@ -291,9 +291,9 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char* pszName, int iSize, void* pbuf
 
 			// replace the code names with the 'real' names
 			if (!strcmp(killedwith + 2, "egon"))
-				strcpy(killedwith, "d_gluon gun");
+				strcpy_s(killedwith, "d_gluon gun");
 			if (!strcmp(killedwith + 2, "gauss"))
-				strcpy(killedwith, "d_tau cannon");
+				strcpy_s(killedwith, "d_tau cannon");
 
 			ConsolePrint(killedwith + 2);  // skip over the "d_" part
 		}

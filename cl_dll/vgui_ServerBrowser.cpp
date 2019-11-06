@@ -131,7 +131,7 @@ namespace
 			address = gEngfuncs.pNetAPI->ValueForKey(info, "address");
 			//gEngfuncs.Con_Printf( "Connecting to %s\n", address );
 
-			sprintf(sz, "connect %s\n", address);
+			sprintf_s(sz, "connect %s\n", address);
 
 			ClientCmd(sz);
 
@@ -195,7 +195,7 @@ namespace
 					val = gEngfuncs.pNetAPI->ValueForKey(info, "address");
 					if (val)
 					{
-						strncpy(sz, val, 31);
+						strncpy_s(sz, val, 31);
 						sz[31] = '\0';
 						// Server Name;
 						m_pLabel->setText(sz);
@@ -205,7 +205,7 @@ namespace
 					val = gEngfuncs.pNetAPI->ValueForKey(info, "hostname");
 					if (val)
 					{
-						strncpy(sz, val, 31);
+						strncpy_s(sz, val, 31);
 						sz[31] = '\0';
 						// Server Map;
 						m_pLabel->setText(sz);
@@ -215,7 +215,7 @@ namespace
 					val = gEngfuncs.pNetAPI->ValueForKey(info, "map");
 					if (val)
 					{
-						strncpy(sz, val, 31);
+						strncpy_s(sz, val, 31);
 						sz[31] = '\0';
 						// Server Name;
 						m_pLabel->setText(sz);
@@ -226,7 +226,7 @@ namespace
 					val2 = gEngfuncs.pNetAPI->ValueForKey(info, "max");
 					if (val && val2)
 					{
-						sprintf(sz, "%s/%s", val, val2);
+						sprintf_s(sz, "%s/%s", val, val2);
 						sz[31] = '\0';
 						// Server Map;
 						m_pLabel->setText(sz);
@@ -236,7 +236,7 @@ namespace
 					val = gEngfuncs.pNetAPI->ValueForKey(info, "ping");
 					if (val)
 					{
-						strncpy(sz, val, 31);
+						strncpy_s(sz, val, 31);
 						sz[31] = '\0';
 						// Server Name;
 						m_pLabel->setText(sz);
@@ -405,7 +405,7 @@ public:
 	LabelSortInputHandler(ServerBrowserTablePanel* pBrowser, char* name)
 	{
 		m_pBrowser = pBrowser;
-		strcpy(m_szSortKey, name);
+		strcpy_s(m_szSortKey, name);
 	}
 
 	virtual void cursorMoved(int x, int y, Panel* panel) {};
@@ -442,7 +442,7 @@ public:
 	{
 		m_pBrowser = nullptr;
 
-		strcpy(m_szSortKey, sortkey);
+		strcpy_s(m_szSortKey, sortkey);
 
 		int label_bg_r = 120,
 			label_bg_g = 75,

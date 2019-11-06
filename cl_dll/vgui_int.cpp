@@ -54,7 +54,7 @@ namespace
 		{
 			char buf[256];
 			_textEntry->getText(0, buf, 256);
-			sscanf(buf, "%d", &_bindIndex);
+			sscanf_s(buf, "%d", &_bindIndex);
 		}
 
 	protected:

@@ -345,7 +345,7 @@ Task_t tlAssassinFail[] =
 Schedule_t slAssassinFail[] =
 {
 	{tlAssassinFail,
-	 ARRAYSIZE(tlAssassinFail),
+	 (int)std::size(tlAssassinFail),
 	 bits_COND_LIGHT_DAMAGE |
 		 bits_COND_HEAVY_DAMAGE |
 		 bits_COND_PROVOKED |
@@ -375,7 +375,7 @@ Schedule_t slAssassinExposed[] =
 {
 	{
 		tlAssassinExposed,
-		ARRAYSIZE(tlAssassinExposed),
+		(int)std::size(tlAssassinExposed),
 		bits_COND_CAN_MELEE_ATTACK1,
 		0,
 		"AssassinExposed",
@@ -402,7 +402,7 @@ Task_t tlAssassinTakeCoverFromEnemy[] =
 Schedule_t slAssassinTakeCoverFromEnemy[] =
 {
 	{tlAssassinTakeCoverFromEnemy,
-	 ARRAYSIZE(tlAssassinTakeCoverFromEnemy),
+	 (int)std::size(tlAssassinTakeCoverFromEnemy),
 	 bits_COND_NEW_ENEMY |
 		 bits_COND_CAN_MELEE_ATTACK1 |
 		 bits_COND_HEAR_SOUND,
@@ -433,7 +433,7 @@ Task_t tlAssassinTakeCoverFromEnemy2[] =
 Schedule_t slAssassinTakeCoverFromEnemy2[] =
 {
 	{tlAssassinTakeCoverFromEnemy2,
-	 ARRAYSIZE(tlAssassinTakeCoverFromEnemy2),
+	 (int)std::size(tlAssassinTakeCoverFromEnemy2),
 	 bits_COND_NEW_ENEMY |
 		 bits_COND_CAN_MELEE_ATTACK2 |
 		 bits_COND_HEAR_SOUND,
@@ -460,7 +460,7 @@ Task_t tlAssassinTakeCoverFromBestSound[] =
 Schedule_t slAssassinTakeCoverFromBestSound[] =
 {
 	{tlAssassinTakeCoverFromBestSound,
-	 ARRAYSIZE(tlAssassinTakeCoverFromBestSound),
+	 (int)std::size(tlAssassinTakeCoverFromBestSound),
 	 bits_COND_NEW_ENEMY,
 	 0,
 	 "AssassinTakeCoverFromBestSound"},
@@ -482,7 +482,7 @@ Task_t tlAssassinHide[] =
 Schedule_t slAssassinHide[] =
 {
 	{tlAssassinHide,
-	 ARRAYSIZE(tlAssassinHide),
+	 (int)std::size(tlAssassinHide),
 	 bits_COND_NEW_ENEMY |
 		 bits_COND_SEE_ENEMY |
 		 bits_COND_SEE_FEAR |
@@ -510,7 +510,7 @@ Task_t tlAssassinHunt[] =
 Schedule_t slAssassinHunt[] =
 {
 	{tlAssassinHunt,
-	 ARRAYSIZE(tlAssassinHunt),
+	 (int)std::size(tlAssassinHunt),
 	 bits_COND_NEW_ENEMY |
 	 // bits_COND_SEE_ENEMY			|
 	 bits_COND_CAN_RANGE_ATTACK1 |
@@ -534,7 +534,7 @@ Task_t tlAssassinJump[] =
 Schedule_t slAssassinJump[] =
 {
 	{tlAssassinJump,
-	 ARRAYSIZE(tlAssassinJump),
+	 (int)std::size(tlAssassinJump),
 	 0,
 	 0,
 	 "AssassinJump"},
@@ -555,7 +555,7 @@ Task_t tlAssassinJumpAttack[] =
 Schedule_t slAssassinJumpAttack[] =
 {
 	{tlAssassinJumpAttack,
-	 ARRAYSIZE(tlAssassinJumpAttack),
+	 (int)std::size(tlAssassinJumpAttack),
 	 0,
 	 0,
 	 "AssassinJumpAttack"},
@@ -583,7 +583,7 @@ Task_t tlAssassinJumpLand[] =
 Schedule_t slAssassinJumpLand[] =
 {
 	{tlAssassinJumpLand,
-	 ARRAYSIZE(tlAssassinJumpLand),
+	 (int)std::size(tlAssassinJumpLand),
 	 0,
 	 0,
 	 "AssassinJumpLand"},

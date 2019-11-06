@@ -1480,7 +1480,6 @@ void CTestHull::CallBuildNodeGraph(void)
 void CTestHull::BuildNodeGraph(void)
 {
 	TraceResult tr;
-	FILE* file;
 
 	char szNrpFilename[MAX_PATH];  // text node report filename
 
@@ -1532,17 +1531,17 @@ void CTestHull::BuildNodeGraph(void)
 
 	// make sure directories have been made
 	GET_GAME_DIR(szNrpFilename);
-	strcat(szNrpFilename, "/maps");
+	strcat_s(szNrpFilename, "/maps");
 	CreateDirectory(szNrpFilename, nullptr);
-	strcat(szNrpFilename, "/graphs");
+	strcat_s(szNrpFilename, "/graphs");
 	CreateDirectory(szNrpFilename, nullptr);
 
-	strcat(szNrpFilename, "/");
-	strcat(szNrpFilename, STRING(gpGlobals->mapname));
-	strcat(szNrpFilename, ".nrp");
+	strcat_s(szNrpFilename, "/");
+	strcat_s(szNrpFilename, STRING(gpGlobals->mapname));
+	strcat_s(szNrpFilename, ".nrp");
 
-	file = fopen(szNrpFilename, "w+");
-
+	FILE* file = nullptr;
+	fopen_s(&file, szNrpFilename, "w+");
 	if (!file)
 	{  // file error
 		ALERT(at_aiconsole, "Couldn't create %s!\n", szNrpFilename);
@@ -2198,14 +2197,14 @@ int CGraph::FLoadGraph(const char* szMapName)
 	// make sure the directories have been made
 	char szDirName[MAX_PATH];
 	GET_GAME_DIR(szDirName);
-	strcat(szDirName, "/maps");
+	strcat_s(szDirName, "/maps");
 	CreateDirectory(szDirName, nullptr);
-	strcat(szDirName, "/graphs");
+	strcat_s(szDirName, "/graphs");
 	CreateDirectory(szDirName, nullptr);
 
-	strcpy(szFilename, "maps/graphs/");
-	strcat(szFilename, szMapName);
-	strcat(szFilename, ".nod");
+	strcpy_s(szFilename, "maps/graphs/");
+	strcat_s(szFilename, szMapName);
+	strcat_s(szFilename, ".nod");
 
 	pMemFile = aMemFile = LOAD_FILE_FOR_ME(szFilename, &length);
 
@@ -2373,7 +2372,6 @@ int CGraph::FSaveGraph(const char* szMapName)
 {
 	int iVersion = GRAPH_VERSION;
 	char szFilename[MAX_PATH];
-	FILE* file;
 
 	if (!m_fGraphPresent || !m_fGraphPointersSet)
 	{  // protect us in the case that the node graph isn't available or built
@@ -2383,19 +2381,17 @@ int CGraph::FSaveGraph(const char* szMapName)
 
 	// make sure directories have been made
 	GET_GAME_DIR(szFilename);
-	strcat(szFilename, "/maps");
+	strcat_s(szFilename, "/maps");
 	CreateDirectory(szFilename, nullptr);
-	strcat(szFilename, "/graphs");
+	strcat_s(szFilename, "/graphs");
 	CreateDirectory(szFilename, nullptr);
 
-	strcat(szFilename, "/");
-	strcat(szFilename, szMapName);
-	strcat(szFilename, ".nod");
+	strcat_s(szFilename, "/");
+	strcat_s(szFilename, szMapName);
+	strcat_s(szFilename, ".nod");
 
-	file = fopen(szFilename, "wb");
-
-	ALERT(at_aiconsole, "Created: %s\n", szFilename);
-
+	FILE* file = nullptr;
+	fopen_s(&file, szFilename, "wb");
 	if (!file)
 	{  // couldn't create
 		ALERT(at_aiconsole, "Couldn't Create: %s\n", szFilename);
@@ -2403,6 +2399,8 @@ int CGraph::FSaveGraph(const char* szMapName)
 	}
 	else
 	{
+		ALERT(at_aiconsole, "Created: %s\n", szFilename);
+
 		// write the version
 		fwrite(&iVersion, sizeof(int), 1, file);
 
@@ -2507,13 +2505,13 @@ int CGraph::CheckNODFile(const char* szMapName)
 	char szGraphFilename[MAX_PATH];
 
 
-	strcpy(szBspFilename, "maps/");
-	strcat(szBspFilename, szMapName);
-	strcat(szBspFilename, ".bsp");
+	strcpy_s(szBspFilename, "maps/");
+	strcat_s(szBspFilename, szMapName);
+	strcat_s(szBspFilename, ".bsp");
 
-	strcpy(szGraphFilename, "maps/graphs/");
-	strcat(szGraphFilename, szMapName);
-	strcat(szGraphFilename, ".nod");
+	strcpy_s(szGraphFilename, "maps/graphs/");
+	strcat_s(szGraphFilename, szMapName);
+	strcat_s(szGraphFilename, ".nod");
 
 	retValue = TRUE;
 

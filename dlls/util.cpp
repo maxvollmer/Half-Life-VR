@@ -312,9 +312,9 @@ DBG_AssertFunction(
 		return;
 	char szOut[512];
 	if (szMessage != NULL)
-		sprintf(szOut, "ASSERT FAILED:\n %s \n(%s@%d)\n%s", szExpr, szFile, szLine, szMessage);
+		sprintf_s(szOut, "ASSERT FAILED:\n %s \n(%s@%d)\n%s", szExpr, szFile, szLine, szMessage);
 	else
-		sprintf(szOut, "ASSERT FAILED:\n %s \n(%s@%d)", szExpr, szFile, szLine);
+		sprintf_s(szOut, "ASSERT FAILED:\n %s \n(%s@%d)", szExpr, szFile, szLine);
 	//	ALERT(at_console, szOut);
 }
 #endif	// DEBUG
@@ -827,7 +827,7 @@ void UTIL_HudMessage(CBaseEntity* pEntity, const hudtextparms_t& textparms, cons
 	else
 	{
 		char tmp[512];
-		strncpy(tmp, pMessage, 511);
+		strncpy_s(tmp, pMessage, 511);
 		tmp[511] = 0;
 		WRITE_STRING(tmp);
 	}
@@ -907,28 +907,28 @@ void UTIL_SayTextAll(const char* pText, CBaseEntity* pEntity)
 char* UTIL_dtos1(int d)
 {
 	static char buf[8];
-	sprintf(buf, "%d", d);
+	sprintf_s(buf, "%d", d);
 	return buf;
 }
 
 char* UTIL_dtos2(int d)
 {
 	static char buf[8];
-	sprintf(buf, "%d", d);
+	sprintf_s(buf, "%d", d);
 	return buf;
 }
 
 char* UTIL_dtos3(int d)
 {
 	static char buf[8];
-	sprintf(buf, "%d", d);
+	sprintf_s(buf, "%d", d);
 	return buf;
 }
 
 char* UTIL_dtos4(int d)
 {
 	static char buf[8];
-	sprintf(buf, "%d", d);
+	sprintf_s(buf, "%d", d);
 	return buf;
 }
 
@@ -1170,7 +1170,7 @@ char* UTIL_VarArgs(char* format, ...)
 	static char string[1024];
 
 	va_start(argptr, format);
-	vsprintf(string, format, argptr);
+	vsprintf_s(string, format, argptr);
 	va_end(argptr);
 
 	return string;
@@ -1782,7 +1782,7 @@ BOOL UTIL_TeamsMatch(const char* pTeamName1, const char* pTeamName2)
 	// Both on a team?
 	if (*pTeamName1 != 0 && *pTeamName2 != 0)
 	{
-		if (!stricmp(pTeamName1, pTeamName2))  // Same Team?
+		if (!_stricmp(pTeamName1, pTeamName2))  // Same Team?
 			return TRUE;
 	}
 
@@ -1795,7 +1795,7 @@ void UTIL_StringToVector(float* pVector, const char* pString)
 	char* pstr, * pfront, tempString[128];
 	int j;
 
-	strcpy(tempString, pString);
+	strcpy_s(tempString, pString);
 	pstr = pfront = tempString;
 
 	for (j = 0; j < 3; j++)  // lifted from pr_edict.c
@@ -1826,7 +1826,7 @@ void UTIL_StringToIntArray(int* pVector, int count, const char* pString)
 	char* pstr, * pfront, tempString[128];
 	int j;
 
-	strcpy(tempString, pString);
+	strcpy_s(tempString, pString);
 	pstr = pfront = tempString;
 
 	for (j = 0; j < count; j++)  // lifted from pr_edict.c
@@ -2044,7 +2044,7 @@ void UTIL_LogPrintf(char* fmt, ...)
 	static char string[1024];
 
 	va_start(argptr, fmt);
-	vsprintf(string, fmt, argptr);
+	vsprintf_s(string, fmt, argptr);
 	va_end(argptr);
 
 	// Print to server console
@@ -2594,7 +2594,7 @@ void EntvarsKeyvalue(entvars_t* pev, KeyValueData* pkvd)
 	{
 		pField = &gEntvarsDescription[i];
 
-		if (!stricmp(pField->fieldName, pkvd->szKeyName))
+		if (!_stricmp(pField->fieldName, pkvd->szKeyName))
 		{
 			switch (pField->fieldType)
 			{
@@ -2838,7 +2838,7 @@ int CRestore::ReadField(void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCoun
 	{
 		fieldNumber = (i + startField) % fieldCount;
 		pTest = &pFields[fieldNumber];
-		if (!stricmp(pTest->fieldName, pName))
+		if (!_stricmp(pTest->fieldName, pName))
 		{
 			if (!m_global || !(pTest->flags & FTYPEDESC_GLOBAL))
 			{

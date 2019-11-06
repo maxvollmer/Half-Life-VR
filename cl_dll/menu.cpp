@@ -119,7 +119,7 @@ void CHudMenu::SelectMenuItem(int menu_item)
 	if ((menu_item > 0) && (m_bitsValidSlots & (1 << (menu_item - 1))))
 	{
 		char szbuf[32];
-		sprintf(szbuf, "menuselect %d\n", menu_item);
+		sprintf_s(szbuf, "menuselect %d\n", menu_item);
 		ClientCmd(szbuf);
 
 		// remove the menu

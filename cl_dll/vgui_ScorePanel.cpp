@@ -262,7 +262,7 @@ void ScorePanel::Update()
 	if (gViewPort->m_szServerName)
 	{
 		char sz[MAX_SERVERNAME_LENGTH + 16];
-		sprintf(sz, "%s", gViewPort->m_szServerName);
+		sprintf_s(sz, "%s", gViewPort->m_szServerName);
 		m_TitleLabel.setText(sz);
 	}
 
@@ -324,7 +324,7 @@ void ScorePanel::SortTeams()
 		int j = 1;
 		for (; j <= m_iNumTeams; j++)
 		{
-			if (!stricmp(g_PlayerExtraInfo[i].teamname, g_TeamInfo[j].name))
+			if (!_stricmp(g_PlayerExtraInfo[i].teamname, g_TeamInfo[j].name))
 				break;
 		}
 		if (j > m_iNumTeams)  // player is not in a team, skip to the next
@@ -423,7 +423,7 @@ void ScorePanel::SortPlayers(int iTeam, char* team)
 			{
 				cl_entity_t* ent = gEngfuncs.GetEntityByIndex(i);
 
-				if (ent && !(team && stricmp(g_PlayerExtraInfo[i].teamname, team)))
+				if (ent && !(team && _stricmp(g_PlayerExtraInfo[i].teamname, team)))
 				{
 					extra_player_info_t* pl_info = &g_PlayerExtraInfo[i];
 					if (pl_info->frags > highest_frags || pl_info->deaths < lowest_deaths)
@@ -489,7 +489,7 @@ void ScorePanel::RebuildTeams()
 			if (g_TeamInfo[j].name[0] == '\0')
 				break;
 
-			if (!stricmp(g_PlayerExtraInfo[i].teamname, g_TeamInfo[j].name))
+			if (!_stricmp(g_PlayerExtraInfo[i].teamname, g_TeamInfo[j].name))
 				break;
 		}
 
@@ -503,7 +503,7 @@ void ScorePanel::RebuildTeams()
 			}
 			m_iNumTeams = max(j, m_iNumTeams);
 
-			strncpy(g_TeamInfo[j].name, g_PlayerExtraInfo[i].teamname, MAX_TEAM_NAME);
+			strncpy_s(g_TeamInfo[j].name, g_PlayerExtraInfo[i].teamname, MAX_TEAM_NAME);
 			g_TeamInfo[j].players = 0;
 		}
 
@@ -685,7 +685,7 @@ void ScorePanel::FillGrid()
 			}
 
 			// Fill out with the correct data
-			strcpy(sz, "");
+			strcpy_s(sz, "");
 			if (m_iIsATeam[row])
 			{
 				char sz2[128];
@@ -695,25 +695,25 @@ void ScorePanel::FillGrid()
 				case COLUMN_NAME:
 					if (m_iIsATeam[row] == TEAM_SPECTATORS)
 					{
-						sprintf(sz2, CHudTextMessage::BufferedLocaliseTextString("#Spectators"));
+						sprintf_s(sz2, CHudTextMessage::BufferedLocaliseTextString("#Spectators"));
 					}
 					else
 					{
-						sprintf(sz2, gViewPort->GetTeamName(team_info->teamnumber));
+						sprintf_s(sz2, gViewPort->GetTeamName(team_info->teamnumber));
 					}
 
-					strcpy(sz, sz2);
+					strcpy_s(sz, sz2);
 
 					// Append the number of players
 					if (m_iIsATeam[row] == TEAM_YES)
 					{
 						if (team_info->players == 1)
 						{
-							sprintf(sz2, "(%d %s)", team_info->players, CHudTextMessage::BufferedLocaliseTextString("#Player"));
+							sprintf_s(sz2, "(%d %s)", team_info->players, CHudTextMessage::BufferedLocaliseTextString("#Player"));
 						}
 						else
 						{
-							sprintf(sz2, "(%d %s)", team_info->players, CHudTextMessage::BufferedLocaliseTextString("#Player_plural"));
+							sprintf_s(sz2, "(%d %s)", team_info->players, CHudTextMessage::BufferedLocaliseTextString("#Player_plural"));
 						}
 
 						pLabel->setText2(sz2);
@@ -726,15 +726,15 @@ void ScorePanel::FillGrid()
 					break;
 				case COLUMN_KILLS:
 					if (m_iIsATeam[row] == TEAM_YES)
-						sprintf(sz, "%d", team_info->frags);
+						sprintf_s(sz, "%d", team_info->frags);
 					break;
 				case COLUMN_DEATHS:
 					if (m_iIsATeam[row] == TEAM_YES)
-						sprintf(sz, "%d", team_info->deaths);
+						sprintf_s(sz, "%d", team_info->deaths);
 					break;
 				case COLUMN_LATENCY:
 					if (m_iIsATeam[row] == TEAM_YES)
-						sprintf(sz, "%d", team_info->ping);
+						sprintf_s(sz, "%d", team_info->ping);
 					break;
 				default:
 					break;
@@ -747,7 +747,7 @@ void ScorePanel::FillGrid()
 				switch (col)
 				{
 				case COLUMN_NAME:
-					sprintf(sz, "%s  ", pl_info->name);
+					sprintf_s(sz, "%s  ", pl_info->name);
 					break;
 				case COLUMN_VOICE:
 					sz[0] = 0;
@@ -776,26 +776,26 @@ void ScorePanel::FillGrid()
 						}
 
 						if (bNoClass)
-							sprintf(sz, "");
+							sprintf_s(sz, "");
 						else
-							sprintf(sz, "%s", CHudTextMessage::BufferedLocaliseTextString(sLocalisedClasses[g_PlayerExtraInfo[m_iSortedRows[row]].playerclass]));
+							sprintf_s(sz, "%s", CHudTextMessage::BufferedLocaliseTextString(sLocalisedClasses[g_PlayerExtraInfo[m_iSortedRows[row]].playerclass]));
 					}
 					else
 					{
-						strcpy(sz, "");
+						strcpy_s(sz, "");
 					}
 					break;
 
 				case COLUMN_TRACKER:
 					break;
 				case COLUMN_KILLS:
-					sprintf(sz, "%d", g_PlayerExtraInfo[m_iSortedRows[row]].frags);
+					sprintf_s(sz, "%d", g_PlayerExtraInfo[m_iSortedRows[row]].frags);
 					break;
 				case COLUMN_DEATHS:
-					sprintf(sz, "%d", g_PlayerExtraInfo[m_iSortedRows[row]].deaths);
+					sprintf_s(sz, "%d", g_PlayerExtraInfo[m_iSortedRows[row]].deaths);
 					break;
 				case COLUMN_LATENCY:
-					sprintf(sz, "%d", g_PlayerInfoList[m_iSortedRows[row]].ping);
+					sprintf_s(sz, "%d", g_PlayerInfoList[m_iSortedRows[row]].ping);
 					break;
 				default:
 					break;
@@ -875,8 +875,8 @@ void ScorePanel::mousePressed(MouseCode code, Panel* panel)
 					// remove mute
 					GetClientVoiceMgr()->SetPlayerBlockedState(iPlayer, false);
 
-					sprintf(string1, CHudTextMessage::BufferedLocaliseTextString("#Unmuted"), pl_info->name);
-					sprintf(string, "%c** %s\n", HUD_PRINTTALK, string1);
+					sprintf_s(string1, CHudTextMessage::BufferedLocaliseTextString("#Unmuted"), pl_info->name);
+					sprintf_s(string, "%c** %s\n", HUD_PRINTTALK, string1);
 
 					gHUD.m_TextMessage.MsgFunc_TextMsg(nullptr, strlen(string) + 1, string);
 				}
@@ -888,9 +888,9 @@ void ScorePanel::mousePressed(MouseCode code, Panel* panel)
 					// mute the player
 					GetClientVoiceMgr()->SetPlayerBlockedState(iPlayer, true);
 
-					sprintf(string1, CHudTextMessage::BufferedLocaliseTextString("#Muted"), pl_info->name);
-					sprintf(string2, CHudTextMessage::BufferedLocaliseTextString("#No_longer_hear_that_player"));
-					sprintf(string, "%c** %s %s\n", HUD_PRINTTALK, string1, string2);
+					sprintf_s(string1, CHudTextMessage::BufferedLocaliseTextString("#Muted"), pl_info->name);
+					sprintf_s(string2, CHudTextMessage::BufferedLocaliseTextString("#No_longer_hear_that_player"));
+					sprintf_s(string, "%c** %s %s\n", HUD_PRINTTALK, string1, string2);
 
 					gHUD.m_TextMessage.MsgFunc_TextMsg(nullptr, strlen(string) + 1, string);
 				}

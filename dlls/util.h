@@ -314,7 +314,7 @@ typedef enum
 	human_hull = 1,
 	large_hull = 2,
 	head_hull = 3
-};
+} HULL_TYPE;
 extern void UTIL_TraceHull(const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTERS igmon, int hullNumber, edict_t* pentIgnore, TraceResult* ptr);
 extern TraceResult UTIL_GetGlobalTrace(void);
 extern void UTIL_TraceModel(const Vector& vecStart, const Vector& vecEnd, int hullNumber, edict_t* pentModel, TraceResult* ptr);
@@ -567,8 +567,8 @@ extern DLL_GLOBAL int g_Language;
 extern char gszallsentencenames[CVOXFILESENTENCEMAX][CBSENTENCENAME_MAX];
 extern int gcallsentences;
 
-int USENTENCEG_Pick(int isentenceg, char* szfound);
-int USENTENCEG_PickSequential(int isentenceg, char* szfound, int ipick, int freset);
+int USENTENCEG_Pick(int isentenceg, char* szfound, int szfoundsize);
+int USENTENCEG_PickSequential(int isentenceg, char* szfound, int szfoundsize, int ipick, int freset);
 void USENTENCEG_InitLRU(unsigned char* plru, int count);
 
 void SENTENCEG_Init();
@@ -577,7 +577,7 @@ int SENTENCEG_PlayRndI(edict_t* entity, int isentenceg, float volume, float atte
 int SENTENCEG_PlayRndSz(edict_t* entity, const char* szrootname, float volume, float attenuation, int flags, int pitch);
 int SENTENCEG_PlaySequentialSz(edict_t* entity, const char* szrootname, float volume, float attenuation, int flags, int pitch, int ipick, int freset);
 int SENTENCEG_GetIndex(const char* szrootname);
-int SENTENCEG_Lookup(const char* sample, char* sentencenum);
+int SENTENCEG_Lookup(const char* sample, char* sentencenum, int sentencenumsize);
 
 void TEXTURETYPE_Init();
 char TEXTURETYPE_Find(char* name);
@@ -635,13 +635,13 @@ void EMIT_GROUPNAME_SUIT(edict_t* entity, const char* groupname);
 
 #define PRECACHE_SOUND_ARRAY(a)                                             \
 	{                                                                       \
-		for (int i = 0; i < ARRAYSIZE(a); i++) PRECACHE_SOUND(a[i]); \
+		for (int i = 0; i < (int)std::size(a); i++) PRECACHE_SOUND(a[i]); \
 	}
 
 #define EMIT_SOUND_ARRAY_DYN(chan, array) \
-	EMIT_SOUND_DYN(ENT(pev), chan, array[RANDOM_LONG(0, ARRAYSIZE(array) - 1)], 1.0, ATTN_NORM, 0, RANDOM_LONG(95, 105));
+	EMIT_SOUND_DYN(ENT(pev), chan, array[RANDOM_LONG(0, (int)std::size(array) - 1)], 1.0, ATTN_NORM, 0, RANDOM_LONG(95, 105));
 
-#define RANDOM_SOUND_ARRAY(array) (array)[RANDOM_LONG(0, ARRAYSIZE((array)) - 1)]
+#define RANDOM_SOUND_ARRAY(array) (array)[RANDOM_LONG(0, (int)std::size((array)) - 1)]
 
 #define PLAYBACK_EVENT(flags, who, index)              PLAYBACK_EVENT_FULL(flags, who, index, 0, g_vecZero, g_vecZero, 0.0, 0.0, 0, 0, 0, 0);
 #define PLAYBACK_EVENT_DELAY(flags, who, index, delay) PLAYBACK_EVENT_FULL(flags, who, index, delay, g_vecZero, g_vecZero, 0.0, 0.0, 0, 0, 0, 0);

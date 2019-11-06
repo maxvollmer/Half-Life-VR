@@ -103,11 +103,21 @@ private:
 	// Max Vollmer, 2019-10-23
 	void StudioSetupBonesInline(float bonetransform[MAXSTUDIOBONES][3][4], float lighttransform[MAXSTUDIOBONES][3][4], float* overrideFrame = nullptr);
 
+	// engine gives times as double, but all operations and all entity fields are float, so we store times as floats now and convert them here:
+	void GetTimes()
+	{
+		double time, oldtime;
+		extern engine_studio_api_t IEngineStudio;
+		IEngineStudio.GetTimes(&m_nFrameCount, &time, &oldtime);
+		m_clTime = static_cast<float>(time);
+		m_clOldTime = static_cast<float>(oldtime);
+	}
+
 public:
 	// Client clock
-	double m_clTime;
+	float m_clTime = 0.f;
 	// Old Client clock
-	double m_clOldTime;
+	float m_clOldTime = 0.f;
 
 	// Do interpolation?
 	int m_fDoInterp;

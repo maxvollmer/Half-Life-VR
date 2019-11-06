@@ -150,7 +150,7 @@ int CHudOverview::Draw(float flTime)
 
 			// draw the players name and health underneath
 			char string[256];
-			sprintf(string, "%s (%i%%)", g_PlayerInfoList[i].name, pl->curstate.health);
+			sprintf_s(string, "%s (%i%%)", g_PlayerInfoList[i].name, pl->curstate.health);
 			DrawConsoleString(x, y + (1.1 * scale), string);
 		}
 	}

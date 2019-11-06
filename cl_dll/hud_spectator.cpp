@@ -74,7 +74,7 @@ void SpectatorSpray(void)
 	pmtrace_t* trace = gEngfuncs.PM_TraceLine(v_origin, forward, PM_TRACELINE_PHYSENTSONLY, 2, -1);
 	if (trace->fraction != 1.0)
 	{
-		sprintf(string, "drc_spray %.2f %.2f %.2f %i", trace->endpos[0], trace->endpos[1], trace->endpos[2], trace->ent);
+		sprintf_s(string, "drc_spray %.2f %.2f %.2f %i", trace->endpos[0], trace->endpos[1], trace->endpos[2], trace->ent);
 		gEngfuncs.pfnServerCmd(string);
 	}
 }
@@ -175,7 +175,7 @@ void UTIL_StringToVector(float* pVector, const char* pString)
 	char* pstr, * pfront, tempString[128];
 	int j;
 
-	strcpy(tempString, pString);
+	strcpy_s(tempString, pString);
 	pstr = pfront = tempString;
 
 	for (j = 0; j < 3; j++)
@@ -247,7 +247,7 @@ int UTIL_FindEntityInMap(char* name, float* origin, float* angle)
 				return 0;
 			};
 
-			strcpy(keyname, token);
+			strcpy_s(keyname, token);
 
 			// another hack to fix keynames with trailing spaces
 			n = strlen(keyname);
@@ -440,7 +440,7 @@ int CHudSpectator::Draw(float flTime)
 		color = GetClientColor(i + 1);
 
 		// draw the players name and health underneath
-		sprintf(string, "%s", g_PlayerInfoList[i + 1].name);
+		sprintf_s(string, "%s", g_PlayerInfoList[i + 1].name);
 
 		lx = strlen(string) * 3;  // 3 is avg. character length :)
 
@@ -535,7 +535,7 @@ void CHudSpectator::DirectorMessage(int iSize, void* pbuf)
 		msg->holdtime = READ_FLOAT();  // holdtime
 		msg->fxtime = READ_FLOAT();  // fxtime;
 
-		strncpy(m_HUDMessageText[m_lastHudMessage], READ_STRING(), 128);
+		strncpy_s(m_HUDMessageText[m_lastHudMessage], READ_STRING(), 128);
 		m_HUDMessageText[m_lastHudMessage][127] = 0;  // text
 
 		msg->pMessage = m_HUDMessageText[m_lastHudMessage];
@@ -602,7 +602,7 @@ void CHudSpectator::FindNextPlayer(bool bReverse)
 	{
 		char cmdstring[32];
 		// forward command to server
-		sprintf(cmdstring, "follownext %i", bReverse ? 1 : 0);
+		sprintf_s(cmdstring, "follownext %i", bReverse ? 1 : 0);
 		gEngfuncs.pfnServerCmd(cmdstring);
 		return;
 	}
@@ -841,8 +841,8 @@ void CHudSpectator::SetModes(int iNewMainMode, int iNewInsetMode)
 		}
 
 		char string[128];
-		sprintf(string, "#Spec_Mode%d", g_iUser1);
-		sprintf(string, "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString(string));
+		sprintf_s(string, "#Spec_Mode%d", g_iUser1);
+		sprintf_s(string, "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString(string));
 		gHUD.m_TextMessage.MsgFunc_TextMsg(nullptr, strlen(string) + 1, string);
 	}
 
@@ -881,15 +881,15 @@ bool CHudSpectator::ParseOverviewFile()
 	m_OverviewData.zoom = 1.0f;
 	m_OverviewData.layers = 0;
 	m_OverviewData.layersHeights[0] = 0.0f;
-	strcpy(m_OverviewData.map, gEngfuncs.pfnGetLevelName());
+	strcpy_s(m_OverviewData.map, gEngfuncs.pfnGetLevelName());
 
 	if (strlen(m_OverviewData.map) == 0)
 		return false;  // not active yet
 
-	strcpy(levelname, m_OverviewData.map + 5);
+	strcpy_s(levelname, m_OverviewData.map + 5);
 	levelname[strlen(levelname) - 4] = 0;
 
-	sprintf(filename, "overviews/%s.txt", levelname);
+	sprintf_s(filename, "overviews/%s.txt", levelname);
 
 	pfile = reinterpret_cast<char*>(gEngfuncs.COM_LoadFile(filename, 5, nullptr));
 
@@ -907,11 +907,11 @@ bool CHudSpectator::ParseOverviewFile()
 		if (!pfile)
 			break;
 
-		if (!stricmp(token, "global"))
+		if (!_stricmp(token, "global"))
 		{
 			// parse the global data
 			pfile = gEngfuncs.COM_ParseFile(pfile, token);
-			if (stricmp(token, "{"))
+			if (_stricmp(token, "{"))
 			{
 				gEngfuncs.Con_Printf("Error parsing overview file %s. (expected { )\n", filename);
 				return false;
@@ -919,14 +919,14 @@ bool CHudSpectator::ParseOverviewFile()
 
 			pfile = gEngfuncs.COM_ParseFile(pfile, token);
 
-			while (stricmp(token, "}"))
+			while (_stricmp(token, "}"))
 			{
-				if (!stricmp(token, "zoom"))
+				if (!_stricmp(token, "zoom"))
 				{
 					pfile = gEngfuncs.COM_ParseFile(pfile, token);
 					m_OverviewData.zoom = atof(token);
 				}
-				else if (!stricmp(token, "origin"))
+				else if (!_stricmp(token, "origin"))
 				{
 					pfile = gEngfuncs.COM_ParseFile(pfile, token);
 					m_OverviewData.origin[0] = atof(token);
@@ -935,12 +935,12 @@ bool CHudSpectator::ParseOverviewFile()
 					pfile = gEngfuncs.COM_ParseFile(pfile, token);
 					m_OverviewData.origin[2] = atof(token);
 				}
-				else if (!stricmp(token, "rotated"))
+				else if (!_stricmp(token, "rotated"))
 				{
 					pfile = gEngfuncs.COM_ParseFile(pfile, token);
 					m_OverviewData.rotated = atoi(token);
 				}
-				else if (!stricmp(token, "inset"))
+				else if (!_stricmp(token, "inset"))
 				{
 					pfile = gEngfuncs.COM_ParseFile(pfile, token);
 					m_OverviewData.insetWindowX = atof(token);
@@ -960,7 +960,7 @@ bool CHudSpectator::ParseOverviewFile()
 				pfile = gEngfuncs.COM_ParseFile(pfile, token);  // parse next token
 			}
 		}
-		else if (!stricmp(token, "layer"))
+		else if (!_stricmp(token, "layer"))
 		{
 			// parse a layer data
 
@@ -973,7 +973,7 @@ bool CHudSpectator::ParseOverviewFile()
 			pfile = gEngfuncs.COM_ParseFile(pfile, token);
 
 
-			if (stricmp(token, "{"))
+			if (_stricmp(token, "{"))
 			{
 				gEngfuncs.Con_Printf("Error parsing overview file %s. (expected { )\n", filename);
 				return false;
@@ -981,14 +981,14 @@ bool CHudSpectator::ParseOverviewFile()
 
 			pfile = gEngfuncs.COM_ParseFile(pfile, token);
 
-			while (stricmp(token, "}"))
+			while (_stricmp(token, "}"))
 			{
-				if (!stricmp(token, "image"))
+				if (!_stricmp(token, "image"))
 				{
 					pfile = gEngfuncs.COM_ParseFile(pfile, token);
-					strcpy(m_OverviewData.layersImages[m_OverviewData.layers], token);
+					strcpy_s(m_OverviewData.layersImages[m_OverviewData.layers], token);
 				}
-				else if (!stricmp(token, "height"))
+				else if (!_stricmp(token, "height"))
 				{
 					pfile = gEngfuncs.COM_ParseFile(pfile, token);
 					height = atof(token);
@@ -1472,7 +1472,7 @@ void CHudSpectator::CheckSettings()
 		{
 			// tell proxy our new chat mode
 			char chatcmd[32];
-			sprintf(chatcmd, "ignoremsg %i", m_chatEnabled ? 0 : 1);
+			sprintf_s(chatcmd, "ignoremsg %i", m_chatEnabled ? 0 : 1);
 			gEngfuncs.pfnServerCmd(chatcmd);
 		}
 	}
