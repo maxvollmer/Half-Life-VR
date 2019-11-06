@@ -185,13 +185,13 @@ class TranslatedFace
 {
 public:
 	TranslatedFace(const msurface_t& face, const Vector& origin, PlaneVertexMetaDataMap& planeVertexMetaData) :
-		plane{ origin + face.polys->verts[0], (face.flags & SURF_PLANEBACK) ? -face.plane->normal : face.plane->normal }
+		plane{ origin + Vector(face.polys->verts[0]), (face.flags & SURF_PLANEBACK) ? -face.plane->normal : face.plane->normal }
 	{
 		for (int i = 0; i < face.polys->numverts; ++i)
 		{
-			Vector& vertexBefore = origin + face.polys->verts[(i > 0) ? (i - 1) : (face.polys->numverts - 1)];
-			Vector& vertex = origin + face.polys->verts[i];
-			Vector& vertexAfter = origin + face.polys->verts[(i < (face.polys->numverts - 1)) ? (i + 1) : 0];
+			Vector vertexBefore = origin + Vector(face.polys->verts[(i > 0) ? (i - 1) : (face.polys->numverts - 1)]);
+			Vector vertex = origin + Vector(face.polys->verts[i]);
+			Vector vertexAfter = origin + Vector(face.polys->verts[(i < (face.polys->numverts - 1)) ? (i + 1) : 0]);
 
 			Vector v1 = (vertexBefore - vertex).Normalize();
 			Vector v2 = (vertexAfter - vertex).Normalize();

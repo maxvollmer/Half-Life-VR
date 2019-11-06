@@ -70,31 +70,36 @@ class Vector  // same data-layout as engine's vec3_t,
 {             //		which is a vec_t[3]
 public:
 	// Construction/destruction
-	inline Vector(void)
+	Vector()
 	{
 		x = 0;
 		y = 0;
 		z = 0;
 	}
-	inline Vector(float X, float Y, float Z)
+	Vector(float X, float Y, float Z)
 	{
 		x = X;
 		y = Y;
 		z = Z;
 	}
-	//inline Vector(double X, double Y, double Z)		{ x = (float)X; y = (float)Y; z = (float)Z;	}
-	//inline Vector(int X, int Y, int Z)				{ x = (float)X; y = (float)Y; z = (float)Z;	}
-	inline Vector(const Vector& v)
+	Vector(const Vector& v)
 	{
 		x = v.x;
 		y = v.y;
 		z = v.z;
 	}
-	inline Vector(float rgfl[3])
+	Vector(float rgfl[3])
 	{
-		x = rgfl[0];
-		y = rgfl[1];
-		z = rgfl[2];
+		if (rgfl)
+		{
+			x = rgfl[0];
+			y = rgfl[1];
+			z = rgfl[2];
+		}
+		else
+		{
+			x = y = z = 0.f;
+		}
 	}
 
 	// Operators
@@ -155,7 +160,7 @@ public:
 	}
 
 	// Members
-	vec_t x, y, z;
+	vec_t x = 0.f, y = 0.f, z = 0.f;
 };
 inline Vector operator*(float fl, const Vector& v) { return v * fl; }
 inline float DotProduct(const Vector& a, const Vector& b) { return (a.x * b.x + a.y * b.y + a.z * b.z); }

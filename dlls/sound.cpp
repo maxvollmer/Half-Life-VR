@@ -1688,11 +1688,6 @@ static char* memfgets(byte* pMemFile, int fileSize, int& filePos, char* pBuffer,
 
 void TEXTURETYPE_Init()
 {
-	char buffer[512];
-	int i, j;
-	byte* pMemFile;
-	int fileSize, filePos;
-
 	if (fTextureTypeInit)
 		return;
 
@@ -1700,17 +1695,20 @@ void TEXTURETYPE_Init()
 	memset(grgchTextureType, 0, CTEXTURESMAX);
 
 	gcTextures = 0;
+	char buffer[512]{ 0 };
 	memset(buffer, 0, 512);
 
-	pMemFile = g_engfuncs.pfnLoadFileForMe("sound/materials.txt", &fileSize);
+	int fileSize = 0;
+	byte* pMemFile = g_engfuncs.pfnLoadFileForMe("sound/materials.txt", &fileSize);
 	if (!pMemFile)
 		return;
 
 	// for each line in the file...
+	int filePos = 0;
 	while (memfgets(pMemFile, fileSize, filePos, buffer, 511) != nullptr && (gcTextures < CTEXTURESMAX))
 	{
 		// skip whitespace
-		i = 0;
+		int i = 0;
 		while (buffer[i] && isspace(buffer[i]))
 			i++;
 
@@ -1732,7 +1730,7 @@ void TEXTURETYPE_Init()
 			continue;
 
 		// get sentence name
-		j = i;
+		int j = i;
 		while (buffer[j] && !isspace(buffer[j]))
 			j++;
 
@@ -1779,14 +1777,14 @@ float TEXTURETYPE_PlaySound(TraceResult* ptr, Vector vecSrc, Vector vecEnd, int 
 {
 	// hit the world, try to play sound based on texture material type
 
-	char chTextureType;
+	char chTextureType = 0;
 	float fvol = 0.f;
 	float fvolbar = 0.f;
-	char szbuffer[64];
-	const char* pTextureName;
-	float rgfl1[3];
-	float rgfl2[3];
-	char* rgsz[4];
+	char szbuffer[64] = { 0 };
+	const char* pTextureName = nullptr;
+	float rgfl1[3] = { 0 };
+	float rgfl2[3] = { 0 };
+	char* rgsz[4] = { 0 };
 	int cnt = 0;
 	float fattn = ATTN_NORM;
 
