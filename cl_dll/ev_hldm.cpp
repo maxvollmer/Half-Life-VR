@@ -1020,26 +1020,26 @@ void EV_FireGauss(event_args_t* args)
 				// reflect
 				vec3_t r;
 
-				VectorMA(forward, 2.0 * n, tr.plane.normal, r);
+				VectorMA(forward, 2.0f * n, tr.plane.normal, r);
 
 				flMaxFrac = flMaxFrac - tr.fraction;
 
 				VectorCopy(r, forward);
 
-				VectorMA(tr.endpos, 8.0, forward, vecSrc);
-				VectorMA(vecSrc, 8192.0, forward, vecDest);
+				VectorMA(tr.endpos, 8.0f, forward, vecSrc);
+				VectorMA(vecSrc, 8192.0f, forward, vecDest);
 
-				gEngfuncs.pEfxAPI->R_TempSprite(tr.endpos, vec3_origin, 0.2, m_iGlow, kRenderGlow, kRenderFxNoDissipation, flDamage * n / 255.0, flDamage * n * 0.5 * 0.1, FTENT_FADEOUT);
+				gEngfuncs.pEfxAPI->R_TempSprite(tr.endpos, vec3_origin, 0.2f, m_iGlow, kRenderGlow, kRenderFxNoDissipation, flDamage * n / 255.f, flDamage * n * 0.5f * 0.1f, FTENT_FADEOUT);
 
 				vec3_t fwd;
 				VectorAdd(tr.endpos, tr.plane.normal, fwd);
 
-				gEngfuncs.pEfxAPI->R_Sprite_Trail(TE_SPRITETRAIL, tr.endpos, fwd, m_iBalls, 3, 0.1, gEngfuncs.pfnRandomFloat(10, 20) / 100.0, 100, 255, 100);
+				gEngfuncs.pEfxAPI->R_Sprite_Trail(TE_SPRITETRAIL, tr.endpos, fwd, m_iBalls, 3, 0.1f, gEngfuncs.pfnRandomFloat(10, 20) / 100.f, 100, 255, 100);
 
 				// lose energy
 				if (n == 0)
 				{
-					n = 0.1;
+					n = 0.1f;
 				}
 
 				flDamage = flDamage * (1 - n);

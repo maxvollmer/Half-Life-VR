@@ -209,6 +209,7 @@ HSPRITE_VALVE LoadSprite(const char* pszName);
 
 
 constexpr const float EPSILON = 0.000001f;
+constexpr const double EPSILON_D = 0.000001;
 
 // Added NormalizeAngles and GetAnglesFromVectors - Max Vollmer, 2017-08-17
 void NormalizeAngles(Vector& angles);

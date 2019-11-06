@@ -916,7 +916,7 @@ void PM_AddCorrectGravity()
 
 	// Add gravity so they'll be in the correct position during movement
 	// yes, this 0.5 looks wrong, but it's not.
-	pmove->velocity[2] -= (ent_gravity * pmove->movevars->gravity * 0.5 * pmove->frametime);
+	pmove->velocity[2] -= (ent_gravity * pmove->movevars->gravity * 0.5f * pmove->frametime);
 	pmove->velocity[2] += pmove->basevelocity[2] * pmove->frametime;
 	pmove->basevelocity[2] = 0;
 
@@ -942,7 +942,7 @@ void PM_FixupGravityVelocity()
 		ent_gravity = 1.0;
 
 	// Get the correct velocity for the end of the dt
-	pmove->velocity[2] -= (ent_gravity * pmove->movevars->gravity * pmove->frametime * 0.5);
+	pmove->velocity[2] -= (ent_gravity * pmove->movevars->gravity * pmove->frametime * 0.5f);
 
 	PM_CheckVelocity();
 }
@@ -1085,7 +1085,7 @@ int PM_FlyMove(void)
 					VectorCopy(new_velocity, original_velocity);
 				}
 				else
-					PM_ClipVelocity(original_velocity, planes[i], new_velocity, 1.0 + pmove->movevars->bounce * (1 - pmove->friction));
+					PM_ClipVelocity(original_velocity, planes[i], new_velocity, 1.0f + pmove->movevars->bounce * (1 - pmove->friction));
 			}
 
 			VectorCopy(new_velocity, pmove->velocity);
@@ -1403,7 +1403,7 @@ void PM_Friction(void)
 	vel = pmove->velocity;
 
 	// Calculate speed
-	speed = sqrt(vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2]);
+	speed = sqrtf(vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2]);
 
 	// If too slow, return
 	if (speed < 0.1f)
@@ -1689,8 +1689,8 @@ qboolean PM_CheckWater()
 	float heightover2;
 
 	// Pick a spot just above the players feet.
-	point[0] = pmove->origin[0] + (pmove->player_mins[pmove->usehull][0] + pmove->player_maxs[pmove->usehull][0]) * 0.5;
-	point[1] = pmove->origin[1] + (pmove->player_mins[pmove->usehull][1] + pmove->player_maxs[pmove->usehull][1]) * 0.5;
+	point[0] = pmove->origin[0] + (pmove->player_mins[pmove->usehull][0] + pmove->player_maxs[pmove->usehull][0]) * 0.5f;
+	point[1] = pmove->origin[1] + (pmove->player_mins[pmove->usehull][1] + pmove->player_maxs[pmove->usehull][1]) * 0.5f;
 	point[2] = pmove->origin[2] + pmove->player_mins[pmove->usehull][2] + 1;
 
 	// Assume that we are not in water at all.
@@ -3074,16 +3074,16 @@ void PM_Jump(void)
 				pmove->velocity[i] = pmove->forward[i] * PLAYER_LONGJUMP_SPEED * 1.6;
 			}
 
-			pmove->velocity[2] = sqrt(2 * 800 * 56.0);
+			pmove->velocity[2] = sqrtf(2 * 800 * 56.0f);
 		}
 		else
 		{
-			pmove->velocity[2] = sqrt(2 * 800 * 45.0);
+			pmove->velocity[2] = sqrtf(2 * 800 * 45.0f);
 		}
 	}
 	else
 	{
-		pmove->velocity[2] = sqrt(2 * 800 * 45.0);
+		pmove->velocity[2] = sqrtf(2 * 800 * 45.0f);
 	}
 
 	// Decay it for simulation
@@ -3131,7 +3131,7 @@ void PM_CheckWaterJump(void)
 	VectorNormalize(flatforward);
 
 	// Are we backing into water from steps or something?  If so, don't pop forward
-	if (curspeed != 0.0 && (DotProduct(flatvelocity, flatforward) < 0.0))
+	if (curspeed != 0.0 && (DotProduct(flatvelocity, flatforward) < 0.f))
 		return;
 
 	VectorCopy(pmove->origin, vecStart);

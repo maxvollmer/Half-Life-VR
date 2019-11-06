@@ -39,7 +39,7 @@ extern "C"
 }
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846  // matches value in gcc v2 math.h
+#define M_PI 3.14159265358979323846f  // matches value in gcc v2 math.h
 #endif
 
 extern "C"
@@ -147,7 +147,7 @@ float v_idlescale;  // used by TFC for concussion grenade effect
 // Quakeworld bob code, this fixes jitters in the mutliplayer since the clock (pparams->time) isn't quite linear
 float V_CalcBob(struct ref_params_s* pparams)
 {
-	static double bobtime;
+	static float bobtime;
 	static float bob;
 	float cycle;
 	static float lasttime;
@@ -173,7 +173,7 @@ float V_CalcBob(struct ref_params_s* pparams)
 	}
 	else
 	{
-		cycle = M_PI + M_PI * (cycle - cl_bobup->value) / (1.0 - cl_bobup->value);
+		cycle = M_PI + M_PI * (cycle - cl_bobup->value) / (1.0f - cl_bobup->value);
 	}
 
 	// bob is proportional to simulated velocity in the xy plane
@@ -181,8 +181,8 @@ float V_CalcBob(struct ref_params_s* pparams)
 	VectorCopy(pparams->simvel, vel);
 	vel[2] = 0;
 
-	bob = sqrt(vel[0] * vel[0] + vel[1] * vel[1]) * cl_bob->value;
-	bob = bob * 0.3 + bob * 0.7 * sin(cycle);
+	bob = sqrtf(vel[0] * vel[0] + vel[1] * vel[1]) * cl_bob->value;
+	bob = bob * 0.3f + bob * 0.7f * sinf(cycle);
 	bob = min(bob, 4);
 	bob = max(bob, -7);
 	return bob;
@@ -473,17 +473,16 @@ void V_CalcNormalRefdef(struct ref_params_s* pparams)
 		if (i < ORIGIN_MASK && ViewInterp.OriginTime[foundidx & ORIGIN_MASK] != 0.0)
 		{
 			// Interpolate
-			vec3_t delta;
-			double frac;
-			double dt;
-			vec3_t neworg;
-
-			dt = ViewInterp.OriginTime[(foundidx + 1) & ORIGIN_MASK] - ViewInterp.OriginTime[foundidx & ORIGIN_MASK];
-			if (dt > 0.0)
+			float dt = ViewInterp.OriginTime[(foundidx + 1) & ORIGIN_MASK] - ViewInterp.OriginTime[foundidx & ORIGIN_MASK];
+			if (dt > 0.f)
 			{
-				frac = (t - ViewInterp.OriginTime[foundidx & ORIGIN_MASK]) / dt;
-				frac = min(1.0, frac);
+				float frac = (t - ViewInterp.OriginTime[foundidx & ORIGIN_MASK]) / dt;
+				frac = min(1.f, frac);
+
+				vec3_t delta;
 				VectorSubtract(ViewInterp.Origins[(foundidx + 1) & ORIGIN_MASK], ViewInterp.Origins[foundidx & ORIGIN_MASK], delta);
+
+				vec3_t neworg;
 				VectorMA(ViewInterp.Origins[foundidx & ORIGIN_MASK], frac, delta, neworg);
 
 				// Dont interpolate large changes

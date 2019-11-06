@@ -240,7 +240,7 @@ float AngleBetweenVectors(const vec3_t v1, const vec3_t v2)
 	if (!l1 || !l2)
 		return 0.0f;
 
-	angle = acos(DotProduct(v1, v2)) / (l1 * l2);
+	angle = acosf(DotProduct(v1, v2)) / (l1 * l2);
 	angle = (angle * 180.0f) / M_PI;
 
 	return angle;
@@ -323,7 +323,7 @@ float Length(const vec3_t v)
 
 float Length2D(const vec3_t v)
 {
-	return sqrt(v[0] * v[0] + v[1] * v[1]);
+	return sqrtf(v[0] * v[0] + v[1] * v[1]);
 }
 
 float Distance(const vec3_t v1, const vec3_t v2)
@@ -417,8 +417,8 @@ void VectorAngles(const vec3_t forward, vec3_t angles)
 		if (yaw < 0)
 			yaw += 360;
 
-		tmp = sqrt(forward[0] * forward[0] + forward[1] * forward[1]);
-		pitch = (atan2(forward[2], tmp) * 180 / M_PI);
+		tmp = sqrtf(forward[0] * forward[0] + forward[1] * forward[1]);
+		pitch = (atan2f(forward[2], tmp) * 180 / M_PI);
 		if (pitch < 0)
 			pitch += 360;
 	}

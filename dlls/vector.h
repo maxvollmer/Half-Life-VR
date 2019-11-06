@@ -39,7 +39,7 @@ public:
 	inline Vector2D operator*(float fl) const { return Vector2D(x * fl, y * fl); }
 	inline Vector2D operator/(float fl) const { return Vector2D(x / fl, y / fl); }
 
-	inline float Length(void) const { return sqrt(x * x + y * y); }
+	inline float Length(void) const { return sqrtf(x * x + y * y); }
 
 	inline Vector2D Normalize(void) const
 	{
@@ -111,8 +111,8 @@ public:
 
 	// Methods
 	inline void CopyToArray(float* rgfl) const { rgfl[0] = x, rgfl[1] = y, rgfl[2] = z; }
-	inline float Length(void) const { return sqrt(x * x + y * y + z * z); }
-	inline float LengthSquared(void) const { return x * x + y * y + z * z; }  // Added squared length for convenience - Max Vollmer, 2018-01-28
+	inline float Length() const { return sqrtf(LengthSquared()); }
+	inline float LengthSquared() const { return x * x + y * y + z * z; }  // Added squared length for convenience - Max Vollmer, 2018-01-28
 	operator float* () { return &x; }                                          // Vectors will now automatically convert to float * when needed
 	operator const float* () const { return &x; }                              // Vectors will now automatically convert to float * when needed
 	inline Vector Normalize(void) const
@@ -147,7 +147,7 @@ public:
 
 		return Vec2;
 	}
-	inline float Length2D(void) const { return sqrt(x * x + y * y); }
+	inline float Length2D(void) const { return sqrtf(x * x + y * y); }
 
 	inline Vector ToViewAngles()
 	{

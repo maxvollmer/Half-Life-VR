@@ -295,7 +295,7 @@ void PM_ViewEntity(void)
 
 	VectorCopy(pmove->origin, origin);
 
-	fup = 0.5 * (pmove->player_mins[pmove->usehull][2] + pmove->player_maxs[pmove->usehull][2]);
+	fup = 0.5f * (pmove->player_mins[pmove->usehull][2] + pmove->player_maxs[pmove->usehull][2]);
 	fup += pmove->view_ofs[2];
 	fup -= 4;
 

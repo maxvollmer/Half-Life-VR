@@ -27,7 +27,7 @@
 #include <string.h>
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846  // matches value in gcc v2 math.h
+#define M_PI 3.14159265358979323846f  // matches value in gcc v2 math.h
 #endif
 
 vec3_t vec3_origin(0, 0, 0);
@@ -61,12 +61,12 @@ void VectorAngles(const float* forward, float* angles)
 	}
 	else
 	{
-		yaw = (atan2(forward[1], forward[0]) * 180 / M_PI);
+		yaw = (atan2f(forward[1], forward[0]) * 180.f / M_PI);
 		if (yaw < 0)
 			yaw += 360;
 
-		tmp = sqrt(forward[0] * forward[0] + forward[1] * forward[1]);
-		pitch = (atan2(forward[2], tmp) * 180 / M_PI);
+		tmp = sqrtf(forward[0] * forward[0] + forward[1] * forward[1]);
+		pitch = (atan2f(forward[2], tmp) * 180.f / M_PI);
 		if (pitch < 0)
 			pitch += 360;
 	}

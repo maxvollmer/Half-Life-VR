@@ -147,6 +147,7 @@ void CHudMessage::MessageScanNextChar(void)
 	srcGreen = m_parms.pMessage->g1;
 	srcBlue = m_parms.pMessage->b1;
 	blend = 0;  // Pure source
+	destRed = destGreen = destBlue = 0;
 
 	switch (m_parms.pMessage->effect)
 	{
@@ -319,7 +320,7 @@ int CHudMessage::Draw(float fTime)
 {
 	int i, drawn;
 	client_textmessage_t* pMessage;
-	float endTime;
+	float endTime = 0.f;
 
 	drawn = 0;
 

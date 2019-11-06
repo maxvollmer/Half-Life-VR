@@ -24,6 +24,12 @@ freely, subject to the following restrictions:
 */
 
 /*
+**
+** 2019-11-06 MODIFIED BY MAX VOLLMER FOR HALF-LIFE: VR: Prevent dereferencing nullptr (line 5308/5309)
+**
+*/
+
+/*
 The manual and changelog are in the header file "lodepng.h"
 Rename this file to lodepng.cpp to use it for C++, or to lodepng.c to use it for C.
 */
@@ -5299,7 +5305,8 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
     adam7 = (unsigned char*)lodepng_malloc(passstart[7]);
     if(!adam7 && passstart[7]) error = 83; /*alloc fail*/
 
-    if(!error) {
+	// Prevent dereferencing nullptr - Max Vollmer, 2019-11-06
+    if(!error && adam7) {
       unsigned i;
 
       Adam7_interlace(adam7, in, w, h, bpp);

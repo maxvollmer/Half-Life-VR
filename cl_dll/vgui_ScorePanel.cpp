@@ -274,6 +274,9 @@ void ScorePanel::Update()
 	{
 		m_iSortedRows[i] = 0;
 		m_iIsATeam[i] = TEAM_NO;
+	}
+	for (int i = 0; i < MAX_PLAYERS; i++)
+	{
 		m_bHasBeenSorted[i] = false;
 	}
 
@@ -688,7 +691,7 @@ void ScorePanel::FillGrid()
 			strcpy_s(sz, "");
 			if (m_iIsATeam[row])
 			{
-				char sz2[128];
+				char sz2[128]{ 0 };
 
 				switch (col)
 				{
@@ -696,16 +699,16 @@ void ScorePanel::FillGrid()
 					if (m_iIsATeam[row] == TEAM_SPECTATORS)
 					{
 						sprintf_s(sz2, CHudTextMessage::BufferedLocaliseTextString("#Spectators"));
+						strcpy_s(sz, sz2);
 					}
-					else
+					else if (m_iIsATeam[row] == TEAM_YES && team_info)
 					{
 						sprintf_s(sz2, gViewPort->GetTeamName(team_info->teamnumber));
+						strcpy_s(sz, sz2);
 					}
 
-					strcpy_s(sz, sz2);
-
 					// Append the number of players
-					if (m_iIsATeam[row] == TEAM_YES)
+					if (m_iIsATeam[row] == TEAM_YES && team_info)
 					{
 						if (team_info->players == 1)
 						{
@@ -725,15 +728,15 @@ void ScorePanel::FillGrid()
 				case COLUMN_CLASS:
 					break;
 				case COLUMN_KILLS:
-					if (m_iIsATeam[row] == TEAM_YES)
+					if (m_iIsATeam[row] == TEAM_YES && team_info)
 						sprintf_s(sz, "%d", team_info->frags);
 					break;
 				case COLUMN_DEATHS:
-					if (m_iIsATeam[row] == TEAM_YES)
+					if (m_iIsATeam[row] == TEAM_YES && team_info)
 						sprintf_s(sz, "%d", team_info->deaths);
 					break;
 				case COLUMN_LATENCY:
-					if (m_iIsATeam[row] == TEAM_YES)
+					if (m_iIsATeam[row] == TEAM_YES && team_info)
 						sprintf_s(sz, "%d", team_info->ping);
 					break;
 				default:

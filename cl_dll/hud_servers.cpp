@@ -715,7 +715,6 @@ int CHudServers::LoadMasterAddresses(int maxservers, int* count, netadr_t* padr)
 	int nPort;
 	int nCount = 0;
 	bool bIgnore;
-	int nDefaultPort;
 
 	// Assume default master and master file
 	strcpy_s(szMaster, VALVE_MASTER_ADDRESS);  // IP:PORT string
@@ -744,13 +743,7 @@ int CHudServers::LoadMasterAddresses(int maxservers, int* count, netadr_t* padr)
 		if (strlen(m_szToken) <= 0)
 			break;
 
-		bIgnore = true;
-
-		if (!_stricmp(m_szToken, "Master"))
-		{
-			nDefaultPort = PORT_MASTER;
-			bIgnore = FALSE;
-		}
+		bIgnore = _stricmp(m_szToken, "Master");
 
 		// Now parse all addresses between { }
 		pstart = gEngfuncs.COM_ParseFile(pstart, m_szToken);
@@ -791,7 +784,7 @@ int CHudServers::LoadMasterAddresses(int maxservers, int* count, netadr_t* padr)
 
 			nPort = atoi(m_szToken);
 			if (!nPort)
-				nPort = nDefaultPort;
+				nPort = PORT_MASTER;
 
 			sprintf_s(szAdr, "%s:%i", base, nPort);
 

@@ -302,26 +302,24 @@ Only produces random numbers to match the server ones.
 */
 Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t* pevAttacker, int shared_rand)
 {
-	float x, y, z;
+	float x = 0.f;
+	float y = 0.f;
 
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)
 	{
-		if (pevAttacker == nullptr)
+		if (pevAttacker)
 		{
-			// get circular gaussian spread
-			do {
-				x = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
-				y = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
-				z = x * x + y * y;
-			} while (z > 1);
+			//Use player's random seed.
+			x = UTIL_SharedRandomFloat(shared_rand + iShot, -0.5f, 0.5f) + UTIL_SharedRandomFloat(shared_rand + (1 + iShot), -0.5f, 0.5f);
+			y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5f, 0.5f) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5f, 0.5f);
 		}
 		else
 		{
-			//Use player's random seed.
 			// get circular gaussian spread
-			x = UTIL_SharedRandomFloat(shared_rand + iShot, -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (1 + iShot), -0.5, 0.5);
-			y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5, 0.5);
-			z = x * x + y * y;
+			do {
+				x = RANDOM_FLOAT(-0.5f, 0.5f) + RANDOM_FLOAT(-0.5f, 0.5f);
+				y = RANDOM_FLOAT(-0.5f, 0.5f) + RANDOM_FLOAT(-0.5f, 0.5f);
+			} while ((x * x + y * y) > 1);
 		}
 
 	}
@@ -596,10 +594,11 @@ For debugging, print out state variables to log file
 */
 void CBasePlayerWeapon::PrintState(void)
 {
+	const float timeDelta = m_flTimeWeaponIdle - gpGlobals->time;
 	COM_Log("c:\\hl.log", "%.4f ", gpGlobals->time);
 	COM_Log("c:\\hl.log", "%.4f ", m_pPlayer->m_flNextAttack);
 	COM_Log("c:\\hl.log", "%.4f ", m_flNextPrimaryAttack);
-	COM_Log("c:\\hl.log", "%.4f ", m_flTimeWeaponIdle - gpGlobals->time);
+	COM_Log("c:\\hl.log", "%.4f ", timeDelta);
 	COM_Log("c:\\hl.log", "%i ", m_iClip);
 }
 

@@ -81,7 +81,7 @@ int ScrollTextUp(void)
 {
 	ConsolePrint(g_szLineBuffer[0]);  // move the first line into the console buffer
 	g_szLineBuffer[MAX_LINES][0] = 0;
-	memmove(g_szLineBuffer[0], g_szLineBuffer[1], sizeof(g_szLineBuffer) - sizeof(g_szLineBuffer[0]));  // overwrite the first line
+	memmove(g_szLineBuffer, g_szLineBuffer + sizeof(g_szLineBuffer[0]), sizeof(g_szLineBuffer) - sizeof(g_szLineBuffer[0]));  // overwrite the first line
 	memmove(&g_pflNameColors[0], &g_pflNameColors[1], sizeof(g_pflNameColors) - sizeof(g_pflNameColors[0]));
 	memmove(&g_iNameLengths[0], &g_iNameLengths[1], sizeof(g_iNameLengths) - sizeof(g_iNameLengths[0]));
 	g_szLineBuffer[MAX_LINES - 1][0] = 0;
