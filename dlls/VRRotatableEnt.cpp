@@ -66,8 +66,8 @@ float VRRotatableEnt::CalculateDeltaAngle(const Vector& currentRotatePos)
 {
 	Vector2D startPos2D = CalculateDeltaPos2D(m_vrRotateStartPos).Normalize();
 	Vector2D currentPos2D = CalculateDeltaPos2D(currentRotatePos).Normalize();
-	float startAngle = std::atan2(startPos2D.y, startPos2D.x) * 180.f / M_PI;
-	float currentAngle = std::atan2(currentPos2D.y, currentPos2D.x) * 180.f / M_PI;
+	float startAngle = atan2f(startPos2D.y, startPos2D.x) * 180.f / M_PI;
+	float currentAngle = atan2f(currentPos2D.y, currentPos2D.x) * 180.f / M_PI;
 	//ALERT(at_console, "CalculateDeltaAngle: startPos2D: %f, %f; currentPos2D: %f, %f; startAngle: %f; currentAngle: %f; deltaAngle: %f\n", startPos2D.x, startPos2D.y, currentPos2D.x, currentPos2D.y, startAngle, currentAngle, (currentAngle - startAngle));
 	return currentAngle - startAngle;
 }

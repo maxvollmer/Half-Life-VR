@@ -354,7 +354,7 @@ void COsprey::UpdateGoal()
 		m_vel2 = gpGlobals->v_forward * m_pGoalEnt->pev->speed;
 
 		m_startTime = m_startTime + m_dTime;
-		m_dTime = 2.0 * (m_pos1 - m_pos2).Length() / (m_vel1.Length() + m_pGoalEnt->pev->speed);
+		m_dTime = 2.f * (m_pos1 - m_pos2).Length() / (m_vel1.Length() + m_pGoalEnt->pev->speed);
 
 		if (m_ang1.y - m_ang2.y < -180)
 		{
@@ -427,7 +427,7 @@ void COsprey::Flight()
 
 	// float flSpeed = DotProduct( gpGlobals->v_forward, pev->velocity );
 
-	float m_flIdealtilt = (160 - flSpeed) / 10.0;
+	float m_flIdealtilt = (160 - flSpeed) / 10.f;
 
 	// ALERT( at_console, "%f %f\n", flSpeed, flIdealtilt );
 	if (m_flRotortilt < m_flIdealtilt)

@@ -87,7 +87,7 @@ TYPEDESCRIPTION CSqueakGrenade::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE(CSqueakGrenade, CGrenade);
 
-#define SQUEEK_DETONATE_DELAY 15.0
+#define SQUEEK_DETONATE_DELAY 15.0f
 
 int CSqueakGrenade::Classify(void)
 {
@@ -261,14 +261,14 @@ void CSqueakGrenade::HuntThink(void)
 	}
 
 	// squeek if it's about time blow up
-	if ((m_flDie - gpGlobals->time <= 0.5) && (m_flDie - gpGlobals->time >= 0.3))
+	if ((m_flDie - gpGlobals->time <= 0.5f) && (m_flDie - gpGlobals->time >= 0.3f))
 	{
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_die1.wav", 1, ATTN_NORM, 0, 100 + RANDOM_LONG(0, 0x3F));
-		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 256, 0.25);
+		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 256, 0.25f);
 	}
 
 	// higher pitch as squeeker gets closer to detonation time
-	float flpitch = 155.0 - 60.0 * ((m_flDie - gpGlobals->time) / SQUEEK_DETONATE_DELAY);
+	float flpitch = 155.f - 60.f * ((m_flDie - gpGlobals->time) / SQUEEK_DETONATE_DELAY);
 	if (flpitch < 80)
 		flpitch = 80;
 
@@ -281,7 +281,7 @@ void CSqueakGrenade::HuntThink(void)
 		}
 
 		float flVel = pev->velocity.Length();
-		float flAdj = 50.0 / (flVel + 10.0);
+		float flAdj = 50.f / (flVel + 10.f);
 
 		if (flAdj > 1.2)
 			flAdj = 1.2;
@@ -340,7 +340,7 @@ void CSqueakGrenade::SuperBounceTouch(CBaseEntity* pOther)
 		return;
 
 	// higher pitch as squeeker gets closer to detonation time
-	flpitch = 155.0 - 60.0 * ((m_flDie - gpGlobals->time) / SQUEEK_DETONATE_DELAY);
+	flpitch = 155.f - 60.f * ((m_flDie - gpGlobals->time) / SQUEEK_DETONATE_DELAY);
 
 	if (pOther->pev->takedamage && m_flNextAttack < gpGlobals->time)
 	{

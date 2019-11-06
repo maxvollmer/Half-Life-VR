@@ -176,9 +176,9 @@ bool VRGroundEntityHandler::CheckIfPotentialGroundEntityForPlayer(CBaseEntity* p
 	// We extend the player's height and lower the origin a bit to make sure we detect movement even if slightly above ground (HMD jittering etc.)
 	return VRPhysicsHelper::Instance().ModelIntersectsCapsule(
 		pEntity,
-		m_pPlayer->pev->origin - Vector{ 0.f, 0.f, 8.f },
+		/*center*/ m_pPlayer->pev->origin - Vector{ 0.f, 0.f, 8.f },
 		/*radius*/ m_pPlayer->pev->size.x,
-		/*height*/ m_pPlayer->pev->size.z + 8.f);
+		/*height*/ double(m_pPlayer->pev->size.z) + 8.0);
 }
 
 bool VRGroundEntityHandler::IsExcludedAsGroundEntity(CBaseEntity* pEntity)

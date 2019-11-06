@@ -73,11 +73,11 @@ void CShower::Think(void)
 void CShower::Touch(CBaseEntity* pOther)
 {
 	if (pev->flags & FL_ONGROUND)
-		pev->velocity = pev->velocity * 0.1;
+		pev->velocity = pev->velocity * 0.1f;
 	else
-		pev->velocity = pev->velocity * 0.6;
+		pev->velocity = pev->velocity * 0.6f;
 
-	if ((pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y) < 10.0)
+	if ((pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y) < 10.f)
 		pev->speed = 0;
 }
 

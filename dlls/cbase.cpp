@@ -490,13 +490,13 @@ int CBaseEntity::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	// figure momentum add (don't let hurt brushes or other triggers move player)
 	if ((!FNullEnt(pevInflictor)) && (pev->movetype == MOVETYPE_WALK || pev->movetype == MOVETYPE_STEP) && (pevAttacker->solid != SOLID_TRIGGER))
 	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
+		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5f;
 		vecDir = vecDir.Normalize();
 
-		float flForce = flDamage * ((32 * 32 * 72.0) / (pev->size.x * pev->size.y * pev->size.z)) * 5;
+		float flForce = flDamage * ((32 * 32 * 72.f) / (pev->size.x * pev->size.y * pev->size.z)) * 5;
 
-		if (flForce > 1000.0)
-			flForce = 1000.0;
+		if (flForce > 1000.f)
+			flForce = 1000.f;
 		pev->velocity = pev->velocity + vecDir * flForce;
 	}
 

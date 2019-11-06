@@ -117,7 +117,7 @@ void CStomp::Spawn(void)
 }
 
 
-#define STOMP_INTERVAL 0.025
+#define STOMP_INTERVAL 0.025f
 
 void CStomp::Think(void)
 {
@@ -642,7 +642,7 @@ void CGargantua::FlameDamage(Vector vecStart, Vector vecEnd, entvars_t* pevInfli
 
 				if (dist > 64)
 				{
-					flAdjustedDamage = flDamage - (dist - 64) * 0.4;
+					flAdjustedDamage = flDamage - (dist - 64) * 0.4f;
 					if (flAdjustedDamage <= 0)
 						continue;
 				}

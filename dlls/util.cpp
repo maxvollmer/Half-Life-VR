@@ -456,7 +456,7 @@ int UTIL_MonstersInSphere(CBaseEntity** pList, int listMax, const Vector& center
 			continue;
 
 		// Now Z
-		delta = center.z - (pEdict->v.absmin.z + pEdict->v.absmax.z) * 0.5;
+		delta = center.z - (pEdict->v.absmin.z + pEdict->v.absmax.z) * 0.5f;
 		delta *= delta;
 
 		distance += delta;

@@ -302,7 +302,7 @@ int GetSequenceInfo(void* pmodel, int sequence, float* pflFrameRate, float* pflG
 	if (pseqdesc->numframes > 1)
 	{
 		*pflFrameRate = 256 * pseqdesc->fps / (pseqdesc->numframes - 1);
-		*pflGroundSpeed = sqrt(pseqdesc->linearmovement[0] * pseqdesc->linearmovement[0] + pseqdesc->linearmovement[1] * pseqdesc->linearmovement[1] + pseqdesc->linearmovement[2] * pseqdesc->linearmovement[2]);
+		*pflGroundSpeed = sqrtf(pseqdesc->linearmovement[0] * pseqdesc->linearmovement[0] + pseqdesc->linearmovement[1] * pseqdesc->linearmovement[1] + pseqdesc->linearmovement[2] * pseqdesc->linearmovement[2]);
 		*pflGroundSpeed = *pflGroundSpeed * pseqdesc->fps / (pseqdesc->numframes - 1);
 	}
 	else
@@ -343,13 +343,13 @@ int GetAnimationEvent(void* pmodel, entvars_t* pev, MonsterEvent_t* pMonsterEven
 
 	if (pseqdesc->numframes > 1)
 	{
-		flStart *= (pseqdesc->numframes - 1) / 256.0;
-		flEnd *= (pseqdesc->numframes - 1) / 256.0;
+		flStart *= (pseqdesc->numframes - 1) / 256.f;
+		flEnd *= (pseqdesc->numframes - 1) / 256.f;
 	}
 	else
 	{
 		flStart = 0;
-		flEnd = 1.0;
+		flEnd = 1.f;
 	}
 
 	for (; index < pseqdesc->numevents; index++)
@@ -410,19 +410,19 @@ float SetController(void* pmodel, entvars_t* pev, int iController, float flValue
 			flValue = -flValue;
 
 		// does the controller not wrap?
-		if (pbonecontroller->start + 359.0 >= pbonecontroller->end)
+		if (pbonecontroller->start + 359.f >= pbonecontroller->end)
 		{
-			if (flValue > ((pbonecontroller->start + pbonecontroller->end) / 2.0) + 180)
-				flValue = flValue - 360;
-			if (flValue < ((pbonecontroller->start + pbonecontroller->end) / 2.0) - 180)
-				flValue = flValue + 360;
+			if (flValue > ((pbonecontroller->start + pbonecontroller->end) / 2.f) + 180.f)
+				flValue = flValue - 360.f;
+			if (flValue < ((pbonecontroller->start + pbonecontroller->end) / 2.f) - 180.f)
+				flValue = flValue + 360.f;
 		}
 		else
 		{
 			if (flValue > 360)
-				flValue = flValue - (int)(flValue / 360.0) * 360.0;
+				flValue = flValue - (int)(flValue / 360.f) * 360.f;
 			else if (flValue < 0)
-				flValue = flValue + (int)((flValue / -360.0) + 1) * 360.0;
+				flValue = flValue + (int)((flValue / -360.f) + 1.f) * 360.f;
 		}
 	}
 
@@ -434,7 +434,7 @@ float SetController(void* pmodel, entvars_t* pev, int iController, float flValue
 		setting = 255;
 	pev->controller[iController] = setting;
 
-	return setting * (1.0 / 255.0) * (pbonecontroller->end - pbonecontroller->start) + pbonecontroller->start;
+	return setting * (1.f / 255.f) * (pbonecontroller->end - pbonecontroller->start) + pbonecontroller->start;
 }
 
 
@@ -456,11 +456,11 @@ float SetBlending(void* pmodel, entvars_t* pev, int iBlender, float flValue)
 			flValue = -flValue;
 
 		// does the controller not wrap?
-		if (pseqdesc->blendstart[iBlender] + 359.0 >= pseqdesc->blendend[iBlender])
+		if (pseqdesc->blendstart[iBlender] + 359.f >= pseqdesc->blendend[iBlender])
 		{
-			if (flValue > ((pseqdesc->blendstart[iBlender] + pseqdesc->blendend[iBlender]) / 2.0) + 180)
+			if (flValue > ((pseqdesc->blendstart[iBlender] + pseqdesc->blendend[iBlender]) / 2.f) + 180.f)
 				flValue = flValue - 360;
-			if (flValue < ((pseqdesc->blendstart[iBlender] + pseqdesc->blendend[iBlender]) / 2.0) - 180)
+			if (flValue < ((pseqdesc->blendstart[iBlender] + pseqdesc->blendend[iBlender]) / 2.f) - 180.f)
 				flValue = flValue + 360;
 		}
 	}
@@ -474,7 +474,7 @@ float SetBlending(void* pmodel, entvars_t* pev, int iBlender, float flValue)
 
 	pev->blending[iBlender] = setting;
 
-	return setting * (1.0 / 255.0) * (pseqdesc->blendend[iBlender] - pseqdesc->blendstart[iBlender]) + pseqdesc->blendstart[iBlender];
+	return setting * (1.f / 255.f) * (pseqdesc->blendend[iBlender] - pseqdesc->blendstart[iBlender]) + pseqdesc->blendstart[iBlender];
 }
 
 
@@ -630,7 +630,7 @@ namespace
 			else
 			{
 				value = 0.f;
-				value = (1.0 - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
+				value = (1.f - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
 			}
 			switch (pbonecontroller[j].type & STUDIO_TYPES)
 			{
@@ -769,7 +769,7 @@ namespace
 					// and there's more data in the span
 					if (panimvalue->num.valid > k + 1)
 					{
-						pos[j] += (panimvalue[k + 1].value * (1.0 - s) + s * panimvalue[k + 2].value) * pbone->scale[j];
+						pos[j] += (panimvalue[k + 1].value * (1.f - s) + s * panimvalue[k + 2].value) * pbone->scale[j];
 					}
 					else
 					{
@@ -781,7 +781,7 @@ namespace
 					// are we at the end of the repeating values section and there's another section with data?
 					if (panimvalue->num.total <= k + 1)
 					{
-						pos[j] += (panimvalue[panimvalue->num.valid].value * (1.0 - s) + s * panimvalue[panimvalue->num.valid + 2].value) * pbone->scale[j];
+						pos[j] += (panimvalue[panimvalue->num.valid].value * (1.f - s) + s * panimvalue[panimvalue->num.valid + 2].value) * pbone->scale[j];
 					}
 					else
 					{
@@ -845,7 +845,7 @@ namespace
 			pos[pseqdesc->motionbone][2] = 0.0;
 		}
 
-		s = 0 * ((1.0 - (f - (int)(f))) / (pseqdesc->numframes)) * pev->framerate;
+		s = 0 * ((1.f - (f - (int)(f))) / (pseqdesc->numframes)) * pev->framerate;
 
 		if (pseqdesc->motiontype & STUDIO_LX)
 		{
@@ -916,7 +916,7 @@ namespace
 	}
 	void MatrixAngles(const float(*matrix)[4], float* angles)
 	{
-		float cp = sqrt(matrix[0][0] * matrix[0][0] + matrix[1][0] * matrix[1][0]);
+		float cp = sqrtf(matrix[0][0] * matrix[0][0] + matrix[1][0] * matrix[1][0]);
 		if (cp < 0.000001f)
 		{
 			angles[YAW] = 0;

@@ -1498,7 +1498,10 @@ int PRECACHE_SOUND(const char* s)
 // Intercept EMIT_AMBIENT_SOUND to inject female NPC sounds when played as ambient sound (e.g. in the test lab) - Max Vollmer, 2018-11-23
 void EMIT_AMBIENT_SOUND(edict_t* entity, float* pos, const char* sample, float volume, float attenuation, int flags, int pitch)
 {
-	if (sample && *sample == '!')
+	if (!sample)
+		return;
+
+	if (*sample == '!')
 	{
 		// Intercept and use female audio files with 50% chance
 		std::string ssample{ sample };
@@ -1537,7 +1540,10 @@ void EMIT_AMBIENT_SOUND(edict_t* entity, float* pos, const char* sample, float v
 
 void EMIT_SOUND_DYN(edict_t* entity, int channel, const char* sample, float volume, float attenuation, int flags, int pitch)
 {
-	if (sample && *sample == '!')
+	if (!sample)
+		return;
+
+	if (*sample == '!')
 	{
 		// Intercept and use female audio files for female NPCs
 		std::string ssample{ sample };

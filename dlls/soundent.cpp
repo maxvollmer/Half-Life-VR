@@ -272,9 +272,7 @@ void CSoundEnt::Initialize(void)
 //=========================================================
 int CSoundEnt::ISoundsInList(int iListType)
 {
-	int i;
-	int iThisSound;
-
+	int iThisSound = 0;
 	if (iListType == SOUNDLISTTYPE_FREE)
 	{
 		iThisSound = m_iFreeSound;
@@ -293,15 +291,16 @@ int CSoundEnt::ISoundsInList(int iListType)
 		return 0;
 	}
 
-	i = 0;
-
+	int i = 0;
 	while (iThisSound != SOUNDLIST_EMPTY)
 	{
 		i++;
 
+		if (iThisSound == m_SoundPool[iThisSound].m_iNext)
+			break;
+
 		iThisSound = m_SoundPool[iThisSound].m_iNext;
 	}
-
 	return i;
 }
 

@@ -1009,7 +1009,7 @@ int CBaseMonster::DeadTakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker
 			return 0;
 		}
 		// Accumulate corpse gibbing damage, so you can gib with multiple hits
-		pev->health -= flDamage * 0.1;
+		pev->health -= flDamage * 0.1f;
 	}
 
 	return 1;
@@ -1018,11 +1018,11 @@ int CBaseMonster::DeadTakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker
 
 float CBaseMonster::DamageForce(float damage)
 {
-	float force = damage * ((32 * 32 * 72.0) / (pev->size.x * pev->size.y * pev->size.z)) * 5;
+	float force = damage * ((32 * 32 * 72.f) / (pev->size.x * pev->size.y * pev->size.z)) * 5;
 
-	if (force > 1000.0)
+	if (force > 1000.f)
 	{
-		force = 1000.0;
+		force = 1000.f;
 	}
 
 	return force;
@@ -1384,20 +1384,16 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)
 	{
 		// get circular gaussian spread
-		float x, y, z;
+		float x = 0.f;
+		float y = 0.f;
 		do
 		{
-			x = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
-			y = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
-			z = x * x + y * y;
-		} while (z > 1);
+			x = RANDOM_FLOAT(-0.5f, 0.5f) + RANDOM_FLOAT(-0.5f, 0.5f);
+			y = RANDOM_FLOAT(-0.5f, 0.5f) + RANDOM_FLOAT(-0.5f, 0.5f);
+		} while ((x * x + y * y) > 1);
 
-		Vector vecDir = vecDirShooting +
-			x * vecSpread.x * vecRight +
-			y * vecSpread.y * vecUp;
-		Vector vecEnd;
-
-		vecEnd = vecSrc + vecDir * flDistance;
+		Vector vecDir = vecDirShooting + x * vecSpread.x * vecRight + y * vecSpread.y * vecUp;
+		Vector vecEnd = vecSrc + vecDir * flDistance;
 		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev) /*pentIgnore*/, &tr);
 
 		tracer = 0;
@@ -1435,7 +1431,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 			}
 		}
 		// do damage, paint decals
-		if (tr.flFraction != 1.0)
+		if (tr.flFraction < 1.f)
 		{
 			CBaseEntity* pEntity = CBaseEntity::InstanceOrWorld(tr.pHit);
 
@@ -1488,7 +1484,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 				}
 		}
 		// make bullet trails
-		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (flDistance * tr.flFraction) / 64.0);
+		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (flDistance * tr.flFraction) / 64.f);
 	}
 	ApplyMultiDamage(pev, pevAttacker);
 }
@@ -1509,7 +1505,6 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
-	float x, y, z;
 
 	if (pevAttacker == nullptr)
 		pevAttacker = pev;  // the default attacker is ourselves
@@ -1517,20 +1512,17 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	ClearMultiDamage();
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
 
+	float x = 0.f;
+	float y = 0.f;
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)
 	{
 		//Use player's random seed.
 		// get circular gaussian spread
-		x = UTIL_SharedRandomFloat(shared_rand + iShot, -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (1 + iShot), -0.5, 0.5);
-		y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5, 0.5);
-		z = x * x + y * y;
+		x = UTIL_SharedRandomFloat(shared_rand + iShot, -0.5f, 0.5f) + UTIL_SharedRandomFloat(shared_rand + (1 + iShot), -0.5f, 0.5f);
+		y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5f, 0.5f) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5f, 0.5f);
 
-		Vector vecDir = vecDirShooting +
-			x * vecSpread.x * vecRight +
-			y * vecSpread.y * vecUp;
-		Vector vecEnd;
-
-		vecEnd = vecSrc + vecDir * flDistance;
+		Vector vecDir = vecDirShooting + x * vecSpread.x * vecRight + y * vecSpread.y * vecUp;
+		Vector vecEnd = vecSrc + vecDir * flDistance;
 		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev) /*pentIgnore*/, &tr);
 
 		// do damage, paint decals
@@ -1579,11 +1571,11 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 				}
 		}
 		// make bullet trails
-		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (flDistance * tr.flFraction) / 64.0);
+		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (flDistance * tr.flFraction) / 64.f);
 	}
 	ApplyMultiDamage(pev, pevAttacker);
 
-	return Vector(x * vecSpread.x, y * vecSpread.y, 0.0);
+	return Vector(x * vecSpread.x, y * vecSpread.y, 0.f);
 }
 
 void CBaseEntity::TraceBleed(float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)

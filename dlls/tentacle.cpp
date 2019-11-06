@@ -488,7 +488,7 @@ void CTentacle::Cycle(void)
 	if (pSound)
 	{
 		Vector vecDir;
-		if (gpGlobals->time - m_flPrevSoundTime < 0.5)
+		if (gpGlobals->time - m_flPrevSoundTime < 0.5f)
 		{
 			float dt = gpGlobals->time - m_flPrevSoundTime;
 			vecDir = pSound->m_vecOrigin + (pSound->m_vecOrigin - m_vecPrevSound) / dt - pev->origin;
@@ -809,8 +809,6 @@ void CTentacle::DieThink(void)
 
 void CTentacle::HandleAnimEvent(MonsterEvent_t* pEvent)
 {
-	char* sound;
-
 	switch (pEvent->event)
 	{
 	case 1:  // bang
@@ -879,35 +877,16 @@ void CTentacle::HandleAnimEvent(MonsterEvent_t* pEvent)
 	}
 	break;
 
-
 	case 7:  // roar
-		switch (RANDOM_LONG(0, 1))
-		{
-		case 0: sound = "tentacle/te_roar1.wav"; break;
-		case 1: sound = "tentacle/te_roar2.wav"; break;
-		}
-
-		UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector(0, 0, MyHeight()), sound, 1.0, ATTN_NORM, 0, 100);
+		UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector(0, 0, MyHeight()), RANDOM_LONG(0, 1) ? "tentacle/te_roar2.wav" : "tentacle/te_roar1.wav", 1.0, ATTN_NORM, 0, 100);
 		break;
 
 	case 8:  // search
-		switch (RANDOM_LONG(0, 1))
-		{
-		case 0: sound = "tentacle/te_search1.wav"; break;
-		case 1: sound = "tentacle/te_search2.wav"; break;
-		}
-
-		UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector(0, 0, MyHeight()), sound, 1.0, ATTN_NORM, 0, 100);
+		UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector(0, 0, MyHeight()), RANDOM_LONG(0, 1) ? "tentacle/te_search2.wav" : "tentacle/te_search1.wav", 1.0, ATTN_NORM, 0, 100);
 		break;
 
 	case 9:  // swing
-		switch (RANDOM_LONG(0, 1))
-		{
-		case 0: sound = "tentacle/te_move1.wav"; break;
-		case 1: sound = "tentacle/te_move2.wav"; break;
-		}
-
-		UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector(0, 0, MyHeight()), sound, 1.0, ATTN_NORM, 0, 100);
+		UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector(0, 0, MyHeight()), RANDOM_LONG(0, 1) ? "tentacle/te_move2.wav" : "tentacle/te_move1.wav", 1.0, ATTN_NORM, 0, 100);
 		break;
 
 	default:

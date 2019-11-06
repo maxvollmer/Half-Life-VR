@@ -974,7 +974,7 @@ void CController::Move(float flInterval)
 			{
 				DispatchBlocked(edict(), pBlocker->edict());
 			}
-			if (pBlocker && m_moveWaitTime > 0 && pBlocker->IsMoving() && !pBlocker->IsPlayer() && (gpGlobals->time - m_flMoveWaitFinished) > 3.0)
+			if (pBlocker && m_moveWaitTime > 0 && pBlocker->IsMoving() && !pBlocker->IsPlayer() && (gpGlobals->time - m_flMoveWaitFinished) > 3.f)
 			{
 				// Can we still move toward our target?
 				if (flDist < m_flGroundSpeed)

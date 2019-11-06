@@ -241,9 +241,9 @@ void CRpgRocket::FollowThink(void)
 
 	// this acceleration and turning math is totally wrong, but it seems to respond well so don't change it.
 	float flSpeed = pev->velocity.Length();
-	if (gpGlobals->time - m_flIgniteTime < 1.0)
+	if (gpGlobals->time - m_flIgniteTime < 1.f)
 	{
-		pev->velocity = pev->velocity * 0.2 + vecTarget * (flSpeed * 0.8 + 400);
+		pev->velocity = pev->velocity * 0.2f + vecTarget * (flSpeed * 0.8f + 400);
 		if (pev->waterlevel == 3)
 		{
 			// go slow underwater
@@ -251,7 +251,7 @@ void CRpgRocket::FollowThink(void)
 			{
 				pev->velocity = pev->velocity.Normalize() * 300;
 			}
-			UTIL_BubbleTrail(pev->origin - pev->velocity * 0.1, pev->origin, 4);
+			UTIL_BubbleTrail(pev->origin - pev->velocity * 0.1f, pev->origin, 4);
 		}
 		else
 		{

@@ -21,15 +21,12 @@
 
 double VectorLength(vec3_t v)
 {
-	int i;
-	double length;
-
-	length = 0;
-	for (i = 0; i < 3; i++)
-		length += v[i] * v[i];
-	length = sqrt(length);  // FIXME
-
-	return length;
+	float squaredlength = 0;
+	for (int i = 0; i < 3; i++)
+	{
+		squaredlength += v[i] * v[i];
+	}
+	return sqrtf(squaredlength);
 }
 
 
@@ -38,7 +35,7 @@ int VectorCompare(vec3_t v1, vec3_t v2)
 	int i;
 
 	for (i = 0; i < 3; i++)
-		if (fabs(v1[i] - v2[i]) > EQUAL_EPSILON)
+		if (fabsf(v1[i] - v2[i]) > EQUAL_EPSILON)
 			return false;
 
 	return true;
@@ -194,14 +191,14 @@ void QuaternionSlerp(const vec4_t p, vec4_t q, float t, vec4_t qt)
 	{
 		if ((1.0 - cosom) > 0.00000001)
 		{
-			omega = acos(cosom);
-			sinom = sin(omega);
-			sclp = sin((1.0 - t) * omega) / sinom;
-			sclq = sin(t * omega) / sinom;
+			omega = acosf(cosom);
+			sinom = sinf(omega);
+			sclp = sinf((1.f - t) * omega) / sinom;
+			sclq = sinf(t * omega) / sinom;
 		}
 		else
 		{
-			sclp = 1.0 - t;
+			sclp = 1.f - t;
 			sclq = t;
 		}
 		for (i = 0; i < 4; i++)

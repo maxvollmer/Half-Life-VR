@@ -154,13 +154,13 @@ void StudioModel::GetSequenceInfo(float* pflFrameRate, float* pflGroundSpeed)
 	if (pseqdesc->numframes > 1)
 	{
 		*pflFrameRate = 256 * pseqdesc->fps / (pseqdesc->numframes - 1);
-		*pflGroundSpeed = sqrt(pseqdesc->linearmovement[0] * pseqdesc->linearmovement[0] + pseqdesc->linearmovement[1] * pseqdesc->linearmovement[1] + pseqdesc->linearmovement[2] * pseqdesc->linearmovement[2]);
+		*pflGroundSpeed = sqrtf(pseqdesc->linearmovement[0] * pseqdesc->linearmovement[0] + pseqdesc->linearmovement[1] * pseqdesc->linearmovement[1] + pseqdesc->linearmovement[2] * pseqdesc->linearmovement[2]);
 		*pflGroundSpeed = *pflGroundSpeed * pseqdesc->fps / (pseqdesc->numframes - 1);
 	}
 	else
 	{
-		*pflFrameRate = 256.0;
-		*pflGroundSpeed = 0.0;
+		*pflFrameRate = 256.f;
+		*pflGroundSpeed = 0.f;
 	}
 }
 

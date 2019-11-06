@@ -32,6 +32,7 @@ constexpr const char* VR_DEFAULT_VIEW_DIST_TO_WALLS_AS_STRING = "5";  // for cva
 inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, entvars_t* ent);  // implementation later in this file
 
 constexpr const float EPSILON = 0.000001f;
+constexpr const float EPSILON_D = 0.000001;
 
 extern globalvars_t* gpGlobals;
 
@@ -84,7 +85,7 @@ typedef int EOFFSET;
 typedef int BOOL;
 
 // In case this ever changes
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846f
 
 // Keeps clutter down a bit, when declaring external entity/global method prototypes
 #define DECLARE_GLOBAL_METHOD(MethodName) extern void DLLEXPORT MethodName(void)

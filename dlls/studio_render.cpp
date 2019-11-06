@@ -34,25 +34,25 @@ void StudioModel::CalcBoneAdj()
 			// check for 360% wrapping
 			if (pbonecontroller[j].type & STUDIO_RLOOP)
 			{
-				value = m_controller[i] * (360.0 / 256.0) + pbonecontroller[j].start;
+				value = m_controller[i] * (360.f / 256.f) + pbonecontroller[j].start;
 			}
 			else
 			{
-				value = m_controller[i] / 255.0;
-				if (value < 0)
-					value = 0;
-				if (value > 1.0)
-					value = 1.0;
-				value = (1.0 - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
+				value = m_controller[i] / 255.f;
+				if (value < 0.f)
+					value = 0.f;
+				if (value > 1.f)
+					value = 1.f;
+				value = (1.f - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
 			}
 			// Con_DPrintf( "%d %d %f : %f\n", m_controller[j], m_prevcontroller[j], value, dadt );
 		}
 		else
 		{
-			value = m_mouth / 64.0;
-			if (value > 1.0)
-				value = 1.0;
-			value = (1.0 - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
+			value = m_mouth / 64.f;
+			if (value > 1.f)
+				value = 1.f;
+			value = (1.f - value) * pbonecontroller[j].start + value * pbonecontroller[j].end;
 			// Con_DPrintf("%d %f\n", mouthopen, value );
 		}
 		switch (pbonecontroller[j].type & STUDIO_TYPES)
@@ -60,7 +60,7 @@ void StudioModel::CalcBoneAdj()
 		case STUDIO_XR:
 		case STUDIO_YR:
 		case STUDIO_ZR:
-			m_adj[j] = value * (Q_PI / 180.0);
+			m_adj[j] = value * (M_PI / 180.f);
 			break;
 		case STUDIO_X:
 		case STUDIO_Y:
@@ -172,7 +172,7 @@ void StudioModel::CalcBonePosition(int frame, float s, mstudiobone_t* pbone, mst
 				// and there's more data in the span
 				if (panimvalue->num.valid > k + 1)
 				{
-					pos[j] += (panimvalue[k + 1].value * (1.0 - s) + s * panimvalue[k + 2].value) * pbone->scale[j];
+					pos[j] += (panimvalue[k + 1].value * (1.f - s) + s * panimvalue[k + 2].value) * pbone->scale[j];
 				}
 				else
 				{
@@ -184,7 +184,7 @@ void StudioModel::CalcBonePosition(int frame, float s, mstudiobone_t* pbone, mst
 				// are we at the end of the repeating values section and there's another section with data?
 				if (panimvalue->num.total <= k + 1)
 				{
-					pos[j] += (panimvalue[panimvalue->num.valid].value * (1.0 - s) + s * panimvalue[panimvalue->num.valid + 2].value) * pbone->scale[j];
+					pos[j] += (panimvalue[panimvalue->num.valid].value * (1.f - s) + s * panimvalue[panimvalue->num.valid + 2].value) * pbone->scale[j];
 				}
 				else
 				{

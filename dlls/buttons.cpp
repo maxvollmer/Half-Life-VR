@@ -184,7 +184,7 @@ void CMultiSource::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE u
 	int i = 0;
 
 	// Find the entity in our list
-	while (i < m_iTotal)
+	while (i < m_iTotal && i < MS_MAX_TARGETS)
 		if (m_rgEntities[i++] == pCaller)
 			break;
 
@@ -197,7 +197,8 @@ void CMultiSource::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE u
 
 	// CONSIDER: a Use input to the multisource always toggles.  Could check useType for ON/OFF/TOGGLE
 
-	m_rgTriggered[i - 1] ^= 1;
+	if (i > 0 && i <= MS_MAX_TARGETS)
+		m_rgTriggered[i - 1] ^= 1;
 
 	//
 	if (IsTriggered(pActivator))

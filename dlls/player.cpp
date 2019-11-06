@@ -2685,7 +2685,7 @@ pt_end:
 
 					if (gun->pev->fuser1 != 1000)
 					{
-						gun->pev->fuser1 = max(gun->pev->fuser1 - gpGlobals->frametime, -0.001);
+						gun->pev->fuser1 = max(gun->pev->fuser1 - gpGlobals->frametime, -0.001f);
 					}
 				}
 				pPlayerItem = pPlayerItem->m_pNext;

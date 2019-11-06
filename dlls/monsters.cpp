@@ -201,7 +201,6 @@ void CBaseMonster::Listen(void)
 	int iSound;
 	int iMySounds;
 	float hearingSensitivity;
-	CSound* pCurrentSound;
 
 	m_iAudibleList = SOUNDLIST_EMPTY;
 	ClearConditions(bits_COND_HEAR_SOUND | bits_COND_SMELL | bits_COND_SMELL_FOOD);
@@ -224,7 +223,7 @@ void CBaseMonster::Listen(void)
 
 	while (iSound != SOUNDLIST_EMPTY)
 	{
-		pCurrentSound = CSoundEnt::SoundPointerForIndex(iSound);
+		CSound* pCurrentSound = CSoundEnt::SoundPointerForIndex(iSound);
 
 		if (pCurrentSound &&
 			(pCurrentSound->m_iType & iMySounds) &&
@@ -265,10 +264,10 @@ void CBaseMonster::Listen(void)
 			m_iAudibleList = iSound;
 		}
 
-		if (iSound != pCurrentSound->m_iNext)
-			iSound = pCurrentSound->m_iNext;
-		else
+		if (!pCurrentSound || iSound == pCurrentSound->m_iNext)
 			break;
+
+		iSound = pCurrentSound->m_iNext;
 	}
 }
 
@@ -328,9 +327,7 @@ void CBaseMonster::Look(int iDistance)
 		{
 			pSightEnt = pList[i];
 			// !!!temporarily only considering other monsters and clients, don't see prisoners
-			if (pSightEnt != this &&
-				!FBitSet(pSightEnt->pev->spawnflags, SF_MONSTER_PRISONER) &&
-				pSightEnt->pev->health > 0)
+			if (pSightEnt && pSightEnt != this && !FBitSet(pSightEnt->pev->spawnflags, SF_MONSTER_PRISONER) && pSightEnt->pev->health > 0)
 			{
 				// the looker will want to consider this entity
 				// don't check anything else about an entity that can't be seen, or an entity that you don't care about.
@@ -340,11 +337,9 @@ void CBaseMonster::Look(int iDistance)
 					{
 						if (pev->spawnflags & SF_MONSTER_WAIT_TILL_SEEN)
 						{
-							CBaseMonster* pClient;
-
-							pClient = dynamic_cast<CBaseMonster*>(pSightEnt);
+							CBaseMonster* pClient = dynamic_cast<CBaseMonster*>(pSightEnt);
 							// don't link this client in the list if the monster is wait till seen and the player isn't facing the monster
-							if (pSightEnt && !pClient->FInViewCone(this))
+							if (pClient && !pClient->FInViewCone(this))
 							{
 								// we're not in the player's view cone.
 								continue;
@@ -421,7 +416,6 @@ CSound* CBaseMonster::PBestSound(void)
 	int iBestSound = -1;
 	float flBestDist = 8192;  // so first nearby sound will become best so far.
 	float flDist;
-	CSound* pSound;
 
 	iThisSound = m_iAudibleList;
 
@@ -436,7 +430,7 @@ CSound* CBaseMonster::PBestSound(void)
 
 	while (iThisSound != SOUNDLIST_EMPTY)
 	{
-		pSound = CSoundEnt::SoundPointerForIndex(iThisSound);
+		CSound* pSound = CSoundEnt::SoundPointerForIndex(iThisSound);
 
 		if (pSound && pSound->FIsSound())
 		{
@@ -449,12 +443,14 @@ CSound* CBaseMonster::PBestSound(void)
 			}
 		}
 
+		if (!pSound || iThisSound == pSound->m_iNextAudible)
+			break;
+
 		iThisSound = pSound->m_iNextAudible;
 	}
 	if (iBestSound >= 0)
 	{
-		pSound = CSoundEnt::SoundPointerForIndex(iBestSound);
-		return pSound;
+		return CSoundEnt::SoundPointerForIndex(iBestSound);
 	}
 #if _DEBUG
 	ALERT(at_error, "nullptr Return from PBestSound\n");
@@ -829,12 +825,8 @@ int ShouldSimplify(int routeType)
 void CBaseMonster::RouteSimplify(CBaseEntity* pTargetEnt)
 {
 	// BUGBUG: this doesn't work 100% yet
-	int i, count, outCount;
-	Vector vecStart;
-	WayPoint_t outRoute[ROUTE_SIZE * 2];  // Any points except the ends can turn into 2 points in the simplified route
-
-	count = 0;
-
+	int i = 0;
+	int count = 0;
 	for (i = m_iRouteIndex; i < ROUTE_SIZE; i++)
 	{
 		if (!m_Route[i].iType)
@@ -851,17 +843,23 @@ void CBaseMonster::RouteSimplify(CBaseEntity* pTargetEnt)
 		return;
 	}
 
-	outCount = 0;
-	vecStart = pev->origin;
-	for (i = 0; i < count - 1; i++)
+	int outCount = 0;
+	Vector vecStart = pev->origin;
+	WayPoint_t outRoute[ROUTE_SIZE * 2];  // Any points except the ends can turn into 2 points in the simplified route
+	for (i = 0; (i + 1) < count; i++)
 	{
+		const int curIndex = m_iRouteIndex + i;
+		const int nextIndex = m_iRouteIndex + i + 1;
+		if (curIndex >= ROUTE_SIZE || nextIndex >= ROUTE_SIZE)
+			break;
+
 		// Don't eliminate path_corners
-		if (!ShouldSimplify(m_Route[m_iRouteIndex + i].iType))
+		if (!ShouldSimplify(m_Route[curIndex].iType))
 		{
-			outRoute[outCount] = m_Route[m_iRouteIndex + i];
+			outRoute[outCount] = m_Route[curIndex];
 			outCount++;
 		}
-		else if (CheckLocalMove(vecStart, m_Route[m_iRouteIndex + i + 1].vecLocation, pTargetEnt, nullptr) == LOCALMOVE_VALID)
+		else if (CheckLocalMove(vecStart, m_Route[nextIndex].vecLocation, pTargetEnt, nullptr) == LOCALMOVE_VALID)
 		{
 			// Skip vert
 			continue;
@@ -871,12 +869,12 @@ void CBaseMonster::RouteSimplify(CBaseEntity* pTargetEnt)
 			Vector vecTest, vecSplit;
 
 			// Halfway between this and next
-			vecTest = (m_Route[m_iRouteIndex + i + 1].vecLocation + m_Route[m_iRouteIndex + i].vecLocation) * 0.5;
+			vecTest = (m_Route[nextIndex].vecLocation + m_Route[curIndex].vecLocation) * 0.5;
 
 			// Halfway between this and previous
-			vecSplit = (m_Route[m_iRouteIndex + i].vecLocation + vecStart) * 0.5;
+			vecSplit = (m_Route[curIndex].vecLocation + vecStart) * 0.5;
 
-			int iType = (m_Route[m_iRouteIndex + i].iType | bits_MF_TO_DETOUR) & ~bits_MF_NOT_TO_MASK;
+			int iType = (m_Route[curIndex].iType | bits_MF_TO_DETOUR) & ~bits_MF_NOT_TO_MASK;
 			if (CheckLocalMove(vecStart, vecTest, pTargetEnt, nullptr) == LOCALMOVE_VALID)
 			{
 				outRoute[outCount].iType = iType;
@@ -892,15 +890,18 @@ void CBaseMonster::RouteSimplify(CBaseEntity* pTargetEnt)
 			}
 			else
 			{
-				outRoute[outCount] = m_Route[m_iRouteIndex + i];
+				outRoute[outCount] = m_Route[curIndex];
 			}
 		}
 		// Get last point
 		vecStart = outRoute[outCount].vecLocation;
 		outCount++;
 	}
-	ASSERT(i < count);
-	outRoute[outCount] = m_Route[m_iRouteIndex + i];
+	const int curIndex = m_iRouteIndex + i;
+	if (curIndex < ROUTE_SIZE)
+	{
+		outRoute[outCount] = m_Route[curIndex];
+	}
 	outCount++;
 
 	// Terminate
@@ -1880,7 +1881,7 @@ void CBaseMonster::Move(float flInterval)
 			DispatchBlocked(edict(), pBlocker->edict());
 		}
 
-		if (pBlocker && m_moveWaitTime > 0 && pBlocker->IsMoving() && !pBlocker->IsPlayer() && (gpGlobals->time - m_flMoveWaitFinished) > 3.0)
+		if (pBlocker && m_moveWaitTime > 0 && pBlocker->IsMoving() && !pBlocker->IsPlayer() && (gpGlobals->time - m_flMoveWaitFinished) > 3.f)
 		{
 			// Can we still move toward our target?
 			if (flDist < m_flGroundSpeed)
@@ -1914,7 +1915,7 @@ void CBaseMonster::Move(float flInterval)
 					else
 					{
 						// Don't get stuck
-						if ((gpGlobals->time - m_flMoveWaitFinished) < 0.2)
+						if ((gpGlobals->time - m_flMoveWaitFinished) < 0.2f)
 							Remember(bits_MEMORY_MOVE_FAILED);
 
 						m_flMoveWaitFinished = gpGlobals->time + 0.1;
@@ -2920,7 +2921,10 @@ void CBaseMonster::ReportAIState(void)
 	{
 		ALERT(level, " Moving ");
 		if (m_flMoveWaitFinished > gpGlobals->time)
-			ALERT(level, ": Stopped for %.2f. ", m_flMoveWaitFinished - gpGlobals->time);
+		{
+			float deltaTime = m_flMoveWaitFinished - gpGlobals->time;
+			ALERT(level, ": Stopped for %.2f. ", deltaTime);
+		}
 		else if (m_IdealActivity == GetStoppedActivity())
 			ALERT(level, ": In stopped anim. ");
 	}

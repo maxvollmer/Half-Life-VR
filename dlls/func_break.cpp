@@ -361,8 +361,8 @@ void CBreakable::DamageSound(void)
 {
 	int pitch;
 	float fvol;
-	char* rgpsz[6];
-	int i;
+	char* rgpsz[6]{ 0 };
+	int i = 0;
 	int material = m_Material;
 
 	//	if (RANDOM_LONG(0,1))
@@ -427,7 +427,7 @@ void CBreakable::DamageSound(void)
 		break;
 	}
 
-	if (i)
+	if (i > 0)
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, rgpsz[RANDOM_LONG(0, i - 1)], fvol, ATTN_NORM, 0, pitch);
 }
 
@@ -960,7 +960,7 @@ void CPushable::Move(CBaseEntity* pOther, int push)
 
 void CPushable::EmitPushSound(float length)
 {
-	if ((gpGlobals->time - m_soundTime) > 0.7)
+	if ((gpGlobals->time - m_soundTime) > 0.7f)
 	{
 		m_soundTime = gpGlobals->time;
 		if (length > 0 && FBitSet(pev->flags, FL_ONGROUND))

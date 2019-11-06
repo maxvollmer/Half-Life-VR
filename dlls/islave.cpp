@@ -648,15 +648,15 @@ Schedule_t* CISlave::GetSchedule(void)
 
 	if (HasConditions(bits_COND_HEAR_SOUND))
 	{
-		CSound* pSound;
-		pSound = PBestSound();
+		CSound* pSound = PBestSound();
+		if (pSound)
+		{
+			if (FBitSet(pSound->m_iType, bits_SOUND_DANGER))
+				return GetScheduleOfType(SCHED_TAKE_COVER_FROM_BEST_SOUND);
 
-		ASSERT(pSound != nullptr);
-
-		if (pSound && (pSound->m_iType & bits_SOUND_DANGER))
-			return GetScheduleOfType(SCHED_TAKE_COVER_FROM_BEST_SOUND);
-		if (pSound->m_iType & bits_SOUND_COMBAT)
-			m_afMemory |= bits_MEMORY_PROVOKED;
+			if (FBitSet(pSound->m_iType, bits_SOUND_COMBAT))
+				m_afMemory |= bits_MEMORY_PROVOKED;
+		}
 	}
 
 	switch (m_MonsterState)

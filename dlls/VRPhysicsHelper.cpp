@@ -393,7 +393,9 @@ public:
 			Vector& vertex = origin + face.polys->verts[i];
 			Vector& vertexAfter = origin + face.polys->verts[(i < (face.polys->numverts - 1)) ? (i + 1) : 0];
 
-			float vertDot = DotProduct((vertexBefore - vertex).Normalize(), (vertexAfter - vertex).Normalize());
+			Vector v1 = (vertexBefore - vertex).Normalize();
+			Vector v2 = (vertexAfter - vertex).Normalize();
+			float vertDot = DotProduct(v1, v2);
 
 			if (fabs(vertDot + 1.f) < EPSILON)
 			{
@@ -403,7 +405,7 @@ public:
 			{
 				vertices.push_back(vertex);
 				planeVertexMetaData[plane][vertex].numFaces++;
-				planeVertexMetaData[plane][vertex].totalCos += vertDot - 1.f;
+				planeVertexMetaData[plane][vertex].totalCos += double(vertDot) - 1.0;
 			}
 		}
 		if (vertices.size() >= 3)
@@ -460,7 +462,7 @@ private:
 		for (const Vector& vec : vertices)
 		{
 			// Discard vertex if it's completely enclosed by other faces
-			if (CVAR_GET_FLOAT("vr_debug_physics") >= 1.f && planeVertexMetaData[plane][vec].totalCos < (EPSILON - 4.f))
+			if (CVAR_GET_FLOAT("vr_debug_physics") >= 1.f && planeVertexMetaData[plane][vec].totalCos < (EPSILON_D - 4.0))
 			{
 				continue;
 			}
@@ -473,7 +475,7 @@ private:
 			for (const Vector& vecOther : other.vertices)
 			{
 				// Discard vertex if it's completely enclosed by other faces
-				if (CVAR_GET_FLOAT("vr_debug_physics") >= 2.f && planeVertexMetaData[plane][vecOther].totalCos < (EPSILON - 4.f))
+				if (CVAR_GET_FLOAT("vr_debug_physics") >= 2.f && planeVertexMetaData[plane][vecOther].totalCos < (EPSILON_D - 4.0))
 				{
 					continue;
 				}
@@ -726,11 +728,11 @@ void FindAdditionalPotentialGapsBetweenMapFacesUsingPhysicsEngine(CollisionBody*
 			{
 				const Vector& vertex = face.GetVertices()[i];
 				const VertexMetaData& vertexMetaData = vertexMetaDataMap[vertex];
-				if (vertexMetaData.totalCos > (EPSILON - 4.f) && !vertexMetaData.handled)
+				if (vertexMetaData.totalCos > (EPSILON_D - 4.0) && !vertexMetaData.handled)
 				{
 					const Vector& vertexAfter = face.GetVertices()[(i < face.GetVertices().size() - 1) ? (i + 1) : 0];
 					const VertexMetaData& vertexMetaDataAfter = vertexMetaDataMap[vertexAfter];
-					if (vertexMetaDataAfter.totalCos > (EPSILON - 4.f) && !vertexMetaDataAfter.handled)
+					if (vertexMetaDataAfter.totalCos > (EPSILON_D - 4.0) && !vertexMetaDataAfter.handled)
 					{
 						Vector dir{ vertex - vertexAfter };
 						dir.InlineNormalize();
@@ -1951,7 +1953,7 @@ void VRPhysicsHelper::EnsureWorldsSmallestCupExists(CBaseEntity* pWorldsSmallest
 		Vector maxs = modelInfo.m_sequences[0].bboxMaxs;
 		rp3d::decimal bottomRadius = max(maxs.x - mins.x, maxs.y - mins.y) * 0.5 * HL_TO_RP3D;
 		rp3d::decimal topRadius = bottomRadius * 1.1;
-		rp3d::decimal height = (maxs.z - mins.z) * HL_TO_RP3D;
+		rp3d::decimal height = double(maxs.z) - double(mins.z) * HL_TO_RP3D;
 
 		m_worldsSmallestCupTopSphereShape = new SphereShape{ topRadius };
 		m_worldsSmallestCupBottomSphereShape = new SphereShape{ bottomRadius };
