@@ -644,6 +644,8 @@ void HUD_InitClientWeapons(void)
 	// Allocate a slot for the local player
 	HUD_PrepEntity(&player, nullptr);
 
+	memset(g_pWpns, 0, sizeof(g_pWpns));
+
 	// Allocate slot(s) for each weapon that we are going to be predicting
 	HUD_PrepEntity(&g_Glock, &player);
 	HUD_PrepEntity(&g_Crowbar, &player);

@@ -119,6 +119,7 @@ class CSquadMonster;
 
 #define SF_NORESPAWN (1 << 30)  // !!!set this bit on guns and stuff that should never respawn.
 
+#ifndef CLIENT_DLL
 //
 // EHANDLE<CBaseEntity>. Safe way to point to CBaseEntities who may die between frames
 //
@@ -220,6 +221,90 @@ public:
 		}
 	};
 };
+#else
+//
+// EHANDLE<CBaseEntity>.
+// In client.dll we simply hold the entity pointer, since they are all fake global entities that live for the duration of the game anyways
+//
+template <class ENTITY>
+class EHANDLE
+{
+private:
+	ENTITY* ent{ nullptr };
+
+public:
+	EHANDLE()
+	{
+	}
+
+	EHANDLE(ENTITY* pEntity)
+	{
+		ent = pEntity;
+	}
+
+	template <class ENTITY2>
+	EHANDLE(EHANDLE<ENTITY2> other) :
+		EHANDLE{ dynamic_cast<ENTITY*>(static_cast<CBaseEntity*>(other.operator ENTITY2* ())) }
+	{
+	}
+
+	edict_t* Get(void) const
+	{
+		return nullptr;
+	};
+
+	edict_t* Set(edict_t* pent)
+	{
+		return pent;
+	};
+
+	operator ENTITY* ()
+	{
+		return ent;
+	};
+
+	operator int() const
+	{
+		return ent != nullptr;
+	}
+
+	ENTITY* operator->()
+	{
+		return ent;
+	}
+
+	template <class ENTITY2>
+	bool operator==(EHANDLE<ENTITY2>& other)
+	{
+		return ent == other.ent;
+	}
+
+	template <class ENTITY2>
+	bool operator!=(EHANDLE<ENTITY2>& other)
+	{
+		return !(operator==(other));
+	}
+
+	class Hash
+	{
+	public:
+		std::size_t operator()(const EHANDLE& e) const
+		{
+			std::hash<ENTITY*> entHasher;
+			return entHasher(e.ent);
+		}
+	};
+
+	class Equal
+	{
+	public:
+		bool operator()(const EHANDLE& e1, const EHANDLE& e2) const
+		{
+			return e1.ent == e2.ent;
+		}
+	};
+};
+#endif
 
 
 
