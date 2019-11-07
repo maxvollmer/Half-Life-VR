@@ -7,3 +7,4 @@ Release/
 !packages/**/Release/
 *.sdf
 /___mod/*.7z
+/crashdumps
