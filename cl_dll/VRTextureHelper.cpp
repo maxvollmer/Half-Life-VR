@@ -111,7 +111,7 @@ const char* VRTextureHelper::GetCurrentSkyboxName()
 		return "desert";
 }
 
-unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& path, unsigned int& width, unsigned int& height)
+unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& path, unsigned int& outwidth, unsigned int& outheight)
 {
 	std::string canonicalpathstring;
 	try
@@ -128,27 +128,28 @@ unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& pa
 		auto it = m_textures.find(canonicalpathstring);
 		if (it != m_textures.end())
 		{
-			width = it->second.width;
-			height = it->second.height;
+			outwidth = it->second.width;
+			outheight = it->second.height;
 			return it->second.texnum;
 		}
 	}
 
 	GLuint texture{ 0 };
 
+	unsigned int lodewidth = 0, lodeheight = 0;
 	if (std::filesystem::exists(path))
 	{
 		std::vector<unsigned char> image;
-		unsigned int error = lodepng::decode(image, width, height, path.string().data());
+		unsigned int error = lodepng::decode(image, lodewidth, lodeheight, path.string().data());
 		if (error)
 		{
 			gEngfuncs.Con_DPrintf("Error (%i) trying to load texture %s: %s\n", error, path.string().data(), lodepng_error_text(error));
 		}
-		else if ((width & (width - 1)) || (height & (height - 1)))
+		else if ((lodewidth & (lodewidth - 1)) || (lodeheight & (lodeheight - 1)))
 		{
 			gEngfuncs.Con_DPrintf("Invalid texture %s, width and height must be power of 2!\n", path.string().data());
-			width = 0;
-			height = 0;
+			lodewidth = 0;
+			lodeheight = 0;
 			texture = 0;
 		}
 		else
@@ -160,7 +161,7 @@ unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& pa
 				TryGLCall(glActiveTexture, GL_TEXTURE0);
 				TryGLCall(glGenTextures, 1, &texture);
 				TryGLCall(glBindTexture, GL_TEXTURE_2D, texture);
-				TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+				TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA8, lodewidth, lodeheight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
 				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				TryGLCall(glGenerateMipmap, GL_TEXTURE_2D);
@@ -169,8 +170,8 @@ unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& pa
 			catch (OGLErrorException e)
 			{
 				gEngfuncs.Con_DPrintf("Couldn't create texture %s, error: %s\n", path.string().data(), e.what());
-				width = 0;
-				height = 0;
+				lodewidth = 0;
+				lodeheight = 0;
 				texture = 0;
 			}
 		}
@@ -178,12 +179,14 @@ unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& pa
 	else
 	{
 		gEngfuncs.Con_DPrintf("Couldn't load texture %s, it doesn't exist.\n", path.string().data());
-		width = 0;
-		height = 0;
+		lodewidth = 0;
+		lodeheight = 0;
 		texture = 0;
 	}
 
-	m_textures[canonicalpathstring] = Texture{ texture, width, height };
+	m_textures[canonicalpathstring] = Texture{ texture, lodewidth, lodeheight };
+	outwidth = lodewidth;
+	outheight = lodeheight;
 	return texture;
 }
 
