@@ -239,14 +239,14 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 
 void VRRenderer::DrawNormal()
 {
-	glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_TEXTURE_BIT);
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
 
 	glPopAttrib();
 }
 
 void VRRenderer::DrawTransparent()
 {
-	glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_TEXTURE_BIT);
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
 
 	if (m_fIsOnlyClientDraw)
 	{
@@ -576,6 +576,14 @@ void VRRenderer::SetViewOfs(const Vector& viewOfs)
 	vrHelper->SetViewOfs(viewOfs);
 }
 
+
+void VRRenderer::DrawHDSkyBox()
+{
+	// TODO: Current implementation is buggy
+}
+
+#if 0
+
 void VRRenderer::DrawHDSkyBox()
 {
 	bool hdTexturesEnabled = CVAR_GET_FLOAT("vr_hd_textures_enabled") != 0.f;
@@ -654,6 +662,10 @@ void VRRenderer::DrawHDSkyBox()
 	Vector skyboxorigin;
 	vrHelper->GetViewOrg(skyboxorigin);
 
+	DrawMapSkyFacesIntoStencilBuffer();
+
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+
 	ClearGLErrors();
 
 	try
@@ -665,6 +677,11 @@ void VRRenderer::DrawHDSkyBox()
 		TryGLCall(glDisable, GL_CULL_FACE);
 		TryGLCall(glDepthMask, GL_FALSE);
 		TryGLCall(glTexEnvi, GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+		TryGLCall(glEnable, GL_STENCIL_TEST);
+		TryGLCall(glStencilFunc, GL_EQUAL, 1, 0xFF);
+		TryGLCall(glStencilOp, GL_KEEP, GL_KEEP, GL_KEEP);
+		TryGLCall(glStencilMask, 0x00);
 
 		TryGLCall(glColor4f, 1.f, 1.f, 1.f, 1.f);
 
@@ -696,7 +713,39 @@ void VRRenderer::DrawHDSkyBox()
 	{
 		gEngfuncs.Con_DPrintf("Failed to render HD sky: %s\n", e.what());
 	}
+
+	glDisable(GL_STENCIL_TEST);
+	glStencilMask(0x00);
+
+	glPopAttrib();
 }
+
+
+void DrawMapSkyFacesIntoStencilBuffer()
+{
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+	ClearGLErrors();
+
+	try
+	{
+		glClear(GL_STENCIL_BUFFER_BIT);
+		// TryGLCall(glEnable, GL_STENCIL_TEST);
+		// TryGLCall(glStencilMask, 0xFF);
+		// TryGLCall(glStencilFunc, GL_ALWAYS, 1, 0xFF);
+		// TryGLCall(glStencilOp, GL_KEEP, GL_KEEP, GL_KEEP);
+	}
+	catch (const OGLErrorException & e)
+	{
+		gEngfuncs.Con_DPrintf("Failed to render HD sky: %s\n", e.what());
+	}
+
+	glPopAttrib();
+}
+
+#endif
+
+
 
 
 

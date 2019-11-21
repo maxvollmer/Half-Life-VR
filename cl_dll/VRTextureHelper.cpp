@@ -210,7 +210,8 @@ const std::array<std::string, 6> VRTextureHelper::m_vrMapSkyboxIndices{
 	 {"lf"},
 	 {"rt"},
 	 {"up"},
-	 {"dn"}} };
+	 {"dn"}}
+};
 
 // order of skybox as used by Half-Life
 const std::array<std::string, 6> VRTextureHelper::m_hlMapSkyboxIndices{
@@ -219,7 +220,8 @@ const std::array<std::string, 6> VRTextureHelper::m_hlMapSkyboxIndices{
 	 {"lf"},
 	 {"ft"},
 	 {"up"},
-	 {"dn"}} };
+	 {"dn"}}
+};
 
 const std::unordered_map<std::string, std::string> VRTextureHelper::m_mapSkyboxNames{
 	{{"maps/c0a0.bsp", "desert"},
@@ -317,4 +319,5 @@ const std::unordered_map<std::string, std::string> VRTextureHelper::m_mapSkyboxN
 	 {"maps/c4a2a.bsp", "neb6"},
 	 {"maps/c4a2b.bsp", "neb6"},
 	 {"maps/c4a3.bsp", "black"},
-	 {"maps/c5a1.bsp", "xen10"}} };
+	 {"maps/c5a1.bsp", "xen10"}}
+};
