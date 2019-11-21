@@ -1,4 +1,5 @@
-0.6.1-beta
+0.6.1-beta - 2019-11-21
+* Fixed several crash bugs and improved general code stability
 * Fixed bug that broke moving with trains and other entities
 * Fixed "invalid decompressed idat size" error for HD textures that aren't 1:1
 * Disabled HD sky due to clipping issues (will be fixed later)
