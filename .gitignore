@@ -1,4 +1,10 @@
 .vs
-Debug
-Release
+Debug/
+Release/
+!reactphysics3d/lib/Debug/
+!reactphysics3d/lib/Release/
+!packages/**/Debug/
+!packages/**/Release/
 *.sdf
+/___mod/*.7z
+/crashdumps

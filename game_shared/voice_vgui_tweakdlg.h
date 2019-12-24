@@ -1,6 +1,6 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -22,4 +22,4 @@ bool IsTweakDlgOpen();
 CMenuPanel* GetVoiceTweakDlg();
 
 
-#endif // VOICE_VGUI_TWEAKDLG_H
+#endif  // VOICE_VGUI_TWEAKDLG_H

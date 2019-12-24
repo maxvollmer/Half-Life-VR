@@ -1,6 +1,6 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -15,10 +15,10 @@
 #include "com_model.h"
 #include "studio_util.h"
 
-#pragma warning(disable: 4244)
+#pragma warning(disable : 4244)
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 int CHudOverview::Init()
 {
@@ -41,9 +41,9 @@ int CHudOverview::VidInit()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : flTime - 
-//			intermission - 
+// Purpose:
+// Input  : flTime -
+//			intermission -
 //-----------------------------------------------------------------------------
 int CHudOverview::Draw(float flTime)
 {
@@ -56,7 +56,7 @@ int CHudOverview::Draw(float flTime)
 
 	// calculate player size on the overview
 	int x1, y1, x2, y2;
-	float v0[3]={0,0,0}, v1[3]={64,64,0};
+	float v0[3] = { 0, 0, 0 }, v1[3] = { 64, 64, 0 };
 	gEngfuncs.Overview_WorldToScreen(v0, &x1, &y1);
 	gEngfuncs.Overview_WorldToScreen(v1, &x2, &y2);
 	float scale = abs(x2 - x1);
@@ -64,32 +64,38 @@ int CHudOverview::Draw(float flTime)
 	// loop through all the players and draw them on the map
 	for (int i = 1; i < MAX_PLAYERS; i++)
 	{
-		cl_entity_t *pl = gEngfuncs.GetEntityByIndex(i);
+		cl_entity_t* pl = gEngfuncs.GetEntityByIndex(i);
 
 		if (pl && pl->player && pl->curstate.health > 0 && pl->curstate.solid != SOLID_NOT)
 		{
 			int x, y, z = 0;
-			float v[3]={pl->origin[0], pl->origin[1], 0};
+			float v[3] = { pl->origin[0], pl->origin[1], 0 };
 			gEngfuncs.Overview_WorldToScreen(v, &x, &y);
 
 			// hack in some team colors
 			float r, g, bc;
 			if (g_PlayerExtraInfo[i].teamnumber == 1)
 			{
-				r = 0.0f; g = 0.0f; bc = 1.0f;
+				r = 0.0f;
+				g = 0.0f;
+				bc = 1.0f;
 			}
 			else if (g_PlayerExtraInfo[i].teamnumber == 2)
 			{
-				r = 1.0f; g = 0.0f; bc = 0.0f;
+				r = 1.0f;
+				g = 0.0f;
+				bc = 0.0f;
 			}
 			else
 			{
 				// just use the default orange color if the team isn't set
-				r = 1.0f; g = 0.7f; bc = 0.0f;
+				r = 1.0f;
+				g = 0.7f;
+				bc = 0.0f;
 			}
 
 			// set the current texture
-			gEngfuncs.pTriAPI->SpriteTexture((struct model_s *)gEngfuncs.GetSpritePointer(m_hsprPlayer), 0);
+			gEngfuncs.pTriAPI->SpriteTexture(gEngfuncs.GetSpritePointer(m_hsprPlayer), 0);
 
 			// additive render mode
 			gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
@@ -105,7 +111,7 @@ int CHudOverview::Draw(float flTime)
 
 			// calculate rotational matrix
 			vec3_t a, b, angles;
-			float rmatrix[3][4];	// transformation matrix
+			float rmatrix[3][4];  // transformation matrix
 			VectorCopy(pl->angles, angles);
 			angles[0] = 0.0f;
 			angles[1] += 90.f;
@@ -114,33 +120,37 @@ int CHudOverview::Draw(float flTime)
 			AngleMatrix(angles, rmatrix);
 			a[2] = 0;
 
-			a[0] = -scale; a[1] = -scale;
-			VectorTransform(a, rmatrix , b );
-			gEngfuncs.pTriAPI->TexCoord2f( 0, 0 );
+			a[0] = -scale;
+			a[1] = -scale;
+			VectorTransform(a, rmatrix, b);
+			gEngfuncs.pTriAPI->TexCoord2f(0, 0);
 			gEngfuncs.pTriAPI->Vertex3f(x + b[0], y + b[1], z);
 
-			a[0]=-scale; a[1] = scale;
-			VectorTransform(a, rmatrix , b );
-			gEngfuncs.pTriAPI->TexCoord2f( 0, 1 );
-			gEngfuncs.pTriAPI->Vertex3f (x + b[0], y + b[1], z);
-			
-			a[0]=scale; a[1] = scale;
-			VectorTransform(a, rmatrix , b );
-			gEngfuncs.pTriAPI->TexCoord2f( 1, 1 );
-			gEngfuncs.pTriAPI->Vertex3f (x + b[0], y + b[1], z);
+			a[0] = -scale;
+			a[1] = scale;
+			VectorTransform(a, rmatrix, b);
+			gEngfuncs.pTriAPI->TexCoord2f(0, 1);
+			gEngfuncs.pTriAPI->Vertex3f(x + b[0], y + b[1], z);
 
-			a[0]=scale; a[1] = -scale;
-			VectorTransform(a, rmatrix , b );
-			gEngfuncs.pTriAPI->TexCoord2f( 1, 0 );
-			gEngfuncs.pTriAPI->Vertex3f (x + b[0], y + b[1], z);
+			a[0] = scale;
+			a[1] = scale;
+			VectorTransform(a, rmatrix, b);
+			gEngfuncs.pTriAPI->TexCoord2f(1, 1);
+			gEngfuncs.pTriAPI->Vertex3f(x + b[0], y + b[1], z);
+
+			a[0] = scale;
+			a[1] = -scale;
+			VectorTransform(a, rmatrix, b);
+			gEngfuncs.pTriAPI->TexCoord2f(1, 0);
+			gEngfuncs.pTriAPI->Vertex3f(x + b[0], y + b[1], z);
 
 			// finish up
 			gEngfuncs.pTriAPI->End();
-			gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
+			gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
 
 			// draw the players name and health underneath
 			char string[256];
-			sprintf(string, "%s (%i%%)", g_PlayerInfoList[i].name, pl->curstate.health);
+			sprintf_s(string, "%s (%i%%)", g_PlayerInfoList[i].name, pl->curstate.health);
 			DrawConsoleString(x, y + (1.1 * scale), string);
 		}
 	}
@@ -153,8 +163,7 @@ int CHudOverview::Draw(float flTime)
 //-----------------------------------------------------------------------------
 void CHudOverview::InitHUDData()
 {
-//  this block would force the spectator view to be on
-//	gEngfuncs.Overview_SetDrawOverview( 1 );
-//	gEngfuncs.Overview_SetDrawInset( 0 );
+	//  this block would force the spectator view to be on
+	//	gEngfuncs.Overview_SetDrawOverview( 1 );
+	//	gEngfuncs.Overview_SetDrawInset( 0 );
 }
-

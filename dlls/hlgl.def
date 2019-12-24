@@ -11,5 +11,6 @@ EXPORTS
 	ClientConnect			@9
 	ClientDisconnect		@10
 	StartFrame				@11
+	GetNewDLLFunctions			@12
 SECTIONS
 	.data READ WRITE

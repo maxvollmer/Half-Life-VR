@@ -1,6 +1,6 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -11,18 +11,18 @@
 
 #ifndef _WIN32  // LINUX
 #include <dlfcn.h>
-#include <unistd.h> // getcwd
-#include <stdio.h> // sprintf
+#include <unistd.h>  // getcwd
+#include <stdio.h>   // sprintf
 #endif
 
 
 // ------------------------------------------------------------------------------------ //
 // InterfaceReg.
 // ------------------------------------------------------------------------------------ //
-InterfaceReg *InterfaceReg::s_pInterfaceRegs = NULL;
+InterfaceReg* InterfaceReg::s_pInterfaceRegs = nullptr;
 
 
-InterfaceReg::InterfaceReg( InstantiateInterfaceFn fn, const char *pName ) :
+InterfaceReg::InterfaceReg(InstantiateInterfaceFn fn, const char* pName) :
 	m_pName(pName)
 {
 	m_CreateFn = fn;
@@ -35,27 +35,27 @@ InterfaceReg::InterfaceReg( InstantiateInterfaceFn fn, const char *pName ) :
 // ------------------------------------------------------------------------------------ //
 // CreateInterface.
 // ------------------------------------------------------------------------------------ //
-EXPORT_FUNCTION IBaseInterface *CreateInterface( const char *pName, int *pReturnCode )
+EXPORT_FUNCTION IBaseInterface* CreateInterface(const char* pName, int* pReturnCode)
 {
-	InterfaceReg *pCur;
-	
-	for(pCur=InterfaceReg::s_pInterfaceRegs; pCur; pCur=pCur->m_pNext)
+	InterfaceReg* pCur;
+
+	for (pCur = InterfaceReg::s_pInterfaceRegs; pCur; pCur = pCur->m_pNext)
 	{
-		if(strcmp(pCur->m_pName, pName) == 0)
+		if (strcmp(pCur->m_pName, pName) == 0)
 		{
-			if ( pReturnCode )
+			if (pReturnCode)
 			{
 				*pReturnCode = IFACE_OK;
 			}
 			return pCur->m_CreateFn();
 		}
 	}
-	
-	if ( pReturnCode )
+
+	if (pReturnCode)
 	{
 		*pReturnCode = IFACE_FAILED;
 	}
-	return NULL;	
+	return nullptr;
 }
 
 
@@ -66,13 +66,13 @@ EXPORT_FUNCTION IBaseInterface *CreateInterface( const char *pName, int *pReturn
 
 
 #ifdef _WIN32
-HINTERFACEMODULE Sys_LoadModule(const char *pModuleName)
+HINTERFACEMODULE Sys_LoadModule(const char* pModuleName)
 {
-	return (HINTERFACEMODULE)LoadLibrary(pModuleName);
+	return reinterpret_cast<HINTERFACEMODULE>(LoadLibraryA(pModuleName));
 }
 
 #else  // LINUX
-HINTERFACEMODULE Sys_LoadModule(const char *pModuleName)
+HINTERFACEMODULE Sys_LoadModule(const char* pModuleName)
 {
 	// Linux dlopen() doesn't look in the current directory for libraries.
 	// We tell it to, so people don't have to 'install' libraries as root.
@@ -80,13 +80,13 @@ HINTERFACEMODULE Sys_LoadModule(const char *pModuleName)
 	char szCwd[1024];
 	char szAbsoluteLibFilename[1024];
 
-	getcwd( szCwd, sizeof( szCwd ) );
-	if ( szCwd[ strlen( szCwd ) - 1 ] == '/' )
-		szCwd[ strlen( szCwd ) - 1 ] = 0;
+	getcwd(szCwd, sizeof(szCwd));
+	if (szCwd[strlen(szCwd) - 1] == '/')
+		szCwd[strlen(szCwd) - 1] = 0;
 
-	sprintf( szAbsoluteLibFilename, "%s/%s", szCwd, pModuleName );
+	sprintf_s(szAbsoluteLibFilename, "%s/%s", szCwd, pModuleName);
 
-	return (HINTERFACEMODULE)dlopen( szAbsoluteLibFilename, RTLD_NOW );
+	return reinterpret_cast<HINTERFACEMODULE>(dlopen(szAbsoluteLibFilename, RTLD_NOW));
 }
 
 #endif
@@ -95,19 +95,19 @@ HINTERFACEMODULE Sys_LoadModule(const char *pModuleName)
 #ifdef _WIN32
 void Sys_FreeModule(HINTERFACEMODULE hModule)
 {
-	if(!hModule)
+	if (!hModule)
 		return;
 
-	FreeLibrary((HMODULE)hModule);
+	FreeLibrary(reinterpret_cast<HMODULE>(hModule));
 }
 
 #else  // LINUX
 void Sys_FreeModule(HINTERFACEMODULE hModule)
 {
-	if(!hModule)
+	if (!hModule)
 		return;
 
-	dlclose( (void *)hModule );
+	dlclose(hModule);
 }
 
 #endif
@@ -117,7 +117,7 @@ void Sys_FreeModule(HINTERFACEMODULE hModule)
 // Purpose: returns the instance of this module
 // Output : interface_instance_t
 //-----------------------------------------------------------------------------
-CreateInterfaceFn Sys_GetFactoryThis( void )
+CreateInterfaceFn Sys_GetFactoryThis(void)
 {
 	return CreateInterface;
 }
@@ -130,21 +130,21 @@ CreateInterfaceFn Sys_GetFactoryThis( void )
 //-----------------------------------------------------------------------------
 
 #ifdef _WIN32
-CreateInterfaceFn Sys_GetFactory( HINTERFACEMODULE hModule )
+CreateInterfaceFn Sys_GetFactory(HINTERFACEMODULE hModule)
 {
-	if(!hModule)
-		return NULL;
+	if (!hModule)
+		return nullptr;
 
-	return (CreateInterfaceFn)GetProcAddress((HMODULE)hModule, CREATEINTERFACE_PROCNAME);
+	return reinterpret_cast<CreateInterfaceFn>(GetProcAddress(reinterpret_cast<HMODULE>(hModule), CREATEINTERFACE_PROCNAME));
 }
 
 #else  // LINUX
-CreateInterfaceFn Sys_GetFactory( HINTERFACEMODULE hModule )
+CreateInterfaceFn Sys_GetFactory(HINTERFACEMODULE hModule)
 {
-	if(!hModule)
-		return NULL;
+	if (!hModule)
+		return nullptr;
 
-	return (CreateInterfaceFn)dlsym( (void *)hModule, CREATEINTERFACE_PROCNAME );
+	return reinterpret_cast<CreateInterfaceFn>(dlsym(hModule, CREATEINTERFACE_PROCNAME));
 }
 
 #endif

@@ -1,16 +1,16 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
 
-#if !defined( WRECTH )
+#if !defined(WRECTH)
 #define WRECTH
 
 typedef struct rect_s
 {
-	int				left, right, top, bottom;
+	int left = 0, right = 0, top = 0, bottom = 0;
 } wrect_t;
 
 #endif

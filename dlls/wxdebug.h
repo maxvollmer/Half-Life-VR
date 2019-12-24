@@ -37,17 +37,17 @@
 
 enum
 {
-	LOG_TRACE		= 0x00000001,	// General tracing
-    LOG_ENTRY		= 0x00000002,	// Function entry logging
-    LOG_EXIT		= 0x00000004,	// Function exit logging
-    LOG_MEMORY		= 0x00000008,	// Memory alloc/free debugging
-    LOG_ERROR		= 0x00000010,	// Error notification
-	LOG_UNUSED0		= 0x00000020,	// reserved
-	LOG_UNUSED1		= 0x00000040,	// reserved
-	LOG_UNUSED2		= 0x00000080,	// reserved
-	LOG_CHUM		= 0x00000100,	// Chumtoad debugging
-	LOG_LEECH		= 0x00000200,	// Leech debugging
-	LOG_ICHTHYOSAUR = 0x00000400,   // Ichthyosaur debugging
+	LOG_TRACE       = 0x00000001,  // General tracing
+	LOG_ENTRY       = 0x00000002,  // Function entry logging
+	LOG_EXIT        = 0x00000004,  // Function exit logging
+	LOG_MEMORY      = 0x00000008,  // Memory alloc/free debugging
+	LOG_ERROR       = 0x00000010,  // Error notification
+	LOG_UNUSED0     = 0x00000020,  // reserved
+	LOG_UNUSED1     = 0x00000040,  // reserved
+	LOG_UNUSED2     = 0x00000080,  // reserved
+	LOG_CHUM        = 0x00000100,  // Chumtoad debugging
+	LOG_LEECH       = 0x00000200,  // Leech debugging
+	LOG_ICHTHYOSAUR = 0x00000400,  // Ichthyosaur debugging
 };
 
 
@@ -55,83 +55,93 @@ enum
 void WINAPI DbgInitialise(HINSTANCE hInst);
 void WINAPI DbgTerminate();
 // These are public but should be called by macro only
-void WINAPI DbgKernelAssert(const TCHAR *pCondition,const TCHAR *pFileName,INT iLine);
-void WINAPI DbgLogInfo(DWORD Type,DWORD Level,const TCHAR *pFormat,...);
+void WINAPI DbgKernelAssert(const TCHAR* pCondition, const TCHAR* pFileName, INT iLine);
+void WINAPI DbgLogInfo(DWORD Type, DWORD Level, const TCHAR* pFormat, ...);
 void WINAPI DbgOutString(LPCTSTR psz);
 
 
-// These are the macros that should be used in code.
+	// These are the macros that should be used in code.
 
-#define DBGASSERT(_x_) \
-    if (!(_x_)) \
-        DbgKernelAssert(TEXT(#_x_),TEXT(__FILE__),__LINE__)
+	#define DBGASSERT(_x_) \
+		if (!(_x_))        \
+		DbgKernelAssert(TEXT(#_x_), TEXT(__FILE__), __LINE__)
 
-#define DBGBREAK(_x_)                   \
-    DbgKernelAssert(TEXT(#_x_),TEXT(__FILE__),__LINE__)
+	#define DBGBREAK(_x_) \
+		DbgKernelAssert(TEXT(#_x_), TEXT(__FILE__), __LINE__)
 
-#define DBGASSERTEXECUTE(_x_) DBGASSERT(_x_)
+	#define DBGASSERTEXECUTE(_x_) DBGASSERT(_x_)
 
-#define DBGLOG(_x_) DbgLogInfo _x_
+	#define DBGLOG(_x_) DbgLogInfo _x_
 
-#define DBGOUT(_x_) DbgOutString(_x_)
+	#define DBGOUT(_x_) DbgOutString(_x_)
 
-#define ValidateReadPtr(p,cb) \
-    {if(IsBadReadPtr((PVOID)p,cb) == TRUE) \
-        DBGBREAK("Invalid read pointer");}
+	#define ValidateReadPtr(p, cb)                  \
+		{                                           \
+			if (IsBadReadPtr((PVOID)p, cb) == TRUE) \
+				DBGBREAK("Invalid read pointer");   \
+		}
 
-#define ValidateWritePtr(p,cb) \
-    {if(IsBadWritePtr((PVOID)p,cb) == TRUE) \
-        DBGBREAK("Invalid write pointer");}
+	#define ValidateWritePtr(p, cb)                  \
+		{                                            \
+			if (IsBadWritePtr((PVOID)p, cb) == TRUE) \
+				DBGBREAK("Invalid write pointer");   \
+		}
 
-#define ValidateReadWritePtr(p,cb) \
-    {ValidateReadPtr(p,cb) ValidateWritePtr(p,cb)}
+	#define ValidateReadWritePtr(p, cb)                    \
+		{                                                  \
+			ValidateReadPtr(p, cb) ValidateWritePtr(p, cb) \
+		}
 
-#define ValidateStringPtr(p) \
-    {if(IsBadStringPtr((LPCTSTR)p,INFINITE) == TRUE) \
-        DBGBREAK("Invalid string pointer");}
+	#define ValidateStringPtr(p)                              \
+		{                                                     \
+			if (IsBadStringPtr((LPCTSTR)p, INFINITE) == TRUE) \
+				DBGBREAK("Invalid string pointer");           \
+		}
 
-#define ValidateStringPtrA(p) \
-    {if(IsBadStringPtrA((LPCSTR)p,INFINITE) == TRUE) \
-        DBGBREAK("Invalid ANSII string pointer");}
+	#define ValidateStringPtrA(p)                             \
+		{                                                     \
+			if (IsBadStringPtrA((LPCSTR)p, INFINITE) == TRUE) \
+				DBGBREAK("Invalid ANSII string pointer");     \
+		}
 
-#define ValidateStringPtrW(p) \
-    {if(IsBadStringPtrW((LPCWSTR)p,INFINITE) == TRUE) \
-        DBGBREAK("Invalid UNICODE string pointer");}
+	#define ValidateStringPtrW(p)                              \
+		{                                                      \
+			if (IsBadStringPtrW((LPCWSTR)p, INFINITE) == TRUE) \
+				DBGBREAK("Invalid UNICODE string pointer");    \
+		}
 
-#else // !_DEBUG
+#else  // !_DEBUG
 
-// Retail builds make public debug functions inert  - WARNING the source
-// files do not define or build any of the entry points in debug builds
-// (public entry points compile to nothing) so if you go trying to call
-// any of the private entry points in your source they won't compile
+	// Retail builds make public debug functions inert  - WARNING the source
+	// files do not define or build any of the entry points in debug builds
+	// (public entry points compile to nothing) so if you go trying to call
+	// any of the private entry points in your source they won't compile
 
-#define DBGASSERT(_x_)
-#define DBGBREAK(_x_)
-#define DBGASSERTEXECUTE(_x_) _x_
-#define DBGLOG(_x_)
-#define DBGOUT(_x_)
-#define ValidateReadPtr(p,cb)
-#define ValidateWritePtr(p,cb)
-#define ValidateReadWritePtr(p,cb)
-#define ValidateStringPtr(p)
-#define ValidateStringPtrA(p)
-#define ValidateStringPtrW(p)
+	#define DBGASSERT(_x_)
+	#define DBGBREAK(_x_)
+	#define DBGASSERTEXECUTE(_x_) _x_
+	#define DBGLOG(_x_)
+	#define DBGOUT(_x_)
+	#define ValidateReadPtr(p, cb)
+	#define ValidateWritePtr(p, cb)
+	#define ValidateReadWritePtr(p, cb)
+	#define ValidateStringPtr(p)
+	#define ValidateStringPtrA(p)
+	#define ValidateStringPtrW(p)
 
 #endif  // !_DEBUG
 
 
 #ifndef REMIND
-    //  REMIND macro - generates warning as reminder to complete coding
-    //  (eg) usage:
-    //
-    //  #pragma message (REMIND("Add automation support"))
+	//  REMIND macro - generates warning as reminder to complete coding
+	//  (eg) usage:
+	//
+	//  #pragma message (REMIND("Add automation support"))
 
 
-    #define REMINDQUOTE(x) #x
-    #define REMINDQQUOTE(y) REMINDQUOTE(y)
-    #define REMIND(str) __FILE__ "(" REMINDQQUOTE(__LINE__) ") :  " str
+	#define REMINDQUOTE(x)  #x
+	#define REMINDQQUOTE(y) REMINDQUOTE(y)
+	#define REMIND(str)     __FILE__ "(" REMINDQQUOTE(__LINE__) ") :  " str
 #endif
 
-#endif // __WXDEBUG__
-
-
+#endif  // __WXDEBUG__

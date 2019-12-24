@@ -18,5 +18,4 @@
 
 
 
-#endif		// MAPRULES_H
-
+#endif  // MAPRULES_H

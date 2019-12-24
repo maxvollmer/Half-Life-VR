@@ -51,9 +51,12 @@ public:
 		if(newData==null){exit(0);return;}
 		memset(newData,0,sizeof(ELEMTYPE)*newCapacity);
 		_capacity=newCapacity;
-   
+
 		//copy data into newData
+#pragma warning( push )
+#pragma warning( disable : 6386)
 		for(int i=0;i<_count;i++){newData[i]=_data[i];}
+#pragma warning( pop )
 
 		delete[] _data;
 		_data=newData;

@@ -1,0 +1,7 @@
+Hand model based on high poly hand model by Willdabeast and HEV arms textures by JohnChronic: https://gamebanana.com/skins/157391
+
+Female scientist model by 23-down. Full info and further credits in scientist_fem_readme.txt
+
+Weapon models modified from original Half-Life game for VR with new hand model and ESRGAN improved textures.
+
+All other models by Valve, with ESRGAN improved textures.

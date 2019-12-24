@@ -1,6 +1,6 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -9,7 +9,7 @@
 #define INC_NOWIN_H
 #ifndef _WIN32
 
-#include <unistd.h>
+	#include <unistd.h>
 
-#endif //!_WIN32
-#endif //INC_NOWIN_H
+#endif  //!_WIN32
+#endif  //INC_NOWIN_H

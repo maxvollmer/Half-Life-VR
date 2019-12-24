@@ -1,6 +1,6 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -20,7 +20,7 @@ public:
 	int VidInit();
 
 	int Draw(float flTime);
-	void InitHUDData( void );
+	void InitHUDData(void);
 
 private:
 	HSPRITE_VALVE m_hsprPlayer;
@@ -28,4 +28,4 @@ private:
 };
 
 
-#endif // OVERVIEW_H
+#endif  // OVERVIEW_H

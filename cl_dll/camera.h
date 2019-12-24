@@ -1,6 +1,6 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -11,4 +11,4 @@
 #ifndef _CAMERA_H_
 #define _CAMEA_H_
 
-#endif		// _CAMERA_H_
+#endif  // _CAMERA_H_

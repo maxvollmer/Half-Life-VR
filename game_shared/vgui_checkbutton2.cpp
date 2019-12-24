@@ -1,6 +1,6 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -11,7 +11,7 @@
 #include "vgui_loadtga.h"
 
 
-#define EXTRA_X	5
+#define EXTRA_X 5
 
 
 using namespace vgui;
@@ -20,19 +20,19 @@ using namespace vgui;
 
 CCheckButton2::CCheckButton2() :
 	m_Label(""),
-	m_pChecked(NULL),
-	m_pUnchecked(NULL),
-	m_pHandler(NULL),
-	m_CheckboxPanel(NULL)
+	m_pChecked(nullptr),
+	m_pUnchecked(nullptr),
+	m_pHandler(nullptr),
+	m_CheckboxPanel(nullptr)
 {
 	m_bOwnImages = false;
 	m_bChecked = false;
-	m_pChecked = m_pUnchecked = NULL;
+	m_pChecked = m_pUnchecked = nullptr;
 	m_bCheckboxLeft = true;
 
 	m_Label.setParent(this);
-	m_Label.setFgColor(255,255,255,0);
-	m_Label.setBgColor(0,0,0,255);	// background is not drawn and foreground is white
+	m_Label.setFgColor(255, 255, 255, 0);
+	m_Label.setBgColor(0, 0, 0, 255);  // background is not drawn and foreground is white
 	m_Label.addInputSignal(this);
 
 	m_CheckboxPanel.setParent(this);
@@ -48,10 +48,10 @@ CCheckButton2::~CCheckButton2()
 }
 
 
-void CCheckButton2::SetImages(char const *pChecked, char const *pUnchecked)
+void CCheckButton2::SetImages(char const* pChecked, char const* pUnchecked)
 {
 	DeleteImages();
-	
+
 	m_pChecked = vgui_LoadTGA(pChecked);
 	m_pUnchecked = vgui_LoadTGA(pUnchecked);
 	m_bOwnImages = true;
@@ -60,7 +60,7 @@ void CCheckButton2::SetImages(char const *pChecked, char const *pUnchecked)
 }
 
 
-void CCheckButton2::SetImages(Image *pChecked, Image *pUnchecked)
+void CCheckButton2::SetImages(Image* pChecked, Image* pUnchecked)
 {
 	DeleteImages();
 
@@ -74,14 +74,14 @@ void CCheckButton2::SetImages(Image *pChecked, Image *pUnchecked)
 
 void CCheckButton2::DeleteImages()
 {
-	if(m_bOwnImages)
+	if (m_bOwnImages)
 	{
 		delete m_pChecked;
 		delete m_pUnchecked;
 	}
 
-	m_pChecked = NULL;
-	m_pUnchecked = NULL;
+	m_pChecked = nullptr;
+	m_pUnchecked = nullptr;
 	m_bOwnImages = false;
 
 	SetupControls();
@@ -101,13 +101,13 @@ bool CCheckButton2::GetCheckboxLeft()
 }
 
 
-void CCheckButton2::SetText(char const *pText, ...)
+void CCheckButton2::SetText(char const* pText, ...)
 {
 	char str[512];
-	
+
 	va_list marker;
 	va_start(marker, pText);
-	_vsnprintf(str, sizeof(str), pText, marker);
+	_vsnprintf_s(str, sizeof(str), pText, marker);
 	va_end(marker);
 
 	m_Label.setText(str);
@@ -122,7 +122,7 @@ void CCheckButton2::SetTextColor(int r, int g, int b, int a)
 }
 
 
-void CCheckButton2::SetHandler(ICheckButton2Handler *pHandler)
+void CCheckButton2::SetHandler(ICheckButton2Handler* pHandler)
 {
 	m_pHandler = pHandler;
 }
@@ -145,7 +145,7 @@ void CCheckButton2::internalMousePressed(MouseCode code)
 {
 	m_bChecked = !m_bChecked;
 
-	if(m_pHandler)
+	if (m_pHandler)
 		m_pHandler->StateChanged(this);
 
 	SetupControls();
@@ -155,19 +155,19 @@ void CCheckButton2::internalMousePressed(MouseCode code)
 void CCheckButton2::SetupControls()
 {
 	// Initialize the checkbutton bitmap.
-	Image *pBitmap = m_bChecked ? m_pChecked : m_pUnchecked;
+	Image* pBitmap = m_bChecked ? m_pChecked : m_pUnchecked;
 
-	Panel *controls[2] = {&m_CheckboxPanel, &m_Label};
+	Panel* controls[2] = { &m_CheckboxPanel, &m_Label };
 	int controlSizes[2][2];
-	
+
 	controlSizes[0][0] = controlSizes[0][1] = 0;
-	if(pBitmap)
+	if (pBitmap)
 		pBitmap->getSize(controlSizes[0][0], controlSizes[0][1]);
-	
+
 	m_CheckboxPanel.setImage(pBitmap);
 	m_CheckboxPanel.setSize(controlSizes[0][0], controlSizes[0][1]);
 
-	
+
 	// Get the label's size.
 	m_Label.getSize(controlSizes[1][0], controlSizes[1][1]);
 	m_Label.setContentAlignment(Label::a_west);
@@ -179,19 +179,14 @@ void CCheckButton2::SetupControls()
 	controls[iLeftControl]->setPos(0, (controlSizes[iBiggestY][1] - controlSizes[iLeftControl][1]) / 2);
 	controls[!iLeftControl]->setPos(controlSizes[iLeftControl][0] + EXTRA_X, (controlSizes[iBiggestY][1] - controlSizes[!iLeftControl][1]) / 2);
 
-	
+
 	// Fit this control to the sizes of the subcontrols.
 	setSize(controlSizes[0][0] + controlSizes[1][0] + EXTRA_X, (controlSizes[0][1] > controlSizes[1][1]) ? controlSizes[0][1] : controlSizes[1][1]);
 	repaint();
 }
 
 
-void CCheckButton2::mousePressed(MouseCode code, Panel *panel)
+void CCheckButton2::mousePressed(MouseCode code, Panel* panel)
 {
 	internalMousePressed(code);
 }
-
-
-
-
-

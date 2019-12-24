@@ -1,24 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommand>D:\Spiele\Steam\steamapps\common\Half-Life\hl.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-game vr -dev 1 -env 1 -console</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>D:\Spiele\Steam\steamapps\common\Half-Life\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommand>$(HalfLifeInstallDirectory)hl.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>-game vr -console -dev 2 -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(HalfLifeInstallDirectory)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommand>D:\Spiele\Steam\steamapps\common\Half-Life\hl.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommand>$(HalfLifeInstallDirectory)hl.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-game vr -dev 1 -env 1 -console</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>D:\Spiele\Steam\steamapps\common\Half-Life\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerAttach>false</LocalDebuggerAttach>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
-    <LocalDebuggerCommand>D:\Spiele\Steam\steamapps\common\Half-Life\hl.exe</LocalDebuggerCommand>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-game vr -dev 1 -env 1 -console</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>D:\Spiele\Steam\steamapps\common\Half-Life\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommandArguments>-game vr -console -dev 2 -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(HalfLifeInstallDirectory)</LocalDebuggerWorkingDirectory>
     <LocalDebuggerAttach>false</LocalDebuggerAttach>
   </PropertyGroup>
 </Project>

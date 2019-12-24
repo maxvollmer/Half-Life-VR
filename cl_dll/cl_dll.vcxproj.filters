@@ -17,6 +17,36 @@
       <UniqueIdentifier>{8534a77e-a6ee-4d0f-b39d-6f21bf54d558}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
+    <Filter Include="VR">
+      <UniqueIdentifier>{59d388bf-3eb8-4b37-8f48-4b8fe6af08c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\input">
+      <UniqueIdentifier>{82956bbd-fb3e-4306-9e5b-b5a2622b4d7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\input\handlers">
+      <UniqueIdentifier>{79ae2d23-5186-418d-b09c-de9e55b35f6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\renderer">
+      <UniqueIdentifier>{aad6ad09-80c5-46ff-b7b6-ac0e998ee368}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\stuff">
+      <UniqueIdentifier>{03e43685-6e0c-43dd-a40b-c1d6dd329a41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\stuff\LodePNG">
+      <UniqueIdentifier>{ee18c929-fe94-4059-97f0-3e75645f85a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\helpers">
+      <UniqueIdentifier>{a7782f82-9407-4a70-b86b-d27e16554e47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\gameui">
+      <UniqueIdentifier>{50c4a45e-cd62-43a2-89e2-12a35b62e2cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\vr_shared">
+      <UniqueIdentifier>{a3f7ece5-bbda-460a-b072-dcf6ce0b2e2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\stuff\Matrices">
+      <UniqueIdentifier>{4cad011d-4d4d-464f-b9b3-74283d6386ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dlls\crossbow.cpp">
@@ -175,15 +205,6 @@
     <ClCompile Include="parsemsg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\pm_shared\pm_debug.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\pm_shared\pm_math.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\pm_shared\pm_shared.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="saytext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -265,20 +286,77 @@
     <ClCompile Include="view.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vr_renderer.cpp">
+    <ClCompile Include="..\pm_shared\pm_shared.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Matrices.cpp">
-      <Filter>Header Files</Filter>
+    <ClCompile Include="..\pm_shared\pm_debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pm_shared\pm_math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputAction.cpp">
+      <Filter>VR\input</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputMovementHandlers.cpp">
+      <Filter>VR\input\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputWeaponsHandlers.cpp">
+      <Filter>VR\input\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputOtherHandlers.cpp">
+      <Filter>VR\input\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputPosesHandlers.cpp">
+      <Filter>VR\input\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="LodePNG\lodepng.cpp">
+      <Filter>VR\stuff\LodePNG</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputHLWindow.cpp">
+      <Filter>VR\input</Filter>
+    </ClCompile>
+    <ClCompile Include="VRDebugPhysicsRenderer.cpp">
+      <Filter>VR\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="VRHUDRenderer.cpp">
+      <Filter>VR\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="VRIntermissionAndMenuRenderer.cpp">
+      <Filter>VR\renderer</Filter>
     </ClCompile>
     <ClCompile Include="vr_gl.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>VR\stuff</Filter>
     </ClCompile>
-    <ClCompile Include="vr_helper.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="VRTextureHelper.cpp">
+      <Filter>VR\helpers</Filter>
     </ClCompile>
-    <ClCompile Include="vr_input.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="VRInput.cpp">
+      <Filter>VR\input</Filter>
+    </ClCompile>
+    <ClCompile Include="VRRenderer.cpp">
+      <Filter>VR\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="VRHelper.cpp">
+      <Filter>VR\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRInputHLMenu.cpp">
+      <Filter>VR\input</Filter>
+    </ClCompile>
+    <ClCompile Include="VRMODExtradataErrorIntercepter.cpp">
+      <Filter>VR\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRModExtraDataCacheHook.cpp">
+      <Filter>VR\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRSpeechListener.cpp">
+      <Filter>VR\input</Filter>
+    </ClCompile>
+    <ClCompile Include="VRSettings.cpp">
+      <Filter>VR\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrices.cpp">
+      <Filter>VR\stuff\Matrices</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -411,23 +489,56 @@
     <ClInclude Include="wrect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vr_renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Matrices.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Vectors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VRInputAction.h">
+      <Filter>VR\input</Filter>
+    </ClInclude>
+    <ClInclude Include="VRInputHandlers.h">
+      <Filter>VR\input</Filter>
+    </ClInclude>
+    <ClInclude Include="LodePNG\lodepng.h">
+      <Filter>VR\stuff\LodePNG</Filter>
+    </ClInclude>
     <ClInclude Include="vr_gl.h">
-      <Filter>Header Files</Filter>
+      <Filter>VR\stuff</Filter>
     </ClInclude>
-    <ClInclude Include="vr_helper.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="VRCommon.h">
+      <Filter>VR\stuff</Filter>
     </ClInclude>
-    <ClInclude Include="vr_input.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="VRTextureHelper.h">
+      <Filter>VR\helpers</Filter>
     </ClInclude>
+    <ClInclude Include="VRInput.h">
+      <Filter>VR\input</Filter>
+    </ClInclude>
+    <ClInclude Include="VRRenderer.h">
+      <Filter>VR\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="VRHelper.h">
+      <Filter>VR\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="IGameConsole.h">
+      <Filter>Header Files\gameui</Filter>
+    </ClInclude>
+    <ClInclude Include="VRMODExtradataErrorIntercepter.h">
+      <Filter>VR\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRSpeechListener.h">
+      <Filter>VR\input</Filter>
+    </ClInclude>
+    <ClInclude Include="VRSettings.h">
+      <Filter>VR\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vr_shared\VRShared.h">
+      <Filter>VR\vr_shared</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrices.h">
+      <Filter>VR\stuff\Matrices</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

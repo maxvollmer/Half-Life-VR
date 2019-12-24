@@ -1,6 +1,6 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -8,30 +8,30 @@
 #ifndef SCOREPANEL_H
 #define SCOREPANEL_H
 
-#include<VGUI_Panel.h>
-#include<VGUI_TablePanel.h>
-#include<VGUI_HeaderPanel.h>
-#include<VGUI_TextGrid.h>
-#include<VGUI_Label.h>
-#include<VGUI_TextImage.h>
+#include <VGUI_Panel.h>
+#include <VGUI_TablePanel.h>
+#include <VGUI_HeaderPanel.h>
+#include <VGUI_TextGrid.h>
+#include <VGUI_Label.h>
+#include <VGUI_TextImage.h>
 #include "..\game_shared\vgui_listbox.h"
 
 #include <ctype.h>
 
-#define MAX_SCORES					10
-#define MAX_SCOREBOARD_TEAMS		5
+#define MAX_SCORES           10
+#define MAX_SCOREBOARD_TEAMS 5
 
 // Scoreboard cells
-#define COLUMN_TRACKER	0
-#define COLUMN_NAME		1
-#define COLUMN_CLASS	2
-#define COLUMN_KILLS	3
-#define COLUMN_DEATHS	4
-#define COLUMN_LATENCY	5
-#define COLUMN_VOICE	6
-#define COLUMN_BLANK	7
-#define NUM_COLUMNS		8
-#define NUM_ROWS		(MAX_PLAYERS + (MAX_SCOREBOARD_TEAMS * 2))
+#define COLUMN_TRACKER 0
+#define COLUMN_NAME    1
+#define COLUMN_CLASS   2
+#define COLUMN_KILLS   3
+#define COLUMN_DEATHS  4
+#define COLUMN_LATENCY 5
+#define COLUMN_VOICE   6
+#define COLUMN_BLANK   7
+#define NUM_COLUMNS    8
+#define NUM_ROWS       (MAX_PLAYERS + (MAX_SCOREBOARD_TEAMS * 2))
 
 using namespace vgui;
 
@@ -50,12 +50,12 @@ public:
 		delete _image[1];
 	}
 
-	TextImage *GetImage(int image)
+	TextImage* GetImage(int image)
 	{
 		return _image[image];
 	}
 
-	void getSize(int &wide, int &tall)
+	void getSize(int& wide, int& tall)
 	{
 		int w1, w2, t1, t2;
 		_image[0]->getTextSize(w1, t1);
@@ -66,7 +66,7 @@ public:
 		setSize(wide, tall);
 	}
 
-	void doPaint(Panel *panel)
+	void doPaint(Panel* panel)
 	{
 		_image[0]->doPaint(panel);
 		_image[1]->doPaint(panel);
@@ -75,7 +75,7 @@ public:
 	void setPos(int x, int y)
 	{
 		_image[0]->setPos(x, y);
-		
+
 		int swide, stall;
 		_image[0]->getSize(swide, stall);
 
@@ -95,8 +95,7 @@ public:
 	}
 
 private:
-	TextImage *_image[2];
-
+	TextImage* _image[2];
 };
 
 //-----------------------------------------------------------------------------
@@ -105,7 +104,8 @@ private:
 class CLabelHeader : public Label
 {
 public:
-	CLabelHeader() : Label("")
+	CLabelHeader() :
+		Label("")
 	{
 		_dualImage = new CTextImage2();
 		_dualImage->setColor2(Color(255, 170, 0, 0));
@@ -135,9 +135,9 @@ public:
 		_dualImage->GetImage(0)->setText(text);
 
 		// calculate the text size
-		Font *font = _dualImage->GetImage(0)->getFont();
+		Font* font = _dualImage->GetImage(0)->getFont();
 		_gap = 0;
-		for (const char *ch = text; *ch != 0; ch++)
+		for (const char* ch = text; *ch != 0; ch++)
 		{
 			int a, b, c;
 			font->getCharABCwide(*ch, a, b, c);
@@ -151,7 +151,7 @@ public:
 	{
 		// strip any non-alnum characters from the end
 		char buf[512];
-		strcpy(buf, text);
+		strcpy_s(buf, text);
 
 		int len = strlen(buf);
 		while (len && isspace(buf[--len]))
@@ -162,20 +162,20 @@ public:
 		CLabelHeader::setText(0, buf);
 	}
 
-	void setText2(const char *text)
+	void setText2(const char* text)
 	{
 		_dualImage->GetImage(1)->setText(text);
 	}
 
-	void getTextSize(int &wide, int &tall)
+	void getTextSize(int& wide, int& tall)
 	{
 		_dualImage->getSize(wide, tall);
 	}
 
-	void setFgColor(int r,int g,int b,int a)
+	void setFgColor(int r, int g, int b, int a)
 	{
-		Label::setFgColor(r,g,b,a);
-		Color color(r,g,b,a);
+		Label::setFgColor(r, g, b, a);
+		Color color(r, g, b, a);
 		_dualImage->setColor(color);
 		_dualImage->setColor2(color);
 		repaint();
@@ -185,18 +185,18 @@ public:
 	{
 		int r, g, b, a;
 		Label::setFgColor(sc);
-		Label::getFgColor( r, g, b, a );
+		Label::getFgColor(r, g, b, a);
 
 		// Call the r,g,b,a version so it sets the color in the dualImage..
-		setFgColor( r, g, b, a );
+		setFgColor(r, g, b, a);
 	}
 
-	void setFont(Font *font)
+	void setFont(Font* font)
 	{
 		_dualImage->GetImage(0)->setFont(font);
 	}
 
-	void setFont2(Font *font)
+	void setFont2(Font* font)
 	{
 		_dualImage->GetImage(1)->setFont(font);
 	}
@@ -210,12 +210,12 @@ public:
 
 	void paint();
 	void paintBackground();
-	void calcAlignment(int iwide, int itall, int &x, int &y);
+	void calcAlignment(int iwide, int itall, int& x, int& y);
 
 private:
-	CTextImage2 *_dualImage;
-	int _row;
-	int _gap;
+	CTextImage2* _dualImage;
+	int _row = 0;
+	int _gap = 0;
 	int _offset[2];
 	bool _useFgColorAsImageColor;
 };
@@ -235,74 +235,70 @@ private:
 	class HitTestPanel : public Panel
 	{
 	public:
-		virtual void	internalMousePressed(MouseCode code);
+		virtual void internalMousePressed(MouseCode code);
 	};
 
 
 private:
+	Label m_TitleLabel;
 
-	Label			m_TitleLabel;
-	
 	// Here is how these controls are arranged hierarchically.
 	// m_HeaderGrid
 	//     m_HeaderLabels
 
 	// m_PlayerGridScroll
 	//     m_PlayerGrid
-	//         m_PlayerEntries 
+	//         m_PlayerEntries
 
-	CGrid			m_HeaderGrid;
-	CLabelHeader	m_HeaderLabels[NUM_COLUMNS];			// Labels above the 
-	CLabelHeader	*m_pCurrentHighlightLabel;
-	int				m_iHighlightRow;
-	
-	vgui::CListBox	m_PlayerList;
-	CGrid			m_PlayerGrids[NUM_ROWS];				// The grid with player and team info. 
-	CLabelHeader	m_PlayerEntries[NUM_COLUMNS][NUM_ROWS];	// Labels for the grid entries.
+	CGrid m_HeaderGrid;
+	CLabelHeader m_HeaderLabels[NUM_COLUMNS];  // Labels above the
+	CLabelHeader* m_pCurrentHighlightLabel;
+	int m_iHighlightRow = 0;
 
-	ScorePanel::HitTestPanel	m_HitTestPanel;
-	CommandButton				*m_pCloseButton;
-	CLabelHeader*	GetPlayerEntry(int x, int y)	{return &m_PlayerEntries[x][y];}
+	vgui::CListBox m_PlayerList;
+	CGrid m_PlayerGrids[NUM_ROWS];                        // The grid with player and team info.
+	CLabelHeader m_PlayerEntries[NUM_COLUMNS][NUM_ROWS];  // Labels for the grid entries.
 
-public:
-	
-	int				m_iNumTeams;
-	int				m_iPlayerNum;
-	int				m_iShowscoresHeld;
-
-	int				m_iRows;
-	int				m_iSortedRows[NUM_ROWS];
-	int				m_iIsATeam[NUM_ROWS];
-	bool			m_bHasBeenSorted[MAX_PLAYERS];
-	int				m_iLastKilledBy;
-	int				m_fLastKillTime;
-
+	ScorePanel::HitTestPanel m_HitTestPanel;
+	CommandButton* m_pCloseButton;
+	CLabelHeader* GetPlayerEntry(int x, int y) { return &m_PlayerEntries[x][y]; }
 
 public:
+	int m_iNumTeams = 0;
+	int m_iPlayerNum = 0;
+	int m_iShowscoresHeld = 0;
 
-	ScorePanel(int x,int y,int wide,int tall);
+	int m_iRows = 0;
+	int m_iSortedRows[NUM_ROWS];
+	int m_iIsATeam[NUM_ROWS];
+	bool m_bHasBeenSorted[MAX_PLAYERS];
+	int m_iLastKilledBy = 0;
+	int m_fLastKillTime = 0;
 
-	void Update( void );
 
-	void SortTeams( void );
-	void SortPlayers( int iTeam, char *team );
-	void RebuildTeams( void );
+public:
+	ScorePanel(int x, int y, int wide, int tall);
+
+	void Update(void);
+
+	void SortTeams(void);
+	void SortPlayers(int iTeam, char* team);
+	void RebuildTeams(void);
 
 	void FillGrid();
 
-	void DeathMsg( int killer, int victim );
+	void DeathMsg(int killer, int victim);
 
-	void Initialize( void );
+	void Initialize(void);
 
-	void Open( void );
+	void Open(void);
 
 	void MouseOverCell(int row, int col);
 
-// InputSignal overrides.
+	// InputSignal overrides.
 public:
-
 	virtual void mousePressed(MouseCode code, Panel* panel);
-	virtual void cursorMoved(int x, int y, Panel *panel);
+	virtual void cursorMoved(int x, int y, Panel* panel);
 
 	friend CLabelHeader;
 };

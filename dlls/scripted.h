@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -19,16 +19,16 @@
 #include "scriptevent.h"
 #endif
 
-#define SF_SCRIPT_WAITTILLSEEN		1
-#define SF_SCRIPT_EXITAGITATED		2
-#define SF_SCRIPT_REPEATABLE		4
-#define SF_SCRIPT_LEAVECORPSE		8
+#define SF_SCRIPT_WAITTILLSEEN 1
+#define SF_SCRIPT_EXITAGITATED 2
+#define SF_SCRIPT_REPEATABLE   4
+#define SF_SCRIPT_LEAVECORPSE  8
 //#define SF_SCRIPT_INTERPOLATE		16 // don't use, old bug
-#define SF_SCRIPT_NOINTERRUPT		32
-#define SF_SCRIPT_OVERRIDESTATE		64
-#define SF_SCRIPT_NOSCRIPTMOVEMENT	128
+#define SF_SCRIPT_NOINTERRUPT      32
+#define SF_SCRIPT_OVERRIDESTATE    64
+#define SF_SCRIPT_NOSCRIPTMOVEMENT 128
 
-#define SCRIPT_BREAK_CONDITIONS		(bits_COND_LIGHT_DAMAGE|bits_COND_HEAVY_DAMAGE)
+#define SCRIPT_BREAK_CONDITIONS (bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE)
 
 enum SS_INTERRUPT
 {
@@ -40,68 +40,68 @@ enum SS_INTERRUPT
 // when a monster finishes an AI scripted sequence, we can choose
 // a schedule to place them in. These defines are the aliases to
 // resolve worldcraft input to real schedules (sjb)
-#define SCRIPT_FINISHSCHED_DEFAULT	0
-#define SCRIPT_FINISHSCHED_AMBUSH	1
+#define SCRIPT_FINISHSCHED_DEFAULT 0
+#define SCRIPT_FINISHSCHED_AMBUSH  1
 
 class CCineMonster : public CBaseMonster
 {
 public:
-	void Spawn( void );
-	virtual void KeyValue( KeyValueData *pkvd );
-	virtual void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	virtual void Blocked( CBaseEntity *pOther );
-	virtual void Touch( CBaseEntity *pOther );
-	virtual int	 ObjectCaps( void ) { return (CBaseMonster :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
-	virtual void Activate( void );
+	void Spawn(void);
+	virtual void KeyValue(KeyValueData* pkvd);
+	virtual void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	virtual void Blocked(CBaseEntity* pOther);
+	virtual void Touch(CBaseEntity* pOther);
+	virtual int ObjectCaps(void) { return (CBaseMonster::ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
+	virtual void Activate(void);
 
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
-	
-	static	TYPEDESCRIPTION m_SaveData[];
+	virtual int Save(CSave& save);
+	virtual int Restore(CRestore& restore);
+
+	static TYPEDESCRIPTION m_SaveData[];
 
 	// void EXPORT CineSpawnThink( void );
-	void EXPORT CineThink( void );
-	void Pain( void );
-	void Die( void );
-	void DelayStart( int state );
-	BOOL FindEntity( void );
-	virtual void PossessEntity( void );
+	void EXPORT CineThink(void);
+	void Pain(void);
+	void Die(void);
+	void DelayStart(int state);
+	BOOL FindEntity(void);
+	virtual void PossessEntity(void);
 
-	void ReleaseEntity( CBaseMonster *pEntity );
-	void CancelScript( void );
-	virtual BOOL StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
-	virtual BOOL FCanOverrideState ( void );
-	void SequenceDone ( CBaseMonster *pMonster );
-	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
-	BOOL	CanInterrupt( void );
-	void	AllowInterrupt( BOOL fAllow );
-	int		IgnoreConditions( void );
+	void ReleaseEntity(CBaseMonster* pEntity);
+	void CancelScript(void);
+	virtual BOOL StartSequence(CBaseMonster* pTarget, int iszSeq, BOOL completeOnEmpty);
+	virtual BOOL FCanOverrideState(void);
+	void SequenceDone(CBaseMonster* pMonster);
+	virtual void FixScriptMonsterSchedule(CBaseMonster* pMonster);
+	BOOL CanInterrupt(void);
+	void AllowInterrupt(BOOL fAllow);
+	int IgnoreConditions(void);
 
-	int	m_iszIdle;		// string index for idle animation
-	int	m_iszPlay;		// string index for scripted animation
-	int m_iszEntity;	// entity that is wanted for this script
-	int m_fMoveTo;
-	int m_iFinishSchedule;
-	float m_flRadius;		// range to search
-	float m_flRepeat;	// repeat rate
+	int m_iszIdle = 0;    // string index for idle animation
+	int m_iszPlay = 0;    // string index for scripted animation
+	int m_iszEntity = 0;  // entity that is wanted for this script
+	int m_fMoveTo = 0;
+	int m_iFinishSchedule = 0;
+	float m_flRadius = 0.f;  // range to search
+	float m_flRepeat = 0.f;  // repeat rate
 
-	int m_iDelay;
-	float m_startTime;
+	int m_iDelay = 0;
+	float m_startTime = 0.f;
 
-	int	m_saved_movetype;
-	int	m_saved_solid;
-	int m_saved_effects;
-//	Vector m_vecOrigOrigin;
-	BOOL m_interruptable;
+	int m_saved_movetype = 0;
+	int m_saved_solid = 0;
+	int m_saved_effects = 0;
+	//	Vector m_vecOrigOrigin;
+	BOOL m_interruptable = FALSE;
 };
 
 class CCineAI : public CCineMonster
 {
-	BOOL StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
-	void PossessEntity( void );
-	BOOL FCanOverrideState ( void );
-	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
+	BOOL StartSequence(CBaseMonster* pTarget, int iszSeq, BOOL completeOnEmpty);
+	void PossessEntity(void);
+	BOOL FCanOverrideState(void);
+	virtual void FixScriptMonsterSchedule(CBaseMonster* pMonster);
 };
 
 
-#endif		//SCRIPTED_H
+#endif  //SCRIPTED_H

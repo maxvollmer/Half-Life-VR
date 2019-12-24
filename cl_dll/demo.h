@@ -1,11 +1,11 @@
 //========= Copyright � 1996-2002, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
 
-#if !defined( DEMOH )
+#if !defined(DEMOH)
 #define DEMOH
 #pragma once
 
@@ -16,7 +16,7 @@ enum
 	TYPE_ZOOM
 };
 
-void Demo_WriteBuffer( int type, int size, unsigned char *buffer );
+void Demo_WriteBuffer(int type, int size, unsigned char* buffer);
 
 extern int g_demosniper;
 extern int g_demosniperdamage;
