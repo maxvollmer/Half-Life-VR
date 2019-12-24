@@ -1,27 +1,11 @@
-
-======
-======
-
-INTERNAL BETA NOTICE
-
- YOU RECEIVED THIS MOD AS PART OF AN INTERNAL BETA TEST
-
- DO NOT MAKE THIS MOD PUBLIC
-
- DO NOT GIVE THIS MOD TO ANY THIRD PARTY
-
-======
-======
-
-
 Half-Life: VR
 =============
 Author: Max Vollmer and team
 github: https://github.com/maxvollmer/Half-Life-VR
 
-VERSION 0.6.1-beta
+VERSION 0.6.2-beta
 
-Release date: 2019-10-23
+Release date: 2019-12-24
 
 Copyright (c) 2017-2019 Max Vollmer (if not otherwise stated)
 
@@ -156,7 +140,7 @@ Special thanks to (order randomized):
 
 Patreons (former and current):
 ---
-David Zwolinski, Aivars Zerg, Will, Samuel Bernstein, Sergio Berg, Johnny Cambridge, Viktor Vitebskiy, David Masse, FogStater, William Kreusch, phantom lord, DetriniuM, Woody G, David Kuhndt, Benjamin Stanley, Harold Flower, Nicholas Kolettis, softboy rodvt, Marek Järve, CoraBlue, Alex Coulter, villain749, Itsss-Cereal, Dan Mizu, Bernie Coors, Chris, Fabian, Franklyn Tackitt, Christopher Rose, Rob L, Legion, Roswitha Siedelberg, MochiVR, Ignacio García, Michael Hoffmann, Ari Tuohenmaa, Eric Gulve, Thomas Nielsen, EvilReFlex, Alex Iliescu, Dante Teresi, Sophie Meier, ScoobyAS, Jobert, Peter Anderson, Hermann Hetzer, IceTee, Jay Sones, brandon domenichelli, Vince Trust, Joshua Cluelow, udwxmoose, Hamish Prendergast
+Alex Coulter, DoesntDoot, Nicholas Kolettis, Xodetaetl, Zane, Rob L, Dan Mizu, Daniel Hirt, IceTee, Thomas Nielsen, udwxmoose, Stratica, Vince Trust, William Kreusch, Roswitha Siedelberg, Gabriel Wiegan, Legion, Peter Anderson, Rhikter_937, Christopher Rose, Hamish Prendergast, EvilReFlex, Cereal, Devin Stapleford, David Masse, Hermann Hetzer, Chris, Sean Brown, Benjamin Stanley, DetriniuM, Joshua Cluelow, Sergio Berg, Woody G, Ari Tuohenmaa, David Kuhndt, FogStater, David Zwolinski, George Goodwin, Jay Sones, Alex Iliescu, Bernie Coors, Ruben Ruoff, Junt, Marek Järve, Samuel Bernstein, brandon domenichelli, Jobert, Eric Gulve, Aivars Zerg, Liz Edwards, Garrulous64, Jonathan Shihor, villain749, Tom, phantom lord, Franklyn Tackitt, Fabian, Harold Flower, kahvikone ., ScoobyAS, softboy rodvt, MochiVR, Michael Hoffmann, CoraBlue, Dante Teresi, Corom, Sophie Meier, Johnny Cambridge, Adam Sinclair, Viktor Vitebskiy, Ignacio García, rntlpbm
 
 Beta testers:
 ---

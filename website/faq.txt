@@ -1,0 +1,29 @@
+Will there be touchpad locomotion?|Yes, through Steam Input you can configure all the controls however you want.
+Will there be teleport locomotion?|Yes.
+What comfort options will there be available?|Teleport will be available as a mappable input. There is options for disabling slipping, sliding, being pushed, and acceleration/deceleration on movement. Snap rotate, and snap backwards are available, and an option for traversing Xen launch pads with a teleport arc instead of being violently thrown is also available. There is even an option for slowing down rotating platforms.
+Will there be manual look rotation available?|Yes.
+Is HDM based rotation available?|Both controller based rotation and HDM based rotation is available.
+Will the Valve Index be supported?|If it supports SteamVR, then it will work. This includes Windows Mixed Reality devices and the Oculus Rift.
+Will the Index knuckles be supported?|Yes, including knuckles "finger tracking".
+Will there be two handed weapons gripping?|Not at this time.
+Is there gunstock configuration support?|Not at this time.
+How is weapon melee handled?|Every weapon can be used to melee but the crowbar is the most effective. There is options for how hard you have to swing, as well as legacy button-press melee support.
+How are ladders handled?|You can physically climb ladders or use the legacy option to slide up as in vanilla Half-Life.
+How is swimming handled?|You can teleport a short distance in any direction via the teleport options or tilt your offhand up & down while moving. Swim up and swim down are also mappable inputs.
+What can I can I interact with?|You can push buttons, turn valves, pull levers, push/pull boxes, pull yourself onto ledges, and climb ladders.
+How are throwables such as grenades handled?|You can either physically throw and have the velocity of the controller be used to determine its distance or have it use the game's default fixed speed for the grenade. There is also an option for button-press legacy throwing.
+How is the HUD handled?|The HUD can be configured to be at either your controllers or attached to the HDM. Scale and position can be modified in the launcher.
+Will there be real life crouching support?|Yes, as well as button press crouch and auto crouch support.
+Can I use the default SD/HD weapons?|Yes, both the SD and HD weapons have been reworked for VR. There is also an option available for removing weapon recoil on these models.
+Will there be scaling options?|There is a world scale option and additional options for NPCs and every weapon.
+Will there be mod support?|Not out of the box. Mods with custom source code are not compatible at all. Mods with only custom maps and textures should be fine (just copy the mod files into the VR mod folder and load the maps). Mods that change models might be compatible, depending on the models. If a mod changes weapon models, you can probably play it, but the weapons won't look nice in VR.
+How do I know if a mod has custom source code?|Search for dll files in the mod folder. If it comes with dll files, it has custom source code and is not compatible.
+Can I use Metahook to add surround sound and HRTF?|Yes, there is an option in the launcher for Metahook support.
+How do I use Metahook with Half-Life: VR?|First install Half-Life: VR. Then follow the installation instructions from Metahook <a href="https://github.com/LAGonauta/metahook#installing">here</a>. Half-Life: VR will detect and use it automatically once installed.
+Can I use texture mods?|Yes. Out of the box, the standard textures will be available as well as AI enhanced super-sampled versions of the originals.
+Can I play custom maps?|Yes, so long as they are vanilla made maps.
+Will Blueshift or other expansions work?|No, and there are no plans in the foreseeable future to add support.
+Do I have to own Half-Life to play this mod?|Yes, you must own Half-Life (the original from 1998) on Steam to play this mod.
+Is Half-Life: Source or Half-Life 2 or any of those games compatible?|No.
+I'm stuck in an area and can't jump/get to a certain place.|Unfortunately this still sometimes happens. Use the teleporter to free yourself.
+How do I use voice commands?|Voice commands rely on Windows speech recognition. Make sure you have a Windows version with speech recognition installed and follow the instructions for your OS. Windows speech recognition needs to be enabled and running for the mod to listen to your voice.

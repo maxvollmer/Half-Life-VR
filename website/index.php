@@ -61,6 +61,7 @@
         <div class="content_video">
           <iframe width="420" height="315" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
         </div>
+        <div class="subnote">Didn't finish a promotional video for the mod in time. So you get this instead.</div>
       </div>
 
       <div class="content_row">
@@ -97,6 +98,7 @@
               </ul>
             </p>
           </div>
+          <div class="button_overlay">Not available yet</div>
         </a>
         <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/latest/download/HLVR.zip">
           <div class="button_text">
@@ -179,34 +181,16 @@
       <div class="content_row">
         <div class="content_title"><h3>FAQ</h3></div>
         <div class="faq">
-          <div class="faq_box">
-            <h5>How do I use Metahook with Half-Life: VR?</h5>
-            <p>First install Half-Life: VR. Then follow the installation instructions from Metahook <a href="https://github.com/LAGonauta/metahook#installing">here</a>. Half-Life: VR will detect and use it automatically once installed.</p>
-          </div>
-          <div class="faq_box">
-            <h5>I'm stuck in an area and can't jump/get to a certain place</h5>
-            <p>Unfortunately this still sometimes happens. Use the teleporter to free yourself.</p>
-          </div>
-          <div class="faq_box">
-            <h5>How do I use voice commands?</h5>
-            <p>Voice commands rely on Windows speech recognition. Make sure you have a Windows version with speech recognition installed and follow the instructions for your OS. Windows speech recognition needs to be enabled and running for the mod to listen to your voice.</p>
-          </div>
-          <div class="faq_box">
-            <h5>Is this a question?</h5>
-            <p>This is an answer.</p>
-          </div>
-          <div class="faq_box">
-            <h5>Is this a question?</h5>
-            <p>This is an answer.</p>
-          </div>
-          <div class="faq_box">
-            <h5>Is this a question?</h5>
-            <p>This is an answer.</p>
-          </div>
-          <div class="faq_box">
-            <h5>Is this a question?</h5>
-            <p>This is an answer.</p>
-          </div>
+          <?php
+            $faqfile = file_get_contents("faq.txt");
+            $lines = explode("\n", $faqfile);
+            foreach($lines as $line) {
+              $q_and_a = explode("|", $line);
+              $question = $q_and_a[0];
+              $answer = $q_and_a[1];
+              echo "<div class='faq_box'><h5>$question</h5><p>$answer</p></div>";
+            }
+          ?>
         </div>
       </div>
 

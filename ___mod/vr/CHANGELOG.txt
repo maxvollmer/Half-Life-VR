@@ -1,3 +1,7 @@
+0.6.2-beta - 2019-12-24
+* No game changes
+* Updated README and released publicly
+
 0.6.1-beta - 2019-11-21
 * Fixed several crash bugs and improved general code stability
 * Fixed bug that broke moving with trains and other entities

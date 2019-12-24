@@ -88,6 +88,11 @@ div.content_box
   padding: 10px;
 }
 
+div.subnote
+{
+  font-size: 0.5em;
+}
+
 a.button
 {
   vertical-align: middle;
@@ -96,11 +101,26 @@ a.button
   border: 1px solid grey;
   padding: 15px;
   color: black;
+  position: relative;
 }
 
 a.button *
 {
   vertical-align: middle;
+}
+
+div.button_overlay
+{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 50%;
+  margin: auto;
+  text-align: center;
+  font-size: 2em;
+  font-weight: bold;
+  color: red;
 }
 
 img.button_icon
