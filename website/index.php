@@ -87,7 +87,7 @@
         <div class="content_title">
           <h3>Downloads</h3>
         </div>
-        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/latest/download/HLVR.exe">
+        <a class="button button2" href="">
           <div class="button_text">
             <h4>Download Installer</h4>
             <p>
@@ -100,14 +100,15 @@
           </div>
           <div class="button_overlay">Not available yet</div>
         </a>
-        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/latest/download/HLVR.zip">
+        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/download/0.6.2-beta/HLVR_0.6.2-beta.zip">
           <div class="button_text">
             <h4>Download Archive</h4>
             <p>
               <ul>
                 <li>Download</li>
                 <li>Extract into Half-Life directory</li>
-                <li>Play</li>
+                <li>Run Steam</li>
+                <li>Run HLVRlauncher.exe</li>
               </ul>
             </p>
           </div>
