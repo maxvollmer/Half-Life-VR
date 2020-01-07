@@ -279,7 +279,7 @@ void LinkUserMessages(void)
 	gmsgVRRestoreYaw = REG_USER_MSG("VRRstrYaw", 2);
 	gmsgVRGroundEntity = REG_USER_MSG("GroundEnt", 2);
 	gmsgVRSetSpawnYaw = REG_USER_MSG("VRSpawnYaw", 1);
-	gmsgVRControllerEnt = REG_USER_MSG("VRCtrlEnt", 29);
+	gmsgVRControllerEnt = REG_USER_MSG("VRCtrlEnt", -1);
 	gmsgVRTrainControls = REG_USER_MSG("TrainCtrl", 7);
 	gmsgVRGrabbedLadder = REG_USER_MSG("GrbdLddr", 2);
 	gmsgVRPullingLedge = REG_USER_MSG("PullLdg", 1);
@@ -3921,7 +3921,7 @@ int CBasePlayer::RemovePlayerItem(CBasePlayerItem* pItem)
 //
 // Returns the unique ID for the ammo, or -1 if error
 //
-int CBasePlayer::GiveAmmo(int iCount, const char* szName, int iMax)
+int CBasePlayer::GiveAmmo(int iCount, const char* szName, int iMax, int* pIndex /*= nullptr*/)
 {
 	if (!szName)
 	{

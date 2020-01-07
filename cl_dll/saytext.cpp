@@ -216,7 +216,7 @@ void CHudSayText::SayTextPrint(const char* pszBuf, int iBufSize, int clientIndex
 	// Set scroll time
 	if (i == 0)
 	{
-		flScrollTime = gHUD.m_flTime + m_HUD_saytext_time->value;
+		flScrollTime = gHUD.m_flHUDDrawTime + m_HUD_saytext_time->value;
 	}
 
 	m_iFlags |= HUD_ACTIVE;

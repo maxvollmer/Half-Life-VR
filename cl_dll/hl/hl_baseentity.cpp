@@ -305,7 +305,7 @@ void CBasePlayer::DropPlayerItem(const char* pszItemName) { }
 BOOL CBasePlayer::HasPlayerItem(CBasePlayerItem* pCheckItem) { return FALSE; }
 BOOL CBasePlayer::SwitchWeapon(CBasePlayerItem* pWeapon) { return FALSE; }
 const char* CBasePlayer::TeamID(void) { return ""; }
-int CBasePlayer::GiveAmmo(int iCount, const char* szName, int iMax) { return 0; }
+int CBasePlayer::GiveAmmo(int iCount, const char* szName, int iMax, int* pIndex /* = nullptr*/) { return 0; }
 void CBasePlayer::AddPoints(int score, BOOL bAllowNegativeScore) { }
 void CBasePlayer::AddPointsToTeam(int score, BOOL bAllowNegativeScore) { }
 

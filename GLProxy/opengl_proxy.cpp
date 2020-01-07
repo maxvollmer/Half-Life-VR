@@ -287,7 +287,8 @@ namespace GLProxy
 	// Shorthand macros to simplify the TGLFunc<> declarations:
 #define TGLFUNC_NAME(funcName) STRING_JOIN2(_real_, funcName)
 #define TGLFUNC_DECL(funcName) TGLFUNC_NAME(funcName){ STRINGIZE(funcName) }
-#define TGLFUNC_CALL(funcName, ...) (TGLFUNC_NAME(funcName).callCount++, TGLFUNC_NAME(funcName).funcPtr(__VA_ARGS__))
+//#define TGLFUNC_CALL(funcName, ...) (TGLFUNC_NAME(funcName).callCount++, TGLFUNC_NAME(funcName).funcPtr(__VA_ARGS__))
+#define TGLFUNC_CALL(funcName, ...) (TGLFUNC_NAME(funcName).funcPtr(__VA_ARGS__))
 
 
 } // namespace GLProxy {}
@@ -1006,27 +1007,27 @@ GLPROXY_EXTERN void GLPROXY_DECL hlvrSetConsoleCallback(void* consoleCallback)
 
 GLPROXY_EXTERN void GLPROXY_DECL glEnable(GLenum cap)
 {
+	static GLProxy::TGLFunc<void, GLenum> TGLFUNC_DECL(glEnable);
 	if (!(hlvr_GLMatricesLocked && cap >= GL_CLIP_PLANE0 && cap <= GL_CLIP_PLANE5))
 	{
-		static GLProxy::TGLFunc<void, GLenum> TGLFUNC_DECL(glEnable);
 		TGLFUNC_CALL(glEnable, cap);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glDisable(GLenum cap)
 {
+	static GLProxy::TGLFunc<void, GLenum> TGLFUNC_DECL(glDisable);
 	if (!(hlvr_GLMatricesLocked && cap == GL_DEPTH_TEST))
 	{
-		static GLProxy::TGLFunc<void, GLenum> TGLFUNC_DECL(glDisable);
 		TGLFUNC_CALL(glDisable, cap);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glViewport(GLint x, GLint y, GLint width, GLsizei height)
 {
+	static GLProxy::TGLFunc<void, GLint, GLint, GLint, GLsizei> TGLFUNC_DECL(glViewport);
 	if (!hlvr_GLMatricesLocked)
 	{
-		static GLProxy::TGLFunc<void, GLint, GLint, GLint, GLsizei> TGLFUNC_DECL(glViewport);
 		TGLFUNC_CALL(glViewport, x, y, width, height);
 	}
 }
@@ -1047,117 +1048,117 @@ GLPROXY_EXTERN void GLPROXY_DECL glPopMatrix(void)
 
 GLPROXY_EXTERN void GLPROXY_DECL glLoadIdentity(void)
 {
+	static GLProxy::TGLFunc<void> TGLFUNC_DECL(glLoadIdentity);
 	if (!hlvr_GLMatricesLocked)
 	{
-		static GLProxy::TGLFunc<void> TGLFUNC_DECL(glLoadIdentity);
 		TGLFUNC_CALL(glLoadIdentity);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glMatrixMode(GLenum mode)
 {
+	static GLProxy::TGLFunc<void, GLenum> TGLFUNC_DECL(glMatrixMode);
 	if (!hlvr_GLMatricesLocked)
 	{
-		static GLProxy::TGLFunc<void, GLenum> TGLFUNC_DECL(glMatrixMode);
 		TGLFUNC_CALL(glMatrixMode, mode);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glLoadMatrixd(const GLdouble* m)
 {
+	static GLProxy::TGLFunc<void, const GLdouble*> TGLFUNC_DECL(glLoadMatrixd);
 	if (!hlvr_GLMatricesLocked)
 	{
-		static GLProxy::TGLFunc<void, const GLdouble*> TGLFUNC_DECL(glLoadMatrixd);
 		TGLFUNC_CALL(glLoadMatrixd, m);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glLoadMatrixf(const GLfloat* m)
 {
+	static GLProxy::TGLFunc<void, const GLfloat*> TGLFUNC_DECL(glLoadMatrixf);
 	if (!hlvr_GLMatricesLocked)
 	{
-		static GLProxy::TGLFunc<void, const GLfloat*> TGLFUNC_DECL(glLoadMatrixf);
 		TGLFUNC_CALL(glLoadMatrixf, m);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glMultMatrixd(const GLdouble* m)
 {
+	static GLProxy::TGLFunc<void, const GLdouble*> TGLFUNC_DECL(glMultMatrixd);
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
-		static GLProxy::TGLFunc<void, const GLdouble*> TGLFUNC_DECL(glMultMatrixd);
 		TGLFUNC_CALL(glMultMatrixd, m);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glMultMatrixf(const GLfloat* m)
 {
+	static GLProxy::TGLFunc<void, const GLfloat*> TGLFUNC_DECL(glMultMatrixf);
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
-		static GLProxy::TGLFunc<void, const GLfloat*> TGLFUNC_DECL(glMultMatrixf);
 		TGLFUNC_CALL(glMultMatrixf, m);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glScaled(GLdouble x, GLdouble y, GLdouble z)
 {
+	static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glScaled);
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
-		static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glScaled);
 		TGLFUNC_CALL(glScaled, x, y, z);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glScalef(GLfloat x, GLfloat y, GLfloat z)
 {
+	static GLProxy::TGLFunc<void, GLfloat, GLfloat, GLfloat> TGLFUNC_DECL(glScalef);
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
-		static GLProxy::TGLFunc<void, GLfloat, GLfloat, GLfloat> TGLFUNC_DECL(glScalef);
 		TGLFUNC_CALL(glScalef, x, y, z);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glTranslated(GLdouble x, GLdouble y, GLdouble z)
 {
+	static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glTranslated);
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
-		static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glTranslated);
 		TGLFUNC_CALL(glTranslated, x, y, z);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glTranslatef(GLfloat x, GLfloat y, GLfloat z)
 {
+	static GLProxy::TGLFunc<void, GLfloat, GLfloat, GLfloat> TGLFUNC_DECL(glTranslatef);
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
-		static GLProxy::TGLFunc<void, GLfloat, GLfloat, GLfloat> TGLFUNC_DECL(glTranslatef);
 		TGLFUNC_CALL(glTranslatef, x, y, z);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glRotated(GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
 {
+	static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glRotated);
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
-		static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glRotated);
 		TGLFUNC_CALL(glRotated, angle, x, y, z);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
+	static GLProxy::TGLFunc<void, GLfloat, GLfloat, GLfloat, GLfloat> TGLFUNC_DECL(glRotatef);
 	if (!hlvr_GLMatricesLocked || hlvr_PushCount > 0)
 	{
-		static GLProxy::TGLFunc<void, GLfloat, GLfloat, GLfloat, GLfloat> TGLFUNC_DECL(glRotatef);
 		TGLFUNC_CALL(glRotatef, angle, x, y, z);
 	}
 }
 
 GLPROXY_EXTERN void GLPROXY_DECL glFrustum(GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble zNear, GLdouble zFar)
 {
+	static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glFrustum);
 	if (!hlvr_GLMatricesLocked)
 	{
-		static GLProxy::TGLFunc<void, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble> TGLFUNC_DECL(glFrustum);
 		TGLFUNC_CALL(glFrustum, left, right, bottom, top, zNear, zFar);
 	}
 }

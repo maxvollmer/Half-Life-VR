@@ -109,6 +109,12 @@ int READ_LONG(void)
 
 float READ_FLOAT(void)
 {
+	if (giRead + 4 > giSize)
+	{
+		giBadRead = true;
+		return 0;
+	}
+
 	byte b[sizeof(float)];
 	for (size_t i = 0; i < sizeof(float); i++)
 	{
@@ -116,6 +122,7 @@ float READ_FLOAT(void)
 	}
 	float result = 0.f;
 	std::memcpy(&result, b, sizeof(float));
+	giRead += 4;
 	return result;
 }
 

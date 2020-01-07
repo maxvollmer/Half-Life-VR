@@ -30,6 +30,8 @@ void CVRControllerModel::Spawn()
 	pev->movetype = MOVETYPE_NONE;
 	pev->effects = 0;
 	pev->frame = 0;
+	pev->rendermode = kRenderTransAlpha;
+	pev->renderamt = 0;
 	TurnOff();
 }
 
@@ -54,6 +56,8 @@ void CVRControllerModel::TurnOff()
 	SetSequence(0);
 	SetThink(nullptr);
 	pev->effects |= EF_NODRAW;
+	pev->rendermode = kRenderTransAlpha;
+	pev->renderamt = 0;
 }
 
 void CVRControllerModel::TurnOn()
@@ -63,6 +67,8 @@ void CVRControllerModel::TurnOn()
 		return;
 
 	pev->effects &= ~EF_NODRAW;
+	pev->rendermode = kRenderTransAlpha;
+	pev->renderamt = 0;
 	SetSequence(0);
 	SetThink(&CVRControllerModel::ControllerModelThink);
 	pev->nextthink = gpGlobals->time + 0.1f;

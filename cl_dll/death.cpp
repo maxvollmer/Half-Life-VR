@@ -110,7 +110,7 @@ int CHudDeathNotice::Draw(float flTime)
 			continue;
 		}
 
-		rgDeathNoticeList[i].flDisplayTime = min(rgDeathNoticeList[i].flDisplayTime, gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME);
+		rgDeathNoticeList[i].flDisplayTime = min(rgDeathNoticeList[i].flDisplayTime, gHUD.m_flHUDDrawTime + DEATHNOTICE_DISPLAY_TIME);
 
 		// Only draw if the viewport will let me
 		if (gViewPort && gViewPort->AllowedToPrintText())
@@ -247,7 +247,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg(const char* pszName, int iSize, void* pbuf
 	rgDeathNoticeList[i].iId = spr;
 
 	DEATHNOTICE_DISPLAY_TIME = CVAR_GET_FLOAT("hud_deathnotice_time");
-	rgDeathNoticeList[i].flDisplayTime = gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME;
+	rgDeathNoticeList[i].flDisplayTime = gHUD.m_flHUDDrawTime + DEATHNOTICE_DISPLAY_TIME;
 
 	if (rgDeathNoticeList[i].iNonPlayerKill)
 	{

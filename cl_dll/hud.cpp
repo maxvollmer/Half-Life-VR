@@ -404,7 +404,7 @@ void CHud::Init(void)
 	}
 
 	// In case we get messages before the first update -- time will be valid
-	m_flTime = 1.0;
+	m_flHUDDrawTime = 1.0;
 
 	m_Ammo.Init();
 	m_Health.Init();
@@ -736,22 +736,6 @@ cl_entity_t* CHud::GetGroundEntity()
 	}
 }
 
-cl_entity_t* CHud::GetMirroredEnt()
-{
-	if (gVRRenderer.HasValidHandController() && m_handControllerEntData.isValid && m_handControllerEntData.isMirrored)
-	{
-		return gEngfuncs.GetEntityByIndex(m_handControllerEntData.entIndex);
-	}
-	else if (gVRRenderer.HasValidWeaponController() && m_weaponControllerEntData.isValid && m_weaponControllerEntData.isMirrored)
-	{
-		return gEngfuncs.GetEntityByIndex(m_weaponControllerEntData.entIndex);
-	}
-	else
-	{
-		return nullptr;
-	}
-}
-
 bool CHud::GetTrainControlsOriginAndOrientation(Vector& origin, Vector& angles)
 {
 	if (m_Train.m_iPos)
@@ -763,30 +747,6 @@ bool CHud::GetTrainControlsOriginAndOrientation(Vector& origin, Vector& angles)
 		return true;
 	}
 	return false;
-}
-
-cl_entity_t* CHud::GetWeaponControllerEntity()
-{
-	if (gVRRenderer.HasValidWeaponController() && m_weaponControllerEntData.isValid)
-	{
-		return gEngfuncs.GetEntityByIndex(m_weaponControllerEntData.entIndex);
-	}
-	else
-	{
-		return nullptr;
-	}
-}
-
-cl_entity_t* CHud::GetHandControllerEntity()
-{
-	if (gVRRenderer.HasValidHandController() && m_handControllerEntData.isValid)
-	{
-		return gEngfuncs.GetEntityByIndex(m_handControllerEntData.entIndex);
-	}
-	else
-	{
-		return nullptr;
-	}
 }
 
 

@@ -530,7 +530,7 @@ class CWeaponBox : public CBaseEntity
 	void Touch(CBaseEntity* pOther);
 	void KeyValue(KeyValueData* pkvd);
 	BOOL IsEmpty(void);
-	int GiveAmmo(int iCount, const char* szName, int iMax, int* pIndex = nullptr);
+	int GiveAmmo(int iCount, const char* szName, int iMax, int* pIndex = nullptr) override;
 	void SetObjectCollisionBox(void);
 
 public:

@@ -31,6 +31,7 @@ public:
 	// Public Interfaces
 	virtual int StudioDrawModel(int flags);
 	virtual int StudioDrawPlayer(int flags, struct entity_state_s* pplayer);
+	virtual void StudioDrawVRHand(const ControllerModelData& controllerModelData, const Vector& origin, const Vector& angles, bool mirrored, int* out_numattachments, float out_attachments[4][3]);
 
 public:
 	// Local interfaces
@@ -112,6 +113,10 @@ private:
 		m_clTime = static_cast<float>(time);
 		m_clOldTime = static_cast<float>(oldtime);
 	}
+
+protected:
+
+	bool m_isCurrentModelMirrored = false;
 
 public:
 	// Client clock

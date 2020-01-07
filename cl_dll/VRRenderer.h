@@ -40,7 +40,7 @@ public:
 	void Init();
 	void VidInit();
 
-	void Frame(double time);
+	void Frame(double frametime);
 	void UpdateGameRenderState();
 	void CalcRefdef(struct ref_params_s* pparams);
 
@@ -59,8 +59,10 @@ public:
 	void ReverseCullface();
 	void RestoreCullface();
 
+	/*
 	bool ShouldMirrorCurrentModel(cl_entity_t* ent);
 	bool IsCurrentModelHandWithSkeletalData(cl_entity_t* ent, float fingerCurl[5]);
+	*/
 
 	// Called in Frame if no game is running
 	void RenderIntermissionRoom();
@@ -99,12 +101,37 @@ public:
 	void RotateVector(Vector& vecToRotate, const Vector& vecAngles, const bool reverse = false);
 	void HLAnglesToGLMatrix(const Vector& angles, float matrix[16]);
 
+	double m_clientTime{ 0.0 };	// keeps track of current time
+
+	bool IsHandModel(const char* modelname) const;
+	bool HasSkeletalDataForHand(bool isMirrored, float fingerCurl[5]) const;
+
+	bool GetLeftControllerAttachment(Vector& out, int attachment);
+	bool GetRightControllerAttachment(Vector& out, int attachment);
+
+	bool GetWeaponControllerAttachment(Vector& out, int attachment)
+	{
+		return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? GetLeftControllerAttachment(out, attachment) : GetRightControllerAttachment(out, attachment);
+	}
+
+	bool GetHandControllerAttachment(Vector& out, int attachment)
+	{
+		return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? GetRightControllerAttachment(out, attachment) : GetLeftControllerAttachment(out, attachment);
+	}
+
 private:
+	float m_leftControllerAttachments[4][3]{ 0.f };
+	float m_rightControllerAttachments[4][3]{ 0.f };
+	int m_numLeftControllerAttachments{ 0 };
+	int m_numRightControllerAttachments{ 0 };
+
 	struct model_s* m_currentMapModel{ nullptr };
 	bool m_hdTexturesEnabled{ false };
 	void CheckAndIfNecessaryReplaceHDTextures();
 	void ReplaceAllTexturesWithHDVersion(struct cl_entity_s* ent, bool enableHD);
 	void CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s* ent);
+
+	void RenderVRHandsAndHUDAndStuff();
 
 	void DebugRenderPhysicsPolygons();
 
@@ -134,6 +161,8 @@ private:
 	Vector m_damageColor;
 
 	unsigned int m_displayList{ 0 };
+	double m_LastDisplayListUpdate{ 0 };
+	bool ShouldUpdateDisplayList();
 
 	bool m_isVeryFirstFrameEver{ true };
 

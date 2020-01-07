@@ -69,14 +69,14 @@ void CHud::Think(void)
 // returns 1 if they've changed, 0 otherwise
 int CHud::Redraw(float flTime, int intermission)
 {
-	m_fOldTime = m_flTime;  // save time of previous redraw
-	m_flTime = flTime;
-	m_flTimeDelta = m_flTime - m_fOldTime;
+	m_fOldHUDDrawTime = m_flHUDDrawTime;  // save time of previous redraw
+	m_flHUDDrawTime = flTime;
+	m_flHUDDrawTimeDelta = m_flHUDDrawTime - m_fOldHUDDrawTime;
 	static float m_flShotTime = 0;
 
 	// Clock was reset, reset delta
-	if (m_flTimeDelta < 0)
-		m_flTimeDelta = 0;
+	if (m_flHUDDrawTimeDelta < 0)
+		m_flHUDDrawTimeDelta = 0;
 
 	// Bring up the scoreboard during intermission
 	if (gViewPort)

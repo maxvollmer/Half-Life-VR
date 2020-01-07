@@ -555,13 +555,15 @@ private:
 
 
 // For precise position when rendering
-struct ControllerEntData
+struct ControllerModelData
 {
-	int entIndex{ 0 };
-	Vector origin;
-	Vector angles;
-	bool isMirrored{ false };
-	bool isValid{ false };
+	int body{ 0 };
+	int skin{ 0 };
+	int sequence{ 0 };
+	float frame{ 0.f };
+	float framerate{ 0.f };
+	float animtime{ 0.f };
+	char modelname[1024];
 };
 
 
@@ -581,16 +583,16 @@ private:
 	float m_trainControlYaw{ 0.f };
 
 public:
-	ControllerEntData m_handControllerEntData{ 0 };
-	ControllerEntData m_weaponControllerEntData{ 0 };
+	ControllerModelData m_leftControllerModelData{ 0 };
+	ControllerModelData m_rightControllerModelData{ 0 };
 
 	int m_vrGrabbedLadderEntIndex{ -1 };
 	bool m_vrIsPullingOnLedge{ false };
 
 	HSPRITE_VALVE m_hsprCursor = 0;
-	float m_flTime = 0.f;        // the current client time
-	float m_fOldTime = 0.f;      // the time at which the HUD was last redrawn
-	float m_flTimeDelta = 0.f;  // the difference between flTime and fOldTime
+	float m_flHUDDrawTime = 0.f;        // the current HUD draw time
+	float m_fOldHUDDrawTime = 0.f;      // the time at which the HUD was last redrawn
+	float m_flHUDDrawTimeDelta = 0.f;  // the difference between flTime and fOldTime
 	Vector m_vecOrigin;
 	Vector m_vecAngles;
 	int m_iKeyBits = 0;
@@ -683,18 +685,13 @@ public:
 	// sprite indexes
 	int m_HUD_number_0 = 0;
 
-
 	void AddHudElem(CHudBase* p);
 
 	// Ground entity for rotating with them in VR (since player rotation is done client side completely) - Max Vollmer, 2019-04-09
 	struct cl_entity_s* GetGroundEntity();
-	struct cl_entity_s* GetMirroredEnt();
 
 	// HUD (train control sprites) attachment for train we are controlling
 	bool GetTrainControlsOriginAndOrientation(Vector& origin, Vector& angles);
-
-	struct cl_entity_s* CHud::GetWeaponControllerEntity();
-	struct cl_entity_s* CHud::GetHandControllerEntity();
 };
 
 class TeamFortressViewport;

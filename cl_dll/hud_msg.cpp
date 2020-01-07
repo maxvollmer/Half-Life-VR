@@ -123,14 +123,20 @@ int CHud::MsgFunc_GroundEnt(const char* pszName, int iSize, void* pbuf)
 int CHud::MsgFunc_VRCtrlEnt(const char* pszName, int iSize, void* pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
-	int entIndex = READ_SHORT();
-	bool isWeapon = READ_BYTE() != 0;
-	auto& data = isWeapon ? m_weaponControllerEntData : m_handControllerEntData;
-	data.entIndex = entIndex;
-	data.origin = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
-	data.angles = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
-	data.isMirrored = READ_BYTE() != 0;
-	data.isValid = READ_BYTE() != 0;
+
+	bool isLeftHand = READ_BYTE() != 0;
+	auto& data = isLeftHand ? m_leftControllerModelData : m_rightControllerModelData;
+	data.body = READ_BYTE();
+	data.skin = READ_BYTE();
+
+	data.sequence = READ_LONG();
+
+	data.frame = READ_FLOAT();
+	data.framerate = READ_FLOAT();
+	data.animtime = READ_FLOAT();
+
+	strncpy_s(data.modelname, READ_STRING(), 1024);
+
 	return 1;
 }
 

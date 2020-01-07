@@ -953,7 +953,7 @@ int CHudAmmo::Draw(float flTime)
 	a = (int)max(MIN_ALPHA, m_fFade);
 
 	if (m_fFade > 0)
-		m_fFade -= (gHUD.m_flTimeDelta * 20);
+		m_fFade -= (gHUD.m_flHUDDrawTimeDelta * 20);
 
 	UnpackRGB(r, g, b, RGB_YELLOWISH);
 

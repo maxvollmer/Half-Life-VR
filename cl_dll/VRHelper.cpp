@@ -29,9 +29,6 @@
 #define MAX_COMMAND_SIZE 256
 #endif
 
-const Vector3 HL_TO_VR(1.44f / 10.f, 2.0f / 10.f, 1.44f / 10.f);
-const Vector3 VR_TO_HL(1.f / HL_TO_VR.x, 1.f / HL_TO_VR.y, 1.f / HL_TO_VR.z);
-
 // Set by message from server on load/restore/levelchange
 float g_vrRestoreYaw_PrevYaw = 0.f;
 float g_vrRestoreYaw_CurrentYaw = 0.f;
@@ -116,16 +113,16 @@ void VRHelper::UpdateWorldRotation()
 		return;
 	}
 
-	if (m_lastYawUpdateTime == gHUD.m_flTime)
+	if (m_lastYawUpdateTime == gVRRenderer.m_clientTime)
 	{
 		// already up-to-date
 		return;
 	}
 
 	// New game
-	if (m_lastYawUpdateTime == -1.f || m_lastYawUpdateTime > gHUD.m_flTime)
+	if (m_lastYawUpdateTime == -1.f || m_lastYawUpdateTime > gVRRenderer.m_clientTime)
 	{
-		m_lastYawUpdateTime = gHUD.m_flTime;
+		m_lastYawUpdateTime = gVRRenderer.m_clientTime;
 		m_prevYaw = 0.f;
 		m_currentYaw = 0.f;
 		m_instantRotateYawValue = 0.f;
@@ -172,22 +169,22 @@ void VRHelper::UpdateWorldRotation()
 		}
 
 		// Already up to date
-		if (gHUD.m_flTime == m_lastYawUpdateTime)
+		if (gVRRenderer.m_clientTime == m_lastYawUpdateTime)
 		{
 			return;
 		}
 
 		// Get time since last update
-		float deltaTime = gHUD.m_flTime - m_lastYawUpdateTime;
+		double deltaTime = gVRRenderer.m_clientTime - m_lastYawUpdateTime;
 		// Rotate
 		m_prevYaw = m_currentYaw;
 		if (g_vrInput.RotateLeft())
 		{
-			m_currentYaw += deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
+			m_currentYaw += static_cast<float>(deltaTime * CVAR_GET_FLOAT("cl_yawspeed"));
 		}
 		else if (g_vrInput.RotateRight())
 		{
-			m_currentYaw -= deltaTime * CVAR_GET_FLOAT("cl_yawspeed");
+			m_currentYaw -= static_cast<float>(deltaTime * CVAR_GET_FLOAT("cl_yawspeed"));
 		}
 
 		// Add in analog VR input
@@ -234,7 +231,7 @@ void VRHelper::UpdateWorldRotation()
 			m_currentYaw += 360.f;
 
 		// Remember time
-		m_lastYawUpdateTime = gHUD.m_flTime;
+		m_lastYawUpdateTime = gVRRenderer.m_clientTime;
 	}
 }
 
@@ -294,6 +291,8 @@ void VRHelper::Init()
 		else
 		{
 			vrSystem->GetRecommendedRenderTargetSize(&vrRenderWidth, &vrRenderHeight);
+			//vrRenderWidth = 640;
+			//vrRenderHeight = 480;
 			gEngfuncs.Con_DPrintf("VR render target size is: %u, %u\n", vrRenderWidth, vrRenderHeight);
 			CreateGLTexture(&vrGLLeftEyeTexture, vrRenderWidth, vrRenderHeight);
 			CreateGLTexture(&vrGLRightEyeTexture, vrRenderWidth, vrRenderHeight);
@@ -573,6 +572,7 @@ void VRHelper::SubmitImages()
 {
 	SubmitImage(vr::EVREye::Eye_Left, vrGLLeftEyeTexture);
 	SubmitImage(vr::EVREye::Eye_Right, vrGLRightEyeTexture);
+	glFlush();
 	vrCompositor->PostPresentHandoff();
 }
 
@@ -666,31 +666,26 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 		g_vrInput.SetVRDucking(false);
 	}
 
-	// correct height (fixes ducking and prevents big players from looking through ceilings)
+	// correct height for ducking and stuff
+	float originalHeight = hlTransform[13];
 	extern playermove_t* pmove;
-	if (pmove)
+	if (!g_vrInput.IsVRDucking() && pmove && (pmove->flags & FL_DUCKING))
 	{
-		float playerViewPosHeight = 0.f;
-		if (pmove->flags & FL_DUCKING)
-		{
-			playerViewPosHeight = m_viewOfs.z - VEC_DUCK_HULL_MIN.z;
-		}
-		else
-		{
-			playerViewPosHeight = m_viewOfs.z - VEC_HULL_MIN.z;
-		}
-		float originalHeight = hlTransform[13];
-		float newHeight = (std::min)(hlTransform[13] * GetVRToHL().y, playerViewPosHeight) / GetVRToHL().y;
-		if (VRGetSmoothStepsSetting() != 0.f)
-		{
-			newHeight += GetStepHeight() / GetVRToHL().y;
-		}
-		hlTransform[13] = newHeight;
+		float playerViewPosHeight = m_viewOfs.z - VEC_DUCK_HULL_MIN.z;
+		float newHeight = (std::min)(hlTransform[13], playerViewPosHeight * GetHLToVR().y);
 		m_hmdHeightOffset = newHeight - originalHeight;
+		hlTransform[13] = newHeight;
 	}
 	else
 	{
 		m_hmdHeightOffset = 0.f;
+	}
+
+	if (VRGetSmoothStepsSetting() != 0.f)
+	{
+		float newHeight = hlTransform[13] + GetStepHeight() / GetVRToHL().y;
+		m_hmdHeightOffset = newHeight - originalHeight;
+		hlTransform[13] = newHeight;
 	}
 
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
@@ -838,7 +833,9 @@ bool VRHelper::UpdateController(
 		MatrixVectors(controllerMatrix, controllerForward, controllerRight, controllerUp);
 		controllerOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(controllerMatrix);
 		if (localPlayer)
+		{
 			controllerOffset.z += localPlayer->curstate.mins.z;
+		}
 		controllerPosition = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(controllerMatrix);
 		controllerAngles = GetHLAnglesFromVRMatrix(controllerMatrix);
 		controllerVelocity = Vector{ velocityInVRSpace.x * GetVRToHL().x, -velocityInVRSpace.z * GetVRToHL().z, velocityInVRSpace.y * GetVRToHL().y };
@@ -894,20 +891,12 @@ void VRHelper::UpdateControllers()
 		m_rightControllerRight,
 		m_rightControllerUp);
 
-	bool areBothControllersValid = m_fLeftControllerValid && m_fRightControllerValid;
-
-	bool useLeftControllerForViewEntity = (areBothControllersValid && leftHandMode) || (!areBothControllersValid && m_fLeftControllerValid);
-
-	if (useLeftControllerForViewEntity)
+	if (leftHandMode)
 	{
-		m_handAnglesValid = m_fRightControllerValid;
-		m_handAngles = m_rightControllerAngles;
 		UpdateViewEnt(m_fLeftControllerValid, m_leftControllerPosition, m_leftControllerAngles, m_leftControllerVelocity, true);
 	}
 	else
 	{
-		m_handAnglesValid = m_fLeftControllerValid;
-		m_handAngles = m_leftControllerAngles;
 		UpdateViewEnt(m_fRightControllerValid, m_rightControllerPosition, m_rightControllerAngles, m_rightControllerVelocity, false);
 	}
 }
@@ -939,17 +928,9 @@ void VRHelper::SendPositionUpdateToServer()
 	VRControllerID leftControllerID;
 	VRControllerID rightControllerID;
 
-	// either both valid or both invalid - chose controller id based on left hand mode
-	if (m_fLeftControllerValid == m_fRightControllerValid)
-	{
-		leftControllerID = leftHandMode ? VRControllerID::WEAPON : VRControllerID::HAND;
-		rightControllerID = leftHandMode ? VRControllerID::HAND : VRControllerID::WEAPON;
-	}
-	else  // only one is valid, chose controller id based on the valid one (the valid one is the weapon)
-	{
-		leftControllerID = m_fLeftControllerValid ? VRControllerID::WEAPON : VRControllerID::HAND;
-		rightControllerID = m_fRightControllerValid ? VRControllerID::WEAPON : VRControllerID::HAND;
-	}
+	// chose controller id based on left hand mode
+	leftControllerID = leftHandMode ? VRControllerID::WEAPON : VRControllerID::HAND;
+	rightControllerID = leftHandMode ? VRControllerID::HAND : VRControllerID::WEAPON;
 
 	char cmdLeftController[MAX_COMMAND_SIZE] = { 0 };
 	sprintf_s(cmdLeftController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i", m_vrUpdateTimestamp, m_fLeftControllerValid ? 1 : 0, leftControllerID, 1 /*isMirrored*/, m_leftControllerOffset.x, m_leftControllerOffset.y, m_leftControllerOffset.z, m_leftControllerAngles.x, m_leftControllerAngles.y, m_leftControllerAngles.z, m_leftControllerVelocity.x, m_leftControllerVelocity.y, m_leftControllerVelocity.z, leftDragOn ? 1 : 0);
@@ -966,14 +947,11 @@ void VRHelper::SendPositionUpdateToServer()
 
 void VRHelper::UpdateViewEnt(bool isControllerValid, const Vector& controllerPosition, const Vector& controllerAngles, const Vector& controllerVelocity, bool isMirrored)
 {
+	mIsViewEntMirrored = isMirrored;
+
 	cl_entity_t* viewent = gEngfuncs.GetViewModel();
 	if (!viewent)
-	{
-		mIsViewEntMirrored = false;
 		return;
-	}
-
-	mIsViewEntMirrored = isMirrored;
 
 	if (isControllerValid)
 	{
@@ -984,20 +962,6 @@ void VRHelper::UpdateViewEnt(bool isControllerValid, const Vector& controllerPos
 		VectorCopy(controllerAngles, viewent->curstate.angles);
 		VectorCopy(controllerAngles, viewent->latched.prevangles);
 		viewent->curstate.velocity = controllerVelocity;
-	}
-	else
-	{
-		cl_entity_t* localPlayer = SaveGetLocalPlayer();
-		if (localPlayer)
-		{
-			VectorCopy(localPlayer->curstate.origin, viewent->origin);
-			VectorCopy(localPlayer->curstate.origin, viewent->curstate.origin);
-			VectorCopy(localPlayer->curstate.origin, viewent->latched.prevorigin);
-			VectorCopy(GetLocalPlayerAngles(), viewent->angles);
-			VectorCopy(GetLocalPlayerAngles(), viewent->curstate.angles);
-			VectorCopy(GetLocalPlayerAngles(), viewent->latched.prevangles);
-			viewent->curstate.velocity = localPlayer->curstate.velocity;
-		}
 	}
 }
 
@@ -1065,9 +1029,14 @@ Vector VRHelper::GetMovementAngles()
 		result = m_movementAngles;
 		result.x = 360.f - result.x;
 	}
-	else if (m_handAnglesValid)
+	else if (m_fRightControllerValid)
 	{
-		result = m_handAngles;
+		result = m_rightControllerAngles;
+		result.x = 360.f - result.x;
+	}
+	else if (m_fLeftControllerValid)
+	{
+		result = m_leftControllerAngles;
 		result.x = 360.f - result.x;
 	}
 	else
@@ -1118,8 +1087,6 @@ void VRHelper::TestRenderControllerPositions()
 bool VRHelper::HasValidWeaponController()
 {
 	// if only one controller is active, it automatically becomes the weapon controller
-	return m_fLeftControllerValid || m_fRightControllerValid;
-	/*
 	if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
 	{
 		return m_fLeftControllerValid;
@@ -1128,15 +1095,12 @@ bool VRHelper::HasValidWeaponController()
 	{
 		return m_fRightControllerValid;
 	}
-	*/
 }
 
 bool VRHelper::HasValidHandController()
 {
 	// if only one controller is active, it automatically becomes the weapon controller,
 	// thus the hand controller is only valid if both are active
-	return m_fLeftControllerValid && m_fRightControllerValid;
-	/*
 	if (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f)
 	{
 		return m_fRightControllerValid;
@@ -1145,7 +1109,6 @@ bool VRHelper::HasValidHandController()
 	{
 		return m_fLeftControllerValid;
 	}
-	*/
 }
 
 vr::IVRSystem* VRHelper::GetVRSystem()
@@ -1198,14 +1161,7 @@ Vector VRHelper::GetWeaponPosition()
 {
 	if (HasValidWeaponController())
 	{
-		if (HasValidHandController())  // if hand is valid decide weapon controller based on left hand mode
-		{
-			return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerPosition : m_rightControllerPosition;
-		}
-		else  // if hand is not valid, decide weapon controller based on which controller is valid
-		{
-			return m_fLeftControllerValid ? m_leftControllerPosition : m_rightControllerPosition;
-		}
+		return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerPosition : m_rightControllerPosition;
 	}
 	else
 	{
@@ -1218,14 +1174,7 @@ Vector VRHelper::GetWeaponAngles()
 {
 	if (HasValidWeaponController())
 	{
-		if (HasValidHandController())  // if hand is valid decide weapon controller based on left hand mode
-		{
-			return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerAngles : m_rightControllerAngles;
-		}
-		else  // if hand is not valid, decide weapon controller based on which controller is valid
-		{
-			return m_fLeftControllerValid ? m_leftControllerAngles : m_rightControllerAngles;
-		}
+		return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerAngles : m_rightControllerAngles;
 	}
 	else
 	{
@@ -1236,10 +1185,10 @@ Vector VRHelper::GetWeaponAngles()
 }
 Vector VRHelper::GetWeaponHUDPosition()
 {
-	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t * ent);
-	if (HasValidWeaponController() && GetViewEntity() && VRGlobalNumAttachmentsForEntity(GetViewEntity()) >= 3)
+	Vector pos;
+	if (HasValidWeaponController() && gVRRenderer.GetWeaponControllerAttachment(pos, VR_MUZZLE_ATTACHMENT + 2))
 	{
-		return GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 2];
+		return pos;
 	}
 	else
 	{
@@ -1248,11 +1197,12 @@ Vector VRHelper::GetWeaponHUDPosition()
 }
 Vector VRHelper::GetWeaponHUDUp()
 {
-	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t * ent);
-	if (HasValidWeaponController() && GetViewEntity() && VRGlobalNumAttachmentsForEntity(GetViewEntity()) >= 4)
+	Vector pos1;
+	Vector pos2;
+	if (HasValidWeaponController()
+		&& gVRRenderer.GetWeaponControllerAttachment(pos1, VR_MUZZLE_ATTACHMENT + 2)
+		&& gVRRenderer.GetWeaponControllerAttachment(pos2, VR_MUZZLE_ATTACHMENT + 3))
 	{
-		Vector pos1 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 2];
-		Vector pos2 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 3];
 		Vector dir = (pos2 - pos1).Normalize();
 		return dir;
 	}
@@ -1263,33 +1213,20 @@ Vector VRHelper::GetWeaponHUDUp()
 		return up;
 	}
 }
+
 void VRHelper::GetWeaponHUDMatrix(float* matrix)
 {
 	if (HasValidWeaponController())
 	{
-		if (HasValidHandController())  // if hand is valid decide weapon controller based on left hand mode
-		{
-			ExtractRotationMatrix((CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerMatrix : m_rightControllerMatrix, matrix);
-		}
-		else  // if hand is not valid, decide weapon controller based on which controller is valid
-		{
-			ExtractRotationMatrix((m_fLeftControllerValid) ? m_leftControllerMatrix : m_rightControllerMatrix, matrix);
-		}
+		ExtractRotationMatrix((CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? m_leftControllerMatrix : m_rightControllerMatrix, matrix);
 	}
 }
+
 void VRHelper::GetWeaponVectors(Vector& forward, Vector& right, Vector& up)
 {
 	if (HasValidWeaponController())
 	{
-		bool useLeftController;
-		if (HasValidHandController())  // if hand is valid decide weapon controller based on left hand mode
-		{
-			useLeftController = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
-		}
-		else  // if hand is not valid, decide weapon controller based on which controller is valid
-		{
-			useLeftController = m_fLeftControllerValid;
-		}
+		bool useLeftController = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
 		if (useLeftController)
 		{
 			forward = m_leftControllerForward;
@@ -1338,11 +1275,10 @@ Vector VRHelper::GetHandAngles()
 }
 Vector VRHelper::GetHandHUDPosition()
 {
-	cl_entity_t* pEnt = gHUD.GetHandControllerEntity();
-	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t * ent);
-	if (HasValidWeaponController() && pEnt && VRGlobalNumAttachmentsForEntity(pEnt) >= 3)
+	Vector pos;
+	if (HasValidHandController() && gVRRenderer.GetHandControllerAttachment(pos, VR_MUZZLE_ATTACHMENT + 2))
 	{
-		return pEnt->attachment[VR_MUZZLE_ATTACHMENT + 2];
+		return pos;
 	}
 	else
 	{
@@ -1351,12 +1287,12 @@ Vector VRHelper::GetHandHUDPosition()
 }
 Vector VRHelper::GetHandHUDUp()
 {
-	cl_entity_t* pEnt = gHUD.GetHandControllerEntity();
-	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t * ent);
-	if (HasValidWeaponController() && pEnt && VRGlobalNumAttachmentsForEntity(pEnt) >= 4)
+	Vector pos1;
+	Vector pos2;
+	if (HasValidHandController()
+		&& gVRRenderer.GetHandControllerAttachment(pos1, VR_MUZZLE_ATTACHMENT + 2)
+		&& gVRRenderer.GetHandControllerAttachment(pos2, VR_MUZZLE_ATTACHMENT + 3))
 	{
-		Vector pos1 = pEnt->attachment[VR_MUZZLE_ATTACHMENT + 2];
-		Vector pos2 = pEnt->attachment[VR_MUZZLE_ATTACHMENT + 3];
 		Vector dir = (pos2 - pos1).Normalize();
 		return dir;
 	}

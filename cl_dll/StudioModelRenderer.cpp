@@ -629,6 +629,24 @@ void CStudioModelRenderer::StudioSetUpTransform(int trivial_accept)
 		}
 	}
 
+	// Mirror hand model - Max Vollmer, 2017-01-05
+	if (m_isCurrentModelMirrored)
+	{
+		// create mirror matrix
+		static float mirrormatrix[3][4] = {
+			{ 1.f, 0.f, 0.f, 1.f },
+			{ 0.f, -1.f, 0.f, 1.f },
+			{ 0.f, 0.f, 1.f, 1.f },
+		};
+
+		// copy rotation matrix
+		float rotationmatrix_copy[3][4] = { 0 };
+		MatrixCopy(*m_protationmatrix, rotationmatrix_copy);
+
+		// concat mirror and rotation matrix
+		ConcatTransforms(rotationmatrix_copy, mirrormatrix, (*m_protationmatrix));
+	}
+
 	(*m_protationmatrix)[0][3] = modelpos[0];
 	(*m_protationmatrix)[1][3] = modelpos[1];
 	(*m_protationmatrix)[2][3] = modelpos[2];
@@ -1004,34 +1022,6 @@ void CStudioModelRenderer::StudioSetupBonesInline(float bonetransform[MAXSTUDIOB
 		}
 	}
 
-	// Ugly but works: Mirror hand model - Max Vollmer, 2017-01-05
-	if (gVRRenderer.ShouldMirrorCurrentModel(m_pCurrentEntity))
-	{
-		// create mirror matrix
-		float mirrormatrix[3][4] = { 0 };
-
-		mirrormatrix[0][0] = 1;
-		mirrormatrix[0][1] = 0;
-		mirrormatrix[0][2] = 0;
-		mirrormatrix[1][0] = 0;
-		mirrormatrix[1][1] = -1;
-		mirrormatrix[1][2] = 0;
-		mirrormatrix[2][0] = 0;
-		mirrormatrix[2][1] = 0;
-		mirrormatrix[2][2] = 1;
-
-		mirrormatrix[0][3] = 1;
-		mirrormatrix[1][3] = 1;
-		mirrormatrix[2][3] = 1;
-
-		// copy rotation matrix
-		float rotationmatrix_copy[3][4] = { 0 };
-		MatrixCopy(*m_protationmatrix, rotationmatrix_copy);
-
-		// concat mirror and rotation matrix
-		ConcatTransforms(rotationmatrix_copy, mirrormatrix, (*m_protationmatrix));
-	}
-
 	for (i = 0; i < m_pStudioHeader->numbones; i++)
 	{
 		QuaternionMatrix(q[i], bonematrix);
@@ -1176,6 +1166,143 @@ void CStudioModelRenderer::StudioMergeBones(model_t* m_pSubModel)
 	}
 }
 
+void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controllerModelData, const Vector& origin, const Vector& angles, bool mirrored, int* out_numattachments, float out_attachments[4][3])
+{
+	if (strlen(controllerModelData.modelname) == 0)
+		return;
+
+	m_pCurrentEntity = IEngineStudio.GetViewEntity();
+	if (!m_pCurrentEntity)
+		return;
+
+	auto model = IEngineStudio.Mod_ForName(controllerModelData.modelname, 0);
+	if (!model)
+		return;
+
+	IEngineStudio.SetRenderModel(m_pCurrentEntity->model = m_pRenderModel = model);
+	m_pCurrentEntity->curstate.body = controllerModelData.body;
+	m_pCurrentEntity->curstate.skin = controllerModelData.skin;
+	m_pCurrentEntity->curstate.frame = controllerModelData.frame;
+	m_pCurrentEntity->curstate.framerate = controllerModelData.framerate;
+	m_pCurrentEntity->curstate.animtime = controllerModelData.animtime;
+	m_pCurrentEntity->curstate.sequence = controllerModelData.sequence;
+	m_pCurrentEntity->curstate.origin = origin;
+	m_pCurrentEntity->curstate.angles = angles;
+	m_pCurrentEntity->origin = origin;
+	m_pCurrentEntity->angles = angles;
+	m_pCurrentEntity->curstate.effects = 0;
+	m_pCurrentEntity->curstate.movetype = MOVETYPE_NOCLIP;
+
+	m_isCurrentModelMirrored = mirrored;
+
+	GetTimes();
+	IEngineStudio.GetViewInfo(m_vRenderOrigin, m_vUp, m_vRight, m_vNormal);
+	IEngineStudio.GetAliasScale(&m_fSoftwareXScale, &m_fSoftwareYScale);
+
+	m_pStudioHeader = Mod_Extradata("StudioDrawModel", m_pCurrentEntity, m_pRenderModel);
+	if (!m_pStudioHeader)
+	{
+		m_isCurrentModelMirrored = false;
+		return;
+	}
+
+	IEngineStudio.StudioSetHeader(m_pStudioHeader);
+	IEngineStudio.SetRenderModel(m_pRenderModel);
+
+	StudioSetUpTransform(0);
+
+	float fingerCurl[Finger_Count];
+	if (gVRRenderer.IsHandModel(controllerModelData.modelname) && gVRRenderer.HasSkeletalDataForHand(mirrored, fingerCurl))
+	{
+		// Use skeletal data from OpenVR to animate curled fingers on hand models:
+		// 1. Call StudioSetupBones twice: Once with initial frame of IDLE (flat hand), and once with initial frame of FULLGRAB_END (fist)
+		// 2. Use fingerCurl data (0 = flat hand, 1 = fully curled) to interpolate between appropriate bone matrices
+		// (Use hardcoded map of bone names (g_handmodelfingerbonenames) to modify correct bone matrices)
+		// - Max Vollmer, 2019-10-22
+
+		m_pCurrentEntity->curstate.frame = 0;
+		m_pCurrentEntity->curstate.framerate = 0;
+		m_pCurrentEntity->curstate.animtime = m_clTime;
+		m_pCurrentEntity->curstate.sequence = IDLE;
+		StudioSetupBones();
+
+		mstudiobone_t* pbones = reinterpret_cast<mstudiobone_t*>(reinterpret_cast<byte*>(m_pStudioHeader) + m_pStudioHeader->boneindex);
+		for (int finger = 0; finger < Finger_Count; finger++)
+		{
+			float f = fingerCurl[finger];
+			if (f > 0.f)
+			{
+				m_pCurrentEntity->curstate.frame = 0;
+				m_pCurrentEntity->curstate.framerate = 0;
+				m_pCurrentEntity->curstate.animtime = m_clTime;
+				m_pCurrentEntity->curstate.sequence = FULLGRAB_START;
+
+				mstudioseqdesc_t* pseqdesc = reinterpret_cast<mstudioseqdesc_t*>(reinterpret_cast<byte*>(m_pStudioHeader) + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;
+				float overrideFrame = (pseqdesc->numframes - 1) * f;
+				m_pCurrentEntity->curstate.frame = overrideFrame;
+
+				float pGrabbingBoneTransform[MAXSTUDIOBONES][3][4];
+				float pGrabbingLightTransform[MAXSTUDIOBONES][3][4];
+				StudioSetupBonesInline(pGrabbingBoneTransform, pGrabbingLightTransform, &overrideFrame);
+
+				for (int i = 0; i < m_pStudioHeader->numbones; i++)
+				{
+					if (IsFingerBoneName(Finger(finger), pbones[i].name))
+					{
+						MatrixCopy(pGrabbingBoneTransform[i], (*m_pbonetransform)[i]);
+						MatrixCopy(pGrabbingLightTransform[i], (*m_plighttransform)[i]);
+					}
+				}
+			}
+		}
+
+		m_pCurrentEntity->curstate.frame = 0;
+		m_pCurrentEntity->curstate.framerate = 0;
+		m_pCurrentEntity->curstate.animtime = m_clTime;
+		m_pCurrentEntity->curstate.sequence = IDLE;
+	}
+	else
+	{
+		StudioSetupBones();
+	}
+	StudioSaveBones();
+
+	int numattachments = min(4, m_pStudioHeader->numattachments);
+	mstudioattachment_t* pattachment = reinterpret_cast<mstudioattachment_t*>(reinterpret_cast<byte*>(m_pStudioHeader) + m_pStudioHeader->attachmentindex);
+	for (int i = 0; i < numattachments; i++)
+	{
+		VectorTransform(pattachment[i].org, (*m_plighttransform)[pattachment[i].bone], out_attachments[i]);
+	}
+	*out_numattachments = numattachments;
+
+	if (m_isCurrentModelMirrored)
+		gVRRenderer.ReverseCullface();
+	else
+		gVRRenderer.RestoreCullface();
+
+	alight_t lighting;
+	vec3_t dir;
+	lighting.plightvec = dir;
+	IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &lighting);
+	IEngineStudio.StudioEntityLight(&lighting);
+
+	// model and frame independant
+	IEngineStudio.StudioSetupLighting(&lighting);
+
+	// get remap colors
+	m_nTopColor = m_pCurrentEntity->curstate.colormap & 0xFF;
+	m_nBottomColor = (m_pCurrentEntity->curstate.colormap & 0xFF00) >> 8;
+
+	IEngineStudio.StudioSetRemapColors(m_nTopColor, m_nBottomColor);
+
+	StudioRenderModel();
+
+	gVRRenderer.RestoreCullface();
+
+
+	m_isCurrentModelMirrored = false;
+}
+
 /*
 ====================
 StudioDrawModel
@@ -1190,44 +1317,12 @@ StudioDrawModel
 */
 int CStudioModelRenderer::StudioDrawModel(int flags)
 {
+	m_isCurrentModelMirrored = false;
+
 	alight_t lighting;
 	vec3_t dir;
 
 	m_pCurrentEntity = IEngineStudio.GetCurrentEntity();
-
-	// A bit hacky, but oh well. Copies precise position and angles into controller weapon/hand model entities
-	// (otherwise location jitters in 0.25 unit steps due to network "compression") - Max Vollmer, 2019-04-13
-	if (m_pCurrentEntity->index > 0)
-	{
-		if (gVRRenderer.HasValidHandController() && gHUD.m_handControllerEntData.isValid && m_pCurrentEntity->index == gHUD.m_handControllerEntData.entIndex)
-		{
-			//Vector origin = gHUD.m_handControllerEntData.origin;
-			//Vector angles = gHUD.m_handControllerEntData.angles;
-			Vector origin = gVRRenderer.GetHandPosition();
-			Vector angles = gVRRenderer.GetHandAngles();
-
-			m_pCurrentEntity->origin = origin;
-			m_pCurrentEntity->curstate.origin = origin;
-			m_pCurrentEntity->latched.prevorigin = origin;
-			m_pCurrentEntity->angles = angles;
-			m_pCurrentEntity->curstate.angles = angles;
-			m_pCurrentEntity->latched.prevangles = angles;
-		}
-		else if (gVRRenderer.HasValidWeaponController() && gHUD.m_weaponControllerEntData.isValid && m_pCurrentEntity->index == gHUD.m_weaponControllerEntData.entIndex)
-		{
-			//Vector origin = gHUD.m_weaponControllerEntData.origin;
-			//Vector angles = gHUD.m_weaponControllerEntData.angles;
-			Vector origin = gVRRenderer.GetWeaponPosition();
-			Vector angles = gVRRenderer.GetWeaponAngles();
-
-			m_pCurrentEntity->origin = origin;
-			m_pCurrentEntity->curstate.origin = origin;
-			m_pCurrentEntity->latched.prevorigin = origin;
-			m_pCurrentEntity->angles = angles;
-			m_pCurrentEntity->curstate.angles = angles;
-			m_pCurrentEntity->latched.prevangles = angles;
-		}
-	}
 
 	GetTimes();
 	IEngineStudio.GetViewInfo(m_vRenderOrigin, m_vUp, m_vRight, m_vNormal);
@@ -1301,60 +1396,7 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 	}
 	else
 	{
-		float fingerCurl[Finger_Count];
-		if (gVRRenderer.IsCurrentModelHandWithSkeletalData(m_pCurrentEntity, fingerCurl))
-		{
-			// Use skeletal data from OpenVR to animate curled fingers on hand models:
-			// 1. Call StudioSetupBones twice: Once with initial frame of IDLE (flat hand), and once with initial frame of FULLGRAB_END (fist)
-			// 2. Use fingerCurl data (0 = flat hand, 1 = fully curled) to interpolate between appropriate bone matrices
-			// (Use hardcoded map of bone names (g_handmodelfingerbonenames) to modify correct bone matrices)
-			// - Max Vollmer, 2019-10-22
-
-			m_pCurrentEntity->curstate.frame = 0;
-			m_pCurrentEntity->curstate.framerate = 0;
-			m_pCurrentEntity->curstate.animtime = m_clTime;
-			m_pCurrentEntity->curstate.sequence = IDLE;
-			StudioSetupBones();
-
-			mstudiobone_t* pbones = reinterpret_cast<mstudiobone_t*>(reinterpret_cast<byte*>(m_pStudioHeader) + m_pStudioHeader->boneindex);
-			for (int finger = 0; finger < Finger_Count; finger++)
-			{
-				float f = fingerCurl[finger];
-				if (f > 0.f)
-				{
-					m_pCurrentEntity->curstate.frame = 0;
-					m_pCurrentEntity->curstate.framerate = 0;
-					m_pCurrentEntity->curstate.animtime = m_clTime;
-					m_pCurrentEntity->curstate.sequence = FULLGRAB_START;
-
-					mstudioseqdesc_t* pseqdesc = reinterpret_cast<mstudioseqdesc_t*>(reinterpret_cast<byte*>(m_pStudioHeader) + m_pStudioHeader->seqindex) + m_pCurrentEntity->curstate.sequence;
-					float overrideFrame = (pseqdesc->numframes - 1) * f;
-					m_pCurrentEntity->curstate.frame = overrideFrame;
-
-					float pGrabbingBoneTransform[MAXSTUDIOBONES][3][4];
-					float pGrabbingLightTransform[MAXSTUDIOBONES][3][4];
-					StudioSetupBonesInline(pGrabbingBoneTransform, pGrabbingLightTransform, &overrideFrame);
-
-					for (int i = 0; i < m_pStudioHeader->numbones; i++)
-					{
-						if (IsFingerBoneName(Finger(finger), pbones[i].name))
-						{
-							MatrixCopy(pGrabbingBoneTransform[i], (*m_pbonetransform)[i]);
-							MatrixCopy(pGrabbingLightTransform[i], (*m_plighttransform)[i]);
-						}
-					}
-				}
-			}
-
-			m_pCurrentEntity->curstate.frame = 0;
-			m_pCurrentEntity->curstate.framerate = 0;
-			m_pCurrentEntity->curstate.animtime = m_clTime;
-			m_pCurrentEntity->curstate.sequence = IDLE;
-		}
-		else
-		{
-			StudioSetupBones();
-		}
+		StudioSetupBones();
 	}
 	StudioSaveBones();
 
@@ -1381,7 +1423,7 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 
 	if (flags & STUDIO_RENDER)
 	{
-		if (gVRRenderer.ShouldMirrorCurrentModel(m_pCurrentEntity))
+		if (m_isCurrentModelMirrored)
 			gVRRenderer.ReverseCullface();
 		else
 			gVRRenderer.RestoreCullface();
@@ -1585,6 +1627,8 @@ StudioDrawPlayer
 */
 int CStudioModelRenderer::StudioDrawPlayer(int flags, entity_state_t* pplayer)
 {
+	m_isCurrentModelMirrored = false;
+
 	alight_t lighting;
 	vec3_t dir;
 

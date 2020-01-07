@@ -147,14 +147,14 @@ void VRRenderer::RenderScreenOverlays()
 
 		if (!m_isDrawingDamage)
 		{
-			m_flDrawingDamageTime = gHUD.m_flTime;
+			m_flDrawingDamageTime = gHUD.m_flHUDDrawTime;
 			m_isDrawingDamage = true;
 			brightness = 0.f;
 		}
 		else
 		{
 			constexpr const float speed = 2.f;
-			brightness = (-cos((gHUD.m_flTime - m_flDrawingDamageTime) * speed) + 1.f) * 0.5f;
+			brightness = (-cos((gHUD.m_flHUDDrawTime - m_flDrawingDamageTime) * speed) + 1.f) * 0.5f;
 		}
 
 		// recalculate damage color everytime we fade out

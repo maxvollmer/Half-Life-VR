@@ -255,13 +255,20 @@ void VRController::UpdateModel(CBasePlayer* pPlayer)
 void VRController::SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID id)
 {
 	extern int gmsgVRControllerEnt;
-	MESSAGE_BEGIN(MSG_ALL, gmsgVRControllerEnt, nullptr);
-	WRITE_ENTITY(ENTINDEX(GetModel()->edict()));
-	WRITE_BYTE((id == VRControllerID::WEAPON) ? 1 : 0);
-	WRITE_PRECISE_VECTOR(GetModel()->pev->origin);
-	WRITE_PRECISE_VECTOR(GetModel()->pev->angles);
+	MESSAGE_BEGIN(MSG_ONE, gmsgVRControllerEnt, nullptr, pPlayer->pev);
+
 	WRITE_BYTE(IsMirrored() ? 1 : 0);
-	WRITE_BYTE(IsValid() ? 1 : 0);
+	WRITE_BYTE(GetModel()->pev->body);
+	WRITE_BYTE(GetModel()->pev->skin);
+
+	WRITE_LONG(GetModel()->pev->sequence);
+
+	WRITE_FLOAT(GetModel()->pev->frame);
+	WRITE_FLOAT(GetModel()->pev->framerate);
+	WRITE_FLOAT(GetModel()->pev->animtime);
+
+	WRITE_STRING(STRING(GetModel()->pev->model));
+
 	MESSAGE_END();
 }
 

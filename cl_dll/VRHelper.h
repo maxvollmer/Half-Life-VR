@@ -54,8 +54,6 @@ public:
 
 	bool m_hasMovementAngles{ false };
 	Vector m_movementAngles;
-	bool m_handAnglesValid{ false };
-	Vector m_handAngles;
 	Vector GetMovementAngles();
 
 	void SetSkybox(const char* name);
@@ -125,7 +123,7 @@ private:
 
 	int m_vrUpdateTimestamp = 0;
 
-	float m_lastYawUpdateTime = -1.f;
+	double m_lastYawUpdateTime = -1.f;
 	float m_prevYaw = 0.f;
 	float m_currentYaw = 0.f;
 	bool m_hasReceivedYawUpdate = false;
@@ -172,6 +170,14 @@ private:
 public:
 	const Vector3& GetVRToHL();
 	const Vector3& GetHLToVR();
+
+	bool HasValidLeftController() { return m_fLeftControllerValid; }
+	Vector GetLeftControllerPosition() { return m_leftControllerPosition; }
+	Vector GetLeftControllerAngles() { return m_leftControllerAngles; }
+
+	bool HasValidRightController() { return m_fRightControllerValid; }
+	Vector GetRightControllerPosition() { return m_rightControllerPosition; }
+	Vector GetRightControllerAngles() { return m_rightControllerAngles; }
 
 	bool HasValidWeaponController();
 	Vector GetWeaponPosition();

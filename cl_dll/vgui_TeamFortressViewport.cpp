@@ -1223,7 +1223,7 @@ void TeamFortressViewport::ShowCommandMenu(int menuIndex)
 	HideVGUIMenu();
 
 	SetCurrentCommandMenu(m_pCommandMenus[menuIndex]);
-	m_flMenuOpenTime = gHUD.m_flTime;
+	m_flMenuOpenTime = gHUD.m_flHUDDrawTime;
 	UpdateCursorState();
 
 	// get command menu parameters
@@ -1251,7 +1251,7 @@ void TeamFortressViewport::InputSignalHideCommandMenu()
 		return;
 
 	// if they've just tapped the command menu key, leave it open
-	if ((m_flMenuOpenTime + 0.3) > gHUD.m_flTime)
+	if ((m_flMenuOpenTime + 0.3) > gHUD.m_flHUDDrawTime)
 		return;
 
 	HideCommandMenu();
@@ -1503,7 +1503,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		}
 	}
 
-	m_flSpectatorPanelLastUpdated = gHUD.m_flTime + 1.0;  // update every seconds
+	m_flSpectatorPanelLastUpdated = gHUD.m_flHUDDrawTime + 1.0;  // update every seconds
 }
 
 //======================================================================
@@ -1982,16 +1982,16 @@ void TeamFortressViewport::paintBackground()
 
 	// See if the Spectator Menu needs to be update
 	if ((g_iUser1 != m_iUser1 || g_iUser2 != m_iUser2) ||
-		(m_flSpectatorPanelLastUpdated < gHUD.m_flTime))
+		(m_flSpectatorPanelLastUpdated < gHUD.m_flHUDDrawTime))
 	{
 		UpdateSpectatorPanel();
 	}
 
 	// Update the Scoreboard, if it's visible
-	if (m_pScoreBoard->isVisible() && (m_flScoreBoardLastUpdated < gHUD.m_flTime))
+	if (m_pScoreBoard->isVisible() && (m_flScoreBoardLastUpdated < gHUD.m_flHUDDrawTime))
 	{
 		m_pScoreBoard->Update();
-		m_flScoreBoardLastUpdated = gHUD.m_flTime + 0.5;
+		m_flScoreBoardLastUpdated = gHUD.m_flHUDDrawTime + 0.5;
 	}
 
 	int extents[4];

@@ -60,7 +60,7 @@ void HistoryResource::AddToHistory(int iType, int iId, int iCount)
 	freeslot->type = iType;
 	freeslot->iId = iId;
 	freeslot->iCount = iCount;
-	freeslot->DisplayTime = gHUD.m_flTime + HISTORY_DRAW_TIME;
+	freeslot->DisplayTime = gHUD.m_flHUDDrawTime + HISTORY_DRAW_TIME;
 }
 
 void HistoryResource::AddToHistory(int iType, const char* szName, int iCount)
@@ -87,7 +87,7 @@ void HistoryResource::AddToHistory(int iType, const char* szName, int iCount)
 	freeslot->iCount = iCount;
 
 	HISTORY_DRAW_TIME = CVAR_GET_FLOAT("hud_drawhistory_time");
-	freeslot->DisplayTime = gHUD.m_flTime + HISTORY_DRAW_TIME;
+	freeslot->DisplayTime = gHUD.m_flHUDDrawTime + HISTORY_DRAW_TIME;
 }
 
 
@@ -111,7 +111,7 @@ int HistoryResource::DrawAmmoHistory(float flTime)
 	{
 		if (rgAmmoHistory[i].type)
 		{
-			rgAmmoHistory[i].DisplayTime = min(rgAmmoHistory[i].DisplayTime, gHUD.m_flTime + HISTORY_DRAW_TIME);
+			rgAmmoHistory[i].DisplayTime = min(rgAmmoHistory[i].DisplayTime, gHUD.m_flHUDDrawTime + HISTORY_DRAW_TIME);
 
 			if (rgAmmoHistory[i].DisplayTime <= flTime)
 			{  // pic drawing time has expired

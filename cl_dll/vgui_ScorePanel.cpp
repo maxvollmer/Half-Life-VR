@@ -666,10 +666,10 @@ void ScorePanel::FillGrid()
 						iTeamColors[g_PlayerExtraInfo[m_iSortedRows[row]].teamnumber % iNumberOfTeamColors][2],
 						196);
 				}
-				else if (m_iSortedRows[row] == m_iLastKilledBy && m_fLastKillTime && m_fLastKillTime > gHUD.m_flTime)
+				else if (m_iSortedRows[row] == m_iLastKilledBy && m_fLastKillTime && m_fLastKillTime > gHUD.m_flHUDDrawTime)
 				{
 					// Killer's name
-					pLabel->setBgColor(255, 0, 0, 255 - ((float)15 * (float)(m_fLastKillTime - gHUD.m_flTime)));
+					pLabel->setBgColor(255, 0, 0, 255 - ((float)15 * (float)(m_fLastKillTime - gHUD.m_flHUDDrawTime)));
 				}
 			}
 
@@ -833,7 +833,7 @@ void ScorePanel::DeathMsg(int killer, int victim)
 	if (victim == m_iPlayerNum || killer == 0)
 	{
 		m_iLastKilledBy = killer ? killer : m_iPlayerNum;
-		m_fLastKillTime = gHUD.m_flTime + 10;  // display who we were killed by for 10 seconds
+		m_fLastKillTime = gHUD.m_flHUDDrawTime + 10;  // display who we were killed by for 10 seconds
 
 		if (killer == m_iPlayerNum)
 			m_iLastKilledBy = m_iPlayerNum;

@@ -102,7 +102,8 @@ void VRSettings::Init()
 	RegisterCVAR("vr_world_scale", "1");
 	RegisterCVAR("vr_world_z_strech", "1");
 	RegisterCVAR("vr_xenjumpthingies_teleporteronly", "0");
-	RegisterCVAR("vr_multipass_mode", "0");
+	RegisterCVAR("vr_displaylist_fps", "60");
+	RegisterCVAR("vr_displaylist_synced", "0");
 	RegisterCVAR("vr_min_fingercurl_for_grab", "70");
 	RegisterCVAR("vr_autocrouch_enabled", "1");
 	RegisterCVAR("vr_tankcontrols", "2");
@@ -173,7 +174,11 @@ bool VRSettings::WasAnyCVARChanged()
 void VRSettings::CheckCVARsForChanges()
 {
 	// make sure these are always properly set
-	gEngfuncs.pfnClientCmd("fps_max 90");
+	float fps_max = CVAR_GET_FLOAT("fps_max");
+	if (fps_max < 90)
+	{
+		gEngfuncs.pfnClientCmd("fps_max 90");
+	}
 	gEngfuncs.pfnClientCmd("fps_override 1");
 	gEngfuncs.pfnClientCmd("gl_vsync 0");
 	gEngfuncs.pfnClientCmd("default_fov 180");

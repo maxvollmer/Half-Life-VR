@@ -71,7 +71,7 @@ int CHudMenu::Draw(float flTime)
 	// check for if menu is set to disappear
 	if (m_flShutoffTime > 0)
 	{
-		if (m_flShutoffTime <= gHUD.m_flTime)
+		if (m_flShutoffTime <= gHUD.m_flHUDDrawTime)
 		{  // times up, shutoff
 			m_fMenuDisplayed = 0;
 			m_iFlags &= ~HUD_ACTIVE;
@@ -147,7 +147,7 @@ int CHudMenu::MsgFunc_ShowMenu(const char* pszName, int iSize, void* pbuf)
 	int NeedMore = READ_BYTE();
 
 	if (DisplayTime > 0)
-		m_flShutoffTime = DisplayTime + gHUD.m_flTime;
+		m_flShutoffTime = DisplayTime + gHUD.m_flHUDDrawTime;
 	else
 		m_flShutoffTime = -1;
 

@@ -1544,7 +1544,7 @@ public:
 		setVisible(true);
 
 		// Note the open time, so we can delay input for a bit
-		m_flOpenTime = gHUD.m_flTime;
+		m_flOpenTime = gHUD.m_flHUDDrawTime;
 	}
 
 	virtual void Close(void)
@@ -1712,7 +1712,7 @@ public:
 		// Has health changed? Flash the health #
 		if (gHUD.m_Health.m_fFade)
 		{
-			gHUD.m_Health.m_fFade -= (gHUD.m_flTimeDelta * 20);
+			gHUD.m_Health.m_fFade -= (gHUD.m_flHUDDrawTimeDelta * 20);
 			if (gHUD.m_Health.m_fFade <= 0)
 			{
 				a = MIN_ALPHA;

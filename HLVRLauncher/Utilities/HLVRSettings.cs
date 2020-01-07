@@ -197,10 +197,9 @@ namespace HLVRLauncher.Utilities
                 { "vr_use_hd_models", Setting.Create( "Use HD models", false ) },
                 { "vr_hd_textures_enabled", Setting.Create( "Use HD textures", false ) },
 
-                { "vr_multipass_mode", Setting.Create( "Multi-pass mode (change this if you encounter performance issues)", 0, new OrderedDictionary<string, string>(){
-                    { "0", "True display list" },
-                    { "1", "Mixed display list" }
-                } ) },
+                { "fps_max", Setting.Create( "VR FPS (actual fps in your headset, sync these with your SteamVR settings)", 90 ) },
+                { "vr_displaylist_fps", Setting.Create( "Engine FPS (for animations and moving objects, keep these as low as possible for best performance)", 25 ) },
+                { "vr_displaylist_synced", Setting.Create( "Sync VR and Engine FPS (fixes model jitter, but poor performance)", false ) },
             } },
 
             { "World customization & scaling", new OrderedDictionary<string, Setting>() {

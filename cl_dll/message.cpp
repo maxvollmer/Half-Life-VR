@@ -326,12 +326,12 @@ int CHudMessage::Draw(float fTime)
 
 	if (m_gameTitleTime > 0)
 	{
-		float localTime = gHUD.m_flTime - m_gameTitleTime;
+		float localTime = gHUD.m_flHUDDrawTime - m_gameTitleTime;
 		float brightness = 0.f;
 
 		// Maybe timer isn't set yet
-		if (m_gameTitleTime > gHUD.m_flTime)
-			m_gameTitleTime = gHUD.m_flTime;
+		if (m_gameTitleTime > gHUD.m_flHUDDrawTime)
+			m_gameTitleTime = gHUD.m_flHUDDrawTime;
 
 		if (localTime > (m_pGameTitle->fadein + m_pGameTitle->holdtime + m_pGameTitle->fadeout))
 			m_gameTitleTime = 0;
@@ -363,8 +363,8 @@ int CHudMessage::Draw(float fTime)
 		if (m_pMessages[i])
 		{
 			pMessage = m_pMessages[i];
-			if (m_startTime[i] > gHUD.m_flTime)
-				m_startTime[i] = gHUD.m_flTime + m_parms.time - m_startTime[i] + 0.2;  // Server takes 0.2 seconds to spawn, adjust for this
+			if (m_startTime[i] > gHUD.m_flHUDDrawTime)
+				m_startTime[i] = gHUD.m_flHUDDrawTime + m_parms.time - m_startTime[i] + 0.2;  // Server takes 0.2 seconds to spawn, adjust for this
 		}
 	}
 
@@ -409,7 +409,7 @@ int CHudMessage::Draw(float fTime)
 	}
 
 	// Remember the time -- to fix up level transitions
-	m_parms.time = gHUD.m_flTime;
+	m_parms.time = gHUD.m_flHUDDrawTime;
 	// Don't call until we get another message
 	if (!drawn)
 		m_iFlags &= ~HUD_ACTIVE;
@@ -489,9 +489,9 @@ int CHudMessage::MsgFunc_HudText(const char* pszName, int iSize, void* pbuf)
 
 	char* pString = READ_STRING();
 
-	MessageAdd(pString, gHUD.m_flTime);
+	MessageAdd(pString, gHUD.m_flHUDDrawTime);
 	// Remember the time -- to fix up level transitions
-	m_parms.time = gHUD.m_flTime;
+	m_parms.time = gHUD.m_flHUDDrawTime;
 
 	// Turn on drawing
 	if (!(m_iFlags & HUD_ACTIVE))
@@ -506,7 +506,7 @@ int CHudMessage::MsgFunc_GameTitle(const char* pszName, int iSize, void* pbuf)
 	m_pGameTitle = TextMessageGet("GAMETITLE");
 	if (m_pGameTitle != nullptr)
 	{
-		m_gameTitleTime = gHUD.m_flTime;
+		m_gameTitleTime = gHUD.m_flHUDDrawTime;
 
 		// Turn on drawing
 		if (!(m_iFlags & HUD_ACTIVE))
@@ -518,7 +518,7 @@ int CHudMessage::MsgFunc_GameTitle(const char* pszName, int iSize, void* pbuf)
 
 void CHudMessage::MessageAdd(client_textmessage_t* newMessage)
 {
-	m_parms.time = gHUD.m_flTime;
+	m_parms.time = gHUD.m_flHUDDrawTime;
 
 	// Turn on drawing
 	if (!(m_iFlags & HUD_ACTIVE))
@@ -529,7 +529,7 @@ void CHudMessage::MessageAdd(client_textmessage_t* newMessage)
 		if (!m_pMessages[i])
 		{
 			m_pMessages[i] = newMessage;
-			m_startTime[i] = gHUD.m_flTime;
+			m_startTime[i] = gHUD.m_flHUDDrawTime;
 			return;
 		}
 	}
