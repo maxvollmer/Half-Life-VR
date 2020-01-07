@@ -1,3 +1,11 @@
+0.6.3-beta
+* Fixed jitter bugs on hand and weapon models
+* Fixed glitchy finger tracking
+* Fixed left hand model being slightly offset
+* Fixed controllers being wrongly switched in left hand mode
+* Fixed ammo-pickup bug
+* Reworked render cycle and greatly improved performance
+
 0.6.2-beta - 2019-12-24
 * No game changes
 * Updated README and released publicly
