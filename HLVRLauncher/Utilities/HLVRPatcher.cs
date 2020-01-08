@@ -21,24 +21,20 @@ namespace HLVRLauncher.Utilities
 
         internal bool IsUnpatching { get; private set; } = false;
 
-        private FileStream opengl32LockStream = null;
         private Process hlProcess = null;
 
         public void Initialize()
         {
             try
             {
-                if (File.Exists(HLVRPaths.HLOpengl32dll) && FilesAreEqual(HLVRPaths.VROpengl32dll, HLVRPaths.HLOpengl32dll)
-                    && File.Exists(HLVRPaths.HLOpenvr_apidll) && FilesAreEqual(HLVRPaths.VROpenvr_apidll, HLVRPaths.HLOpenvr_apidll)
-                    && File.Exists(HLVRPaths.HLEasyHook32dll) && FilesAreEqual(HLVRPaths.VREasyHook32dll, HLVRPaths.HLEasyHook32dll))
-                {
-                    opengl32LockStream = new FileStream(HLVRPaths.HLOpengl32dll, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                }
+                if (File.Exists(HLVRPaths.HLOpenvr_apidll) && !FilesAreEqual(HLVRPaths.VROpenvr_apidll, HLVRPaths.HLOpenvr_apidll))
+                    DeleteDLL(HLVRPaths.HLOpenvr_apidll, true);
+
+                if (File.Exists(HLVRPaths.HLEasyHook32dll) && !FilesAreEqual(HLVRPaths.VREasyHook32dll, HLVRPaths.HLEasyHook32dll))
+                    DeleteDLL(HLVRPaths.HLEasyHook32dll, true);
             }
             catch (Exception)
             {
-                opengl32LockStream = null;
-                DeleteDLL(HLVRPaths.HLOpengl32dll, false);
                 DeleteDLL(HLVRPaths.HLOpenvr_apidll, true);
                 DeleteDLL(HLVRPaths.HLEasyHook32dll, true);
             }
@@ -58,20 +54,12 @@ namespace HLVRLauncher.Utilities
                 {
                     try
                     {
-                        CopyDLL(HLVRPaths.VROpengl32dll, HLVRPaths.HLOpengl32dll, false);
                         CopyDLL(HLVRPaths.VROpenvr_apidll, HLVRPaths.HLOpenvr_apidll, true);
                         CopyDLL(HLVRPaths.VREasyHook32dll, HLVRPaths.HLEasyHook32dll, true);
-                        opengl32LockStream = new FileStream(HLVRPaths.HLOpengl32dll, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     }
                     catch (Exception e)
                     {
                         MessageBox.Show($"Unable to patch Half-Life:\n {e}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        if (opengl32LockStream != null)
-                        {
-                            opengl32LockStream.Close();
-                        }
-                        opengl32LockStream = null;
-                        DeleteDLL(HLVRPaths.HLOpengl32dll, false);
                         DeleteDLL(HLVRPaths.HLOpenvr_apidll, true);
                         DeleteDLL(HLVRPaths.HLEasyHook32dll, true);
                     }
@@ -102,12 +90,6 @@ namespace HLVRLauncher.Utilities
                 {
                     try
                     {
-                        if (opengl32LockStream != null)
-                        {
-                            opengl32LockStream.Close();
-                        }
-                        opengl32LockStream = null;
-                        DeleteDLL(HLVRPaths.HLOpengl32dll, false);
                         DeleteDLL(HLVRPaths.HLOpenvr_apidll, true);
                         DeleteDLL(HLVRPaths.HLEasyHook32dll, true);
                     }
@@ -242,10 +224,7 @@ namespace HLVRLauncher.Utilities
         {
             lock (patchLock)
             {
-                return File.Exists(HLVRPaths.HLOpengl32dll)
-                && File.Exists(HLVRPaths.HLOpenvr_apidll)
-                && File.Exists(HLVRPaths.HLEasyHook32dll)
-                && opengl32LockStream != null;
+                return File.Exists(HLVRPaths.HLOpenvr_apidll)  && File.Exists(HLVRPaths.HLEasyHook32dll);
             }
         }
 

@@ -930,21 +930,6 @@ namespace
 			angles[ROLL] = atan2(matrix[2][1], matrix[2][2]) * 180.f / M_PI;
 		}
 	}
-	void StudioSetUpTransform(entvars_t* pev, float(*modeltransform)[3][4])
-	{
-		vec3_t angles;
-		vec3_t modelpos;
-
-		VectorCopy(pev->origin, modelpos);
-		VectorCopy(pev->angles, angles);
-
-		angles[PITCH] = -angles[PITCH];
-		AngleMatrix(angles, (*modeltransform));
-
-		(*modeltransform)[0][3] = modelpos[0];
-		(*modeltransform)[1][3] = modelpos[1];
-		(*modeltransform)[2][3] = modelpos[2];
-	}
 	void MatrixCopy(float in[3][4], float out[3][4])
 	{
 		memcpy(out, in, sizeof(float) * 3 * 4);
@@ -976,6 +961,39 @@ namespace
 		out[2][3] = in1[2][0] * in2[0][3] + in1[2][1] * in2[1][3] +
 			in1[2][2] * in2[2][3] + in1[2][3];
 	}
+	void StudioSetUpTransform(entvars_t* pev, float(*modeltransform)[3][4], bool mirrored)
+	{
+		vec3_t angles;
+		vec3_t modelpos;
+
+		VectorCopy(pev->origin, modelpos);
+		VectorCopy(pev->angles, angles);
+
+		angles[PITCH] = -angles[PITCH];
+		AngleMatrix(angles, (*modeltransform));
+
+		// Mirror hand model
+		if (mirrored)
+		{
+			// create mirror matrix
+			static float mirrormatrix[3][4] = {
+				{ 1.f, 0.f, 0.f, 1.f },
+				{ 0.f, -1.f, 0.f, 1.f },
+				{ 0.f, 0.f, 1.f, 1.f },
+			};
+
+			// copy rotation matrix
+			float modeltransform_copy[3][4] = { 0 };
+			MatrixCopy(*modeltransform, modeltransform_copy);
+
+			// concat mirror and rotation matrix
+			ConcatTransforms(modeltransform_copy, mirrormatrix, (*modeltransform));
+		}
+
+		(*modeltransform)[0][3] = modelpos[0];
+		(*modeltransform)[1][3] = modelpos[1];
+		(*modeltransform)[2][3] = modelpos[2];
+	}
 	void VectorTransform(const vec3_t in1, float in2[3][4], vec3_t out)
 	{
 		out[0] = DotProduct(in1, in2[0]) + in2[0][3];
@@ -996,7 +1014,7 @@ namespace
 			return 0;
 
 		float modeltransform[3][4];
-		StudioSetUpTransform(pev, &modeltransform);
+		StudioSetUpTransform(pev, &modeltransform, mirrored);
 
 		int i = 0;
 
@@ -1073,33 +1091,6 @@ namespace
 					modeltransform[j][k] *= pev->scale;
 				}
 			}
-		}
-
-		if (mirrored)
-		{
-			// create mirror matrix
-			float mirrormatrix[3][4] = { 0 };
-
-			mirrormatrix[0][0] = 1;
-			mirrormatrix[0][1] = 0;
-			mirrormatrix[0][2] = 0;
-			mirrormatrix[1][0] = 0;
-			mirrormatrix[1][1] = -1;
-			mirrormatrix[1][2] = 0;
-			mirrormatrix[2][0] = 0;
-			mirrormatrix[2][1] = 0;
-			mirrormatrix[2][2] = 1;
-
-			mirrormatrix[0][3] = 1;
-			mirrormatrix[1][3] = 1;
-			mirrormatrix[2][3] = 1;
-
-			// copy rotation matrix
-			float modeltransform_copy[3][4] = { 0 };
-			MatrixCopy(modeltransform, modeltransform_copy);
-
-			// concat mirror and rotation matrix
-			ConcatTransforms(modeltransform_copy, mirrormatrix, modeltransform);
 		}
 
 		float bonetransform[MAXSTUDIOBONES][3][4];

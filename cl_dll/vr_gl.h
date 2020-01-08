@@ -34,12 +34,6 @@ typedef void(APIENTRY* PFNGLFRAMEBUFFERRENDERBUFFERPROC)(GLenum target, GLenum a
 typedef void(APIENTRY* PFNGLACTIVETEXTUREPROC)(GLenum texture);
 typedef void(APIENTRY* PFNGLGENERATEMIPMAPPROC)(GLenum texture);
 
-typedef void(APIENTRY* PFNHLVRLOCKGLMATRICESPROC)(void);
-typedef void(APIENTRY* PFNHLVRUNLOCKGLMATRICESPROC)(void);
-typedef void(APIENTRY* PFNHLVRSETCONSOLECALLBACKPROC)(void*);
-typedef void(APIENTRY* PFNHLVRSETGENANDDELETETEXTURESCALLBACKPROC)(void*, void*);
-typedef void(APIENTRY* PFNHLVRSETGLBEGINCALLBACKPROC)(void*, void*);
-
 extern PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
 extern PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers;
 
@@ -49,9 +43,6 @@ extern PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer;
 extern PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
 extern PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage;
 extern PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer;
-
-extern PFNHLVRLOCKGLMATRICESPROC hlvrLockGLMatrices;
-extern PFNHLVRUNLOCKGLMATRICESPROC hlvrUnlockGLMatrices;
 
 extern PFNGLACTIVETEXTUREPROC glActiveTexture;
 extern PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
@@ -66,8 +57,6 @@ bool CreateGLTexture(unsigned int* texture, int width, int height);
 bool CreateGLFrameBuffer(unsigned int* framebuffer, unsigned int texture, int width, int height);
 
 bool InitAdditionalGLFunctions();
-bool InitGLMatrixOverrideFunctions();
-bool InitGLCallbackFunctions();
 
 void CaptureCurrentScreenToTexture(GLuint texture);
 

@@ -24,7 +24,6 @@ namespace HLVRLauncher.Utilities
         public static string VREasyHook32dll { get { return Path.Combine(HLVRPaths.VRDirectory, "EasyHook32.dll"); } }
 
 
-        public static string HLOpengl32dll { get { return Path.Combine(HLVRPaths.HLDirectory, "opengl32.dll"); } }
         public static string HLOpenvr_apidll { get { return Path.Combine(HLVRPaths.HLDirectory, "openvr_api.dll"); } }
         public static string HLEasyHook32dll { get { return Path.Combine(HLVRPaths.HLDirectory, "EasyHook32.dll"); } }
 

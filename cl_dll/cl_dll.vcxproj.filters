@@ -47,6 +47,9 @@
     <Filter Include="VR\stuff\Matrices">
       <UniqueIdentifier>{4cad011d-4d4d-464f-b9b3-74283d6386ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\stuff\opengl">
+      <UniqueIdentifier>{83c02c98-e327-4e37-bafe-5ba9f44abc4c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dlls\crossbow.cpp">
@@ -325,9 +328,6 @@
     <ClCompile Include="VRIntermissionAndMenuRenderer.cpp">
       <Filter>VR\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="vr_gl.cpp">
-      <Filter>VR\stuff</Filter>
-    </ClCompile>
     <ClCompile Include="VRTextureHelper.cpp">
       <Filter>VR\helpers</Filter>
     </ClCompile>
@@ -357,6 +357,12 @@
     </ClCompile>
     <ClCompile Include="Matrices.cpp">
       <Filter>VR\stuff\Matrices</Filter>
+    </ClCompile>
+    <ClCompile Include="vr_gl.cpp">
+      <Filter>VR\stuff\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="VROpenGLInterceptor.cpp">
+      <Filter>VR\stuff\opengl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -501,12 +507,6 @@
     <ClInclude Include="LodePNG\lodepng.h">
       <Filter>VR\stuff\LodePNG</Filter>
     </ClInclude>
-    <ClInclude Include="vr_gl.h">
-      <Filter>VR\stuff</Filter>
-    </ClInclude>
-    <ClInclude Include="VRCommon.h">
-      <Filter>VR\stuff</Filter>
-    </ClInclude>
     <ClInclude Include="VRTextureHelper.h">
       <Filter>VR\helpers</Filter>
     </ClInclude>
@@ -536,6 +536,15 @@
     </ClInclude>
     <ClInclude Include="Matrices.h">
       <Filter>VR\stuff\Matrices</Filter>
+    </ClInclude>
+    <ClInclude Include="vr_gl.h">
+      <Filter>VR\stuff\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="VROpenGLInterceptor.h">
+      <Filter>VR\stuff\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="VRCommon.h">
+      <Filter>VR\vr_shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

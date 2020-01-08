@@ -596,6 +596,24 @@ void CStudioModelRenderer::StudioSetUpTransform(int trivial_accept)
 	angles[PITCH] = -angles[PITCH];
 	AngleMatrix(angles, (*m_protationmatrix));
 
+	// Mirror hand model - Max Vollmer, 2017-01-05
+	if (m_isCurrentModelMirrored)
+	{
+		// create mirror matrix
+		static float mirrormatrix[3][4] = {
+			{ 1.f, 0.f, 0.f, 1.f },
+			{ 0.f, -1.f, 0.f, 1.f },
+			{ 0.f, 0.f, 1.f, 1.f },
+		};
+
+		// copy rotation matrix
+		float rotationmatrix_copy[3][4] = { 0 };
+		MatrixCopy(*m_protationmatrix, rotationmatrix_copy);
+
+		// concat mirror and rotation matrix
+		ConcatTransforms(rotationmatrix_copy, mirrormatrix, (*m_protationmatrix));
+	}
+
 	if (!IEngineStudio.IsHardware())
 	{
 		static float viewmatrix[3][4];
@@ -627,24 +645,6 @@ void CStudioModelRenderer::StudioSetUpTransform(int trivial_accept)
 				(*m_paliastransform)[2][i] *= 1.0f / (ZISCALE * 0x10000);
 			}
 		}
-	}
-
-	// Mirror hand model - Max Vollmer, 2017-01-05
-	if (m_isCurrentModelMirrored)
-	{
-		// create mirror matrix
-		static float mirrormatrix[3][4] = {
-			{ 1.f, 0.f, 0.f, 1.f },
-			{ 0.f, -1.f, 0.f, 1.f },
-			{ 0.f, 0.f, 1.f, 1.f },
-		};
-
-		// copy rotation matrix
-		float rotationmatrix_copy[3][4] = { 0 };
-		MatrixCopy(*m_protationmatrix, rotationmatrix_copy);
-
-		// concat mirror and rotation matrix
-		ConcatTransforms(rotationmatrix_copy, mirrormatrix, (*m_protationmatrix));
 	}
 
 	(*m_protationmatrix)[0][3] = modelpos[0];

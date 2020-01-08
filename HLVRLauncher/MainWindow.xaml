@@ -14,23 +14,21 @@
                     <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
 
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="PatchedNotRunningGamePanel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is currently patched. (You risk getting VAC banned if playing any GoldSrc games online while the game is patched!)</TextBlock>
+                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is currently patched.</TextBlock>
                             <Button Click="UnpatchGame_Click" Padding="5" Margin="5">Unpatch game</Button>
                             <Button Click="LaunchMod_Click" Padding="5" Margin="5">Launch Half-Life: VR</Button>
                         </StackPanel>
 
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="PatchedRunningGamePannel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is currently patched. (You risk getting VAC banned if playing any GoldSrc games online while the game is patched!)</TextBlock>
                             <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is currently running. You cannot make any changes until the game has quit.</TextBlock>
                         </StackPanel>
 
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="UnpatchedNotRunningGamePanel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is not patched. You need to patch the game to run Half-Life: VR. (Please note: You risk getting VAC banned if playing any GoldSrc games online while the game is patched!)</TextBlock>
+                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is not patched. You need to patch the game to run Half-Life: VR.</TextBlock>
                             <Button Click="PatchGame_Click" Padding="5" Margin="5">Patch game</Button>
                         </StackPanel>
 
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="UnpatchedRunningGamePannel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is not patched. You need to patch the game to run Half-Life: VR. (Please note: You risk getting VAC banned if playing any GoldSrc games online while the game is patched!)</TextBlock>
                             <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is currently running. You cannot make any changes until the game has quit.</TextBlock>
                         </StackPanel>
 

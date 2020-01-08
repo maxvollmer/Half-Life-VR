@@ -19,11 +19,6 @@ PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D = nullptr;
 PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage = nullptr;
 PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer = nullptr;
 
-PFNHLVRLOCKGLMATRICESPROC hlvrLockGLMatrices = nullptr;
-PFNHLVRUNLOCKGLMATRICESPROC hlvrUnlockGLMatrices = nullptr;
-
-PFNHLVRSETCONSOLECALLBACKPROC hlvrSetConsoleCallback = nullptr;
-
 PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
 PFNGLGENERATEMIPMAPPROC glGenerateMipmap = nullptr;
 
@@ -191,29 +186,6 @@ bool InitAdditionalGLFunctions()
 		glFramebufferRenderbuffer != nullptr &&
 		glActiveTexture != nullptr &&
 		glGenerateMipmap != nullptr;
-}
-
-// Separate for better error messages
-bool InitGLMatrixOverrideFunctions()
-{
-	hlvrLockGLMatrices = (PFNHLVRLOCKGLMATRICESPROC)GetOpenGLFuncAddress("hlvrLockGLMatrices");
-	hlvrUnlockGLMatrices = (PFNHLVRUNLOCKGLMATRICESPROC)GetOpenGLFuncAddress("hlvrUnlockGLMatrices");
-
-	return hlvrLockGLMatrices != nullptr &&
-		hlvrUnlockGLMatrices != nullptr;
-}
-
-bool InitGLCallbackFunctions()
-{
-	hlvrSetConsoleCallback = (PFNHLVRSETCONSOLECALLBACKPROC)GetOpenGLFuncAddress("hlvrSetConsoleCallback");
-
-	if (hlvrSetConsoleCallback != nullptr)
-	{
-		hlvrSetConsoleCallback(&HLVRConsoleCallback);
-		return true;
-	}
-
-	return false;
 }
 
 void CaptureCurrentScreenToTexture(GLuint texture)

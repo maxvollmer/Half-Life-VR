@@ -34,6 +34,7 @@
 
 #include "VRRenderer.h"
 #include "VRHelper.h"
+#include "VROpenGLInterceptor.h"
 
 #define HARDWARE_MODE
 #include "com_model.h"
@@ -122,7 +123,8 @@ void VRRenderer::DrawScreenFade()
 
 void VRRenderer::RenderScreenOverlays()
 {
-	hlvrUnlockGLMatrices();
+	//hlvrUnlockGLMatrices();
+	HLVR_UnlockGLMatrices();
 
 	DrawScreenFade();
 
@@ -298,7 +300,8 @@ void VRRenderer::RenderScreenOverlays()
 
 	glPopAttrib();
 
-	hlvrLockGLMatrices();
+	//hlvrLockGLMatrices();
+	HLVR_LockGLMatrices();
 }
 
 void RenderCube()

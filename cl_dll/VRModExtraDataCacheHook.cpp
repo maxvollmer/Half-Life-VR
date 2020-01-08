@@ -20,10 +20,13 @@ void* MyModExtradata(struct model_s* mod)
 	return Mod_Extradata("EngineHook", nullptr, mod);
 }
 
-void InstallModExtraDataCacheHook()
+namespace
 {
 	HOOK_TRACE_INFO hHook = { nullptr };
+}
 
+void InstallModExtraDataCacheHook()
+{
 	NTSTATUS result = LhInstallHook(
 		IEngineStudio.DONOTUSEMod_ExtradataDONOTUSE,
 		MyModExtradata,
