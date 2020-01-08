@@ -20,6 +20,8 @@ namespace VR
 			static void HandleMoveDown(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleTurnLeft(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleTurnRight(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleTurn45Left(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleTurn45Right(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleTurn90Left(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleTurn90Right(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleTurn180(const vr::InputDigitalActionData_t& data, const std::string& action);

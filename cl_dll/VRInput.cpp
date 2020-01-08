@@ -117,6 +117,8 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "TurnRight", &VR::Input::Movement::HandleTurnRight);
 		RegisterAction("input", "Turn90Left", &VR::Input::Movement::HandleTurn90Left);
 		RegisterAction("input", "Turn90Right", &VR::Input::Movement::HandleTurn90Right);
+		RegisterAction("input", "Turn45Left", &VR::Input::Movement::HandleTurn45Left);
+		RegisterAction("input", "Turn45Right", &VR::Input::Movement::HandleTurn45Right);
 		RegisterAction("input", "Turn180", &VR::Input::Movement::HandleTurn180);
 		RegisterAction("input", "Jump", &VR::Input::Movement::HandleJump);
 		RegisterAction("input", "Crouch", &VR::Input::Movement::HandleCrouch);

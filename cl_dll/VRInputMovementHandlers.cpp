@@ -92,11 +92,27 @@ namespace VR
 			g_vrInput.m_rotateRight = data.bActive && data.bState;
 		}
 
+		void Movement::HandleTurn45Left(const vr::InputDigitalActionData_t& data, const std::string& action)
+		{
+			if (data.bActive && data.bState && data.bChanged)
+			{
+				gVRRenderer.GetHelper()->InstantRotateYaw(45.f);
+			}
+		}
+
+		void Movement::HandleTurn45Right(const vr::InputDigitalActionData_t& data, const std::string& action)
+		{
+			if (data.bActive && data.bState && data.bChanged)
+			{
+				gVRRenderer.GetHelper()->InstantRotateYaw(-45.f);
+			}
+		}
+
 		void Movement::HandleTurn90Left(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
 			if (data.bActive && data.bState && data.bChanged)
 			{
-				gVRRenderer.GetHelper()->InstantRotateYaw(-90.f);
+				gVRRenderer.GetHelper()->InstantRotateYaw(90.f);
 			}
 		}
 
@@ -104,7 +120,7 @@ namespace VR
 		{
 			if (data.bActive && data.bState && data.bChanged)
 			{
-				gVRRenderer.GetHelper()->InstantRotateYaw(90.f);
+				gVRRenderer.GetHelper()->InstantRotateYaw(-90.f);
 			}
 		}
 

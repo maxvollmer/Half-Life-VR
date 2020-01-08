@@ -63,6 +63,16 @@
          "type" : "boolean"
       },
       {
+         "name" : "/actions/input/in/Turn45Left",
+         "requirement" : "optional",
+         "type" : "boolean"
+      },
+      {
+         "name" : "/actions/input/in/Turn45Right",
+         "requirement" : "optional",
+         "type" : "boolean"
+      },
+      {
          "name" : "/actions/input/in/Turn90Left",
          "requirement" : "optional",
          "type" : "boolean"
@@ -239,15 +249,13 @@
       },
       {
          "name": "/actions/input/in/LeftHandSkeleton",
-         "requirement" : "optional",
          "type": "skeleton",
          "skeleton": "/skeleton/hand/left"
       },
       {
          "name": "/actions/input/in/RightHandSkeleton",
-         "requirement" : "optional",
          "type": "skeleton",
-         "skeleton": "/skeleton/hand/right"
+         "skeleton": "/skeleton/hand/left"
       },
       {
          "name" : "/actions/feedback/out/Recoil",
@@ -467,6 +475,8 @@
          "/actions/input/in/ToggleFlashlight" : "Toggle flashlight",
          "/actions/input/in/Turn" : "Turn left/right",
          "/actions/input/in/Turn180" : "Turn 180°",
+         "/actions/input/in/Turn45Left" : "Turn 45° left",
+         "/actions/input/in/Turn45Right" : "Turn 45° right",
          "/actions/input/in/Turn90Left" : "Turn 90° left",
          "/actions/input/in/Turn90Right" : "Turn 90° right",
          "/actions/input/in/TurnLeft" : "Turn left",
