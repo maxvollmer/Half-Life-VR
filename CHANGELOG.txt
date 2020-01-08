@@ -1,4 +1,4 @@
-0.6.3-beta
+0.6.3-beta - 2020-01-08
 * Fixed jitter bugs on hand and weapon models
 * Fixed glitchy finger tracking
 * Fixed left hand model being slightly offset
