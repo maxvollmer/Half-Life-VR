@@ -667,18 +667,45 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	}
 
 	// correct height for ducking and stuff
-	float originalHeight = hlTransform[13];
+	const float originalHeight = hlTransform[13];
 	extern playermove_t* pmove;
-	if (!g_vrInput.IsVRDucking() && pmove && (pmove->flags & FL_DUCKING))
+	if (pmove)
 	{
-		float playerViewPosHeight = m_viewOfs.z - VEC_DUCK_HULL_MIN.z;
-		float newHeight = (std::min)(hlTransform[13], playerViewPosHeight * GetHLToVR().y);
-		m_hmdHeightOffset = newHeight - originalHeight;
-		hlTransform[13] = newHeight;
-	}
-	else
-	{
-		m_hmdHeightOffset = 0.f;
+		cl_entity_t* localPlayer = SaveGetLocalPlayer();
+		float maxPlayerViewPosHeight = originalHeight;
+		if (!g_vrInput.IsVRDucking() && (pmove->flags & FL_DUCKING))
+		{
+			maxPlayerViewPosHeight = (m_viewOfs.z - VEC_DUCK_HULL_MIN.z) * GetHLToVR().y;
+		}
+		else if (localPlayer)
+		{
+			pmtrace_t tr{ 0 };
+			gEngfuncs.pEventAPI->EV_SetTraceHull(2);  // point hull
+			Vector wayup = localPlayer->curstate.origin;
+			wayup.z += 1024.f;
+			gEngfuncs.pEventAPI->EV_PlayerTrace(localPlayer->curstate.origin, wayup, PM_STUDIO_IGNORE | PM_GLASS_IGNORE, -1, &tr);
+			if (!tr.allsolid && tr.fraction < 1.f && tr.fraction > 0.f && !tr.startsolid)
+			{
+				float totalDistance = 1024.f * tr.fraction;
+				if (pmove->flags & FL_DUCKING)
+				{
+					float viewofsToHead = fabs(m_viewOfs.z - VEC_DUCK_HULL_MAX.z);
+					maxPlayerViewPosHeight = (totalDistance - viewofsToHead - VEC_DUCK_HULL_MIN.z) * GetHLToVR().y;
+				}
+				else
+				{
+					float viewofsToHead = fabs(m_viewOfs.z - VEC_HULL_MAX.z);
+					maxPlayerViewPosHeight = (totalDistance - viewofsToHead - VEC_HULL_MIN.z) * GetHLToVR().y;
+				}
+			}
+		}
+
+		if (maxPlayerViewPosHeight < originalHeight)
+		{
+			float newHeight = (std::min)(originalHeight, maxPlayerViewPosHeight);
+			m_hmdHeightOffset = newHeight - originalHeight;
+			hlTransform[13] = newHeight;
+		}
 	}
 
 	if (VRGetSmoothStepsSetting() != 0.f)
