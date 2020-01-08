@@ -517,20 +517,3 @@ bool VRInput::HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, 
 	}
 	return false;
 }
-
-bool VRInput::AreFingersBendForDragging(vr::ETrackedControllerRole controllerRole) const
-{
-	float fingerCurl[5];
-	if (HasSkeletalDataForHand(controllerRole, fingerCurl))
-	{
-		const float minCurlForGrab = CVAR_GET_FLOAT("vr_min_fingercurl_for_grab") * 0.01f;
-		if (fingerCurl[vr::VRFinger_Thumb] > minCurlForGrab)
-		{
-			float total = 0.f;
-			for (int i = 1; i < 5; i++)
-				total += fingerCurl[i];
-			return total > (minCurlForGrab * 4.f);
-		}
-	}
-	return false;
-}

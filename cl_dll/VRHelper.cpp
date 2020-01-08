@@ -922,8 +922,8 @@ void VRHelper::SendPositionUpdateToServer()
 	m_hasReceivedSpawnYaw = false;
 
 	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
-	bool leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand) || g_vrInput.AreFingersBendForDragging(vr::TrackedControllerRole_LeftHand);
-	bool rightDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand) || g_vrInput.AreFingersBendForDragging(vr::TrackedControllerRole_RightHand);
+	bool leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);
+	bool rightDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand);
 
 	VRControllerID leftControllerID;
 	VRControllerID rightControllerID;
@@ -1021,29 +1021,62 @@ void VRHelper::ClearPose(VRPoseType poseType)
 	}
 }
 
+constexpr const int VR_MOVEMENT_ATTACHMENT_HAND = 0;
+constexpr const int VR_MOVEMENT_ATTACHMENT_WEAPON = 1;
+constexpr const int VR_MOVEMENT_ATTACHMENT_HEAD = 2;
+constexpr const int VR_MOVEMENT_ATTACHMENT_POSE = 3;
+
 Vector VRHelper::GetMovementAngles()
 {
-	Vector result;
-	if (m_hasMovementAngles)
+	int attachment = int(CVAR_GET_FLOAT("vr_movement_attachment"));
+
+	if (attachment == VR_MOVEMENT_ATTACHMENT_POSE)
 	{
-		result = m_movementAngles;
-		result.x = 360.f - result.x;
+		if (m_hasMovementAngles)
+		{
+			Vector result = m_movementAngles;
+			result.x = 360.f - result.x;
+			return result;
+		}
+		else
+		{
+			// fallback to hand
+			attachment = VR_MOVEMENT_ATTACHMENT_HAND;
+		}
 	}
-	else if (m_fRightControllerValid)
+
+	if (attachment == VR_MOVEMENT_ATTACHMENT_HAND)
 	{
-		result = m_rightControllerAngles;
-		result.x = 360.f - result.x;
+		if (HasValidHandController())
+		{
+			Vector result = GetHandAngles();
+			result.x = 360.f - result.x;
+			return result;
+		}
+		else
+		{
+			// fallback to weapon
+			attachment = VR_MOVEMENT_ATTACHMENT_WEAPON;
+		}
 	}
-	else if (m_fLeftControllerValid)
+
+	if (attachment == VR_MOVEMENT_ATTACHMENT_WEAPON)
 	{
-		result = m_leftControllerAngles;
-		result.x = 360.f - result.x;
+		if (HasValidWeaponController())
+		{
+			Vector result = GetWeaponAngles();
+			result.x = 360.f - result.x;
+			return result;
+		}
+		else
+		{
+			// fallback to pose
+			attachment = VR_MOVEMENT_ATTACHMENT_WEAPON;
+		}
 	}
-	else
-	{
-		result = GetHLViewAnglesFromVRMatrix(positions.m_mat4RightModelView);
-	}
-	return result;
+
+	// either attachment is head or we fallback to head because no other attachment was available
+	return GetHLViewAnglesFromVRMatrix(positions.m_mat4RightModelView);
 }
 
 void RenderLine(Vector v1, Vector v2, Vector color)

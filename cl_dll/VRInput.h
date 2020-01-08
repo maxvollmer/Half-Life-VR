@@ -67,7 +67,6 @@ public:
 
 	void SetFingerSkeletalData(vr::ETrackedControllerRole controllerRole, const float fingerCurl[vr::VRFinger_Count]);
 	bool HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, float fingerCurl[5]) const;
-	bool AreFingersBendForDragging(vr::ETrackedControllerRole controllerRole) const;
 
 	void FireFeedback(FeedbackType feedback, int damageType, float durationInSeconds, float frequency, float amplitude);
 

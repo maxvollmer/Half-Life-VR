@@ -145,8 +145,6 @@ namespace HLVRLauncher.Utilities
 
                 { "vr_melee_swing_speed", Setting.Create( "Minimum controller speed to trigger melee damage", 150 ) },
 
-                { "vr_min_fingercurl_for_grab", Setting.Create( "How strong fingers need to be bent for triggering grab action (in percent)", 70 ) },
-
                 { "vr_weapon_grenade_mode", Setting.Create( "Grenade throw mode", 0, new OrderedDictionary<string, string>(){ {"0", "Use controller aim and velocity" }, { "1", "Aim with controller, but fly with fixed speed (as in original game)" } } ) },
 
                 { "vr_ledge_pull_mode", Setting.Create( "Ledge pulling", 1, new OrderedDictionary<string, string>(){ {"0", "Disabled" }, { "1", "Move onto ledge when pulling" }, { "2", "Teleport onto ledge instantly when pulling" } } ) },
@@ -154,6 +152,7 @@ namespace HLVRLauncher.Utilities
 
                 { "vr_teleport_attachment", Setting.Create( "Teleporter attachment", 0, new OrderedDictionary<string, string>(){ {"0", "Hand" }, { "1", "Weapon" }, { "2", "Head (HMD)" }, { "3", "SteamVR Input pose" } } ) },
                 { "vr_flashlight_attachment", Setting.Create( "Flashlight attachment", 0 , new OrderedDictionary<string, string>(){ {"0", "Hand" }, { "1", "Weapon" }, { "2", "Head (HMD)" }, { "3", "SteamVR Input pose" } }) },
+                { "vr_movement_attachment", Setting.Create( "Movement attachment", 0 , new OrderedDictionary<string, string>(){ {"0", "Hand" }, { "1", "Weapon" }, { "2", "Head (HMD)" }, { "3", "SteamVR Input pose" } }) },
             } },
 
             { "Ladders", new OrderedDictionary<string, Setting>() {

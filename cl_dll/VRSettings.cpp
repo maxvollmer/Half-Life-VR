@@ -43,6 +43,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_speech_commands_enabled", "0");
 	RegisterCVAR("vr_flashlight_attachment", "0");
 	RegisterCVAR("vr_flashlight_toggle", "0");
+	RegisterCVAR("vr_movement_attachment", "0");
 	RegisterCVAR("vr_force_introtrainride", "1");
 	RegisterCVAR("vr_gauss_scale", "1");
 	RegisterCVAR("vr_gordon_hand_scale", "1");
@@ -104,7 +105,6 @@ void VRSettings::Init()
 	RegisterCVAR("vr_xenjumpthingies_teleporteronly", "0");
 	RegisterCVAR("vr_displaylist_fps", "60");
 	RegisterCVAR("vr_displaylist_synced", "0");
-	RegisterCVAR("vr_min_fingercurl_for_grab", "70");
 	RegisterCVAR("vr_autocrouch_enabled", "1");
 	RegisterCVAR("vr_tankcontrols", "2");
 	RegisterCVAR("vr_tankcontrols_max_distance", "128");
