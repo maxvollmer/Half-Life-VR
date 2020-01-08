@@ -4,9 +4,12 @@
 * Fixed left hand model being slightly offset
 * Fixed controllers being wrongly switched in left hand mode
 * Fixed ammo-pickup bug
+* Fixed some issues with grabbing when finger tracking is enabled
+* Fixed view height issues
 * Fixed 90° snap rotations being inverted
 * Added 45° snap rotation
 * Reworked render cycle and greatly improved performance
+* Added user-friendly config for movement direction
 
 0.6.2-beta - 2019-12-24
 * No game changes
