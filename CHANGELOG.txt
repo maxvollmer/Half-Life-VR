@@ -14,6 +14,7 @@
 * Reworked render cycle and greatly improved performance
 * Added user-friendly config for movement direction
 * Added sanity check for physics data loaded from files
+* Removed now obsolete opengl32.dll
 
 0.6.2-beta - 2019-12-24
 * No game changes

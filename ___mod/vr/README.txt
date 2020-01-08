@@ -5,7 +5,7 @@ github: https://github.com/maxvollmer/Half-Life-VR
 
 VERSION 0.6.3-beta
 
-Release date: 2019-12-24
+Release date: 
 
 Copyright (c) 2017-2019 Max Vollmer (if not otherwise stated)
 
@@ -37,8 +37,6 @@ For a list of third parties see bottom of file.
 
 ===
 This mod is released as is without any guarantee that it works and without any warranties whatsoever. Use on your own risk. If you don't know what you are doing, don't do it.
-
-WARNING: The custom OpenGL32.dll can get you VAC banned.
 
 ===
 NO SUPPORT IS OFFERED WHATSOEVER. Bug reports are welcome, but "it's not working" is not a bug report and will be ignored. The best thing is to upload a video of the issue you want to report.
@@ -101,11 +99,6 @@ Copyright (c) 2010-2019 Daniel Chappuis
 This mod uses EasyHook32
 http://easyhook.github.io/index.html
 Copyright (c) 2009 Christoph Husse & Copyright (c) 2015 Justin Stenning
-
-===
-This mod uses a modified version of GLProxy by Guilherme R. Lampert
-https://github.com/glampert/GLProxy/blob/master/opengl_proxy.cpp
-Copyright (C) 2015 Guilherme R. Lampert
 
 ===
 This mod uses LodePNG version 20190210
