@@ -6,10 +6,14 @@
 * Fixed ammo-pickup bug
 * Fixed some issues with grabbing when finger tracking is enabled
 * Fixed view height issues
+* Fixed fps lock that was set to exactly 90; now is set to at least 90 (for the 144hz folk out there)
+* Fixed VR teleporter wrongly identifying locations in corners or close to walls as invalid teleporter targets
+* Fixed doors and other objects not reacting to players moving into them when walking IRL
 * Fixed 90° snap rotations being inverted
 * Added 45° snap rotation
 * Reworked render cycle and greatly improved performance
 * Added user-friendly config for movement direction
+* Added sanity check for physics data loaded from files
 
 0.6.2-beta - 2019-12-24
 * No game changes
