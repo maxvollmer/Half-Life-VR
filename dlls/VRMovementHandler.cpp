@@ -11,7 +11,7 @@
 
 constexpr const byte VR_MOVEMENT_FAKE_FRAMETIME = 10;
 
-Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to)
+Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to, CBaseEntity* pMovingEntityForTouch /*= nullptr*/)
 {
 	extern playermove_t* pmove;
 	extern void PM_PlayerMove(qboolean server);
@@ -98,6 +98,22 @@ Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to)
 
 	// get new position calculated by movement code
 	Vector result = pmove->origin;
+
+	// handle touched entities!
+	if (pMovingEntityForTouch)
+	{
+		Vector backupVelocity = pMovingEntityForTouch->pev->velocity;
+		pMovingEntityForTouch->pev->velocity = (to - from) * (1000 / (int)VR_MOVEMENT_FAKE_FRAMETIME);
+		for (int i = 0; i < pmove->numtouch; i++)
+		{
+			EHANDLE<CBaseEntity> hTouched = CBaseEntity::SafeInstance<CBaseEntity>(g_engfuncs.pfnPEntityOfEntIndex(pmove->physents[pmove->touchindex[i].ent].info));
+			if (hTouched)
+			{
+				hTouched->Touch(pMovingEntityForTouch);
+			}
+		}
+		pMovingEntityForTouch->pev->velocity = backupVelocity;
+	}
 
 	// restore backup
 	std::memcpy(pmove, &pmovebackup, sizeof(playermove_t));

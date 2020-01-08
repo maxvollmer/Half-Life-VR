@@ -1650,6 +1650,12 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 					throw std::runtime_error{ "expected eof, but didn't reach eof" };
 				}
 
+				const model_t* world = GetWorldBSPModel();
+				if (m_hlWorldModel == nullptr || m_hlWorldModel != world || m_collisionWorld == nullptr || m_bspModelData.empty() || m_bspModelData.count(m_currentMapName) == 0 || m_dynamicBSPModelData.count(m_currentMapName) == 0)
+				{
+					throw std::runtime_error{ "sanity check failed, invalid physics data" };
+				}
+
 				ALERT(at_console, "Successfully loaded physics data from %s\n", physicsMapDataFilePath.c_str());
 				return true;
 			}
@@ -1837,7 +1843,7 @@ bool VRPhysicsHelper::CheckWorld()
 		}
 	}
 
-	return m_hlWorldModel != nullptr && m_hlWorldModel == world && m_collisionWorld != nullptr && !m_bspModelData.empty() && m_bspModelData.count(m_currentMapName) > 0;
+	return m_hlWorldModel != nullptr && m_hlWorldModel == world && m_collisionWorld != nullptr && !m_bspModelData.empty() && m_bspModelData.count(m_currentMapName) > 0 && m_dynamicBSPModelData.count(m_currentMapName) > 0;
 }
 
 void RotateVectorX(Vector& vecToRotate, const float angle)

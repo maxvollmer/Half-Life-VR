@@ -4965,7 +4965,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 
 	// Use movement handler to move to new position (instead of simply teleporting)
 	// Uses pm_shared code. Allows for climbing up stairs and handling all kinds of collisions with level geometry.
-	pev->origin = VRMovementHandler::DoMovement(pev->origin, newOrigin);
+	pev->origin = VRMovementHandler::DoMovement(pev->origin, newOrigin, this);
 
 	// Always add in newOrigin instead of pev->origin, creates much better and smoother results
 	vr_ClientOriginOffset.x = clientOrigin.x - newOrigin.x;
