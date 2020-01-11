@@ -833,14 +833,14 @@ public:
 	static TYPEDESCRIPTION m_SaveData[];
 
 	float m_flRadius = 0.f;
-	float m_flRoomtype = 0.f;
+	int m_iRoomtype = 0;
 };
 
 LINK_ENTITY_TO_CLASS(env_sound, CEnvSound);
 TYPEDESCRIPTION CEnvSound::m_SaveData[] =
 {
 	DEFINE_FIELD(CEnvSound, m_flRadius, FIELD_FLOAT),
-	DEFINE_FIELD(CEnvSound, m_flRoomtype, FIELD_FLOAT),
+	DEFINE_FIELD(CEnvSound, m_iRoomtype, FIELD_INTEGER),
 };
 
 IMPLEMENT_SAVERESTORE(CEnvSound, CBaseEntity);
@@ -855,7 +855,7 @@ void CEnvSound::KeyValue(KeyValueData* pkvd)
 	}
 	if (FStrEq(pkvd->szKeyName, "roomtype"))
 	{
-		m_flRoomtype = atof(pkvd->szValue);
+		m_iRoomtype = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 }
@@ -926,7 +926,7 @@ void CEnvSound::Think(void)
 		// this is the entity currently affecting player, check
 		// for validity
 
-		if (pPlayer->m_flSndRoomtype != 0 && pPlayer->m_flSndRange != 0)
+		if (pPlayer->m_iSndRoomtype != 0 && pPlayer->m_flSndRange != 0)
 		{
 			// we're looking at a valid sound entity affecting
 			// player, make sure it's still valid, update range
@@ -944,7 +944,7 @@ void CEnvSound::Think(void)
 				// NOTE: until we have a new valid room_type to change it to.
 
 				pPlayer->m_flSndRange = 0;
-				pPlayer->m_flSndRoomtype = 0;
+				pPlayer->m_iSndRoomtype = 0;
 				goto env_sound_Think_slow;
 			}
 		}
@@ -965,7 +965,7 @@ void CEnvSound::Think(void)
 		{
 			// new entity is closer to player, so it wins.
 			pPlayer->m_pentSndLast = ENT(pev);
-			pPlayer->m_flSndRoomtype = m_flRoomtype;
+			pPlayer->m_iSndRoomtype = m_iRoomtype;
 			pPlayer->m_flSndRange = flRange;
 
 			// send room_type command to player's server.
@@ -974,8 +974,8 @@ void CEnvSound::Think(void)
 
 			//CLIENT_COMMAND(pentPlayer, "room_type %f", m_flRoomtype);
 
-			MESSAGE_BEGIN(MSG_ONE, SVC_ROOMTYPE, nullptr, pentPlayer);  // use the magic #1 for "one client"
-			WRITE_SHORT((short)m_flRoomtype);                        // sequence number
+			MESSAGE_BEGIN(MSG_ONE, SVC_ROOMTYPE, nullptr, pentPlayer);
+			WRITE_SHORT(m_iRoomtype);                        // sequence number
 			MESSAGE_END();
 
 			// crank up nextthink rate for new active sound entity
