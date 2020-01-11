@@ -272,24 +272,12 @@ void VRHelper::Init()
 	{
 		Exit("Failed to load necessary OpenGL functions. Make sure you have a graphics card that can handle VR and up-to-date drivers, and make sure you are running the game in OpenGL mode.");
 	}
-	/*
-	else if (!InitGLMatrixOverrideFunctions())
-	{
-		Exit("Failed to load custom opengl32.dll. Make sure you launch this game through HLVRLauncher.exe, not the Steam menu. (Tipp: You can add a custom game shortcut to HLVRLauncher.exe in your Steam library.))");
-	}
-	*/
 	else if (!InterceptOpenGLCalls())
 	{
 		Exit("Failed to intercept OpenGL calls. See log for details.");
 	}
 	else
 	{
-		/*
-		if (!InitGLCallbackFunctions())
-		{
-			gEngfuncs.Con_DPrintf("Failed to load callbacks from opengl32.dll. No opengl debug info will be printed, and HD skyboxes are unavailable.\n");
-		}
-		*/
 		vr::EVRInitError vrInitError;
 		vrSystem = vr::VR_Init(&vrInitError, vr::EVRApplicationType::VRApplication_Scene);
 		vrCompositor = vr::VRCompositor();

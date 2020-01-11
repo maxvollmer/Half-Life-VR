@@ -19,9 +19,11 @@ namespace HLVRLauncher.Utilities
         public static string VRDirectory { get; private set; }
 
 
-        public static string VROpengl32dll { get { return Path.Combine(HLVRPaths.VRDirectory, "opengl32.dll"); } }
         public static string VROpenvr_apidll { get { return Path.Combine(HLVRPaths.VRDirectory, "openvr_api.dll"); } }
         public static string VREasyHook32dll { get { return Path.Combine(HLVRPaths.VRDirectory, "EasyHook32.dll"); } }
+        public static string VRServerdll { get { return Path.Combine(Path.Combine(VRDirectory, "dlls"), "vr.dll"); } }
+        public static string VRClientdll { get { return Path.Combine(Path.Combine(VRDirectory, "cl_dlls"), "client.dll"); } }
+        public static string VRLiblistgam { get { return Path.Combine(HLVRPaths.VRDirectory, "liblist.gam"); } }
 
 
         public static string HLOpenvr_apidll { get { return Path.Combine(HLVRPaths.HLDirectory, "openvr_api.dll"); } }
@@ -201,18 +203,11 @@ namespace HLVRLauncher.Utilities
                 throw new CancelAndTerminateAppException();
             }
 
-            string opengl32dll = Path.Combine(VRDirectory, "opengl32.dll");
-            string openvr_apidll = Path.Combine(VRDirectory, "openvr_api.dll");
-            string EasyHook32dll = Path.Combine(VRDirectory, "EasyHook32.dll");
-            string vrdll = Path.Combine(Path.Combine(VRDirectory, "dlls"), "vr.dll");
-            string clientdll = Path.Combine(Path.Combine(VRDirectory, "cl_dlls"), "client.dll");
-            string liblistgam = Path.Combine(VRDirectory, "liblist.gam");
-            if (!File.Exists(opengl32dll)
-                || !File.Exists(openvr_apidll)
-                || !File.Exists(EasyHook32dll)
-                || !File.Exists(vrdll)
-                || !File.Exists(clientdll)
-                || !File.Exists(liblistgam))
+            if (!File.Exists(VROpenvr_apidll)
+                || !File.Exists(VREasyHook32dll)
+                || !File.Exists(VRServerdll)
+                || !File.Exists(VRClientdll)
+                || !File.Exists(VRLiblistgam))
             {
                 MessageBox.Show("Couldn't find necessary mod files. Please reinstall the mod.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 throw new CancelAndTerminateAppException();
@@ -232,14 +227,12 @@ namespace HLVRLauncher.Utilities
 
         private static bool IsModDirectory(string directory)
         {
-            string opengl32dll = Path.Combine(directory, "opengl32.dll");
             string openvr_apidll = Path.Combine(directory, "openvr_api.dll");
             string EasyHook32dll = Path.Combine(directory, "EasyHook32.dll");
             string vrdll = Path.Combine(Path.Combine(directory, "dlls"), "vr.dll");
             string clientdll = Path.Combine(Path.Combine(directory, "cl_dlls"), "client.dll");
             string liblistgam = Path.Combine(directory, "liblist.gam");
-            return File.Exists(opengl32dll)
-                && File.Exists(openvr_apidll)
+            return File.Exists(openvr_apidll)
                 && File.Exists(EasyHook32dll)
                 && File.Exists(vrdll)
                 && File.Exists(clientdll)

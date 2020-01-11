@@ -1,3 +1,8 @@
+0.6.4-beta - 
+* Fixed HLVRLauncher still checking if opengl32.dll is present
+* Fixed wrong default value for engine fps
+* Fixed render bug where objects wouldn't visually move
+
 0.6.3-beta - 2020-01-08
 * Fixed jitter bugs on hand and weapon models
 * Fixed glitchy finger tracking

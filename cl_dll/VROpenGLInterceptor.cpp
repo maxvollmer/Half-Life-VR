@@ -226,6 +226,8 @@ bool InterceptOpenGLCalls()
 		InterceptOpenGLCall("glEnable", MyGLEnable) &&
 		InterceptOpenGLCall("glDisable", MyGLDisable) &&
 		InterceptOpenGLCall("glViewport", MyGLViewport) &&
+		InterceptOpenGLCall("glPushMatrix", MyGLPushMatrix) &&
+		InterceptOpenGLCall("glPopMatrix", MyGLPopMatrix) &&
 		InterceptOpenGLCall("glLoadIdentity", MyGLLoadIdentity) &&
 		InterceptOpenGLCall("glMatrixMode", MyGLMatrixMode) &&
 		InterceptOpenGLCall("glLoadMatrixd", MyGLLoadMatrixd) &&
@@ -239,4 +241,8 @@ bool InterceptOpenGLCalls()
 		InterceptOpenGLCall("glRotated", MyGLRotated) &&
 		InterceptOpenGLCall("glRotatef", MyGLRotatef) &&
 		InterceptOpenGLCall("glFrustum", MyGLFrustum);
+
+
+
+
 }

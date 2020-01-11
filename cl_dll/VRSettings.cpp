@@ -103,7 +103,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_world_scale", "1");
 	RegisterCVAR("vr_world_z_strech", "1");
 	RegisterCVAR("vr_xenjumpthingies_teleporteronly", "0");
-	RegisterCVAR("vr_displaylist_fps", "60");
+	RegisterCVAR("vr_displaylist_fps", "25");
 	RegisterCVAR("vr_displaylist_synced", "0");
 	RegisterCVAR("vr_autocrouch_enabled", "1");
 	RegisterCVAR("vr_tankcontrols", "2");
