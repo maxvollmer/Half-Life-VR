@@ -1,7 +1,12 @@
-0.6.4-beta - 
+0.6.4-beta
 * Fixed HLVRLauncher still checking if opengl32.dll is present
 * Fixed wrong default value for engine fps
 * Fixed render bug where objects wouldn't visually move
+* Renamed third party libraries and patched client.dll to import from vr directory (makes copying dlls to Half-Life directory obsolete)
+* Added FMOD support, including 3d occlusion based on actual map
+* Improved HLVRLauncher interface
+* Added option for HMD offset (vr_headset_offset) to accommodate people of varying body sizes and/or for seated people
+* Added classic mode (unmodified 1998 models and textures)
 
 0.6.3-beta - 2020-01-08
 * Fixed jitter bugs on hand and weapon models

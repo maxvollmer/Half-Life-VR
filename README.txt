@@ -135,6 +135,13 @@ This mod uses dr_wav - v0.11.3 - 2020-01-12
 https://mackron.github.io/dr_wav
 Copyright (c), David Reid - mackron@gmail.com
 
+===
+This mod uses highly customized parts of MetaAudio by LAGonauta based on MetaHook by nagist and MetaRenderer by hzqst
+https://github.com/LAGonauta/MetaAudio
+https://github.com/nagist/metahook
+https://github.com/hzqst/MetaRenderer
+Copyright (c), LAGonauta, nagist, hzqst
+
 
 ===================
 *******************
