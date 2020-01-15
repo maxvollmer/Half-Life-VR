@@ -125,6 +125,16 @@ This mod uses Microsoft.Experimental.Collections
 https://www.nuget.org/packages/Microsoft.Experimental.Collections/
 Copyright (c) 2014-2019 Microsoft Corporation
 
+===
+This mod uses FMOD Core API
+https://fmod.com/resources/documentation-api?version=2.0&page=core-api.html
+Copyright (c), Firelight Technologies Pty, Ltd. 2004-2019.
+
+===
+This mod uses dr_wav - v0.11.3 - 2020-01-12
+https://mackron.github.io/dr_wav
+Copyright (c), David Reid - mackron@gmail.com
+
 
 ===================
 *******************

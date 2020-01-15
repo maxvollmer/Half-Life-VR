@@ -320,6 +320,12 @@ void VRHelper::Init()
 
 	// Set skybox
 	SetSkybox("desert");
+
+	extern bool VRHookSoundFunctions();
+	if (!VRHookSoundFunctions())
+	{
+		gEngfuncs.Con_DPrintf("Failed to hook into engine sound functions for FMOD, falling back to default engine sound system.\n");
+	}
 }
 
 void VRHelper::Exit(const char* lpErrorMessage)
@@ -713,6 +719,11 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 		m_hmdHeightOffset = newHeight - originalHeight;
 		hlTransform[13] = newHeight;
 	}
+
+	// add custom HMD offset (e.g. for seated players)
+	float vr_headset_offset = CVAR_GET_FLOAT("vr_headset_offset");
+	hlTransform[13] += vr_headset_offset / 100.f;
+	m_hmdHeightOffset += vr_headset_offset / 100.f;
 
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
 		return hlTransform;

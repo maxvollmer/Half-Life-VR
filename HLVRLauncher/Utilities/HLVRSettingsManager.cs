@@ -98,28 +98,28 @@ namespace HLVRLauncher.Utilities
             DelayedStoreSettings();
         }
 
-        internal static void SetModSetting(string category, string name, bool value)
+        internal static void SetModSetting(OrderedDictionary<string, OrderedDictionary<string, Setting>> settings, string category, string name, bool value)
         {
-            Settings.ModSettings[category][name].Value = value ? "1" : "0";
+            settings[category][name].Value = value ? "1" : "0";
             DelayedStoreSettings();
         }
 
-        internal static void SetModSetting(string category, string name, string value)
+        internal static void SetModSetting(OrderedDictionary<string, OrderedDictionary<string, Setting>> settings, string category, string name, string value)
         {
-            if (Settings.ModSettings[category][name].AllowedValues.Count > 0)
+            if (settings[category][name].AllowedValues.Count > 0)
             {
-                foreach (var allowedValue in Settings.ModSettings[category][name].AllowedValues)
+                foreach (var allowedValue in settings[category][name].AllowedValues)
                 {
                     if (allowedValue.Value.Equals(value))
                     {
-                        Settings.ModSettings[category][name].Value = allowedValue.Key;
+                        settings[category][name].Value = allowedValue.Key;
                         break;
                     }
                 }
             }
             else
             {
-                Settings.ModSettings[category][name].Value = value;
+                settings[category][name].Value = value;
             }
             DelayedStoreSettings();
         }
@@ -134,7 +134,10 @@ namespace HLVRLauncher.Utilities
         internal static void RestoreModSettings()
         {
             HLVRSettings defaultSettings = new HLVRSettings();
-            Settings.ModSettings = defaultSettings.ModSettings;
+            Settings.InputSettings = defaultSettings.InputSettings;
+            Settings.GraphicsSettings = defaultSettings.GraphicsSettings;
+            Settings.AudioSettings = defaultSettings.AudioSettings;
+            Settings.OtherSettings = defaultSettings.OtherSettings;
             DelayedStoreSettings();
         }
 
@@ -154,6 +157,21 @@ namespace HLVRLauncher.Utilities
             }
         }
 
+        private static void CopyNewSettings(OrderedDictionary<string, OrderedDictionary<string, Setting>> settings, OrderedDictionary<string, OrderedDictionary<string, Setting>> newSettings)
+        {
+            foreach (var settingCategory in settings)
+            {
+                foreach (var settingName in settingCategory.Value.Keys)
+                {
+                    try
+                    {
+                        settingCategory.Value[settingName].Value = newSettings[settingCategory.Key][settingName].Value;
+                    }
+                    catch (KeyNotFoundException) { }
+                }
+            }
+        }
+
         private static bool TryLoadSettings()
         {
             lock (settingsFileLock)
@@ -161,28 +179,11 @@ namespace HLVRLauncher.Utilities
                 try
                 {
                     var newSettings = JsonConvert.DeserializeObject<HLVRSettings>(File.ReadAllText(HLVRPaths.VRSettingsFile));
-                    foreach (var settingCategory in Settings.LauncherSettings)
-                    {
-                        foreach (var settingName in settingCategory.Value.Keys)
-                        {
-                            try
-                            {
-                                settingCategory.Value[settingName].Value = newSettings.LauncherSettings[settingCategory.Key][settingName].Value;
-                            }
-                            catch (KeyNotFoundException) { }
-                        }
-                    }
-                    foreach (var settingCategory in Settings.ModSettings)
-                    {
-                        foreach (var settingName in settingCategory.Value.Keys)
-                        {
-                            try
-                            {
-                                settingCategory.Value[settingName].Value = newSettings.ModSettings[settingCategory.Key][settingName].Value;
-                            }
-                            catch (KeyNotFoundException) { }
-                        }
-                    }
+                    CopyNewSettings(Settings.LauncherSettings, newSettings.LauncherSettings);
+                    CopyNewSettings(Settings.InputSettings, newSettings.AudioSettings);
+                    CopyNewSettings(Settings.GraphicsSettings, newSettings.GraphicsSettings);
+                    CopyNewSettings(Settings.AudioSettings, newSettings.AudioSettings);
+                    CopyNewSettings(Settings.OtherSettings, newSettings.OtherSettings);
                     return true;
                 }
                 catch (Exception)

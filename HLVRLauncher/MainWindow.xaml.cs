@@ -1,22 +1,15 @@
 ﻿using DbMon.NET;
 using HLVRLauncher.Utilities;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace HLVRLauncher
 {
@@ -25,7 +18,7 @@ namespace HLVRLauncher
         private System.Windows.Forms.NotifyIcon notifyIcon;
 
         private readonly SingleProcessEnforcer singleProcessEnforcer = new SingleProcessEnforcer();
-        private readonly HLVRPatcher hlvrPatcher = new HLVRPatcher();
+        private readonly HLVRModLauncher hlvrModLauncher = new HLVRModLauncher();
 
         public bool IsValidProcess
         {
@@ -40,15 +33,18 @@ namespace HLVRLauncher
                 singleProcessEnforcer.ForceSingleProcess();
                 HLVRPaths.Initialize();
                 HLVRSettingsManager.InitSettings();
-                hlvrPatcher.Initialize();
                 IsValidProcess = true;
                 InitializeComponent();
                 HLVRLauncherConfig.Initialize(LauncherConfig);
-                HLVRModConfig.Initialize(ModConfig);
+                HLVRModConfig.Initialize(InputConfig, HLVRSettingsManager.Settings.InputSettings);
+                HLVRModConfig.Initialize(GraphicsConfig, HLVRSettingsManager.Settings.GraphicsSettings);
+                HLVRModConfig.Initialize(AudioConfig, HLVRSettingsManager.Settings.AudioSettings);
+                HLVRModConfig.Initialize(OtherConfig, HLVRSettingsManager.Settings.OtherSettings);
                 InitializeNotifyIcon();
                 UpdateState();
                 HandleInitialSettings();
                 LoadReadme();
+                //new Timer((object state) => UpdateState(), null, 1000, 1000);
             }
             catch (CancelAndTerminateAppException)
             {
@@ -77,10 +73,9 @@ namespace HLVRLauncher
                 WindowState = WindowState.Minimized;
                 OnWindowStateChanged();
             }
-            if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.AutoPatchAndRunMod].IsTrue())
+            if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.AutoRunMod].IsTrue())
             {
-                hlvrPatcher.PatchGame();
-                hlvrPatcher.LaunchMod(false);
+                hlvrModLauncher.LaunchMod(false);
             }
         }
 
@@ -129,58 +124,21 @@ namespace HLVRLauncher
 
         public void UpdateState()
         {
-            PatchedNotRunningGamePanel.Visibility = (!hlvrPatcher.IsPatching && !hlvrPatcher.IsUnpatching && hlvrPatcher.IsGamePatched() && !hlvrPatcher.IsGameRunning()) ? Visibility.Visible : Visibility.Collapsed;
-            PatchedRunningGamePannel.Visibility = (!hlvrPatcher.IsPatching && !hlvrPatcher.IsUnpatching && hlvrPatcher.IsGamePatched() && hlvrPatcher.IsGameRunning()) ? Visibility.Visible : Visibility.Collapsed;
-            UnpatchedNotRunningGamePanel.Visibility = (!hlvrPatcher.IsPatching && !hlvrPatcher.IsUnpatching && !hlvrPatcher.IsGamePatched() && !hlvrPatcher.IsGameRunning()) ? Visibility.Visible : Visibility.Collapsed;
-            UnpatchedRunningGamePannel.Visibility = (!hlvrPatcher.IsPatching && !hlvrPatcher.IsUnpatching && !hlvrPatcher.IsGamePatched() && hlvrPatcher.IsGameRunning()) ? Visibility.Visible : Visibility.Collapsed;
-            PatchingGamePanel.Visibility = (hlvrPatcher.IsPatching) ? Visibility.Visible : Visibility.Collapsed;
-            UnpatchingGamePanel.Visibility = (hlvrPatcher.IsUnpatching) ? Visibility.Visible : Visibility.Collapsed;
+            NotRunningGamePanel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Collapsed : Visibility.Visible;
+            RunningGamePannel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Visible : Visibility.Collapsed;
         }
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            Boolean cancel = false;
-
-            if (IsValidProcess && hlvrPatcher.IsGamePatched())
+            if (IsValidProcess 
+                && hlvrModLauncher.IsGameRunning()
+                && HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.AutoCloseGame].IsTrue())
             {
-                MessageBoxResult result;
-                if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.AutoUnpatchAndCloseGame].IsTrue())
-                {
-                    result = MessageBoxResult.Yes;
-                }
-                else if (hlvrPatcher.IsGameRunning())
-                {
-                    result = MessageBox.Show("Half-Life: VR is still running and Half-Life is still patched. Do you want to quit Half-Life and unpatch the game before exiting? If you chose no, Half-Life will remain patched after Half-Life: VR quit.", "Half-Life: VR is running!", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
-                }
-                else
-                {
-                    result = MessageBox.Show("Half-Life is still patched. Do you want to unpatch the game before exiting? If you chose no, Half-Life will remain patched.", "Half-Life is still patched!", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
-                }
-
-                switch (result)
-                {
-                    case MessageBoxResult.Yes:
-                    case MessageBoxResult.OK:
-                        hlvrPatcher.TerminateGame();
-                        hlvrPatcher.UnpatchGame();
-                        break;
-                    case MessageBoxResult.No:
-                        break;
-                    case MessageBoxResult.Cancel:
-                    case MessageBoxResult.None:
-                    default:
-                        cancel = true;
-                        break;
-                }
+                hlvrModLauncher.TerminateGame();
             }
 
-            e.Cancel = cancel;
-
-            if (!cancel)
-            {
-                singleProcessEnforcer.Dispose();
-                try { if (DebugMonitor.IsStarted) DebugMonitor.Stop(); } catch (Exception) { }
-            }
+            singleProcessEnforcer.Dispose();
+            try { if (DebugMonitor.IsStarted) DebugMonitor.Stop(); } catch (Exception) { }
         }
 
         private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -204,21 +162,9 @@ namespace HLVRLauncher
             }
         }
 
-        private void PatchGame_Click(object sender, RoutedEventArgs e)
-        {
-            hlvrPatcher.PatchGame();
-            UpdateState();
-        }
-
-        private void UnpatchGame_Click(object sender, RoutedEventArgs e)
-        {
-            hlvrPatcher.UnpatchGame();
-            UpdateState();
-        }
-
         private void LaunchMod_Click(object sender, RoutedEventArgs e)
         {
-            hlvrPatcher.LaunchMod(true);
+            hlvrModLauncher.LaunchMod(true);
             UpdateState();
         }
 
@@ -229,10 +175,11 @@ namespace HLVRLauncher
 
         public void RefreshConfigTabs()
         {
-            LauncherConfig.Children.Clear();
             HLVRLauncherConfig.Initialize(LauncherConfig);
-            ModConfig.Children.Clear();
-            HLVRModConfig.Initialize(ModConfig);
+            HLVRModConfig.Initialize(InputConfig, HLVRSettingsManager.Settings.InputSettings);
+            HLVRModConfig.Initialize(GraphicsConfig, HLVRSettingsManager.Settings.GraphicsSettings);
+            HLVRModConfig.Initialize(AudioConfig, HLVRSettingsManager.Settings.AudioSettings);
+            HLVRModConfig.Initialize(OtherConfig, HLVRSettingsManager.Settings.OtherSettings);
         }
 
         private void RestoreDefaultLauncherConfig_Click(object sender, RoutedEventArgs e)

@@ -11,22 +11,17 @@ namespace HLVRLauncher.Utilities
 {
     public class HLVRLauncherConfig
     {
-        private static readonly string MetaHookReleasesURL = "https://github.com/LAGonauta/metahook/releases";
-
         public static readonly string CategoryLauncher = "Launcher";
-        public static readonly string CategoryMetaHook = "MetaHook (Credits: LAGonauta, nagist, hzqst)";
 
         public static readonly string MinimizeToTray = "MinimizeToTray";
         public static readonly string StartMinimized = "StartMinimized";
-        public static readonly string AutoPatchAndRunMod = "AutoPatchAndRunMod";
-        public static readonly string AutoUnpatchAndCloseLauncher = "AutoUnpatchAndCloseLauncher";
-        public static readonly string AutoUnpatchAndCloseGame = "AutoUnpatchAndCloseGame";
-
-        public static readonly string UseMetaHook = "UseMetaHook";
-        public static readonly string MetaHookDoppler = "MetaHookDoppler";
+        public static readonly string AutoRunMod = "AutoRunMod";
+        public static readonly string AutoCloseLauncher = "AutoCloseLauncher";
+        public static readonly string AutoCloseGame = "AutoCloseGame";
 
         public static void Initialize(StackPanel panel)
         {
+            panel.Children.Clear();
             foreach (var category in HLVRSettingsManager.Settings.LauncherSettings)
             {
                 AddCategory(panel, category.Key, category.Value);
@@ -43,28 +38,16 @@ namespace HLVRLauncher.Utilities
 
             AddTitle(categoryPanel, category);
 
-            if (category.Equals(CategoryMetaHook) && !(File.Exists(HLVRPaths.MetaHookExe) && File.Exists(HLVRPaths.MetaHookAudioDLL) && File.Exists(HLVRPaths.MetaHookPluginsLST)))
+            foreach (var setting in settings)
             {
-                AddCheckBox(categoryPanel, category, UseMetaHook, HLVRSettingsManager.Settings.LauncherSettings[CategoryMetaHook][UseMetaHook].Description, false, true);
-                AddMetaHookLink(categoryPanel);
-            }
-            else
-            {
-                foreach (var setting in settings)
+                switch (setting.Value.Type)
                 {
-                    switch (setting.Value.Type)
-                    {
-                        case SettingValueType.BOOLEAN:
-                            AddCheckBox(categoryPanel, category, setting.Key, setting.Value.Description, setting.Value.IsTrue());
-                            break;
-                        default:
-                            AddInput(categoryPanel, category, setting.Key, setting.Value.Description, setting.Value);
-                            break;
-                    }
-                }
-                if (category.Equals(CategoryMetaHook))
-                {
-                    AddMetaHookLink(categoryPanel, true);
+                    case SettingValueType.BOOLEAN:
+                        AddCheckBox(categoryPanel, category, setting.Key, setting.Value.Description, setting.Value.IsTrue());
+                        break;
+                    default:
+                        AddInput(categoryPanel, category, setting.Key, setting.Value.Description, setting.Value);
+                        break;
                 }
             }
 
@@ -177,45 +160,6 @@ namespace HLVRLauncher.Utilities
             }
 
             panel.Children.Add(inputPanel);
-        }
-
-        private static void AddMetaHookLink(StackPanel panel, bool isInstalled = false)
-        {
-            StackPanel inputPanel = new StackPanel()
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(5),
-            };
-
-            if (!isInstalled)
-            {
-                inputPanel.Children.Add(new TextBlock()
-                {
-                    TextWrapping = TextWrapping.NoWrap,
-                    Padding = new Thickness(5),
-                    Margin = new Thickness(5),
-                    Focusable = true,
-                    MinWidth = 150,
-                    Text = "MetaHook is not installed. Get it from here: "
-                });
-            }
-
-            Button downloadbutton = new Button()
-            {
-                Padding = new Thickness(5),
-                Margin = new Thickness(5),
-                Content = isInstalled ? "Go to website" : "Download MetaHook"
-            };
-            downloadbutton.Click += DownloadButton_Click;
-            inputPanel.Children.Add(downloadbutton);
-
-            panel.Children.Add(inputPanel);
-        }
-
-        private static void DownloadButton_Click(object sender, RoutedEventArgs e)
-        {
-            Process.Start(new ProcessStartInfo(MetaHookReleasesURL));
-            e.Handled = true;
         }
     }
 }

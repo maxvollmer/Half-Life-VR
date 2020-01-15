@@ -112,7 +112,16 @@ void VRSettings::Init()
 	RegisterCVAR("vr_make_levers_nonsolid", "1");
 	RegisterCVAR("vr_make_mountedguns_nonsolid", "1");
 	RegisterCVAR("vr_tankcontrols_instant_turn", "0");
-	RegisterCVAR("vr_smooth_steps", "2");
+	RegisterCVAR("vr_smooth_steps", "0");
+	RegisterCVAR("vr_headset_offset", "0");
+	RegisterCVAR("vr_classic_mode", "0");
+
+	RegisterCVAR("vr_use_fmod", "1");
+	RegisterCVAR("vr_fmod_3d_occlusion", "1");
+	RegisterCVAR("vr_fmod_wall_occlusion", "40");
+	RegisterCVAR("vr_fmod_door_occlusion", "30");
+	RegisterCVAR("vr_fmod_water_occlusion", "20");
+	RegisterCVAR("vr_fmod_glass_occlusion", "10");
 
 	RegisterCVAR("vr_speech_commands_follow", "follow-me|come|lets-go");
 	RegisterCVAR("vr_speech_commands_wait", "wait|stop|hold");
@@ -194,6 +203,13 @@ void VRSettings::CheckCVARsForChanges()
 		gEngfuncs.Cvar_SetValue("vr_cheat_enable_healing_exploit", 0.f);
 	}
 
+	// reset HD cvars if classic mode is enabled
+	if (CVAR_GET_FLOAT("vr_classic_mode") != 0.f)
+	{
+		gEngfuncs.Cvar_SetValue("vr_hd_textures_enabled", 0.f);
+		gEngfuncs.Cvar_SetValue("vr_use_hd_models", 0.f);
+	}
+
 	// only check every 100ms
 	auto now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).time_since_epoch().count();
 	if (now < m_nextSettingCheckTime)
@@ -208,6 +224,41 @@ void VRSettings::CheckCVARsForChanges()
 	else if (WasAnyCVARChanged() || m_needsRetry == RetryMode::WRITE)
 	{
 		UpdateJsonFromCVARS();
+	}
+}
+
+void SetCVAR(const char* name, const char* value)
+{
+	gEngfuncs.Cvar_SetValue(const_cast<char*>(name), atof(value));
+	gEngfuncs.pfnClientCmd((std::string(name) + " " + value).data());
+}
+
+void LoadSettingsIntoCvars(nlohmann::json settings, const std::string& settingsGroup)
+{
+	for (auto& settingCategory : settings[settingsGroup])
+	{
+		for (auto& setting : settingCategory.items())
+		{
+			const std::string& cvarname = setting.key();
+			const std::string& value = setting.value()["Value"];
+			SetCVAR(cvarname.data(), value.data());
+		}
+	}
+}
+
+void LoadCvarsIntoSettings(nlohmann::json settings, const std::string& settingsGroup, const std::unordered_map<std::string, std::string>& cvar_cache)
+{
+	for (auto& settingCategory : settings)
+	{
+		for (auto& setting : settingCategory.items())
+		{
+			const std::string& cvarname = setting.key();
+			auto cachedcvar = cvar_cache.find(cvarname);
+			if (cachedcvar != cvar_cache.end())
+			{
+				setting.value()["Value"] = cachedcvar->second;
+			}
+		}
 	}
 }
 
@@ -226,15 +277,10 @@ void VRSettings::UpdateCVARSFromJson()
 			{
 				settingsstream >> settings;
 
-				for (auto& settingCategory : settings["ModSettings"])
-				{
-					for (auto& setting : settingCategory.items())
-					{
-						const std::string& cvarname = setting.key();
-						const std::string& value = setting.value()["Value"];
-						SetCVAR(cvarname.data(), value.data());
-					}
-				}
+				LoadSettingsIntoCvars(settings, "InputSettings");
+				LoadSettingsIntoCvars(settings, "GraphicsSettings");
+				LoadSettingsIntoCvars(settings, "AudioSettings");
+				LoadSettingsIntoCvars(settings, "OtherSettings");
 
 				m_lastSettingsFileChangedTime = std::filesystem::last_write_time(settingsPath).time_since_epoch().count();
 			}
@@ -266,18 +312,10 @@ void VRSettings::UpdateJsonFromCVARS()
 				settingsinstream >> settings;
 				settingsinstream.close();
 
-				for (auto& settingCategory : settings["ModSettings"])
-				{
-					for (auto& setting : settingCategory.items())
-					{
-						const std::string& cvarname = setting.key();
-						auto cachedcvar = m_cvarCache.find(cvarname);
-						if (cachedcvar != m_cvarCache.end())
-						{
-							setting.value()["Value"] = cachedcvar->second;
-						}
-					}
-				}
+				LoadCvarsIntoSettings(settings, "InputSettings", m_cvarCache);
+				LoadCvarsIntoSettings(settings, "GraphicsSettings", m_cvarCache);
+				LoadCvarsIntoSettings(settings, "AudioSettings", m_cvarCache);
+				LoadCvarsIntoSettings(settings, "OtherSettings", m_cvarCache);
 
 				std::ofstream settingsoutstream(settingsPath);
 				if (settingsoutstream)
@@ -308,12 +346,6 @@ void VRSettings::RegisterCVAR(const char* name, const char* value)
 {
 	CVAR_CREATE(name, value, FCVAR_ARCHIVE);
 	m_cvarCache[name] = value;
-}
-
-void VRSettings::SetCVAR(const char* name, const char* value)
-{
-	gEngfuncs.Cvar_SetValue(const_cast<char*>(name), atof(value));
-	gEngfuncs.pfnClientCmd((std::string(name) + " " + value).data());
 }
 
 void VRSettings::InitialUpdateCVARSFromJson()

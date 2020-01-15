@@ -50,7 +50,9 @@ public:
 
 	void InterceptHUDRedraw(float time, int intermission);
 
+	void GetViewOrg(float* origin);
 	void GetViewAngles(float* angles);
+	void GetViewVectors(Vector& forward, Vector& right, Vector& up);
 	Vector GetMovementAngles();
 
 
@@ -109,15 +111,8 @@ public:
 	bool GetLeftControllerAttachment(Vector& out, int attachment);
 	bool GetRightControllerAttachment(Vector& out, int attachment);
 
-	bool GetWeaponControllerAttachment(Vector& out, int attachment)
-	{
-		return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? GetLeftControllerAttachment(out, attachment) : GetRightControllerAttachment(out, attachment);
-	}
-
-	bool GetHandControllerAttachment(Vector& out, int attachment)
-	{
-		return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? GetRightControllerAttachment(out, attachment) : GetLeftControllerAttachment(out, attachment);
-	}
+	bool GetWeaponControllerAttachment(Vector& out, int attachment);
+	bool GetHandControllerAttachment(Vector& out, int attachment);
 
 private:
 	float m_leftControllerAttachments[4][3]{ 0.f };
@@ -172,5 +167,7 @@ private:
 	bool GetHUDHealthOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up);
 	bool GetHUDFlashlightOriginAndOrientation(Vector& origin, Vector& forward, Vector& right, Vector& up);
 };
+
+extern cl_entity_t* SaveGetLocalPlayer();
 
 extern VRRenderer gVRRenderer;

@@ -23,7 +23,6 @@ private:
 	};
 
 	void RegisterCVAR(const char* name, const char* value);
-	void SetCVAR(const char* name, const char* value);
 	void UpdateCVARSFromJson();
 	void UpdateJsonFromCVARS();
 	bool WasSettingsFileChanged();

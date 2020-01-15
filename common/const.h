@@ -583,7 +583,7 @@
 #define CONTENTS_SLIME -4
 #define CONTENTS_LAVA  -5
 #define CONTENTS_SKY   -6
-/* These additional contents constants are defined in bspfile.h
+// These additional contents constants are defined in bspfile.h
 #define	CONTENTS_ORIGIN		-7		// removed at csg time
 #define	CONTENTS_CLIP		-8		// changed to contents_solid
 #define	CONTENTS_CURRENT_0		-9
@@ -594,7 +594,7 @@
 #define	CONTENTS_CURRENT_DOWN	-14
 
 #define CONTENTS_TRANSLUCENT	-15
-*/
+
 #define CONTENTS_LADDER -16
 
 #define CONTENT_FLYFIELD         -17

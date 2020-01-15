@@ -19,15 +19,12 @@ namespace HLVRLauncher.Utilities
         public static string VRDirectory { get; private set; }
 
 
-        public static string VROpenvr_apidll { get { return Path.Combine(HLVRPaths.VRDirectory, "openvr_api.dll"); } }
-        public static string VREasyHook32dll { get { return Path.Combine(HLVRPaths.VRDirectory, "EasyHook32.dll"); } }
+        public static string VROpenvr_apidll { get { return Path.Combine(HLVRPaths.VRDirectory, "opnvrpi.dll"); } }
+        public static string VREasyHook32dll { get { return Path.Combine(HLVRPaths.VRDirectory, "ezhok32.dll"); } }
         public static string VRServerdll { get { return Path.Combine(Path.Combine(VRDirectory, "dlls"), "vr.dll"); } }
         public static string VRClientdll { get { return Path.Combine(Path.Combine(VRDirectory, "cl_dlls"), "client.dll"); } }
         public static string VRLiblistgam { get { return Path.Combine(HLVRPaths.VRDirectory, "liblist.gam"); } }
 
-
-        public static string HLOpenvr_apidll { get { return Path.Combine(HLVRPaths.HLDirectory, "openvr_api.dll"); } }
-        public static string HLEasyHook32dll { get { return Path.Combine(HLVRPaths.HLDirectory, "EasyHook32.dll"); } }
 
         public static string HLExecutable { get { return Path.Combine(HLVRPaths.HLDirectory, "hl.exe"); } }
 
@@ -37,10 +34,6 @@ namespace HLVRLauncher.Utilities
         public static string VRReadme { get { return Path.Combine(HLVRPaths.VRDirectory, "README.txt"); } }
         public static string VRLogFile { get { return Path.Combine(HLVRPaths.VRDirectory, "hlvr_log.txt"); } }
 
-
-        public static string MetaHookExe { get { return Path.Combine(HLVRPaths.HLDirectory, "MetaHook.exe"); } }
-        public static string MetaHookAudioDLL { get { return Path.Combine(Path.Combine(Path.Combine(HLVRPaths.VRDirectory, "metahook"), "plugins"), "Audio.dll"); } }
-        public static string MetaHookPluginsLST { get { return Path.Combine(Path.Combine(Path.Combine(HLVRPaths.VRDirectory, "metahook"), "configs"), "plugins.lst"); } }
 
 
         public static void Initialize()

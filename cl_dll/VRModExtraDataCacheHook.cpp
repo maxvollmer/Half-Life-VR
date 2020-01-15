@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 
-#include <easyhook.h>
+#include "EasyHook/include/easyhook.h"
 
 #include "hud.h"
 #include "cl_util.h"

@@ -644,7 +644,7 @@ void CScientist::HandleAnimEvent(MonsterEvent_t* pEvent)
 //=========================================================
 void CScientist::Spawn(void)
 {
-	m_fIsFemale = rand() % 2 == 1;
+	m_fIsFemale = CVAR_GET_FLOAT("vr_classic_mode") == 0.f && rand() % 2 == 1;
 	Precache();
 
 	SET_MODEL(ENT(pev), m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
@@ -1125,7 +1125,7 @@ LINK_ENTITY_TO_CLASS(monster_scientist_dead, CDeadScientist);
 //
 void CDeadScientist::Spawn()
 {
-	m_fIsFemale = rand() % 2 == 1;
+	m_fIsFemale = CVAR_GET_FLOAT("vr_classic_mode") == 0.f && rand() % 2 == 1;
 	PRECACHE_MODEL(m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
 	SET_MODEL(ENT(pev), m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
 
@@ -1219,7 +1219,7 @@ typedef enum
 //
 void CSittingScientist::Spawn()
 {
-	m_fIsFemale = rand() % 2 == 1;
+	m_fIsFemale = CVAR_GET_FLOAT("vr_classic_mode") == 0.f && rand() % 2 == 1;
 	PRECACHE_MODEL(m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
 	SET_MODEL(ENT(pev), m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
 	Precache();

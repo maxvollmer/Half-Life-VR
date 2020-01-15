@@ -120,8 +120,8 @@ public:
 	int m_afButtonPressed = 0;
 	int m_afButtonReleased = 0;
 
-	edict_t* m_pentSndLast;  // last sound entity to modify player room type
-	float m_flSndRoomtype = 0.f;   // last roomtype set by sound entity
+	EHANDLE<CBaseEntity> m_hSndLast;  // last sound entity to modify player room type
+	float m_iSndRoomtype = 0;   // last roomtype set by sound entity
 	float m_flSndRange = 0.f;      // dist from player to sound entity
 
 	float m_flFallVelocity = 0.f;

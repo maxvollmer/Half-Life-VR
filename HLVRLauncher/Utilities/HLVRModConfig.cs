@@ -8,15 +8,16 @@ namespace HLVRLauncher.Utilities
 {
     public class HLVRModConfig
     {
-        public static void Initialize(StackPanel panel)
+        public static void Initialize(StackPanel panel, OrderedDictionary<string, OrderedDictionary<string, Setting>> settingcategories)
         {
-            foreach (var category in HLVRSettingsManager.Settings.ModSettings)
+            panel.Children.Clear();
+            foreach (var category in settingcategories)
             {
-                AddCategory(panel, category.Key, category.Value);
+                AddCategory(settingcategories, panel, category.Key, category.Value);
             }
         }
 
-        private static void AddCategory(StackPanel panel, string category, OrderedDictionary<string, Setting> settings)
+        private static void AddCategory(OrderedDictionary<string, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, string category, OrderedDictionary<string, Setting> settings)
         {
             StackPanel categoryPanel = new StackPanel()
             {
@@ -30,10 +31,10 @@ namespace HLVRLauncher.Utilities
                 switch (setting.Value.Type)
                 {
                     case SettingValueType.BOOLEAN:
-                        AddCheckBox(categoryPanel, category, setting.Key, setting.Value.Description, setting.Value.IsTrue());
+                        AddCheckBox(settingcategories, categoryPanel, category, setting.Key, setting.Value.Description, setting.Value.IsTrue());
                         break;
                     default:
-                        AddInput(categoryPanel, category, setting.Key, setting.Value.Description, setting.Value);
+                        AddInput(settingcategories, categoryPanel, category, setting.Key, setting.Value.Description, setting.Value);
                         break;
                 }
             }
@@ -41,7 +42,7 @@ namespace HLVRLauncher.Utilities
             panel.Children.Add(categoryPanel);
         }
 
-        private static void AddInput(StackPanel panel, string category, string name, string label, Setting value)
+        private static void AddInput(OrderedDictionary<string, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, string category, string name, string label, Setting value)
         {
             StackPanel inputPanel = new StackPanel()
             {
@@ -74,7 +75,7 @@ namespace HLVRLauncher.Utilities
                 };
                 textbox.TextChanged += (object sender, TextChangedEventArgs e) =>
                 {
-                    HLVRSettingsManager.SetModSetting(category, name, textbox.Text);
+                    HLVRSettingsManager.SetModSetting(settingcategories, category, name, textbox.Text);
                 };
                 inputPanel.Children.Add(textbox);
             }
@@ -100,7 +101,7 @@ namespace HLVRLauncher.Utilities
                 combobox.SelectedIndex = selectedIndex;
                 combobox.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
                 {
-                    HLVRSettingsManager.SetModSetting(category, name, (combobox.SelectedValue as ComboBoxItem).Content as string);
+                    HLVRSettingsManager.SetModSetting(settingcategories, category, name, (combobox.SelectedValue as ComboBoxItem).Content as string);
                 };
                 inputPanel.Children.Add(combobox);
             }
@@ -121,7 +122,7 @@ namespace HLVRLauncher.Utilities
             panel.Children.Add(textBlock);
         }
 
-        private static void AddCheckBox(StackPanel panel, string category, string name, string label, bool isChecked)
+        private static void AddCheckBox(OrderedDictionary<string, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, string category, string name, string label, bool isChecked)
         {
             CheckBox cb = new CheckBox
             {
@@ -132,15 +133,15 @@ namespace HLVRLauncher.Utilities
             };
             cb.Checked += (object sender, RoutedEventArgs e) =>
             {
-                HLVRSettingsManager.SetModSetting(category, name, true);
+                HLVRSettingsManager.SetModSetting(settingcategories, category, name, true);
             };
             cb.Unchecked += (object sender, RoutedEventArgs e) =>
             {
-                HLVRSettingsManager.SetModSetting(category, name, false);
+                HLVRSettingsManager.SetModSetting(settingcategories, category, name, false);
             };
             cb.Indeterminate += (object sender, RoutedEventArgs e) =>
             {
-                HLVRSettingsManager.SetModSetting(category, name, false);
+                HLVRSettingsManager.SetModSetting(settingcategories, category, name, false);
             };
             panel.Children.Add(cb);
         }

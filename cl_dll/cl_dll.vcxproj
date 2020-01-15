@@ -106,11 +106,12 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Debug\client.dll</OutputFile>
       <ImportLibrary>.\Debug\client.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;fmod/lib/x86/fmodL_vc.lib;EasyHook/lib/EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
-      <Command>copy .\Debug\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
+      <Command>ClientDLLIncludeFixer.exe .\Debug\client.dll
+copy .\Debug\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
 copy .\Debug\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
 </Command>
     </PostBuildEvent>
@@ -157,11 +158,12 @@ copy .\Debug\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\client.dll</OutputFile>
       <ImportLibrary>.\Release\client.lib</ImportLibrary>
-      <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;fmod/lib/x86/fmod_vc.lib;EasyHook/lib/EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy .\Release\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
+      <Command>ClientDLLIncludeFixer.exe .\Release\client.dll
+copy .\Release\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
 copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
 </Command>
     </PostBuildEvent>
@@ -227,12 +229,14 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClCompile Include="Matrices.cpp" />
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="message.cpp" />
+    <ClCompile Include="metahook.cpp" />
     <ClCompile Include="overview.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="parsemsg.cpp" />
     <ClCompile Include="saytext.cpp" />
+    <ClCompile Include="snd_hook.cpp" />
     <ClCompile Include="statusbar.cpp" />
     <ClCompile Include="status_icons.cpp" />
     <ClCompile Include="StudioModelRenderer.cpp" />
@@ -254,6 +258,7 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClCompile Include="vgui_TeamFortressViewport.cpp" />
     <ClCompile Include="vgui_teammenu.cpp" />
     <ClCompile Include="view.cpp" />
+    <ClCompile Include="VRClientDLLUnloadHandler.cpp" />
     <ClCompile Include="VRDebugPhysicsRenderer.cpp" />
     <ClCompile Include="VRHUDRenderer.cpp" />
     <ClCompile Include="VRInputHLMenu.cpp" />
@@ -267,6 +272,7 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClCompile Include="VRMODExtradataErrorIntercepter.cpp" />
     <ClCompile Include="VROpenGLInterceptor.cpp" />
     <ClCompile Include="VRSettings.cpp" />
+    <ClCompile Include="VRSound.cpp" />
     <ClCompile Include="VRSpeechListener.cpp" />
     <ClCompile Include="VRTextureHelper.cpp" />
     <ClCompile Include="vr_gl.cpp" />
@@ -293,6 +299,7 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClInclude Include="cl_dll.h" />
     <ClInclude Include="com_weapons.h" />
     <ClInclude Include="demo.h" />
+    <ClInclude Include="dr_wav.h" />
     <ClInclude Include="eventscripts.h" />
     <ClInclude Include="ev_hldm.h" />
     <ClInclude Include="GameStudioModelRenderer.h" />
@@ -307,8 +314,10 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClInclude Include="kbutton.h" />
     <ClInclude Include="LodePNG\lodepng.h" />
     <ClInclude Include="Matrices.h" />
+    <ClInclude Include="metahook.h" />
     <ClInclude Include="overview.h" />
     <ClInclude Include="parsemsg.h" />
+    <ClInclude Include="snd_hook.h" />
     <ClInclude Include="StudioModelRenderer.h" />
     <ClInclude Include="studio_util.h" />
     <ClInclude Include="util.h" />
@@ -329,6 +338,7 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClInclude Include="VRMODExtradataErrorIntercepter.h" />
     <ClInclude Include="VROpenGLInterceptor.h" />
     <ClInclude Include="VRSettings.h" />
+    <ClInclude Include="VRSound.h" />
     <ClInclude Include="VRSpeechListener.h" />
     <ClInclude Include="VRTextureHelper.h" />
     <ClInclude Include="vr_gl.h" />
@@ -337,21 +347,6 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClInclude Include="VRRenderer.h" />
     <ClInclude Include="wrect.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\EasyHookNativePackage.redist.2.7.7097\build\native\EasyHookNativePackage.redist.targets" Condition="Exists('..\packages\EasyHookNativePackage.redist.2.7.7097\build\native\EasyHookNativePackage.redist.targets')" />
-    <Import Project="..\packages\EasyHookNativePackage.2.7.7097\build\native\EasyHookNativePackage.targets" Condition="Exists('..\packages\EasyHookNativePackage.2.7.7097\build\native\EasyHookNativePackage.targets')" />
-    <Import Project="..\packages\EasyHookNativePackage.symbols.2.7.7097\build\native\EasyHookNativePackage.symbols.targets" Condition="Exists('..\packages\EasyHookNativePackage.symbols.2.7.7097\build\native\EasyHookNativePackage.symbols.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\EasyHookNativePackage.redist.2.7.7097\build\native\EasyHookNativePackage.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EasyHookNativePackage.redist.2.7.7097\build\native\EasyHookNativePackage.redist.targets'))" />
-    <Error Condition="!Exists('..\packages\EasyHookNativePackage.2.7.7097\build\native\EasyHookNativePackage.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EasyHookNativePackage.2.7.7097\build\native\EasyHookNativePackage.targets'))" />
-    <Error Condition="!Exists('..\packages\EasyHookNativePackage.symbols.2.7.7097\build\native\EasyHookNativePackage.symbols.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EasyHookNativePackage.symbols.2.7.7097\build\native\EasyHookNativePackage.symbols.targets'))" />
-  </Target>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

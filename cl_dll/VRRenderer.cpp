@@ -104,14 +104,17 @@ void VRRenderer::Frame(double frametime)
 
 	UpdateGameRenderState();
 
+	extern void VRSoundUpdate(bool paused);
 	if (m_isInMenu || !IsInGame())
 	{
 		g_vrInput.ShowHLMenu();
 		vrHelper->PollEvents(false, m_isInMenu);
+		VRSoundUpdate(true);
 	}
 	else
 	{
 		g_vrInput.HideHLMenu();
+		VRSoundUpdate(false);
 	}
 
 	if (!IsInGame() || (m_isInMenu && m_wasMenuJustRendered))
@@ -445,9 +448,29 @@ void VRRenderer::InterceptHUDRedraw(float time, int intermission)
 	m_HUDRedrawWasCalled = true;
 }
 
+void VRRenderer::GetViewOrg(float* origin)
+{
+	vrHelper->GetViewOrg(origin);
+}
+
 void VRRenderer::GetViewAngles(float* angles)
 {
 	vrHelper->GetViewAngles(vr::EVREye::Eye_Right, angles);
+}
+
+void VRRenderer::GetViewVectors(Vector& forward, Vector& right, Vector& up)
+{
+	vrHelper->GetViewVectors(forward, right, up);
+}
+
+bool VRRenderer::GetWeaponControllerAttachment(Vector& out, int attachment)
+{
+	return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? GetLeftControllerAttachment(out, attachment) : GetRightControllerAttachment(out, attachment);
+}
+
+bool VRRenderer::GetHandControllerAttachment(Vector& out, int attachment)
+{
+	return (CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f) ? GetRightControllerAttachment(out, attachment) : GetLeftControllerAttachment(out, attachment);
 }
 
 Vector VRRenderer::GetMovementAngles()
@@ -617,7 +640,7 @@ cl_entity_t* VRRenderer::SaveGetLocalPlayer()
 	}
 }
 
-extern cl_entity_t* SaveGetLocalPlayer()
+cl_entity_t* SaveGetLocalPlayer()
 {
 	return gVRRenderer.SaveGetLocalPlayer();
 }

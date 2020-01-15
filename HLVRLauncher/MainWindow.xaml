@@ -12,32 +12,12 @@
             <TabItem Header="General">
                 <DockPanel>
                     <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
-
-                        <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="PatchedNotRunningGamePanel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is currently patched.</TextBlock>
-                            <Button Click="UnpatchGame_Click" Padding="5" Margin="5">Unpatch game</Button>
+                        <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="NotRunningGamePanel">
                             <Button Click="LaunchMod_Click" Padding="5" Margin="5">Launch Half-Life: VR</Button>
                         </StackPanel>
 
-                        <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="PatchedRunningGamePannel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is currently running. You cannot make any changes until the game has quit.</TextBlock>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="UnpatchedNotRunningGamePanel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is not patched. You need to patch the game to run Half-Life: VR.</TextBlock>
-                            <Button Click="PatchGame_Click" Padding="5" Margin="5">Patch game</Button>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="UnpatchedRunningGamePannel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is currently running. You cannot make any changes until the game has quit.</TextBlock>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="PatchingGamePanel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Patching game, please wait...</TextBlock>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="UnpatchingGamePanel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Unpatching game, please wait...</TextBlock>
+                        <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="RunningGamePannel">
+                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is currently running.</TextBlock>
                         </StackPanel>
                     </StackPanel>
 
@@ -59,11 +39,35 @@
                     </ScrollViewer>
                 </DockPanel>
             </TabItem>
-            <TabItem Header="Mod Config">
+            <TabItem Header="Input &amp; Movement Settings">
                 <DockPanel>
                     <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
-                        <StackPanel Orientation="Vertical" x:Name="ModConfig"/>
+                        <StackPanel Orientation="Vertical" x:Name="InputConfig"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Graphics &amp; Display Settings">
+                <DockPanel>
+                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Vertical" x:Name="GraphicsConfig"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Audio Settings">
+                <DockPanel>
+                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Vertical" x:Name="AudioConfig"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Other Mod Settings">
+                <DockPanel>
+                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Vertical" x:Name="OtherConfig"/>
                     </ScrollViewer>
                 </DockPanel>
             </TabItem>

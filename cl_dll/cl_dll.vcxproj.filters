@@ -50,6 +50,18 @@
     <Filter Include="VR\stuff\opengl">
       <UniqueIdentifier>{83c02c98-e327-4e37-bafe-5ba9f44abc4c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\sound">
+      <UniqueIdentifier>{2258587a-dbbd-435d-912c-fca1051afdd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\metahook">
+      <UniqueIdentifier>{c97c8227-3e19-48d0-9cce-84112d50c015}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\sound\MetaAudio">
+      <UniqueIdentifier>{300abd81-01da-4df5-990e-6099cce3247e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VR\sound\dr_wav">
+      <UniqueIdentifier>{bfecc395-0c6f-45b6-8406-a34247469240}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dlls\crossbow.cpp">
@@ -364,6 +376,18 @@
     <ClCompile Include="VROpenGLInterceptor.cpp">
       <Filter>VR\stuff\opengl</Filter>
     </ClCompile>
+    <ClCompile Include="VRSound.cpp">
+      <Filter>VR\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="metahook.cpp">
+      <Filter>VR\metahook</Filter>
+    </ClCompile>
+    <ClCompile Include="snd_hook.cpp">
+      <Filter>VR\sound\MetaAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="VRClientDLLUnloadHandler.cpp">
+      <Filter>VR\stuff</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parsemsg.h">
@@ -546,8 +570,17 @@
     <ClInclude Include="VRCommon.h">
       <Filter>VR\vr_shared</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <ClInclude Include="VRSound.h">
+      <Filter>VR\sound</Filter>
+    </ClInclude>
+    <ClInclude Include="metahook.h">
+      <Filter>VR\metahook</Filter>
+    </ClInclude>
+    <ClInclude Include="snd_hook.h">
+      <Filter>VR\sound\MetaAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="dr_wav.h">
+      <Filter>VR\sound\dr_wav</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

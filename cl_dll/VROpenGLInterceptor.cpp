@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 
-#include <easyhook.h>
+#include "EasyHook/include/easyhook.h"
 
 #include "hud.h"
 #include "cl_util.h"
@@ -17,7 +17,6 @@ namespace
 
 	bool hlvr_GLMatricesLocked = false;
 	int hlvr_PushCount = 0;
-
 }
 
 void HLVR_LockGLMatrices()
@@ -206,9 +205,7 @@ bool InterceptOpenGLCall(const char* name, void* hookmethod)
 
 	if (FAILED(result))
 	{
-		std::wstring ws(RtlGetLastErrorString());
-		std::string s{ ws.begin(), ws.end() };
-		gEngfuncs.Con_DPrintf("Warning: Failed to install hook for OpenGL method %s: %s\n", name, s.c_str());
+		gEngfuncs.Con_DPrintf("Warning: Failed to install hook for OpenGL method %s: %s\n", name, RtlGetLastErrorString());
 		return false;
 	}
 	else
@@ -241,8 +238,4 @@ bool InterceptOpenGLCalls()
 		InterceptOpenGLCall("glRotated", MyGLRotated) &&
 		InterceptOpenGLCall("glRotatef", MyGLRotatef) &&
 		InterceptOpenGLCall("glFrustum", MyGLFrustum);
-
-
-
-
 }

@@ -72,7 +72,7 @@
     <Compile Include="Utilities\HLVRLauncherConfig.cs" />
     <Compile Include="Utilities\HLVRModConfig.cs" />
     <Compile Include="Utilities\CancelAndTerminateAppException.cs" />
-    <Compile Include="Utilities\HLVRPatcher.cs" />
+    <Compile Include="Utilities\HLVRModLauncher.cs" />
     <Compile Include="Utilities\HLVRPaths.cs" />
     <Compile Include="Utilities\HLVRSettings.cs" />
     <Compile Include="Utilities\HLVRSettingsManager.cs" />

@@ -481,10 +481,16 @@ extern DLL_GLOBAL int g_Language;
 
 #define SPEAKER_START_SILENT 1  // wait for trigger 'on' to start announcements
 
-#define SND_SPAWNING     (1 << 8)  // duplicated in protocol.h we're spawing, used in some cases for ambients
-#define SND_STOP         (1 << 5)  // duplicated in protocol.h stop sound
-#define SND_CHANGE_VOL   (1 << 6)  // duplicated in protocol.h change sound vol
-#define SND_CHANGE_PITCH (1 << 7)  // duplicated in protocol.h change sound pitch
+#define SND_VOLUME			(1 << 0)
+#define SND_ATTENUATION		(1 << 1)
+#define SND_LARGE_INDEX		(1 << 2)
+#define SND_PITCH			(1 << 3)
+#define SND_SENTENCE		(1 << 4)
+
+#define SND_STOP			(1 << 5)  // duplicated in protocol.h stop sound
+#define SND_CHANGE_VOL		(1 << 6)  // duplicated in protocol.h change sound vol
+#define SND_CHANGE_PITCH	(1 << 7)  // duplicated in protocol.h change sound pitch
+#define SND_SPAWNING		(1 << 8)  // duplicated in protocol.h we're spawing, used in some cases for ambients
 
 #define LFO_SQUARE   1
 #define LFO_TRIANGLE 2
