@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <optional>
 
 #include "snd_hook.h"
 #include "VRSound.h"
@@ -26,9 +27,24 @@ constexpr const float DYNAMIC_CHANNEL_MAXDIST = 1000.f;
 
 constexpr const float HL_TO_METERS = 0.0254f;
 
+constexpr const float VR_DEFAULT_FMOD_WALL_OCCLUSION = 0.4f;
+constexpr const float VR_DEFAULT_FMOD_DOOR_OCCLUSION = 0.3f;
+constexpr const float VR_DEFAULT_FMOD_WATER_OCCLUSION = 0.2f;
+constexpr const float VR_DEFAULT_FMOD_GLASS_OCCLUSION = 0.1f;
+
 constexpr const FMOD_VECTOR HL_TO_FMOD(const Vector& vec)
 {
-	return FMOD_VECTOR{ vec.x * HL_TO_METERS, vec.y * HL_TO_METERS, vec.z * HL_TO_METERS };
+/*
+HL.x = forward
+HL.y = right
+HL.z = up
+
+FMOD.x = right
+FMOD.y = up
+FMOD.z = forwards
+*/
+
+	return FMOD_VECTOR{ vec.y * HL_TO_METERS, vec.z * HL_TO_METERS, vec.x * HL_TO_METERS };
 }
 
 struct LetHalfLifeHandleThisSoundException : public std::exception
@@ -47,10 +63,80 @@ struct LetHalfLifeHandleThisSoundException : public std::exception
 
 namespace
 {
+	struct EntnumChannelSoundname
+	{
+		const int entnum;
+		const int channel;
+		const std::string soundname;
+
+		EntnumChannelSoundname() :
+			entnum{ -1 },
+			channel{ -1 }
+		{
+		}
+
+		EntnumChannelSoundname(int entnum, int channel, const std::string& soundname) :
+			entnum{ entnum },
+			channel{ channel },
+			soundname{ soundname }
+		{
+		}
+
+		struct Hash
+		{
+			std::size_t operator()(const EntnumChannelSoundname& e) const
+			{
+				std::hash<int> intHasher;
+				std::hash<std::string> stringHasher;
+				return intHasher(e.entnum) ^ intHasher(e.channel) ^ stringHasher(e.soundname);
+			}
+		};
+
+		struct EqualTo
+		{
+			bool operator()(const EntnumChannelSoundname& e1, const EntnumChannelSoundname& e2) const
+			{
+				return e1.entnum == e2.entnum && e1.channel == e2.channel && e1.soundname == e2.soundname;
+			}
+		};
+	};
+
+	struct SoundInfo
+	{
+		std::string soundfile;
+		float delayed_until = 0.f;
+		float pitch = 0.f;
+		float volume = 0.f;
+		float attenuation = 0.f;
+	};
+
+	struct Sound
+	{
+		FMOD::Channel* fmodChannel;
+		FMOD::Sound* fmodSound;
+		bool startedpaused;
+		float delayed_until = 0.f;				// Only set for sentences
+		std::shared_ptr<Sound> nextSound;			// For sentences
+
+		Sound() :
+			fmodChannel{ nullptr },
+			fmodSound{ nullptr },
+			startedpaused{ false }
+		{}
+
+		Sound(FMOD::Channel* fmodChannel, FMOD::Sound* fmodSound, bool startedpaused) :
+			fmodChannel{ fmodChannel },
+			fmodSound{ fmodSound },
+			startedpaused{ startedpaused }
+		{}
+	};
+
 	FMOD::System* fmodSystem = nullptr;
 	model_t* fmod_currentMapModel = nullptr;
 	FMOD::Geometry* fmod_mapGeometry = nullptr;
 	std::unordered_map<std::string, FMOD::Geometry*> fmod_geometries;
+	std::unordered_map<EntnumChannelSoundname, Sound, EntnumChannelSoundname::Hash, EntnumChannelSoundname::EqualTo> allSounds;
+	bool soundspaused = true;
 }
 
 void ReleaseAllGeometries()
@@ -129,99 +215,121 @@ FMOD::Geometry* CreateFMODGeometryFromHLModel(model_t* model, float directocclus
 	return nullptr;
 }
 
-bool VRInitSound()
+void UpdateGeometries()
 {
-	FMOD_RESULT result = FMOD::System_Create(&fmodSystem);
-	if (result != FMOD_OK)
+	bool occlusion_enabled = CVAR_GET_FLOAT("vr_fmod_3d_occlusion") != 0.f;
+	if (!occlusion_enabled && (fmod_mapGeometry || !fmod_geometries.empty()))
 	{
-		gEngfuncs.Con_DPrintf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
-		return false;
+		ReleaseAllGeometries();
 	}
 
-	fmodSystem->setGeometrySettings(8192 * HL_TO_METERS);
-
-	// TODO: fmodSystem->setAdvancedSettings();
-
-	result = fmodSystem->init(2000, FMOD_INIT_NORMAL, 0);
-	if (result != FMOD_OK)
+	if (occlusion_enabled)
 	{
-		gEngfuncs.Con_DPrintf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
-		return false;
-	}
+		float vr_fmod_wall_occlusion = CVAR_GET_FLOAT("vr_fmod_wall_occlusion") / 100.f;
+		float vr_fmod_door_occlusion = CVAR_GET_FLOAT("vr_fmod_door_occlusion") / 100.f;
+		float vr_fmod_water_occlusion = CVAR_GET_FLOAT("vr_fmod_water_occlusion") / 100.f;
+		float vr_fmod_glass_occlusion = CVAR_GET_FLOAT("vr_fmod_glass_occlusion") / 100.f;
 
-	return true;
+		if (!fmod_mapGeometry && fmod_currentMapModel && !fmod_currentMapModel->needload)
+		{
+			fmod_mapGeometry = CreateFMODGeometryFromHLModel(fmod_currentMapModel, vr_fmod_wall_occlusion, vr_fmod_wall_occlusion);
+			if (!fmod_mapGeometry)
+			{
+				gEngfuncs.Con_DPrintf("Couldn't create FMOD geometry from map data, 3d occlusion is disabled.\n");
+			}
+		}
+
+		extern playermove_t* pmove;
+		if (fmod_mapGeometry && pmove)
+		{
+			std::unordered_set<std::string> audible_modelnames;
+
+			for (int i = 0; i < pmove->numphysent; i++)
+			{
+				// not a brush model
+				if (!pmove->physents[i].model || pmove->physents[i].model->name[0] != '*')
+					continue;
+
+				// default same as level
+				float occlusion = vr_fmod_wall_occlusion;
+
+				// if it moves, use door occlusion (should be a bit less than walls, but is user configurable)
+				if (pmove->physents[i].movetype != MOVETYPE_NONE)
+				{
+					occlusion = vr_fmod_door_occlusion;
+				}
+
+				if (pmove->physents[i].solid == SOLID_NOT)
+				{
+					// not solid, no occlusion
+					if (pmove->physents[i].skin < CONTENTS_LAVA || pmove->physents[i].skin > CONTENTS_WATER)
+						continue;
+
+					switch (pmove->physents[i].skin)
+					{
+					case CONTENTS_WATER:
+						occlusion = vr_fmod_water_occlusion;			// water occludes very little
+						break;
+					case CONTENTS_SLIME:
+						occlusion = vr_fmod_water_occlusion * 1.25f;	// slime occludes a bit more
+						break;
+					case CONTENTS_LAVA:
+						occlusion = vr_fmod_water_occlusion * 1.5f;		// lava occludes even more a bit more
+						break;
+					}
+				}
+				else
+				{
+					if (pmove->physents[i].rendermode != 0)
+					{
+						// if rendermode is set assume glass
+						occlusion = vr_fmod_glass_occlusion;
+					}
+				}
+
+				// no occlusion, skip
+				if (occlusion <= 0.f)
+					continue;
+
+				// sanitize occlusion
+				if (occlusion > 1.f) occlusion = 1.f;
+
+				// returns cached geometry if one already exists
+				FMOD::Geometry* fmod_geometry = CreateFMODGeometryFromHLModel(pmove->physents[i].model, occlusion, occlusion);
+				if (fmod_geometry)
+				{
+					// update position and rotation, and set active (covers cached geometries from entities that left and re-entered audible set)
+
+					FMOD_VECTOR position = HL_TO_FMOD(pmove->physents[i].origin);
+
+					Vector hlforward;
+					Vector hlup;
+					gEngfuncs.pfnAngleVectors(pmove->physents[i].angles, hlforward, nullptr, hlup);
+
+					FMOD_VECTOR forward{ hlforward.x, hlforward.y, hlforward.z };
+					FMOD_VECTOR up{ hlup.x, hlup.y, hlup.z };
+
+					fmod_geometry->setPosition(&position);
+					fmod_geometry->setRotation(&forward, &up);
+					fmod_geometry->setActive(true);
+
+					// keep track of all modelnames that are currently in audible set (we deactivate all other ones)
+					audible_modelnames.insert(pmove->physents[i].model->name);
+				}
+			}
+
+			for (auto& [modelname, fmod_geometry] : fmod_geometries)
+			{
+				// disable all geometries belonging to entities that left the audible set
+				if (fmod_geometry != fmod_mapGeometry
+					&& audible_modelnames.find(modelname) == audible_modelnames.end())
+				{
+					fmod_geometry->setActive(false);
+				}
+			}
+		}
+	}
 }
-
-struct EntnumChannelSoundname
-{
-	const int entnum;
-	const int channel;
-	const std::string soundname;
-
-	EntnumChannelSoundname() :
-		entnum{ -1 },
-		channel{ -1 }
-	{
-	}
-
-	EntnumChannelSoundname(int entnum, int channel, const std::string& soundname) :
-		entnum{ entnum },
-		channel{ channel },
-		soundname{ soundname }
-	{
-	}
-
-	struct Hash
-	{
-		std::size_t operator()(const EntnumChannelSoundname& e) const
-		{
-			std::hash<int> intHasher;
-			std::hash<std::string> stringHasher;
-			return intHasher(e.entnum) ^ intHasher(e.channel) ^ stringHasher(e.soundname);
-		}
-	};
-
-	struct EqualTo
-	{
-		bool operator()(const EntnumChannelSoundname& e1, const EntnumChannelSoundname& e2) const
-		{
-			return e1.entnum == e2.entnum && e1.channel == e2.channel && e1.soundname == e2.soundname;
-		}
-	};
-};
-
-struct SoundModifiers
-{
-	float delayed_until = 0.f;
-	float pitch = 0.f;
-	float volume = 0.f;
-	float attenuation = 0.f;
-};
-
-struct Sound
-{
-	FMOD::Channel* fmodChannel;
-	FMOD::Sound* fmodSound;
-	bool startedpaused;
-	std::shared_ptr<SoundModifiers> modifiers;	// Only set for sentences
-	std::shared_ptr<Sound> nextSound;			// For sentences
-
-	Sound() :
-		fmodChannel{ nullptr },
-		fmodSound{ nullptr },
-		startedpaused{ false }
-	{}
-
-	Sound(FMOD::Channel* fmodChannel, FMOD::Sound* fmodSound, bool startedpaused) :
-		fmodChannel{ fmodChannel },
-		fmodSound{ fmodSound },
-		startedpaused{ startedpaused }
-	{}
-};
-
-std::unordered_map<EntnumChannelSoundname, Sound, EntnumChannelSoundname::Hash, EntnumChannelSoundname::EqualTo> allSounds;
-
-bool soundspaused = false;
 
 
 std::string GetSoundFileForName(const std::string& name)
@@ -242,6 +350,9 @@ bool IsUISound(const std::string& name)
 
 bool IsPlaying(FMOD::Channel* fmodChannel)
 {
+	if (!fmodSystem)
+		return false;
+
 	if (!fmodChannel)
 		return false;
 
@@ -267,6 +378,9 @@ bool IsPlayerAudio(int entnum, float* origin)
 
 void CloseMouth(int entnum)
 {
+	if (!fmodSystem)
+		return;
+
 	cl_entity_t* pent = gEngfuncs.GetEntityByIndex(entnum);
 	if (pent)
 	{
@@ -278,6 +392,9 @@ void CloseMouth(int entnum)
 
 void UpdateMouth(int entnum, Sound& sound)
 {
+	if (!fmodSystem)
+		return;
+
 	cl_entity_t* pent = gEngfuncs.GetEntityByIndex(entnum);
 	if (!pent)
 		return;
@@ -316,6 +433,12 @@ void UpdateMouth(int entnum, Sound& sound)
 
 void UpdateSoundEffects(FMOD::Channel* fmodChannel, int entnum, bool playerUnderWater)
 {
+	if (!fmodSystem)
+		return;
+
+	// TODO: Get current reverb from env_sound (HUD Message!)
+
+	// TODO
 	/*
 	if (underwater)
 	{
@@ -332,6 +455,9 @@ void UpdateSoundEffects(FMOD::Channel* fmodChannel, int entnum, bool playerUnder
 
 void UpdateSoundPosition(FMOD::Channel* fmodChannel, int entnum, float* florigin, bool onlyIfNew)
 {
+	if (!fmodSystem)
+		return;
+
 	FMOD_MODE mode = FMOD_DEFAULT;
 	fmodChannel->getMode(&mode);
 	if (!(mode & FMOD_3D))
@@ -378,6 +504,9 @@ void UpdateSoundPosition(FMOD::Channel* fmodChannel, int entnum, float* florigin
 
 bool ParseLoopPoints(const std::string& filename, FMOD::Sound* fmodSound)
 {
+	if (!fmodSystem)
+		return false;
+
 	drwav wav;
 	if (!drwav_init_file(&wav, filename.data(), nullptr))
 		return false;
@@ -412,130 +541,35 @@ bool ParseLoopPoints(const std::string& filename, FMOD::Sound* fmodSound)
 	return isLooping;
 }
 
-void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float fvol, float attenuation, int flags, int pitch, bool isStaticChannel)
+std::vector<SoundInfo> ParseSentence(const std::string& sentence, float default_pitch, float default_volume, float default_attenuation)
 {
-	if (!sfx)
-		return;
+	std::vector<SoundInfo> soundInfos;
 
-	if (!sfx->name)
-		return;
 
-	if (!sfx->name[0])
-		return;
 
-	if (_stricmp(sfx->name, "common/null.wav") == 0)
-		return;
+	return soundInfos;
+}
 
-	if (_stricmp(sfx->name, "!xxtestxx") == 0)
-	{
-		// This is a "speak" console command, no need to handle this with FMOD
-		gEngfuncs.Con_DPrintf("LetHalfLifeHandleThisSoundException: %s\n", sfx->name);
-		throw LetHalfLifeHandleThisSoundException{};
-	}
+std::shared_ptr<Sound> CreateSound(const std::string& soundfile, bool is2DSound, bool isStaticChannel, int entnum, int entchannel, float* origin, float fpitch, float fvol, float attenuation, bool startpaused)
+{
+	if (!fmodSystem)
+		return nullptr;
 
-	if (fvol > 1.f) fvol = 1.f;
-
-	if (sfx->name[0] == '!' || sfx->name[0] == '#')
-	{
-		// TODO
-		gEngfuncs.Con_DPrintf("TODO: %s\n", sfx->name);
-		return;
-	}
-
-	if (sfx->name[0] == '?' || entchannel == CHAN_STREAM || (entchannel >= CHAN_NETWORKVOICE_BASE && entchannel <= CHAN_NETWORKVOICE_END))
-	{
-		gEngfuncs.Con_DPrintf("LetHalfLifeHandleThisSoundException: %s\n", sfx->name);
-		throw LetHalfLifeHandleThisSoundException{};
-	}
-
-	bool isstreamsound = sfx->name[0] == '*';
-	std::string actualsoundfile = GetSoundFileForName(isstreamsound ? sfx->name + 1 : sfx->name);
-
-	if (IsUISound(actualsoundfile))
-	{
-		// just play and forget
-		gEngfuncs.Con_DPrintf("IsUISound: %s\n", sfx->name);
-		FMOD::Sound* sound = nullptr;
-		fmodSystem->createSound(actualsoundfile.c_str(), FMOD_2D, nullptr, &sound);
-		fmodSystem->playSound(sound, nullptr, false, nullptr);
-		return;
-	}
-
-	float fpitch = pitch / 100.0f;
-
-	auto& entnumChannelSound = allSounds.find(EntnumChannelSoundname{entnum, entchannel, sfx->name});
-	// If sound already exists, modify
-	if (entnumChannelSound != allSounds.end())
-	{
-		// Sound is playing, modify
-		if (entnumChannelSound->second.fmodChannel && IsPlaying(entnumChannelSound->second.fmodChannel))
-		{
-			if (flags & SND_STOP)
-			{
-				gEngfuncs.Con_DPrintf("[%f] SND_STOP:  ent: %i, chan: %i, soundname: %s\n", gVRRenderer.m_clientTime, entnum, entchannel, sfx->name);
-
-				// Stop signal received, stop sound and forget
-				entnumChannelSound->second.fmodChannel->stop();
-				allSounds.erase(entnumChannelSound);
-				CloseMouth(entnum);
-				return;
-			}
-			else if (flags & (SND_CHANGE_VOL | SND_CHANGE_PITCH))
-			{
-				// gEngfuncs.Con_DPrintf("[%f] (SND_CHANGE_VOL | SND_CHANGE_PITCH): ent: %i, chan: %i, oldsound: %s, newsound: %s\n", gVRRenderer.m_clientTime, entnum, entchannel, entnumChannelSound->second.soundname.data(), sfx->name);
-				// Modify signal received, modify sound and return
-
-				if (flags & SND_CHANGE_PITCH)
-					entnumChannelSound->second.fmodChannel->setPitch(fpitch);
-
-				if (flags & SND_CHANGE_VOL)
-					entnumChannelSound->second.fmodChannel->setVolume(fvol);
-
-				UpdateMouth(entnum, entnumChannelSound->second);
-
-				return;
-			}
-		}
-		else
-		{
-			gEngfuncs.Con_DPrintf("[%f] died: ent: %i, chan: %i, soundname: %s\n", gVRRenderer.m_clientTime, entnum, entchannel, sfx->name);
-		}
-
-		// Stop (if playing) and delete old sound
-
-		if (entnumChannelSound->second.fmodChannel)
-			entnumChannelSound->second.fmodChannel->stop();
-		allSounds.erase(entnumChannelSound);
-		CloseMouth(entnum);
-	}
-
-	if (flags & SND_STOP)
-	{
-		// Got stop signal, but already stopped or playing different audio, ignore
-		gEngfuncs.Con_DPrintf("[%f] SND_STOP ignored (already stopped): %s, ent: %i, chan: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel);
-		return;
-	}
-
-	bool is2DSound = attenuation <= 0.f || IsPlayerAudio(entnum, origin);
-	gEngfuncs.Con_DPrintf("[%f] Playing new sound: %s, ent: %i, chan: %i, origin: %f %f %f, fvol: %f, attenuation: %f, flags: %i, pitch: %i, isStatic: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel, origin[0], origin[1], origin[2], fvol, attenuation, flags, pitch, isStaticChannel);
-
-	// If we are here we have a new audiofile that needs to be played, if one already exists, we overwrite it
 	FMOD::Sound* fmodSound = nullptr;
 	FMOD_MODE fmodMode = is2DSound ? FMOD_2D : (FMOD_3D | FMOD_3D_WORLDRELATIVE | FMOD_3D_LINEARROLLOFF);
-	// if (isstreamsound) fmodMode |= FMOD_CREATESTREAM;
 	fmodMode |= FMOD_CREATESAMPLE;
-	FMOD_RESULT result1 = fmodSystem->createSound(actualsoundfile.c_str(), fmodMode, nullptr, &fmodSound);
+	FMOD_RESULT result1 = fmodSystem->createSound(soundfile.c_str(), fmodMode, nullptr, &fmodSound);
 	if (result1 == FMOD_OK && fmodSound != nullptr)
 	{
-		bool isLooping = ParseLoopPoints(actualsoundfile, fmodSound);
+		bool isLooping = ParseLoopPoints(soundfile, fmodSound);
 		if (isLooping)
 		{
 			fmodSound->setMode(fmodMode | FMOD_LOOP_NORMAL);
-			gEngfuncs.Con_DPrintf("[%f] LOOPING: %s, ent: %i, chan: %i, origin: %f %f %f, fvol: %f, attenuation: %f, flags: %i, pitch: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel, origin[0], origin[1], origin[2], fvol, attenuation, flags, pitch);
+			// gEngfuncs.Con_DPrintf("[%f] LOOPING: %s, ent: %i, chan: %i, origin: %f %f %f, fvol: %f, attenuation: %f, flags: %i, pitch: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel, origin[0], origin[1], origin[2], fvol, attenuation, flags, pitch);
 		}
 
 		FMOD::Channel* fmodChannel = nullptr;
-		FMOD_RESULT result2 = fmodSystem->playSound(fmodSound, nullptr, soundspaused, &fmodChannel);
+		FMOD_RESULT result2 = fmodSystem->playSound(fmodSound, nullptr, startpaused, &fmodChannel);
 		if (result2 == FMOD_OK && fmodChannel != nullptr)
 		{
 			if (!is2DSound)
@@ -561,23 +595,158 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 				fmodChannel->set3DMinMaxDistance(1.f, (maxdist / attenuation) * HL_TO_METERS);
 			}
 
-			/*
-			float mindist = 0.f;
-			float maxdist = 0.f;
-			fmodChannel->get3DMinMaxDistance(&mindist, &maxdist);
+			return std::make_shared<Sound>(fmodChannel, fmodSound, soundspaused);
+		}
+	}
 
-			if (attenuation > 0.f)
+	return nullptr;
+}
+
+void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float fvol, float attenuation, int flags, int pitch, bool isStaticChannel)
+{
+	if (!fmodSystem)
+		return;
+
+	if (!sfx)
+		return;
+
+	if (!sfx->name)
+		return;
+
+	if (!sfx->name[0])
+		return;
+
+	if (_stricmp(sfx->name, "common/null.wav") == 0)
+		return;
+
+	if (_stricmp(sfx->name, "!xxtestxx") == 0)
+	{
+		// This is a "speak" console command, no need to handle this with FMOD
+		throw LetHalfLifeHandleThisSoundException{};
+	}
+
+	if (IsUISound(sfx->name))
+	{
+		// Let Half-Life handle UI sounds
+		throw LetHalfLifeHandleThisSoundException{};
+	}
+
+	if ( sfx->name[0] == '?' || /*entchannel == CHAN_STREAM ||*/ (entchannel >= CHAN_NETWORKVOICE_BASE && entchannel <= CHAN_NETWORKVOICE_END))
+	{
+		// Let Half-Life handle streams
+		gEngfuncs.Con_DPrintf("Got a stream sound, falling back to GoldSrc audio.\n");
+		throw LetHalfLifeHandleThisSoundException{};
+	}
+
+	if (sfx->name[0] == '#')
+	{
+		// Let Half-Life handle sentences run by index (we should actually never get these anyways)
+		gEngfuncs.Con_DPrintf("Got a sentence by index, falling back to GoldSrc audio.\n");
+		throw LetHalfLifeHandleThisSoundException{};
+	}
+
+	if (fvol > 1.f) fvol = 1.f;
+	float fpitch = pitch / 100.0f;
+
+	auto& entnumChannelSound = allSounds.find(EntnumChannelSoundname{entnum, entchannel, sfx->name});
+	// If sound already exists, modify
+	if (entnumChannelSound != allSounds.end())
+	{
+		// Sound is playing, modify
+		if (entnumChannelSound->second.fmodChannel && IsPlaying(entnumChannelSound->second.fmodChannel))
+		{
+			if (flags & SND_STOP)
 			{
-				// If entchannel is body and SND_ATTENUATION is set, attenuation is 1/64 of a unit, otherwise it is 1/1000 of a unit
-				if (entchannel == CHAN_BODY && (flags & SND_ATTENUATION))
-					fmodChannel->set3DMinMaxDistance(MIN_SOUND_DIST * HL_TO_METERS, attenuation * 64.f * HL_TO_METERS);
-				else
-					fmodChannel->set3DMinMaxDistance(MIN_SOUND_DIST * HL_TO_METERS, attenuation * 1000.f * HL_TO_METERS);
-			}
-			//fmodChannel->set3DMinMaxDistance(MIN_DIST * HL_TO_METERS, 25.4f);
-			*/
+				// gEngfuncs.Con_DPrintf("[%f] SND_STOP:  ent: %i, chan: %i, soundname: %s\n", gVRRenderer.m_clientTime, entnum, entchannel, sfx->name);
 
-			allSounds[EntnumChannelSoundname{ entnum, entchannel, sfx->name }] = Sound{ fmodChannel, fmodSound, soundspaused };
+				// Stop signal received, stop sound and forget
+				entnumChannelSound->second.fmodChannel->stop();
+				if (entnumChannelSound->second.fmodSound)
+					entnumChannelSound->second.fmodSound->release();
+				allSounds.erase(entnumChannelSound);
+				CloseMouth(entnum);
+				return;
+			}
+			else if (flags & (SND_CHANGE_VOL | SND_CHANGE_PITCH))
+			{
+				// gEngfuncs.Con_DPrintf("[%f] (SND_CHANGE_VOL | SND_CHANGE_PITCH): ent: %i, chan: %i, oldsound: %s, newsound: %s\n", gVRRenderer.m_clientTime, entnum, entchannel, entnumChannelSound->second.soundname.data(), sfx->name);
+				// Modify signal received, modify sound and return
+
+				if (flags & SND_CHANGE_PITCH)
+					entnumChannelSound->second.fmodChannel->setPitch(fpitch);
+
+				if (flags & SND_CHANGE_VOL)
+					entnumChannelSound->second.fmodChannel->setVolume(fvol);
+
+				UpdateMouth(entnum, entnumChannelSound->second);
+
+				return;
+			}
+		}
+		else
+		{
+			// gEngfuncs.Con_DPrintf("[%f] died: ent: %i, chan: %i, soundname: %s\n", gVRRenderer.m_clientTime, entnum, entchannel, sfx->name);
+		}
+
+		// Stop (if playing) and delete old sound
+
+		if (entnumChannelSound->second.fmodChannel)
+			entnumChannelSound->second.fmodChannel->stop();
+		if (entnumChannelSound->second.fmodSound)
+			entnumChannelSound->second.fmodSound->release();
+		allSounds.erase(entnumChannelSound);
+		CloseMouth(entnum);
+	}
+
+	if (flags & SND_STOP)
+	{
+		// Got stop signal, but already stopped or playing different audio, ignore
+		// gEngfuncs.Con_DPrintf("[%f] SND_STOP ignored (already stopped): %s, ent: %i, chan: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel);
+		return;
+	}
+
+	bool is2DSound = attenuation <= 0.f || IsPlayerAudio(entnum, origin);
+	// gEngfuncs.Con_DPrintf("[%f] Playing new sound: %s, ent: %i, chan: %i, origin: %f %f %f, fvol: %f, attenuation: %f, flags: %i, pitch: %i, isStatic: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel, origin[0], origin[1], origin[2], fvol, attenuation, flags, pitch, isStaticChannel);
+
+	// If we are here we have a new audiofile that needs to be played, if one already exists, we overwrite it
+
+	// Sentences come in lists of audiofiles, so we treat normal audio playback as a list of size 1 for easier handling of both cases
+	std::vector<SoundInfo> soundInfos;
+
+	if (sfx->name[0] == '!')
+	{
+		soundInfos = ParseSentence(sfx->name + 1, fpitch, fvol, attenuation);
+	}
+	else
+	{
+		// Sounds that start with '*' are treated by GoldSrc as streaming sounds,
+		// e.g. for "big" audiofiles that couldn't be safely loaded into a 4MB RAM computer back then.
+		// We don't care and just load every file the same, so we simply drop the '*' from the name.
+		std::string actualsoundfile = GetSoundFileForName(sfx->name[0] == '*' ? sfx->name + 1 : sfx->name);
+		soundInfos.push_back(SoundInfo{
+				actualsoundfile,
+				0.f,
+				fpitch,
+				fvol,
+				attenuation
+			});
+	}
+
+	std::shared_ptr<Sound> previousSound;
+	for (auto& soundInfo : soundInfos)
+	{
+		auto sound = CreateSound(soundInfo.soundfile, is2DSound, isStaticChannel, entnum, entchannel, origin, soundInfo.pitch, soundInfo.volume, soundInfo.attenuation, soundspaused || previousSound);
+		if (sound)
+		{
+			if (previousSound)
+			{
+				previousSound->nextSound = sound;
+			}
+			else
+			{
+				allSounds[EntnumChannelSoundname{ entnum, entchannel, sfx->name }] = *sound;
+			}
+			previousSound = sound;
 		}
 	}
 
@@ -587,7 +756,11 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 
 void MyStartDynamicSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float fvol, float attenuation, int flags, int pitch)
 {
-	//gEngfuncs.Con_DPrintf("MyStartDynamicSound\n");
+	if (CVAR_GET_FLOAT("vr_use_fmod") == 0.f)
+	{
+		gAudEngine.S_StartDynamicSound(entnum, entchannel, sfx, origin, fvol, attenuation, flags, pitch);
+		return;
+	}
 
 	try
 	{
@@ -601,7 +774,11 @@ void MyStartDynamicSound(int entnum, int entchannel, sfx_t* sfx, float* origin, 
 
 void MyStartStaticSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float fvol, float attenuation, int flags, int pitch)
 {
-	//gEngfuncs.Con_DPrintf("MyStartStaticSound\n");
+	if (CVAR_GET_FLOAT("vr_use_fmod") == 0.f)
+	{
+		gAudEngine.S_StartStaticSound(entnum, entchannel, sfx, origin, fvol, attenuation, flags, pitch);
+		return;
+	}
 
 	try
 	{
@@ -615,7 +792,7 @@ void MyStartStaticSound(int entnum, int entchannel, sfx_t* sfx, float* origin, f
 
 void MyStopSound(int entnum, int entchannel)
 {
-	gEngfuncs.Con_DPrintf("MyStopSound: %i, %i\n", entnum, entchannel);
+	// gEngfuncs.Con_DPrintf("MyStopSound: %i, %i\n", entnum, entchannel);
 
 	for (auto& [entnumChannelSoundname, sound] : allSounds)
 	{
@@ -623,10 +800,14 @@ void MyStopSound(int entnum, int entchannel)
 		{
 			if (sound.fmodChannel)
 				sound.fmodChannel->stop();
-			sound.nextSound = nullptr;
-			sound.modifiers = nullptr;
+			if (sound.fmodSound)
+				sound.fmodSound->release();
+
 			sound.fmodChannel = nullptr;
 			sound.fmodSound = nullptr;
+			sound.startedpaused = false;
+			sound.delayed_until = 0.f;
+			sound.nextSound = nullptr;
 		}
 	}
 
@@ -635,12 +816,14 @@ void MyStopSound(int entnum, int entchannel)
 
 void MyStopAllSounds(qboolean clear)
 {
-	gEngfuncs.Con_DPrintf("MyStopAllSounds\n");
+	// gEngfuncs.Con_DPrintf("MyStopAllSounds\n");
 
 	for (auto& [entnumChannelSoundname, sound] : allSounds)
 	{
 		if (sound.fmodChannel)
 			sound.fmodChannel->stop();
+		if (sound.fmodSound)
+			sound.fmodSound->release();
 	}
 	allSounds.clear();
 
@@ -676,14 +859,76 @@ FMOD_3D_ATTRIBUTES GetFMODListenerAttributes()
 	 return listenerattributes;
 }
 
-constexpr const float VR_DEFAULT_FMOD_WALL_OCCLUSION = 0.4f;
-constexpr const float VR_DEFAULT_FMOD_DOOR_OCCLUSION = 0.3f;
-constexpr const float VR_DEFAULT_FMOD_WATER_OCCLUSION = 0.2f;
-constexpr const float VR_DEFAULT_FMOD_GLASS_OCCLUSION = 0.1f;
+bool VRInitSound()
+{
+	if (CVAR_GET_FLOAT("vr_use_fmod") == 0.f)
+		return false;
+
+	if (g_soundHookFailed)
+	{
+		gEngfuncs.Con_DPrintf("Can't use FMOD, as hooking into engine sound functions has failed during game initialization.\n");
+		gEngfuncs.Cvar_SetValue("vr_use_fmod", 0.f);
+		return false;
+	}
+
+	if (fmodSystem)
+	{
+		gEngfuncs.Con_DPrintf("Couldn't create FMOD system, it already has been created. This should never happen, and if it did happen, congratulations, you broke reality.\n");
+		return false;
+	}
+
+	// Stop all engine sounds, in case user switches to FMOD during play
+	MyStopAllSounds(1);
+
+	FMOD_RESULT result = FMOD::System_Create(&fmodSystem);
+	if (result != FMOD_OK)
+	{
+		gEngfuncs.Con_DPrintf("Couldn't create FMOD system, falling back to GoldSrc audio. Error %i: %s\n", result, FMOD_ErrorString(result));
+		gEngfuncs.Cvar_SetValue("vr_use_fmod", 0.f);
+		return false;
+	}
+
+	fmodSystem->setGeometrySettings(8192.f * HL_TO_METERS);
+
+	// TODO:
+	// FMOD_ADVANCEDSETTINGS settings;
+	// fmodSystem->setAdvancedSettings(&settings);
+
+	result = fmodSystem->init(2000, FMOD_INIT_NORMAL, 0);
+	if (result != FMOD_OK)
+	{
+		gEngfuncs.Con_DPrintf("Couldn't initialize FMOD system, falling back to GoldSrc audio. Error %i: %s\n", result, FMOD_ErrorString(result));
+		gEngfuncs.Cvar_SetValue("vr_use_fmod", 0.f);
+		return false;
+	}
+
+	return true;
+}
 
 void VRSoundUpdate(bool paused)
 {
-	extern playermove_t* pmove;
+	if (CVAR_GET_FLOAT("vr_use_fmod") == 0.f)
+	{
+		if (fmodSystem)
+		{
+			fmodSystem->release();
+			fmodSystem = nullptr;
+			fmod_currentMapModel = nullptr;
+			fmod_mapGeometry = nullptr;
+			fmod_geometries.clear();
+			allSounds.clear();
+			soundspaused = true;
+		}
+		return;
+	}
+
+	if (!fmodSystem)
+	{
+		VRInitSound();
+	}
+
+	if (!fmodSystem)
+		return;
 
 	if (paused != soundspaused)
 	{
@@ -699,8 +944,7 @@ void VRSoundUpdate(bool paused)
 			if (fmod_currentMapModel)
 			{
 				// If we had a map before, clear all sounds and clear map
-				gEngfuncs.Con_DPrintf("stop and clear all sounds from previous map\n");
-				MyStopAllSounds(1);
+				// MyStopAllSounds(1);
 				ReleaseAllGeometries();
 				fmod_currentMapModel = nullptr;
 			}
@@ -711,7 +955,6 @@ void VRSoundUpdate(bool paused)
 			// new level, stop and clear all sounds
 			if (!fmod_currentMapModel || map->model != fmod_currentMapModel)
 			{
-				gEngfuncs.Con_DPrintf("new map\n");
 				fmod_currentMapModel = map->model;
 			}
 		}
@@ -730,6 +973,7 @@ void VRSoundUpdate(bool paused)
 		fmodSystem->set3DListenerAttributes(0, &listenerattributes.position, &listenerattributes.velocity, &listenerattributes.forward, &listenerattributes.up);
 
 		bool isPlayerUnderWater = false;
+		extern playermove_t* pmove;
 		if (pmove)
 		{
 			Vector playerhead;
@@ -748,115 +992,7 @@ void VRSoundUpdate(bool paused)
 			}
 		}
 
-		bool occlusion_enabled = CVAR_GET_FLOAT("vr_fmod_3d_occlusion") != 0.f;
-		if (!occlusion_enabled && (fmod_mapGeometry || !fmod_geometries.empty()))
-		{
-			ReleaseAllGeometries();
-		}
-
-		if (occlusion_enabled)
-		{
-			float vr_fmod_wall_occlusion = CVAR_GET_FLOAT("vr_fmod_wall_occlusion") / 100.f;
-			float vr_fmod_door_occlusion = CVAR_GET_FLOAT("vr_fmod_door_occlusion") / 100.f;
-			float vr_fmod_water_occlusion = CVAR_GET_FLOAT("vr_fmod_water_occlusion") / 100.f;
-			float vr_fmod_glass_occlusion = CVAR_GET_FLOAT("vr_fmod_glass_occlusion") / 100.f;
-
-			if (!fmod_mapGeometry && fmod_currentMapModel && !fmod_currentMapModel->needload)
-			{
-				gEngfuncs.Con_DPrintf("new map, creating geometry\n");
-				fmod_mapGeometry = CreateFMODGeometryFromHLModel(fmod_currentMapModel, vr_fmod_wall_occlusion, vr_fmod_wall_occlusion);
-				if (!fmod_mapGeometry)
-				{
-					gEngfuncs.Con_DPrintf("Couldn't create FMOD geometry from map data, 3d occlusion is disabled.\n");
-				}
-			}
-
-			if (pmove)
-			{
-				std::unordered_set<std::string> audible_modelnames;
-
-				for (int i = 0; i < pmove->numphysent; i++)
-				{
-					// not a brush model
-					if (!pmove->physents[i].model || pmove->physents[i].model->name[0] != '*')
-						continue;
-
-					// default same as level
-					float occlusion = vr_fmod_wall_occlusion;
-
-					// if it moves, use door occlusion (should be a bit less than walls, but is user configurable)
-					if (pmove->physents[i].movetype != MOVETYPE_NONE)
-					{
-						occlusion = vr_fmod_door_occlusion;
-					}
-
-					if (pmove->physents[i].solid == SOLID_NOT)
-					{
-						// not solid, no occlusion
-						if (pmove->physents[i].skin < CONTENTS_LAVA || pmove->physents[i].skin > CONTENTS_WATER)
-							continue;
-
-						switch (pmove->physents[i].skin)
-						{
-						case CONTENTS_WATER:
-							occlusion = vr_fmod_water_occlusion;			// water occludes very little
-							break;
-						case CONTENTS_SLIME:
-							occlusion = vr_fmod_water_occlusion * 1.25f;	// slime occludes a bit more
-							break;
-						case CONTENTS_LAVA:
-							occlusion = vr_fmod_water_occlusion * 1.5f;		// lava occludes even more a bit more
-							break;
-						}
-					}
-					else
-					{
-						if (pmove->physents[i].rendermode != 0)
-						{
-							// if rendermode is set assume glass
-							occlusion = vr_fmod_glass_occlusion;
-						}
-					}
-
-					// no occlusion, skip
-					if (occlusion <= 0.f)
-						continue;
-
-					// returns cached geometry if one already exists
-					FMOD::Geometry* fmod_geometry = CreateFMODGeometryFromHLModel(pmove->physents[i].model, occlusion, occlusion);
-					if (fmod_geometry)
-					{
-						// update position and rotation, and set active (covers cached geometries from entities that left and re-entered audible set)
-
-						FMOD_VECTOR position = HL_TO_FMOD(pmove->physents[i].origin);
-
-						Vector hlforward;
-						Vector hlup;
-						gEngfuncs.pfnAngleVectors(pmove->physents[i].angles, hlforward, nullptr, hlup);
-
-						FMOD_VECTOR forward{ hlforward.x, hlforward.y, hlforward.z };
-						FMOD_VECTOR up{ hlup.x, hlup.y, hlup.z };
-
-						fmod_geometry->setPosition(&position);
-						fmod_geometry->setRotation(&forward, &up);
-						fmod_geometry->setActive(true);
-
-						// keep track of all modelnames that are currently in audible set (we deactivate all other ones)
-						audible_modelnames.insert(pmove->physents[i].model->name);
-					}
-				}
-
-				for (auto& [modelname, fmod_geometry] : fmod_geometries)
-				{
-					// disable all geometries belonging to entities that left the audible set
-					if (fmod_geometry != fmod_mapGeometry
-						&& audible_modelnames.find(modelname) == audible_modelnames.end())
-					{
-						fmod_geometry->setActive(false);
-					}
-				}
-			}
-		}
+		UpdateGeometries();
 	}
 
 	fmodSystem->update();

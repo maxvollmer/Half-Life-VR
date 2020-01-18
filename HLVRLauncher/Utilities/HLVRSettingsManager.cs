@@ -26,11 +26,11 @@ namespace HLVRLauncher.Utilities
         private static Thread storeLoadThread;
         private static StoreLoadTask currentStoreLoadTask = StoreLoadTask.NONE;
         private static EventWaitHandle storeLoadTaskWaitHandle;
-        private static object storeLoadTaskLock = new object();
+        private static readonly object storeLoadTaskLock = new object();
         private static Stopwatch storeLoadTaskStopWatch = new Stopwatch();
         private static int storeLoadTaskTimeToWait = 1000;
 
-        private static object settingsFileLock = new object();
+        private static readonly object settingsFileLock = new object();
 
         public static HLVRSettings Settings { get; private set; } = new HLVRSettings();
 

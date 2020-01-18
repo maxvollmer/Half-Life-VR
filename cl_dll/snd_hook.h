@@ -91,4 +91,6 @@ public:
 
 extern aud_engine_t gAudEngine;
 
+extern bool g_soundHookFailed;
+
 void S_FillAddress();

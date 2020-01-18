@@ -322,9 +322,13 @@ void VRHelper::Init()
 	SetSkybox("desert");
 
 	extern bool VRHookSoundFunctions();
-	if (!VRHookSoundFunctions())
+	if (VRHookSoundFunctions())
 	{
-		gEngfuncs.Con_DPrintf("Failed to hook into engine sound functions for FMOD, falling back to default engine sound system.\n");
+		if (CVAR_GET_FLOAT("vr_use_fmod") != 0.f)
+		{
+			extern void VRInitSound();
+			VRInitSound();
+		}
 	}
 }
 

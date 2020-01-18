@@ -19,6 +19,8 @@ All credit goes to LAGonauta and hzqst for making MetaAudio!
 
 aud_engine_t gAudEngine;
 
+bool g_soundHookFailed = true;  // Init as true, so we won't initialize FMOD before VRHookSoundFunctions has successfully hooked engine functions.
+
 //Error when can't find sig
 void Sys_ErrorEx(const char* fmt, ...)
 {
@@ -211,7 +213,9 @@ bool VRHookSoundFunctions()
     }
     catch (const SoundInitError & e)
     {
-        gEngfuncs.Con_DPrintf("Couldn't initialize sound, default sound engine is used. Error: %s\n", e.what());
+        gEngfuncs.Con_DPrintf("Couldn't find engine sound function addresses, FMOD will not be available. Error: %s\n", e.what());
+        gEngfuncs.Cvar_SetValue("vr_use_fmod", 0.f);
+        g_soundHookFailed = true;
         return false;
     }
 
@@ -221,10 +225,20 @@ bool VRHookSoundFunctions()
     extern void MyStopAllSounds(qboolean clear);
     extern bool VRInitSound();
 
-    return
-        VRInitSound() &&
+    bool success =
         HookSoundMethod("StartStaticSound", gAudEngine.S_StartStaticSound, MyStartStaticSound) &&
         HookSoundMethod("StartDynamicSound", gAudEngine.S_StartDynamicSound, MyStartDynamicSound) &&
         HookSoundMethod("StopSound", gAudEngine.S_StopSound, MyStopSound) &&
         HookSoundMethod("StopAllSounds", gAudEngine.S_StopAllSounds, MyStopAllSounds);
+
+    if (!success)
+    {
+        gEngfuncs.Con_DPrintf("Failed to hook into engine sound functions, FMOD will not be available.\n");
+        gEngfuncs.Cvar_SetValue("vr_use_fmod", 0.f);
+        g_soundHookFailed = true;
+        return false;
+    }
+
+    g_soundHookFailed = false;
+    return true;
 }
