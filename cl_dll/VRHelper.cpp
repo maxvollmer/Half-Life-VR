@@ -326,8 +326,8 @@ void VRHelper::Init()
 	{
 		if (CVAR_GET_FLOAT("vr_use_fmod") != 0.f)
 		{
-			extern void VRInitSound();
-			VRInitSound();
+			extern bool VRInitFMOD();
+			VRInitFMOD();
 		}
 	}
 }

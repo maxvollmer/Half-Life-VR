@@ -4974,6 +4974,8 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	// Remember offset for wallcheck next call
 	vr_lastHMDOffset.x = hmdOffset.x;
 	vr_lastHMDOffset.y = hmdOffset.y;
+
+	// TODO: HMD height and HMD direction for view_ofs and viewdir for looking at and interaction with stuff
 }
 
 void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging)

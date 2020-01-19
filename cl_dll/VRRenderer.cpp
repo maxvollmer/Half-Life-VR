@@ -43,6 +43,7 @@
 #include "VRHelper.h"
 #include "VRInput.h"
 #include "VRSettings.h"
+#include "VRSound.h"
 
 #define HARDWARE_MODE
 #include "com_model.h"
@@ -104,17 +105,16 @@ void VRRenderer::Frame(double frametime)
 
 	UpdateGameRenderState();
 
-	extern void VRSoundUpdate(bool paused);
 	if (m_isInMenu || !IsInGame())
 	{
 		g_vrInput.ShowHLMenu();
 		vrHelper->PollEvents(false, m_isInMenu);
-		VRSoundUpdate(true);
+		VRSoundUpdate(true, frametime);
 	}
 	else
 	{
 		g_vrInput.HideHLMenu();
-		VRSoundUpdate(false);
+		VRSoundUpdate(false, frametime);
 	}
 
 	if (!IsInGame() || (m_isInMenu && m_wasMenuJustRendered))

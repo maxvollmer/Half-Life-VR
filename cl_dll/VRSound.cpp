@@ -1,4 +1,6 @@
 
+#include <iostream>
+#include <fstream>
 #include <string>
 #include <algorithm>
 #include <memory>
@@ -6,6 +8,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <optional>
+#include <regex>
 
 #include "snd_hook.h"
 #include "VRSound.h"
@@ -22,35 +25,6 @@
 
 #include "VRRenderer.h"
 
-constexpr const float STATIC_CHANNEL_MAXDIST = 64000.f;
-constexpr const float DYNAMIC_CHANNEL_MAXDIST = 1000.f;
-
-constexpr const float HL_TO_METERS = 0.0254f;
-
-constexpr const float VR_DEFAULT_FMOD_WALL_OCCLUSION = 0.4f;
-constexpr const float VR_DEFAULT_FMOD_DOOR_OCCLUSION = 0.3f;
-constexpr const float VR_DEFAULT_FMOD_WATER_OCCLUSION = 0.2f;
-constexpr const float VR_DEFAULT_FMOD_GLASS_OCCLUSION = 0.1f;
-
-constexpr const FMOD_VECTOR HL_TO_FMOD(const Vector& vec)
-{
-/*
-HL.x = forward
-HL.y = right
-HL.z = up
-
-FMOD.x = right
-FMOD.y = up
-FMOD.z = forwards
-*/
-
-	return FMOD_VECTOR{ vec.y * HL_TO_METERS, vec.z * HL_TO_METERS, vec.x * HL_TO_METERS };
-}
-
-struct LetHalfLifeHandleThisSoundException : public std::exception
-{};
-
-
 #define SND_VOLUME			(1 << 0)
 #define SND_ATTENUATION		(1 << 1)
 #define SND_LARGE_INDEX		(1 << 2)
@@ -63,6 +37,39 @@ struct LetHalfLifeHandleThisSoundException : public std::exception
 
 namespace
 {
+	// We have so much stuff here, probs would make sense to actually create a VRSound class, but oh well
+
+	constexpr const float STATIC_CHANNEL_MAXDIST = 64000.f;
+	constexpr const float DYNAMIC_CHANNEL_MAXDIST = 1000.f;
+
+	constexpr const float HL_TO_METERS = 0.0254f;
+
+	constexpr const float VR_DEFAULT_FMOD_WALL_OCCLUSION = 0.4f;
+	constexpr const float VR_DEFAULT_FMOD_DOOR_OCCLUSION = 0.3f;
+	constexpr const float VR_DEFAULT_FMOD_WATER_OCCLUSION = 0.2f;
+	constexpr const float VR_DEFAULT_FMOD_GLASS_OCCLUSION = 0.1f;
+
+	constexpr const float VOX_PERIOD_PAUSETIME = 0.43f;
+	constexpr const float VOX_COMMA_PAUSETIME = 0.25f;
+
+	constexpr const FMOD_VECTOR HL_TO_FMOD(const Vector& vec)
+	{
+		/*
+		HL.x = forward
+		HL.y = right
+		HL.z = up
+
+		FMOD.x = right
+		FMOD.y = up
+		FMOD.z = forwards
+		*/
+
+		return FMOD_VECTOR{ vec.y * HL_TO_METERS, vec.z * HL_TO_METERS, vec.x * HL_TO_METERS };
+	}
+
+	struct LetHalfLifeHandleThisSoundException : public std::exception
+	{};
+
 	struct EntnumChannelSoundname
 	{
 		const int entnum;
@@ -104,30 +111,35 @@ namespace
 	struct SoundInfo
 	{
 		std::string soundfile;
-		float delayed_until = 0.f;
+
+		float delayed_by = 0.f;
+		float start_offset = 0.f;
+		float end_offset = 0.f;
+		float timecompress = 0.f;
+
 		float pitch = 0.f;
 		float volume = 0.f;
-		float attenuation = 0.f;
 	};
 
 	struct Sound
 	{
 		FMOD::Channel* fmodChannel;
 		FMOD::Sound* fmodSound;
-		bool startedpaused;
-		float delayed_until = 0.f;				// Only set for sentences
-		std::shared_ptr<Sound> nextSound;			// For sentences
+
+		std::shared_ptr<Sound> nextSound;		// For sentences
+		float delayed_by = 0.f;					// Only set for sentences
+		float end_offset = 0.f;					// Only set for sentences
+		double time_marker = -1.f;				// Is set as soon as VRSoundUpdate touches this sound for the first time
+		bool has_started = false;				// Set to true when VRSoundUpdate starts playing this sound for the first time
 
 		Sound() :
 			fmodChannel{ nullptr },
-			fmodSound{ nullptr },
-			startedpaused{ false }
+			fmodSound{ nullptr }
 		{}
 
 		Sound(FMOD::Channel* fmodChannel, FMOD::Sound* fmodSound, bool startedpaused) :
 			fmodChannel{ fmodChannel },
-			fmodSound{ fmodSound },
-			startedpaused{ startedpaused }
+			fmodSound{ fmodSound }
 		{}
 	};
 
@@ -135,8 +147,12 @@ namespace
 	model_t* fmod_currentMapModel = nullptr;
 	FMOD::Geometry* fmod_mapGeometry = nullptr;
 	std::unordered_map<std::string, FMOD::Geometry*> fmod_geometries;
-	std::unordered_map<EntnumChannelSoundname, Sound, EntnumChannelSoundname::Hash, EntnumChannelSoundname::EqualTo> allSounds;
-	bool soundspaused = true;
+	std::unordered_map<EntnumChannelSoundname, Sound, EntnumChannelSoundname::Hash, EntnumChannelSoundname::EqualTo> g_allSounds;
+	bool g_soundspaused = true;
+	double g_soundtime = 0.0;
+
+	std::unordered_map<std::string, std::string> g_allSentences;				// This contains all sentences from valve/sound/sentences.txt and vr/sound/sentences.txt, where the latter overrides the former
+	std::unordered_map<std::string, std::vector<SoundInfo>> g_parsedSentences;	// This is a cache for all sentences that are in use.
 }
 
 void ReleaseAllGeometries()
@@ -331,16 +347,37 @@ void UpdateGeometries()
 	}
 }
 
-
-std::string GetSoundFileForName(const std::string& name)
+std::string GetFullSoundFilePath(const std::string& name)
 {
 	if (name.empty())
 		return name;
 
+	std::string vrfilename;
+	std::string valvefilename;
+
 	if (name.substr(0, 6) == "sound/")
-		return "./valve/" + name;
+	{
+		vrfilename = "./vr/" + name;
+		valvefilename = "./valve/" + name;
+	}
 	else
-		return "./valve/sound/" + name;
+	{
+		vrfilename = "./vr/sound/" + name;
+		valvefilename = "./valve/sound/" + name;
+	}
+
+	if (std::ifstream{ vrfilename }.good())
+	{
+		return vrfilename;
+	}
+	else if(std::ifstream{ valvefilename }.good())
+	{
+		return valvefilename;
+	}
+	else
+	{
+		return "";
+	}
 }
 
 bool IsUISound(const std::string& name)
@@ -357,8 +394,8 @@ bool IsPlaying(FMOD::Channel* fmodChannel)
 		return false;
 
 	bool isPlaying = false;
-	fmodChannel->isPlaying(&isPlaying);
-	return isPlaying;
+	FMOD_RESULT result = fmodChannel->isPlaying(&isPlaying);
+	return result == FMOD_OK && isPlaying;
 }
 
 bool IsPlayerAudio(int entnum, float* origin)
@@ -400,23 +437,29 @@ void UpdateMouth(int entnum, Sound& sound)
 		return;
 
 	FMOD::DSP* fft = nullptr;
-	sound.fmodChannel->getDSP(FMOD_CHANNELCONTROL_DSP_HEAD, &fft);
+	FMOD_RESULT result = sound.fmodChannel->getDSP(FMOD_CHANNELCONTROL_DSP_HEAD, &fft);
 
-	if (!fft)
+	if (result == FMOD_ERR_CHANNEL_STOLEN)
+	{
+		FMOD_RESULT result3 = sound.fmodChannel->stop();
+		FMOD_RESULT result4 = result3;
+	}
+
+	if (result != FMOD_OK || !fft)
 	{
 		CloseMouth(entnum);
 		return;
 	}
 
 	FMOD_DSP_PARAMETER_FFT* data = nullptr;
-	fft->getParameterData(FMOD_DSP_FFT_SPECTRUMDATA, (void**)&data, 0, 0, 0);
-	if (!data)
+	FMOD_RESULT result2 = fft->getParameterData(FMOD_DSP_FFT_SPECTRUMDATA, (void**)&data, 0, 0, 0);
+	if (result2 != FMOD_OK || !data)
 	{
 		CloseMouth(entnum);
 		return;
 	}
 
-	float val = 0.f;
+	double val = 0.f;
 	int count = 0;
 	for (int channel = 0; channel < data->numchannels; channel++)
 	{
@@ -426,9 +469,13 @@ void UpdateMouth(int entnum, Sound& sound)
 			count++;
 		}
 	}
-	float avg = val / count;
-
-	pent->mouth.mouthopen = static_cast<byte>(avg * 255.f);
+	if (count > 0 && data->numchannels > 0)
+	{
+		double avg = val / data->numchannels;
+		if (avg < 0.f) avg = 0.f;
+		if (avg > 1.f) avg = 1.f;
+		pent->mouth.mouthopen = static_cast<byte>(avg * 255.0);
+	}
 }
 
 void UpdateSoundEffects(FMOD::Channel* fmodChannel, int entnum, bool playerUnderWater)
@@ -541,27 +588,243 @@ bool ParseLoopPoints(const std::string& filename, FMOD::Sound* fmodSound)
 	return isLooping;
 }
 
-std::vector<SoundInfo> ParseSentence(const std::string& sentence, float default_pitch, float default_volume, float default_attenuation)
+void LoadAllSentences(const std::string& filename)
 {
-	std::vector<SoundInfo> soundInfos;
+	static const std::regex sentenceRegex{ "^\\s*([a-zA-Z0-9_]+)\\s+(.*)$" };
 
-
-
-	return soundInfos;
+	std::ifstream file;
+	file.open(filename);
+	if (file.is_open())
+	{
+		std::string line;
+		while (std::getline(file, line))
+		{
+			std::smatch match;
+			if (std::regex_match(line, match, sentenceRegex) && match.size() == 3)
+			{
+				std::string sentenceName = match[1].str();
+				std::string sentence = match[2].str();
+				g_allSentences[sentenceName] = sentence;
+			}
+		}
+		file.close();
+	}
 }
 
-std::shared_ptr<Sound> CreateSound(const std::string& soundfile, bool is2DSound, bool isStaticChannel, int entnum, int entchannel, float* origin, float fpitch, float fvol, float attenuation, bool startpaused)
+void LoadAllSentences()
+{
+	if (!g_allSentences.empty())
+		return;
+
+	LoadAllSentences("./valve/sound/sentences.txt");
+	LoadAllSentences("./vr/sound/sentences.txt");
+
+	if (g_allSentences.empty())
+	{
+		gEngfuncs.Con_DPrintf("Couldn't load sentences.txt. NPC conversations, HEV suit messages and Black Mesa speaker announcements won't play while using FMOD. Disable FMOD to hear these sounds.\n");
+	}
+}
+
+std::vector<std::string> GetSentenceTokens(const std::string& sentence)
+{
+	// sentences look like this: optionalpath/firstfile(optionalparameters) secondfile(optionalparameters) thirdfile(optionalparameters) fourthfile(optionalparameters) etc(etc)
+	// (optional parameters) may contain spaces, so we need to split along spaces, except if inside brackets
+	static const std::regex sentenceSplitRegex{ "\\s+(?![^(]*\\))" };
+
+	std::vector<std::string> sentenceTokens;
+	std::copy(
+		std::sregex_token_iterator{ sentence.begin(), sentence.end(), sentenceSplitRegex, -1 },
+		std::sregex_token_iterator{},
+		std::back_inserter(sentenceTokens));
+
+	return sentenceTokens;
+}
+
+std::string RemovePathFromSentence(const std::string& sentence, std::string& path)
+{
+	// sentences look like this: optionalpath/firstfile(optionalparameters) secondfile(optionalparameters) etc(etc)
+	// here we look for optionalpath/
+	static const std::regex pathExtractRegex{ "^\\s*([^\\s^/]+/)(.+)$" };
+	std::smatch match;
+	if (std::regex_match(sentence, match, pathExtractRegex))
+	{
+		// optionalpath/ exists, set it, and return the sentence from after the /
+		path = match[1];
+		return match[2];
+	}
+	else
+	{
+		// optionalpath/ doesn't exist, set default vox, and return the original unmodified sentence
+		path = "vox/";
+		return sentence;
+	}
+}
+
+void ParseVOXParams(const std::string& params, float* pitch, float* volume, float* start_offset, float* end_offset, float* timecompress)
+{
+	// params look like this: (CXXX CXXX CXXX)
+	// where C is any of the parameters below and XXX is an integer
+	/*
+	parameters
+	p -> pitch
+	v -> volume
+	s -> start (offset start of wave percent)
+	e -> end (offset end of wave percent)
+	t -> timecompress (% of wave that GoldSrc skips, we transform this into a timestretch multiplier value)
+	*/
+
+	static const std::regex paramsRegex{ "\\((?:([pvset][0-9]+)\\s*)+\\)" };
+	std::smatch match;
+	if (std::regex_match(params, match, paramsRegex))
+	{
+		for (size_t i = 1; i < match.size(); i++)
+		{
+			std::string param = match[1];
+			switch (param[0])
+			{
+			case 'p':
+				*pitch = std::atoi(&param[1]) / 100.f;
+				break;
+			case 'v':
+				*volume = std::atoi(&param[1]) / 100.f;
+				break;
+			case 's':
+				*start_offset = std::atoi(&param[1]) / 100.f;
+				break;
+			case 'e':
+				*end_offset = std::atoi(&param[1]) / 100.f;
+				break;
+			case 't':
+				*timecompress = std::atoi(&param[1]) / 100.f;
+				break;
+			}
+		}
+	}
+}
+
+std::string ParseVOX(const std::string& sound, float* next_delayed_by)
+{
+	/*
+	special characters
+	',' -> 250ms pause
+	'.' -> 430ms pause
+	*/
+
+	if (sound.rbegin()[0] == '.')
+	{
+		*next_delayed_by = VOX_PERIOD_PAUSETIME;
+		return sound.substr(0, sound.size() - 1);
+	}
+	else if (sound.rbegin()[0] == ',')
+	{
+		*next_delayed_by = VOX_COMMA_PAUSETIME;
+		return sound.substr(0, sound.size() - 1);
+	}
+	else
+	{
+		*next_delayed_by = 0.f;
+		return sound;
+	}
+}
+
+std::vector<SoundInfo> ParseSentence(const std::string& sentenceName, float initial_pitch, float initial_volume)
+{
+	auto parsedSentence = g_parsedSentences.find(sentenceName);
+	if (parsedSentence != g_parsedSentences.end())
+		return parsedSentence->second;
+
+	auto sentencePair = g_allSentences.find(sentenceName);
+	if (sentencePair != g_allSentences.end())
+	{
+		std::string path;
+		std::string sentence = RemovePathFromSentence(sentencePair->second, path);
+
+		gEngfuncs.Con_DPrintf("sentence name: %s, full sentence: %s, path: %s, sentence wo path: %s\n", sentenceName.c_str(), sentencePair->second.c_str(), path.c_str(), sentence.c_str());
+
+		std::vector<SoundInfo> soundInfos;
+
+		float default_pitch = initial_pitch;
+		float default_volume = initial_volume;
+		float default_start_offset = 0.f; 
+		float default_end_offset = 0.f; 
+		float default_timecompress = 0.f;
+		float next_delayed_by = 0.f;
+
+		std::vector<std::string> sentenceTokens = GetSentenceTokens(sentence);
+		for (std::string token : sentenceTokens)
+		{
+			// token is either name of audio file or params or name of audio file with params
+			if (token[0] == '(')
+			{
+				// token is params if it starts with '('
+				ParseVOXParams(token, &default_pitch, &default_volume, &default_start_offset, &default_end_offset, &default_timecompress);
+			}
+			else
+			{
+				// token is name of audio file with params, or just name of audio file
+				// we use a regex with an optional 2nd capture group for the params
+				// if no params exist, that group will simply give us an empty result, and ParseVOXParams will be a no-op
+				static const std::regex tokenRegex{ "^([^\\(]+)(\\([^\\)]+\\))?$" };
+				std::smatch match;
+				if (std::regex_match(token, match, tokenRegex))
+				{
+					SoundInfo soundInfo;
+					soundInfo.delayed_by = next_delayed_by;
+					soundInfo.soundfile = path + ParseVOX(match[1], &next_delayed_by) + ".wav";
+
+					soundInfo.pitch = default_pitch;
+					soundInfo.volume = default_volume;
+					soundInfo.start_offset = default_start_offset;
+					soundInfo.end_offset = default_end_offset;
+					soundInfo.timecompress = default_timecompress;
+
+					ParseVOXParams(match[2], &soundInfo.pitch, &soundInfo.volume, &soundInfo.start_offset, &soundInfo.end_offset, &soundInfo.timecompress);
+
+					soundInfos.push_back(soundInfo);
+				}
+			}
+		}
+
+		g_parsedSentences[sentenceName] = soundInfos;
+		return soundInfos;
+	}
+
+	return {};
+}
+
+std::shared_ptr<Sound> CreateSound(
+	const std::string& soundfile,
+	bool is2DSound,
+	bool isStaticChannel,
+	int entnum,
+	int entchannel,
+	float* origin,
+	float fpitch,
+	float fvol,
+	float attenuation,
+	float start_offset,
+	float timecompress)
 {
 	if (!fmodSystem)
+		return nullptr;
+
+	if (start_offset >= 1.f)
+		return nullptr;
+
+	if (timecompress >= 1.f)
+		return nullptr;
+
+	std::string actualsoundfile = GetFullSoundFilePath(soundfile);
+	if (actualsoundfile.empty())
 		return nullptr;
 
 	FMOD::Sound* fmodSound = nullptr;
 	FMOD_MODE fmodMode = is2DSound ? FMOD_2D : (FMOD_3D | FMOD_3D_WORLDRELATIVE | FMOD_3D_LINEARROLLOFF);
 	fmodMode |= FMOD_CREATESAMPLE;
-	FMOD_RESULT result1 = fmodSystem->createSound(soundfile.c_str(), fmodMode, nullptr, &fmodSound);
+	FMOD_RESULT result1 = fmodSystem->createSound(actualsoundfile.c_str(), fmodMode, nullptr, &fmodSound);
 	if (result1 == FMOD_OK && fmodSound != nullptr)
 	{
-		bool isLooping = ParseLoopPoints(soundfile, fmodSound);
+		bool isLooping = ParseLoopPoints(actualsoundfile, fmodSound);
 		if (isLooping)
 		{
 			fmodSound->setMode(fmodMode | FMOD_LOOP_NORMAL);
@@ -569,24 +832,12 @@ std::shared_ptr<Sound> CreateSound(const std::string& soundfile, bool is2DSound,
 		}
 
 		FMOD::Channel* fmodChannel = nullptr;
-		FMOD_RESULT result2 = fmodSystem->playSound(fmodSound, nullptr, startpaused, &fmodChannel);
+		FMOD_RESULT result2 = fmodSystem->playSound(fmodSound, nullptr, true, &fmodChannel);
+
 		if (result2 == FMOD_OK && fmodChannel != nullptr)
 		{
 			if (!is2DSound)
 				UpdateSoundPosition(fmodChannel, entnum, origin, false);
-
-			if (entchannel == CHAN_VOICE || entchannel == CHAN_STREAM)
-			{
-				FMOD::DSP* fft = nullptr;
-				FMOD_RESULT result3 = fmodSystem->createDSPByType(FMOD_DSP_TYPE_FFT, &fft);
-				if (result3 == FMOD_OK && fft != nullptr)
-				{
-					fmodChannel->addDSP(FMOD_CHANNELCONTROL_DSP_HEAD, fft);
-				}
-			}
-
-			fmodChannel->setPitch(fpitch);
-			fmodChannel->setVolume(fvol);
 
 			if (attenuation > 0.f)
 			{
@@ -595,11 +846,84 @@ std::shared_ptr<Sound> CreateSound(const std::string& soundfile, bool is2DSound,
 				fmodChannel->set3DMinMaxDistance(1.f, (maxdist / attenuation) * HL_TO_METERS);
 			}
 
-			return std::make_shared<Sound>(fmodChannel, fmodSound, soundspaused);
+			fmodChannel->setPitch(fpitch);
+			fmodChannel->setVolume(fvol);
+
+			if (timecompress > 0.f)
+			{
+				FMOD::DSP* timestretchDSP = nullptr;
+				FMOD_RESULT result3 = fmodSystem->createDSPByType(FMOD_DSP_TYPE_PITCHSHIFT, &timestretchDSP);
+				if (result3 == FMOD_OK && timestretchDSP != nullptr)
+				{
+					float timestretch = 1.f - timecompress;
+					timestretchDSP->setParameterFloat(0, 1.f / timestretch);	// pitch (counters timestretch)
+					timestretchDSP->setParameterFloat(1, 4096);					// buffer size
+					fmodChannel->addDSP(FMOD_CHANNELCONTROL_DSP_HEAD, timestretchDSP);
+					fmodChannel->setPitch(timestretch * fpitch);
+				}
+			}
+
+			if (entchannel == CHAN_VOICE || entchannel == CHAN_STREAM)
+			{
+				FMOD::DSP* fftDSP = nullptr;
+				FMOD_RESULT result3 = fmodSystem->createDSPByType(FMOD_DSP_TYPE_FFT, &fftDSP);
+				if (result3 == FMOD_OK && fftDSP != nullptr)
+				{
+					fmodChannel->addDSP(FMOD_CHANNELCONTROL_DSP_HEAD, fftDSP);
+				}
+				fmodChannel->setPriority(0); // give channel highest priority, so it won't be stolen by some random sound
+			}
+
+			if (start_offset > 0.f)
+			{
+				unsigned int length = 0;
+				fmodSound->getLength(&length, FMOD_TIMEUNIT_MS);
+				fmodChannel->setPosition(length * start_offset, FMOD_TIMEUNIT_MS);
+			}
+
+			return std::make_shared<Sound>(fmodChannel, fmodSound, g_soundspaused);
 		}
 	}
 
 	return nullptr;
+}
+
+void MyStopSound(int entnum, int entchannel)
+{
+	// gEngfuncs.Con_DPrintf("MyStopSound: %i, %i\n", entnum, entchannel);
+
+	for (auto& [entnumChannelSoundname, sound] : g_allSounds)
+	{
+		if (entnumChannelSoundname.entnum == entnum && entnumChannelSoundname.channel == entchannel)
+		{
+			if (sound.fmodChannel)
+				sound.fmodChannel->stop();
+			if (sound.fmodSound)
+				sound.fmodSound->release();
+
+			sound = Sound{};
+		}
+	}
+
+	gAudEngine.S_StopSound(entnum, entchannel);
+}
+
+void MyStopAllSounds(qboolean clear)
+{
+	// gEngfuncs.Con_DPrintf("MyStopAllSounds\n");
+
+	for (auto& [entnumChannelSoundname, sound] : g_allSounds)
+	{
+		if (sound.fmodChannel)
+			sound.fmodChannel->stop();
+		if (sound.fmodSound)
+			sound.fmodSound->release();
+	}
+	g_allSounds.clear();
+
+	gAudEngine.S_StopAllSounds(clear);
+
+	g_soundtime = 0.0;
 }
 
 void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float fvol, float attenuation, int flags, int pitch, bool isStaticChannel)
@@ -648,9 +972,9 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 	if (fvol > 1.f) fvol = 1.f;
 	float fpitch = pitch / 100.0f;
 
-	auto& entnumChannelSound = allSounds.find(EntnumChannelSoundname{entnum, entchannel, sfx->name});
+	auto& entnumChannelSound = g_allSounds.find(EntnumChannelSoundname{entnum, entchannel, sfx->name});
 	// If sound already exists, modify
-	if (entnumChannelSound != allSounds.end())
+	if (entnumChannelSound != g_allSounds.end())
 	{
 		// Sound is playing, modify
 		if (entnumChannelSound->second.fmodChannel && IsPlaying(entnumChannelSound->second.fmodChannel))
@@ -663,7 +987,7 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 				entnumChannelSound->second.fmodChannel->stop();
 				if (entnumChannelSound->second.fmodSound)
 					entnumChannelSound->second.fmodSound->release();
-				allSounds.erase(entnumChannelSound);
+				g_allSounds.erase(entnumChannelSound);
 				CloseMouth(entnum);
 				return;
 			}
@@ -694,7 +1018,7 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 			entnumChannelSound->second.fmodChannel->stop();
 		if (entnumChannelSound->second.fmodSound)
 			entnumChannelSound->second.fmodSound->release();
-		allSounds.erase(entnumChannelSound);
+		g_allSounds.erase(entnumChannelSound);
 		CloseMouth(entnum);
 	}
 
@@ -708,44 +1032,70 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 	bool is2DSound = attenuation <= 0.f || IsPlayerAudio(entnum, origin);
 	// gEngfuncs.Con_DPrintf("[%f] Playing new sound: %s, ent: %i, chan: %i, origin: %f %f %f, fvol: %f, attenuation: %f, flags: %i, pitch: %i, isStatic: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel, origin[0], origin[1], origin[2], fvol, attenuation, flags, pitch, isStaticChannel);
 
-	// If we are here we have a new audiofile that needs to be played, if one already exists, we overwrite it
+	// If we are here we have a new audiofile that needs to be played
+	// if this is a voice, we stop all previous voices first
+	if (entchannel == CHAN_VOICE || entchannel == CHAN_STREAM)
+	{
+		MyStopSound(entnum, entchannel);
+	}
 
 	// Sentences come in lists of audiofiles, so we treat normal audio playback as a list of size 1 for easier handling of both cases
 	std::vector<SoundInfo> soundInfos;
 
 	if (sfx->name[0] == '!')
 	{
-		soundInfos = ParseSentence(sfx->name + 1, fpitch, fvol, attenuation);
+		soundInfos = ParseSentence(sfx->name + 1, fpitch, fvol);
 	}
 	else
 	{
 		// Sounds that start with '*' are treated by GoldSrc as streaming sounds,
 		// e.g. for "big" audiofiles that couldn't be safely loaded into a 4MB RAM computer back then.
 		// We don't care and just load every file the same, so we simply drop the '*' from the name.
-		std::string actualsoundfile = GetSoundFileForName(sfx->name[0] == '*' ? sfx->name + 1 : sfx->name);
+		std::string soundfile = sfx->name[0] == '*' ? sfx->name + 1 : sfx->name;
 		soundInfos.push_back(SoundInfo{
-				actualsoundfile,
+				soundfile,
+
 				0.f,
+				0.f,
+				0.f,
+				0.f,
+
 				fpitch,
-				fvol,
-				attenuation
+				fvol
 			});
 	}
 
 	std::shared_ptr<Sound> previousSound;
 	for (auto& soundInfo : soundInfos)
 	{
-		auto sound = CreateSound(soundInfo.soundfile, is2DSound, isStaticChannel, entnum, entchannel, origin, soundInfo.pitch, soundInfo.volume, soundInfo.attenuation, soundspaused || previousSound);
+		auto sound = CreateSound(
+			soundInfo.soundfile,
+			is2DSound,
+			isStaticChannel,
+			entnum,
+			entchannel,
+			origin,
+			soundInfo.pitch,
+			soundInfo.volume,
+			attenuation,
+			soundInfo.start_offset,
+			soundInfo.timecompress
+		);
+
 		if (sound)
 		{
+			sound->delayed_by = soundInfo.delayed_by;
+			sound->end_offset = soundInfo.end_offset;
+
 			if (previousSound)
 			{
 				previousSound->nextSound = sound;
 			}
 			else
 			{
-				allSounds[EntnumChannelSoundname{ entnum, entchannel, sfx->name }] = *sound;
+				g_allSounds[EntnumChannelSoundname{ entnum, entchannel, sfx->name }] = *sound;
 			}
+
 			previousSound = sound;
 		}
 	}
@@ -790,46 +1140,6 @@ void MyStartStaticSound(int entnum, int entchannel, sfx_t* sfx, float* origin, f
 	}
 }
 
-void MyStopSound(int entnum, int entchannel)
-{
-	// gEngfuncs.Con_DPrintf("MyStopSound: %i, %i\n", entnum, entchannel);
-
-	for (auto& [entnumChannelSoundname, sound] : allSounds)
-	{
-		if (entnumChannelSoundname.entnum == entnum && entnumChannelSoundname.channel == entchannel)
-		{
-			if (sound.fmodChannel)
-				sound.fmodChannel->stop();
-			if (sound.fmodSound)
-				sound.fmodSound->release();
-
-			sound.fmodChannel = nullptr;
-			sound.fmodSound = nullptr;
-			sound.startedpaused = false;
-			sound.delayed_until = 0.f;
-			sound.nextSound = nullptr;
-		}
-	}
-
-	gAudEngine.S_StopSound(entnum, entchannel);
-}
-
-void MyStopAllSounds(qboolean clear)
-{
-	// gEngfuncs.Con_DPrintf("MyStopAllSounds\n");
-
-	for (auto& [entnumChannelSoundname, sound] : allSounds)
-	{
-		if (sound.fmodChannel)
-			sound.fmodChannel->stop();
-		if (sound.fmodSound)
-			sound.fmodSound->release();
-	}
-	allSounds.clear();
-
-	gAudEngine.S_StopAllSounds(clear);
-}
-
 FMOD_3D_ATTRIBUTES GetFMODListenerAttributes()
 {
 	 FMOD_3D_ATTRIBUTES listenerattributes {
@@ -859,7 +1169,7 @@ FMOD_3D_ATTRIBUTES GetFMODListenerAttributes()
 	 return listenerattributes;
 }
 
-bool VRInitSound()
+bool VRInitFMOD()
 {
 	if (CVAR_GET_FLOAT("vr_use_fmod") == 0.f)
 		return false;
@@ -894,7 +1204,7 @@ bool VRInitSound()
 	// FMOD_ADVANCEDSETTINGS settings;
 	// fmodSystem->setAdvancedSettings(&settings);
 
-	result = fmodSystem->init(2000, FMOD_INIT_NORMAL, 0);
+	result = fmodSystem->init(4093, FMOD_INIT_NORMAL, 0);
 	if (result != FMOD_OK)
 	{
 		gEngfuncs.Con_DPrintf("Couldn't initialize FMOD system, falling back to GoldSrc audio. Error %i: %s\n", result, FMOD_ErrorString(result));
@@ -902,10 +1212,15 @@ bool VRInitSound()
 		return false;
 	}
 
+	LoadAllSentences();
+
+	g_soundtime = 0.0;
+
+	gEngfuncs.Con_DPrintf("FMOD successfully initialized. Game sounds are now played back using FMOD.\n");
 	return true;
 }
 
-void VRSoundUpdate(bool paused)
+void VRSoundUpdate(bool paused, double frametime)
 {
 	if (CVAR_GET_FLOAT("vr_use_fmod") == 0.f)
 	{
@@ -916,21 +1231,22 @@ void VRSoundUpdate(bool paused)
 			fmod_currentMapModel = nullptr;
 			fmod_mapGeometry = nullptr;
 			fmod_geometries.clear();
-			allSounds.clear();
-			soundspaused = true;
+			g_allSounds.clear();
+			g_soundspaused = true;
+			g_soundtime = 0.0;
 		}
 		return;
 	}
 
 	if (!fmodSystem)
 	{
-		VRInitSound();
+		VRInitFMOD();
 	}
 
 	if (!fmodSystem)
 		return;
 
-	if (paused != soundspaused)
+	if (paused != g_soundspaused)
 	{
 		cl_entity_s* map = gEngfuncs.GetEntityByIndex(0);
 		if (map == nullptr
@@ -941,6 +1257,7 @@ void VRSoundUpdate(bool paused)
 		{
 			// No map yet, stay paused
 			paused = true;
+			g_soundtime = 0.0;
 			if (fmod_currentMapModel)
 			{
 				// If we had a map before, clear all sounds and clear map
@@ -952,22 +1269,27 @@ void VRSoundUpdate(bool paused)
 
 		if (!paused)
 		{
-			// new level, stop and clear all sounds
+			// new level
 			if (!fmod_currentMapModel || map->model != fmod_currentMapModel)
 			{
+				g_soundtime = 0.0;
 				fmod_currentMapModel = map->model;
 			}
 		}
 
-		for (auto& [entnumChannel, sound] : allSounds)
+		for (auto& [entnumChannel, sound] : g_allSounds)
 		{
-			sound.fmodChannel->setPaused(paused);
+			// pause all sounds, but only unpause sounds that have started
+			if (paused || sound.has_started)
+			{
+				sound.fmodChannel->setPaused(paused);
+			}
 		}
 
-		soundspaused = paused;
+		g_soundspaused = paused;
 	}
 
-	if (!soundspaused)
+	if (!g_soundspaused)
 	{
 		FMOD_3D_ATTRIBUTES listenerattributes = GetFMODListenerAttributes();
 		fmodSystem->set3DListenerAttributes(0, &listenerattributes.position, &listenerattributes.velocity, &listenerattributes.forward, &listenerattributes.up);
@@ -982,17 +1304,51 @@ void VRSoundUpdate(bool paused)
 			isPlayerUnderWater = (pmove->waterlevel > 2) || (playerheadcontents <= CONTENTS_WATER && playerheadcontents > CONTENTS_TRANSLUCENT);
 		}
 
-		for (auto& [entnumChannel, sound] : allSounds)
+		for (auto& [entnumChannel, sound] : g_allSounds)
 		{
+			if (!sound.fmodChannel || !sound.fmodSound)
+				continue;
+
 			UpdateSoundPosition(sound.fmodChannel, entnumChannel.entnum, nullptr, true);
 			UpdateSoundEffects(sound.fmodChannel, entnumChannel.entnum, isPlayerUnderWater);
-			if (entnumChannel.channel == CHAN_VOICE)
+			if (entnumChannel.channel == CHAN_VOICE || entnumChannel.channel == CHAN_STREAM)
 			{
 				UpdateMouth(entnumChannel.entnum, sound);
+			}
+			if (sound.time_marker < 0.f)
+			{
+				sound.time_marker = g_soundtime;
+			}
+
+			if (sound.has_started)
+			{
+				// TODO: end_offset
+				if (sound.end_offset > 0.f)
+				{
+				}
+
+				if (sound.nextSound && !IsPlaying(sound.fmodChannel))
+				{
+					if (sound.fmodChannel)
+						sound.fmodChannel->stop();
+					if (sound.fmodSound)
+						sound.fmodSound->release();
+					sound = *sound.nextSound;
+				}
+			}
+			else
+			{
+				if ((sound.time_marker + sound.delayed_by) <= g_soundtime)
+				{
+					sound.fmodChannel->setPaused(false);
+					sound.has_started = true;
+				}
 			}
 		}
 
 		UpdateGeometries();
+
+		g_soundtime += frametime;
 	}
 
 	fmodSystem->update();
