@@ -601,6 +601,8 @@
 #define CONTENT_GRAVITY_FLYFIELD -18
 #define CONTENT_FOG              -19
 
+#define CONTENTS_VR_TEMP_HACK	-32		// Hack value used by UTIL_IsPointInEntity
+
 #define CONTENT_EMPTY -1
 #define CONTENT_SOLID -2
 #define CONTENT_WATER -3

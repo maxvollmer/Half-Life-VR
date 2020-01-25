@@ -1022,18 +1022,22 @@ bool UTIL_IsPointInEntity(CBaseEntity* pEntity, const Vector& p)
 	if (!pEntity)
 		return false;
 
-	if (pEntity->pev->solid == SOLID_TRIGGER || pEntity->pev->movetype == MOVETYPE_STEP)
+	// No model or model is studio model
+	if (!pEntity->pev->model || STRING(pEntity->pev->model)[0] == 0 || STRING(pEntity->pev->model)[0] != '*')
 	{
+		// TODO: Do proper hitbox check
 		return UTIL_PointInsideBBox(p, pEntity->pev->origin + pEntity->pev->mins, pEntity->pev->origin + pEntity->pev->maxs);
 	}
 
+	int backupskin = pEntity->pev->skin;
+	pEntity->pev->skin = CONTENTS_VR_TEMP_HACK;
+
 	edict_t* pent = nullptr;
-	UTIL_PointContents(p, true, &pent);
+	int contents = UTIL_PointContents(p, true, &pent);
 
-	if (pent && pEntity->edict() == pent)
-		return true;
+	pEntity->pev->skin = backupskin;
 
-	return false;
+	return (contents == CONTENTS_VR_TEMP_HACK) || (pEntity->edict() == pent);
 }
 
 // For finding triggers that are intercepted by a line between two points (used to trigger stuff when teleporting in VR) - Max Vollmer, 2018-01-10
@@ -1043,6 +1047,9 @@ CBaseEntity* UTIL_TraceTriggers(CBaseEntity* pStartEntity, const Vector& vecStar
 	CBaseEntity* pEntity = pStartEntity;
 	while (UTIL_FindAllEntities(&pEntity))
 	{
+		// TODO: Problem with tracing bboxes is that some triggers are actually more "elaborate" 3d meshes,
+		// e.g. the sloped train tracks in On A Rail have sloped trigger_hurt's for electric damage.
+		// So we actually need to trace the actual 3d data from the bsp model.
 		if (pEntity->pev->solid == SOLID_TRIGGER && UTIL_TraceBBox(vecStart, vecEnd, pEntity->pev->absmin, pEntity->pev->absmax))
 		{
 			return pEntity;
@@ -1319,7 +1326,7 @@ bool UTIL_PointInsideBSPModel(const Vector& vec, const Vector& absmin, const Vec
 int UTIL_PointContents(const Vector& vec, bool detectSolidEntities, edict_t** pPent)
 {
 	int pointContents = POINT_CONTENTS(vec);
-	if (pointContents != CONTENTS_SOLID && detectSolidEntities)
+	if (detectSolidEntities)
 	{
 		edict_t* pEnt = g_engfuncs.pfnPEntityOfEntIndex(1);
 		if (pEnt != nullptr)

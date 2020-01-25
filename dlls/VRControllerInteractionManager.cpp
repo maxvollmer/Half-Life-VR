@@ -171,7 +171,9 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 		if (!IsReachable(pPlayer, hitbox))
 			continue;
 
-		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult) || UTIL_IsPointInEntity(hEntity, hitbox.origin))
+		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult)
+			// TODO: Use VRPhysicsHelper to check if point is inside entity with proper raytracing
+			|| UTIL_IsPointInEntity(hEntity, hitbox.origin))
 		{
 			if (!intersectResult->hasresult)
 			{
