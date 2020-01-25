@@ -179,8 +179,8 @@ private:
 
 	void InitPhysicsWorld();
 
-	bool GetPhysicsMapDataFromFile(const std::string& physicsMapDataFilePath);
-	void StorePhysicsMapDataToFile(const std::string& physicsMapDataFilePath);
+	bool GetPhysicsMapDataFromFile(const std::string& mapFilePath, const std::string& physicsMapDataFilePath);
+	void StorePhysicsMapDataToFile(const std::string& mapFilePath, const std::string& physicsMapDataFilePath);
 	void GetPhysicsMapDataFromModel();
 
 	void EnsureWorldsSmallestCupExists(CBaseEntity* pWorldsSmallestCup);

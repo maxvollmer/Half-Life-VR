@@ -36,7 +36,7 @@ extern struct playermove_s* PM_GetPlayerMove(void);
 #include <cstdlib>
 
 constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_MAGIC = 'HLVR';
-constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_VERSION = 104;
+constexpr const uint32_t HLVR_MAP_PHYSDATA_FILE_VERSION = 105;
 
 // Stuff needed to extract brush models
 constexpr const unsigned int ENGINE_MODEL_ARRAY_SIZE = 1024;
@@ -48,6 +48,20 @@ enum NeedLoadFlag
 	NEEDS_LOADING = 1,  // If set, this brush model still needs to be loaded
 	UNREFERENCED = 2   // If set, this brush model isn't used by the current map
 };
+
+uint64_t HashFileData(const std::string& filename)
+{
+	try
+	{
+		std::hash<std::string> stringhasher;
+		std::string data(std::istreambuf_iterator<char>(std::fstream(filename, std::ios_base::binary | std::ios_base::in)), std::istreambuf_iterator<char>());
+		return stringhasher(data);
+	}
+	catch (...)
+	{
+		return 0;
+	}
+}
 
 class MyCollisionCallback : public reactphysics3d::CollisionCallback
 {
@@ -1548,7 +1562,7 @@ void ReadVerticesAndIndices(
 	}
 }
 
-bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDataFilePath)
+bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& mapFilePath, const std::string& physicsMapDataFilePath)
 {
 	m_bspModelData.clear();
 	m_dynamicBSPModelData.clear();
@@ -1566,10 +1580,14 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 			ReadBinaryData(physicsMapDataFileStream, version);
 			ReadBinaryData(physicsMapDataFileStream, hash);
 
-			// TODO: hash is ignored for now
-			if (magic == HLVR_MAP_PHYSDATA_FILE_MAGIC && version == HLVR_MAP_PHYSDATA_FILE_VERSION
-				/*&& hash == TODO*/)
+			if (magic == HLVR_MAP_PHYSDATA_FILE_MAGIC && version == HLVR_MAP_PHYSDATA_FILE_VERSION && hash != 0)
 			{
+				if (hash != HashFileData(mapFilePath))
+				{
+					ALERT(at_console, "Game must recalculate physics data because %s has changed.\n", mapFilePath.c_str());
+					return false;
+				}
+
 				{
 					uint32_t bspDataCount = 0;
 					ReadBinaryData(physicsMapDataFileStream, bspDataCount);
@@ -1650,8 +1668,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 					throw std::runtime_error{ "expected eof, but didn't reach eof" };
 				}
 
-				const model_t* world = GetWorldBSPModel();
-				if (m_hlWorldModel == nullptr || m_hlWorldModel != world || m_collisionWorld == nullptr || m_bspModelData.empty() || m_bspModelData.count(m_currentMapName) == 0 || m_dynamicBSPModelData.count(m_currentMapName) == 0)
+				if (m_bspModelData.count(m_currentMapName) == 0 || m_dynamicBSPModelData.count(m_currentMapName) == 0)
 				{
 					throw std::runtime_error{ "sanity check failed, invalid physics data" };
 				}
@@ -1679,12 +1696,17 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& physicsMapDat
 	}
 }
 
-void VRPhysicsHelper::StorePhysicsMapDataToFile(const std::string& physicsMapDataFilePath)
+void VRPhysicsHelper::StorePhysicsMapDataToFile(const std::string& mapFilePath, const std::string& physicsMapDataFilePath)
 {
 	std::ofstream physicsMapDataFileStream{ physicsMapDataFilePath, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary };
 	if (!physicsMapDataFileStream.fail())
 	{
-		uint64_t hash = 1337;  // TODO!
+		uint64_t hash = HashFileData(mapFilePath);
+		if (hash == 0)
+		{
+			ALERT(at_console, "Couldn't store physics data in file %s! Hash generation for bsp file %s failed!\n", physicsMapDataFilePath.c_str(), mapFilePath.c_str());
+			return;
+		}
 
 		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_MAGIC);
 		WriteBinaryData(physicsMapDataFileStream, HLVR_MAP_PHYSDATA_FILE_VERSION);
@@ -1825,15 +1847,16 @@ bool VRPhysicsHelper::CheckWorld()
 			m_currentMapName = std::string{ world->name };
 			const std::string mapName{ m_currentMapName.substr(0, m_currentMapName.find_last_of(".")) };
 			const std::string physicsMapDataFilePath{ UTIL_GetGameDir() + "/" + mapName + ".hlvrphysdata" };
+			const std::string mapFilePath{ UTIL_GetGameDir() + "/" + mapName + ".bsp" };
 
 			ALERT(at_console, "Initializing physics data for current map (%s)...\n", m_currentMapName.data());
 			auto start = std::chrono::system_clock::now();
 			std::chrono::duration<double> timePassed;
 
-			if (!GetPhysicsMapDataFromFile(physicsMapDataFilePath))
+			if (!GetPhysicsMapDataFromFile(mapFilePath, physicsMapDataFilePath))
 			{
 				GetPhysicsMapDataFromModel();
-				StorePhysicsMapDataToFile(physicsMapDataFilePath);
+				StorePhysicsMapDataToFile(mapFilePath, physicsMapDataFilePath);
 			}
 
 			timePassed = std::chrono::system_clock::now() - start;
