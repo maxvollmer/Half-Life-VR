@@ -103,6 +103,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_world_scale", "1");
 	RegisterCVAR("vr_world_z_strech", "1");
 	RegisterCVAR("vr_xenjumpthingies_teleporteronly", "0");
+	RegisterCVAR("vr_headset_fps", "90");
 	RegisterCVAR("vr_displaylist_fps", "25");
 	RegisterCVAR("vr_displaylist_synced", "0");
 	RegisterCVAR("vr_autocrouch_enabled", "1");
@@ -183,11 +184,14 @@ bool VRSettings::WasAnyCVARChanged()
 void VRSettings::CheckCVARsForChanges()
 {
 	// make sure these are always properly set
-	float fps_max = CVAR_GET_FLOAT("fps_max");
-	if (fps_max < 90)
+	float vr_headset_fps = CVAR_GET_FLOAT("vr_headset_fps");
+	if (vr_headset_fps <= 0.f)
 	{
-		gEngfuncs.pfnClientCmd("fps_max 90");
+		gEngfuncs.Cvar_SetValue("vr_headset_fps", 90.f);
+		vr_headset_fps = 90.f;
 	}
+	std::string fps_max_cmd = "fps_max " + std::to_string(static_cast<int>(vr_headset_fps));
+	gEngfuncs.pfnClientCmd(fps_max_cmd.c_str());
 	gEngfuncs.pfnClientCmd("fps_override 1");
 	gEngfuncs.pfnClientCmd("gl_vsync 0");
 	gEngfuncs.pfnClientCmd("default_fov 180");

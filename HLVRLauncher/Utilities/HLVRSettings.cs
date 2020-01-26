@@ -182,7 +182,7 @@ namespace HLVRLauncher.Utilities
         public OrderedDictionary<string, OrderedDictionary<string, Setting>> GraphicsSettings = new OrderedDictionary<string, OrderedDictionary<string, Setting>>()
         {
             { "FPS & Performance", new OrderedDictionary<string, Setting>() {
-                { "fps_max", Setting.Create( "VR FPS (actual fps in your headset, sync these with your SteamVR settings)", 90 ) },
+                { "vr_headset_fps", Setting.Create( "VR FPS (actual fps in your headset, sync these with your SteamVR settings)", 90 ) },
                 { "vr_displaylist_fps", Setting.Create( "Engine FPS (for animations and moving objects, keep these as low as possible for best performance)", 25 ) },
                 { "vr_displaylist_synced", Setting.Create( "Sync VR and Engine FPS (fixes model jitter, but poor performance)", false ) },
             } },
