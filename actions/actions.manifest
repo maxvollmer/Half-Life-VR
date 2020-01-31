@@ -255,7 +255,7 @@
       {
          "name": "/actions/input/in/RightHandSkeleton",
          "type": "skeleton",
-         "skeleton": "/skeleton/hand/left"
+         "skeleton": "/skeleton/hand/right"
       },
       {
          "name" : "/actions/feedback/out/Recoil",
