@@ -124,8 +124,18 @@ namespace HLVRConfig
 
         public void UpdateState()
         {
-            NotRunningGamePanel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Collapsed : Visibility.Visible;
-            RunningGamePannel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Visible : Visibility.Collapsed;
+            if (!HLVRPaths.CheckHLDirectory() || !HLVRPaths.CheckModDirectory())
+            {
+                ModNotFoundPanel.Visibility = Visibility.Visible;
+                NotRunningGamePanel.Visibility = Visibility.Collapsed;
+                RunningGamePannel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ModNotFoundPanel.Visibility = Visibility.Collapsed;
+                NotRunningGamePanel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Collapsed : Visibility.Visible;
+                RunningGamePannel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         protected override void OnClosing(CancelEventArgs e)

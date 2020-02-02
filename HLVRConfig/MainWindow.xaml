@@ -9,9 +9,13 @@
         MinHeight="450" MinWidth="600">
     <Grid>
         <TabControl>
-            <TabItem Header="General">
+            <TabItem Header="Mod Status">
                 <DockPanel>
                     <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="ModNotFoundPanel">
+                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Couldn't find Half-Life or mod folder. Please go to "Launcher Config" to fix.</TextBlock>
+                        </StackPanel>
+
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="NotRunningGamePanel">
                             <Button Click="LaunchMod_Click" Padding="5" Margin="5">Launch Half-Life: VR</Button>
                         </StackPanel>

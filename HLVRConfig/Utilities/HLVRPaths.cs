@@ -177,7 +177,7 @@ namespace HLVRConfig.Utilities
             }
         }
 
-        private static bool CheckHLDirectory()
+        public static bool CheckHLDirectory()
         {
             //MessageBox.Show("Couldn't find Half-Life installation. Please make sure your installation of Half-Life is valid and run the game at least once from the Steam library. If the problem persists, try running HLVRConfig with administrative privileges.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             //MessageBox.Show("Couldn't verify Half-Life installation. Please make sure your installation of Half-Life is valid and run the game at least once from the Steam library.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -185,7 +185,7 @@ namespace HLVRConfig.Utilities
             return IsHalflifeDirectory(HLDirectory);
         }
 
-        private static bool CheckModDirectory()
+        public static bool CheckModDirectory()
         {
             if (!CheckHLDirectory())
                 return false;
