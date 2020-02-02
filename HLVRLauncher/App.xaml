@@ -1,7 +1,7 @@
-﻿<Application x:Class="HLVRLauncher.App"
+﻿<Application x:Class="HLVRConfig.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:HLVRLauncher"
+             xmlns:local="clr-namespace:HLVRConfig"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
 

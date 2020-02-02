@@ -6,12 +6,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HLVRLauncher.Utilities
+namespace HLVRConfig.Utilities
 {
     class SingleProcessEnforcer
     {
-        private readonly string mutexEventName = "HalfLifeVirtualRealityLauncherMutexEventLaliludgnskdagjfgbs";
-        private readonly string mutexName = "HalfLifeVirtualRealityLauncherMutexLaliludgnskdagjfgbs";
+        private readonly string mutexEventName = "HalfLifeVirtualRealityConfigMutexEventLaliludgnskdagjfgbs";
+        private readonly string mutexName = "HalfLifeVirtualRealityConfigMutexLaliludgnskdagjfgbs";
 
         private EventWaitHandle mutexEventWaitHandle;
         private Mutex mutex;
@@ -19,8 +19,7 @@ namespace HLVRLauncher.Utilities
 
         public void ForceSingleProcess()
         {
-            Boolean mutexCreated;
-            mutex = new Mutex(true, mutexName, out mutexCreated);
+            mutex = new Mutex(true, mutexName, out bool mutexCreated);
             mutexEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, mutexEventName);
             if (!mutexCreated)
             {

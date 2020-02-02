@@ -330,6 +330,9 @@ void VRHelper::Init()
 			VRInitFMOD();
 		}
 	}
+
+	std::filesystem::path hlvrConfigPath = GetPathFor("/HLVRConfig.exe");
+	ShellExecuteA(NULL, "open", hlvrConfigPath.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
 }
 
 void VRHelper::Exit(const char* lpErrorMessage)

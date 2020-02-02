@@ -23,13 +23,13 @@ constexpr const char* VR_DEFAULT_VIEW_DIST_TO_WALLS_AS_STRING = "5";  // for cva
 
 void VRSettings::Init()
 {
-	// These are separate, we don't store them and don't make them accessible through HLVRLauncher's config menu
+	// These are separate, we don't store them and don't make them accessible through HLVRConfig's config menu
 	CVAR_CREATE("vr_debug_physics", "0", 0);
 	CVAR_CREATE("vr_debug_controllers", "0", 0);
 	CVAR_CREATE("vr_noclip", "0", 0);
 	CVAR_CREATE("vr_cheat_enable_healing_exploit", "0", 0);
 
-	// These are all stored in hlsettings.cfg and synchronized with HLVRLauncher
+	// These are all stored in hlsettings.cfg and synchronized with HLVRConfig
 	RegisterCVAR("vr_357_scale", "1");
 	RegisterCVAR("vr_9mmar_scale", "1");
 	RegisterCVAR("vr_9mmhandgun_scale", "1");

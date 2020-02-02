@@ -10,7 +10,7 @@ using System.Windows;
 using Microsoft.Collections.Extensions;
 using Newtonsoft.Json;
 
-namespace HLVRLauncher.Utilities
+namespace HLVRConfig.Utilities
 {
     public class HLVRSettingsManager
     {
@@ -42,7 +42,7 @@ namespace HLVRLauncher.Utilities
             {
                 if (!TryLoadSettings())
                 {
-                    var result = MessageBox.Show("Couldn't load settings file. If you chose OK, HLVRLauncher will replace settings with default values. If you chose Cancel, HLVRLauncher will exit.", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                    var result = MessageBox.Show("Couldn't load settings file. If you chose OK, HLVRConfig will replace settings with default values. If you chose Cancel, HLVRLauncher will exit.", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
                     if (result != MessageBoxResult.OK)
                     {
                         throw new CancelAndTerminateAppException();
@@ -52,7 +52,7 @@ namespace HLVRLauncher.Utilities
 
             if (!TryStoreSettings())
             {
-                var result = MessageBox.Show("Couldn't synchronize settings. If you chose OK, HLVRLauncher will run, but settings shown here might not reflect actual settings stored in the mod. If you chose Cancel, HLVRLauncher will exit.", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                var result = MessageBox.Show("Couldn't synchronize settings. If you chose OK, HLVRConfig will run, but settings shown here might not reflect actual settings stored in the mod. If you chose Cancel, HLVRLauncher will exit.", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
                 if (result != MessageBoxResult.OK)
                 {
                     throw new CancelAndTerminateAppException();

@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 
-namespace HLVRLauncher.Utilities
+namespace HLVRConfig.Utilities
 {
     public class HLVRLauncherConfig
     {

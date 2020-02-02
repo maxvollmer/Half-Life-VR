@@ -11,7 +11,7 @@ using System.Windows;
 using System.Windows.Interop;
 using Microsoft.Win32;
 
-namespace HLVRLauncher.Utilities
+namespace HLVRConfig.Utilities
 {
     public class HLVRPaths
     {
@@ -83,8 +83,7 @@ namespace HLVRLauncher.Utilities
 
             if (steamDirectory == null || steamDirectory.Length == 0 || !Directory.Exists(steamDirectory))
             {
-                MessageBox.Show("Couldn't verify Steam installation. Please make sure Steam is installed. If the problem persists, try running HLVRLauncher with administrative privileges.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                throw new CancelAndTerminateAppException();
+                return null;
             }
 
             return steamDirectory;
@@ -124,6 +123,8 @@ namespace HLVRLauncher.Utilities
         private static string FindHalflifeDirectoryFromSteam()
         {
             string steamDirectory = GetSteamDirectory();
+            if (steamDirectory == null || steamDirectory.Length == 0)
+                return null;
 
             string hlmanifest = Path.Combine(Path.Combine(steamDirectory, "steamapps"), "appmanifest_70.acf");
             if (File.Exists(hlmanifest))
@@ -170,49 +171,41 @@ namespace HLVRLauncher.Utilities
         private static void InitializeFromSteam()
         {
             HLDirectory = FindHalflifeDirectoryFromSteam();
-            if (HLDirectory == null || HLDirectory.Length == 0 || !Directory.Exists(HLDirectory))
+            if (CheckHLDirectory())
             {
-                MessageBox.Show("Couldn't find Half-Life installation. Please make sure your installation of Half-Life is valid and run the game at least once from the Steam library. If the problem persists, try running HLVRLauncher with administrative privileges.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                throw new CancelAndTerminateAppException();
+                VRDirectory = Path.Combine(HLDirectory, "vr");
             }
-
-            string hlexe = Path.Combine(HLDirectory, "hl.exe");
-            string valvefolder = Path.Combine(HLDirectory, "valve");
-            if (!File.Exists(hlexe) || !Directory.Exists(valvefolder))
-            {
-                MessageBox.Show("Couldn't verify Half-Life installation. Please make sure your installation of Half-Life is valid and run the game at least once from the Steam library.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                throw new CancelAndTerminateAppException();
-            }
-
-            CheckModDirectory();
         }
 
-        private static void CheckModDirectory()
+        private static bool CheckHLDirectory()
         {
-            VRDirectory = Path.Combine(HLDirectory, "vr");
-            if (!Directory.Exists(VRDirectory))
-            {
-                MessageBox.Show("Couldn't find Half-Life: VR. Please reinstall the mod.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                throw new CancelAndTerminateAppException();
-            }
+            //MessageBox.Show("Couldn't find Half-Life installation. Please make sure your installation of Half-Life is valid and run the game at least once from the Steam library. If the problem persists, try running HLVRConfig with administrative privileges.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            //MessageBox.Show("Couldn't verify Half-Life installation. Please make sure your installation of Half-Life is valid and run the game at least once from the Steam library.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
 
-            if (!File.Exists(VROpenvr_apidll)
-                || !File.Exists(VREasyHook32dll)
-                || !File.Exists(VRServerdll)
-                || !File.Exists(VRClientdll)
-                || !File.Exists(VRLiblistgam))
-            {
-                MessageBox.Show("Couldn't find necessary mod files. Please reinstall the mod.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                throw new CancelAndTerminateAppException();
-            }
+            return IsHalflifeDirectory(HLDirectory);
+        }
+
+        private static bool CheckModDirectory()
+        {
+            if (!CheckHLDirectory())
+                return false;
+
+            //MessageBox.Show("Couldn't find Half-Life: VR. Please reinstall the mod.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            //MessageBox.Show("Couldn't find necessary mod files. Please reinstall the mod.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+            return IsModDirectory(VRDirectory);
         }
 
         private static bool IsHalflifeDirectory(string directory)
         {
+            if (directory == null || directory.Length == 0)
+                return false;
+
             if (!Directory.Exists(directory))
                 return false;
 
-            if (!File.Exists(Path.Combine(directory, "hl.exe")))
+            if (!File.Exists(Path.Combine(directory, "hl.exe"))
+                || !Directory.Exists(Path.Combine(directory, "valve")))
                 return false;
 
             return true;
@@ -220,12 +213,14 @@ namespace HLVRLauncher.Utilities
 
         private static bool IsModDirectory(string directory)
         {
-            string openvr_apidll = Path.Combine(directory, "openvr_api.dll");
-            string EasyHook32dll = Path.Combine(directory, "EasyHook32.dll");
+            string fmod_dll = Path.Combine(directory, "f.dll");
+            string openvr_apidll = Path.Combine(directory, "opnvrpi.dll");
+            string EasyHook32dll = Path.Combine(directory, "ezhok32.dll");
             string vrdll = Path.Combine(Path.Combine(directory, "dlls"), "vr.dll");
             string clientdll = Path.Combine(Path.Combine(directory, "cl_dlls"), "client.dll");
             string liblistgam = Path.Combine(directory, "liblist.gam");
-            return File.Exists(openvr_apidll)
+            return File.Exists(fmod_dll)
+                && File.Exists(openvr_apidll)
                 && File.Exists(EasyHook32dll)
                 && File.Exists(vrdll)
                 && File.Exists(clientdll)

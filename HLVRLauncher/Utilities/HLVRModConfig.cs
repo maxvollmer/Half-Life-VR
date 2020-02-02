@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using Microsoft.Collections.Extensions;
 
-namespace HLVRLauncher.Utilities
+namespace HLVRConfig.Utilities
 {
     public class HLVRModConfig
     {

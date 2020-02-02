@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Media;
 
-namespace HLVRLauncher.Utilities
+namespace HLVRConfig.Utilities
 {
     public class HLVRModLauncher
     {

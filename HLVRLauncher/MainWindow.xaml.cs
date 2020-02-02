@@ -1,5 +1,5 @@
 ﻿using DbMon.NET;
-using HLVRLauncher.Utilities;
+using HLVRConfig.Utilities;
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -11,7 +11,7 @@ using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
 
-namespace HLVRLauncher
+namespace HLVRConfig
 {
     public partial class MainWindow : Window
     {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HLVRLauncher.Utilities
+namespace HLVRConfig.Utilities
 {
     public enum SettingValueType
     {

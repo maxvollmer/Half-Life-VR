@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hl", "dlls\hl.vcxproj", "{C
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cl_dll", "cl_dll\cl_dll.vcxproj", "{63DEED01-E58B-43FC-9723-FD8987454C75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HLVRLauncher", "HLVRLauncher\HLVRLauncher.csproj", "{47168417-6749-49B5-AF9E-7FD855B388A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HLVRConfig", "HLVRLauncher\HLVRConfig.csproj", "{47168417-6749-49B5-AF9E-7FD855B388A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
