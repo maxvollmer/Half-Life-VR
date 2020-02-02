@@ -32,19 +32,17 @@ namespace HLVRConfig
             {
                 singleProcessEnforcer.ForceSingleProcess();
                 HLVRPaths.Initialize();
+
                 HLVRSettingsManager.InitSettings();
-                IsValidProcess = true;
-                InitializeComponent();
-                HLVRLauncherConfig.Initialize(LauncherConfig);
-                HLVRModConfig.Initialize(InputConfig, HLVRSettingsManager.Settings.InputSettings);
-                HLVRModConfig.Initialize(GraphicsConfig, HLVRSettingsManager.Settings.GraphicsSettings);
-                HLVRModConfig.Initialize(AudioConfig, HLVRSettingsManager.Settings.AudioSettings);
-                HLVRModConfig.Initialize(OtherConfig, HLVRSettingsManager.Settings.OtherSettings);
+                RefreshConfigTabs();
+
                 InitializeNotifyIcon();
                 UpdateState();
                 HandleInitialSettings();
                 LoadReadme();
-                //new Timer((object state) => UpdateState(), null, 1000, 1000);
+
+                InitializeComponent();
+                IsValidProcess = true;
             }
             catch (CancelAndTerminateAppException)
             {
@@ -135,6 +133,7 @@ namespace HLVRConfig
                 ModNotFoundPanel.Visibility = Visibility.Collapsed;
                 NotRunningGamePanel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Collapsed : Visibility.Visible;
                 RunningGamePannel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Visible : Visibility.Collapsed;
+                HLVRSettingsManager.InitSettings();
             }
         }
 
@@ -185,23 +184,41 @@ namespace HLVRConfig
 
         public void RefreshConfigTabs()
         {
-            HLVRLauncherConfig.Initialize(LauncherConfig);
-            HLVRModConfig.Initialize(InputConfig, HLVRSettingsManager.Settings.InputSettings);
-            HLVRModConfig.Initialize(GraphicsConfig, HLVRSettingsManager.Settings.GraphicsSettings);
-            HLVRModConfig.Initialize(AudioConfig, HLVRSettingsManager.Settings.AudioSettings);
-            HLVRModConfig.Initialize(OtherConfig, HLVRSettingsManager.Settings.OtherSettings);
+            HLVRSettingsManager.InitSettings();
+            if (HLVRSettingsManager.IsInitialized)
+            {
+                HLVRLauncherConfig.Initialize(LauncherConfig);
+                HLVRModConfig.Initialize(InputConfig, HLVRSettingsManager.Settings.InputSettings);
+                HLVRModConfig.Initialize(GraphicsConfig, HLVRSettingsManager.Settings.GraphicsSettings);
+                HLVRModConfig.Initialize(AudioConfig, HLVRSettingsManager.Settings.AudioSettings);
+                HLVRModConfig.Initialize(OtherConfig, HLVRSettingsManager.Settings.OtherSettings);
+            }
+            else
+            {
+                LauncherConfig.Children.Clear();
+                InputConfig.Children.Clear();
+                GraphicsConfig.Children.Clear();
+                AudioConfig.Children.Clear();
+                OtherConfig.Children.Clear();
+            }
         }
 
         private void RestoreDefaultLauncherConfig_Click(object sender, RoutedEventArgs e)
         {
-            HLVRSettingsManager.RestoreLauncherSettings();
-            RefreshConfigTabs();
+            if (HLVRSettingsManager.IsInitialized)
+            {
+                HLVRSettingsManager.RestoreLauncherSettings();
+                RefreshConfigTabs();
+            }
         }
 
         private void RestoreDefaultModConfig_Click(object sender, RoutedEventArgs e)
         {
-            HLVRSettingsManager.RestoreModSettings();
-            RefreshConfigTabs();
+            if (HLVRSettingsManager.IsInitialized)
+            {
+                HLVRSettingsManager.RestoreModSettings();
+                RefreshConfigTabs();
+            }
         }
 
         public void ConsoleLog(string msg, Brush color)

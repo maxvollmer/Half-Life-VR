@@ -36,27 +36,40 @@ namespace HLVRConfig.Utilities
 
         private static FileSystemWatcher FileSystemWatcher;
 
+        public static bool IsInitialized { get; private set; } = false;
+
         public static void InitSettings()
         {
+            if (IsInitialized)
+            {
+                // TODO: Check if paths have changed
+                return;
+            }
+
+            if (!HLVRPaths.CheckHLDirectory() || !HLVRPaths.CheckModDirectory())
+            {
+                IsInitialized = false;
+                return;
+            }
+
             if (File.Exists(HLVRPaths.VRSettingsFile))
             {
                 if (!TryLoadSettings())
                 {
-                    var result = MessageBox.Show("Couldn't load settings file. If you chose OK, HLVRConfig will replace settings with default values. If you chose Cancel, HLVRLauncher will exit.", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                    var result = MessageBox.Show("Couldn't load settings file. If you chose OK, HLVRConfig will replace settings with default values. If you chose Cancel, config tabs will not be available.", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
                     if (result != MessageBoxResult.OK)
                     {
-                        throw new CancelAndTerminateAppException();
+                        IsInitialized = false;
+                        return;
                     }
                 }
             }
 
             if (!TryStoreSettings())
             {
-                var result = MessageBox.Show("Couldn't synchronize settings. If you chose OK, HLVRConfig will run, but settings shown here might not reflect actual settings stored in the mod. If you chose Cancel, HLVRLauncher will exit.", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
-                if (result != MessageBoxResult.OK)
-                {
-                    throw new CancelAndTerminateAppException();
-                }
+                MessageBox.Show("Couldn't synchronize settings. Config tabs will not be available.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                IsInitialized = false;
+                return;
             }
 
             storeLoadTaskWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
@@ -76,6 +89,8 @@ namespace HLVRConfig.Utilities
                 //Filter = HLVRPaths.VRSettingsFileName
             };
             FileSystemWatcher.Changed += FileSystemWatcher_Changed;
+
+            IsInitialized = true;
         }
 
         private static void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
