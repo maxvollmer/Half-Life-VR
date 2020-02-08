@@ -2,13 +2,15 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using HLVRConfig.Utilities.Settings;
 using Microsoft.Collections.Extensions;
+using static HLVRConfig.Utilities.Settings.Setting;
 
 namespace HLVRConfig.Utilities
 {
     public class HLVRModConfig
     {
-        public static void Initialize(StackPanel panel, OrderedDictionary<string, OrderedDictionary<string, Setting>> settingcategories)
+        public static void Initialize(StackPanel panel, OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settingcategories)
         {
             panel.Children.Clear();
             foreach (var category in settingcategories)
@@ -17,7 +19,7 @@ namespace HLVRConfig.Utilities
             }
         }
 
-        private static void AddCategory(OrderedDictionary<string, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, string category, OrderedDictionary<string, Setting> settings)
+        private static void AddCategory(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, I18N.I18NString category, OrderedDictionary<string, Setting> settings)
         {
             StackPanel categoryPanel = new StackPanel()
             {
@@ -42,7 +44,7 @@ namespace HLVRConfig.Utilities
             panel.Children.Add(categoryPanel);
         }
 
-        private static void AddInput(OrderedDictionary<string, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, string category, string name, string label, Setting value)
+        private static void AddInput(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, I18N.I18NString category, string name, I18N.I18NString label, Setting value)
         {
             StackPanel inputPanel = new StackPanel()
             {
@@ -57,7 +59,7 @@ namespace HLVRConfig.Utilities
                 Margin = new Thickness(5),
                 Focusable = true,
                 MinWidth = 150,
-                Text = label
+                Text = I18N.Get(label)
             });
 
             if (value.AllowedValues.Count == 0)
@@ -101,7 +103,7 @@ namespace HLVRConfig.Utilities
                 combobox.SelectedIndex = selectedIndex;
                 combobox.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
                 {
-                    HLVRSettingsManager.SetModSetting(settingcategories, category, name, (combobox.SelectedValue as ComboBoxItem).Content as string);
+                    HLVRSettingsManager.SetModSetting(settingcategories, category, name, ((I18N.I18NString)(combobox.SelectedValue as ComboBoxItem).Content).Key);
                 };
                 inputPanel.Children.Add(combobox);
             }
@@ -109,7 +111,7 @@ namespace HLVRConfig.Utilities
             panel.Children.Add(inputPanel);
         }
 
-        private static void AddTitle(StackPanel panel, string title)
+        private static void AddTitle(StackPanel panel, I18N.I18NString title)
         {
             TextBlock textBlock = new TextBlock()
             {
@@ -118,16 +120,16 @@ namespace HLVRConfig.Utilities
                 Margin = new Thickness(5),
                 Focusable = true
             };
-            textBlock.Inlines.Add(new Bold(new Run(title)));
+            textBlock.Inlines.Add(new Bold(new Run(I18N.Get(title))));
             panel.Children.Add(textBlock);
         }
 
-        private static void AddCheckBox(OrderedDictionary<string, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, string category, string name, string label, bool isChecked)
+        private static void AddCheckBox(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, I18N.I18NString category, string name, I18N.I18NString label, bool isChecked)
         {
             CheckBox cb = new CheckBox
             {
                 Name = name,
-                Content = label,
+                Content = new Run(I18N.Get(label)),
                 Margin = new Thickness(10),
                 IsChecked = isChecked
             };

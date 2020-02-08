@@ -43,9 +43,6 @@
     <Reference Include="Microsoft.Experimental.Collections, Version=1.0.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Experimental.Collections.1.0.6-e190117-3\lib\netstandard2.0\Microsoft.Experimental.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -70,13 +67,20 @@
     </ApplicationDefinition>
     <Compile Include="DbMon.NET\DebugMonitor.cs" />
     <Compile Include="Utilities\CancelAndTerminateAppException.cs" />
+    <Compile Include="Utilities\Controls\I18NTabItem.cs" />
+    <Compile Include="Utilities\Controls\I18NText.cs" />
+    <Compile Include="Utilities\Controls\II18NControl.cs" />
     <Compile Include="Utilities\HLVRLauncherConfig.cs" />
     <Compile Include="Utilities\HLVRModConfig.cs" />
     <Compile Include="Utilities\HLVRModLauncher.cs" />
     <Compile Include="Utilities\HLVRPaths.cs" />
-    <Compile Include="Utilities\HLVRSettings.cs" />
+    <Compile Include="Utilities\I18N.cs" />
+    <Compile Include="Utilities\Settings\HLVRLauncherSettings.cs" />
+    <Compile Include="Utilities\Settings\HLVRModSettings.cs" />
     <Compile Include="Utilities\HLVRSettingsManager.cs" />
     <Compile Include="Utilities\ProcessStandardListener.cs" />
+    <Compile Include="Utilities\Settings\Setting.cs" />
+    <Compile Include="Utilities\Settings\ISettingsContainer.cs" />
     <Compile Include="Utilities\SingleProcessEnforcer.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

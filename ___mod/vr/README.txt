@@ -3,9 +3,9 @@ Half-Life: VR
 Author: Max Vollmer and team
 github: https://github.com/maxvollmer/Half-Life-VR
 
-VERSION 0.6.4-beta
+VERSION 0.6.5-beta
 
-Release date: 2020-01-26
+Release date: 
 
 Copyright (c) 2017-2019 Max Vollmer (if not otherwise stated)
 
@@ -109,11 +109,6 @@ Copyright (c) 2005-2019 Lode Vandevenne
 This mod uses DbMon.NET
 https://www.codeproject.com/Articles/13345/DbMon-NET-A-simple-NET-OutputDebugString-capturer
 Copyright (c) 2006 Christian Birkl
-
-===
-This mod uses Newtonsoft.Json
-https://www.newtonsoft.com/json
-Copyright (c) 2007 James Newton-King
 
 ===
 This mod uses JSON for Modern C++

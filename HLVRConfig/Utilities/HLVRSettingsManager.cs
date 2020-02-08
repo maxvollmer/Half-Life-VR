@@ -7,8 +7,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using HLVRConfig.Utilities.Settings;
 using Microsoft.Collections.Extensions;
-using Newtonsoft.Json;
 
 namespace HLVRConfig.Utilities
 {
@@ -24,7 +24,8 @@ namespace HLVRConfig.Utilities
         }
 
         private static Thread storeLoadThread;
-        private static StoreLoadTask currentStoreLoadTask = StoreLoadTask.NONE;
+        private static StoreLoadTask currentModStoreLoadTask = StoreLoadTask.NONE;
+        private static StoreLoadTask currentLauncherStoreLoadTask = StoreLoadTask.NONE;
         private static EventWaitHandle storeLoadTaskWaitHandle;
         private static readonly object storeLoadTaskLock = new object();
         private static Stopwatch storeLoadTaskStopWatch = new Stopwatch();
@@ -32,43 +33,83 @@ namespace HLVRConfig.Utilities
 
         private static readonly object settingsFileLock = new object();
 
-        public static HLVRSettings Settings { get; private set; } = new HLVRSettings();
+        public static HLVRModSettings ModSettings { get; private set; } = new HLVRModSettings();
+        public static HLVRLauncherSettings LauncherSettings { get; private set; } = new HLVRLauncherSettings();
 
         private static FileSystemWatcher FileSystemWatcher;
 
-        public static bool IsInitialized { get; private set; } = false;
+        public static bool AreModSettingsInitialized { get; private set; } = false;
+        public static bool AreLauncherSettingsInitialized { get; private set; } = false;
 
-        public static void InitSettings()
+        private static string ModPath = null;
+        private static string VRPath = null;
+
+        private static void InitLauncherSettings()
         {
-            if (IsInitialized)
+            if (AreLauncherSettingsInitialized)
+                return;
+
+            LauncherSettings = new HLVRLauncherSettings();
+
+            if (File.Exists(HLVRPaths.VRLauncherSettingsFile))
             {
-                // TODO: Check if paths have changed
+                AreLauncherSettingsInitialized =
+                    TryLoadSettings(HLVRPaths.VRLauncherSettingsFile)
+                    && TryStoreSettings(LauncherSettings, HLVRPaths.VRLauncherSettingsFile);
+            }
+            else
+            {
+                AreLauncherSettingsInitialized = TryStoreSettings(LauncherSettings, HLVRPaths.VRLauncherSettingsFile);
+            }
+
+            if (string.IsNullOrEmpty(HLVRPaths.HLDirectory))
+            {
+                HLVRPaths.RestoreLastHLDirectory();
+            }
+        }
+
+        private static void InitModSettings()
+        {
+            // If paths have changed, we need to reload mod settings
+            if (ModPath == null || VRPath == null || ModPath != HLVRPaths.HLDirectory || VRPath != HLVRPaths.VRDirectory)
+            {
+                AreModSettingsInitialized = false;
+            }
+
+            if (AreModSettingsInitialized)
+            {
                 return;
             }
+
+            ModSettings = new HLVRModSettings();
 
             if (!HLVRPaths.CheckHLDirectory() || !HLVRPaths.CheckModDirectory())
             {
-                IsInitialized = false;
+                AreModSettingsInitialized = false;
                 return;
             }
 
-            if (File.Exists(HLVRPaths.VRSettingsFile))
+            if (File.Exists(HLVRPaths.VRModSettingsFile))
             {
-                if (!TryLoadSettings())
+                if (!TryLoadSettings(HLVRPaths.VRModSettingsFile))
                 {
-                    var result = MessageBox.Show("Couldn't load settings file. If you chose OK, HLVRConfig will replace settings with default values. If you chose Cancel, config tabs will not be available.", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                    var errorMsg = new I18N.I18NString("ErrorMsgCouldNotLoadModSettings", "Couldn't load mod settings file. If you chose OK, HLVRConfig will replace settings with default values. If you chose Cancel, config tabs will not be available.");
+                    var errorTitle = new I18N.I18NString("Error", "Error");
+                    var result = MessageBox.Show(I18N.Get(errorMsg), I18N.Get(errorTitle), MessageBoxButton.OKCancel, MessageBoxImage.Warning);
                     if (result != MessageBoxResult.OK)
                     {
-                        IsInitialized = false;
+                        AreModSettingsInitialized = false;
                         return;
                     }
                 }
             }
 
-            if (!TryStoreSettings())
+            if (!TryStoreSettings(ModSettings, HLVRPaths.VRModSettingsFile))
             {
-                MessageBox.Show("Couldn't synchronize settings. Config tabs will not be available.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                IsInitialized = false;
+                var errorMsg = new I18N.I18NString("ErrorMsgCouldNotSynchronizeModSettings", "Couldn't synchronize mod settings. Config tabs are not available.");
+                var errorTitle = new I18N.I18NString("Error", "Error");
+                MessageBox.Show(I18N.Get(errorMsg), I18N.Get(errorTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
+                AreModSettingsInitialized = false;
                 return;
             }
 
@@ -85,47 +126,72 @@ namespace HLVRConfig.Utilities
                 Path = HLVRPaths.VRDirectory,
                 EnableRaisingEvents = true,
                 IncludeSubdirectories = false,
-                NotifyFilter = NotifyFilters.LastWrite,
-                //Filter = HLVRPaths.VRSettingsFileName
+                NotifyFilter = NotifyFilters.LastWrite
             };
             FileSystemWatcher.Changed += FileSystemWatcher_Changed;
 
-            IsInitialized = true;
+            ModPath = HLVRPaths.HLDirectory;
+            VRPath = HLVRPaths.VRDirectory;
+            AreModSettingsInitialized = true;
+        }
+
+        public static void InitSettings()
+        {
+            InitModSettings();
+            InitLauncherSettings();
         }
 
         private static void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
-            if (HLVRPaths.VRSettingsFileName.Equals(e.Name))
+            if (HLVRPaths.VRModSettingsFileName.Equals(e.Name))
             {
-                DelayedLoadSettings();
+                DelayedLoadModSettings();
+            }
+            else if (HLVRPaths.VRLauncherSettingsFileName.Equals(e.Name))
+            {
+                DelayedLoadLauncherSettings();
             }
         }
 
-        public static void SetLauncherSetting(string category, string name, bool value)
+        public static void SetLauncherSetting(I18N.I18NString category, string name, bool value)
         {
-            Settings.LauncherSettings[category][name].Value = value ? "1" : "0";
-            DelayedStoreSettings();
+            LauncherSettings.LauncherSettings[category][name].Value = value ? "1" : "0";
+            DelayedStoreLauncherSettings();
         }
 
-        public static void SetLauncherSetting(string category, string name, string value)
+        public static void SetLauncherSetting(I18N.I18NString category, string name, string value)
         {
-            Settings.LauncherSettings[category][name].Value = value;
-            DelayedStoreSettings();
+            if (LauncherSettings.LauncherSettings[category][name].AllowedValues.Count > 0)
+            {
+                foreach (var allowedValue in LauncherSettings.LauncherSettings[category][name].AllowedValues)
+                {
+                    if (allowedValue.Value.Key.Equals(value))
+                    {
+                        LauncherSettings.LauncherSettings[category][name].Value = allowedValue.Key;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                LauncherSettings.LauncherSettings[category][name].Value = value;
+            }
+            DelayedStoreLauncherSettings();
         }
 
-        internal static void SetModSetting(OrderedDictionary<string, OrderedDictionary<string, Setting>> settings, string category, string name, bool value)
+        internal static void SetModSetting(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settings, I18N.I18NString category, string name, bool value)
         {
             settings[category][name].Value = value ? "1" : "0";
-            DelayedStoreSettings();
+            DelayedStoreModSettings();
         }
 
-        internal static void SetModSetting(OrderedDictionary<string, OrderedDictionary<string, Setting>> settings, string category, string name, string value)
+        internal static void SetModSetting(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settings, I18N.I18NString category, string name, string value)
         {
             if (settings[category][name].AllowedValues.Count > 0)
             {
                 foreach (var allowedValue in settings[category][name].AllowedValues)
                 {
-                    if (allowedValue.Value.Equals(value))
+                    if (allowedValue.Value.Key.Equals(value))
                     {
                         settings[category][name].Value = allowedValue.Key;
                         break;
@@ -136,33 +202,33 @@ namespace HLVRConfig.Utilities
             {
                 settings[category][name].Value = value;
             }
-            DelayedStoreSettings();
+            DelayedStoreModSettings();
         }
 
         internal static void RestoreLauncherSettings()
         {
-            HLVRSettings defaultSettings = new HLVRSettings();
-            Settings.LauncherSettings = defaultSettings.LauncherSettings;
-            DelayedStoreSettings();
+            HLVRLauncherSettings defaultSettings = new HLVRLauncherSettings();
+            LauncherSettings.LauncherSettings = defaultSettings.LauncherSettings;
+            DelayedStoreLauncherSettings();
         }
 
         internal static void RestoreModSettings()
         {
-            HLVRSettings defaultSettings = new HLVRSettings();
-            Settings.InputSettings = defaultSettings.InputSettings;
-            Settings.GraphicsSettings = defaultSettings.GraphicsSettings;
-            Settings.AudioSettings = defaultSettings.AudioSettings;
-            Settings.OtherSettings = defaultSettings.OtherSettings;
-            DelayedStoreSettings();
+            HLVRModSettings defaultSettings = new HLVRModSettings();
+            ModSettings.InputSettings = defaultSettings.InputSettings;
+            ModSettings.GraphicsSettings = defaultSettings.GraphicsSettings;
+            ModSettings.AudioSettings = defaultSettings.AudioSettings;
+            ModSettings.OtherSettings = defaultSettings.OtherSettings;
+            DelayedStoreModSettings();
         }
 
-        private static bool TryStoreSettings()
+        private static bool TryStoreSettings(ISettingsContainer settings, string file)
         {
             lock (settingsFileLock)
             {
                 try
                 {
-                    File.WriteAllText(HLVRPaths.VRSettingsFile, JsonConvert.SerializeObject(Settings));
+                    File.WriteAllText(file, SettingsToText(settings));
                     return true;
                 }
                 catch (Exception)
@@ -172,33 +238,15 @@ namespace HLVRConfig.Utilities
             }
         }
 
-        private static void CopyNewSettings(OrderedDictionary<string, OrderedDictionary<string, Setting>> settings, OrderedDictionary<string, OrderedDictionary<string, Setting>> newSettings)
-        {
-            foreach (var settingCategory in settings)
-            {
-                foreach (var settingName in settingCategory.Value.Keys)
-                {
-                    try
-                    {
-                        settingCategory.Value[settingName].Value = newSettings[settingCategory.Key][settingName].Value;
-                    }
-                    catch (KeyNotFoundException) { }
-                }
-            }
-        }
-
-        private static bool TryLoadSettings()
+        private static bool TryLoadSettings(string file)
         {
             lock (settingsFileLock)
             {
                 try
                 {
-                    var newSettings = JsonConvert.DeserializeObject<HLVRSettings>(File.ReadAllText(HLVRPaths.VRSettingsFile));
-                    CopyNewSettings(Settings.LauncherSettings, newSettings.LauncherSettings);
-                    CopyNewSettings(Settings.InputSettings, newSettings.AudioSettings);
-                    CopyNewSettings(Settings.GraphicsSettings, newSettings.GraphicsSettings);
-                    CopyNewSettings(Settings.AudioSettings, newSettings.AudioSettings);
-                    CopyNewSettings(Settings.OtherSettings, newSettings.OtherSettings);
+                    string text = File.ReadAllText(file);
+                    TextToSettings(text, LauncherSettings);
+                    TextToSettings(text, ModSettings);
                     return true;
                 }
                 catch (Exception)
@@ -217,26 +265,50 @@ namespace HLVRConfig.Utilities
             storeLoadTaskWaitHandle.Set();
         }
 
-        private static void DelayedStoreSettings()
+        private static void DelayedStoreModSettings()
         {
             lock (storeLoadTaskLock)
             {
                 // wait a full second before storing (that way changing multiple settings won't result in lots of stores, every change will push the time further, the file is stored 1 second after the last change)
                 storeLoadTaskTimeToWait = 1000;
                 storeLoadTaskStopWatch = Stopwatch.StartNew();
-                currentStoreLoadTask = StoreLoadTask.STORE;
+                currentModStoreLoadTask = StoreLoadTask.STORE;
             }
             storeLoadTaskWaitHandle.Set();
         }
 
-        private static void DelayedLoadSettings()
+        private static void DelayedLoadModSettings()
         {
             lock (storeLoadTaskLock)
             {
                 // we only wait 100ms when loading
                 storeLoadTaskTimeToWait = 100;
                 storeLoadTaskStopWatch = Stopwatch.StartNew();
-                currentStoreLoadTask = StoreLoadTask.LOAD;
+                currentModStoreLoadTask = StoreLoadTask.LOAD;
+            }
+            storeLoadTaskWaitHandle.Set();
+        }
+
+        private static void DelayedStoreLauncherSettings()
+        {
+            lock (storeLoadTaskLock)
+            {
+                // wait a full second before storing (that way changing multiple settings won't result in lots of stores, every change will push the time further, the file is stored 1 second after the last change)
+                storeLoadTaskTimeToWait = 1000;
+                storeLoadTaskStopWatch = Stopwatch.StartNew();
+                currentLauncherStoreLoadTask = StoreLoadTask.STORE;
+            }
+            storeLoadTaskWaitHandle.Set();
+        }
+
+        private static void DelayedLoadLauncherSettings()
+        {
+            lock (storeLoadTaskLock)
+            {
+                // we only wait 100ms when loading
+                storeLoadTaskTimeToWait = 100;
+                storeLoadTaskStopWatch = Stopwatch.StartNew();
+                currentLauncherStoreLoadTask = StoreLoadTask.LOAD;
             }
             storeLoadTaskWaitHandle.Set();
         }
@@ -254,21 +326,59 @@ namespace HLVRConfig.Utilities
 
                     if (storeLoadTaskStopWatch.Elapsed.TotalMilliseconds > storeLoadTaskTimeToWait)
                     {
-                        if (currentStoreLoadTask == StoreLoadTask.LOAD)
+                        if (currentModStoreLoadTask == StoreLoadTask.LOAD)
                         {
-                            if (TryLoadSettings())
+                            if (TryLoadSettings(HLVRPaths.VRModSettingsFile))
                             {
-                                currentStoreLoadTask = StoreLoadTask.NONE;
-                                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.RefreshConfigTabs()));
+                                currentModStoreLoadTask = StoreLoadTask.NONE;
+                                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.RefreshConfigTabs(true, false)));
                             }
                         }
-                        else if (currentStoreLoadTask == StoreLoadTask.STORE)
+                        else if (currentModStoreLoadTask == StoreLoadTask.STORE)
                         {
-                            if (TryStoreSettings())
+                            if (TryStoreSettings(ModSettings, HLVRPaths.VRModSettingsFile))
                             {
-                                currentStoreLoadTask = StoreLoadTask.NONE;
+                                currentModStoreLoadTask = StoreLoadTask.NONE;
                             }
                         }
+
+                        if (currentLauncherStoreLoadTask == StoreLoadTask.LOAD)
+                        {
+                            if (TryLoadSettings(HLVRPaths.VRLauncherSettingsFile))
+                            {
+                                currentLauncherStoreLoadTask = StoreLoadTask.NONE;
+                                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.RefreshConfigTabs(false, true)));
+                            }
+                        }
+                        else if (currentLauncherStoreLoadTask == StoreLoadTask.STORE)
+                        {
+                            if (TryStoreSettings(LauncherSettings, HLVRPaths.VRLauncherSettingsFile))
+                            {
+                                currentLauncherStoreLoadTask = StoreLoadTask.NONE;
+                                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.RefreshConfigTabs(true, true)));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static string SettingsToText(ISettingsContainer settings)
+        {
+            return string.Join("\n", settings.KeyValuePairs.ToList().ConvertAll(pair => pair.Key + "=" + pair.Value.Value));
+        }
+
+        private static void TextToSettings(string text, ISettingsContainer settings)
+        {
+            using (StringReader reader = new StringReader(text))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var pair = line.Split(new char[] { '=' }, 2);
+                    if (pair.Length == 2)
+                    {
+                        settings.SetValue(pair[0], pair[1]);
                     }
                 }
             }

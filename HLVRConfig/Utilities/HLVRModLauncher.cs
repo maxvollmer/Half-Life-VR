@@ -82,7 +82,7 @@ namespace HLVRConfig.Utilities
             lock (gameLock)
             {
                 hlProcess = null;
-                if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.AutoCloseLauncher].IsTrue())
+                if (HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLauncher][HLVRLauncherSettings.AutoCloseLauncher].IsTrue())
                 {
                     System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => System.Windows.Application.Current.Shutdown()));
                 }

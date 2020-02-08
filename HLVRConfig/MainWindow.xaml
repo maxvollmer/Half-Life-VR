@@ -3,29 +3,37 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:HLVRConfig"
+        xmlns:controls="clr-namespace:HLVRConfig.Utilities.Controls"
         mc:Ignorable="d"
         Title="Half-Life: VR Launcher" Height="450" Width="800"
         MinHeight="450" MinWidth="600">
     <Grid>
         <TabControl>
-            <TabItem Header="Mod Status">
+            <controls:I18NTabItem Key="GUI.Tab.ModStatus" DefaultValue="Mod Status">
                 <DockPanel>
                     <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="ModNotFoundPanel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Couldn't find Half-Life or mod folder. Please go to "Launcher Config" to fix.</TextBlock>
+                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">
+                                <controls:I18NText Key="GUI.ModNotFoundMessage" DefaultValue="Couldn't find Half-Life or mod folder. Please go to &quot;Launcher Config&quot; to fix."></controls:I18NText>
+                            </TextBlock>
                         </StackPanel>
 
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="NotRunningGamePanel">
-                            <Button Click="LaunchMod_Click" Padding="5" Margin="5">Launch Half-Life: VR</Button>
+                            <Button Click="LaunchMod_Click" Padding="5" Margin="5">
+                                <controls:I18NText Key="GUI.LaunchMod" DefaultValue="Launch Half-Life: VR"></controls:I18NText>
+                            </Button>
                         </StackPanel>
 
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="RunningGamePannel">
-                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">Half-Life is currently running.</TextBlock>
+                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">
+                                <controls:I18NText Key="GUI.HLIsRunningMessage" DefaultValue="Half-Life is currently running."></controls:I18NText>
+                            </TextBlock>
                         </StackPanel>
                     </StackPanel>
 
-                    <Button Click="ClearConsole_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom">Clear Console</Button>
+                    <Button Click="ClearConsole_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom">
+                        <controls:I18NText Key="GUI.ClearConsole" DefaultValue="Clear Console"></controls:I18NText>
+                    </Button>
 
                     <RichTextBox Background="Transparent" BorderThickness="1" Padding="5" Margin="10" DockPanel.Dock="Bottom" IsReadOnly="True"
                                  ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
@@ -34,53 +42,63 @@
                         </FlowDocument>
                     </RichTextBox>
                 </DockPanel>
-            </TabItem>
-            <TabItem Header="Launcher Config">
+            </controls:I18NTabItem>
+            <controls:I18NTabItem Key="GUI.Tab.LauncherConfig" DefaultValue="Launcher Config">
                 <DockPanel>
-                    <Button Click="RestoreDefaultLauncherConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
+                    <Button Click="RestoreDefaultLauncherConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                        <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
+                    </Button>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
                         <StackPanel Orientation="Vertical" x:Name="LauncherConfig"/>
                     </ScrollViewer>
                 </DockPanel>
-            </TabItem>
-            <TabItem Header="Input &amp; Movement Settings">
+            </controls:I18NTabItem>
+            <controls:I18NTabItem Key="GUI.Tab.InputAndMovementSettings" DefaultValue="Input &amp; Movement Settings">
                 <DockPanel>
-                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
+                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                        <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
+                    </Button>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
                         <StackPanel Orientation="Vertical" x:Name="InputConfig"/>
                     </ScrollViewer>
                 </DockPanel>
-            </TabItem>
-            <TabItem Header="Graphics &amp; Display Settings">
+            </controls:I18NTabItem>
+            <controls:I18NTabItem Key="GUI.Tab.GraphicsAndDisplaySettings" DefaultValue="Graphics &amp; Display Settings">
                 <DockPanel>
-                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
+                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                        <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
+                    </Button>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
                         <StackPanel Orientation="Vertical" x:Name="GraphicsConfig"/>
                     </ScrollViewer>
                 </DockPanel>
-            </TabItem>
-            <TabItem Header="Audio Settings">
+            </controls:I18NTabItem>
+            <controls:I18NTabItem Key="GUI.Tab.AudioSettings" DefaultValue="Audio Settings">
                 <DockPanel>
-                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
+                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                        <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
+                    </Button>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
                         <StackPanel Orientation="Vertical" x:Name="AudioConfig"/>
                     </ScrollViewer>
                 </DockPanel>
-            </TabItem>
-            <TabItem Header="Other Mod Settings">
+            </controls:I18NTabItem>
+            <controls:I18NTabItem Key="GUI.Tab.OtherModSettings" DefaultValue="Other Mod Settings">
                 <DockPanel>
-                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">Restore defaults</Button>
+                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                        <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
+                    </Button>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
                         <StackPanel Orientation="Vertical" x:Name="OtherConfig"/>
                     </ScrollViewer>
                 </DockPanel>
-            </TabItem>
-            <TabItem Header="Custom Input Actions">
+            </controls:I18NTabItem>
+            <controls:I18NTabItem Key="GUI.Tab.CustomInputActions" DefaultValue="Custom Input Actions">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Orientation="Vertical" x:Name="CustomInputActions"/>
                 </ScrollViewer>
-            </TabItem>
-            <TabItem Header="About">
+            </controls:I18NTabItem>
+            <controls:I18NTabItem Key="GUI.Tab.About" DefaultValue="About">
                 <DockPanel>
                     <RichTextBox Background="Transparent" BorderThickness="1" Padding="5" Margin="10" DockPanel.Dock="Bottom" IsReadOnly="True"
                                  ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
@@ -89,7 +107,7 @@
                         </FlowDocument>
                     </RichTextBox>
                 </DockPanel>
-            </TabItem>
+            </controls:I18NTabItem>
         </TabControl>
     </Grid>
 </Window>

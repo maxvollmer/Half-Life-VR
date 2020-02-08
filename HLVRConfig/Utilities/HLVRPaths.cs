@@ -15,7 +15,22 @@ namespace HLVRConfig.Utilities
 {
     public class HLVRPaths
     {
-        public static string HLDirectory { get; private set; }
+        public static string LastHLDirectory { get; private set; } = "";
+
+        public static string HLDirectory
+        {
+            get
+            {
+                return HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryModLocation][HLVRLauncherSettings.HLDirectory].Value;
+            }
+
+            private set
+            {
+                HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryModLocation][HLVRLauncherSettings.HLDirectory].Value = value;
+                LastHLDirectory = value;
+            }
+        }
+
         public static string VRDirectory { get; private set; }
 
 
@@ -29,11 +44,15 @@ namespace HLVRConfig.Utilities
         public static string HLExecutable { get { return Path.Combine(HLVRPaths.HLDirectory, "hl.exe"); } }
 
 
-        public static string VRSettingsFileName { get { return "hlvrsettings.cfg"; } }
-        public static string VRSettingsFile { get { return Path.Combine(HLVRPaths.VRDirectory, VRSettingsFileName); } }
+        public static string VRModSettingsFileName { get { return "hlvr.cfg"; } }
+        public static string VRModSettingsFile { get { return Path.Combine(HLVRPaths.VRDirectory, VRModSettingsFileName); } }
         public static string VRReadme { get { return Path.Combine(HLVRPaths.VRDirectory, "README.txt"); } }
         public static string VRLogFile { get { return Path.Combine(HLVRPaths.VRDirectory, "hlvr_log.txt"); } }
 
+        public static string VRLauncherSettingsFileName { get { return "hlvrlauncher.cfg"; } }
+        public static string VRLauncherSettingsFile { get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, VRLauncherSettingsFileName); } }
+
+        public static string VRI18NDirectory { get { return Path.Combine(HLVRPaths.VRDirectory, "i18n"); } }
 
 
         public static void Initialize()
@@ -44,6 +63,11 @@ namespace HLVRConfig.Utilities
                 // if that fails use steam to find Half-Life
                 InitializeFromSteam();
             }
+        }
+
+        public static void RestoreLastHLDirectory()
+        {
+            HLDirectory = LastHLDirectory;
         }
 
         private static bool InitializeFromLocation()
@@ -179,9 +203,6 @@ namespace HLVRConfig.Utilities
 
         public static bool CheckHLDirectory()
         {
-            //MessageBox.Show("Couldn't find Half-Life installation. Please make sure your installation of Half-Life is valid and run the game at least once from the Steam library. If the problem persists, try running HLVRConfig with administrative privileges.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-            //MessageBox.Show("Couldn't verify Half-Life installation. Please make sure your installation of Half-Life is valid and run the game at least once from the Steam library.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-
             return IsHalflifeDirectory(HLDirectory);
         }
 
@@ -189,9 +210,6 @@ namespace HLVRConfig.Utilities
         {
             if (!CheckHLDirectory())
                 return false;
-
-            //MessageBox.Show("Couldn't find Half-Life: VR. Please reinstall the mod.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-            //MessageBox.Show("Couldn't find necessary mod files. Please reinstall the mod.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
 
             return IsModDirectory(VRDirectory);
         }

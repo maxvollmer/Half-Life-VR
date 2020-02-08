@@ -1,12 +1,16 @@
 ﻿using DbMon.NET;
 using HLVRConfig.Utilities;
+using HLVRConfig.Utilities.Controls;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -31,17 +35,20 @@ namespace HLVRConfig
             try
             {
                 singleProcessEnforcer.ForceSingleProcess();
+
                 HLVRPaths.Initialize();
-
-                HLVRSettingsManager.InitSettings();
-                RefreshConfigTabs();
-
-                InitializeNotifyIcon();
-                UpdateState();
-                HandleInitialSettings();
-                LoadReadme();
+                UpdateSettingsAndLanguage();
 
                 InitializeComponent();
+
+                UpdateState();
+                RefreshConfigTabs();
+
+                LoadReadme();
+                InitializeNotifyIcon();
+
+                HandleInitialSettings();
+
                 IsValidProcess = true;
             }
             catch (CancelAndTerminateAppException)
@@ -60,18 +67,21 @@ namespace HLVRConfig
             catch (IOException e)
             {
                 AboutText.Inlines.Clear();
-                AboutText.Inlines.Add("Couldn't load README.txt: " + e.Message);
+                var errorMsg = new I18N.I18NString("ErrorMsgCouldNotLoadReadme", "Couldn't load README.txt: %s");
+                AboutText.Inlines.Add(new Regex(Regex.Escape("%s")).Replace(I18N.Get(errorMsg), e.Message, 1));
             }
         }
 
         private void HandleInitialSettings()
         {
-            if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.StartMinimized].IsTrue())
+            if (HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLauncher][HLVRLauncherSettings.StartMinimized].IsTrue())
             {
                 WindowState = WindowState.Minimized;
                 OnWindowStateChanged();
             }
-            if (HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.AutoRunMod].IsTrue())
+            if (HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLauncher][HLVRLauncherSettings.AutoRunMod].IsTrue()
+                && HLVRPaths.CheckHLDirectory()
+                && HLVRPaths.CheckModDirectory())
             {
                 hlvrModLauncher.LaunchMod(false);
             }
@@ -120,8 +130,16 @@ namespace HLVRConfig
             UpdateState();
         }
 
+        private void UpdateSettingsAndLanguage()
+        {
+            I18N.Init();
+            HLVRSettingsManager.InitSettings();
+            I18N.Init();
+        }
+
         public void UpdateState()
         {
+            UpdateSettingsAndLanguage();
             if (!HLVRPaths.CheckHLDirectory() || !HLVRPaths.CheckModDirectory())
             {
                 ModNotFoundPanel.Visibility = Visibility.Visible;
@@ -133,15 +151,16 @@ namespace HLVRConfig
                 ModNotFoundPanel.Visibility = Visibility.Collapsed;
                 NotRunningGamePanel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Collapsed : Visibility.Visible;
                 RunningGamePannel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Visible : Visibility.Collapsed;
-                HLVRSettingsManager.InitSettings();
             }
         }
 
         protected override void OnClosing(CancelEventArgs e)
         {
+            I18N.SaveI18NFile();
+
             if (IsValidProcess 
                 && hlvrModLauncher.IsGameRunning()
-                && HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.AutoCloseGame].IsTrue())
+                && HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLauncher][HLVRLauncherSettings.AutoCloseGame].IsTrue())
             {
                 hlvrModLauncher.TerminateGame();
             }
@@ -159,7 +178,7 @@ namespace HLVRConfig
         private void OnWindowStateChanged()
         {
             if (WindowState == WindowState.Minimized
-                && HLVRSettingsManager.Settings.LauncherSettings[HLVRLauncherConfig.CategoryLauncher][HLVRLauncherConfig.MinimizeToTray].IsTrue())
+                && HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLauncher][HLVRLauncherSettings.MinimizeToTray].IsTrue())
             {
                 ShowInTaskbar = false;
                 notifyIcon.Visible = true;
@@ -182,43 +201,65 @@ namespace HLVRConfig
             ConsoleOutput.Inlines.Clear();
         }
 
-        public void RefreshConfigTabs()
+        public void RefreshConfigTabs(bool mod = true, bool launcher = true)
         {
-            HLVRSettingsManager.InitSettings();
-            if (HLVRSettingsManager.IsInitialized)
+            UpdateSettingsAndLanguage();
+
+            if (mod)
+            {
+                if (HLVRSettingsManager.AreModSettingsInitialized)
+                {
+                    HLVRModConfig.Initialize(InputConfig, HLVRSettingsManager.ModSettings.InputSettings);
+                    HLVRModConfig.Initialize(GraphicsConfig, HLVRSettingsManager.ModSettings.GraphicsSettings);
+                    HLVRModConfig.Initialize(AudioConfig, HLVRSettingsManager.ModSettings.AudioSettings);
+                    HLVRModConfig.Initialize(OtherConfig, HLVRSettingsManager.ModSettings.OtherSettings);
+                }
+                else
+                {
+                    InputConfig.Children.Clear();
+                    GraphicsConfig.Children.Clear();
+                    AudioConfig.Children.Clear();
+                    OtherConfig.Children.Clear();
+                    var errorMsg = I18N.Get(new I18N.I18NString("ErrorMsgCouldNotSynchronizeModSettings", "Couldn't synchronize mod settings. Config tabs are not available."));
+                    AddNopeText(InputConfig, errorMsg);
+                    AddNopeText(GraphicsConfig, errorMsg);
+                    AddNopeText(AudioConfig, errorMsg);
+                    AddNopeText(OtherConfig, errorMsg);
+                }
+            }
+
+            if (launcher)
             {
                 HLVRLauncherConfig.Initialize(LauncherConfig);
-                HLVRModConfig.Initialize(InputConfig, HLVRSettingsManager.Settings.InputSettings);
-                HLVRModConfig.Initialize(GraphicsConfig, HLVRSettingsManager.Settings.GraphicsSettings);
-                HLVRModConfig.Initialize(AudioConfig, HLVRSettingsManager.Settings.AudioSettings);
-                HLVRModConfig.Initialize(OtherConfig, HLVRSettingsManager.Settings.OtherSettings);
+                if (!HLVRSettingsManager.AreLauncherSettingsInitialized)
+                {
+                    var errorMsg = I18N.Get(new I18N.I18NString("ErrorMsgCouldNotSynchronizeLauncherSettings", "Couldn't synchronize launcher settings. You can modify these settings, but they might be lost after closing HLVRConfig."));
+                    AddNopeText(LauncherConfig, errorMsg);
+                }
             }
-            else
+        }
+
+        private void AddNopeText(StackPanel panel, string text)
+        {
+            panel.Children.Insert(0, new TextBlock(new Run(text))
             {
-                LauncherConfig.Children.Clear();
-                InputConfig.Children.Clear();
-                GraphicsConfig.Children.Clear();
-                AudioConfig.Children.Clear();
-                OtherConfig.Children.Clear();
-            }
+                TextWrapping = TextWrapping.WrapWithOverflow,
+                Padding = new Thickness(5),
+                Margin = new Thickness(5),
+                Focusable = true
+            });
         }
 
         private void RestoreDefaultLauncherConfig_Click(object sender, RoutedEventArgs e)
         {
-            if (HLVRSettingsManager.IsInitialized)
-            {
-                HLVRSettingsManager.RestoreLauncherSettings();
-                RefreshConfigTabs();
-            }
+            HLVRSettingsManager.RestoreLauncherSettings();
+            RefreshConfigTabs();
         }
 
         private void RestoreDefaultModConfig_Click(object sender, RoutedEventArgs e)
         {
-            if (HLVRSettingsManager.IsInitialized)
-            {
-                HLVRSettingsManager.RestoreModSettings();
-                RefreshConfigTabs();
-            }
+            HLVRSettingsManager.RestoreModSettings();
+            RefreshConfigTabs();
         }
 
         public void ConsoleLog(string msg, Brush color)
@@ -232,6 +273,37 @@ namespace HLVRConfig
                 File.AppendAllText(HLVRPaths.VRLogFile, msg);
             }
             catch (IOException) { } // TODO: Somehow notify user of exception
+        }
+
+
+        private IEnumerable<II18NControl> Find18NControls(DependencyObject control)
+        {
+            foreach (var child in LogicalTreeHelper.GetChildren(control))
+            {
+                if (child is Button button)
+                    if (button.Content is II18NControl)
+                        yield return button.Content as II18NControl;
+
+                if (child is TextBlock textBlock)
+                    foreach (var inline in textBlock.Inlines)
+                        if (inline is II18NControl)
+                            yield return inline as II18NControl;
+
+                if (child is II18NControl)
+                    yield return child as II18NControl;
+
+                if (child is DependencyObject dependencyObject)
+                    foreach (II18NControl childOfChild in Find18NControls(dependencyObject))
+                        yield return childOfChild;
+            }
+        }
+
+        public void UpdateGUITexts()
+        {
+            foreach (var i18nControl in Find18NControls(this).ToList())
+            {
+                i18nControl.Update();
+            }
         }
     }
 }
