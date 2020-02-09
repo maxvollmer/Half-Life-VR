@@ -18,6 +18,9 @@ class VRSpeechListener
 public:
 	VRSpeechCommand GetCommand();
 
+	void RegisterCommandString(const std::string& name, const std::string& commands);
+	void ExportCommandStrings(std::vector<std::string>& settingslines);
+
 	static VRSpeechListener& Instance();
 
 private:
@@ -31,9 +34,7 @@ private:
 	ISpRecoGrammar* InitGrammar(ISpRecoContext* recoContext);
 	void CleanupSAPI();
 
-	void InitCommandStrings();
-	bool DidCommandStringsChange();
-	std::unordered_set<std::wstring> GetCommandsFromCommandString(const std::string& commandstring);
+	std::unordered_set<std::wstring> GetCommandsFromCommandString(VRSpeechCommand command, const std::string& commandstring);
 
 	void VerifyResult(long result, const std::string& message);
 
@@ -51,6 +52,7 @@ private:
 	std::string m_followcommandstring;
 	std::string m_waitcommandstring;
 	std::string m_hellocommandstring;
+	bool m_commandsHaveChanged = false;
 
 	std::unordered_map<VRSpeechCommand, std::unordered_set<std::wstring>> m_commands;
 

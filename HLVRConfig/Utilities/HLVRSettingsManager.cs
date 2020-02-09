@@ -228,7 +228,7 @@ namespace HLVRConfig.Utilities
             {
                 try
                 {
-                    File.WriteAllText(file, SettingsToText(settings));
+                    File.WriteAllText(file, SettingsToText(settings), Encoding.UTF8);
                     return true;
                 }
                 catch (Exception)
@@ -244,7 +244,7 @@ namespace HLVRConfig.Utilities
             {
                 try
                 {
-                    string text = File.ReadAllText(file);
+                    string text = File.ReadAllText(file, Encoding.UTF8);
                     TextToSettings(text, LauncherSettings);
                     TextToSettings(text, ModSettings);
                     return true;

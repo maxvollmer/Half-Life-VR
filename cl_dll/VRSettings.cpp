@@ -14,6 +14,7 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "VRCommon.h"
+#include "VRSpeechListener.h"
 
 VRSettings g_vrSettings;
 
@@ -122,10 +123,6 @@ void VRSettings::Init()
 	RegisterCVAR("vr_fmod_door_occlusion", "30");
 	RegisterCVAR("vr_fmod_water_occlusion", "20");
 	RegisterCVAR("vr_fmod_glass_occlusion", "10");
-
-	RegisterCVAR("vr_speech_commands_follow", "follow-me|come|lets-go");
-	RegisterCVAR("vr_speech_commands_wait", "wait|stop|hold");
-	RegisterCVAR("vr_speech_commands_hello", "hello|good-morning|hey|hi|morning|greetings");
 
 	// Initialize time that settings file was last changed
 	std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
@@ -262,8 +259,15 @@ void VRSettings::UpdateCVARSFromFile()
 						// sanitize input: only load settings that we actually care about
 						if (m_cvarCache.find(cvarname) != m_cvarCache.end())
 						{
+							// TODO: sanitize input: how to make sure that value doesn't murder goldsrc?
+
 							SetCVAR(cvarname.data(), value.data());
 							m_cvarCache[cvarname] = value;
+						}
+						else
+						{
+							// VRSpeechListener sanitizes input itself and filters out stuff that isn't a commandstring
+							VRSpeechListener::Instance().RegisterCommandString(cvarname, value);
 						}
 					}
 				}
@@ -313,6 +317,7 @@ void VRSettings::UpdateFileFromCVARS()
 						{
 							settingslines.push_back(cvarname + "=" + value);
 						}
+						VRSpeechListener::Instance().ExportCommandStrings(settingslines);
 						std::sort(settingslines.begin(), settingslines.end(), [](const std::string& a, const std::string& b) { return a < b; });
 
 						for (auto& settingsline : settingslines)

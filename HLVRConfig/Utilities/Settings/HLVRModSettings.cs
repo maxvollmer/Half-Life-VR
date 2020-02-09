@@ -127,9 +127,9 @@ namespace HLVRConfig.Utilities
             { new I18N.I18NString("AudioSettings.SpeechRecognition", "Speech recognition"), new OrderedDictionary<string, Setting>() {
                 { "vr_speech_commands_enabled", Setting.Create( new I18N.I18NString("vr_speech_commands_enabled", "Enable speech recognition"), false ) },
 
-                { "vr_speech_commands_follow", Setting.Create( new I18N.I18NString("vr_speech_commands_follow", "Follow commands"), "follow-me|come|lets-go" ) },
-                { "vr_speech_commands_wait", Setting.Create( new I18N.I18NString("vr_speech_commands_wait", "Wait commands"), "wait|stop|hold") },
-                { "vr_speech_commands_hello", Setting.Create( new I18N.I18NString("vr_speech_commands_hello", "Greetings"), "hello|good-morning|hey|hi|morning|greetings" ) },
+                { "vr_speech_commands_follow", Setting.Create( new I18N.I18NString("vr_speech_commands_follow", "Follow commands"), "follow me,come on,come,come with me,lets go" ) },
+                { "vr_speech_commands_wait", Setting.Create( new I18N.I18NString("vr_speech_commands_wait", "Wait commands"), "wait here,wait,stop,hold") },
+                { "vr_speech_commands_hello", Setting.Create( new I18N.I18NString("vr_speech_commands_hello", "Greetings"), "hello,good morning,hey,hi,morning,greetings" ) },
             } },
         };
 

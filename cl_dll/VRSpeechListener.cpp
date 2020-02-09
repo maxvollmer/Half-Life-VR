@@ -44,8 +44,10 @@ VRSpeechCommand VRSpeechListener::GetCommand()
 		return VRSpeechCommand::NONE;
 
 	// reinit if command strings changed
-	if (DidCommandStringsChange())
+	if (m_commandsHaveChanged)
 	{
+		m_commandsHaveChanged = false;
+
 		CleanupSAPI();
 		InitSAPI();
 
@@ -70,14 +72,17 @@ VRSpeechCommand VRSpeechListener::GetCommand()
 
 			wchar_t* phraseBuffer{ nullptr };
 			VerifyResult(result->GetText(SP_GETWHOLEPHRASE, SP_GETWHOLEPHRASE, FALSE, &phraseBuffer, nullptr), "Couldn't get recognized phrase text");
-			std::wstring phrase{ phraseBuffer };
-			CoTaskMemFree(phraseBuffer);
-
-			for (const auto& [command, commandPhrases] : m_commands)
+			if (phraseBuffer)
 			{
-				if (commandPhrases.find(phrase) != commandPhrases.end())
+				std::wstring phrase{ phraseBuffer };
+				CoTaskMemFree(phraseBuffer);
+
+				for (const auto& [command, commandPhrases] : m_commands)
 				{
-					return command;
+					if (commandPhrases.find(phrase) != commandPhrases.end())
+					{
+						return command;
+					}
 				}
 			}
 
@@ -94,32 +99,85 @@ VRSpeechCommand VRSpeechListener::GetCommand()
 	return VRSpeechCommand::NONE;
 }
 
-bool VRSpeechListener::DidCommandStringsChange()
+void VRSpeechListener::ExportCommandStrings(std::vector<std::string>& settingslines)
 {
-	return m_followcommandstring != CVAR_GET_STRING("vr_speech_commands_follow") || m_waitcommandstring != CVAR_GET_STRING("vr_speech_commands_wait") || m_hellocommandstring != CVAR_GET_STRING("vr_speech_commands_hello");
+	settingslines.push_back("vr_speech_commands_follow=" + m_followcommandstring);
+	settingslines.push_back("vr_speech_commands_wait=" + m_waitcommandstring);
+	settingslines.push_back("vr_speech_commands_hello=" + m_hellocommandstring);
 }
 
-void VRSpeechListener::InitCommandStrings()
+void VRSpeechListener::RegisterCommandString(const std::string& name, const std::string& commands)
 {
-	m_followcommandstring = CVAR_GET_STRING("vr_speech_commands_follow");
-	m_waitcommandstring = CVAR_GET_STRING("vr_speech_commands_wait");
-	m_hellocommandstring = CVAR_GET_STRING("vr_speech_commands_hello");
+	VRSpeechCommand command;
+	if (name == "vr_speech_commands_follow")
+	{
+		if (m_followcommandstring == commands)
+			return;
 
-	m_commands[VRSpeechCommand::FOLLOW] = GetCommandsFromCommandString(m_followcommandstring);
-	m_commands[VRSpeechCommand::WAIT] = GetCommandsFromCommandString(m_waitcommandstring);
-	m_commands[VRSpeechCommand::HELLO] = GetCommandsFromCommandString(m_hellocommandstring);
+		m_followcommandstring = commands;
+		command = VRSpeechCommand::FOLLOW;
+	}
+	else if (name == "vr_speech_commands_wait")
+	{
+		if (m_waitcommandstring == commands)
+			return;
+
+		m_waitcommandstring = commands;
+		command = VRSpeechCommand::WAIT;
+	}
+	else if (name == "vr_speech_commands_hello")
+	{
+		if (m_hellocommandstring == commands)
+			return;
+
+		m_hellocommandstring = commands;
+		command = VRSpeechCommand::HELLO;
+	}
+	else
+	{
+		return;
+	}
+
+	m_commands[command] = GetCommandsFromCommandString(command, commands);
+	m_commandsHaveChanged = true;
 }
 
-std::unordered_set<std::wstring> VRSpeechListener::GetCommandsFromCommandString(const std::string& commandstring)
+const char* CommandTypeToString(VRSpeechCommand commandtype)
+{
+	switch (commandtype)
+	{
+	case VRSpeechCommand::FOLLOW: return "FOLLOW";
+	case VRSpeechCommand::WAIT: return "WAIT";
+	case VRSpeechCommand::HELLO: return "HELLO";
+	case VRSpeechCommand::MUMBLE: return "MUMBLE";
+	case VRSpeechCommand::NONE: return "NONE";
+	default: return "<INVALID>";
+	}
+}
+
+std::unordered_set<std::wstring> VRSpeechListener::GetCommandsFromCommandString(VRSpeechCommand commandtype, const std::string& commandstring)
 {
 	std::unordered_set<std::wstring> result;
 
 	std::istringstream commandstringstream{ commandstring };
 	std::string command;
-	while (getline(commandstringstream, command, '|'))
+	int index = 0;
+	while (getline(commandstringstream, command, ','))
 	{
-		command = std::regex_replace(command, std::regex{ "[-]" }, " ");
-		result.insert(std::wstring{ command.begin(), command.end() });
+		command = std::regex_replace(command, std::regex{ "^[\\s]*(.*)[\\s]*$" }, "$1");
+		int requiredsize = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, command.data(), -1, NULL, 0);
+		if (requiredsize > 0)
+		{
+			std::vector<wchar_t> wcommand;
+			wcommand.resize(requiredsize * 4 + 1024);	// paranoia
+			MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, command.data(), -1, wcommand.data(), requiredsize);
+			result.insert(std::wstring{ wcommand.data() });
+		}
+		else
+		{
+			gEngfuncs.Con_DPrintf("Invalid speech command for type %s at index %i\n", CommandTypeToString(commandtype), index);
+		}
+		index++;
 	}
 
 	return result;
@@ -132,8 +190,6 @@ void VRSpeechListener::InitSAPI()
 		m_isInitialized = false;
 		return;
 	}
-
-	InitCommandStrings();
 
 	try
 	{
