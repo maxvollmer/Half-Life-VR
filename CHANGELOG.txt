@@ -1,9 +1,11 @@
 0.6.5-beta
 * Replaced HLVRLauncher with HLVRConfig
-* Added i18n support to HLVRConfig
-* Improved error feedback
-* Support for custom Half-Life installations that HLVRLauncher couldn't detect
-* Replaced json based config file with simple keyvalue file, and split into 2 files (mod settings and settings for HLVRConfig itself)
+  * Added i18n support to HLVRConfig
+  * General improvement of error feedback and user interface
+  * Support for custom Half-Life installations that HLVRLauncher couldn't detect
+* Replaced json based config file with simple keyvalue file, and split into 2 files (mod settings and settings for HLVRConfig)
+* Added support for selecting any installed language for speech recognition
+* Added support for unicode speech commands
 
 0.6.4-beta - 2020-01-26
 * Fixed HLVRLauncher still checking if opengl32.dll is present
