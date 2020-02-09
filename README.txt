@@ -111,11 +111,6 @@ https://www.codeproject.com/Articles/13345/DbMon-NET-A-simple-NET-OutputDebugStr
 Copyright (c) 2006 Christian Birkl
 
 ===
-This mod uses JSON for Modern C++
-https://github.com/nlohmann/json
-Copyright (c) 2013-2019 Niels Lohmann
-
-===
 This mod uses Microsoft.Experimental.Collections
 https://www.nuget.org/packages/Microsoft.Experimental.Collections/
 Copyright (c) 2014-2019 Microsoft Corporation

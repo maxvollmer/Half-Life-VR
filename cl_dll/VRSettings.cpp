@@ -1,10 +1,9 @@
 #include "VRSettings.h"
 
-#include "nlohmann/json.hpp"
-
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <regex>
 
 #define NOGDI
 #define VC_EXTRALEAN
@@ -129,7 +128,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_speech_commands_hello", "hello|good-morning|hey|hi|morning|greetings");
 
 	// Initialize time that settings file was last changed
-	std::filesystem::path settingsPath = GetPathFor("/hlvrsettings.cfg");
+	std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
 	if (std::filesystem::exists(settingsPath))
 	{
 		m_lastSettingsFileChangedTime = std::filesystem::last_write_time(settingsPath).time_since_epoch().count();
@@ -139,11 +138,11 @@ void VRSettings::Init()
 		m_lastSettingsFileChangedTime = 0;
 	}
 
-	// Create a watch handle, so we can observe if hlvrsettings.cfg has changed
+	// Create a watch handle, so we can observe if hlvr.cfg has changed
 	m_watchVRFolderHandle = FindFirstChangeNotificationW((L"\\\\?\\" + GetPathFor("").wstring()).c_str(), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
 
 	// If possible load existing settings
-	UpdateCVARSFromJson();
+	UpdateCVARSFromFile();
 }
 
 bool VRSettings::WasSettingsFileChanged()
@@ -151,7 +150,7 @@ bool VRSettings::WasSettingsFileChanged()
 	DWORD result = WaitForSingleObjectEx(m_watchVRFolderHandle, 0, FALSE);
 	if (result == WAIT_OBJECT_0)
 	{
-		std::filesystem::path settingsPath = GetPathFor("/hlvrsettings.cfg");
+		std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
 		if (std::filesystem::exists(settingsPath))
 		{
 			auto filechangedtime = std::filesystem::last_write_time(settingsPath).time_since_epoch().count();
@@ -223,11 +222,11 @@ void VRSettings::CheckCVARsForChanges()
 
 	if (WasSettingsFileChanged() || m_needsRetry == RetryMode::LOAD)
 	{
-		UpdateCVARSFromJson();
+		UpdateCVARSFromFile();
 	}
 	else if (WasAnyCVARChanged() || m_needsRetry == RetryMode::WRITE)
 	{
-		UpdateJsonFromCVARS();
+		UpdateFileFromCVARS();
 	}
 }
 
@@ -237,112 +236,108 @@ void SetCVAR(const char* name, const char* value)
 	gEngfuncs.pfnClientCmd((std::string(name) + " " + value).data());
 }
 
-void LoadSettingsIntoCvars(nlohmann::json settings, const std::string& settingsGroup)
+void VRSettings::UpdateCVARSFromFile()
 {
-	for (auto& settingCategory : settings[settingsGroup])
-	{
-		for (auto& setting : settingCategory.items())
-		{
-			const std::string& cvarname = setting.key();
-			const std::string& value = setting.value()["Value"];
-			SetCVAR(cvarname.data(), value.data());
-		}
-	}
-}
+	static const std::regex settingslineregex{ "^([A-Za-z_]+)=(.+)$" };
 
-void LoadCvarsIntoSettings(nlohmann::json settings, const std::string& settingsGroup, const std::unordered_map<std::string, std::string>& cvar_cache)
-{
-	for (auto& settingCategory : settings)
-	{
-		for (auto& setting : settingCategory.items())
-		{
-			const std::string& cvarname = setting.key();
-			auto cachedcvar = cvar_cache.find(cvarname);
-			if (cachedcvar != cvar_cache.end())
-			{
-				setting.value()["Value"] = cachedcvar->second;
-			}
-		}
-	}
-}
-
-void VRSettings::UpdateCVARSFromJson()
-{
 	m_needsRetry = RetryMode::NONE;
 
-	std::filesystem::path settingsPath = GetPathFor("/hlvrsettings.cfg");
-	if (std::filesystem::exists(settingsPath))
+	try
 	{
-		std::ifstream settingsstream(settingsPath);
-		if (settingsstream)
+		std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
+		if (std::filesystem::exists(settingsPath))
 		{
-			nlohmann::json settings;
-			try
+			std::ifstream settingsstream(settingsPath);
+			if (settingsstream)
 			{
-				settingsstream >> settings;
+				std::string setting;
+				while (std::getline(settingsstream, setting))
+				{
+					std::smatch match;
+					if (std::regex_match(setting, match, settingslineregex) && match.size() == 2)
+					{
+						auto cvarname = match[1].str();
+						auto value = match[2].str();
 
-				LoadSettingsIntoCvars(settings, "InputSettings");
-				LoadSettingsIntoCvars(settings, "GraphicsSettings");
-				LoadSettingsIntoCvars(settings, "AudioSettings");
-				LoadSettingsIntoCvars(settings, "OtherSettings");
-
+						// sanitize input: only load settings that we actually care about
+						if (m_cvarCache.find(cvarname) != m_cvarCache.end())
+						{
+							SetCVAR(cvarname.data(), value.data());
+							m_cvarCache[cvarname] = value;
+						}
+					}
+				}
 				m_lastSettingsFileChangedTime = std::filesystem::last_write_time(settingsPath).time_since_epoch().count();
 			}
-			catch (const nlohmann::detail::exception & e)
+			else
 			{
-				gEngfuncs.Con_DPrintf("Couldn't load settings from hlvrsettings.cfg, error: %i (%s)\n", e.id, e.what());
+				m_needsRetry = RetryMode::LOAD;
 			}
 		}
-		else
+	}
+	catch (std::exception& e)
+	{
+		gEngfuncs.Con_DPrintf("Couldn't load settings from hlvr.cfg, error: %s\n", e.what());
+	}
+}
+
+void LoadCvarsIntoSettings(const std::unordered_map<std::string, std::string>& settings, const std::unordered_map<std::string, std::string>& cvar_cache)
+{
+	for (auto [cvarname, value] : settings)
+	{
+		auto cachedcvar = cvar_cache.find(cvarname);
+		if (cachedcvar != cvar_cache.end())
 		{
-			m_needsRetry = RetryMode::LOAD;
+			value = cachedcvar->second;
 		}
 	}
 }
 
-void VRSettings::UpdateJsonFromCVARS()
+void VRSettings::UpdateFileFromCVARS()
 {
 	m_needsRetry = RetryMode::NONE;
 
-	std::filesystem::path settingsPath = GetPathFor("/hlvrsettings.cfg");
-	if (std::filesystem::exists(settingsPath))
+	try
 	{
-		std::ifstream settingsinstream(settingsPath);
-		if (settingsinstream)
+		std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
+		if (std::filesystem::exists(settingsPath))
 		{
-			try
+			std::ifstream settingsinstream(settingsPath);
+			if (settingsinstream)
 			{
-				nlohmann::json settings;
-				settingsinstream >> settings;
-				settingsinstream.close();
+					std::ofstream settingsoutstream(settingsPath);
+					if (settingsoutstream)
+					{
+						std::vector<std::string> settingslines;
+						for (auto [cvarname, value] : m_cvarCache)
+						{
+							settingslines.push_back(cvarname + "=" + value);
+						}
+						std::sort(settingslines.begin(), settingslines.end(), [](const std::string& a, const std::string& b) { return a < b; });
 
-				LoadCvarsIntoSettings(settings, "InputSettings", m_cvarCache);
-				LoadCvarsIntoSettings(settings, "GraphicsSettings", m_cvarCache);
-				LoadCvarsIntoSettings(settings, "AudioSettings", m_cvarCache);
-				LoadCvarsIntoSettings(settings, "OtherSettings", m_cvarCache);
+						for (auto& settingsline : settingslines)
+						{
+							settingsoutstream << settingsline << std::endl;
+						}
 
-				std::ofstream settingsoutstream(settingsPath);
-				if (settingsoutstream)
-				{
-					settingsoutstream << settings;
-					settingsoutstream.flush();
-					settingsoutstream.close();
-					m_lastSettingsFileChangedTime = std::filesystem::last_write_time(settingsPath).time_since_epoch().count();
-				}
-				else
-				{
-					m_needsRetry = RetryMode::WRITE;
-				}
+						settingsoutstream.flush();
+						settingsoutstream.close();
+						m_lastSettingsFileChangedTime = std::filesystem::last_write_time(settingsPath).time_since_epoch().count();
+					}
+					else
+					{
+						m_needsRetry = RetryMode::WRITE;
+					}
 			}
-			catch (const nlohmann::detail::exception & e)
+			else
 			{
-				gEngfuncs.Con_DPrintf("Couldn't store settings to hlvrsettings.cfg, error: %i (%s)\n", e.id, e.what());
+				m_needsRetry = RetryMode::WRITE;
 			}
 		}
-		else
-		{
-			m_needsRetry = RetryMode::WRITE;
-		}
+	}
+	catch (std::exception & e)
+	{
+		gEngfuncs.Con_DPrintf("Couldn't store settings to hlvr.cfg, error: %s\n", e.what());
 	}
 }
 
@@ -352,7 +347,7 @@ void VRSettings::RegisterCVAR(const char* name, const char* value)
 	m_cvarCache[name] = value;
 }
 
-void VRSettings::InitialUpdateCVARSFromJson()
+void VRSettings::InitialUpdateCVARSFromFile()
 {
-	UpdateCVARSFromJson();
+	UpdateCVARSFromFile();
 }

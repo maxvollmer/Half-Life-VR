@@ -10,7 +10,7 @@ class VRSettings
 public:
 	void Init();
 
-	void InitialUpdateCVARSFromJson();
+	void InitialUpdateCVARSFromFile();
 
 	void CheckCVARsForChanges();
 
@@ -23,8 +23,8 @@ private:
 	};
 
 	void RegisterCVAR(const char* name, const char* value);
-	void UpdateCVARSFromJson();
-	void UpdateJsonFromCVARS();
+	void UpdateCVARSFromFile();
+	void UpdateFileFromCVARS();
 	bool WasSettingsFileChanged();
 	bool WasAnyCVARChanged();
 

@@ -97,7 +97,7 @@ void VRRenderer::Frame(double frametime)
 
 	if (m_isVeryFirstFrameEver)
 	{
-		g_vrSettings.InitialUpdateCVARSFromJson();
+		g_vrSettings.InitialUpdateCVARSFromFile();
 		m_isVeryFirstFrameEver = false;
 	}
 

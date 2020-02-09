@@ -365,7 +365,9 @@ namespace HLVRConfig.Utilities
 
         private static string SettingsToText(ISettingsContainer settings)
         {
-            return string.Join("\n", settings.KeyValuePairs.ToList().ConvertAll(pair => pair.Key + "=" + pair.Value.Value));
+            var lines = settings.KeyValuePairs.ToList().ConvertAll(pair => pair.Key + "=" + pair.Value.Value);
+            lines.Sort();
+            return string.Join("\n", lines);
         }
 
         private static void TextToSettings(string text, ISettingsContainer settings)
