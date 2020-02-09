@@ -43,7 +43,7 @@ namespace HLVRConfig.Utilities
             } },
 
             { CategoryLauncher, new OrderedDictionary<string, Setting>() {
-                { MinimizeToTray, Setting.Create( new I18N.I18NString("MinimizeToTray", "Minimize to tray"), true ) },
+                { MinimizeToTray, Setting.Create( new I18N.I18NString("MinimizeToTray", "Minimize to tray"), false ) },
                 { StartMinimized, Setting.Create( new I18N.I18NString("StartMinimized", "Start HLVRConfig minimized"), false ) },
                 { AutoRunMod, Setting.Create( new I18N.I18NString("AutoRunMod", "Run mod automatically when starting HLVRConfig"), false ) },
                 { AutoCloseLauncher, Setting.Create( new I18N.I18NString("AutoCloseLauncher", "Exit HLVRConfig automatically when Half-Life: VR exits"), false ) },
