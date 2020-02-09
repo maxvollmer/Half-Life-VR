@@ -30,16 +30,17 @@ namespace HLVRConfig.Utilities
         private static readonly object storeLoadTaskLock = new object();
         private static Stopwatch storeLoadTaskStopWatch = new Stopwatch();
         private static int storeLoadTaskTimeToWait = 1000;
+        private static FileSystemWatcher fileSystemWatcher;
 
         private static readonly object settingsFileLock = new object();
 
         public static HLVRModSettings ModSettings { get; private set; } = new HLVRModSettings();
         public static HLVRLauncherSettings LauncherSettings { get; private set; } = new HLVRLauncherSettings();
 
-        private static FileSystemWatcher FileSystemWatcher;
 
         public static bool AreModSettingsInitialized { get; private set; } = false;
         public static bool AreLauncherSettingsInitialized { get; private set; } = false;
+        private static bool IsFileSystemWatcherInitialized { get; set; } = false;
 
         private static string ModPath = null;
         private static string VRPath = null;
@@ -70,12 +71,6 @@ namespace HLVRConfig.Utilities
 
         private static void InitModSettings()
         {
-            // If paths have changed, we need to reload mod settings
-            if (ModPath == null || VRPath == null || ModPath != HLVRPaths.HLDirectory || VRPath != HLVRPaths.VRDirectory)
-            {
-                AreModSettingsInitialized = false;
-            }
-
             if (AreModSettingsInitialized)
             {
                 return;
@@ -113,32 +108,61 @@ namespace HLVRConfig.Utilities
                 return;
             }
 
-            storeLoadTaskWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-
-            storeLoadThread = new Thread(StoreLoadWorkerLoop)
-            {
-                IsBackground = true
-            };
-            storeLoadThread.Start();
-
-            FileSystemWatcher = new FileSystemWatcher
-            {
-                Path = HLVRPaths.VRDirectory,
-                EnableRaisingEvents = true,
-                IncludeSubdirectories = false,
-                NotifyFilter = NotifyFilters.LastWrite
-            };
-            FileSystemWatcher.Changed += FileSystemWatcher_Changed;
-
-            ModPath = HLVRPaths.HLDirectory;
-            VRPath = HLVRPaths.VRDirectory;
             AreModSettingsInitialized = true;
+        }
+
+        private static void InitFileSystemWatcherEtc()
+        {
+            if (storeLoadTaskWaitHandle == null)
+                storeLoadTaskWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+
+            if (storeLoadThread == null)
+            {
+                storeLoadThread = new Thread(StoreLoadWorkerLoop)
+                {
+                    IsBackground = true
+                };
+                storeLoadThread.Start();
+            }
+
+            if (!IsFileSystemWatcherInitialized)
+            {
+                if (fileSystemWatcher != null)
+                {
+                    fileSystemWatcher.Dispose();
+                    fileSystemWatcher = null;
+                }
+
+                if (HLVRPaths.CheckHLDirectory() && HLVRPaths.CheckModDirectory())
+                {
+                    fileSystemWatcher = new FileSystemWatcher
+                    {
+                        Path = HLVRPaths.VRDirectory,
+                        EnableRaisingEvents = true,
+                        IncludeSubdirectories = false,
+                        NotifyFilter = NotifyFilters.LastWrite
+                    };
+                    fileSystemWatcher.Changed += FileSystemWatcher_Changed;
+
+                    IsFileSystemWatcherInitialized = true;
+                }
+            }
         }
 
         public static void InitSettings()
         {
-            InitModSettings();
+            // If paths have changed, we need to reload mod settings
+            if (ModPath == null || VRPath == null || ModPath != HLVRPaths.HLDirectory || VRPath != HLVRPaths.VRDirectory)
+            {
+                AreModSettingsInitialized = false;
+                IsFileSystemWatcherInitialized = false;
+            }
+            ModPath = HLVRPaths.HLDirectory;
+            VRPath = HLVRPaths.VRDirectory;
+
+            InitFileSystemWatcherEtc();
             InitLauncherSettings();
+            InitModSettings();
         }
 
         private static void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
@@ -155,12 +179,18 @@ namespace HLVRConfig.Utilities
 
         public static void SetLauncherSetting(I18N.I18NString category, string name, bool value)
         {
+            if (!AreLauncherSettingsInitialized)
+                return;
+
             LauncherSettings.LauncherSettings[category][name].Value = value ? "1" : "0";
             DelayedStoreLauncherSettings();
         }
 
         public static void SetLauncherSetting(I18N.I18NString category, string name, string value)
         {
+            if (!AreLauncherSettingsInitialized)
+                return;
+
             if (LauncherSettings.LauncherSettings[category][name].AllowedValues.Count > 0)
             {
                 foreach (var allowedValue in LauncherSettings.LauncherSettings[category][name].AllowedValues)
@@ -181,12 +211,18 @@ namespace HLVRConfig.Utilities
 
         internal static void SetModSetting(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settings, I18N.I18NString category, string name, bool value)
         {
+            if (!AreModSettingsInitialized)
+                return;
+
             settings[category][name].Value = value ? "1" : "0";
             DelayedStoreModSettings();
         }
 
         internal static void SetModSetting(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settings, I18N.I18NString category, string name, string value)
         {
+            if (!AreModSettingsInitialized)
+                return;
+
             if (settings[category][name].AllowedValues.Count > 0)
             {
                 foreach (var allowedValue in settings[category][name].AllowedValues)

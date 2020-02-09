@@ -249,12 +249,14 @@ ISpRecoGrammar* VRSpeechListener::InitGrammar(ISpRecoContext* recoContext)
 
 	try
 	{
-		WORD langId = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_UK);
-		VerifyResult(grammar->ResetGrammar(langId), "Couldn't initialize grammar with english.");
+		std::string hexLangId = CVAR_GET_STRING("vr_speech_language_id");
+		int langId = std::stoi(hexLangId, nullptr, 16);
+		VerifyResult(grammar->ResetGrammar(static_cast<WORD>(langId)), "");
 	}
 	catch (...)
 	{
-		VerifyResult(grammar->ResetGrammar(GetUserDefaultUILanguage()), "Couldn't initialize grammar with english or user default language.");
+		gEngfuncs.Con_DPrintf("Warning: Couldn't initialize speech recognition with selected language. Make sure you have installed and properly setup the selected language for speech recognition in your system settings. Falling back to default language.\n");
+		VerifyResult(grammar->ResetGrammar(GetUserDefaultUILanguage()), "Couldn't initialize speech recognition with default language.");
 	}
 
 	SPSTATEHANDLE rule{ 0 };

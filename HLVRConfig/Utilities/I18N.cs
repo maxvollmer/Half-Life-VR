@@ -1,8 +1,10 @@
 ﻿using Microsoft.Collections.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,6 +12,18 @@ namespace HLVRConfig.Utilities
 {
     public class I18N
     {
+        private static readonly System.UInt32 MUI_LANGUAGE_ID = 0x4;      // Use traditional language ID convention
+        // private static readonly System.UInt32 MUI_LANGUAGE_NAME = 0x8;    // Use ISO language (culture) name convention
+
+        [DllImport("Kernel32.dll", CharSet = CharSet.Auto)]
+        static extern System.Boolean GetUserPreferredUILanguages(
+            System.UInt32 dwFlags,
+            ref System.UInt32 pulNumLanguages,
+            System.IntPtr pwszLanguagesBuffer,
+            ref System.UInt32 pcchLanguagesBuffer
+            );
+
+
         public struct I18NString
         {
             public string Key;
@@ -120,6 +134,70 @@ namespace HLVRConfig.Utilities
             }
 
             System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.UpdateGUITexts()));
+
+            UpdateSpeechLanguages();
+        }
+
+        private static void UpdateSpeechLanguages()
+        {
+            HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.Clear();
+
+            System.UInt32 pulNumLanguages = 0;
+            System.UInt32 pcchLanguagesBuffer = 0;
+            if (GetUserPreferredUILanguages(MUI_LANGUAGE_ID, ref pulNumLanguages, IntPtr.Zero, ref pcchLanguagesBuffer)
+                && pcchLanguagesBuffer > 0)
+            {
+                // size is given in wchar characters, so we need to allocate size*2 bytes
+                IntPtr pwszLanguagesBuffer = Marshal.AllocHGlobal((int)pcchLanguagesBuffer * 2);
+
+                if (GetUserPreferredUILanguages(MUI_LANGUAGE_ID, ref pulNumLanguages, pwszLanguagesBuffer, ref pcchLanguagesBuffer))
+                {
+                    if (pulNumLanguages > 0)
+                    {
+                        // make sure sizes are correct:
+                        // each language is 4 characters + 0 delimiter and the entire list ends with an additional 0
+                        if (pulNumLanguages * 5 + 1 == pcchLanguagesBuffer)
+                        {
+                            for (int i = 0; i < pulNumLanguages; i++)
+                            {
+                                // copy language (4 characters excluding 0) into char array
+                                // all characters are 0-F, so we can safely cast them to char and create a string to parse the value from
+                                char[] language = new char[4];
+                                Marshal.Copy(IntPtr.Add(pwszLanguagesBuffer, i * 5), language, 0, 4);
+                                string hexCultureId = new string(language);
+                                CultureInfo cultureInfo;
+                                try
+                                {
+                                    int cultureId = int.Parse(hexCultureId, System.Globalization.NumberStyles.HexNumber);
+                                    cultureInfo = new CultureInfo(cultureId, true);
+                                }
+                                catch (Exception)
+                                {
+                                    continue;
+                                }
+                                if (cultureInfo != null)
+                                {
+                                    Console.WriteLine(cultureInfo.Name);
+                                }
+                                HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages[hexCultureId] = new I18NString("vr_speech_language_id." + hexCultureId, cultureInfo.DisplayName);
+                            }
+                        }
+                    }
+                }
+
+                Marshal.FreeHGlobal(pwszLanguagesBuffer);
+            }
+
+            if (HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.Count == 0)
+            {
+                HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages["1400"] = new I18NString("vr_speech_language_id.1400", "System Default");
+            }
+
+            // Make sure selected language exists in current list - if not, select first available language
+            if (!HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.ContainsKey(HLVRSettingsManager.ModSettings.AudioSettings[HLVRModSettings.CategorySpeechRecognition][HLVRModSettings.SpeechRecognitionLanguage].Value))
+            {
+                HLVRSettingsManager.SetModSetting(HLVRSettingsManager.ModSettings.AudioSettings, HLVRModSettings.CategorySpeechRecognition, HLVRModSettings.SpeechRecognitionLanguage, "vr_speech_language_id." + HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.Keys.First());
+            }
         }
     }
 }

@@ -41,6 +41,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_egon_scale", "1");
 	RegisterCVAR("vr_enable_aim_laser", "0");
 	RegisterCVAR("vr_speech_commands_enabled", "0");
+	RegisterCVAR("vr_speech_language_id", "1400");
 	RegisterCVAR("vr_flashlight_attachment", "0");
 	RegisterCVAR("vr_flashlight_toggle", "0");
 	RegisterCVAR("vr_movement_attachment", "0");

@@ -10,6 +10,18 @@ namespace HLVRConfig.Utilities
 {
     public class HLVRModSettings : ISettingsContainer
     {
+        public OrderedDictionary<string, I18N.I18NString> SpeechRecognitionLanguages
+        {
+            get
+            {
+                return AudioSettings[CategorySpeechRecognition][SpeechRecognitionLanguage].AllowedValues;
+            }
+        }
+
+        public static readonly I18N.I18NString CategorySpeechRecognition = new I18N.I18NString("AudioSettings.SpeechRecognition", "Speech recognition");
+        public static readonly string SpeechRecognitionLanguage = "vr_speech_language_id";
+
+
         public OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> InputSettings = new OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>>()
         {
             { new I18N.I18NString("InputSettings.AntinauseaFeatures", "Anti-nausea features"), new OrderedDictionary<string, Setting>() {
@@ -124,8 +136,10 @@ namespace HLVRConfig.Utilities
                 { "vr_fmod_glass_occlusion", Setting.Create( new I18N.I18NString("vr_fmod_glass_occlusion", "Glass occlusion (how much sound gets blocked by glass in %)"), 10 ) },
             } },
 
-            { new I18N.I18NString("AudioSettings.SpeechRecognition", "Speech recognition"), new OrderedDictionary<string, Setting>() {
+            { CategorySpeechRecognition, new OrderedDictionary<string, Setting>() {
                 { "vr_speech_commands_enabled", Setting.Create( new I18N.I18NString("vr_speech_commands_enabled", "Enable speech recognition"), false ) },
+
+                { SpeechRecognitionLanguage, Setting.Create( new I18N.I18NString("SpeechRecognitionLanguage", "Language"), "1400", new OrderedDictionary<string, I18N.I18NString>(){ { "1400", new I18N.I18NString("vr_speech_language_id.1400", "System Default") } } ) },
 
                 { "vr_speech_commands_follow", Setting.Create( new I18N.I18NString("vr_speech_commands_follow", "Follow commands"), "follow me,come on,come,come with me,lets go" ) },
                 { "vr_speech_commands_wait", Setting.Create( new I18N.I18NString("vr_speech_commands_wait", "Wait commands"), "wait here,wait,stop,hold") },
