@@ -238,7 +238,7 @@ void SetCVAR(const char* name, const char* value)
 
 void VRSettings::UpdateCVARSFromFile()
 {
-	static const std::regex settingslineregex{ "^([A-Za-z_]+)=(.+)$" };
+	static const std::regex settingslineregex{ "^(.+)=(.+)$" };
 
 	m_needsRetry = RetryMode::NONE;
 
