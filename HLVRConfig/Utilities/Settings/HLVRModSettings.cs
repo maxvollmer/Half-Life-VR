@@ -18,8 +18,17 @@ namespace HLVRConfig.Utilities
             }
         }
 
+        public float GetWorldScale()
+        {
+            float.TryParse(GraphicsSettings[HLVRModSettings.CategoryWorldCustomizationAndScaling][HLVRModSettings.WorldScale].Value, out float value);
+            return value;
+        }
+
         public static readonly I18N.I18NString CategorySpeechRecognition = new I18N.I18NString("AudioSettings.SpeechRecognition", "Speech recognition");
         public static readonly string SpeechRecognitionLanguage = "vr_speech_language_id";
+
+        public static readonly I18N.I18NString CategoryWorldCustomizationAndScaling = new I18N.I18NString("GraphicsSettings.WorldCustomizationAndScaling", "World customization & scaling");
+        public static readonly string WorldScale = "vr_world_scale";
 
 
         public OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> InputSettings = new OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>>()
@@ -117,8 +126,8 @@ namespace HLVRConfig.Utilities
                 { "vr_hd_textures_enabled", Setting.Create( new I18N.I18NString("vr_hd_textures_enabled", "Use HD textures"), false ) }
             } },
 
-            { new I18N.I18NString("GraphicsSettings.WorldCustomizationAndScaling", "World customization & scaling"), new OrderedDictionary<string, Setting>() {
-                { "vr_world_scale", Setting.Create( new I18N.I18NString("vr_world_scale", "World scale"), SettingType.FACTOR, "1" ) },
+            { CategoryWorldCustomizationAndScaling, new OrderedDictionary<string, Setting>() {
+                { WorldScale, Setting.Create( new I18N.I18NString(WorldScale, "World scale"), SettingType.FACTOR, "1" ) },
                 { "vr_world_z_strech", Setting.Create( new I18N.I18NString("vr_world_z_strech", "World height factor"), SettingType.FACTOR, "1" ) },
 
                 { "vr_npcscale", Setting.Create( new I18N.I18NString("vr_npcscale", "NPC scale"), SettingType.FACTOR, "1" ) },
