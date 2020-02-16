@@ -36,7 +36,7 @@ namespace HLVRConfig.Utilities
             {
                 switch (setting.Value.Type)
                 {
-                    case SettingValueType.BOOLEAN:
+                    case SettingType.BOOLEAN:
                         AddCheckBox(categoryPanel, category, setting.Key, setting.Value.Description, setting.Value.IsTrue());
                         break;
                     default:
@@ -109,25 +109,10 @@ namespace HLVRConfig.Utilities
 
             if (value.AllowedValues.Count == 0)
             {
-                var textbox = new TextBox()
-                {
-                    TextWrapping = TextWrapping.NoWrap,
-                    Padding = new Thickness(5),
-                    Margin = new Thickness(5),
-                    Focusable = true,
-                    MaxLines = 1,
-                    MinLines = 1,
-                    MinWidth = (value.Type == SettingValueType.STRING) ? 300 : 100,
-                    Text = value.Value
-                };
+                var textbox = MakeTextBox(value);
                 textbox.TextChanged += (object sender, TextChangedEventArgs e) =>
                 {
                     HLVRSettingsManager.SetLauncherSetting(category, name, textbox.Text);
-                    if (value.IsFolder)
-                    {
-                        System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.UpdateState()));
-                        System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.RefreshConfigTabs(true, false)));
-                    }
                 };
                 inputPanel.Children.Add(textbox);
 
@@ -181,6 +166,22 @@ namespace HLVRConfig.Utilities
             }
 
             panel.Children.Add(inputPanel);
+        }
+
+        private static TextBox MakeTextBox(Setting value)
+        {
+            var textbox = new TextBox()
+            {
+                TextWrapping = TextWrapping.NoWrap,
+                Padding = new Thickness(5),
+                Margin = new Thickness(5),
+                Focusable = true,
+                MaxLines = 1,
+                MinLines = 1,
+                MinWidth = (value.Type == SettingType.STRING) ? 300 : 100,
+                Text = value.Value
+            };
+            return textbox;
         }
     }
 }

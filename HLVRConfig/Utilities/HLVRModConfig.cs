@@ -10,6 +10,9 @@ namespace HLVRConfig.Utilities
 {
     public class HLVRModConfig
     {
+        private static readonly float CM_TO_UNIT = 0.375f;
+        private static readonly float UNIT_TO_CM = 1.0f / CM_TO_UNIT;
+
         public static void Initialize(StackPanel panel, OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settingcategories)
         {
             panel.Children.Clear();
@@ -32,7 +35,7 @@ namespace HLVRConfig.Utilities
             {
                 switch (setting.Value.Type)
                 {
-                    case SettingValueType.BOOLEAN:
+                    case SettingType.BOOLEAN:
                         AddCheckBox(settingcategories, categoryPanel, category, setting.Key, setting.Value.Description, setting.Value.IsTrue());
                         break;
                     default:
@@ -64,22 +67,36 @@ namespace HLVRConfig.Utilities
 
             if (value.AllowedValues.Count == 0)
             {
-                var textbox = new TextBox()
-                {
-                    TextWrapping = TextWrapping.NoWrap,
-                    Padding = new Thickness(5),
-                    Margin = new Thickness(5),
-                    Focusable = true,
-                    MaxLines = 1,
-                    MinLines = 1,
-                    MinWidth = (value.Type == SettingValueType.STRING) ? 300 : 100,
-                    Text = value.Value
-                };
+                var textbox = MakeTextBox(value);
                 textbox.TextChanged += (object sender, TextChangedEventArgs e) =>
                 {
                     HLVRSettingsManager.SetModSetting(settingcategories, category, name, textbox.Text);
                 };
                 inputPanel.Children.Add(textbox);
+
+                if (value.Type == SettingType.SPEED || value.Type == SettingType.DISTANCE)
+                {
+                    var meterTextbox = MakeTextBox(value);
+                    meterTextbox.Text = UnitToMeter(textbox.Text);
+                    bool preventinfiniteloop = false;
+                    textbox.TextChanged += (object sender, TextChangedEventArgs e) =>
+                    {
+                        if (preventinfiniteloop) return;
+                        preventinfiniteloop = true;
+                        meterTextbox.Text = UnitToMeter(textbox.Text);
+                        preventinfiniteloop = false;
+                    };
+                    meterTextbox.TextChanged += (object sender, TextChangedEventArgs e) =>
+                    {
+                        if (preventinfiniteloop) return;
+                        preventinfiniteloop = true;
+                        textbox.Text = MeterToUnit(meterTextbox.Text);
+                        preventinfiniteloop = false;
+                    };
+                    inputPanel.Children.Add(CreateMiniText(value.Type == SettingType.SPEED ? "units/s" : "units"));
+                    inputPanel.Children.Add(meterTextbox);
+                    inputPanel.Children.Add(CreateMiniText(value.Type == SettingType.SPEED ? "cm/s" : "cm"));
+                }
             }
             else
             {
@@ -109,6 +126,17 @@ namespace HLVRConfig.Utilities
             }
 
             panel.Children.Add(inputPanel);
+        }
+
+        private static TextBlock CreateMiniText(string text)
+        {
+            return new TextBlock(new Run(text))
+            {
+                TextWrapping = TextWrapping.NoWrap,
+                Padding = new Thickness(0, 10, 10, 0),
+                Margin = new Thickness(0, 0, 0, 0),
+                Focusable = false
+            };
         }
 
         private static void AddTitle(StackPanel panel, I18N.I18NString title)
@@ -146,6 +174,65 @@ namespace HLVRConfig.Utilities
                 HLVRSettingsManager.SetModSetting(settingcategories, category, name, false);
             };
             panel.Children.Add(cb);
+        }
+
+        private static TextBox MakeTextBox(Setting value)
+        {
+            var textbox = new TextBox()
+            {
+                TextWrapping = TextWrapping.NoWrap,
+                Padding = new Thickness(5),
+                Margin = new Thickness(5),
+                Focusable = true,
+                MaxLines = 1,
+                MinLines = 1,
+                MinWidth = GetTextBoxWidth(value.Type),
+                Text = value.Value
+            };
+            return textbox;
+        }
+
+        private static double GetTextBoxWidth(SettingType type)
+        {
+            switch (type)
+            {
+                case SettingType.STRING:
+                    return 300;
+                case SettingType.SPEED:
+                    return 75;
+                case SettingType.DISTANCE:
+                    return 75;
+                case SettingType.FACTOR:
+                    return 75;
+                case SettingType.COUNT:
+                    return 75;
+                default:
+                    return 100;
+            }
+        }
+
+        private static string UnitToMeter(string text)
+        {
+            try
+            {
+                return ((int)(float.Parse(text) * UNIT_TO_CM)).ToString();
+            }
+            catch (Exception)
+            {
+                return "";
+            }
+        }
+
+        private static string MeterToUnit(string text)
+        {
+            try
+            {
+                return ((int)(float.Parse(text) * CM_TO_UNIT)).ToString();
+            }
+            catch (Exception)
+            {
+                return "";
+            }
         }
     }
 }

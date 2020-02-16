@@ -36,8 +36,8 @@ void VRSettings::Init()
 	RegisterCVAR("vr_crossbow_scale", "1");
 	RegisterCVAR("vr_crowbar_scale", "1");
 	RegisterCVAR("vr_crowbar_vanilla_attack_enabled", "0");
-	RegisterCVAR("vr_disable_func_friction", "0");
-	RegisterCVAR("vr_disable_triggerpush", "0");
+	RegisterCVAR("vr_disable_func_friction", "1");
+	RegisterCVAR("vr_disable_triggerpush", "1");
 	RegisterCVAR("vr_egon_scale", "1");
 	RegisterCVAR("vr_enable_aim_laser", "0");
 	RegisterCVAR("vr_speech_commands_enabled", "0");
@@ -78,9 +78,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_move_analogsideways_inverted", "0");
 	RegisterCVAR("vr_move_analogturn_inverted", "0");
 	RegisterCVAR("vr_move_analogupdown_inverted", "0");
-	RegisterCVAR("vr_move_instant_accelerate", "0");
 	RegisterCVAR("vr_move_instant_accelerate", "1");
-	RegisterCVAR("vr_move_instant_decelerate", "0");
 	RegisterCVAR("vr_move_instant_decelerate", "1");
 	RegisterCVAR("vr_no_gauss_recoil", "1");
 	RegisterCVAR("vr_npcscale", "1");
@@ -124,6 +122,14 @@ void VRSettings::Init()
 	RegisterCVAR("vr_fmod_door_occlusion", "30");
 	RegisterCVAR("vr_fmod_water_occlusion", "20");
 	RegisterCVAR("vr_fmod_glass_occlusion", "10");
+
+	RegisterCVAR("vr_forwardspeed", "200");		// cl_forwardspeed
+	RegisterCVAR("vr_backspeed", "200");		// cl_backspeed
+	RegisterCVAR("vr_sidespeed", "200");		// cl_sidespeed
+	RegisterCVAR("vr_upspeed", "200");			// cl_upspeed
+	RegisterCVAR("vr_yawspeed", "210");			// cl_yawspeed
+	RegisterCVAR("vr_walkspeedfactor", "0.3");	// cl_movespeedkey
+
 
 	// Initialize time that settings file was last changed
 	std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
@@ -178,6 +184,11 @@ bool VRSettings::WasAnyCVARChanged()
 	return cvarsChanged;
 }
 
+void SyncCvars(const char* src, const char* dst)
+{
+	gEngfuncs.Cvar_SetValue(dst, CVAR_GET_FLOAT(src));
+}
+
 void VRSettings::CheckCVARsForChanges()
 {
 	// make sure these are always properly set
@@ -203,6 +214,13 @@ void VRSettings::CheckCVARsForChanges()
 		gEngfuncs.Cvar_SetValue("vr_noclip", 0.f);
 		gEngfuncs.Cvar_SetValue("vr_cheat_enable_healing_exploit", 0.f);
 	}
+
+	SyncCvars("vr_forwardspeed", "cl_forwardspeed");
+	SyncCvars("vr_backspeed", "cl_backspeed");
+	SyncCvars("vr_sidespeed", "cl_sidespeed");
+	SyncCvars("vr_upspeed", "cl_upspeed");
+	SyncCvars("vr_yawspeed", "cl_yawspeed");
+	SyncCvars("vr_walkspeedfactor", "cl_movespeedkey");
 
 	// reset HD cvars if classic mode is enabled
 	if (CVAR_GET_FLOAT("vr_classic_mode") != 0.f)

@@ -71,7 +71,7 @@ namespace HLVRConfig.Utilities
                 {
                     texts.Clear();
 
-                    using (StringReader reader = new StringReader(File.ReadAllText(I18NFile)))
+                    using (StringReader reader = new StringReader(File.ReadAllText(I18NFile, Encoding.UTF8)))
                     {
                         string line;
                         while ((line = reader.ReadLine()) != null)
@@ -99,7 +99,7 @@ namespace HLVRConfig.Utilities
                 }
                 var lines = texts.ToList().ConvertAll(pair => pair.Key + "=" + pair.Value);
                 lines.Sort();
-                File.WriteAllText(I18NFile, string.Join("\n", lines));
+                File.WriteAllText(I18NFile, string.Join("\n", lines), Encoding.UTF8);
             }
         }
 

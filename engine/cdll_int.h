@@ -159,7 +159,7 @@ extern "C"
 		void (*GetViewAngles)(float*);
 		void (*SetViewAngles)(float*);
 		int (*GetMaxClients)(void);
-		void (*Cvar_SetValue)(char* cvar, float value);
+		void (*Cvar_SetValue)(const char* cvar, float value);
 
 		int (*Cmd_Argc)(void);
 		char* (*Cmd_Argv)(int arg);

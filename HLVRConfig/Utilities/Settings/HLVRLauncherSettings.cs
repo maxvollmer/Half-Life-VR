@@ -39,7 +39,7 @@ namespace HLVRConfig.Utilities
             } },
 
             { CategoryLanguage, new OrderedDictionary<string, Setting>() {
-                { Language, Setting.Create( new I18N.I18NString("Language", "Language"), "en", new OrderedDictionary<string, I18N.I18NString>() ) },
+                { Language, Setting.Create( new I18N.I18NString("Language", "Language"), new OrderedDictionary<string, I18N.I18NString>(), "en" ) },
             } },
 
             { CategoryLauncher, new OrderedDictionary<string, Setting>() {
