@@ -162,6 +162,34 @@ namespace VR
 			}
 		}
 
+		void Movement::HandleWalk(const vr::InputDigitalActionData_t& data, const std::string& action)
+		{
+			if (data.bChanged)
+			{
+				if (CVAR_GET_FLOAT("vr_togglewalk") != 0.f)
+				{
+					if (data.bState)
+						ClientCmd("+speed");
+					else
+						ClientCmd("-speed");
+				}
+				else
+				{
+					extern kbutton_t in_speed;
+					if (in_speed.state & 1)
+					{
+						in_speed.down[0] = in_speed.down[1] = 0;
+						in_speed.state = 0;
+					}
+					else
+					{
+						in_speed.down[0] = in_speed.down[1] = 0;
+						in_speed.state = 1;
+					}
+				}
+			}
+		}
+
 		void Movement::HandleAnalogJump(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
 			if (data.bActive && fabs(data.deltaX) > EPSILON)

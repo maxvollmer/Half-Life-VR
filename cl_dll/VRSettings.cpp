@@ -129,6 +129,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_upspeed", "200");			// cl_upspeed
 	RegisterCVAR("vr_yawspeed", "210");			// cl_yawspeed
 	RegisterCVAR("vr_walkspeedfactor", "0.3");	// cl_movespeedkey
+	RegisterCVAR("vr_togglewalk", "0");
 
 
 	// Initialize time that settings file was last changed

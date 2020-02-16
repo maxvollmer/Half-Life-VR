@@ -53,6 +53,11 @@
          "type" : "boolean"
       },
       {
+         "name" : "/actions/input/in/Walk",
+         "requirement" : "suggested",
+         "type" : "boolean"
+      },
+      {
          "name" : "/actions/input/in/TurnLeft",
          "requirement" : "optional",
          "type" : "boolean"
@@ -464,6 +469,7 @@
          "/actions/input/in/MoveSideways" : "Move left/right",
          "/actions/input/in/MoveUp" : "Move up (ladder/water)",
          "/actions/input/in/MoveUpDown" : "Move up/down (ladders/water)",
+         "/actions/input/in/Walk" : "Walk",
          "/actions/input/in/NextWeapon" : "Select next weapon",
          "/actions/input/in/PauseGame" : "Pause Game",
          "/actions/input/in/PreviousWeapon" : "Select previous weapon",

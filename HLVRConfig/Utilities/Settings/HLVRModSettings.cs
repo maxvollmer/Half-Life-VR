@@ -51,6 +51,7 @@ namespace HLVRConfig.Utilities
                 { "vr_sidespeed", Setting.Create( new I18N.I18NString("vr_sidespeed", "Sideways speed"), SettingType.SPEED, "200" ) },
                 { "vr_upspeed", Setting.Create( new I18N.I18NString("vr_upspeed", "Up/Down speed"), SettingType.SPEED, "200" ) },
                 { "vr_yawspeed", Setting.Create( new I18N.I18NString("vr_yawspeed", "Turn speed (degrees/s)"), SettingType.COUNT, "210" ) },
+                { "vr_togglewalk", Setting.Create( new I18N.I18NString("vr_togglewalk", "Walk Input Mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_togglewalk.Hold", "Hold (Hold to Walk, release to run)") }, { "1", new I18N.I18NString("vr_togglewalk.Toggle", "Toggle (Click to switch between walking and running)") } }, "0" ) },
                 { "vr_walkspeedfactor", Setting.Create( new I18N.I18NString("vr_walkspeedfactor", "Speed factor when 'walk' is active"), SettingType.FACTOR, "0.3" ) },
             } },
 

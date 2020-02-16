@@ -129,6 +129,7 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "MoveForwardBackward", &VR::Input::Movement::HandleMoveForwardBackward);
 		RegisterAction("input", "MoveSideways", &VR::Input::Movement::HandleMoveSideways);
 		RegisterAction("input", "MoveUpDown", &VR::Input::Movement::HandleMoveUpDown);
+		RegisterAction("input", "Walk", &VR::Input::Movement::HandleWalk);
 		RegisterAction("input", "Turn", &VR::Input::Movement::HandleTurn);
 		RegisterAction("input", "MoveForwardBackwardSideways", &VR::Input::Movement::HandleMoveForwardBackwardSideways);
 		RegisterAction("input", "MoveForwardBackwardTurn", &VR::Input::Movement::HandleMoveForwardBackwardTurn);
