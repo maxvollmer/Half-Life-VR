@@ -1541,8 +1541,6 @@ void CBasePlayer::PlayerUse(void)
 	float flMaxDot = VIEW_FIELD_NARROW;
 	float flDot = 0.f;
 
-	UTIL_MakeVectors(pev->v_angle);  // so we know which way we are facing
-
 	while ((pObject = UTIL_FindEntityInSphere(pObject, pev->origin, PLAYER_SEARCH_RADIUS)) != nullptr)
 	{
 		if (pObject->ObjectCaps() & (FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE))
@@ -1556,7 +1554,7 @@ void CBasePlayer::PlayerUse(void)
 			// if it's "hull" is in the view cone
 			vecLOS = UTIL_ClampVectorToBox(vecLOS, pObject->pev->size * 0.5);
 
-			flDot = DotProduct(vecLOS, gpGlobals->v_forward);
+			flDot = DotProduct(vecLOS, vr_hmdForward);
 			if (flDot > flMaxDot)
 			{  // only if the item is in front of the user
 				pClosest = pObject;
@@ -4878,7 +4876,7 @@ LINK_ENTITY_TO_CLASS(info_intermission, CInfoIntermission);
 
 // VR methods:
 
-void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg, bool hasReceivedSpawnYaw)
+void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const float hmdOffsetZ, const Vector& hmdForward, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg, bool hasReceivedSpawnYaw)
 {
 	// Filter out outdated updates
 	if (timestamp <= vr_hmdLastUpdateClienttime && vr_hmdLastUpdateServertime >= gpGlobals->time)
@@ -4975,7 +4973,10 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	vr_lastHMDOffset.x = hmdOffset.x;
 	vr_lastHMDOffset.y = hmdOffset.y;
 
-	// TODO: HMD height and HMD direction for view_ofs and viewdir for looking at and interaction with stuff
+	// HMD height and HMD direction for view_ofs and viewdir for looking at and interaction with stuff
+	pev->view_ofs.z = pev->mins.z + hmdOffsetZ;
+	vr_hmdForward = hmdForward;
+	vr_hmdForward.InlineNormalize();
 }
 
 void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging)

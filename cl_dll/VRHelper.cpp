@@ -952,13 +952,21 @@ void VRHelper::SendPositionUpdateToServer()
 		return;
 
 	Vector hmdOffset = GetOffsetInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform());
-	hmdOffset.z = 0.f;
+
+	Vector hmdForward;
+	Vector dummy;
+	GetViewVectors(hmdForward, dummy, dummy);
 
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
 	float hmdHeightInRL = hlTransform.get()[13];
 
 	char cmdHMD[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %i %i", m_vrUpdateTimestamp, hmdOffset.x, hmdOffset.y, m_currentYawOffsetDelta.x, m_currentYawOffsetDelta.y, m_prevYaw, m_currentYaw,  // for save/restore
+	sprintf_s(cmdHMD, "vrupd_hmd %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i %i",
+		m_vrUpdateTimestamp,
+		hmdOffset.x, hmdOffset.y, hmdOffset.z,
+		hmdForward.x, hmdForward.y, hmdForward.z,
+		m_currentYawOffsetDelta.x, m_currentYawOffsetDelta.y,
+		m_prevYaw, m_currentYaw,  // for save/restore
 		m_hasReceivedYawUpdate ? 1 : 0,
 		m_hasReceivedSpawnYaw ? 1 : 0);
 	m_currentYawOffsetDelta = Vector2D{};  // reset after sending

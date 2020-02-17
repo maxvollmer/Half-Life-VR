@@ -528,16 +528,18 @@ void ClientCommand(edict_t* pEntity)
 	else if (FStrEq(pcmd, "vrupd_hmd"))  // Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
-		if (size == 10)
+		if (size == 14)
 		{
 			int timestamp = atoi(CMD_ARGV(1));
 			Vector2D offset(atof(CMD_ARGV(2)), atof(CMD_ARGV(3)));
-			Vector2D yawOffsetDelta(atof(CMD_ARGV(4)), atof(CMD_ARGV(5)));
-			float prevYaw = atof(CMD_ARGV(6));
-			float currentYaw = atof(CMD_ARGV(7));
-			bool hasReceivedRestoreYawMsg = atoi(CMD_ARGV(8)) != 0;
-			bool hasReceivedSpawnYaw = atoi(CMD_ARGV(9)) != 0;
-			pPlayer->UpdateVRHeadset(timestamp, offset, yawOffsetDelta, prevYaw, currentYaw, hasReceivedRestoreYawMsg, hasReceivedSpawnYaw);
+			float offsetZ = atof(CMD_ARGV(4));
+			Vector forward(atof(CMD_ARGV(5)), atof(CMD_ARGV(6)), atof(CMD_ARGV(7)));
+			Vector2D yawOffsetDelta(atof(CMD_ARGV(8)), atof(CMD_ARGV(9)));
+			float prevYaw = atof(CMD_ARGV(10));
+			float currentYaw = atof(CMD_ARGV(11));
+			bool hasReceivedRestoreYawMsg = atoi(CMD_ARGV(12)) != 0;
+			bool hasReceivedSpawnYaw = atoi(CMD_ARGV(13)) != 0;
+			pPlayer->UpdateVRHeadset(timestamp, offset, offsetZ, forward, yawOffsetDelta, prevYaw, currentYaw, hasReceivedRestoreYawMsg, hasReceivedSpawnYaw);
 		}
 		else
 		{

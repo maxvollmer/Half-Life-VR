@@ -343,6 +343,8 @@ private:
 	int vr_hmdLastUpdateClienttime = 0;
 	float vr_hmdLastUpdateServertime = 0;
 
+	Vector vr_hmdForward{ 1.f, 0.f, 0.f };
+
 	Vector vr_ClientOriginOffset;  // Must be Vector instead of Vector2D for save/restore. z is not used.
 
 	EHANDLE<CBaseEntity> hFlashLight;
@@ -446,7 +448,7 @@ public:
 	bool IsWeaponUnderWater();
 	bool IsWeaponPositionValid();
 
-	void UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg, bool hasReceivedSpawnYaw);
+	void UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const float offsetZ, const Vector& forward, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg, bool hasReceivedSpawnYaw);
 	void UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool dragOn);
 
 	void StoreVROffsetsForLevelchange();
