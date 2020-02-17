@@ -236,7 +236,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 			m_displayList = 0;
 		}
 
-		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
+		vrHelper->PrepareVRScene(VRHelper::VRSceneMode::Engine);
 
 		m_displayList = glGenLists(1);
 		glNewList(m_displayList, GL_COMPILE);
@@ -257,13 +257,13 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 	if (executeDisplayList)
 	{
 		// draw recorderd display list for left eye, then render vr hands and hud
-		vrHelper->PrepareVRScene(vr::EVREye::Eye_Left);
+		vrHelper->PrepareVRScene(VRHelper::VRSceneMode::LeftEye);
 		glCallList(m_displayList);
 		RenderVRHandsAndHUDAndStuff();
 		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
 
 		// draw recorderd display list for right eye, then render vr hands and hud
-		vrHelper->PrepareVRScene(vr::EVREye::Eye_Right);
+		vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
 		glCallList(m_displayList);
 		RenderVRHandsAndHUDAndStuff();
 		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);

@@ -30,10 +30,17 @@ public:
 
 	void Init();
 
+	enum class VRSceneMode
+	{
+		LeftEye,
+		RightEye,
+		Engine
+	};
+
 	void PollEvents(bool isInGame, bool isInMenu);
 	bool UpdatePositions();
 	void SubmitImages();
-	void PrepareVRScene(vr::EVREye eEye);
+	void PrepareVRScene(VRSceneMode sceneMode);
 	void FinishVRScene(float width, float height);
 
 	unsigned int GetVRTexture(vr::EVREye eEye);

@@ -512,15 +512,22 @@ bool VRHelper::UpdatePositions()
 	return false;
 }
 
-void VRHelper::PrepareVRScene(vr::EVREye eEye)
+void VRHelper::PrepareVRScene(VRSceneMode sceneMode)
 {
 	ClearGLErrors();
 
 	try
 	{
-		TryGLCall(glBindFramebuffer, GL_FRAMEBUFFER, eEye == vr::EVREye::Eye_Left ? vrGLLeftEyeFrameBuffer : vrGLRightEyeFrameBuffer);
-
-		TryGLCall(glViewport, 0, 0, vrRenderWidth, vrRenderHeight);
+		if (sceneMode == VRSceneMode::Engine)
+		{
+			TryGLCall(glBindFramebuffer, GL_FRAMEBUFFER, 0);
+			TryGLCall(glViewport, 0, 0, 640, 480);
+		}
+		else
+		{
+			TryGLCall(glBindFramebuffer, GL_FRAMEBUFFER, sceneMode == VRSceneMode::LeftEye ? vrGLLeftEyeFrameBuffer : vrGLRightEyeFrameBuffer);
+			TryGLCall(glViewport, 0, 0, vrRenderWidth, vrRenderHeight);
+		}
 
 		TryGLCall(glClearColor, 0, 0, 0, 0);
 		TryGLCall(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -528,12 +535,12 @@ void VRHelper::PrepareVRScene(vr::EVREye eEye)
 		TryGLCall(glMatrixMode, GL_PROJECTION);
 		TryGLCall(glPushMatrix);
 		TryGLCall(glLoadIdentity);
-		TryGLCall(glLoadMatrixf, eEye == vr::EVREye::Eye_Left ? positions.m_mat4LeftProjection.get() : positions.m_mat4RightProjection.get());
+		TryGLCall(glLoadMatrixf, sceneMode == VRSceneMode::LeftEye ? positions.m_mat4LeftProjection.get() : positions.m_mat4RightProjection.get());
 
 		TryGLCall(glMatrixMode, GL_MODELVIEW);
 		TryGLCall(glPushMatrix);
 		TryGLCall(glLoadIdentity);
-		TryGLCall(glLoadMatrixf, eEye == vr::EVREye::Eye_Left ? positions.m_mat4LeftModelView.get() : positions.m_mat4RightModelView.get());
+		TryGLCall(glLoadMatrixf, sceneMode == VRSceneMode::LeftEye ? positions.m_mat4LeftModelView.get() : positions.m_mat4RightModelView.get());
 
 		TryGLCall(glDisable, GL_CULL_FACE);
 	}
