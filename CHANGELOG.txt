@@ -1,4 +1,4 @@
-0.6.5-beta
+0.6.5-beta - 2020-02-17
 * Replaced HLVRLauncher with HLVRConfig
   * Added i18n support to HLVRConfig
   * General improvement of error feedback and user interface
