@@ -164,7 +164,7 @@ bool VRRenderer::ShouldUpdateDisplayList()
 	if (m_displayList == 0)
 		return true;
 
-	if (CVAR_GET_FLOAT("vr_displaylist_synced") != 0.f)
+	if (CVAR_GET_FLOAT("vr_async_fps_enabled") == 0.f)
 		return true;
 
 	double vr_displaylist_fps = CVAR_GET_FLOAT("vr_displaylist_fps");

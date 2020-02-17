@@ -117,9 +117,9 @@ namespace HLVRConfig.Utilities
         public OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> GraphicsSettings = new OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>>()
         {
             { new I18N.I18NString("GraphicsSettings.FPSAndPerformance", "FPS & Performance"), new OrderedDictionary<string, Setting>() {
+                { "vr_async_fps_enabled", Setting.Create( new I18N.I18NString("vr_async_fps_enabled", "(EXPERIMENTAL) Enable separate FPS for engine and VR"), false ) },
                 { "vr_headset_fps", Setting.Create( new I18N.I18NString("vr_headset_fps", "VR FPS (actual fps in your headset, sync these with your SteamVR settings)"), SettingType.COUNT, "90" ) },
                 { "vr_displaylist_fps", Setting.Create( new I18N.I18NString("vr_displaylist_fps", "Engine FPS (for animations and moving objects, keep these as low as possible for best performance)"), SettingType.COUNT, "25" ) },
-                { "vr_displaylist_synced", Setting.Create( new I18N.I18NString("vr_displaylist_synced", "Sync VR and Engine FPS (fixes model jitter, but poor performance)"), false ) },
             } },
 
             { new I18N.I18NString("GraphicsSettings.Quality", "Quality"), new OrderedDictionary<string, Setting>() {
