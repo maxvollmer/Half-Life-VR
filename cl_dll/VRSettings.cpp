@@ -103,6 +103,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_world_z_strech", "1");
 	RegisterCVAR("vr_xenjumpthingies_teleporteronly", "0");
 	RegisterCVAR("vr_headset_fps", "90");
+	RegisterCVAR("vr_rendermode", "0");
 	RegisterCVAR("vr_displaylist_fps", "25");
 	RegisterCVAR("vr_async_fps_enabled", "0"); 
 	RegisterCVAR("vr_autocrouch_enabled", "1");
@@ -271,7 +272,7 @@ void VRSettings::UpdateCVARSFromFile()
 				while (std::getline(settingsstream, setting))
 				{
 					std::smatch match;
-					if (std::regex_match(setting, match, settingslineregex) && match.size() == 2)
+					if (std::regex_match(setting, match, settingslineregex) && match.size() == 3)
 					{
 						auto cvarname = match[1].str();
 						auto value = match[2].str();

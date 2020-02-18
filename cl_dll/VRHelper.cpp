@@ -2,6 +2,8 @@
 #include <string>
 #include <algorithm>
 #include <unordered_set>
+#include <mutex>
+#include <thread>
 
 #include "Matrices.h"
 #include "hud.h"
@@ -29,6 +31,11 @@
 #ifndef MAX_COMMAND_SIZE
 #define MAX_COMMAND_SIZE 256
 #endif
+
+namespace
+{
+	std::mutex g_vr_compositorMutex;
+}
 
 // Set by message from server on load/restore/levelchange
 float g_vrRestoreYaw_PrevYaw = 0.f;
@@ -495,6 +502,8 @@ bool VRHelper::UpdatePositions()
 	UpdateVRHLConversionVectors();
 	UpdateWorldRotation();
 
+	//std::lock_guard<std::mutex> lockCompositor{ g_vr_compositorMutex };
+
 	if (vrSystem != nullptr && vrCompositor != nullptr)
 	{
 		vrCompositor->SetTrackingSpace(isVRRoomScale ? vr::TrackingUniverseStanding : vr::TrackingUniverseSeated);
@@ -551,10 +560,15 @@ void VRHelper::PrepareVRScene(VRSceneMode sceneMode)
 
 	//hlvrLockGLMatrices();
 	HLVR_LockGLMatrices();
+
+	vr_scenePushCount++;
 }
 
 void VRHelper::FinishVRScene(float width, float height)
 {
+	if (vr_scenePushCount <= 0)
+		return;
+
 	//hlvrUnlockGLMatrices();
 	HLVR_UnlockGLMatrices();
 
@@ -567,14 +581,16 @@ void VRHelper::FinishVRScene(float width, float height)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	glViewport(0, 0, width, height);
+
+	vr_scenePushCount--;
 }
 
-void VRHelper::SubmitImage(vr::EVREye eEye, unsigned int texture)
+void VRHelper::InternalSubmitImage(vr::EVREye eEye)
 {
 	vr::Texture_t vrTexture;
 	vrTexture.eType = vr::ETextureType::TextureType_OpenGL;
 	vrTexture.eColorSpace = vr::EColorSpace::ColorSpace_Gamma;
-	vrTexture.handle = reinterpret_cast<void*>(texture);
+	vrTexture.handle = reinterpret_cast<void*>(eEye == vr::EVREye::Eye_Left ? vrGLLeftEyeTexture : vrGLRightEyeTexture);
 
 	ClearGLErrors();
 	auto vrError = vrCompositor->Submit(eEye, &vrTexture);
@@ -587,12 +603,21 @@ void VRHelper::SubmitImage(vr::EVREye eEye, unsigned int texture)
 	}
 }
 
-void VRHelper::SubmitImages()
+void VRHelper::InternalSubmitImages()
 {
-	SubmitImage(vr::EVREye::Eye_Left, vrGLLeftEyeTexture);
-	SubmitImage(vr::EVREye::Eye_Right, vrGLRightEyeTexture);
+	//std::lock_guard<std::mutex> lockCompositor{ g_vr_compositorMutex };
+
+	InternalSubmitImage(vr::EVREye::Eye_Left);
+	InternalSubmitImage(vr::EVREye::Eye_Right);
 	glFlush();
 	vrCompositor->PostPresentHandoff();
+}
+
+void VRHelper::SubmitImages()
+{
+	InternalSubmitImages();
+	//std::thread thread{ [this] { InternalSubmitImages(); } };
+	//thread.detach();
 }
 
 unsigned int VRHelper::GetVRTexture(vr::EVREye eEye)
@@ -1446,6 +1471,8 @@ Vector VRHelper::GetLocalPlayerAngles()
 
 void VRHelper::SetSkybox(const char* name)
 {
+	//std::lock_guard<std::mutex> lockCompositor{ g_vr_compositorMutex };
+
 	if (!vrCompositor)
 		return;
 

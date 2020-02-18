@@ -215,65 +215,103 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		CheckAndIfNecessaryReplaceHDTextures();
 	}
 
-	// We record the entire engine rendering in an OpenGL display list every 40ms
-	// and we execute it every frame for left and right eye
-
-	bool executeDisplayList = false;
-
-	if (pparams->nextView == 1)
+	if (pparams->nextView == 0)
 	{
-		glEndList();
-		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-
-		executeDisplayList = true;
+		m_useDisplayList = CVAR_GET_FLOAT("vr_rendermode") != 0.f;
 	}
-	else if (ShouldUpdateDisplayList())
+
+	if (m_useDisplayList)
 	{
-		if (m_displayList)
+
+		// We record the entire engine rendering in an OpenGL display list every 40ms
+		// and we execute it every frame for left and right eye
+
+		bool executeDisplayList = false;
+
+		if (pparams->nextView == 1)
 		{
-			// delete previous display list
-			glDeleteLists(m_displayList, 1);
-			m_displayList = 0;
+			glEndList();
+			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+
+			executeDisplayList = true;
+		}
+		else if (ShouldUpdateDisplayList())
+		{
+			if (m_displayList)
+			{
+				// delete previous display list
+				glDeleteLists(m_displayList, 1);
+				m_displayList = 0;
+			}
+
+			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::Engine);
+
+			m_displayList = glGenLists(1);
+			glNewList(m_displayList, GL_COMPILE);
+
+			pparams->nextView = 1;
+			pparams->onlyClientDraw = 0;
+			m_fIsOnlyClientDraw = false;
+
+			m_LastDisplayListUpdate = m_clientTime;
+
+			executeDisplayList = false;
+		}
+		else
+		{
+			executeDisplayList = true;
 		}
 
-		vrHelper->PrepareVRScene(VRHelper::VRSceneMode::Engine);
+		if (executeDisplayList)
+		{
+			// draw recorderd display list for left eye, then render vr hands and hud
+			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::LeftEye);
+			glCallList(m_displayList);
+			RenderVRHandsAndHUDAndStuff();
+			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
 
-		m_displayList = glGenLists(1);
-		glNewList(m_displayList, GL_COMPILE);
+			// draw recorderd display list for right eye, then render vr hands and hud
+			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
+			glCallList(m_displayList);
+			RenderVRHandsAndHUDAndStuff();
+			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
 
-		pparams->nextView = 1;
-		pparams->onlyClientDraw = 0;
-		m_fIsOnlyClientDraw = false;
+			// send images to HMD
+			vrHelper->SubmitImages();
 
-		m_LastDisplayListUpdate = m_clientTime;
-
-		executeDisplayList = false;
+			pparams->nextView = 0;
+			pparams->onlyClientDraw = 1;
+			m_fIsOnlyClientDraw = true;
+		}
 	}
 	else
 	{
-		executeDisplayList = true;
-	}
+		if (pparams->nextView == 0)
+		{
+			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::LeftEye);
 
-	if (executeDisplayList)
-	{
-		// draw recorderd display list for left eye, then render vr hands and hud
-		vrHelper->PrepareVRScene(VRHelper::VRSceneMode::LeftEye);
-		glCallList(m_displayList);
-		RenderVRHandsAndHUDAndStuff();
-		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+			pparams->nextView = 1;
+			pparams->onlyClientDraw = 0;
+			m_fIsOnlyClientDraw = false;
+		}
+		else if (pparams->nextView == 1)
+		{
+			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
 
-		// draw recorderd display list for right eye, then render vr hands and hud
-		vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
-		glCallList(m_displayList);
-		RenderVRHandsAndHUDAndStuff();
-		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+			pparams->nextView = 2;
+			pparams->onlyClientDraw = 0;
+			m_fIsOnlyClientDraw = false;
+		}
+		else if (pparams->nextView == 2)
+		{
+			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+			vrHelper->SubmitImages();
 
-		// send images to HMD
-		vrHelper->SubmitImages();
-
-		pparams->nextView = 0;
-		pparams->onlyClientDraw = 1;
-		m_fIsOnlyClientDraw = true;
+			pparams->nextView = 0;
+			pparams->onlyClientDraw = 1;
+			m_fIsOnlyClientDraw = true;
+		}
 	}
 
 	vrHelper->GetViewOrg(pparams->vieworg);
@@ -348,13 +386,21 @@ bool VRRenderer::GetRightControllerAttachment(Vector& out, int attachment)
 
 void VRRenderer::DrawNormal()
 {
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glPopAttrib();
 }
 
 void VRRenderer::DrawTransparent()
 {
+	if (!m_fIsOnlyClientDraw)
+	{
+		m_wasMenuJustRendered = false;
+		return;
+	}
+
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	return;
+
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 
 	if (m_fIsOnlyClientDraw)
@@ -382,12 +428,12 @@ void VRRenderer::DrawTransparent()
 		bool renderUpsideDown = false;
 		if (m_isInMenu)
 		{
-			glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+			//glBindTexture(GL_TEXTURE_2D, backgroundTexture);
 			m_wasMenuJustRendered = true;
 		}
 		else
 		{
-			glBindTexture(GL_TEXTURE_2D, vrHelper->GetVRTexture(vr::EVREye::Eye_Left));
+			//glBindTexture(GL_TEXTURE_2D, vrHelper->GetVRTexture(vr::EVREye::Eye_Left));
 			m_wasMenuJustRendered = false;
 			renderUpsideDown = true;
 		}
@@ -396,16 +442,18 @@ void VRRenderer::DrawTransparent()
 
 		float size = 1.f;
 
+		/*
 		glBegin(GL_QUADS);
-		glTexCoord2f(0, renderUpsideDown ? 0 : 1);
+		//glTexCoord2f(0, renderUpsideDown ? 0 : 1);
 		glVertex3f(-size, -size, -1.f);
-		glTexCoord2f(1, renderUpsideDown ? 0 : 1);
+		//glTexCoord2f(1, renderUpsideDown ? 0 : 1);
 		glVertex3f(size, -size, -1.f);
-		glTexCoord2f(1, renderUpsideDown ? 1 : 0);
+		//glTexCoord2f(1, renderUpsideDown ? 1 : 0);
 		glVertex3f(size, size, -1.f);
-		glTexCoord2f(0, renderUpsideDown ? 1 : 0);
+		//glTexCoord2f(0, renderUpsideDown ? 1 : 0);
 		glVertex3f(-size, size, -1.f);
 		glEnd();
+		*/
 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
@@ -502,6 +550,7 @@ void VRRenderer::RestoreCullface()
 #define SURF_TRANSPARENT 256  // it's a transparent texture (was SURF_DONTWARP)
 
 std::unordered_map<std::string, int> m_originalTextureIDs;
+std::unordered_set<std::string> m_noHDTextureExistsIDs;
 void VRRenderer::ReplaceAllTexturesWithHDVersion(struct cl_entity_s* ent, bool enableHD)
 {
 	if (ent != nullptr && ent->model != nullptr)
@@ -520,6 +569,11 @@ void VRRenderer::ReplaceAllTexturesWithHDVersion(struct cl_entity_s* ent, bool e
 					m_originalTextureIDs[texture->name] = texture->gl_texturenum;
 				}
 
+				if (m_noHDTextureExistsIDs.count(texture->name) > 0)
+				{
+					continue;
+				}
+
 				// Replace
 				if (enableHD)
 				{
@@ -527,6 +581,10 @@ void VRRenderer::ReplaceAllTexturesWithHDVersion(struct cl_entity_s* ent, bool e
 					if (hdTex)
 					{
 						texture->gl_texturenum = int(hdTex);
+					}
+					else
+					{
+						m_noHDTextureExistsIDs.insert(texture->name);
 					}
 				}
 				// Restore
@@ -572,6 +630,11 @@ void VRRenderer::CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s* map)
 					if (texture != nullptr && texture->name != nullptr && strcmp("sky", texture->name) != 0 && texture->name[0] != '{'  // skip transparent textures, they are broken
 						)
 					{
+						if (m_noHDTextureExistsIDs.count(texture->name) > 0)
+						{
+							continue;
+						}
+
 						if (m_originalTextureIDs.count(texture->name) == 0 || m_originalTextureIDs[texture->name] == texture->gl_texturenum)
 						{
 							replaceHDTextures = true;
@@ -591,11 +654,6 @@ void VRRenderer::CheckAndIfNecessaryReplaceHDTextures(struct cl_entity_s* map)
 
 void VRRenderer::CheckAndIfNecessaryReplaceHDTextures()
 {
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glColor4f(0, 0, 0, 1);
-
 	cl_entity_s* map = gEngfuncs.GetEntityByIndex(0);
 	if (map != nullptr && map->model != nullptr)
 	{

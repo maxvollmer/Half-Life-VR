@@ -84,7 +84,8 @@ private:
 	void SendPositionUpdateToServer();
 	void UpdateViewEnt(bool isControllerValid, const Vector& controllerPosition, const Vector& controllerAngles, const Vector& controllerVelocity, bool isMirrored);
 
-	void SubmitImage(vr::EVREye eEye, unsigned int texture);
+	void InternalSubmitImages();
+	void InternalSubmitImage(vr::EVREye eEye);
 
 	void MatrixVectors(const Matrix4& source, Vector& forward, Vector& right, Vector& up);
 
@@ -173,6 +174,8 @@ private:
 	bool mIsViewEntMirrored{ false };
 
 	float m_hmdHeightOffset{ 0.f };
+
+	int vr_scenePushCount = 0;
 
 public:
 	const Vector3& GetVRToHL();

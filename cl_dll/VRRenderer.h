@@ -140,6 +140,8 @@ private:
 	bool m_CalcRefdefWasCalled{ false };
 	bool m_HUDRedrawWasCalled{ false };
 
+	bool m_useDisplayList = false;
+
 	// HUD Render stuff
 	VRHUDRenderType m_hudRenderType{ VRHUDRenderType::NONE };
 	HSPRITE_VALVE m_hudSpriteHandle{ 0 };
