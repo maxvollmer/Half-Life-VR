@@ -1,3 +1,8 @@
+0.6.6-beta
+* Fixed bug that caused the game to replace textures with HD textures every frame
+* Added option to switch between normal rendering and displaylist based rendering
+* Removed view of current VR display in HL window
+
 0.6.5-beta - 2020-02-17
 * Replaced HLVRLauncher with HLVRConfig
   * Added i18n support to HLVRConfig
