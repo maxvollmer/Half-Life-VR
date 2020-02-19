@@ -1,4 +1,4 @@
-0.6.6-beta
+0.6.6-beta - 2020-02-19
 * Fixed bug that caused the game to replace textures with HD textures every frame
 * Added option to switch between normal rendering and displaylist based rendering
 * Removed view of current VR display in HL window
