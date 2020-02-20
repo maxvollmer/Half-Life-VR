@@ -296,6 +296,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		}
 		else if (pparams->nextView == 1)
 		{
+			RenderVRHandsAndHUDAndStuff();
 			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
 			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
 
@@ -305,6 +306,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		}
 		else if (pparams->nextView == 2)
 		{
+			RenderVRHandsAndHUDAndStuff();
 			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
 			vrHelper->SubmitImages();
 
