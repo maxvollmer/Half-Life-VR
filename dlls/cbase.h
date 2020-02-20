@@ -657,6 +657,7 @@ public:
 		HandleDragStop();
 	}
 	std::unordered_set<VRControllerID> m_isBeingDragged;
+	EHANDLE<CBaseEntity> hDragger;
 };
 
 

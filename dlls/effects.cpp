@@ -2203,10 +2203,13 @@ void CEnvBeverage::Spawn(void)
 	pev->effects = EF_NODRAW;
 	pev->frags = 0;
 
-	if (pev->health == 0)
+	if (pev->health <= 0)
 	{
 		pev->health = 10;
 	}
+
+	// give soda machines a bit more soda cans for the fun ;)
+	pev->health *= 5;
 }
 
 //=========================================================
@@ -2217,17 +2220,25 @@ class CItemSoda : public CBaseEntity
 public:
 	void Spawn(void);
 	void Precache(void);
-	void EXPORT CanThink(void);
-	void EXPORT CanTouch(CBaseEntity* pOther);
+	void EXPORT SpawnThink(void);
+	void EXPORT DragThink(void);
+
+	virtual bool IsDraggable() override { return !(pev->effects & EF_NODRAW); }
+	virtual void HandleDragStart() override;
+	virtual void HandleDragStop() override;
+
+private:
+
+	void Drink(CBaseEntity* pDrinker);
 };
+
+LINK_ENTITY_TO_CLASS(item_sodacan, CItemSoda);
 
 void CItemSoda::Precache(void)
 {
 }
 
-LINK_ENTITY_TO_CLASS(item_sodacan, CItemSoda);
-
-void CItemSoda::Spawn(void)
+void CItemSoda::Spawn()
 {
 	Precache();
 	pev->solid = SOLID_NOT;
@@ -2236,36 +2247,59 @@ void CItemSoda::Spawn(void)
 	SET_MODEL(ENT(pev), "models/can.mdl");
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 
-	SetThink(&CItemSoda::CanThink);
+	SetThink(&CItemSoda::SpawnThink);
 	pev->nextthink = gpGlobals->time + 0.5;
 }
 
-void CItemSoda::CanThink(void)
+void CItemSoda::HandleDragStart(void)
 {
-	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/g_bounce3.wav", 1, ATTN_NORM);
-
-	pev->solid = SOLID_TRIGGER;
-	UTIL_SetSize(pev, Vector(-8, -8, 0), Vector(8, 8, 8));
-	SetThink(nullptr);
-	SetTouch(&CItemSoda::CanTouch);
-}
-
-void CItemSoda::CanTouch(CBaseEntity* pOther)
-{
-	if (!pOther->IsPlayer())
-	{
-		return;
-	}
-
-	// spoit sound here
-
-	pOther->TakeHealth(1, DMG_GENERIC);  // a bit of health.
-
+	// tell the machine the the can was taken
 	if (!FNullEnt(pev->owner))
 	{
-		// tell the machine the can was taken
 		pev->owner->v.frags = 0;
+		pev->owner = nullptr;
 	}
+
+	pev->movetype = MOVETYPE_NONE;
+	SetThink(nullptr);
+
+	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
+}
+
+void CItemSoda::HandleDragStop(void)
+{
+	pev->movetype = MOVETYPE_TOSS;
+	SetThink(&CItemSoda::SpawnThink);
+	pev->nextthink = gpGlobals->time;
+}
+
+void CItemSoda::DragThink()
+{
+	// check if player moved the can close enough to face for drinking
+	if (hDragger && hDragger->IsPlayer())
+	{
+		float distance = (hDragger->EyePosition() - pev->origin).Length();
+		if (distance < 8)
+		{
+			Drink(hDragger);
+		}
+	}
+}
+
+void CItemSoda::SpawnThink()
+{
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/g_bounce3.wav", 1, ATTN_NORM);
+	pev->movetype = MOVETYPE_TOSS;
+	UTIL_SetSize(pev, Vector(-8, -8, 0), Vector(8, 8, 8));
+	SetThink(nullptr);
+}
+
+void CItemSoda::Drink(CBaseEntity* pDrinker)
+{
+	// closest audio file to drinking sound i could find xD
+	EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "gonarch/gon_sack2.wav", 1, ATTN_NORM, 0, PITCH_HIGH);
+
+	pDrinker->TakeHealth(1, DMG_GENERIC);  // a bit of health.
 
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;

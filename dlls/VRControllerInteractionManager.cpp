@@ -841,6 +841,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 		{
 			if (interaction.dragging.didChange)
 			{
+				hEntity->hDragger = pPlayer;
 				hEntity->m_isBeingDragged.insert(controller.GetID());
 				hEntity->SetThink(&CBaseEntity::DragStartThink);
 			}
@@ -852,6 +853,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 		{
 			if (interaction.dragging.didChange)
 			{
+				hEntity->hDragger = nullptr;
 				hEntity->m_isBeingDragged.erase(controller.GetID());
 				hEntity->SetThink(&CBaseEntity::DragStopThink);
 			}
