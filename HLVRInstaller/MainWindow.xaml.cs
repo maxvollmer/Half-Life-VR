@@ -149,27 +149,24 @@ namespace HLVRInstaller
             foreach (ZipArchiveEntry file in archive.Entries)
             {
                 if (doCancel)
-                {
                     return;
-                }
 
-                string completeFileName = Path.GetFullPath(Path.Combine(halflifeDirectory, file.FullName));
-
-                if (!completeFileName.StartsWith(halflifeDirectory, StringComparison.OrdinalIgnoreCase))
+                string fullFilePath = Path.GetFullPath(Path.Combine(halflifeDirectory, file.FullName));
+                if (!fullFilePath.StartsWith(halflifeDirectory, StringComparison.OrdinalIgnoreCase))
                 {
                     throw new IOException("Invalid path: " + halflifeDirectory);
                 }
 
-                if (file.Name == "")
+                if (string.IsNullOrEmpty(file.Name))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(completeFileName));
-                    continue;
+                    Directory.CreateDirectory(Path.GetDirectoryName(fullFilePath));
+                }
+                else
+                {
+                    file.ExtractToFile(fullFilePath, true);
                 }
 
-                file.ExtractToFile(completeFileName, true);
-
                 count++;
-
                 Invoke(() => { InstallProgressBar.Value = count / (double)total; });
             }
 
