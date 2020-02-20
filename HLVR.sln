@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cl_dll", "cl_dll\cl_dll.vcx
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HLVRConfig", "HLVRConfig\HLVRConfig.csproj", "{47168417-6749-49B5-AF9E-7FD855B388A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HLVRInstaller", "HLVRInstaller\HLVRInstaller.csproj", "{0EAE691C-6D4F-4C60-BDE1-CA6E29CE974C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -27,6 +29,10 @@ Global
 		{47168417-6749-49B5-AF9E-7FD855B388A7}.Debug|x86.Build.0 = Debug|Any CPU
 		{47168417-6749-49B5-AF9E-7FD855B388A7}.Release|x86.ActiveCfg = Release|Any CPU
 		{47168417-6749-49B5-AF9E-7FD855B388A7}.Release|x86.Build.0 = Release|Any CPU
+		{0EAE691C-6D4F-4C60-BDE1-CA6E29CE974C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0EAE691C-6D4F-4C60-BDE1-CA6E29CE974C}.Debug|x86.Build.0 = Debug|Any CPU
+		{0EAE691C-6D4F-4C60-BDE1-CA6E29CE974C}.Release|x86.ActiveCfg = Release|Any CPU
+		{0EAE691C-6D4F-4C60-BDE1-CA6E29CE974C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
