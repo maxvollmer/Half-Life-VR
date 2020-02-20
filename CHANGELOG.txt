@@ -1,3 +1,7 @@
+0.6.8-beta
+* Fixed some configurable heights not using units, but cm (mismatching what HLVRConfig says)
+* Improved HLVRConfig interface: Hides settings that depend on another setting, if that other setting is disabled
+
 0.6.7-beta - 2020-02-20
 * Fixed hand/weapon models and HUD not being rendered in new "normal" render mode
 
