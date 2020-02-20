@@ -28,10 +28,16 @@
                     <TextBox TextWrapping="NoWrap" Padding="5" Margin="0, 10, 5, 10" Focusable="True" MinLines="1" MaxLines="1" Width="300" HorizontalAlignment="Left" x:Name="HalfLifeDirectoryInput"/>
                     <Button Click="BrowseHalfLifeDirectory" Padding="5" Margin="10" Focusable="True">Browse For Directory</Button>
                 </StackPanel>
-                <DockPanel>
-                    <Button Click="InstallHalfLife" Padding="5" Margin="10" Focusable="True" DockPanel.Dock="Left" HorizontalAlignment="Left" Width="200">Install Half-Life: VR</Button>
-                    <Button Click="Quit" Padding="5" Margin="10" Focusable="True" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="200">Quit</Button>
-                </DockPanel>
+                <Grid Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button Click="InstallMod" Padding="5" Margin="10" Focusable="True" Grid.Column="0" Width="200">Install Half-Life: VR</Button>
+                    <Button Click="UninstallMod" Padding="5" Margin="10" Focusable="True" Grid.Column="1" Width="200" Visibility="Collapsed" x:Name="UninstallButton">Uninstall Half-Life: VR</Button>
+                    <Button Click="Quit" Padding="5" Margin="10" Focusable="True" Grid.Column="2" Width="200">Quit</Button>
+                </Grid>
             </StackPanel>
             <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="DuringInstall">
                 <TextBlock TextWrapping="WrapWithOverflow" Padding="15" Margin="10" Focusable="True">
