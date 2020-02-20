@@ -5876,3 +5876,47 @@ bool CBasePlayer::VRCanAttack()
 	UTIL_TraceLine(pev->origin, GetGunPosition(), ignore_monsters, nullptr, &tr);
 	return tr.flFraction == 1.f;
 }
+
+
+
+
+void EXPORT CBaseEntity::DragThink(void)
+{
+	m_pfnThink = nullptr;
+
+	Vector origin = pev->origin;
+	Vector velocity = pev->velocity;
+	Vector angles = pev->angles;
+
+	int count = 0;
+
+	for (auto& [player, controllers] : m_isBeingDragged)
+	{
+		EHANDLE<CBasePlayer> hPlayer = player;
+		if (hPlayer)
+		{
+			for (auto& controllerId : controllers)
+			{
+				auto& controller = hPlayer->GetController(controllerId);
+				if (controller.IsValid())
+				{
+					origin = origin + controller.GetGunPosition();
+					velocity = velocity + controller.GetVelocity();
+					angles = angles + controller.GetAngles();	// this might be wrong...
+					count++;
+				}
+			}
+		}
+	}
+
+	if (count > 0)
+	{
+		origin = origin * (1.f / count);
+		velocity = velocity * (1.f / count);
+		angles = angles * (1.f / count);	// this might be wrong...
+
+		UTIL_AnglesMod(angles);
+
+		HandleDragUpdate(origin, velocity, angles);
+	}
+}

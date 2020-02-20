@@ -325,19 +325,17 @@ BOOL UTIL_GetNextBestWeapon(CBasePlayer* pPlayer, CBasePlayerItem* pCurrentWeapo
 	return g_pGameRules->GetNextBestWeapon(pPlayer, pCurrentWeapon);
 }
 
-// ripped this out of the engine
+
 float UTIL_AngleMod(float a)
 {
 	if (a < 0)
 	{
-		a = a + 360 * ((int)(a / 360) + 1);
+		return std::fmod(a, 360.f) + 360.f;
 	}
-	else if (a >= 360)
+	else
 	{
-		a = a - 360 * ((int)(a / 360));
+		return std::fmod(a, 360.f);
 	}
-	// a = (360.0/65536) * ((int)(a*(65536/360.0)) & 65535);
-	return a;
 }
 
 float UTIL_AngleDiff(float destAngle, float srcAngle)
@@ -363,6 +361,14 @@ Vector UTIL_VecToAngles(const Vector& vec)
 	float rgflVecOut[3];
 	VEC_TO_ANGLES(vec, rgflVecOut);
 	return Vector(rgflVecOut);
+}
+
+Vector& UTIL_AnglesMod(Vector& angles)
+{
+	angles.x = UTIL_AngleMod(angles.x);
+	angles.y = UTIL_AngleMod(angles.y);
+	angles.z = UTIL_AngleMod(angles.z);
+	return angles;
 }
 
 //	float UTIL_MoveToOrigin( edict_t *pent, const Vector vecGoal, float flDist, int iMoveType )

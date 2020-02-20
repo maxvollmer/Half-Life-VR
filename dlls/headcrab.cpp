@@ -16,12 +16,17 @@
 // headcrab.cpp - tiny, jumpy alien parasite
 //=========================================================
 
+#include <algorithm>
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
 #include "monsters.h"
 #include "schedule.h"
 #include "game.h"
+#include "player.h"
+
+#include "VRPhysicsHelper.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -103,9 +108,10 @@ public:
 	static const char* pBiteSounds[];
 
 	// Headcrabs are draggable!
-	virtual bool IsDraggable() override { return false; /*TODO: Super buggy, disabled for now.*/ }
+	virtual bool IsDraggable() override { return true; }
 	virtual void HandleDragStart() override;
 	virtual void HandleDragStop() override;
+	virtual void HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles) override;
 	virtual void BaseBalled(CBaseEntity* pPlayer, const Vector& velocity) override;
 	void EXPORT DragThink();
 };
@@ -482,6 +488,101 @@ Schedule_t* CHeadCrab::GetScheduleOfType(int Type)
 	return CBaseMonster::GetScheduleOfType(Type);
 }
 
+void CHeadCrab::HandleDragStart()
+{
+	SetThink(&CHeadCrab::DragThink);
+	pev->nextthink = gpGlobals->time + 0.1f;
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+
+	m_IdealMonsterState = MONSTERSTATE_NONE;
+	m_IdealActivity = ACT_IDLE;
+	m_iHintNode = -1;
+	m_afMemory = MEMORY_CLEAR;
+	m_hEnemy = nullptr;
+
+	ClearSchedule();
+	RouteClear();
+
+	pev->sequence = 13;	// "yaw_adjustment" - perfect for grabbing headcrab
+	ResetSequenceInfo();
+	m_fSequenceLoops = true;
+}
+
+void CHeadCrab::HandleDragStop()
+{
+	SetThink(&CHeadCrab::CallMonsterThink);
+	pev->nextthink = gpGlobals->time + 0.1f;
+	pev->solid = SOLID_SLIDEBOX;
+	pev->movetype = MOVETYPE_STEP;
+	pev->angles.x = 0.f;
+	pev->angles.z = 0.f;
+
+	m_IdealMonsterState = MONSTERSTATE_IDLE;
+	m_IdealActivity = ACT_IDLE;
+
+	// give it a little throw
+	BaseBalled(nullptr, pev->velocity * 1.5f);
+}
+
+void CHeadCrab::HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles)
+{
+	pev->velocity = velocity;
+	pev->angles = angles;
+
+	// TODO: Define good grab offset
+	/*
+	Vector grabOffset = Vector(0, 0, 0);
+	VRPhysicsHelper::Instance().RotateVector(grabOffset, pev->angles);
+	pev->origin = origin + grabOffset;
+	*/
+	pev->origin = origin;
+}
+
+void CHeadCrab::DragThink()
+{
+	if (m_fSequenceFinished)
+	{
+		pev->sequence = 13;
+		ResetSequenceInfo();
+		m_fSequenceLoops = true;
+	}
+	StudioFrameAdvance();
+	pev->nextthink = gpGlobals->time + 0.1f;
+
+	// Check if player smashes us into a wall
+	if (CONTENTS_SOLID == UTIL_PointContents(pev->origin, true, nullptr))
+	{
+		extern float GetMeleeSwingSpeed();
+		if (pev->velocity.Length() > GetMeleeSwingSpeed())
+		{
+			PainSound();
+			this->TakeDamage(pev, pev, pev->health + 1000.f, DMG_CRUSH | DMG_ALWAYSGIB);
+		}
+	}
+}
+
+void CHeadCrab::BaseBalled(CBaseEntity* pPlayer, const Vector& velocity)
+{
+	// scream if alive (we might have been killed by the melee attack)
+	if (IsAlive())
+	{
+		PainSound();
+	}
+
+	// take off ground
+	ClearBits(pev->flags, FL_ONGROUND);
+	pev->origin.z += 1.f;
+	UTIL_SetOrigin(pev, pev->origin);
+
+	// set velocity with a little kick
+	pev->velocity = velocity * 1.5f;
+
+	// prevent attack for 2 seconds
+	m_flNextAttack = gpGlobals->time + 2.f;
+}
+
+
 
 class CBabyCrab : public CHeadCrab
 {
@@ -494,6 +595,8 @@ public:
 	Schedule_t* GetScheduleOfType(int Type);
 	virtual int GetVoicePitch(void) { return PITCH_NORM + RANDOM_LONG(40, 50); }
 	virtual float GetSoundVolue(void) { return 0.8; }
+
+	virtual bool IsDraggable() override { return false; }
 };
 LINK_ENTITY_TO_CLASS(monster_babycrab, CBabyCrab);
 
@@ -554,67 +657,4 @@ Schedule_t* CBabyCrab::GetScheduleOfType(int Type)
 	}
 
 	return CHeadCrab::GetScheduleOfType(Type);
-}
-
-void CHeadCrab::HandleDragStart()
-{
-	Stop();
-	pev->sequence = LookupActivity(ACT_WALK);
-	ResetSequenceInfo();
-	SetThink(&CHeadCrab::DragThink);
-	pev->nextthink = gpGlobals->time + 0.1f;
-	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NONE;
-}
-
-void CHeadCrab::HandleDragStop()
-{
-	Stop();
-	SetThink(&CHeadCrab::CallMonsterThink);
-	pev->nextthink = gpGlobals->time + 0.1f;
-	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_STEP;
-	pev->angles.x = 0.f;
-	pev->angles.z = 0.f;
-}
-
-void CHeadCrab::DragThink()
-{
-	if (m_fSequenceFinished)
-	{
-		pev->sequence = LookupActivity(ACT_WALK);
-		ResetSequenceInfo();
-	}
-	StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1f;
-
-	// Check if player smashes us into a wall
-	if (CONTENTS_SOLID == UTIL_PointContents(pev->origin, true, nullptr))
-	{
-		extern float GetMeleeSwingSpeed();
-		if (pev->velocity.Length() > GetMeleeSwingSpeed())
-		{
-			this->TakeDamage(pev, pev, pev->health + 1000.f, DMG_CRUSH | DMG_ALWAYSGIB);
-		}
-	}
-}
-
-void CHeadCrab::BaseBalled(CBaseEntity* pPlayer, const Vector& velocity)
-{
-	// scream if alive (we might have been killed by the melee attack)
-	if (IsAlive())
-	{
-		PainSound();
-	}
-
-	// take off ground
-	ClearBits(pev->flags, FL_ONGROUND);
-	pev->origin.z += 1.f;
-	UTIL_SetOrigin(pev, pev->origin);
-
-	// set velocity
-	pev->velocity = velocity;
-
-	// prevent attack for 2 seconds
-	m_flNextAttack = gpGlobals->time + 2.f;
 }

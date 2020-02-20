@@ -2276,12 +2276,16 @@ void CItemSoda::HandleDragStop(void)
 void CItemSoda::DragThink()
 {
 	// check if player moved the can close enough to face for drinking
-	if (hDragger && hDragger->IsPlayer())
+	for (auto& [player, controllers] : m_isBeingDragged)
 	{
-		float distance = (hDragger->EyePosition() - pev->origin).Length();
-		if (distance < 8)
+		EHANDLE<CBaseEntity> hPlayer = player;
+		if (hPlayer && hPlayer->IsPlayer())
 		{
-			Drink(hDragger);
+			float distance = (hPlayer->EyePosition() - pev->origin).Length();
+			if (distance < 8)
+			{
+				Drink(hPlayer);
+			}
 		}
 	}
 }

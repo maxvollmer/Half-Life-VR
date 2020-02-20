@@ -408,6 +408,8 @@ public:
 	bool m_vrIsPullingOnLedge{ false };
 	bool m_vrWasPullingOnLedge{ false };
 
+	VRController& GetController(VRControllerID id) { return m_vrControllers[id]; }
+
 
 // private VR methods:
 private:

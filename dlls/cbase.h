@@ -645,6 +645,13 @@ public:
 	virtual bool IsDraggable() { return false; }
 	virtual void HandleDragStart() {}
 	virtual void HandleDragStop() {}
+	virtual void HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles)
+	{
+		// default implementation just copies values in
+		pev->origin = origin;
+		pev->velocity = velocity;
+		pev->angles = angles;
+	}
 	virtual void BaseBalled(CBaseEntity* pPlayer, const Vector& velocity) {}
 	void EXPORT DragStartThink(void)
 	{
@@ -656,8 +663,8 @@ public:
 		m_pfnThink = nullptr;
 		HandleDragStop();
 	}
-	std::unordered_set<VRControllerID> m_isBeingDragged;
-	EHANDLE<CBaseEntity> hDragger;
+	void EXPORT DragThink(void);
+	std::unordered_map<EHANDLE<CBaseEntity>, std::unordered_set<VRControllerID>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_isBeingDragged;
 };
 
 

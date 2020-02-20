@@ -434,14 +434,18 @@ bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer* pPlayer, EHAND
 		{
 			if (isTouching && controller.IsDragging())
 			{
-				pWorldsSmallestCup->m_isBeingDragged.insert(controller.GetID());
+				pWorldsSmallestCup->m_isBeingDragged[pPlayer].insert(controller.GetID());
 				pWorldsSmallestCup->pev->origin = controller.GetGunPosition();
 				pWorldsSmallestCup->pev->angles = controller.GetAngles();
 				pWorldsSmallestCup->pev->velocity = controller.GetVelocity();
 			}
 			else
 			{
-				pWorldsSmallestCup->m_isBeingDragged.erase(controller.GetID());
+				pWorldsSmallestCup->m_isBeingDragged[pPlayer].erase(controller.GetID());
+				if (hEntity->m_isBeingDragged[pPlayer].empty())
+				{
+					hEntity->m_isBeingDragged.erase(pPlayer);
+				}
 			}
 		}
 		return true;
@@ -841,20 +845,23 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 		{
 			if (interaction.dragging.didChange)
 			{
-				hEntity->hDragger = pPlayer;
-				hEntity->m_isBeingDragged.insert(controller.GetID());
+				hEntity->m_isBeingDragged[pPlayer].insert(controller.GetID());
 				hEntity->SetThink(&CBaseEntity::DragStartThink);
 			}
-			hEntity->pev->origin = controller.GetGunPosition();
-			hEntity->pev->angles = controller.GetAngles();
-			hEntity->pev->velocity = controller.GetVelocity();
+			else
+			{
+				hEntity->SetThink(&CBaseEntity::DragThink);
+			}
 		}
 		else
 		{
 			if (interaction.dragging.didChange)
 			{
-				hEntity->hDragger = nullptr;
-				hEntity->m_isBeingDragged.erase(controller.GetID());
+				hEntity->m_isBeingDragged[pPlayer].erase(controller.GetID());
+				if (hEntity->m_isBeingDragged[pPlayer].empty())
+				{
+					hEntity->m_isBeingDragged.erase(pPlayer);
+				}
 				hEntity->SetThink(&CBaseEntity::DragStopThink);
 			}
 		}

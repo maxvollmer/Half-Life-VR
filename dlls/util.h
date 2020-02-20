@@ -245,6 +245,8 @@ extern Vector UTIL_VecToAngles(const Vector& vec);
 extern float UTIL_AngleMod(float a);
 extern float UTIL_AngleDiff(float destAngle, float srcAngle);
 
+extern Vector& UTIL_AnglesMod(Vector& angles);
+
 extern CBaseEntity* UTIL_FindEntityInSphere(CBaseEntity* pStartEntity, const Vector& vecCenter, float flRadius);
 extern CBaseEntity* UTIL_FindEntityByString(CBaseEntity* pStartEntity, const char* szKeyword, const char* szValue);
 extern CBaseEntity* UTIL_FindEntityByClassname(CBaseEntity* pStartEntity, const char* szName);
