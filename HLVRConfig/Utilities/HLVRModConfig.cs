@@ -13,7 +13,7 @@ namespace HLVRConfig.Utilities
         private static readonly float CM_TO_UNIT = 0.375f;
         private static readonly float UNIT_TO_CM = 1.0f / CM_TO_UNIT;
 
-        public static void Initialize(StackPanel panel, OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settingcategories)
+        public static void Initialize(StackPanel panel, OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories)
         {
             panel.Children.Clear();
             foreach (var category in settingcategories)
@@ -22,17 +22,26 @@ namespace HLVRConfig.Utilities
             }
         }
 
-        private static void AddCategory(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, I18N.I18NString category, OrderedDictionary<string, Setting> settings)
+        private static void AddCategory(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, OrderedDictionary<string, Setting> settings)
         {
+            if (category.Dependency != null && !category.Dependency.IsSatisfied())
+                return;
+
             StackPanel categoryPanel = new StackPanel()
             {
                 Orientation = Orientation.Vertical,
                 Margin = new Thickness(20),
             };
 
-            AddTitle(categoryPanel, category);
+            AddTitle(categoryPanel, category.Title);
+            AddDescription(categoryPanel, category.Description);
+
+            int numOfSettings = 0;
             foreach (var setting in settings)
             {
+                if (setting.Value.Dependency != null && !setting.Value.Dependency.IsSatisfied())
+                    continue;
+
                 switch (setting.Value.Type)
                 {
                     case SettingType.BOOLEAN:
@@ -42,12 +51,15 @@ namespace HLVRConfig.Utilities
                         AddInput(settingcategories, categoryPanel, category, setting.Key, setting.Value.Description, setting.Value);
                         break;
                 }
+
+                numOfSettings++;
             }
 
-            panel.Children.Add(categoryPanel);
+            if (numOfSettings > 0)
+                panel.Children.Add(categoryPanel);
         }
 
-        private static void AddInput(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, I18N.I18NString category, string name, I18N.I18NString label, Setting value)
+        private static void AddInput(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, string name, I18N.I18NString label, Setting value)
         {
             StackPanel inputPanel = new StackPanel()
             {
@@ -152,7 +164,23 @@ namespace HLVRConfig.Utilities
             panel.Children.Add(textBlock);
         }
 
-        private static void AddCheckBox(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, I18N.I18NString category, string name, I18N.I18NString label, bool isChecked)
+        private static void AddDescription(StackPanel panel, I18N.I18NString description)
+        {
+            if (description == null)
+                return;
+
+            TextBlock textBlock = new TextBlock()
+            {
+                TextWrapping = TextWrapping.WrapWithOverflow,
+                Padding = new Thickness(5),
+                Margin = new Thickness(5),
+                Focusable = true
+            };
+            textBlock.Inlines.Add(new Run(I18N.Get(description)));
+            panel.Children.Add(textBlock);
+        }
+
+        private static void AddCheckBox(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, string name, I18N.I18NString label, bool isChecked)
         {
             CheckBox cb = new CheckBox
             {

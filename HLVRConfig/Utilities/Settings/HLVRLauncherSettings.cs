@@ -19,9 +19,9 @@ namespace HLVRConfig.Utilities
             }
         }
 
-        public static readonly I18N.I18NString CategoryModLocation = new I18N.I18NString("LauncherSettings.ModLocation", "Mod Directory");
-        public static readonly I18N.I18NString CategoryLanguage = new I18N.I18NString("LauncherSettings.Language", "Language");
-        public static readonly I18N.I18NString CategoryLauncher = new I18N.I18NString("LauncherSettings.Launcher", "Launcher");
+        public static readonly SettingCategory CategoryModLocation = new SettingCategory(new I18N.I18NString("LauncherSettings.ModLocation", "Mod Directory"));
+        public static readonly SettingCategory CategoryLanguage = new SettingCategory(new I18N.I18NString("LauncherSettings.Language", "Language"));
+        public static readonly SettingCategory CategoryLauncher = new SettingCategory(new I18N.I18NString("LauncherSettings.Launcher", "Launcher"));
 
         public static readonly string MinimizeToTray = "MinimizeToTray";
         public static readonly string StartMinimized = "StartMinimized";
@@ -32,7 +32,7 @@ namespace HLVRConfig.Utilities
         public static readonly string Language = "Language";
 
 
-        public OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> LauncherSettings = new OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>>()
+        public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> LauncherSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
         {
             { CategoryModLocation, new OrderedDictionary<string, Setting>() {
                 { HLDirectory, Setting.Create( new I18N.I18NString("HLDirectory", "Half-Life directory"), HLVRPaths.LastHLDirectory ).MakeFolderSetting() },

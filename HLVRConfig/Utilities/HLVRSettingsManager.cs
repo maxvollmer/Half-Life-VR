@@ -30,6 +30,8 @@ namespace HLVRConfig.Utilities
         private static readonly object storeLoadTaskLock = new object();
         private static Stopwatch storeLoadTaskStopWatch = new Stopwatch();
         private static int storeLoadTaskTimeToWait = 1000;
+
+
         private static FileSystemWatcher fileSystemWatcher;
 
         private static readonly object settingsFileLock = new object();
@@ -177,7 +179,7 @@ namespace HLVRConfig.Utilities
             }
         }
 
-        public static void SetLauncherSetting(I18N.I18NString category, string name, bool value)
+        public static void SetLauncherSetting(SettingCategory category, string name, bool value)
         {
             if (!AreLauncherSettingsInitialized)
                 return;
@@ -186,7 +188,7 @@ namespace HLVRConfig.Utilities
             DelayedStoreLauncherSettings();
         }
 
-        public static void SetLauncherSetting(I18N.I18NString category, string name, string value)
+        public static void SetLauncherSetting(SettingCategory category, string name, string value)
         {
             if (!AreLauncherSettingsInitialized)
                 return;
@@ -209,7 +211,7 @@ namespace HLVRConfig.Utilities
             DelayedStoreLauncherSettings();
         }
 
-        internal static void SetModSetting(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settings, I18N.I18NString category, string name, bool value)
+        public static void SetModSetting(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settings, SettingCategory category, string name, bool value)
         {
             if (!AreModSettingsInitialized)
                 return;
@@ -218,7 +220,7 @@ namespace HLVRConfig.Utilities
             DelayedStoreModSettings();
         }
 
-        internal static void SetModSetting(OrderedDictionary<I18N.I18NString, OrderedDictionary<string, Setting>> settings, I18N.I18NString category, string name, string value)
+        public static void SetModSetting(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settings, SettingCategory category, string name, string value)
         {
             if (!AreModSettingsInitialized)
                 return;
@@ -241,14 +243,14 @@ namespace HLVRConfig.Utilities
             DelayedStoreModSettings();
         }
 
-        internal static void RestoreLauncherSettings()
+        public static void RestoreLauncherSettings()
         {
             HLVRLauncherSettings defaultSettings = new HLVRLauncherSettings();
             LauncherSettings.LauncherSettings = defaultSettings.LauncherSettings;
             DelayedStoreLauncherSettings();
         }
 
-        internal static void RestoreModSettings()
+        public static void RestoreModSettings()
         {
             HLVRModSettings defaultSettings = new HLVRModSettings();
             ModSettings.InputSettings = defaultSettings.InputSettings;
@@ -256,6 +258,36 @@ namespace HLVRConfig.Utilities
             ModSettings.AudioSettings = defaultSettings.AudioSettings;
             ModSettings.OtherSettings = defaultSettings.OtherSettings;
             DelayedStoreModSettings();
+        }
+
+        public static Setting GetSetting(string name)
+        {
+            var setting = ModSettings.KeyValuePairs.Where(kvp => kvp.Key == name).FirstOrDefault().Value;
+            if (setting == null)
+            {
+                setting = LauncherSettings.KeyValuePairs.Where(kvp => kvp.Key == name).FirstOrDefault().Value;
+            }
+            return setting;
+        }
+
+        public static SettingCategory GetCategory(string setting)
+        {
+            foreach (var category in ModSettings.InputSettings)
+                if (category.Value.ContainsKey(setting))
+                    return category.Key;
+            foreach (var category in ModSettings.AudioSettings)
+                if (category.Value.ContainsKey(setting))
+                    return category.Key;
+            foreach (var category in ModSettings.GraphicsSettings)
+                if (category.Value.ContainsKey(setting))
+                    return category.Key;
+            foreach (var category in ModSettings.OtherSettings)
+                if (category.Value.ContainsKey(setting))
+                    return category.Key;
+            foreach (var category in LauncherSettings.LauncherSettings)
+                if (category.Value.ContainsKey(setting))
+                    return category.Key;
+            return null;
         }
 
         private static bool TryStoreSettings(ISettingsContainer settings, string file)

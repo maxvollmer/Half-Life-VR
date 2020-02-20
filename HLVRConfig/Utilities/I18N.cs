@@ -24,7 +24,7 @@ namespace HLVRConfig.Utilities
             );
 
 
-        public struct I18NString
+        public class I18NString
         {
             public string Key;
             public string DefaultValue;
@@ -174,10 +174,6 @@ namespace HLVRConfig.Utilities
                                 catch (Exception)
                                 {
                                     continue;
-                                }
-                                if (cultureInfo != null)
-                                {
-                                    Console.WriteLine(cultureInfo.Name);
                                 }
                                 HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages[hexCultureId] = new I18NString("vr_speech_language_id." + hexCultureId, cultureInfo.DisplayName);
                             }

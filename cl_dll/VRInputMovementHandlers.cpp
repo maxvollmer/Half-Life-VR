@@ -194,7 +194,7 @@ namespace VR
 		{
 			if (data.bActive && fabs(data.deltaX) > EPSILON)
 			{
-				if (fabs(data.x) > EPSILON)
+				if (fabs(data.x) > CVAR_GET_FLOAT("vr_move_analog_deadzone"))
 					ClientCmd("+jump");
 				else
 					ClientCmd("-jump");
@@ -205,7 +205,7 @@ namespace VR
 		{
 			if (data.bActive && fabs(data.deltaX) > EPSILON)
 			{
-				if (fabs(data.x) > EPSILON)
+				if (fabs(data.x) > CVAR_GET_FLOAT("vr_move_analog_deadzone"))
 					ClientCmd("+duck");
 				else
 					ClientCmd("-duck");
@@ -216,13 +216,14 @@ namespace VR
 		{
 			if (data.bActive && fabs(data.x) > EPSILON)
 			{
-				ClientCmd("vr_lngjump");
+				if (fabs(data.x) > CVAR_GET_FLOAT("vr_move_analog_deadzone"))
+					ClientCmd("vr_lngjump");
 			}
 		}
 
 		void TryAddInAnalogSpeed(float& target, const float& inputValue, const char* cvar_inverted)
 		{
-			if (fabs(inputValue) > EPSILON)
+			if (fabs(inputValue) > CVAR_GET_FLOAT("vr_move_analog_deadzone"))
 			{
 				target += (CVAR_GET_FLOAT(cvar_inverted) != 0.f) ? -inputValue : inputValue;
 			}

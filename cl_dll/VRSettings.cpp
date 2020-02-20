@@ -78,12 +78,13 @@ void VRSettings::Init()
 	RegisterCVAR("vr_move_analogsideways_inverted", "0");
 	RegisterCVAR("vr_move_analogturn_inverted", "0");
 	RegisterCVAR("vr_move_analogupdown_inverted", "0");
+	RegisterCVAR("vr_move_analog_deadzone", "0.1");
 	RegisterCVAR("vr_move_instant_accelerate", "1");
 	RegisterCVAR("vr_move_instant_decelerate", "1");
 	RegisterCVAR("vr_no_gauss_recoil", "1");
 	RegisterCVAR("vr_npcscale", "1");
 	RegisterCVAR("vr_playerturn_enabled", "1");
-	RegisterCVAR("vr_rl_duck_height", "100");
+	RegisterCVAR("vr_rl_duck_height", "36");
 	RegisterCVAR("vr_rl_ducking_enabled", "1");
 	RegisterCVAR("vr_rotate_with_trains", "1");
 	RegisterCVAR("vr_rpg_scale", "1");

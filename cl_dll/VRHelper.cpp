@@ -698,12 +698,21 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	auto vrTransform = positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
 
+	// add custom HMD offset (e.g. for seated players)
+	float vr_headset_offset_units = CVAR_GET_FLOAT("vr_headset_offset");
+	if (vr_headset_offset_units != 0.f)
+	{
+		float vr_headset_offset_cm = vr_headset_offset_units * GetVRToHL().y;
+		hlTransform[13] += vr_headset_offset_cm / 100.f;
+		m_hmdHeightOffset += vr_headset_offset_cm / 100.f;
+	}
+
 	if (CVAR_GET_FLOAT("vr_rl_ducking_enabled") != 0.f)
 	{
-		float rlDuckHeightInVR_cm = CVAR_GET_FLOAT("vr_rl_duck_height");
-		float hmdHeight_m = hlTransform[13];
-		float hmdHeight_cm = hmdHeight_m * 100.f;
-		g_vrInput.SetVRDucking(hmdHeight_cm < rlDuckHeightInVR_cm);
+		float rlDuckHeight_units = CVAR_GET_FLOAT("vr_rl_duck_height");
+		float rlDuckHeight_cm = vr_headset_offset_units * GetVRToHL().y;
+		float hmdHeight_cm = hlTransform[13] * 100.f;
+		g_vrInput.SetVRDucking(hmdHeight_cm < rlDuckHeight_cm);
 	}
 	else
 	{
@@ -758,11 +767,6 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 		m_hmdHeightOffset = newHeight - originalHeight;
 		hlTransform[13] = newHeight;
 	}
-
-	// add custom HMD offset (e.g. for seated players)
-	float vr_headset_offset = CVAR_GET_FLOAT("vr_headset_offset");
-	hlTransform[13] += vr_headset_offset / 100.f;
-	m_hmdHeightOffset += vr_headset_offset / 100.f;
 
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
 		return hlTransform;

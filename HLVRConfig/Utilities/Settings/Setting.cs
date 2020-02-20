@@ -17,12 +17,72 @@ namespace HLVRConfig.Utilities.Settings
         FACTOR,
         COUNT
     }
+    public class SettingDependency
+    {
+        public enum MatchMode
+        {
+            MUST_MATCH,
+            MUST_NOT_MATCH
+        }
+
+        public readonly string Setting;
+        public readonly string Value;
+        public readonly MatchMode Mode;
+        public SettingDependency(string setting, string value, MatchMode mode = MatchMode.MUST_MATCH)
+        {
+            Setting = setting;
+            Value = value;
+            Mode = mode;
+        }
+
+        public bool IsSatisfied()
+        {
+            var setting = HLVRSettingsManager.GetSetting(Setting);
+            if (setting == null)
+                return true;
+
+            if ((Mode == MatchMode.MUST_MATCH) != (setting.Value == Value))
+                return false;
+
+            if (setting.Dependency != null && !setting.Dependency.IsSatisfied())
+                return false;
+
+            var category = HLVRSettingsManager.GetCategory(Setting);
+            if (category!= null && category.Dependency != null && !category.Dependency.IsSatisfied())
+                return false;
+
+            return true;
+        }
+    }
+
+    public class SettingCategory
+    {
+        public I18N.I18NString Title { get; set; }
+        public I18N.I18NString Description { get; set; } = null;
+        public SettingDependency Dependency { get; set; } = null;
+        public SettingCategory(I18N.I18NString title)
+        {
+            Title = title;
+        }
+        public SettingCategory(I18N.I18NString title, SettingDependency dependency = null)
+        {
+            Title = title;
+            Dependency = dependency;
+        }
+        public SettingCategory(I18N.I18NString title, I18N.I18NString description, SettingDependency dependency = null)
+        {
+            Title = title;
+            Description = description;
+            Dependency = dependency;
+        }
+    }
 
     public class Setting
     {
         public SettingType Type { get; set; } = SettingType.BOOLEAN;
         public I18N.I18NString Description { get; set; }
         public string DefaultValue { get; set; } = null;
+        public SettingDependency Dependency { get; set; } = null;
         public string Value { get; set; } = null;
         public readonly OrderedDictionary<string, I18N.I18NString> AllowedValues = new OrderedDictionary<string, I18N.I18NString>();
 
@@ -61,52 +121,56 @@ namespace HLVRConfig.Utilities.Settings
             }
         }
 
-        public static Setting Create(I18N.I18NString description, string value)
+        public static Setting Create(I18N.I18NString description, string value, SettingDependency dependency = null)
         {
             var setting = new Setting()
             {
                 Type = SettingType.STRING,
                 Value = value,
                 DefaultValue = value,
-                Description = description
+                Description = description,
+                Dependency = dependency
             };
             return setting;
         }
 
-        public static Setting Create(I18N.I18NString description, bool value)
+        public static Setting Create(I18N.I18NString description, bool value, SettingDependency dependency = null)
         {
             var setting = new Setting()
             {
                 Type = SettingType.BOOLEAN,
                 Value = value ? "1" : "0",
                 DefaultValue = value ? "1" : "0",
-                Description = description
+                Description = description,
+                Dependency = dependency
             };
             return setting;
         }
 
-        public static Setting Create(I18N.I18NString description, OrderedDictionary<string, I18N.I18NString> allowedValues, string defaultvalue)
+        public static Setting Create(I18N.I18NString description, OrderedDictionary<string, I18N.I18NString> allowedValues, string defaultvalue, SettingDependency dependency = null)
         {
             var setting = new Setting()
             {
                 Type = SettingType.ENUM,
                 Value = defaultvalue,
                 DefaultValue = defaultvalue,
-                Description = description
+                Description = description,
+                Dependency = dependency
             };
             foreach (var allowedValue in allowedValues)
                 setting.AllowedValues.Add(allowedValue.Key, allowedValue.Value);
             return setting;
         }
 
-        public static Setting Create(I18N.I18NString description, SettingType type, string value)
+        public static Setting Create(I18N.I18NString description, SettingType type, string value, SettingDependency dependency = null)
         {
             var setting = new Setting()
             {
                 Type = type,
                 Value = value,
                 DefaultValue = value,
-                Description = description
+                Description = description,
+                Dependency = dependency
             };
             return setting;
         }
