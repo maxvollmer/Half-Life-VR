@@ -95,7 +95,7 @@ namespace HLVRConfig.Utilities
                 { "vr_disable_func_friction", Setting.Create( new I18N.I18NString("vr_disable_func_friction", "Disable slippery surfaces"), true ) },
                 { "vr_xenjumpthingies_teleporteronly", Setting.Create( new I18N.I18NString("vr_xenjumpthingies_teleporteronly", "Disable being pushed up by xen jump thingies (you can use the teleporter on those things)"), true ) },
                 { "vr_semicheat_spinthingyspeed", Setting.Create( new I18N.I18NString("vr_semicheat_spinthingyspeed", "Set maximum speed for those fast spinning platforms near the tentacle monster (map c1a4f) (game default: 110, mod default: 50)"), SettingType.SPEED, "50" ) },
-                { "vr_smooth_steps", Setting.Create( new I18N.I18NString("vr_smooth_steps", "Smooth out steps (may affect performance!)"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_smooth_steps.Disabled", "Disabled") }, { "1", new I18N.I18NString("vr_smooth_steps.Most", "Smooth out most steps") }, { "2", new I18N.I18NString("vr_smooth_steps.All", "Smooth out all steps") } }, "0" ) },
+                //{ "vr_smooth_steps", Setting.Create( new I18N.I18NString("vr_smooth_steps", "Smooth out steps (may affect performance!)"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_smooth_steps.Disabled", "Disabled") }, { "1", new I18N.I18NString("vr_smooth_steps.Most", "Smooth out most steps") }, { "2", new I18N.I18NString("vr_smooth_steps.All", "Smooth out all steps") } }, "0" ) },
             } },
 
             { CategoryMovementSpeed, new OrderedDictionary<string, Setting>() {
