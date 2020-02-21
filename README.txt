@@ -7,7 +7,7 @@ VERSION 0.6.8-beta
 
 Release date:
 
-Copyright (c) 2017-2019 Max Vollmer (if not otherwise stated)
+Copyright (c) 2017-2020 Max Vollmer (if not otherwise stated)
 
 Half-Life: VR team consists of Max Vollmer, Formic.Sapien, Rorin and DoomMarine23.
 
