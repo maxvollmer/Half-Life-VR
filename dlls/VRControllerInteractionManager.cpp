@@ -190,7 +190,13 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 
 bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE<CBaseEntity> hEntity)
 {
-	return FClassnameIs(hEntity->pev, "vr_easteregg") || FClassnameIs(hEntity->pev, "func_rot_button") || FClassnameIs(hEntity->pev, "momentary_rot_button") || (FClassnameIs(hEntity->pev, "func_door_rotating") && FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY)) || FClassnameIs(hEntity->pev, "func_pushable") || (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f && FClassnameIs(hEntity->pev, "func_ladder")) || hEntity->IsDraggable();
+	return FClassnameIs(hEntity->pev, "vr_easteregg")
+		|| FClassnameIs(hEntity->pev, "func_rot_button")
+		|| FClassnameIs(hEntity->pev, "momentary_rot_button")
+		|| (FClassnameIs(hEntity->pev, "func_door_rotating") && FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
+		|| FClassnameIs(hEntity->pev, "func_pushable")
+		|| (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f && FClassnameIs(hEntity->pev, "func_ladder"))
+		|| hEntity->IsDraggable();
 }
 
 constexpr const int VR_DRAG_DISTANCE_TOLERANCE = 64;
@@ -865,6 +871,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 				hEntity->SetThink(&CBaseEntity::DragStopThink);
 			}
 		}
+
 		return true;
 	}
 
