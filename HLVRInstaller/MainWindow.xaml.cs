@@ -61,6 +61,12 @@ namespace HLVRInstaller
 
         private void UninstallMod(object sender, RoutedEventArgs args)
         {
+            if (!ReadmeCheckbox.IsChecked ?? false)
+            {
+                MessageBox.Show(this, "Please confirm that you read and understood the text.", "Confirmation required", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                return;
+            }
+
             if (!HalflifeDirectoryFinder.CheckModDirectory())
             {
                 UninstallButton.Visibility = Visibility.Collapsed;
@@ -87,6 +93,12 @@ namespace HLVRInstaller
 
         private async void InstallMod(object sender, RoutedEventArgs args)
         {
+            if (!ReadmeCheckbox.IsChecked ?? false)
+            {
+                MessageBox.Show(this, "Please confirm that you read and understood the text.", "Confirmation required", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                return;
+            }
+
             if (!HalflifeDirectoryFinder.CheckHLDirectory())
             {
                 var result = MessageBox.Show(this, "\"" + HalflifeDirectoryFinder.HLDirectory + "\" doesn't seem to be a valid Half-Life installation. Install anyways?", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Exclamation);
@@ -96,8 +108,8 @@ namespace HLVRInstaller
 
             if (HalflifeDirectoryFinder.CheckModDirectory())
             {
-                var result = MessageBox.Show(this, "Half-Life: VR is already installed. Install anyways? (All files will be overwritten.)", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Exclamation);
-                if (result == MessageBoxResult.Cancel)
+                var result = MessageBox.Show(this, "Half-Life: VR is already installed. Install anyways? (All files will be overwritten.)", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
+                if (result != MessageBoxResult.Yes)
                     return;
             }
 
