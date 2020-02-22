@@ -62,6 +62,9 @@
     <Filter Include="VR\sound\dr_wav">
       <UniqueIdentifier>{bfecc395-0c6f-45b6-8406-a34247469240}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\helpers\random">
+      <UniqueIdentifier>{45d5e476-1401-4eab-bf6c-e088b58a734b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dlls\crossbow.cpp">
@@ -388,6 +391,12 @@
     <ClCompile Include="VRClientDLLUnloadHandler.cpp">
       <Filter>VR\stuff</Filter>
     </ClCompile>
+    <ClCompile Include="random.cpp">
+      <Filter>VR\helpers\random</Filter>
+    </ClCompile>
+    <ClCompile Include="VREngineRandomInterceptor.cpp">
+      <Filter>VR\helpers\random</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parsemsg.h">
@@ -581,6 +590,9 @@
     </ClInclude>
     <ClInclude Include="dr_wav.h">
       <Filter>VR\sound\dr_wav</Filter>
+    </ClInclude>
+    <ClInclude Include="VREngineRandomInterceptor.h">
+      <Filter>VR\helpers\random</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

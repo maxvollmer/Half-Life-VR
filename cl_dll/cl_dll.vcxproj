@@ -235,6 +235,7 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="parsemsg.cpp" />
+    <ClCompile Include="random.cpp" />
     <ClCompile Include="saytext.cpp" />
     <ClCompile Include="snd_hook.cpp" />
     <ClCompile Include="statusbar.cpp" />
@@ -260,6 +261,7 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClCompile Include="view.cpp" />
     <ClCompile Include="VRClientDLLUnloadHandler.cpp" />
     <ClCompile Include="VRDebugPhysicsRenderer.cpp" />
+    <ClCompile Include="VREngineRandomInterceptor.cpp" />
     <ClCompile Include="VRHUDRenderer.cpp" />
     <ClCompile Include="VRInputHLMenu.cpp" />
     <ClCompile Include="VRInputHLWindow.cpp" />
@@ -333,6 +335,7 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClInclude Include="vgui_TeamFortressViewport.h" />
     <ClInclude Include="view.h" />
     <ClInclude Include="VRCommon.h" />
+    <ClInclude Include="VREngineRandomInterceptor.h" />
     <ClInclude Include="VRInputAction.h" />
     <ClInclude Include="VRInputHandlers.h" />
     <ClInclude Include="VRMODExtradataErrorIntercepter.h" />

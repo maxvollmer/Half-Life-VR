@@ -338,8 +338,15 @@ void VRHelper::Init()
 		}
 	}
 
+	extern bool VRHookRandomFunctions();
+	if (!VRHookRandomFunctions())
+	{
+		gEngfuncs.Con_DPrintf("Warning: Failed to intercept game engine's random number generator. Some visual effects will look... weird.\n");
+	}
+
 	std::filesystem::path hlvrConfigPath = GetPathFor("/HLVRConfig.exe");
-	ShellExecuteA(NULL, "open", hlvrConfigPath.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+	std::filesystem::path hlvrConfigFolder = GetPathFor("");
+	ShellExecuteA(NULL, "open", hlvrConfigPath.string().c_str(), NULL, hlvrConfigFolder.string().c_str(), SW_SHOWDEFAULT);
 }
 
 void VRHelper::Exit(const char* lpErrorMessage)

@@ -44,6 +44,7 @@
 #include "VRInput.h"
 #include "VRSettings.h"
 #include "VRSound.h"
+#include "VREngineRandomInterceptor.h"
 
 #define HARDWARE_MODE
 #include "com_model.h"
@@ -228,6 +229,15 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		{
 			VectorCopy(viewentity->origin, pparams->vieworg);
 		}
+	}
+
+	if (pparams->nextView == 0)
+	{
+		VRRandomBackupSeed();
+	}
+	else
+	{
+		VRRandomRestoreSeed();
 	}
 }
 
