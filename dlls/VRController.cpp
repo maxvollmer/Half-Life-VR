@@ -13,8 +13,6 @@
 #include "VRPhysicsHelper.h"
 #include "VRModelHelper.h"
 
-#define RENDER_DEBUG_BBOXES
-
 #ifdef RENDER_DEBUG_BBOXES
 #include "VRDebugBBoxDrawer.h"
 static VRDebugBBoxDrawer g_VRDebugBBoxDrawer;

@@ -21,9 +21,13 @@
 #include "VRMovementHandler.h"
 #include "VRControllerModel.h"
 
-#include "VRDebugBBoxDrawer.h"
-
 #include "VRRotatableEnt.h"
+
+
+#ifdef RENDER_DEBUG_BBOXES
+#include "VRDebugBBoxDrawer.h"
+static VRDebugBBoxDrawer g_VRDebugBBoxDrawer;
+#endif
 
 
 #define SF_BUTTON_TOUCH_ONLY 256  // button only fires as a result of USE key.
@@ -65,8 +69,6 @@ std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBa
 EHANDLE<CBaseEntity> g_vrHRetinaScanner;
 float g_vrRetinaScannerLookTime = 0.f;
 bool g_vrRetinaScannerUsed = false;
-
-static VRDebugBBoxDrawer g_VRDebugBBoxDrawer;
 
 
 bool CheckShoulderTouch(CBaseMonster* pMonster, const Vector& pos)
@@ -187,11 +189,10 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 		}
 	}
 
-	// TEMP DEBUG
-	if (FClassnameIs(hEntity->pev, "item_sodacan"))
-	{
-		g_VRDebugBBoxDrawer.DrawBBoxes(hEntity);
-	}
+#ifdef RENDER_DEBUG_BBOXES
+	// draw bboxes of entities in close proximity of controller
+	g_VRDebugBBoxDrawer.DrawBBoxes(hEntity);
+#endif
 
 	// Check each hitbox of current weapon
 	for (auto hitbox : controller.GetHitBoxes())
