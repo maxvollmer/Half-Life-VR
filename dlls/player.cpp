@@ -5884,39 +5884,17 @@ void EXPORT CBaseEntity::DragThink(void)
 {
 	m_pfnThink = nullptr;
 
-	Vector origin = pev->origin;
-	Vector velocity = pev->velocity;
-	Vector angles = pev->angles;
-
-	int count = 0;
-
-	for (auto& [player, controllers] : m_isBeingDragged)
+	EHANDLE<CBasePlayer> hPlayer = m_vrDragger;
+	if (hPlayer && m_vrDragController != VRControllerID::INVALID)
 	{
-		EHANDLE<CBasePlayer> hPlayer = player;
-		if (hPlayer)
+		auto& controller = hPlayer->GetController(m_vrDragController);
+		if (controller.IsValid())
 		{
-			for (auto& controllerId : controllers)
-			{
-				auto& controller = hPlayer->GetController(controllerId);
-				if (controller.IsValid())
-				{
-					origin = origin + controller.GetGunPosition();
-					velocity = velocity + controller.GetVelocity();
-					angles = angles + controller.GetAngles();	// this might be wrong...
-					count++;
-				}
-			}
+			Vector origin = controller.GetGunPosition();
+			Vector velocity = controller.GetVelocity();
+			Vector angles = controller.GetAngles();
+
+			HandleDragUpdate(origin, velocity, UTIL_AnglesMod(angles));
 		}
-	}
-
-	if (count > 0)
-	{
-		origin = origin * (1.f / count);
-		velocity = velocity * (1.f / count);
-		angles = angles * (1.f / count);	// this might be wrong...
-
-		UTIL_AnglesMod(angles);
-
-		HandleDragUpdate(origin, velocity, angles);
 	}
 }

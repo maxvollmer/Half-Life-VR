@@ -44,7 +44,7 @@ private:
 		const Vector intersectPoint;
 	};
 
-	bool HandleEasterEgg(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange);
+	bool HandleEasterEgg(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction);
 	bool HandleRetinaScanners(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange);
 	bool HandleButtonsAndDoors(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction);
 	bool HandleRechargers(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange);

@@ -104,9 +104,6 @@ void VRSettings::Init()
 	RegisterCVAR("vr_world_z_strech", "1");
 	RegisterCVAR("vr_xenjumpthingies_teleporteronly", "0");
 	RegisterCVAR("vr_headset_fps", "90");
-	RegisterCVAR("vr_rendermode", "0");
-	RegisterCVAR("vr_displaylist_fps", "25");
-	RegisterCVAR("vr_async_fps_enabled", "0"); 
 	RegisterCVAR("vr_autocrouch_enabled", "1");
 	RegisterCVAR("vr_tankcontrols", "2");
 	RegisterCVAR("vr_tankcontrols_max_distance", "128");

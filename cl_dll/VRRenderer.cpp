@@ -157,27 +157,6 @@ void VRRenderer::UpdateGameRenderState()
 		m_wasMenuJustRendered = false;
 }
 
-constexpr const double VR_DEFAULT_DISPLAYLIST_FPS = 25.0;
-
-bool VRRenderer::ShouldUpdateDisplayList()
-{
-	if (m_displayList == 0)
-		return true;
-
-	if (CVAR_GET_FLOAT("vr_async_fps_enabled") == 0.f)
-		return true;
-
-	double vr_displaylist_fps = CVAR_GET_FLOAT("vr_displaylist_fps");
-	if (vr_displaylist_fps > 0.f)
-	{
-		return (std::fabs)(m_LastDisplayListUpdate - m_clientTime) > (1.0 / double(vr_displaylist_fps));
-	}
-	else
-	{
-		return (std::fabs)(m_LastDisplayListUpdate - m_clientTime) > (1.0 / VR_DEFAULT_DISPLAYLIST_FPS);
-	}
-}
-
 void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 {
 	m_CalcRefdefWasCalled = true;
@@ -190,14 +169,6 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		pparams->nextView = 0;
 		pparams->onlyClientDraw = 1;
 		m_fIsOnlyClientDraw = true;
-
-		// clear display list, so levelchanges work properly
-		if (m_displayList != 0)
-		{
-			glEndList();
-			glDeleteLists(m_displayList, 1);
-			m_displayList = 0;
-		}
 
 		return;
 	}
@@ -217,103 +188,31 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 
 	if (pparams->nextView == 0)
 	{
-		m_useDisplayList = CVAR_GET_FLOAT("vr_rendermode") != 0.f;
+		vrHelper->PrepareVRScene(VRHelper::VRSceneMode::LeftEye);
+
+		pparams->nextView = 1;
+		pparams->onlyClientDraw = 0;
+		m_fIsOnlyClientDraw = false;
 	}
-
-	if (m_useDisplayList)
+	else if (pparams->nextView == 1)
 	{
+		RenderVRHandsAndHUDAndStuff();
+		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+		vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
 
-		// We record the entire engine rendering in an OpenGL display list every 40ms
-		// and we execute it every frame for left and right eye
-
-		bool executeDisplayList = false;
-
-		if (pparams->nextView == 1)
-		{
-			glEndList();
-			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-
-			executeDisplayList = true;
-		}
-		else if (ShouldUpdateDisplayList())
-		{
-			if (m_displayList)
-			{
-				// delete previous display list
-				glDeleteLists(m_displayList, 1);
-				m_displayList = 0;
-			}
-
-			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::Engine);
-
-			m_displayList = glGenLists(1);
-			glNewList(m_displayList, GL_COMPILE);
-
-			pparams->nextView = 1;
-			pparams->onlyClientDraw = 0;
-			m_fIsOnlyClientDraw = false;
-
-			m_LastDisplayListUpdate = m_clientTime;
-
-			executeDisplayList = false;
-		}
-		else
-		{
-			executeDisplayList = true;
-		}
-
-		if (executeDisplayList)
-		{
-			// draw recorderd display list for left eye, then render vr hands and hud
-			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::LeftEye);
-			glCallList(m_displayList);
-			RenderVRHandsAndHUDAndStuff();
-			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-
-			// draw recorderd display list for right eye, then render vr hands and hud
-			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
-			glCallList(m_displayList);
-			RenderVRHandsAndHUDAndStuff();
-			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-
-			// send images to HMD
-			vrHelper->SubmitImages();
-
-			pparams->nextView = 0;
-			pparams->onlyClientDraw = 1;
-			m_fIsOnlyClientDraw = true;
-		}
+		pparams->nextView = 2;
+		pparams->onlyClientDraw = 0;
+		m_fIsOnlyClientDraw = false;
 	}
-	else
+	else if (pparams->nextView == 2)
 	{
-		if (pparams->nextView == 0)
-		{
-			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::LeftEye);
+		RenderVRHandsAndHUDAndStuff();
+		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
+		vrHelper->SubmitImages();
 
-			pparams->nextView = 1;
-			pparams->onlyClientDraw = 0;
-			m_fIsOnlyClientDraw = false;
-		}
-		else if (pparams->nextView == 1)
-		{
-			RenderVRHandsAndHUDAndStuff();
-			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
-
-			pparams->nextView = 2;
-			pparams->onlyClientDraw = 0;
-			m_fIsOnlyClientDraw = false;
-		}
-		else if (pparams->nextView == 2)
-		{
-			RenderVRHandsAndHUDAndStuff();
-			vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-			vrHelper->SubmitImages();
-
-			pparams->nextView = 0;
-			pparams->onlyClientDraw = 1;
-			m_fIsOnlyClientDraw = true;
-		}
+		pparams->nextView = 0;
+		pparams->onlyClientDraw = 1;
+		m_fIsOnlyClientDraw = true;
 	}
 
 	vrHelper->GetViewOrg(pparams->vieworg);

@@ -171,10 +171,7 @@ namespace HLVRConfig.Utilities
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> GraphicsSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
         {
             { CategoryFPSAndPerformance, new OrderedDictionary<string, Setting>() {
-                { "vr_rendermode", Setting.Create( new I18N.I18NString("vr_rendermode", "Render Mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_rendermode.RenderTwice", "Normal (Game engine renders twice for each eye)") }, { "1", new I18N.I18NString("vr_rendermode.RecordAndReplay", "Record and Replay (mod records engine rendering once, mod then replays recorded render for both eyes)") } }, "0" ) },
-                { "vr_async_fps_enabled", Setting.Create( new I18N.I18NString("vr_async_fps_enabled", "(EXPERIMENTAL) Enable separate FPS for engine and VR (Only available for Record and Replay)"), false, new SettingDependency("vr_rendermode", "0", SettingDependency.MatchMode.MUST_NOT_MATCH) ) },
-                { "vr_headset_fps", Setting.Create( new I18N.I18NString("vr_headset_fps", "VR FPS (actual fps in your headset, sync these with your SteamVR settings)"), SettingType.COUNT, "90", new SettingDependency("vr_rendermode", "0", SettingDependency.MatchMode.MUST_NOT_MATCH) ) },
-                { "vr_displaylist_fps", Setting.Create( new I18N.I18NString("vr_displaylist_fps", "Engine FPS (for animations and moving objects, keep these as low as possible for best performance)"), SettingType.COUNT, "25", new SettingDependency("vr_rendermode", "0", SettingDependency.MatchMode.MUST_NOT_MATCH) ) },
+                { "vr_headset_fps", Setting.Create( new I18N.I18NString("vr_headset_fps", "FPS (Sync these with your SteamVR settings. It is highly recommended that you play Half-Life: VR at no more than 90fps.)"), SettingType.COUNT, "90" ) },
             } },
 
             { CategoryQuality, new OrderedDictionary<string, Setting>() {

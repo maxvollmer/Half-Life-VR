@@ -296,7 +296,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 		Interaction::InteractionInfo hitting{ isHitting, didHitChange };
 		Interaction interaction{ touching, dragging, hitting, flHitDamage, intersectResult.hasresult ? intersectResult.hitpoint : controller.GetPosition() };
 
-		if (HandleEasterEgg(pPlayer, hEntity, controller, isTouching, didTouchChange))
+		if (HandleEasterEgg(pPlayer, hEntity, controller, interaction))
 			;  // easter egg first, obviously the most important
 		else if (HandleRetinaScanners(pPlayer, hEntity, controller, isTouching, didTouchChange))
 			;
@@ -431,26 +431,38 @@ float VRControllerInteractionManager::DoDamage(CBasePlayer* pPlayer, EHANDLE<CBa
 	return damage;
 }
 
-bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange)
+bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction)
 {
 	if (FClassnameIs(hEntity->pev, "vr_easteregg"))
 	{
 		EHANDLE<CWorldsSmallestCup> pWorldsSmallestCup = hEntity;
 		if (pWorldsSmallestCup)
 		{
-			if (isTouching && controller.IsDragging())
+			if (interaction.dragging.isSet)
 			{
-				pWorldsSmallestCup->m_isBeingDragged[pPlayer].insert(controller.GetID());
-				pWorldsSmallestCup->pev->origin = controller.GetGunPosition();
-				pWorldsSmallestCup->pev->angles = controller.GetAngles();
-				pWorldsSmallestCup->pev->velocity = controller.GetVelocity();
+				if (interaction.dragging.didChange)
+				{
+					hEntity->m_vrDragger = pPlayer;
+					hEntity->m_vrDragController = controller.GetID();
+				}
+				// If we are the same player and controller that last started dragging the entity, update drag
+				if (hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
+				{
+					pWorldsSmallestCup->pev->origin = controller.GetGunPosition();
+					pWorldsSmallestCup->pev->angles = controller.GetAngles();
+					pWorldsSmallestCup->pev->velocity = controller.GetVelocity();
+				}
 			}
 			else
 			{
-				pWorldsSmallestCup->m_isBeingDragged[pPlayer].erase(controller.GetID());
-				if (hEntity->m_isBeingDragged[pPlayer].empty())
+				if (interaction.dragging.didChange)
 				{
-					hEntity->m_isBeingDragged.erase(pPlayer);
+					// If we are the same player and controller that last started dragging the entity, stop dragging
+					if (hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
+					{
+						hEntity->m_vrDragger = nullptr;
+						hEntity->m_vrDragController = VRControllerID::INVALID;
+					}
 				}
 			}
 		}
@@ -851,24 +863,30 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 		{
 			if (interaction.dragging.didChange)
 			{
-				hEntity->m_isBeingDragged[pPlayer].insert(controller.GetID());
+				hEntity->m_vrDragger = pPlayer;
+				hEntity->m_vrDragController = controller.GetID();
 				hEntity->SetThink(&CBaseEntity::DragStartThink);
 			}
 			else
 			{
-				hEntity->SetThink(&CBaseEntity::DragThink);
+				// If we are the same player and controller that last started dragging the entity, update drag
+				if (hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
+				{
+					hEntity->SetThink(&CBaseEntity::DragThink);
+				}
 			}
 		}
 		else
 		{
 			if (interaction.dragging.didChange)
 			{
-				hEntity->m_isBeingDragged[pPlayer].erase(controller.GetID());
-				if (hEntity->m_isBeingDragged[pPlayer].empty())
+				// If we are the same player and controller that last started dragging the entity, stop dragging
+				if (hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
 				{
-					hEntity->m_isBeingDragged.erase(pPlayer);
+					hEntity->m_vrDragger = nullptr;
+					hEntity->m_vrDragController = VRControllerID::INVALID;
+					hEntity->SetThink(&CBaseEntity::DragStopThink);
 				}
-				hEntity->SetThink(&CBaseEntity::DragStopThink);
 			}
 		}
 

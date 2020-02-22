@@ -157,10 +157,6 @@ private:
 	float m_flDrawingDamageTime = 0.f;
 	Vector m_damageColor;
 
-	unsigned int m_displayList{ 0 };
-	double m_LastDisplayListUpdate{ 0 };
-	bool ShouldUpdateDisplayList();
-
 	bool m_isVeryFirstFrameEver{ true };
 
 	void GetStartingPosForHUDRenderType(const VRHUDRenderType m_hudRenderType, float& hudStartPositionUpOffset, float& hudStartPositionRightOffset);

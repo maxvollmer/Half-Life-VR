@@ -664,7 +664,13 @@ public:
 		HandleDragStop();
 	}
 	void EXPORT DragThink(void);
-	std::unordered_map<EHANDLE<CBaseEntity>, std::unordered_set<VRControllerID>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_isBeingDragged;
+
+	inline bool IsBeingDragged() { return m_vrDragger && m_vrDragController != VRControllerID::INVALID; }
+
+	EHANDLE<CBaseEntity> m_vrDragger;
+	VRControllerID m_vrDragController{ VRControllerID::INVALID };
+
+	// std::unordered_map<EHANDLE<CBaseEntity>, std::unordered_set<VRControllerID>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_isBeingDragged;
 };
 
 

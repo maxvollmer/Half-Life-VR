@@ -63,7 +63,11 @@ void CWorldsSmallestCup::CupThink()
 
 	m_instance = this;
 
-	if (m_isBeingDragged.empty())
+	if (IsBeingDragged())
+	{
+		VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
+	}
+	else
 	{
 		VRPhysicsHelper::Instance().GetWorldsSmallestCupPosition(this);
 
@@ -78,16 +82,12 @@ void CWorldsSmallestCup::CupThink()
 			}
 		}
 	}
-	else
-	{
-		VRPhysicsHelper::Instance().SetWorldsSmallestCupPosition(this);
-	}
 
 	pev->absmin = pev->origin + pev->mins;
 	pev->absmax = pev->origin + pev->maxs;
 
 	// check if we are in front of a kleiner
-	if (!m_isBeingDragged.empty())
+	if (IsBeingDragged())
 	{
 		if (m_hKleiner && AmIInKleinersFace(m_hKleiner))
 		{
@@ -135,7 +135,7 @@ void CWorldsSmallestCup::CupThink()
 
 bool CWorldsSmallestCup::IsFallingOutOfWorld()
 {
-	if (!m_isBeingDragged.empty())
+	if (IsBeingDragged())
 		return false;
 
 	TraceResult tr;
