@@ -1,15 +1,65 @@
 
+// Random implementation using std random classes for overriding engine's random functions
+// For Half-Life: VR by Max Vollmer - 2020-02-22
+
 #include "EasyHook/include/easyhook.h"
 
+#include <random>
 #include <vector>
 #include <memory>
+#include <string>
+#include <sstream>
 
 #include "hud.h"
 
 namespace
 {
     std::vector<std::shared_ptr<HOOK_TRACE_INFO>> hooks;
+
+    std::random_device random_device;
+
+    std::default_random_engine seeder{ random_device() };
+
+    std::default_random_engine rng{ random_device() };
+
+    std::default_random_engine rngbackup = rng;
 }
+
+void VRRandomResetSeed(unsigned int seed/* = 0*/)
+{
+    if (seed)
+    {
+        rng.seed(seed);
+    }
+    else
+    {
+        static std::uniform_int_distribution<long> distribution((std::random_device::min)(), (std::random_device::max)());
+        rng.seed(distribution(seeder));
+    }
+}
+
+void VRRandomBackupSeed()
+{
+    rngbackup = rng;
+}
+
+void VRRandomRestoreSeed()
+{
+    rng = rngbackup;
+}
+
+float VRRandomFloat(float low, float high)
+{
+    std::uniform_real_distribution<float> distribution(low, high);
+    return distribution(rng);
+}
+
+long VRRandomLong(long low, long high)
+{
+    std::uniform_int_distribution<long> distribution(low, high);
+    return distribution(rng);
+}
+
 
 bool HookRandomMethod(const char* name, void* originalmethod, void* hookmethod)
 {
@@ -35,45 +85,9 @@ bool HookRandomMethod(const char* name, void* originalmethod, void* hookmethod)
     }
 }
 
-void VRRandomResetSeed()
-{
-    extern int idum;
-    idum = 0;
-}
-
-namespace
-{
-    int backupseed = 0;
-}
-
-void VRRandomBackupSeed()
-{
-    extern int idum;
-    backupseed = idum;
-}
-
-void VRRandomRestoreSeed()
-{
-    extern int idum;
-    idum = backupseed;
-}
-
-float MyRandomFloat(float flLow, float flHigh)
-{
-    extern float Com_RandomFloat(float flLow, float flHigh);
-    return Com_RandomFloat(flLow, flHigh);
-}
-
-long MyRandomLong(long lLow, long lHigh)
-{
-    extern int Com_RandomLong(int lLow, int lHigh);
-    return Com_RandomLong(lLow, lHigh);
-}
-
 bool VRHookRandomFunctions()
 {
     return
-        HookRandomMethod("RandomFloat", gEngfuncs.pfnRandomFloat, MyRandomFloat)
-        && HookRandomMethod("RandomLong", gEngfuncs.pfnRandomLong, MyRandomLong);
+        HookRandomMethod("RandomFloat", gEngfuncs.pfnRandomFloat, VRRandomFloat)
+        && HookRandomMethod("RandomLong", gEngfuncs.pfnRandomLong, VRRandomLong);
 }
-

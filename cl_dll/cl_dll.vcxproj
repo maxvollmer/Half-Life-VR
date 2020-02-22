@@ -235,7 +235,6 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="parsemsg.cpp" />
-    <ClCompile Include="random.cpp" />
     <ClCompile Include="saytext.cpp" />
     <ClCompile Include="snd_hook.cpp" />
     <ClCompile Include="statusbar.cpp" />

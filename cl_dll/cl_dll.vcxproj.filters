@@ -391,9 +391,6 @@
     <ClCompile Include="VRClientDLLUnloadHandler.cpp">
       <Filter>VR\stuff</Filter>
     </ClCompile>
-    <ClCompile Include="random.cpp">
-      <Filter>VR\helpers\random</Filter>
-    </ClCompile>
     <ClCompile Include="VREngineRandomInterceptor.cpp">
       <Filter>VR\helpers\random</Filter>
     </ClCompile>
