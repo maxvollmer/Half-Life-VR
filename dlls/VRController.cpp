@@ -13,6 +13,12 @@
 #include "VRPhysicsHelper.h"
 #include "VRModelHelper.h"
 
+#define RENDER_DEBUG_BBOXES
+
+#ifdef RENDER_DEBUG_BBOXES
+#include "VRDebugBBoxDrawer.h"
+static VRDebugBBoxDrawer g_VRDebugBBoxDrawer;
+#endif
 
 namespace
 {
@@ -90,14 +96,6 @@ VRController::~VRController()
 		UTIL_Remove(m_hLaserSpot);
 		m_hLaserSpot = nullptr;
 	}
-
-#ifdef RENDER_DEBUG_HITBOXES
-	for (auto beam : m_hDebugBBoxes)
-	{
-		UTIL_Remove(beam);
-	}
-	m_hDebugBBoxes.clear();
-#endif
 }
 
 
@@ -139,13 +137,13 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 
 	UpdateHitBoxes();
 
-#ifdef RENDER_DEBUG_HITBOXES
-	DebugDrawHitBoxes(pPlayer);
-#endif
-
 	UpdateLaserSpot();
 
 	SendEntityDataToClient(pPlayer, id);
+
+#ifdef RENDER_DEBUG_BBOXES
+	g_VRDebugBBoxDrawer.DrawBBoxes(GetModel());
+#endif
 }
 
 void VRController::UpdateLaserSpot()
@@ -508,5 +506,3 @@ bool VRController::GetAttachment(size_t index, Vector& attachment) const
 	}
 	return false;
 }
-
-

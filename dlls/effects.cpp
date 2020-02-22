@@ -2165,6 +2165,7 @@ void CEnvBeverage::Precache(void)
 {
 	PRECACHE_MODEL("models/can.mdl");
 	PRECACHE_SOUND("weapons/g_bounce3.wav");
+	PRECACHE_SOUND("gonarch/gon_sack2.wav");
 }
 
 LINK_ENTITY_TO_CLASS(env_beverage, CEnvBeverage);
@@ -2176,6 +2177,8 @@ void CEnvBeverage::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE u
 		// no more cans while one is waiting in the dispenser, or if I'm out of cans.
 		return;
 	}
+
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/g_bounce3.wav", 1, ATTN_NORM);
 
 	CBaseEntity* pCan = CBaseEntity::Create<CBaseEntity>("item_sodacan", pev->origin, pev->angles, edict());
 
@@ -2215,15 +2218,13 @@ void CEnvBeverage::Spawn(void)
 //=========================================================
 // Soda can
 //=========================================================
-class CItemSoda : public CBaseEntity
+class CItemSoda : public CGib
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	void EXPORT SpawnThink(void);
-	void EXPORT DragThink(void);
+	void Spawn();
+	virtual void HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles) override;
 
-	virtual bool IsDraggable() override { return !(pev->effects & EF_NODRAW); }
+	virtual bool IsDraggable() override { return !(pev->effects & EF_NODRAW) && CGib::IsDraggable(); }
 	virtual void HandleDragStart() override;
 	virtual void HandleDragStop() override;
 
@@ -2234,24 +2235,24 @@ private:
 
 LINK_ENTITY_TO_CLASS(item_sodacan, CItemSoda);
 
-void CItemSoda::Precache(void)
-{
-}
-
 void CItemSoda::Spawn()
 {
-	Precache();
-	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_TOSS;
+	CGib::Spawn("models/can.mdl");
 
-	SET_MODEL(ENT(pev), "models/can.mdl");
+	// cans are frickin huge in VR!
+	pev->scale = 0.5f;
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
+	pev->classname = MAKE_STRING("item_sodacan");
 
-	SetThink(&CItemSoda::SpawnThink);
-	pev->nextthink = gpGlobals->time + 0.5;
+	m_lifeTime = -1;	// live forever
+	m_material = matMetal;
+
+	// cans don't bleed
+	m_bloodColor = DONT_BLEED;
+	m_cBloodDecals = 0;
 }
 
-void CItemSoda::HandleDragStart(void)
+void CItemSoda::HandleDragStart()
 {
 	// tell the machine the the can was taken
 	if (!FNullEnt(pev->owner))
@@ -2260,42 +2261,28 @@ void CItemSoda::HandleDragStart(void)
 		pev->owner = nullptr;
 	}
 
-	pev->movetype = MOVETYPE_NONE;
-	SetThink(nullptr);
-
-	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
+	CGib::HandleDragStart();
 }
 
-void CItemSoda::HandleDragStop(void)
+void CItemSoda::HandleDragStop()
 {
-	pev->movetype = MOVETYPE_TOSS;
-	SetThink(&CItemSoda::SpawnThink);
-	pev->nextthink = gpGlobals->time;
+	CGib::HandleDragStop();
 }
 
-void CItemSoda::DragThink()
+void CItemSoda::HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles)
 {
+	CGib::HandleDragUpdate(origin, velocity, angles);
+
 	// check if player moved the can close enough to face for drinking
-	for (auto& [player, controllers] : m_isBeingDragged)
+	EHANDLE<CBaseEntity> hPlayer = m_vrDragger;
+	if (hPlayer && hPlayer->IsPlayer())
 	{
-		EHANDLE<CBaseEntity> hPlayer = player;
-		if (hPlayer && hPlayer->IsPlayer())
+		float distance = (hPlayer->EyePosition() - pev->origin).Length();
+		if (distance < 8)
 		{
-			float distance = (hPlayer->EyePosition() - pev->origin).Length();
-			if (distance < 8)
-			{
-				Drink(hPlayer);
-			}
+			Drink(hPlayer);
 		}
 	}
-}
-
-void CItemSoda::SpawnThink()
-{
-	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/g_bounce3.wav", 1, ATTN_NORM);
-	pev->movetype = MOVETYPE_TOSS;
-	UTIL_SetSize(pev, Vector(-8, -8, 0), Vector(8, 8, 8));
-	SetThink(nullptr);
 }
 
 void CItemSoda::Drink(CBaseEntity* pDrinker)

@@ -177,34 +177,27 @@ void CGib::SpawnHeadGib(entvars_t* pevVictim)
 	pGib->LimitVelocity();
 }
 
-void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, int human)
+void CGib::SpawnGibs(entvars_t* pevVictim, const char* model, int cGibs, int minBody, int maxBody)
 {
 	int cSplat = 0;
 
 	for (cSplat = 0; cSplat < cGibs; cSplat++)
 	{
 		CGib* pGib = GetClassPtr<CGib>(nullptr);
+		pGib->Spawn(model);
 
-		if (g_Language == LANGUAGE_GERMAN)
+		if (minBody < 0 || maxBody < 0)
 		{
-			pGib->Spawn("models/germangibs.mdl");
-			pGib->pev->body = RANDOM_LONG(0, GERMAN_GIB_COUNT - 1);
-		}
-		else
-		{
-			if (human)
+			minBody = 0;
+			maxBody = 0;
+
+			void* pmodel = GET_MODEL_PTR(pGib->edict());
+			if (pmodel)
 			{
-				// human pieces
-				pGib->Spawn("models/hgibs.mdl");
-				pGib->pev->body = RANDOM_LONG(1, HUMAN_GIB_COUNT - 1);  // start at one to avoid throwing random amounts of skulls (0th gib)
-			}
-			else
-			{
-				// aliens
-				pGib->Spawn("models/agibs.mdl");
-				pGib->pev->body = RANDOM_LONG(0, ALIEN_GIB_COUNT - 1);
+				maxBody = GetNumBodies(pmodel) - 1;
 			}
 		}
+		pGib->pev->body = RANDOM_LONG(minBody, maxBody);
 
 		if (pevVictim)
 		{
@@ -246,6 +239,22 @@ void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, int human)
 			UTIL_SetSize(pGib->pev, Vector(0, 0, 0), Vector(0, 0, 0));
 		}
 		pGib->LimitVelocity();
+	}
+}
+
+void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, int human)
+{
+	if (g_Language == LANGUAGE_GERMAN)
+	{
+		CGib::SpawnGibs(pevVictim, "models/germangibs.mdl", cGibs, 0, GERMAN_GIB_COUNT - 1);
+	}
+	else if (human)
+	{
+		CGib::SpawnGibs(pevVictim, "models/hgibs.mdl", cGibs, 1, HUMAN_GIB_COUNT - 1);
+	}
+	else
+	{
+		CGib::SpawnGibs(pevVictim, "models/agibs.mdl", cGibs, 0, ALIEN_GIB_COUNT - 1);
 	}
 }
 
@@ -685,8 +694,11 @@ void CGib::WaitTillLand(void)
 
 	if (pev->velocity == g_vecZero)
 	{
-		SetThink(&CGib::SUB_StartFadeOut);
-		pev->nextthink = gpGlobals->time + m_lifeTime;
+		if (m_lifeTime > 0)
+		{
+			SetThink(&CGib::SUB_StartFadeOut);
+			pev->nextthink = gpGlobals->time + m_lifeTime;
+		}
 
 		// If you bleed, you stink!
 		if (m_bloodColor != DONT_BLEED)

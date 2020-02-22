@@ -137,8 +137,4 @@ private:
 		m_attachments.clear();
 	}
 
-#ifdef RENDER_DEBUG_HITBOXES
-	void DebugDrawHitBoxes(CBasePlayer* pPlayer);
-	mutable std::vector<EHANDLE<CBaseEntity>> m_hDebugBBoxes;
-#endif
 };

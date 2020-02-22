@@ -387,6 +387,9 @@
     <ClCompile Include="VRControllerTeleporter.cpp">
       <Filter>VR\Controller</Filter>
     </ClCompile>
+    <ClCompile Include="VRDebugBBoxDrawer.cpp">
+      <Filter>VR\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activity.h">
@@ -568,6 +571,9 @@
     </ClInclude>
     <ClInclude Include="VRControllerTeleporter.h">
       <Filter>VR\Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="VRDebugBBoxDrawer.h">
+      <Filter>VR\Helpers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

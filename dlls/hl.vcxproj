@@ -272,6 +272,7 @@ copy .\Debug\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
     <ClCompile Include="VRControllerModel.cpp" />
     <ClCompile Include="VRControllerTeleporter.cpp" />
     <ClCompile Include="VRCrushEntityHandler.cpp" />
+    <ClCompile Include="VRDebugBBoxDrawer.cpp" />
     <ClCompile Include="VRGroundEntityHandler.cpp" />
     <ClCompile Include="VRModelHelper.cpp" />
     <ClCompile Include="VRMovementHandler.cpp" />
@@ -314,6 +315,7 @@ copy .\Debug\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
     <ClInclude Include="hlmv_mathlib.h" />
     <ClInclude Include="hornet.h" />
     <ClInclude Include="items.h" />
+    <ClInclude Include="VRDebugBBoxDrawer.h" />
     <ClInclude Include="VRMovementHandler.h" />
     <ClInclude Include="VRRotatableEnt.h" />
     <ClInclude Include="monsterevent.h" />

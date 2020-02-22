@@ -26,6 +26,7 @@
 #include "func_break.h"
 #include "decals.h"
 #include "explode.h"
+#include "monsters.h"
 
 extern DLL_GLOBAL Vector g_vecAttackDir;
 
@@ -722,11 +723,16 @@ void CBreakable::Die(void)
 	WRITE_BYTE(cFlag);
 	MESSAGE_END();
 
+
 	float size = pev->size.x;
 	if (size < pev->size.y)
 		size = pev->size.y;
 	if (size < pev->size.z)
 		size = pev->size.z;
+
+
+	CGib::SpawnGibs(pev, STRING(m_iszGibModel), 10);
+
 
 	// !!! HACK  This should work!
 	// Build a box above the entity that looks like an 8 pixel high sheet
@@ -744,6 +750,13 @@ void CBreakable::Die(void)
 		{
 			ClearBits(pList[i]->pev->flags, FL_ONGROUND);
 			pList[i]->pev->groundentity = nullptr;
+
+			// give pushables a nudge to fall down
+			CPushable* pPushable = dynamic_cast<CPushable*>(pList[i]);
+			if (pPushable)
+			{
+				pPushable->pev->velocity.z -= 1;
+			}
 		}
 	}
 

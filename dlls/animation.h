@@ -56,6 +56,7 @@ struct StudioAttachment
 	vec3_t pos;
 };
 int GetNumHitboxes(void* pmodel);
+int GetNumBodies(void* pmodel);
 int GetNumAttachments(void* pmodel);
 int GetHitboxesAndAttachments(entvars_t* pev, void* pmodel, int sequence, float frame, StudioHitBox* hitboxes, StudioAttachment* attachments, bool mirrored = false);
 

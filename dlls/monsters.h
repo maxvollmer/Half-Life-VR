@@ -156,6 +156,7 @@ public:
 
 	virtual int ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE; }
 	static void SpawnHeadGib(entvars_t* pevVictim);
+	static void SpawnGibs(entvars_t* pevVictim, const char* model, int cGibs, int minBody = -1, int maxBody = -1);
 	static void SpawnRandomGibs(entvars_t* pevVictim, int cGibs, int human);
 	static void SpawnStickyGibs(entvars_t* pevVictim, Vector vecOrigin, int cGibs);
 
@@ -163,6 +164,24 @@ public:
 	int m_cBloodDecals = 0;
 	int m_material = 0;
 	float m_lifeTime = 0.f;
+
+	virtual bool IsDraggable() override { return !(pev->effects & EF_NODRAW) && pev->rendermode != kRenderTransTexture; }
+	virtual void HandleDragStart() override
+	{
+		pev->movetype = MOVETYPE_NONE;
+		if (m_pfnTouch) sticky = m_pfnTouch == &CGib::StickyGibTouch;
+		SetThink(nullptr);
+		SetTouch(nullptr);
+	}
+	virtual void HandleDragStop() override
+	{
+		pev->movetype = MOVETYPE_BOUNCE;
+		SetThink(&CGib::WaitTillLand);
+		SetTouch(sticky ? &CGib::StickyGibTouch : &CGib::BounceGibTouch);
+	}
+
+private:
+	bool sticky = false;
 };
 
 

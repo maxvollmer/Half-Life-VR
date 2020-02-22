@@ -1144,6 +1144,14 @@ int GetNumHitboxes(void* pmodel)
 
 	return pstudiohdr->numhitboxes;
 }
+int GetNumBodies(void* pmodel)
+{
+	studiohdr_t* pstudiohdr = static_cast<studiohdr_t*>(pmodel);
+	if (!pstudiohdr)
+		return 0;
+
+	return pstudiohdr->numbodyparts;
+}
 int GetNumAttachments(void* pmodel)
 {
 	studiohdr_t* pstudiohdr = static_cast<studiohdr_t*>(pmodel);

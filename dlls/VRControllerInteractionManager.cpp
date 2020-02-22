@@ -21,6 +21,8 @@
 #include "VRMovementHandler.h"
 #include "VRControllerModel.h"
 
+#include "VRDebugBBoxDrawer.h"
+
 #include "VRRotatableEnt.h"
 
 
@@ -63,6 +65,8 @@ std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBa
 EHANDLE<CBaseEntity> g_vrHRetinaScanner;
 float g_vrRetinaScannerLookTime = 0.f;
 bool g_vrRetinaScannerUsed = false;
+
+static VRDebugBBoxDrawer g_VRDebugBBoxDrawer;
 
 
 bool CheckShoulderTouch(CBaseMonster* pMonster, const Vector& pos)
@@ -126,14 +130,33 @@ bool IsNonInteractingEntity(EHANDLE<CBaseEntity> hEntity)
 	return (hEntity->pev->solid == SOLID_NOT && !IsUsableDoor(hEntity)) || FClassnameIs(hEntity->pev, "func_wall") || FClassnameIs(hEntity->pev, "func_illusionary") || FClassnameIs(hEntity->pev, "vr_controllermodel");  // TODO/NOTE: If this mod gets ever patched up for multiplayer, and you want players to be able to crowbar-fight, this should probably be changed
 }
 
-bool IsReachable(CBasePlayer* pPlayer, const VRController::HitBox& hitbox)
+bool IsReachable(CBasePlayer* pPlayer, const VRController::HitBox& hitbox, bool strict)
 {
 	TraceResult tr{ 0 };
 	UTIL_TraceLine(pPlayer->pev->origin, hitbox.origin, ignore_monsters, nullptr, &tr);
 	if (tr.flFraction < 1.f)
 		return false;
 
+	if (!strict)
+		return true;
+
 	return !VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->pev->origin, hitbox.origin);
+}
+
+bool IsTriggerOrButton(EHANDLE<CBaseEntity> hEntity)
+{
+	if (!hEntity)
+		return false;
+
+	// usables (doors, buttons, levers etc)
+	if (hEntity->ObjectCaps() & (FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE | FCAP_DIRECTIONAL_USE))
+		return true;
+
+	// triggers
+	if (hEntity->pev->solid == SOLID_TRIGGER && hEntity->pev->model && STRING(hEntity->pev->model)[0] == '*')
+		return true;
+
+	return false;
 }
 
 bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
@@ -164,11 +187,18 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 		}
 	}
 
+	// TEMP DEBUG
+	if (FClassnameIs(hEntity->pev, "item_sodacan"))
+	{
+		g_VRDebugBBoxDrawer.DrawBBoxes(hEntity);
+	}
+
 	// Check each hitbox of current weapon
 	for (auto hitbox : controller.GetHitBoxes())
 	{
 		// Prevent interaction with stuff through walls
-		if (!IsReachable(pPlayer, hitbox))
+		// (simple check for non-important stuff like ammo, strict check using physics engine for important things like triggers, NPCs and buttons)
+		if (!IsReachable(pPlayer, hitbox, IsTriggerOrButton(hEntity)))
 			continue;
 
 		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult)
@@ -866,6 +896,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 				hEntity->m_vrDragger = pPlayer;
 				hEntity->m_vrDragController = controller.GetID();
 				hEntity->SetThink(&CBaseEntity::DragStartThink);
+				hEntity->pev->nextthink = gpGlobals->time;
 			}
 			else
 			{
@@ -873,6 +904,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 				if (hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
 				{
 					hEntity->SetThink(&CBaseEntity::DragThink);
+					hEntity->pev->nextthink = gpGlobals->time;
 				}
 			}
 		}
@@ -886,6 +918,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 					hEntity->m_vrDragger = nullptr;
 					hEntity->m_vrDragController = VRControllerID::INVALID;
 					hEntity->SetThink(&CBaseEntity::DragStopThink);
+					hEntity->pev->nextthink = gpGlobals->time;
 				}
 			}
 		}
