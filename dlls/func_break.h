@@ -86,6 +86,12 @@ public:
 	float m_angle = 0.f;
 	int m_iszGibModel = 0;
 	int m_iszSpawnObject = 0;
+	int m_iSmokeTrail = 0;
+
+private:
+
+	void VRSpawnBreakModels(const Vector& pos, const Vector& size, Vector direction, float random, float life, int count, const char* model, int modelIndex, int material, char flags);
+
 };
 
 class CPushable : public CBreakable

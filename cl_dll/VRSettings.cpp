@@ -114,6 +114,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_smooth_steps", "0");
 	RegisterCVAR("vr_headset_offset", "0");
 	RegisterCVAR("vr_classic_mode", "0");
+	RegisterCVAR("vr_enable_interactive_debris", "1");
 
 	RegisterCVAR("vr_use_fmod", "1");
 	RegisterCVAR("vr_fmod_3d_occlusion", "1");

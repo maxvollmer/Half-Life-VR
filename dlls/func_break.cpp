@@ -19,6 +19,9 @@
   spawn, think, and use functions for entities that use brush models
 
 */
+
+#include <algorithm>
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -27,6 +30,7 @@
 #include "decals.h"
 #include "explode.h"
 #include "monsters.h"
+#include "animation.h"
 
 extern DLL_GLOBAL Vector g_vecAttackDir;
 
@@ -340,6 +344,8 @@ void CBreakable::Precache(void)
 		PRECACHE_SOUND("debris/bustceiling.wav");
 		break;
 	}
+
+	m_iSmokeTrail = PRECACHE_MODEL("sprites/smoke.spr");
 
 	MaterialSoundPrecache(m_Material);
 
@@ -689,50 +695,7 @@ void CBreakable::Die(void)
 	}
 
 	vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, vecSpot);
-	WRITE_BYTE(TE_BREAKMODEL);
-
-	// position
-	WRITE_COORD(vecSpot.x);
-	WRITE_COORD(vecSpot.y);
-	WRITE_COORD(vecSpot.z);
-
-	// size
-	WRITE_COORD(pev->size.x);
-	WRITE_COORD(pev->size.y);
-	WRITE_COORD(pev->size.z);
-
-	// velocity
-	WRITE_COORD(vecVelocity.x);
-	WRITE_COORD(vecVelocity.y);
-	WRITE_COORD(vecVelocity.z);
-
-	// randomization
-	WRITE_BYTE(10);
-
-	// Model
-	WRITE_SHORT(m_idShard);  //model id#
-
-	// # of shards
-	WRITE_BYTE(0);  // let client decide
-
-	// duration
-	WRITE_BYTE(25);  // 2.5 seconds
-
-	// flags
-	WRITE_BYTE(cFlag);
-	MESSAGE_END();
-
-
-	float size = pev->size.x;
-	if (size < pev->size.y)
-		size = pev->size.y;
-	if (size < pev->size.z)
-		size = pev->size.z;
-
-
-	CGib::SpawnGibs(pev, STRING(m_iszGibModel), 10);
-
+	VRSpawnBreakModels(vecSpot, pev->size, vecVelocity, 10, 2.5f, 0, STRING(m_iszGibModel), m_idShard, m_Material, cFlag);
 
 	// !!! HACK  This should work!
 	// Build a box above the entity that looks like an 8 pixel high sheet
@@ -778,6 +741,125 @@ void CBreakable::Die(void)
 		ExplosionCreate(Center(), pev->angles, edict(), ExplosionMagnitude(), TRUE);
 	}
 }
+
+void CBreakable::VRSpawnBreakModels(const Vector& pos, const Vector& size, Vector direction, float random, float life, int count, const char* model, int modelIndex, int material, char flags)
+{
+	// boring classic client-side temp entities that disappear quickly and can't be picked up
+	if (CVAR_GET_FLOAT("vr_enable_interactive_debris") == 0.f)
+	{
+		if (!modelIndex)
+			return;
+
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_BREAKMODEL);
+		WRITE_COORDS(pos);
+		WRITE_COORDS(size);
+		WRITE_COORDS(direction);
+		WRITE_BYTE(static_cast<int>(random));
+		WRITE_SHORT(modelIndex);
+		WRITE_BYTE(count);
+		WRITE_BYTE(static_cast<int>(life * 10));
+		WRITE_BYTE(flags);
+		MESSAGE_END();
+
+		return;
+	}
+
+	if (!model)
+		return;
+
+	if (count <= 0)
+	{
+		constexpr const float volumePerShard = 432.f;
+		count = (size[0] * size[1] + size[1] * size[2] + size[2] * size[0]) / (volumePerShard);
+	}
+
+	count = std::clamp(count, 1, 100);
+
+	if (random = 0.f)
+		random = 10.f;
+
+	bool randomdirection = direction.LengthSquared() == 0.f;
+
+	char type = flags & BREAK_TYPEMASK;
+
+	for (int i = 0; i < count; i++)
+	{
+		// find a spot that isn't stuck in something solid
+		int numtries = 0;
+		Vector vecSpot;
+		bool isstuck = false;
+		do
+		{
+			vecSpot.x = pos.x + g_engfuncs.pfnRandomFloat(-0.5f, 0.5f) * size.x;
+			vecSpot.y = pos.y + g_engfuncs.pfnRandomFloat(-0.5f, 0.5f) * size.y;
+			vecSpot.z = pos.z + g_engfuncs.pfnRandomFloat(-0.5f, 0.5f) * size.z;
+			isstuck = UTIL_PointContents(vecSpot) == CONTENTS_SOLID;
+			++numtries;
+		} while (numtries < 32 && isstuck);
+
+		if (isstuck)
+			continue;
+
+		CGib* pGib = GetClassPtr<CGib>(nullptr);
+		pGib->Spawn(model);
+
+		int numBodies = GetNumBodies(GET_MODEL_PTR(pGib->edict()));
+		if (numBodies > 1)
+			pGib->pev->body = g_engfuncs.pfnRandomLong(0, numBodies - 1);
+
+		if ((type == BREAK_GLASS) || (flags & BREAK_TRANS))
+		{
+			pGib->pev->rendermode = kRenderTransTexture;
+			pGib->pev->renderamt = 128;
+		}
+
+		pGib->m_material = material;
+		pGib->m_lifeTime = life + g_engfuncs.pfnRandomLong(0.0f, 1.0f);
+		pGib->pev->solid = SOLID_BBOX;
+
+		pGib->pev->origin = vecSpot;
+
+		// new random direction for every gib
+		if (randomdirection)
+		{
+			direction.x = g_engfuncs.pfnRandomFloat(-1.0f, 1.0f);
+			direction.y = g_engfuncs.pfnRandomFloat(-1.0f, 1.0f);
+			direction.z = g_engfuncs.pfnRandomFloat(-1.0f, 1.0f);
+			direction.Normalize();
+		}
+
+		pGib->pev->velocity.x = direction.x + g_engfuncs.pfnRandomFloat(-random, random);
+		pGib->pev->velocity.y = direction.y + g_engfuncs.pfnRandomFloat(-random, random);
+		pGib->pev->velocity.z = direction.z + g_engfuncs.pfnRandomFloat(0, random);
+
+		if (g_engfuncs.pfnRandomLong(0, 255) < 200)
+		{
+			pGib->pev->angles.x = g_engfuncs.pfnRandomFloat(-256, 255);
+			pGib->pev->angles.y = g_engfuncs.pfnRandomFloat(-256, 255);
+			pGib->pev->angles.z = g_engfuncs.pfnRandomFloat(-256, 255);
+		}
+
+		if ((flags & BREAK_SMOKE) && (g_engfuncs.pfnRandomLong(0, 255) < 100))
+		{
+			// smoke trail
+			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY);
+			WRITE_BYTE(TE_BEAMFOLLOW);
+			WRITE_SHORT(pGib->entindex());
+			WRITE_SHORT(m_iSmokeTrail);
+			WRITE_BYTE(static_cast<int>(life * 10 * 0.5f));
+			WRITE_BYTE(1);
+			WRITE_BYTE(224); WRITE_BYTE(224); WRITE_BYTE(255); WRITE_BYTE(255);	// rgba
+			MESSAGE_END();
+		}
+
+		UTIL_SetSize(pGib->pev, Vector(0, 0, 0), Vector(0, 0, 0));
+		pGib->LimitVelocity();
+	}
+}
+
+
+
 
 
 

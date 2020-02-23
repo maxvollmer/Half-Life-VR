@@ -2237,10 +2237,11 @@ LINK_ENTITY_TO_CLASS(item_sodacan, CItemSoda);
 
 void CItemSoda::Spawn()
 {
-	CGib::Spawn("models/can.mdl");
-
 	// cans are frickin huge in VR!
 	pev->scale = 0.5f;
+
+	CGib::Spawn("models/can.mdl");
+
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 	pev->classname = MAKE_STRING("item_sodacan");
 

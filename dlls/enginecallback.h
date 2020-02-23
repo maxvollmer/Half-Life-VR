@@ -82,6 +82,18 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = nul
 #define WRITE_COORD  (*g_engfuncs.pfnWriteCoord)
 #define WRITE_STRING (*g_engfuncs.pfnWriteString)
 #define WRITE_ENTITY (*g_engfuncs.pfnWriteEntity)
+inline void WRITE_COORDS(const float* v)
+{
+	WRITE_COORD(v[0]);
+	WRITE_COORD(v[1]);
+	WRITE_COORD(v[2]);
+}
+inline void WRITE_ANGLES(const float* v)
+{
+	WRITE_ANGLE(v[0]);
+	WRITE_ANGLE(v[1]);
+	WRITE_ANGLE(v[2]);
+}
 inline void WRITE_FLOAT(float f)
 {
 	unsigned char floatbytes[sizeof(float)];
