@@ -13,6 +13,10 @@ namespace HLVRConfig.Utilities
         private static readonly float CM_TO_UNIT = 0.375f;
         private static readonly float UNIT_TO_CM = 1.0f / CM_TO_UNIT;
 
+        private static readonly I18N.I18NString ModDefaultLabel = new I18N.I18NString("ModDefault", "Mod Default");
+        private static readonly I18N.I18NString CheckboxOnLabel = new I18N.I18NString("CheckboxOn", "on");
+        private static readonly I18N.I18NString CheckboxOffLabel = new I18N.I18NString("CheckboxOff", "off");
+
         public static void Initialize(StackPanel panel, OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories)
         {
             panel.Children.Clear();
@@ -45,7 +49,7 @@ namespace HLVRConfig.Utilities
                 switch (setting.Value.Type)
                 {
                     case SettingType.BOOLEAN:
-                        AddCheckBox(settingcategories, categoryPanel, category, setting.Key, setting.Value.Description, setting.Value.IsTrue());
+                        AddCheckBox(settingcategories, categoryPanel, category, setting.Key, setting.Value.Description, setting.Value.IsTrue(), !setting.Value.DefaultValue.Equals("0"));
                         break;
                     default:
                         AddInput(settingcategories, categoryPanel, category, setting.Key, setting.Value.Description, setting.Value);
@@ -108,6 +112,12 @@ namespace HLVRConfig.Utilities
                     inputPanel.Children.Add(CreateMiniText(value.Type == SettingType.SPEED ? "units/s" : "units"));
                     inputPanel.Children.Add(meterTextbox);
                     inputPanel.Children.Add(CreateMiniText(value.Type == SettingType.SPEED ? "cm/s" : "cm"));
+
+                    inputPanel.Children.Add(CreateDefaultLabel(value.DefaultValue + "/" + UnitToMeter(value.DefaultValue)));
+                }
+                else
+                {
+                    inputPanel.Children.Add(CreateDefaultLabel(value.DefaultValue));
                 }
             }
             else
@@ -118,6 +128,7 @@ namespace HLVRConfig.Utilities
                 };
                 int index = 0;
                 int selectedIndex = 0;
+                I18N.I18NString defaultValue = null;
                 foreach (var allowedValue in value.AllowedValues)
                 {
                     var comboboxitem = new ComboBoxItem() { };
@@ -127,6 +138,10 @@ namespace HLVRConfig.Utilities
                     {
                         selectedIndex = index;
                     }
+                    if (allowedValue.Key.Equals(value.DefaultValue))
+                    {
+                        defaultValue = allowedValue.Value;
+                    }
                     index++;
                 }
                 combobox.SelectedIndex = selectedIndex;
@@ -135,18 +150,26 @@ namespace HLVRConfig.Utilities
                     HLVRSettingsManager.SetModSetting(settingcategories, category, name, ((I18N.I18NString)(combobox.SelectedValue as ComboBoxItem).Content).Key);
                 };
                 inputPanel.Children.Add(combobox);
+
+                if (defaultValue != null)
+                    inputPanel.Children.Add(CreateDefaultLabel(I18N.Get(defaultValue)));
             }
 
             panel.Children.Add(inputPanel);
         }
 
-        private static TextBlock CreateMiniText(string text)
+        private static TextBlock CreateDefaultLabel(string defaultValue)
+        {
+            return CreateMiniText("(" + I18N.Get(ModDefaultLabel) + ": " + defaultValue + ")", 20);
+        }
+
+        private static TextBlock CreateMiniText(string text, double leftmargin=0)
         {
             return new TextBlock(new Run(text))
             {
                 TextWrapping = TextWrapping.NoWrap,
                 Padding = new Thickness(0, 10, 10, 0),
-                Margin = new Thickness(0, 0, 0, 0),
+                Margin = new Thickness(leftmargin, 0, 0, 0),
                 Focusable = false
             };
         }
@@ -180,8 +203,13 @@ namespace HLVRConfig.Utilities
             panel.Children.Add(textBlock);
         }
 
-        private static void AddCheckBox(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, string name, I18N.I18NString label, bool isChecked)
+        private static void AddCheckBox(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, string name, I18N.I18NString label, bool isChecked, bool isDefaultChecked)
         {
+            StackPanel inputPanel = new StackPanel()
+            {
+                Orientation = Orientation.Horizontal,
+            };
+
             CheckBox cb = new CheckBox
             {
                 Name = name,
@@ -201,7 +229,9 @@ namespace HLVRConfig.Utilities
             {
                 HLVRSettingsManager.SetModSetting(settingcategories, category, name, false);
             };
-            panel.Children.Add(cb);
+            inputPanel.Children.Add(cb);
+
+            panel.Children.Add(inputPanel);
         }
 
         private static TextBox MakeTextBox(Setting value)
