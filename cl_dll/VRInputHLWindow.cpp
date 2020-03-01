@@ -131,6 +131,12 @@ namespace
 		SetForegroundWindow(hPreviousForegroundWindow);
 	}
 
+	void VRForceWindowToForeground()
+	{
+		VRFindHLWindow();
+		SwitchToThisWindow(hlWindow, TRUE);
+	}
+
 	void VRDisplayErrorPopup(const char* errorMessage)
 	{
 		VRFindHLWindow();
@@ -151,4 +157,9 @@ void VRInput::SendMouseButtonClickToHLWindow(float x, float y)
 void VRInput::DisplayErrorPopup(const char* errorMessage)
 {
 	VRDisplayErrorPopup(errorMessage);
+}
+
+void VRInput::ForceWindowToForeground()
+{
+	VRForceWindowToForeground();
 }

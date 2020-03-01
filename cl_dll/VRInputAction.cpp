@@ -58,6 +58,10 @@ void VRInputAction::HandleDigitalInput()
 	vr::EVRInputError result = vr::VRInput()->GetDigitalActionData(m_handle, &data, sizeof(vr::InputDigitalActionData_t), vr::k_ulInvalidInputValueHandle);
 	if (result == vr::VRInputError_None)
 	{
+		if (data.bActive && data.bChanged && data.bState)
+		{
+			g_vrInput.m_vrInputThisFrame = true;
+		}
 		(m_digitalActionHandler)(data, m_id);
 	}
 	else
@@ -72,6 +76,12 @@ void VRInputAction::HandleAnalogInput()
 	vr::EVRInputError result = vr::VRInput()->GetAnalogActionData(m_handle, &data, sizeof(vr::InputAnalogActionData_t), vr::k_ulInvalidInputValueHandle);
 	if (result == vr::VRInputError_None)
 	{
+		if (data.bActive && (fabs(data.deltaX) > CVAR_GET_FLOAT("vr_move_analog_deadzone")
+							|| fabs(data.deltaY) > CVAR_GET_FLOAT("vr_move_analog_deadzone")
+							|| fabs(data.deltaZ) > CVAR_GET_FLOAT("vr_move_analog_deadzone") ))
+		{
+			g_vrInput.m_vrInputThisFrame = true;
+		}
 		(m_analogActionHandler)(data, m_id);
 	}
 	else

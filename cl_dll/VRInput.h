@@ -84,7 +84,10 @@ public:
 	void ShowHLMenu();
 	void HideHLMenu();
 
+	void ForceWindowToForeground();
 	void DisplayErrorPopup(const char* errorMessage);
+
+	bool m_vrInputThisFrame = false;
 
 private:
 	struct ActionSet

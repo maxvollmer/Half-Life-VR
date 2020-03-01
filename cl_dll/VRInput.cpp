@@ -437,6 +437,7 @@ void VRInput::FireDamageFeedback(const std::string& action, float durationInSeco
 
 void VRInput::HandleInput(bool isInGame)
 {
+	m_vrInputThisFrame = false;
 	m_fingerSkeletalData.clear();
 
 	std::vector<vr::VRActiveActionSet_t> activeActionSets;
@@ -460,6 +461,11 @@ void VRInput::HandleInput(bool isInGame)
 				action.HandleInput(isInGame);
 			}
 		}
+	}
+
+	if (isInGame && m_vrInputThisFrame)
+	{
+		ForceWindowToForeground();
 	}
 }
 
