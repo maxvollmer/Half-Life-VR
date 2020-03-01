@@ -1,4 +1,4 @@
-0.6.8-beta
+0.6.8-beta - 2020-03-01
  Mod:
   * Fixed bug that pushed players upwards when walking into walls
   * Fixed labcoat hand model animations and misaligned UV maps
