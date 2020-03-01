@@ -73,7 +73,11 @@ namespace HLVRConfig.Utilities
                         };
                     }
                 }
-                catch (Exception) {}
+                catch (Exception e)
+                {
+                    string error = "ERROR Couldn't connect to Half-Life console: " + e.Message + "\n\n" + e.StackTrace;
+                    System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.ConsoleLog(error, Brushes.Red)));
+                }
             }
         }
 

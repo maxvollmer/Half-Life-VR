@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:HLVRConfig.Utilities.Controls"
         mc:Ignorable="d"
-        Title="Half-Life: VR Launcher" Height="450" Width="800"
+        Title="Half-Life: VR Config" Height="450" Width="800"
         MinHeight="450" MinWidth="600">
     <Grid>
         <TabControl>
