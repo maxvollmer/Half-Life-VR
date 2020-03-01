@@ -2684,9 +2684,7 @@ PM_NoClip
 
 ====================
 */
-// the maximum distance we try to move a stuck player
-#define VR_UNSTUCK_DISTANCE 32
-void PM_NoClip(bool unstuckMove = false)
+void PM_NoClip()
 {
 	int i = 0;
 	vec3_t wishvel;
@@ -2704,6 +2702,7 @@ void PM_NoClip(bool unstuckMove = false)
 	{
 		wishvel[i] = pmove->forward[i] * fmove + pmove->right[i] * smove;
 	}
+	// TODO UPBUG: Investigate here if this pushes us up on walls
 	wishvel[2] += pmove->cmd.upmove;
 
 	// Zero out the velocity so that we don't accumulate a huge downward velocity from gravity, etc.
@@ -2712,81 +2711,92 @@ void PM_NoClip(bool unstuckMove = false)
 	vec3_t wishend;
 	VectorMA(pmove->origin, pmove->frametime, wishvel, wishend);
 
-	// Trying to determine if a player can move while being stuck (move away from wall) - Max Vollmer, 2018-04-01
-	if (unstuckMove)
-	{
-		// Don't unstuck dead players
-		if (pmove->dead || pmove->deadflag != DEAD_NO)
-			return;
+	VectorCopy(wishend, pmove->origin);
+	PM_CategorizePosition();
+}
 
-		// check if it's just a step
-		wishend[2] += pmove->movevars->stepsize;
-		if (pmove->PM_TestPlayerPosition(wishend, nullptr) >= 0)
+bool PM_TryUnstuck()
+{
+	// Trying to determine if a player can move while being stuck (move away from wall) - Max Vollmer, 2018-04-01
+	// Updated and improved - Max Vollmer, 2020-03-01
+
+	// the maximum distance we try to move a stuck player
+	constexpr const float VR_UNSTUCK_DISTANCE = 32.f;
+
+	// Don't unstuck dead players
+	if (pmove->dead || pmove->deadflag != DEAD_NO)
+		return false;
+
+	// we aren't stuck (possible retry ducking)
+	if (pmove->PM_TestPlayerPosition(pmove->origin, nullptr) < 0)
+		return true;
+
+	// check if it's just a step
+	float oldz = pmove->origin[2];
+	pmove->origin[2] += pmove->movevars->stepsize;
+	if (pmove->PM_TestPlayerPosition(pmove->origin, nullptr) < 0)
+		return true;
+
+	// bruteforce our way out of this!
+	pmove->origin[2] = oldz;
+	int stuckent = pmove->PM_TestPlayerPosition(pmove->origin, nullptr);
+	bool foundend = false;
+	bool foundendinsideent = false;
+	vec3_t foundendoffset;
+	for (int i = 0; !foundend && i <= VR_UNSTUCK_DISTANCE; i++)
+	{
+		for (int x = -1; x <= 1; x++)
 		{
-			// bruteforce our way out of this!
-			wishend[2] -= pmove->movevars->stepsize;
-			int stuckent = pmove->PM_TestPlayerPosition(wishend, nullptr);
-			bool foundend = false;
-			bool foundendinsideent = false;
-			vec3_t foundendoffset;
-			for (int i = 0; !foundend && i <= VR_UNSTUCK_DISTANCE; i++)
+			for (int y = -1; y <= 1; y++)
 			{
-				for (int x = -1; x <= 1; x++)
+				// go positive in z direction first (unstucking upwards is always better than downwards)
+				for (int z = 1; z >= -1; z--)
 				{
-					for (int y = -1; y <= 1; y++)
+					vec3_t testend;
+					vec3_t offset;
+					offset[0] = x * i;
+					offset[1] = y * i;
+					offset[2] = z * i;
+					VectorAdd(pmove->origin, offset, testend);
+					if (pmove->PM_TestPlayerPosition(testend, nullptr) == -1)
 					{
-						// go positive in z direction first (unstucking upwards is always better than downwards)
-						for (int z = 1; z >= -1; z--)
+						if (stuckent > 0 && VRGlobalIsPointInsideEnt(testend, pmove->physents[stuckent].info) && (!foundendinsideent || Length(offset) < Length(foundendoffset)))
 						{
-							vec3_t testend;
-							vec3_t offset;
-							offset[0] = x * i;
-							offset[1] = y * i;
-							offset[2] = z * i;
-							VectorAdd(wishend, offset, testend);
-							if (pmove->PM_TestPlayerPosition(testend, nullptr) == -1)
-							{
-								if (stuckent > 0 && VRGlobalIsPointInsideEnt(testend, pmove->physents[stuckent].info) && (!foundendinsideent || Length(offset) < Length(foundendoffset)))
-								{
-									VectorCopy(offset, foundendoffset);
-									foundendinsideent = true;
-								}
-								else if (!foundendinsideent && (!foundend || Length(offset) < Length(foundendoffset)))
-								{
-									VectorCopy(offset, foundendoffset);
-								}
-								foundend = true;
-							}
+							VectorCopy(offset, foundendoffset);
+							foundendinsideent = true;
 						}
+						else if (!foundendinsideent && (!foundend || Length(offset) < Length(foundendoffset)))
+						{
+							VectorCopy(offset, foundendoffset);
+						}
+						foundend = true;
 					}
 				}
-			}
-			if (foundend)
-			{
-				VectorAdd(wishend, foundendoffset, wishend);
-			}
-			else
-			{
-				// still stuc and already ducking, can't unstuck :(
-				if ((pmove->flags & FL_DUCKING) || pmove->usehull == 1)
-				{
-					return;
-				}
-				// try ducking
-				pmove->flags |= FL_DUCKING;
-				pmove->usehull = 1;
-				for (int i = 0; i < 3; i++)
-				{
-					pmove->origin[i] -= (pmove->player_mins[1][i] - pmove->player_mins[0][i]);
-				}
-				PM_NoClip(true);
-				return;
 			}
 		}
 	}
 
-	VectorCopy(wishend, pmove->origin);
-	PM_CategorizePosition();
+	if (foundend)
+	{
+		// successfully unstucked
+		VectorAdd(pmove->origin, foundendoffset, pmove->origin);
+		return true;
+	}
+
+	// still stuck and already ducking, can't unstuck :(
+	if ((pmove->flags & FL_DUCKING) || pmove->usehull == 1)
+		return false;
+
+	// try ducking
+	pmove->flags |= FL_DUCKING;
+	pmove->usehull = 1;
+	for (int i = 0; i < 3; i++)
+	{
+		pmove->origin[i] -= (pmove->player_mins[1][i] - pmove->player_mins[0][i]);
+	}
+
+	// try again ducking
+	return PM_TryUnstuck();
 }
 
 /*
@@ -3442,7 +3452,7 @@ void PM_HandleMovement(physent_t* pLadder)
 	case MOVETYPE_WALK:
 		if (VRGlobalGetNoclipMode())
 		{
-			PM_NoClip(false);
+			PM_NoClip();
 		}
 		else
 		{
@@ -3505,13 +3515,19 @@ void PM_PlayerMove(qboolean server)
 		}
 		if (PM_CheckStuck() || stuckent >= 0)
 		{
-			// When we're stuck, noclip away if our move direction is going away from whatever we're stuck on
+			// When we're stuck, move away if our move direction is going away from whatever we're stuck on
 			// (Only unstuck us on server, to not interfere with dontUnstuck, which is only set by server)
 			if ((server || pmove->server) && !dontUnstuck)
 			{
-				PM_NoClip(true);
+				if (!PM_TryUnstuck())
+				{
+					return;
+				}
 			}
-			return;
+			else
+			{
+				return;
+			}
 		}
 	}
 
@@ -3802,7 +3818,6 @@ void PM_Move(struct playermove_s* ppmove, int server)
 	assert(pm_shared_initialized);
 
 	pmove = ppmove;
-
 	PM_PlayerMove((server != 0) ? true : false);
 
 	if (pmove->onground != -1)
