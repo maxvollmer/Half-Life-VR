@@ -41,14 +41,13 @@ public:
 	inline const Vector& GetPreviousAngles() const { return m_previousAngles; }
 	inline const Vector& GetVelocity() const { return m_velocity; }
 	inline const float GetRadius() const { return m_radius; }
-	inline bool IsDragging() const { return m_isDragging; }
 	inline bool IsValid() const { return m_isValid && m_id != VRControllerID::INVALID; }
 	inline int GetWeaponId() const { return m_weaponId; }
 	inline bool IsMirrored() const { return m_isMirrored; }
 	inline bool IsBlocked() const { return m_isBlocked; }
-
 	inline const std::vector<HitBox>& GetHitBoxes() const { return m_hitboxes; }
 
+	bool IsDragging() const;
 	bool GetAttachment(size_t index, Vector& attachment) const;
 
 	const Vector GetGunPosition() const;
@@ -90,6 +89,7 @@ private:
 	void UpdateModel(CBasePlayer* pPlayer);
 	void UpdateLaserSpot();
 	void UpdateHitBoxes();
+	void ClearOutDeadEntities();
 	void SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID id);
 
 	EHANDLE<CBasePlayer> m_hPlayer;

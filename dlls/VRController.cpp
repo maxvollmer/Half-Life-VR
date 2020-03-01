@@ -137,11 +137,28 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 
 	UpdateLaserSpot();
 
+	ClearOutDeadEntities();
+
 	SendEntityDataToClient(pPlayer, id);
 
 #ifdef RENDER_DEBUG_BBOXES
 	g_VRDebugBBoxDrawer.DrawBBoxes(GetModel());
 #endif
+}
+
+void VRController::ClearOutDeadEntities()
+{
+	for (auto& it = m_touchedEntities.begin(); it != m_touchedEntities.end();)
+		if (!it->Get()) it = m_touchedEntities.erase(it);
+		else it++;
+
+	for (auto& it = m_hitEntities.begin(); it != m_hitEntities.end();)
+		if (!it->Get()) it = m_hitEntities.erase(it);
+		else it++;
+
+	for (auto& it = m_draggedEntities.begin(); it != m_draggedEntities.end();)
+		if (!it->first.Get()) it = m_draggedEntities.erase(it);
+		else it++;
 }
 
 void VRController::UpdateLaserSpot()
@@ -504,3 +521,13 @@ bool VRController::GetAttachment(size_t index, Vector& attachment) const
 	}
 	return false;
 }
+
+bool VRController::IsDragging() const
+{
+	if (CVAR_GET_FLOAT("vr_drag_onlyhand") != 0.f && GetWeaponId() != WEAPON_BAREHAND)
+	{
+		return false;
+	}
+	return m_isDragging;
+}
+

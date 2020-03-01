@@ -127,12 +127,12 @@ namespace HLVRConfig.Utilities
 
                 { "vr_weapon_grenade_mode", Setting.Create( new I18N.I18NString("vr_weapon_grenade_mode", "Grenade throw mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_weapon_grenade_mode.ControllerVelocity", "Use controller velocity") }, { "1", new I18N.I18NString("vr_weapon_grenade_mode.ControllerAimGameVelocity", "Aim with controller, but fly with fixed speed (as in original game)") } }, "0" ) },
 
-                { "vr_ledge_pull_mode", Setting.Create( new I18N.I18NString("vr_ledge_pull_mode", "Ledge pulling"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_ledge_pull_mode.Disabled", "Disabled") }, { "1", new I18N.I18NString("vr_ledge_pull_mode.Move", "Move onto ledge when pulling") }, { "2", new I18N.I18NString("vr_ledge_pull_mode.Teleport", "Teleport onto ledge instantly when pulling") } }, "1" ) },
-                { "vr_ledge_pull_speed", Setting.Create( new I18N.I18NString("vr_ledge_pull_speed", "Minimum controller speed to trigger ledge pulling"), SettingType.SPEED, "50", new SettingDependency("vr_ledge_pull_mode", "0", SettingDependency.MatchMode.MUST_NOT_MATCH) ) },
-
                 { "vr_teleport_attachment", Setting.Create( new I18N.I18NString("vr_teleport_attachment", "Teleporter attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0" ) },
                 { "vr_flashlight_attachment", Setting.Create( new I18N.I18NString("vr_flashlight_attachment", "Flashlight attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0") },
                 { "vr_movement_attachment", Setting.Create( new I18N.I18NString("vr_movement_attachment", "Movement attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0") },
+
+                { "vr_enable_interactive_debris", Setting.Create( new I18N.I18NString("vr_enable_interactive_debris", "Enable interactive debris"), true ) },
+                { "vr_drag_onlyhand", Setting.Create( new I18N.I18NString("vr_drag_onlyhand", "Only allow dragging and grabbing objects with bare hands (not with a weapon)"), false ) },
             } },
 
             { CategoryMovement, new OrderedDictionary<string, Setting>() {
@@ -263,7 +263,6 @@ namespace HLVRConfig.Utilities
                 { "vr_force_introtrainride", Setting.Create( new I18N.I18NString("vr_force_introtrainride", "Enable hacky fix for issues with intro train ride"), true ) },
                 { "vr_view_dist_to_walls", Setting.Create( new I18N.I18NString("vr_view_dist_to_walls", "Minimum view distance to walls"), SettingType.DISTANCE, "5" ) },
                 { "vr_classic_mode", Setting.Create( new I18N.I18NString("vr_classic_mode", "Classic mode (unchanged vanilla 1998 models and textures, overrides HD graphics settings)"), false ) },
-                { "vr_enable_interactive_debris", Setting.Create( new I18N.I18NString("vr_enable_interactive_debris", "Enable interactive debris"), true ) },
             } },
         };
 

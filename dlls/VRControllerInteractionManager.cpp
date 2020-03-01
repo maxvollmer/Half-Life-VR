@@ -272,9 +272,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 		bool didHitChange;
 
 		// If we are dragging something draggable, we override all the booleans to avoid "losing" the entity due to fast movements
-		if (controller.IsDragging()
-			/*&& controller.GetWeaponId() == WEAPON_BAREHAND*/
-			&& controller.IsDraggedEntity(hEntity) && IsDraggableEntity(hEntity) && !DistanceTooBigForDragging(hEntity, controller))
+		if (controller.IsDragging() && controller.IsDraggedEntity(hEntity) && IsDraggableEntity(hEntity) && !DistanceTooBigForDragging(hEntity, controller))
 		{
 			isTouching = true;
 			didTouchChange = false;
@@ -288,7 +286,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			isTouching = CheckIfEntityAndControllerTouch(pPlayer, hEntity, controller, &intersectResult);
 			didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
 
-			isDragging = isTouching /*&& controller.GetWeaponId() == WEAPON_BAREHAND*/ && controller.IsDragging();
+			isDragging = isTouching && controller.IsDragging();
 			didDragChange = isDragging ? controller.AddDraggedEntity(hEntity) : controller.RemoveDraggedEntity(hEntity);
 
 			if (isTouching)
@@ -346,6 +344,8 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 		else if (HandleLadders(pPlayer, hEntity, controller, interaction))
 			;
 		else if (HandleAlliedMonsters(pPlayer, hEntity, controller, isTouching, didTouchChange, isHitting, didHitChange, flHitDamage))
+			;
+		else if (HandleTossables(pPlayer, hEntity, controller, interaction))
 			;
 		else if (isTouching && didTouchChange)
 		{
@@ -988,6 +988,28 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, EHANDLE
 		return true;
 	}
 
+	return false;
+}
+
+bool VRControllerInteractionManager::HandleTossables(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction)
+{
+	if (interaction.touching.isSet
+		&& (hEntity->pev->movetype == MOVETYPE_TOSS || hEntity->pev->movetype == MOVETYPE_BOUNCE)
+		&& hEntity->pev->solid == SOLID_BBOX)
+	{
+		if (interaction.touching.didChange)
+		{
+			hEntity->Touch(pPlayer);
+		}
+		Vector intersection = hEntity->pev->origin - interaction.intersectPoint;
+		Vector pushAwayVelocity = controller.GetVelocity() + (intersection * 0.5f);
+		if (pushAwayVelocity.Length() > 100)
+		{
+			pushAwayVelocity = pushAwayVelocity.Normalize() * 100;
+		}
+		hEntity->pev->velocity = pushAwayVelocity;
+		return true;
+	}
 	return false;
 }
 
