@@ -1,8 +1,20 @@
 0.6.8-beta
-* Fixed some configurable heights not using units, but cm (mismatching what HLVRConfig says)
-* Improved HLVRConfig interface: Hides settings that depend on another setting, if that other setting is disabled
-* Removed "smooth steps" option from HLVRConfig as the feature is broken
-* Soda cans can now be picked up and consumed by moving them close to one's face. They can also be thrown.
+ Mod:
+  * Fixed labcoat hand model animations and misaligned UV maps
+  * Added automatic re-focus of HL window when playing to fix performance issues when HL window is not in focus
+  * Soda cans can now be picked up and consumed by moving them close to one's face. They can also be thrown.
+  * Thrown grenades can now be picked up and thrown again (with the risk of them exploding in your hand)
+  * Live snarks can be picked up and are then turned back into a player weapon
+  * Added option to allow dragging and grabbing stuff only with bare hands (not with a weapon)
+  * Most small entities like wood pieces, glass shards, fleshy gibs etc. can be picked up, thrown, and pushed with hands/weapons
+
+ HLVRConfig:
+  * Fixed HL console output not being displayed
+  * Added option to set maximum lines to display in console log and added timestamps to log
+  * Hide settings that depend on another setting, if that other setting is disabled
+  * Show default values for settings
+  * All distances are now in the same units (previously some where ingame units, some where meters, some where cm)
+  * Removed "smooth steps" option from HLVRConfig as the feature is broken
 
 0.6.7-beta - 2020-02-20
 * Fixed hand/weapon models and HUD not being rendered in new "normal" render mode
