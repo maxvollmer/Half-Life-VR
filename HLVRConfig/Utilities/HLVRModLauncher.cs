@@ -73,7 +73,7 @@ namespace HLVRConfig.Utilities
                         };
                     }
                 }
-                catch (Exception) { }
+                catch (Exception) {}
             }
         }
 

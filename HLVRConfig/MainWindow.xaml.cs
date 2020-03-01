@@ -237,6 +237,8 @@ namespace HLVRConfig
                     AddNopeText(LauncherConfig, errorMsg);
                 }
             }
+
+            SkipTooManyLines();
         }
 
         private void AddNopeText(StackPanel panel, string text)
@@ -262,12 +264,23 @@ namespace HLVRConfig
             RefreshConfigTabs();
         }
 
+        private void SkipTooManyLines()
+        {
+            int maxloglines = HLVRSettingsManager.LauncherSettings.MaxLogLines;
+            if (maxloglines > 0 && ConsoleOutput.Inlines.Count > maxloglines)
+            {
+                var lines = new List<Inline>(ConsoleOutput.Inlines.Skip(ConsoleOutput.Inlines.Count - maxloglines));
+                ConsoleOutput.Inlines.Clear();
+                ConsoleOutput.Inlines.AddRange(lines);
+            }
+        }
+
         public void ConsoleLog(string msg, Brush color)
         {
+            msg = MakeTimeStamp() + msg;
+
+            SkipTooManyLines();
             ConsoleOutput.Inlines.Add(new Run(msg) { Foreground = color });
-            var lines = ConsoleOutput.Inlines.Skip(ConsoleOutput.Inlines.Count() - 100);
-            ConsoleOutput.Inlines.Clear();
-            ConsoleOutput.Inlines.AddRange(lines);
             try
             {
                 File.AppendAllText(HLVRPaths.VRLogFile, msg);
@@ -275,6 +288,10 @@ namespace HLVRConfig
             catch (IOException) { } // TODO: Somehow notify user of exception
         }
 
+        private string MakeTimeStamp()
+        {
+            return "[" + DateTime.Now.ToString("HH:mm:ss.ffff") + "] ";
+        }
 
         private IEnumerable<II18NControl> Find18NControls(DependencyObject control)
         {
