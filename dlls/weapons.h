@@ -36,7 +36,6 @@ public:
 
 	static CGrenade* ShootTimed(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity, float time);
 	static CGrenade* ShootContact(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity);
-	static CGrenade* ShootSatchelCharge(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity);
 	static void UseSatchelCharges(entvars_t* pevOwner, SATCHELCODE code);
 
 	void Explode(Vector vecSrc, Vector vecAim);
@@ -56,6 +55,17 @@ public:
 	virtual void Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib);
 
 	BOOL m_fRegisteredSound = FALSE;  // whether or not this grenade has issued its DANGER sound to the world sound list yet.
+
+
+	virtual bool IsDraggable() override;
+	virtual void HandleDragStart() override;
+	virtual void HandleDragStop() override;
+	virtual void HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles) override;
+	virtual void BaseBalled(CBaseEntity* pPlayer, const Vector& velocity) override;
+
+private:
+	void (CBaseEntity ::* m_backupThink)(void) = nullptr;
+	void (CBaseEntity ::* m_backupTouch)(CBaseEntity* pOther) = nullptr;
 };
 
 

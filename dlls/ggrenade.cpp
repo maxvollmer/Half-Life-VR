@@ -26,6 +26,7 @@
 #include "nodes.h"
 #include "soundent.h"
 #include "decals.h"
+#include "player.h"
 
 
 //===================grenade
@@ -125,6 +126,8 @@ void CGrenade::Explode(TraceResult* pTrace, int bitsDamageType)
 			CBaseEntity::Create<CBaseEntity>("spark_shower", pev->origin, pTrace->vecPlaneNormal, nullptr);
 		}
 	}
+
+	SetTouch(nullptr);
 }
 
 
@@ -426,35 +429,6 @@ CGrenade* CGrenade::ShootTimed(entvars_t* pevOwner, Vector vecStart, Vector vecV
 }
 
 
-CGrenade* CGrenade::ShootSatchelCharge(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity)
-{
-	CGrenade* pGrenade = GetClassPtr<CGrenade>(nullptr);
-	pGrenade->pev->movetype = MOVETYPE_BOUNCE;
-	pGrenade->pev->classname = MAKE_STRING("grenade");
-
-	pGrenade->pev->solid = SOLID_BBOX;
-
-	SET_MODEL(ENT(pGrenade->pev), "models/grenade.mdl");  // Change this to satchel charge model
-
-	UTIL_SetSize(pGrenade->pev, Vector(0, 0, 0), Vector(0, 0, 0));
-
-	pGrenade->pev->dmg = 200;
-	UTIL_SetOrigin(pGrenade->pev, vecStart);
-	pGrenade->pev->velocity = vecVelocity;
-	pGrenade->pev->angles = g_vecZero;
-	pGrenade->pev->owner = ENT(pevOwner);
-
-	// Detonate in "time" seconds
-	pGrenade->SetThink(&CGrenade::SUB_DoNothing);
-	pGrenade->SetUse(&CGrenade::DetonateUse);
-	pGrenade->SetTouch(&CGrenade::SlideTouch);
-	pGrenade->pev->spawnflags = SF_DETONATE;
-
-	pGrenade->pev->friction = 0.9;
-
-	return pGrenade;
-}
-
 
 
 void CGrenade::UseSatchelCharges(entvars_t* pevOwner, SATCHELCODE code)
@@ -488,5 +462,121 @@ void CGrenade::UseSatchelCharges(entvars_t* pevOwner, SATCHELCODE code)
 		pentFind = FIND_ENTITY_BY_CLASSNAME(pentFind, "grenade");
 	}
 }
+
+
+bool CGrenade::IsDraggable()
+{
+	if (pev->dmgtime <= gpGlobals->time)
+		return false;
+
+	if (FStringNull(pev->model))
+		return false;
+
+	if (strcmp(STRING(pev->model), "models/w_satchel.mdl") == 0)
+	{
+		// satchel, can be picked up and placed somewhere else
+		return true;
+	}
+	else if (strcmp(STRING(pev->model), "models/w_grenade.mdl") == 0)
+	{
+		// normal grenade, can be picked up and thrown (will explode in hand if timer runs out)
+		return true;
+	}
+	else if (strcmp(STRING(pev->model), "models/w_squeak.mdl") == 0)
+	{
+		// snark, can be picked up as ammo
+		return true;
+	}
+
+	// 9mmAR grenade or unknown grenade type or exploded, can't be grabbed
+	return false;
+}
+
+void CGrenade::HandleDragStart()
+{
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NONE;
+	UTIL_SetOrigin(pev, pev->origin);
+
+	if (strcmp(STRING(pev->model), "models/w_squeak.mdl") == 0)
+	{
+		// snark, can be picked up as ammo
+
+		EHANDLE<CBasePlayer> hDragger = m_vrDragger;
+		if (hDragger)
+		{
+			// kill this snark
+			pev->effects = EF_NODRAW;
+			pev->flags = 0;
+			pev->takedamage = DAMAGE_NO;
+			pev->deadflag = DEAD_DEAD;
+
+			UTIL_Remove(this);
+
+			// add snark item to player
+			extern int gEvilImpulse101;
+			int backup = gEvilImpulse101;
+			gEvilImpulse101 = TRUE;
+			hDragger->GiveNamedItem("weapon_snark");
+			gEvilImpulse101 = backup;
+
+			// switch to snark item
+			EHANDLE<CBasePlayerItem> hItem = hDragger->m_rgpPlayerItems[5];
+			while (hItem)
+			{
+				if (FClassnameIs(hItem->pev, "weapon_snark"))
+				{
+					hDragger->SwitchWeapon(hItem);
+					break;
+				}
+				hItem = hItem->m_pNext;
+			}
+		}
+
+		m_backupTouch = nullptr;
+		m_backupThink = nullptr;
+
+		SetTouch(nullptr);
+		SetThink(nullptr);
+	}
+	else
+	{
+		m_backupTouch = m_pfnTouch;
+		m_backupThink = m_pfnThink;
+
+		SetTouch(nullptr);
+		SetThink(nullptr);
+	}
+}
+
+void CGrenade::HandleDragStop()
+{
+	if (strcmp(STRING(pev->model), "models/w_squeak.mdl") == 0)
+		return;
+
+	pev->solid = SOLID_BBOX;
+	pev->movetype = MOVETYPE_BOUNCE;
+	UTIL_SetOrigin(pev, pev->origin);
+
+	SetTouch(m_backupTouch);
+	SetThink(m_backupThink);
+	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+void CGrenade::HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles)
+{
+	if (strcmp(STRING(pev->model), "models/w_squeak.mdl") == 0)
+		return;
+
+	CBaseEntity::HandleDragUpdate(origin, velocity, angles);
+}
+
+void CGrenade::BaseBalled(CBaseEntity* pPlayer, const Vector& velocity)
+{
+	// only play baseball if we are a draggable grenade
+	if (IsDraggable())
+		pev->velocity = velocity;
+}
+
 
 //======================end grenade

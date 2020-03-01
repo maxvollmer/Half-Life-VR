@@ -100,6 +100,11 @@ void CGrenade::Spawn(void) { }
 CGrenade* CGrenade::ShootTimed(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity, float time) { return 0; }
 CGrenade* CGrenade::ShootContact(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity) { return 0; }
 void CGrenade::DetonateUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) { }
+bool CGrenade::IsDraggable() { return false; }
+void CGrenade::HandleDragStart() { }
+void CGrenade::HandleDragStop() { }
+void CGrenade::HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles) { }
+void CGrenade::BaseBalled(CBaseEntity* pPlayer, const Vector& velocity) { }
 
 void UTIL_Remove(CBaseEntity* pEntity) { }
 struct skilldata_t  gSkillData;
