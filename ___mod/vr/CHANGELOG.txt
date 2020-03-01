@@ -1,5 +1,6 @@
 0.6.8-beta
  Mod:
+  * Fixed bug that pushed players upwards when walking into walls
   * Fixed labcoat hand model animations and misaligned UV maps
   * Added automatic re-focus of HL window when playing to fix performance issues when HL window is not in focus
   * Soda cans can now be picked up and consumed by moving them close to one's face. They can also be thrown.
