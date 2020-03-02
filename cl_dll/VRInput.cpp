@@ -172,6 +172,8 @@ void VRInput::RegisterActionSets()
 	}
 	if (RegisterActionSet("feedback", false))
 	{
+		RegisterFeedback("feedback", "All");
+		RegisterFeedback("feedback", "AllButRecoil");
 		RegisterFeedback("feedback", "Touch");
 		RegisterFeedback("feedback", "Recoil");
 		RegisterFeedback("feedback", "Earthquake");
@@ -505,6 +507,15 @@ void VRInput::FireFeedback(FeedbackType feedback, int damageType, float duration
 	}
 
 	vr::VRInput()->TriggerHapticVibrationAction(handle, 0.f, durationInSeconds, frequency, amplitude, vr::k_ulInvalidInputValueHandle);
+
+	if (feedback != FeedbackType::DAMAGE)
+	{
+		vr::VRInput()->TriggerHapticVibrationAction(m_actionSets["feedback"].feedbackActions["All"], 0.f, durationInSeconds, frequency, amplitude, vr::k_ulInvalidInputValueHandle);
+		if (feedback != FeedbackType::RECOIL)
+		{
+			vr::VRInput()->TriggerHapticVibrationAction(m_actionSets["feedback"].feedbackActions["AllButRecoil"], 0.f, durationInSeconds, frequency, amplitude, vr::k_ulInvalidInputValueHandle);
+		}
+	}
 }
 
 void VRInput::FireDamageFeedback(const std::string& action, float durationInSeconds, float frequency, float amplitude)
