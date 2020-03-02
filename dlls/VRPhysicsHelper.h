@@ -61,6 +61,8 @@ public:
 
 	bool ModelIntersectsBBox(CBaseEntity* pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles = Vector{}, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
 	bool ModelIntersectsCapsule(CBaseEntity* pModel, const Vector& capsuleCenter, double radius, double height);
+	bool ModelIntersectsLine(CBaseEntity* pModel, const Vector& lineA, const Vector& lineB, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
+	bool BBoxIntersectsLine(const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles, const Vector& lineA, const Vector& lineB, VRPhysicsHelperModelBBoxIntersectResult* result);
 
 	bool ModelBBoxIntersectsBBox(
 		const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1, const Vector& bboxAngles1, const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);

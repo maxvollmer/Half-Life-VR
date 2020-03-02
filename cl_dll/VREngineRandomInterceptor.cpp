@@ -50,13 +50,13 @@ void VRRandomRestoreSeed()
 
 float VRRandomFloat(float low, float high)
 {
-    std::uniform_real_distribution<float> distribution(low, high);
+    std::uniform_real_distribution<float> distribution((std::min)(low, high), (std::max)(low, high));
     return distribution(rng);
 }
 
 long VRRandomLong(long low, long high)
 {
-    std::uniform_int_distribution<long> distribution(low, high);
+    std::uniform_int_distribution<long> distribution((std::min)(low, high), (std::max)(low, high));
     return distribution(rng);
 }
 

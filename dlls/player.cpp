@@ -40,11 +40,13 @@
 #include "func_break.h"
 #include "explode.h"
 #include "talkmonster.h"
+#include "trains.h"
 
 #include "VRPhysicsHelper.h"
 #include "VRGroundEntityHandler.h"
 #include "VRModelHelper.h"
 #include "VRMovementHandler.h"
+#include "VRControllerModel.h"
 
 
 // #define DUCKFIX
@@ -1512,24 +1514,27 @@ void CBasePlayer::PlayerUse(void)
 		}
 		else
 		{
-			if (m_afPhysicsFlags & PFLAG_ONTRAIN)
+			if (CVAR_GET_FLOAT("vr_train_controls") != 0.f)
 			{
-				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
-				m_iTrain = TRAIN_NEW | TRAIN_OFF;
-				return;
-			}
-			else
-			{
-				// Check if we are on a train
-				CBaseEntity* pMaybeTrain = CBaseEntity::InstanceOrWorld(pev->groundentity);
-				if (pMaybeTrain && !FBitSet(pMaybeTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) && FBitSet(pMaybeTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) && pMaybeTrain->OnControls(pev))
+				if (m_afPhysicsFlags & PFLAG_ONTRAIN)
 				{
-					// Start controlling the train!
-					m_afPhysicsFlags |= PFLAG_ONTRAIN;
-					m_iTrain = TrainSpeed(pMaybeTrain->pev->speed, pMaybeTrain->pev->impulse);
-					m_iTrain |= TRAIN_NEW;
-					EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM);
+					m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
+					m_iTrain = TRAIN_NEW | TRAIN_OFF;
 					return;
+				}
+				else
+				{
+					// Check if we are on a train
+					CBaseEntity* pMaybeTrain = CBaseEntity::InstanceOrWorld(pev->groundentity);
+					if (pMaybeTrain && !FBitSet(pMaybeTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) && FBitSet(pMaybeTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) && pMaybeTrain->OnControls(pev))
+					{
+						// Start controlling the train!
+						m_afPhysicsFlags |= PFLAG_ONTRAIN;
+						m_iTrain = TrainSpeed(pMaybeTrain->pev->speed, pMaybeTrain->pev->impulse);
+						m_iTrain |= TRAIN_NEW;
+						EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM);
+						return;
+					}
 				}
 			}
 		}
@@ -1806,7 +1811,18 @@ void CBasePlayer::UpdateStatusBar()
 	}
 }
 
-
+bool CBasePlayer::CheckVRTRainButtonTouched(const Vector& buttonLeftPos, const Vector& buttonRightPos)
+{
+	for (auto& [id, controller] : m_vrControllers)
+	{
+		if (controller.IsValid())
+		{
+			if (VRPhysicsHelper::Instance().ModelIntersectsLine(controller.GetModel(), buttonLeftPos, buttonRightPos))
+				return true;
+		}
+	}
+	return false;
+}
 
 void CBasePlayer::PreThink(void)
 {
@@ -1878,22 +1894,38 @@ void CBasePlayer::PreThink(void)
 		m_vrControllerInteractionManager.DoMultiControllerActions(this, m_vrControllers[VRControllerID::HAND], m_vrControllers[VRControllerID::WEAPON]);
 	}
 
-	// So the correct flags get sent to client asap.
-	//
-	if (m_afPhysicsFlags & PFLAG_ONTRAIN)
-		pev->flags |= FL_ONTRAIN;
-	else
-		pev->flags &= ~FL_ONTRAIN;
+	// Check if we are on a train
+	if (CVAR_GET_FLOAT("vr_train_controls") == 0.f)
+	{
+		if (pev->groundentity && !FBitSet(m_afPhysicsFlags, PFLAG_ONTRAIN))
+		{
+			CBaseEntity* pMaybeTrain = CBaseEntity::InstanceOrWorld(pev->groundentity);
+			if (pMaybeTrain && !FBitSet(pMaybeTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) && FBitSet(pMaybeTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) && pMaybeTrain->OnControls(pev))
+			{
+				// Start controlling the train!
+				m_afPhysicsFlags |= PFLAG_ONTRAIN;
+				m_iTrain = TrainSpeed(pMaybeTrain->pev->speed, pMaybeTrain->pev->impulse);
+				m_iTrain |= TRAIN_NEW;
+				EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM);
+			}
+		}
+	}
 
-	// Train speed control
+	// Set FL_STUCK_ONTRAIN only if legacy train controls are enabled (this flag prevents movement in pm_shared)
+	if (CVAR_GET_FLOAT("vr_train_controls") != 0.f && (m_afPhysicsFlags & PFLAG_ONTRAIN))
+		pev->flags |= FL_STUCK_ONTRAIN;
+	else
+		pev->flags &= ~FL_STUCK_ONTRAIN;
+
+	// Check if we are still on a train
 	if (m_afPhysicsFlags & PFLAG_ONTRAIN)
 	{
 		CBaseEntity* pTrain = CBaseEntity::InstanceOrWorld(pev->groundentity);
 
 		if (!pTrain)
 		{
-			TraceResult trainTrace;
 			// Maybe this is on the other side of a level transition
+			TraceResult trainTrace;
 			UTIL_TraceLine(pev->origin, pev->origin + Vector(0, 0, -38), ignore_monsters, ENT(pev), &trainTrace);
 
 			// HACKHACK - Just look for the func_tracktrain classname
@@ -1901,53 +1933,115 @@ void CBasePlayer::PreThink(void)
 			{
 				pTrain = CBaseEntity::InstanceOrWorld(trainTrace.pHit);
 			}
-
-			if (!pTrain || !FBitSet(pTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) || !pTrain->OnControls(pev))
-			{
-				//ALERT( at_error, "In train mode with no train!\n" );
-				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
-				m_iTrain = TRAIN_NEW | TRAIN_OFF;
-				return;
-			}
 		}
-		else if (FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) || !FBitSet(pTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) || !pTrain->OnControls(pev))
+
+		if (!pTrain || FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) || !FBitSet(pTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) || !pTrain->OnControls(pev))
 		{
 			// Turn off the train if the train controls go dead or you leave the control area
 			m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 			m_iTrain = TRAIN_NEW | TRAIN_OFF;
-			return;
 		}
-
-		Vector forward;
-		Vector right;
-		Vector up;
-		UTIL_MakeVectorsPrivate(pTrain->pev->angles, forward, right, up);
-		vr_trainControlPosition = pTrain->pev->origin + (forward * -48.f) + (right * 16.f) + (up * 24.f);
-		vr_trainControlYaw = pTrain->pev->angles.y;
-
-		if (CVAR_GET_FLOAT("vr_legacy_train_controls_enabled") != 0.f)
+		else
 		{
-			pev->velocity = g_vecZero;
-			float vel = 0;
-			if (m_afButtonPressed & IN_FORWARD)
-			{
-				vel = 1;
-				pTrain->Use(this, this, USE_SET, (float)vel);
-			}
-			else if (m_afButtonPressed & IN_BACK)
-			{
-				vel = -1;
-				pTrain->Use(this, this, USE_SET, (float)vel);
-			}
+			// Train speed control
+			Vector forward;
+			Vector right;
+			Vector up;
+			UTIL_MakeVectorsPrivate(pTrain->pev->angles, forward, right, up);
+			vr_trainControlPosition = pTrain->pev->origin + (forward * -48.f) + (right * 20.f) + (up * 40.f);
+			vr_trainControlYaw = pTrain->pev->angles.y;
 
-			if (vel)
+			if (m_iTrain == TRAIN_OFF)
 			{
 				m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
-				m_iTrain |= TRAIN_ACTIVE | TRAIN_NEW;
 			}
+
+			if (CVAR_GET_FLOAT("vr_train_controls") != 0.f)
+			{
+				pev->velocity = g_vecZero;
+				float vel = 0;
+				if (m_afButtonPressed & IN_FORWARD)
+				{
+					vel = 1;
+				}
+				else if (m_afButtonPressed & IN_BACK)
+				{
+					vel = -1;
+				}
+				if (vel)
+				{
+					pTrain->Use(this, this, USE_SET, vel);
+					m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
+				}
+			}
+			else
+			{
+				Vector trainFastButtonPos = vr_trainControlPosition + (forward * -8.f)	 + (up * 20.f);
+				Vector trainMedmButtonPos = vr_trainControlPosition + (forward * -6.25f) + (up * 15.5f);
+				Vector trainSlowButtonPos = vr_trainControlPosition + (forward * -4.5f)	 + (up * 11.5f);
+				Vector trainNeutButtonPos = vr_trainControlPosition + (forward * -2.75f) + (up * 6.5f);
+				Vector trainBackButtonPos = vr_trainControlPosition + (forward * -1.f)	 + (up * 2.f);
+
+				float newspeed = pTrain->pev->speed;
+				if (CheckVRTRainButtonTouched(trainNeutButtonPos + (right * 8.f), trainNeutButtonPos - (right * 8.f)))
+				{
+					m_iTrain = TRAIN_NEUTRAL;
+					newspeed = 0.f;
+				}
+				else if (CheckVRTRainButtonTouched(trainSlowButtonPos + (right * 8.f), trainSlowButtonPos - (right * 8.f)))
+				{
+					m_iTrain = TRAIN_SLOW;
+					newspeed = pTrain->pev->impulse * 0.25f;
+				}
+				else if (CheckVRTRainButtonTouched(trainMedmButtonPos + (right * 8.f), trainMedmButtonPos - (right * 8.f)))
+				{
+					m_iTrain = TRAIN_MEDIUM;
+					newspeed = pTrain->pev->impulse * 0.5f;
+				}
+				else if (CheckVRTRainButtonTouched(trainFastButtonPos + (right * 8.f), trainFastButtonPos - (right * 8.f)))
+				{
+					m_iTrain = TRAIN_FAST;
+					newspeed = pTrain->pev->impulse * 0.75f;
+				}
+				else if (CheckVRTRainButtonTouched(trainBackButtonPos + (right * 8.f), trainBackButtonPos - (right * 8.f)))
+				{
+					m_iTrain = TRAIN_BACK;
+					newspeed = -pTrain->pev->impulse * 0.25f;
+				}
+
+				if (newspeed != pTrain->pev->speed)
+				{
+					pTrain->pev->speed = newspeed;
+					auto pActualTrain = dynamic_cast<CFuncTrackTrain*>(pTrain);
+					if (pActualTrain) pActualTrain->Next();
+				}
+			}
+
+			m_iTrain |= TRAIN_ACTIVE | TRAIN_NEW;
+
+			m_hLastTrain = pTrain;
 		}
 	}
-	else if (m_iTrain & TRAIN_ACTIVE)
+
+	// autostop train if we are not standing on it anymore
+	if (!FBitSet(m_afPhysicsFlags, PFLAG_ONTRAIN))
+	{
+		if (m_hLastTrain && (m_hLastTrain->edict() != pev->groundentity) && m_hLastTrain->pev->speed > 0 && CVAR_GET_FLOAT("vr_train_autostop") != 0.f)
+		{
+			m_hLastTrain->pev->speed = 0;
+			m_hLastTrain->pev->velocity = g_vecZero;
+			m_hLastTrain->pev->avelocity = g_vecZero;
+			m_hLastTrain->SetThink(nullptr);
+			EHANDLE<CFuncTrackTrain> hTrackTrain = m_hLastTrain;
+			if (hTrackTrain)
+			{
+				hTrackTrain->StopSound();
+			}
+			m_hLastTrain = nullptr;
+		}
+	}
+
+	if (FBitSet(m_iTrain, TRAIN_ACTIVE) && !FBitSet(m_afPhysicsFlags, PFLAG_ONTRAIN))
 	{
 		m_iTrain = TRAIN_NEW;  // turn off train
 	}
@@ -4236,15 +4330,7 @@ void CBasePlayer::UpdateClientData(void)
 		MESSAGE_END();
 	}
 
-	if (m_iTrain & TRAIN_NEW)
-	{
-		MESSAGE_BEGIN(MSG_ONE, gmsgTrain, nullptr, pev);
-		WRITE_BYTE(m_iTrain & 0xF);
-		MESSAGE_END();
-		m_iTrain &= ~TRAIN_NEW;
-	}
-
-	if (m_iTrain)
+	if (m_afPhysicsFlags & PFLAG_ONTRAIN)
 	{
 		MESSAGE_BEGIN(MSG_ONE, gmsgVRTrainControls, nullptr, pev);
 		WRITE_COORD(vr_trainControlPosition.x);
@@ -4252,6 +4338,14 @@ void CBasePlayer::UpdateClientData(void)
 		WRITE_COORD(vr_trainControlPosition.z);
 		WRITE_ANGLE(vr_trainControlYaw);
 		MESSAGE_END();
+	}
+
+	if (m_iTrain & TRAIN_NEW)
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgTrain, nullptr, pev);
+		WRITE_BYTE(m_iTrain & 0xF);
+		MESSAGE_END();
+		m_iTrain &= ~TRAIN_NEW;
 	}
 
 	//

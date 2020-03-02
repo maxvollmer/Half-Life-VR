@@ -1104,6 +1104,133 @@ bool VRPhysicsHelper::ModelBBoxIntersectsBBox(
 	return TestCollision(bboxBody1, bboxBody2, result);
 }
 
+// internal helper function
+namespace
+{
+	bool BodyIntersectsLine(rp3d::CollisionBody* body, const Vector& lineA, const Vector& lineB, Vector& hitPoint)
+	{
+		if (!body)
+			return false;
+
+		{
+			Ray ray1{ HLVecToRP3DVec(lineA), HLVecToRP3DVec(lineB) };
+			RaycastInfo raycastInfo1;
+			if (body->raycast(ray1, raycastInfo1) && raycastInfo1.hitFraction < 1.f)
+			{
+				hitPoint = RP3DVecToHLVec(raycastInfo1.worldPoint);
+				return true;
+			}
+		}
+
+		{
+			Ray ray2{ HLVecToRP3DVec(lineB), HLVecToRP3DVec(lineA) };
+			RaycastInfo raycastInfo2;
+			if (body->raycast(ray2, raycastInfo2) && raycastInfo2.hitFraction < 1.f)
+			{
+				hitPoint = RP3DVecToHLVec(raycastInfo2.worldPoint);
+				return true;
+			}
+		}
+
+		return false;
+	}
+}
+
+bool VRPhysicsHelper::BBoxIntersectsLine(const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles, const Vector& lineA, const Vector& lineB, VRPhysicsHelperModelBBoxIntersectResult* result)
+{
+	if (!CheckWorld())
+		return false;
+
+	auto bboxBody = GetHitBoxBody(0, bboxCenter, bboxMins, bboxMaxs, bboxAngles);
+	if (!bboxBody)
+		return false;
+
+	Vector hitPoint;
+	if (BodyIntersectsLine(bboxBody, lineA, lineB, hitPoint))
+	{
+		if (result)
+		{
+			result->hasresult = true;
+			result->hitpoint = hitPoint;
+		}
+		return true;
+	}
+
+	return false;
+}
+
+bool VRPhysicsHelper::ModelIntersectsLine(CBaseEntity* pModel, const Vector& lineA, const Vector& lineB, VRPhysicsHelperModelBBoxIntersectResult* result)
+{
+	if (!CheckWorld())
+		return false;
+
+	if (!pModel->pev->model)
+	{
+		// No model, use bounding box
+		return BBoxIntersectsLine(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, lineA, lineB, result);
+	}
+
+	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
+	if (bspModelData != m_bspModelData.end() && bspModelData->second.HasData())
+	{
+		// BSP model
+		Vector hitPoint;
+		if (BodyIntersectsLine(bspModelData->second.m_collisionBody, lineA, lineB, hitPoint))
+		{
+			if (result)
+			{
+				result->hasresult = true;
+				result->hitpoint = hitPoint;
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		// Studio model
+		void* pmodel = GET_MODEL_PTR(pModel->edict());
+		if (!pmodel)
+		{
+			// Invalid studio model, use bounding box
+			return BBoxIntersectsLine(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, lineA, lineB, result);
+		}
+
+		int numhitboxes = GetNumHitboxes(pmodel);
+		if (numhitboxes <= 0)
+		{
+			// No hitboxes, use bounding box
+			return BBoxIntersectsLine(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, lineA, lineB, result);
+		}
+
+		std::vector<StudioHitBox> studiohitboxes;
+		studiohitboxes.resize(numhitboxes);
+		if (GetHitboxesAndAttachments(pModel->pev, pmodel, pModel->pev->sequence, pModel->pev->frame, studiohitboxes.data(), nullptr, false))
+		{
+			for (const auto& studiohitbox : studiohitboxes)
+			{
+				if (BBoxIntersectsLine(studiohitbox.origin, studiohitbox.mins, studiohitbox.maxs, studiohitbox.angles, lineA, lineB, result))
+				{
+					if (result)
+					{
+						result->hitgroup = studiohitbox.hitgroup;
+					}
+					return true;
+				}
+			}
+			return false;
+		}
+		else
+		{
+			// Failed to get hitboxes, use bounding box
+			return BBoxIntersectsLine(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, lineA, lineB, result);
+		}
+	}
+}
+
 bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity* pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles, VRPhysicsHelperModelBBoxIntersectResult* result)
 {
 	if (!CheckWorld())

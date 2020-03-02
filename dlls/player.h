@@ -164,6 +164,7 @@ public:
 	BOOL m_fInitHUD = FALSE;      // True when deferred HUD restart msg needs to be sent
 	BOOL m_fGameHUDInitialized = FALSE;
 	int m_iTrain = 0;    // Train control position
+	EHANDLE<CBaseEntity> m_hLastTrain;
 	BOOL m_fWeapon = FALSE;  // Set this to FALSE to force a reset of the current weapon HUD info
 
 	EHANDLE<CBaseEntity> m_pTank;    // the tank which the player is currently controlling,  nullptr if no tank
@@ -394,6 +395,8 @@ private:
 
 	bool m_vrIsUsingTankWithVRControllers{ false };
 	Vector m_vrTankVRControllerAngles;
+
+	bool CheckVRTRainButtonTouched(const Vector& buttonLeftPos, const Vector& buttonRightPos);
 
 // public VR members:
 public:

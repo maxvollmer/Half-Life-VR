@@ -40,7 +40,7 @@ namespace HLVRConfig.Utilities
             new I18N.I18NString("InputSettings.Ladders", "Ladders"));
 
         public static readonly SettingCategory CategoryTrains = new SettingCategory(
-            new I18N.I18NString("InputSettings.Trains", "Trains"));
+            new I18N.I18NString("InputSettings.Trains", "Usable trains"));
 
         public static readonly SettingCategory CategoryMountedGuns = new SettingCategory(
             new I18N.I18NString("InputSettings.MountedGuns", "Mounted guns"));
@@ -156,7 +156,8 @@ namespace HLVRConfig.Utilities
             } },
 
             { CategoryTrains, new OrderedDictionary<string, Setting>() {
-                // { "vr_legacy_train_controls_enabled", Setting.Create( new I18N.I18NString("vr_legacy_train_controls_enabled", "Enable control of usable trains with 'LegacyUse' and forward/backward movement."), true ) },
+                { "vr_train_controls", Setting.Create( new I18N.I18NString("vr_train_controls", "Control mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_train_controls.VR", "VR Mode (Standing on train activates train, touching train interface controls train speed.)") }, { "1", new I18N.I18NString("vr_train_controls.Legacy", "Legacy Mode (LegacyUse activates train, forward and backward move control train speed.)") } }, "0" ) },
+                { "vr_train_autostop", Setting.Create( new I18N.I18NString("vr_train_autostop", "Automatically stop trains when falling off"), false ) },
             } },
 
             { CategoryMountedGuns, new OrderedDictionary<string, Setting>() {

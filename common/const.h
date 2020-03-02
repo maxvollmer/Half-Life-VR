@@ -46,16 +46,16 @@
 #define FL_BARNACLED FL_IMMUNE_WATER  // we just use this flag as it isn't used elsewhere - Max Vollmer, 2019-05-26
 //#define FL_VR_DUCKING			FL_IMMUNE_SLIME	// we just use this flag as it isn't used elsewhere - Max Vollmer, 2019-05-26
 
-#define FL_PROXY        (1 << 20)  // This is a spectator proxy
-#define FL_ALWAYSTHINK  (1 << 21)  // Brush model flag -- call think every frame regardless of nextthink - ltime (for constantly changing velocity/path)
-#define FL_BASEVELOCITY (1 << 22)  // Base velocity has been applied this frame (used to convert base velocity into momentum)
-#define FL_MONSTERCLIP  (1 << 23)  // Only collide in with monsters who have FL_MONSTERCLIP set
-#define FL_ONTRAIN      (1 << 24)  // Player is _controlling_ a train, so movement commands should be ignored on client during prediction.
-#define FL_WORLDBRUSH   (1 << 25)  // Not moveable/removeable brush entity (really part of the world, but represented as an entity for transparency or something)
-#define FL_SPECTATOR    (1 << 26)  // This client is a spectator, don't run touch functions, etc.
-#define FL_CUSTOMENTITY (1 << 29)  // This is a custom entity
-#define FL_KILLME       (1 << 30)  // This entity is marked for death -- This allows the engine to kill ents at the appropriate time
-#define FL_DORMANT      (1 << 31)  // Entity is dormant, no updates to client
+#define FL_PROXY			(1 << 20)  // This is a spectator proxy
+#define FL_ALWAYSTHINK		(1 << 21)  // Brush model flag -- call think every frame regardless of nextthink - ltime (for constantly changing velocity/path)
+#define FL_BASEVELOCITY		(1 << 22)  // Base velocity has been applied this frame (used to convert base velocity into momentum)
+#define FL_MONSTERCLIP		(1 << 23)  // Only collide in with monsters who have FL_MONSTERCLIP set
+#define FL_STUCK_ONTRAIN	(1 << 24)  // Player is _controlling_ a train, so movement commands should be ignored on client during prediction.
+#define FL_WORLDBRUSH		(1 << 25)  // Not moveable/removeable brush entity (really part of the world, but represented as an entity for transparency or something)
+#define FL_SPECTATOR		(1 << 26)  // This client is a spectator, don't run touch functions, etc.
+#define FL_CUSTOMENTITY		(1 << 29)  // This is a custom entity
+#define FL_KILLME			(1 << 30)  // This entity is marked for death -- This allows the engine to kill ents at the appropriate time
+#define FL_DORMANT			(1 << 31)  // Entity is dormant, no updates to client
 
 
 // Goes into globalvars_t.trace_flags

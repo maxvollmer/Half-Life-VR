@@ -3358,7 +3358,7 @@ void PM_CheckParamters(void)
 	}
 
 	if (pmove->flags & FL_FROZEN ||
-		pmove->flags & FL_ONTRAIN ||
+		pmove->flags & FL_STUCK_ONTRAIN ||
 		pmove->dead)
 	{
 		pmove->cmd.forwardmove = 0;
@@ -3548,7 +3548,7 @@ void PM_PlayerMove(qboolean server)
 
 	g_onladder = 0;
 	// Don't run ladder code if dead or on a train
-	if (!pmove->dead && !(pmove->flags & FL_ONTRAIN))
+	if (!pmove->dead && !(pmove->flags & FL_STUCK_ONTRAIN))
 	{
 		pLadder = PM_Ladder();
 		if (pLadder)
@@ -3562,7 +3562,7 @@ void PM_PlayerMove(qboolean server)
 	PM_Duck();
 
 	// Don't run ladder code if dead or on a train
-	if (!pmove->dead && !(pmove->flags & FL_ONTRAIN))
+	if (!pmove->dead && !(pmove->flags & FL_STUCK_ONTRAIN))
 	{
 		if (pLadder && !VRGlobalGetNoclipMode())
 		{

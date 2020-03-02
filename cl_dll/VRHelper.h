@@ -113,6 +113,9 @@ private:
 
 	bool isVRRoomScale = true;
 
+	float m_worldScale = 1.f;
+	float m_worldZStretch = 1.f;
+
 	vr::IVRSystem* vrSystem = nullptr;
 	vr::IVRCompositor* vrCompositor = nullptr;
 
@@ -180,6 +183,7 @@ private:
 public:
 	const Vector3& GetVRToHL();
 	const Vector3& GetHLToVR();
+	float UnitToMeter(float unit);
 
 	bool HasValidLeftController() { return m_fLeftControllerValid; }
 	Vector GetLeftControllerPosition() { return m_leftControllerPosition; }

@@ -73,35 +73,38 @@ VRHelper::~VRHelper()
 vr::Texture_t m_skyboxTextures[6]{ 0 };
 vr::Texture_t m_skyboxHDTextures[6]{ 0 };
 
-#define MAGIC_HL_TO_VR_FACTOR 3.75f
-#define MAGIC_VR_TO_HL_FACTOR 10.f
+constexpr const float MAGIC_HL_TO_VR_FACTOR = 3.75f;
+constexpr const float MAGIC_VR_TO_HL_FACTOR = 10.f;
+
+constexpr const float METER_TO_UNIT = 37.5f;
+constexpr const float UNIT_TO_METER = 1.0f / METER_TO_UNIT;
 
 void VRHelper::UpdateVRHLConversionVectors()
 {
-	float worldScale = CVAR_GET_FLOAT("vr_world_scale");
-	float worldZStretch = CVAR_GET_FLOAT("vr_world_z_strech");
+	m_worldScale = CVAR_GET_FLOAT("vr_world_scale");
+	m_worldZStretch = CVAR_GET_FLOAT("vr_world_z_strech");
 
-	if (worldScale < 0.1f)
+	if (m_worldScale < 0.1f)
 	{
-		worldScale = 0.1f;
+		m_worldScale = 0.1f;
 	}
-	else if (worldScale > 100.f)
+	else if (m_worldScale > 100.f)
 	{
-		worldScale = 100.f;
-	}
-
-	if (worldZStretch < 0.1f)
-	{
-		worldZStretch = 0.1f;
-	}
-	else if (worldZStretch > 100.f)
-	{
-		worldZStretch = 100.f;
+		m_worldScale = 100.f;
 	}
 
-	hlToVR.x = worldScale * 1.f / MAGIC_HL_TO_VR_FACTOR;
-	hlToVR.y = worldScale * 1.f / MAGIC_HL_TO_VR_FACTOR * worldZStretch;
-	hlToVR.z = worldScale * 1.f / MAGIC_HL_TO_VR_FACTOR;
+	if (m_worldZStretch < 0.1f)
+	{
+		m_worldZStretch = 0.1f;
+	}
+	else if (m_worldZStretch > 100.f)
+	{
+		m_worldZStretch = 100.f;
+	}
+
+	hlToVR.x = m_worldScale * 1.f / MAGIC_HL_TO_VR_FACTOR;
+	hlToVR.y = m_worldScale * 1.f / MAGIC_HL_TO_VR_FACTOR * m_worldZStretch;
+	hlToVR.z = m_worldScale * 1.f / MAGIC_HL_TO_VR_FACTOR;
 
 	vrToHL.x = MAGIC_VR_TO_HL_FACTOR * 1.f / hlToVR.x;
 	vrToHL.y = MAGIC_VR_TO_HL_FACTOR * 1.f / hlToVR.y;
@@ -265,6 +268,11 @@ const Vector3& VRHelper::GetVRToHL()
 const Vector3& VRHelper::GetHLToVR()
 {
 	return hlToVR;
+}
+
+float VRHelper::UnitToMeter(float unit)
+{
+	return unit * UNIT_TO_METER * m_worldScale * m_worldZStretch;
 }
 
 void VRHelper::Init()
@@ -444,6 +452,8 @@ Matrix4 VRHelper::GetModelViewMatrixFromAbsoluteTrackingMatrix(const Matrix4& ab
 	switchYAndZTransitionMatrix[10] = 0;
 
 	Matrix4 modelViewMatrix = absoluteTrackingMatrix * hlToVRScaleMatrix * switchYAndZTransitionMatrix * hlToVRTranslateMatrix;
+
+	// I still don't quite get why I have to scale things by 10 here. But it works :S
 	return modelViewMatrix.scale(10);
 }
 
@@ -707,21 +717,24 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	auto vrTransform = positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
 
+	m_hmdHeightOffset = 0.f;
+
 	// add custom HMD offset (e.g. for seated players)
-	float vr_headset_offset_units = CVAR_GET_FLOAT("vr_headset_offset");
-	if (vr_headset_offset_units != 0.f)
 	{
-		float vr_headset_offset_cm = vr_headset_offset_units * GetVRToHL().y;
-		hlTransform[13] += vr_headset_offset_cm / 100.f;
-		m_hmdHeightOffset += vr_headset_offset_cm / 100.f;
+		float vr_headset_offset_units = CVAR_GET_FLOAT("vr_headset_offset");
+		if (vr_headset_offset_units != 0.f)
+		{
+			float vr_headset_offset_meter = UnitToMeter(vr_headset_offset_units);
+			hlTransform[13] += vr_headset_offset_meter;
+			m_hmdHeightOffset += vr_headset_offset_meter;
+		}
 	}
 
 	if (CVAR_GET_FLOAT("vr_rl_ducking_enabled") != 0.f)
 	{
 		float rlDuckHeight_units = CVAR_GET_FLOAT("vr_rl_duck_height");
-		float rlDuckHeight_cm = vr_headset_offset_units * GetVRToHL().y;
-		float hmdHeight_cm = hlTransform[13] * 100.f;
-		g_vrInput.SetVRDucking(hmdHeight_cm < rlDuckHeight_cm);
+		float rlDuckHeight_meter = UnitToMeter(rlDuckHeight_units);
+		g_vrInput.SetVRDucking(hlTransform[13] < rlDuckHeight_meter);
 	}
 	else
 	{
@@ -729,15 +742,15 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	}
 
 	// correct height for ducking and stuff
-	const float originalHeight = hlTransform[13];
+	const float originalHeight_meter = hlTransform[13];
 	extern playermove_t* pmove;
 	if (pmove)
 	{
 		cl_entity_t* localPlayer = SaveGetLocalPlayer();
-		float maxPlayerViewPosHeight = originalHeight;
+		float maxPlayerViewPosHeight_meter = originalHeight_meter;
 		if (!g_vrInput.IsVRDucking() && (pmove->flags & FL_DUCKING))
 		{
-			maxPlayerViewPosHeight = (m_viewOfs.z - VEC_DUCK_HULL_MIN.z) * GetHLToVR().y;
+			maxPlayerViewPosHeight_meter = UnitToMeter(m_viewOfs.z - VEC_DUCK_HULL_MIN.z);
 		}
 		else if (localPlayer)
 		{
@@ -748,34 +761,36 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 			gEngfuncs.pEventAPI->EV_PlayerTrace(localPlayer->curstate.origin, wayup, PM_STUDIO_IGNORE | PM_GLASS_IGNORE, -1, &tr);
 			if (!tr.allsolid && tr.fraction < 1.f && tr.fraction > 0.f && !tr.startsolid)
 			{
-				float totalDistance = 1024.f * tr.fraction;
+				float totalDistance_units = 1024.f * tr.fraction;
 				if (pmove->flags & FL_DUCKING)
 				{
-					float viewofsToHead = fabs(m_viewOfs.z - VEC_DUCK_HULL_MAX.z);
-					maxPlayerViewPosHeight = (totalDistance - viewofsToHead - VEC_DUCK_HULL_MIN.z) * GetHLToVR().y;
+					float viewofsToHead_units = fabs(m_viewOfs.z - VEC_DUCK_HULL_MAX.z);
+					maxPlayerViewPosHeight_meter = UnitToMeter(totalDistance_units - viewofsToHead_units - VEC_DUCK_HULL_MIN.z);
 				}
 				else
 				{
-					float viewofsToHead = fabs(m_viewOfs.z - VEC_HULL_MAX.z);
-					maxPlayerViewPosHeight = (totalDistance - viewofsToHead - VEC_HULL_MIN.z) * GetHLToVR().y;
+					float viewofsToHead_units = fabs(m_viewOfs.z - VEC_HULL_MAX.z);
+					maxPlayerViewPosHeight_meter = UnitToMeter(totalDistance_units - viewofsToHead_units - VEC_HULL_MIN.z);
 				}
 			}
 		}
 
-		if (maxPlayerViewPosHeight < originalHeight)
+		if (maxPlayerViewPosHeight_meter < originalHeight_meter)
 		{
-			float newHeight = (std::min)(originalHeight, maxPlayerViewPosHeight);
-			m_hmdHeightOffset = newHeight - originalHeight;
-			hlTransform[13] = newHeight;
+			m_hmdHeightOffset += maxPlayerViewPosHeight_meter - originalHeight_meter;
+			hlTransform[13] = maxPlayerViewPosHeight_meter;
 		}
 	}
 
+	/*
+	// TODO: Smooth steps
 	if (VRGetSmoothStepsSetting() != 0.f)
 	{
-		float newHeight = hlTransform[13] + GetStepHeight() / GetVRToHL().y;
-		m_hmdHeightOffset = newHeight - originalHeight;
-		hlTransform[13] = newHeight;
+		float newHeight_meter = hlTransform[13] + GetStepHeight() / GetVRToHL().y;
+		m_hmdHeightOffset += newHeight_meter - originalHeight_meter;
+		hlTransform[13] = newHeight_meter;
 	}
+	*/
 
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
 		return hlTransform;

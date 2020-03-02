@@ -58,7 +58,7 @@ namespace
 
 	constexpr const float VR_HUD_CONTROLLER_SPRITE_SCALE = 0.05f;
 
-	constexpr const float VR_HUD_TRAINCONTROLS_SPRITE_SCALE = 0.5f;
+	constexpr const float VR_HUD_TRAINCONTROLS_SPRITE_SCALE = 0.25f;
 
 	constexpr const int VR_HUD_SPRITE_OFFSET_STEPSIZE = 40;
 
@@ -77,6 +77,7 @@ namespace
 		{std::string{"sprites/640hud7.spr"}, HUDSpriteSize{256, 128}},
 		{std::string{"sprites/640hud8.spr"}, HUDSpriteSize{256, 64}},
 		{std::string{"sprites/640hud9.spr"}, HUDSpriteSize{256, 64}},
+		{std::string{"sprites/640_train.spr"}, HUDSpriteSize{96, 96}},
 	};
 }  // namespace
 
@@ -385,24 +386,41 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 	const model_s* pSpriteModel = gEngfuncs.GetSpritePointer(m_hudSpriteHandle);
 	if (pSpriteModel == nullptr)
 	{
-		gEngfuncs.Con_DPrintf("Error: HUD Sprite model is nullptr!\n");
+		gEngfuncs.Con_DPrintf("Warning: HUD sprite model is nullptr!\n");
 		return;
 	}
 
 	extern engine_studio_api_t IEngineStudio;
 	IEngineStudio.GL_SetRenderMode(kRenderTransAdd);
 	glColor4f(m_hudSpriteColor.r / 255.f, m_hudSpriteColor.g / 255.f, m_hudSpriteColor.b / 255.f, 1.f);
-	//glColor4f(1.f, 1.f, 1.f, 1.f);
 
 	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	// "sprites/640hud7.spr" -> "hud/640hud7.spr"
-	std::string hudTextureName = std::regex_replace(pSpriteModel->name, std::regex{ "sprites/([a-z0-9]+)\\.spr" }, m_hdTexturesEnabled ? "/hud/HD/$1.png" : "/hud/$1.png");
+	int texture = 0;
 
-	//unsigned int width, height;
-	glBindTexture(GL_TEXTURE_2D, VRTextureHelper::Instance().GetTexture(hudTextureName /*, width, height*/));
+	// "sprites/640hud7.spr" -> "hud/640hud7.png"
+	std::string hudTextureName = std::regex_replace(pSpriteModel->name, std::regex{ "^sprites/([a-z0-9_]+)\\.spr$" }, m_hdTexturesEnabled ? "/hud/HD/$1.png" : "/hud/$1.png");
+	if (frame == 0 && hudTextureName.find("640_train") == std::string::npos)
+	{
+		texture = VRTextureHelper::Instance().GetTexture(hudTextureName);
+	}
+	if (texture == 0 || frame > 0)
+	{
+		// "hud/640_train.png" -> "hud/640_train_frame_xxx.png"
+		hudTextureName = std::regex_replace(hudTextureName, std::regex{ "^(.+)\\.png$" }, "$1_frame_" + std::to_string(frame) + ".png");
+		texture = VRTextureHelper::Instance().GetTexture(hudTextureName);
+	}
+
+	if (texture == 0)
+	{
+		// give up
+		gEngfuncs.Con_DPrintf("Warning: HUD sprite model %s has no texture!\n", pSpriteModel->name);
+		return;
+	}
+
+	glBindTexture(GL_TEXTURE_2D, texture);
 
 	// Half-Life thinks HUD textures are fixed size sprites and gives us absolute coordinates for that size.
 	// We get the size here independent of the actual texture resolution, and then further below we calculate proper texture coordinates from 0 to 1.
@@ -525,7 +543,7 @@ void VRRenderer::GetStartingPosForHUDRenderType(const VRHUDRenderType hudRenderT
 		hudStartPositionRightOffset = 0;
 	case VRHUDRenderType::TRAINCONTROLS:
 		hudStartPositionUpOffset = 0;
-		hudStartPositionRightOffset = 32;
+		hudStartPositionRightOffset = 48;
 		break;
 	}
 }
