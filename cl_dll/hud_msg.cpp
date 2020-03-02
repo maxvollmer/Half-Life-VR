@@ -150,6 +150,16 @@ int CHud::MsgFunc_TrainCtrl(const char* pszName, int iSize, void* pbuf)
 	return 1;
 }
 
+int CHud::MsgFunc_VRScrnShke(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	m_screenShakeAmplitude = READ_FLOAT();
+	m_screenShakeDuration = READ_FLOAT();
+	m_screenShakeFrequency = READ_FLOAT();
+	m_hasScreenShake = true;
+	return 1;
+}
+
 int CHud::MsgFunc_GrbdLddr(const char* pszName, int iSize, void* pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
@@ -161,5 +171,20 @@ int CHud::MsgFunc_PullLdg(const char* pszName, int iSize, void* pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
 	m_vrIsPullingOnLedge = READ_BYTE() != 0;
+	return 1;
+}
+
+int CHud::MsgFunc_VRTouch(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	bool isLeftHand = READ_BYTE() != 0;
+	if (isLeftHand)
+	{
+		m_vrLeftHandTouchVibrateIntensity = READ_FLOAT();
+	}
+	else
+	{
+		m_vrRightHandTouchVibrateIntensity = READ_FLOAT();
+	}
 	return 1;
 }

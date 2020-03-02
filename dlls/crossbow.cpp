@@ -404,6 +404,10 @@ void CCrossbow::FireSniperBolt()
 		ApplyMultiDamage(pev, m_pPlayer->pev);
 	}
 #endif
+
+#ifdef CLIENT_DLL
+	VRRegisterRecoil(0.25f);
+#endif
 }
 
 void CCrossbow::FireBolt()
@@ -468,6 +472,10 @@ void CCrossbow::FireBolt()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 5.0;
 	else
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
+
+#ifdef CLIENT_DLL
+	VRRegisterRecoil(0.5f);
+#endif
 }
 
 

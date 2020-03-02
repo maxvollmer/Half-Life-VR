@@ -26,7 +26,15 @@ public:
 		Vector maxs;
 	};
 
+	enum class TouchType
+	{
+		LIGHT_TOUCH,
+		NORMAL_TOUCH,
+		HARD_TOUCH
+	};
+
 	void Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, VRControllerID id, int weaponId);
+	void PostFrame();
 
 	CVRControllerModel* GetModel() const;
 	void PlayWeaponAnimation(int iAnim, int body);
@@ -85,6 +93,8 @@ public:
 		Vector& entityLastOrigin,
 		Vector& playerLastOrigin) const;
 
+	void AddTouch(TouchType touch, float duration = 0.f);
+
 private:
 	void UpdateModel(CBasePlayer* pPlayer);
 	void UpdateLaserSpot();
@@ -137,4 +147,5 @@ private:
 		m_attachments.clear();
 	}
 
+	std::unordered_map<TouchType, float> m_touches;
 };

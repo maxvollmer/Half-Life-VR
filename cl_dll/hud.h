@@ -589,6 +589,14 @@ public:
 	int m_vrGrabbedLadderEntIndex{ -1 };
 	bool m_vrIsPullingOnLedge{ false };
 
+	float m_screenShakeAmplitude = 0;
+	float m_screenShakeDuration = 0;
+	float m_screenShakeFrequency = 0;
+	bool m_hasScreenShake = false;
+
+	float m_vrLeftHandTouchVibrateIntensity = 0.f;
+	float m_vrRightHandTouchVibrateIntensity = 0.f;
+
 	HSPRITE_VALVE m_hsprCursor = 0;
 	float m_flHUDDrawTime = 0.f;        // the current HUD draw time
 	float m_fOldHUDDrawTime = 0.f;      // the time at which the HUD was last redrawn
@@ -671,9 +679,10 @@ public:
 	int _cdecl MsgFunc_GroundEnt(const char* pszName, int iSize, void* pbuf);
 	int _cdecl MsgFunc_VRCtrlEnt(const char* pszName, int iSize, void* pbuf);
 	int _cdecl MsgFunc_TrainCtrl(const char* pszName, int iSize, void* pbuf);
+	int _cdecl MsgFunc_VRScrnShke(const char* pszName, int iSize, void* pbuf);
 	int _cdecl MsgFunc_GrbdLddr(const char* pszName, int iSize, void* pbuf);
 	int _cdecl MsgFunc_PullLdg(const char* pszName, int iSize, void* pbuf);
-	int _cdecl MsgFunc_VRUpdEgon(const char* pszName, int iSize, void* pbuf);
+	int _cdecl MsgFunc_VRTouch(const char* pszName, int iSize, void* pbuf);
 
 	// Screen information
 	SCREENINFO m_scrinfo;

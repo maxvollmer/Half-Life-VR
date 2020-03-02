@@ -245,6 +245,11 @@ int __MsgFunc_TrainCtrl(const char* pszName, int iSize, void* pbuf)
 	return gHUD.MsgFunc_TrainCtrl(pszName, iSize, pbuf);
 }
 
+int __MsgFunc_VRScrnShke(const char* pszName, int iSize, void* pbuf)
+{
+	return gHUD.MsgFunc_VRScrnShke(pszName, iSize, pbuf);
+}
+
 int __MsgFunc_GrbdLddr(const char* pszName, int iSize, void* pbuf)
 {
 	return gHUD.MsgFunc_GrbdLddr(pszName, iSize, pbuf);
@@ -265,6 +270,11 @@ int __MsgFunc_VRUpdEgon(const char* pszName, int iSize, void* pbuf)
 	EV_UpdateEgon(beamStartPos, beamEndPos);
 
 	return 0;
+}
+
+int __MsgFunc_VRTouch(const char* pszName, int iSize, void* pbuf)
+{
+	return gHUD.MsgFunc_VRTouch(pszName, iSize, pbuf);
 }
 
 int __MsgFunc_MOTD(const char* pszName, int iSize, void* pbuf)
@@ -372,9 +382,11 @@ void CHud::Init(void)
 	HOOK_MESSAGE(VRCtrlEnt);
 	HOOK_MESSAGE(VRSpawnYaw);
 	HOOK_MESSAGE(TrainCtrl);
+	HOOK_MESSAGE(VRScrnShke);
 	HOOK_MESSAGE(GrbdLddr);
 	HOOK_MESSAGE(PullLdg);
 	HOOK_MESSAGE(VRUpdEgon);
+	HOOK_MESSAGE(VRTouch);
 
 	CVAR_CREATE("hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO);  // controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE("hud_takesshots", "0", FCVAR_ARCHIVE);                      // controls whether or not to automatically take screenshots at the end of a round

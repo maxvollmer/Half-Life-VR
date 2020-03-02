@@ -537,6 +537,10 @@ void CGauss::Fire(Vector vecOrigSrc, Vector vecDir, float flDamage)
 	}
 #endif
 	// ALERT( at_console, "%d bytes\n", nTotal );
+
+#ifdef CLIENT_DLL
+	VRRegisterRecoil(flDamage / 200.f);
+#endif
 }
 
 

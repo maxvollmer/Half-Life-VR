@@ -8,7 +8,7 @@ struct VRPhysicsHelperModelBBoxIntersectResult;
 class VRControllerInteractionManager
 {
 public:
-	void CheckAndPressButtons(CBasePlayer* pPlayer, const VRController& controller);
+	void CheckAndPressButtons(CBasePlayer* pPlayer, VRController& controller);
 	void DoMultiControllerActions(CBasePlayer* pPlayer, const VRController& controller1, const VRController& controller2);
 
 private:

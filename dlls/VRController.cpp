@@ -146,6 +146,54 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 #endif
 }
 
+float GetVibrateIntensity(VRController::TouchType touch)
+{
+	switch (touch)
+	{
+	case VRController::TouchType::LIGHT_TOUCH:
+		return 0.1f;
+	case VRController::TouchType::NORMAL_TOUCH:
+		return 0.5f;
+	case VRController::TouchType::HARD_TOUCH:
+		return 1.f;
+	default:
+		return 0.f;
+	}
+}
+
+void VRController::PostFrame()
+{
+	float vibrateintensity = 0.f;
+	for (auto it = m_touches.begin(); it != m_touches.end();)
+	{
+		vibrateintensity = (std::max)(vibrateintensity, GetVibrateIntensity(it->first));
+		if (it->second <= gpGlobals->time)
+		{
+			it = m_touches.erase(it);
+		}
+		else
+		{
+			it++;
+		}
+	}
+
+	if (vibrateintensity > 0.f)
+	{
+		// Send vibrate message to client
+		extern int gmsgVRTouch;
+		MESSAGE_BEGIN(MSG_ONE, gmsgVRTouch, nullptr, m_hPlayer->pev);
+		WRITE_BYTE(IsMirrored() ? 1 : 0);
+		WRITE_FLOAT(vibrateintensity);
+		MESSAGE_END();
+	}
+}
+
+void VRController::AddTouch(TouchType touch, float duration)
+{
+	float touchuntil = gpGlobals->time + duration;
+	m_touches[touch] = (std::max)(m_touches[touch], touchuntil);
+}
+
 void VRController::ClearOutDeadEntities()
 {
 	for (auto& it = m_touchedEntities.begin(); it != m_touchedEntities.end();)

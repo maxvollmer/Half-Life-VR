@@ -473,6 +473,10 @@ void CRpg::PrimaryAttack()
 
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+
+#ifdef CLIENT_DLL
+		VRRegisterRecoil(1.f);
+#endif
 	}
 	else
 	{

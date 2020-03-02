@@ -240,7 +240,7 @@ bool DistanceTooBigForDragging(EHANDLE<CBaseEntity> hEntity, const VRController&
 	return distance > (controller.GetRadius() + entityRadius + VR_DRAG_DISTANCE_TOLERANCE);
 }
 
-void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, const VRController& controller)
+void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, VRController& controller)
 {
 	CBaseEntity* pEntity = nullptr;
 	while (UTIL_FindAllEntities(&pEntity))
@@ -309,15 +309,42 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			didHitChange = isHitting ? controller.AddHitEntity(hEntity) : controller.RemoveHitEntity(hEntity);
 		}
 
-		if (!isDragging && didDragChange)
-		{
-			int i = 0;
-		}
-
 		float flHitDamage = 0.f;
 		if (pPlayer->HasWeapons() && isHitting && didHitChange)
 		{
 			flHitDamage = DoDamage(pPlayer, hEntity, controller, intersectResult);
+		}
+
+		// vibrate if touching something solid (but not if we are dragging it!)
+		if (isTouching && hEntity->m_vrDragger != pPlayer && hEntity->m_vrDragController != controller.GetID())
+		{
+			if ((hEntity->pev->solid != SOLID_NOT && hEntity->pev->solid != SOLID_TRIGGER)
+				|| (hEntity->pev->solid == SOLID_TRIGGER && (hEntity->pev->movetype == MOVETYPE_TOSS || hEntity->pev->movetype == MOVETYPE_BOUNCE))
+				|| hEntity->IsDraggable())
+			{
+				if (isHitting)
+				{
+					if (hEntity->pev->solid == SOLID_BSP)
+					{
+						controller.AddTouch(VRController::TouchType::HARD_TOUCH, 0.1f);
+					}
+					else
+					{
+						controller.AddTouch(VRController::TouchType::NORMAL_TOUCH, 0.1f);
+					}
+				}
+				else
+				{
+					if (hEntity->pev->solid == SOLID_BSP)
+					{
+						controller.AddTouch(VRController::TouchType::NORMAL_TOUCH, 0.1f);
+					}
+					else
+					{
+						controller.AddTouch(VRController::TouchType::LIGHT_TOUCH, 0.1f);
+					}
+				}
+			}
 		}
 
 		Interaction::InteractionInfo touching{ isTouching, didTouchChange };

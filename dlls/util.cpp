@@ -721,11 +721,15 @@ void UTIL_ScreenShake(const Vector& center, float amplitude, float frequency, fl
 			shake.amplitude = FixedUnsigned16(localAmplitude, 1 << 12);  // 4.12 fixed
 
 			MESSAGE_BEGIN(MSG_ONE, gmsgShake, nullptr, pPlayer->edict());  // use the magic #1 for "one client"
-
 			WRITE_SHORT(shake.amplitude);  // shake amount
 			WRITE_SHORT(shake.duration);   // shake lasts this long
 			WRITE_SHORT(shake.frequency);  // shake noise frequency
+			MESSAGE_END();
 
+			MESSAGE_BEGIN(MSG_ONE, gmsgVRScreenShake, nullptr, pPlayer->edict());
+			WRITE_FLOAT(localAmplitude / 25.f);
+			WRITE_FLOAT(duration);
+			WRITE_FLOAT(100.f / frequency);
 			MESSAGE_END();
 		}
 	}

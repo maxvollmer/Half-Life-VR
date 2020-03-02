@@ -161,6 +161,10 @@ void CGlock::GlockFire(float flSpread, float flCycleTime, BOOL fUseAutoAim)
 	}
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
+
+#ifdef CLIENT_DLL
+	VRRegisterRecoil(0.2f);
+#endif
 }
 
 

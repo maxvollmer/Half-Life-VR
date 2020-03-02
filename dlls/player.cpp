@@ -231,6 +231,8 @@ int gmsgVRTrainControls = 0;
 int gmsgVRGrabbedLadder = 0;
 int gmsgVRPullingLedge = 0;
 int gmsgVRUpdateEgon = 0;
+int gmsgVRScreenShake = 0;
+int gmsgVRTouch = 0;
 
 
 void LinkUserMessages(void)
@@ -286,6 +288,8 @@ void LinkUserMessages(void)
 	gmsgVRGrabbedLadder = REG_USER_MSG("GrbdLddr", 2);
 	gmsgVRPullingLedge = REG_USER_MSG("PullLdg", 1);
 	gmsgVRUpdateEgon = REG_USER_MSG("VRUpdEgon", -1);
+	gmsgVRScreenShake = REG_USER_MSG("VRScrnShke", 3 * sizeof(float));
+	gmsgVRTouch = REG_USER_MSG("VRTouch", 5);
 }
 
 LINK_ENTITY_TO_CLASS(player, CBasePlayer);
@@ -1818,7 +1822,10 @@ bool CBasePlayer::CheckVRTRainButtonTouched(const Vector& buttonLeftPos, const V
 		if (controller.IsValid())
 		{
 			if (VRPhysicsHelper::Instance().ModelIntersectsLine(controller.GetModel(), buttonLeftPos, buttonRightPos))
+			{
+				controller.AddTouch(VRController::TouchType::LIGHT_TOUCH, 0.1f);
 				return true;
+			}
 		}
 	}
 	return false;
@@ -2699,6 +2706,17 @@ void CBasePlayer::PostThink()
 
 	// do weapon stuff
 	ItemPostFrame();
+
+
+	// controller feedback
+	for (auto& [id, controller] : m_vrControllers)
+	{
+		if (controller.IsValid())
+		{
+			controller.PostFrame();
+		}
+	}
+
 
 	// check to see if player landed hard enough to make a sound
 	// falling farther than half of the maximum safe distance, but not as far a max safe distance will

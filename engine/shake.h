@@ -19,6 +19,7 @@
 
 // screen shake
 extern int gmsgShake;
+extern int gmsgVRScreenShake;
 
 // This structure is sent over the net to describe a screen shake event
 typedef struct

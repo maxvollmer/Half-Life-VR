@@ -17,6 +17,10 @@
 
 #include "effects.h"
 
+#ifdef CLIENT_DLL
+extern void VRRegisterRecoil(float intensity);
+#endif
+
 class CBasePlayer;
 extern int gmsgWeapPickup;
 

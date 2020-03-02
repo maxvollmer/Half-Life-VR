@@ -263,6 +263,16 @@
          "skeleton": "/skeleton/hand/right"
       },
       {
+         "name" : "/actions/feedback/out/LeftTouch",
+         "requirement" : "optional",
+         "type" : "vibration"
+      },
+      {
+         "name" : "/actions/feedback/out/RightTouch",
+         "requirement" : "optional",
+         "type" : "vibration"
+      },
+      {
          "name" : "/actions/feedback/out/Recoil",
          "requirement" : "optional",
          "type" : "vibration"
@@ -436,8 +446,10 @@
          "/actions/damagefeedback/out/SlowFreeze" : "Slow freeze damage",
          "/actions/damagefeedback/out/Sonic" : "Shockwave damage",
          "/actions/feedback" : "Force Feedback (e.g. recoil or earthquakes)",
-         "/actions/feedback/out/Earthquake" : "Earthquake shake feedback",
+         "/actions/feedback/out/LeftTouch" : "Left hand touch feedback",
+         "/actions/feedback/out/RightTouch" : "Right hand touch feedback",
          "/actions/feedback/out/Recoil" : "Recoil vibration",
+         "/actions/feedback/out/Earthquake" : "Earthquake shake feedback",
          "/actions/feedback/out/TrainShake" : "On moving Train/Elevator/Platform shake feedback",
          "/actions/feedback/out/WaterSplash" : "Feedback when falling into water",
          "/actions/input" : "Input",

@@ -58,6 +58,8 @@ public:
 
 	enum class FeedbackType
 	{
+		LEFTTOUCH,
+		RIGHTTOUCH,
 		RECOIL,
 		EARTHQUAKE,
 		ONTRAIN,
@@ -67,8 +69,6 @@ public:
 
 	void SetFingerSkeletalData(vr::ETrackedControllerRole controllerRole, const float fingerCurl[vr::VRFinger_Count]);
 	bool HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, float fingerCurl[5]) const;
-
-	void FireFeedback(FeedbackType feedback, int damageType, float durationInSeconds, float frequency, float amplitude);
 
 	void ExecuteCustomAction(const std::string& action);
 
@@ -88,6 +88,9 @@ public:
 	void DisplayErrorPopup(const char* errorMessage);
 
 	bool m_vrInputThisFrame = false;
+
+	float damageintensity = 0.f;
+	float recoilintensity = 0.f;
 
 private:
 	struct ActionSet
@@ -125,6 +128,8 @@ private:
 	void SendMousePosToHLWindow(float x, float y);
 	void SendMouseButtonClickToHLWindow(float x, float y);
 
+	void FireFeedbacks();
+	void FireFeedback(FeedbackType feedback, int damageType, float durationInSeconds, float frequency, float amplitude);
 	void FireDamageFeedback(const std::string& action, float durationInSeconds, float frequency, float amplitude);
 
 	bool UpdateActionStates(std::vector<vr::VRActiveActionSet_t>& actionSets);

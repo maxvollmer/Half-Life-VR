@@ -383,6 +383,10 @@ void CEgon::Fire(const Vector& vecSrc, const Vector& vecDir)
 	timedist = 1 - timedist;
 
 	UpdateEffect(vecSrc, tr.vecEndPos, timedist);
+
+#ifdef CLIENT_DLL
+	VRRegisterRecoil(0.2f);
+#endif
 }
 
 

@@ -512,6 +512,10 @@ void CTripmine::PrimaryAttack(void)
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.3;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
+
+#ifdef CLIENT_DLL
+	VRRegisterRecoil(0.1f);
+#endif
 }
 
 #ifndef CLIENT_DLL

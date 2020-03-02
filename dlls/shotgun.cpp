@@ -186,6 +186,10 @@ void CShotgun::PrimaryAttack()
 	else
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.75;
 	m_fInSpecialReload = 0;
+
+#ifdef CLIENT_DLL
+	VRRegisterRecoil(0.4f);
+#endif
 }
 
 
@@ -261,6 +265,10 @@ void CShotgun::SecondaryAttack(void)
 		m_flTimeWeaponIdle = 1.5;
 
 	m_fInSpecialReload = 0;
+
+#ifdef CLIENT_DLL
+	VRRegisterRecoil(0.8f);
+#endif
 }
 
 

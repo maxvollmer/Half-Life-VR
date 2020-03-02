@@ -35,6 +35,7 @@
 #include "VRRenderer.h"
 #include "VRHelper.h"
 #include "VROpenGLInterceptor.h"
+#include "VRInput.h"
 
 #define HARDWARE_MODE
 #include "com_model.h"
@@ -136,6 +137,9 @@ void VRRenderer::RenderScreenOverlays()
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// reset everytime
+	g_vrInput.damageintensity = 0.f;
 
 	// draw damage unless when being healed
 	// damage is drawn as pulsating red gradient overlay using a sine wave (well actually negative cosine so we start at 0, but who cares)
@@ -291,6 +295,11 @@ void VRRenderer::RenderScreenOverlays()
 			glColor4fv(color);
 			glVertex3fv(viewOrg + toprightback);
 			glEnd();
+		}
+
+		if (m_isDrawingDamage)
+		{
+			g_vrInput.damageintensity = brightness;
 		}
 	}
 	else

@@ -175,6 +175,11 @@ void CHgun::PrimaryAttack()
 	}
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
+
+
+#ifdef CLIENT_DLL
+	VRRegisterRecoil(0.1f);
+#endif
 }
 
 
@@ -258,6 +263,10 @@ void CHgun::SecondaryAttack(void)
 
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.1;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
+
+#ifdef CLIENT_DLL
+	VRRegisterRecoil(0.2f);
+#endif
 }
 
 

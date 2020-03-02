@@ -11,9 +11,20 @@
 #include "cl_util.h"
 #include "VRInput.h"
 #include "eiface.h"
+#include "pm_defs.h"
+
 #include "VRCommon.h"
+#include "VRRenderer.h"
+#include "VRHelper.h"
 
 VRInput g_vrInput;
+
+// used by client weapon prediction code
+void VRRegisterRecoil(float intensity)
+{
+	g_vrInput.recoilintensity = intensity;
+}
+
 
 static inline void TrimString(std::string& s)
 {
@@ -104,7 +115,6 @@ void VRInput::LoadCustomActions()
 
 void VRInput::RegisterActionSets()
 {
-	// TODO: Implement all actions
 	if (RegisterActionSet("input", true))
 	{
 		RegisterAction("input", "MoveForward", &VR::Input::Movement::HandleMoveForward);
@@ -162,6 +172,7 @@ void VRInput::RegisterActionSets()
 	}
 	if (RegisterActionSet("feedback", false))
 	{
+		RegisterFeedback("feedback", "Touch");
 		RegisterFeedback("feedback", "Recoil");
 		RegisterFeedback("feedback", "Earthquake");
 		RegisterFeedback("feedback", "TrainShake");
@@ -321,12 +332,78 @@ bool VRInput::RegisterFeedback(const std::string& actionSet, const std::string& 
 	}
 }
 
+void VRInput::FireFeedbacks()
+{
+	extern playermove_t* pmove;
+
+	// LEFTTOUCH
+	if (gHUD.m_vrLeftHandTouchVibrateIntensity > 0.f)
+	{
+		FireFeedback(FeedbackType::LEFTTOUCH, 0, 0.1f, 1.f * (std::max)(1.f, gHUD.m_vrLeftHandTouchVibrateIntensity), (std::min)(1.f, gHUD.m_vrLeftHandTouchVibrateIntensity));
+		gHUD.m_vrLeftHandTouchVibrateIntensity = 0.f;
+	}
+
+	// RIGHTTOUCH
+	if (gHUD.m_vrRightHandTouchVibrateIntensity > 0.f)
+	{
+		FireFeedback(FeedbackType::LEFTTOUCH, 0, 0.1f, 1.f * (std::max)(1.f, gHUD.m_vrRightHandTouchVibrateIntensity), (std::min)(1.f, gHUD.m_vrRightHandTouchVibrateIntensity));
+		gHUD.m_vrRightHandTouchVibrateIntensity = 0.f;
+	}
+
+	// RECOIL
+	if (recoilintensity > 0.f)
+	{
+		FireFeedback(FeedbackType::RECOIL, gHUD.m_Health.m_bitsDamage, 0.1f, 4.f * (std::max)(1.f, recoilintensity), (std::min)(1.f, recoilintensity));
+		recoilintensity = 0.f;
+	}
+
+	// EARTHQUAKE
+	if (gHUD.m_hasScreenShake)
+	{
+		FireFeedback(FeedbackType::EARTHQUAKE, 0, gHUD.m_screenShakeDuration, gHUD.m_screenShakeFrequency, (std::min)(1.f, gHUD.m_screenShakeAmplitude));
+		gHUD.m_hasScreenShake = false;
+	}
+
+	if (pmove)
+	{
+		// ONTRAIN
+		if (pmove->onground > 0)
+		{
+			cl_entity_t* groundent = gEngfuncs.GetEntityByIndex(pmove->onground);
+			if (groundent && groundent->curstate.solid == SOLID_BSP && groundent->curstate.velocity.Length() > 0.f)
+			{
+				float intensity = groundent->curstate.velocity.Length() / 100.f;
+				FireFeedback(FeedbackType::ONTRAIN, 0, 0.1f, 1.f * (std::max)(1.f, intensity), (std::min)(1.f, intensity));
+			}
+		}
+
+		// WATERSPLASH
+		if ((pmove->oldwaterlevel == 0 && pmove->waterlevel != 0) ||
+			(pmove->oldwaterlevel != 0 && pmove->waterlevel == 0))
+		{
+			FireFeedback(FeedbackType::WATERSPLASH, 0, 0.5f, 2.f, 0.5f);
+		}
+	}
+
+	// DAMAGE
+	if (damageintensity > 0.f)
+	{
+		FireFeedback(FeedbackType::DAMAGE, gHUD.m_Health.m_bitsDamage, 0.1f, 4.f * (std::max)(1.f, damageintensity), (std::min)(1.f, damageintensity));
+	}
+}
+
 void VRInput::FireFeedback(FeedbackType feedback, int damageType, float durationInSeconds, float frequency, float amplitude)
 {
 	vr::VRActionHandle_t handle{ 0 };
 
 	switch (feedback)
 	{
+	case FeedbackType::LEFTTOUCH:
+		handle = m_actionSets["feedback"].feedbackActions["LeftTouch"];
+		break;
+	case FeedbackType::RIGHTTOUCH:
+		handle = m_actionSets["feedback"].feedbackActions["RightTouch"];
+		break;
 	case FeedbackType::RECOIL:
 		handle = m_actionSets["feedback"].feedbackActions["Recoil"];
 		break;
@@ -467,6 +544,8 @@ void VRInput::HandleInput(bool isInGame)
 	{
 		ForceWindowToForeground();
 	}
+
+	FireFeedbacks();
 }
 
 bool VRInput::UpdateActionStates(std::vector<vr::VRActiveActionSet_t>& actionSets)
