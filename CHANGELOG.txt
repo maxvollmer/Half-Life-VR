@@ -1,3 +1,13 @@
+0.6.9-beta
+ Mod:
+  * Fixed some bugs with height offsets
+  * Fixed HUD train speed display
+  * Implemented VR controls for usable trains
+  * Added option to automatically stop trains when falling/jumping off
+
+ HLVRConfig:
+  * No changes
+
 0.6.8-beta - 2020-03-01
  Mod:
   * Fixed bug that pushed players upwards when walking into walls
