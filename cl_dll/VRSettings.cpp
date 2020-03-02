@@ -74,6 +74,10 @@ void VRSettings::Init()
 	RegisterCVAR("vr_lefthand_mode", "0");
 	RegisterCVAR("vr_train_controls", "0");
 	RegisterCVAR("vr_train_autostop", "0");
+	RegisterCVAR("vr_train_speed_slow", "0.2");
+	RegisterCVAR("vr_train_speed_medium", "0.4");
+	RegisterCVAR("vr_train_speed_fast", "0.6");
+	RegisterCVAR("vr_train_speed_back", "0.2");
 	RegisterCVAR("vr_melee_swing_speed", "100");
 	RegisterCVAR("vr_move_analogforward_inverted", "0");
 	RegisterCVAR("vr_move_analogsideways_inverted", "0");

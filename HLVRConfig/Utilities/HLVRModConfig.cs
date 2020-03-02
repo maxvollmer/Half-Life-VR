@@ -160,6 +160,9 @@ namespace HLVRConfig.Utilities
 
         private static TextBlock CreateDefaultLabel(string defaultValue)
         {
+            if (defaultValue.Contains("("))
+                defaultValue = defaultValue.Substring(0, defaultValue.IndexOf("(")).Trim();
+
             return CreateMiniText("(" + I18N.Get(ModDefaultLabel) + ": " + defaultValue + ")", 20);
         }
 

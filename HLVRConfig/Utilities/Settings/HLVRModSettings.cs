@@ -156,8 +156,12 @@ namespace HLVRConfig.Utilities
             } },
 
             { CategoryTrains, new OrderedDictionary<string, Setting>() {
-                { "vr_train_controls", Setting.Create( new I18N.I18NString("vr_train_controls", "Control mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_train_controls.VR", "VR Mode (Standing on train activates train, touching train interface controls train speed.)") }, { "1", new I18N.I18NString("vr_train_controls.Legacy", "Legacy Mode (LegacyUse activates train, forward and backward move control train speed.)") } }, "0" ) },
                 { "vr_train_autostop", Setting.Create( new I18N.I18NString("vr_train_autostop", "Automatically stop trains when falling off"), false ) },
+                { "vr_train_controls", Setting.Create( new I18N.I18NString("vr_train_controls", "Control mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_train_controls.VR", "VR Mode (Standing on train activates train, touching train interface controls train speed.)") }, { "1", new I18N.I18NString("vr_train_controls.Legacy", "Legacy Mode (LegacyUse activates train, forward and backward move control train speed.)") } }, "0" ) },
+                { "vr_train_speed_slow", Setting.Create( new I18N.I18NString("vr_train_speed_slow", "Train speed slow"), SettingType.FACTOR, "0.2", new SettingDependency("vr_train_controls", "0") ) },
+                { "vr_train_speed_medium", Setting.Create( new I18N.I18NString("vr_train_speed_medium", "Train speed medium"), SettingType.FACTOR, "0.4", new SettingDependency("vr_train_controls", "0") ) },
+                { "vr_train_speed_fast", Setting.Create( new I18N.I18NString("vr_train_speed_fast", "Train speed fast"), SettingType.FACTOR, "0.6", new SettingDependency("vr_train_controls", "0") ) },
+                { "vr_train_speed_back", Setting.Create( new I18N.I18NString("vr_train_speed_back", "Train speed backwards"), SettingType.FACTOR, "0.2", new SettingDependency("vr_train_controls", "0") ) },
             } },
 
             { CategoryMountedGuns, new OrderedDictionary<string, Setting>() {

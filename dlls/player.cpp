@@ -1824,6 +1824,19 @@ bool CBasePlayer::CheckVRTRainButtonTouched(const Vector& buttonLeftPos, const V
 	return false;
 }
 
+float GetTrainSpeed(const char* cvarname)
+{
+	float speed = CVAR_GET_FLOAT(cvarname);
+
+	if (speed <= 0.f)
+		return 0.25f;
+
+	if (speed > 1.f)
+		return 1.f;
+
+	return speed;
+}
+
 void CBasePlayer::PreThink(void)
 {
 	// Make sure we always have the right hand model
@@ -1991,22 +2004,22 @@ void CBasePlayer::PreThink(void)
 				else if (CheckVRTRainButtonTouched(trainSlowButtonPos + (right * 8.f), trainSlowButtonPos - (right * 8.f)))
 				{
 					m_iTrain = TRAIN_SLOW;
-					newspeed = pTrain->pev->impulse * 0.25f;
+					newspeed = pTrain->pev->impulse * GetTrainSpeed("vr_train_speed_slow");
 				}
 				else if (CheckVRTRainButtonTouched(trainMedmButtonPos + (right * 8.f), trainMedmButtonPos - (right * 8.f)))
 				{
 					m_iTrain = TRAIN_MEDIUM;
-					newspeed = pTrain->pev->impulse * 0.5f;
+					newspeed = pTrain->pev->impulse * GetTrainSpeed("vr_train_speed_medium");
 				}
 				else if (CheckVRTRainButtonTouched(trainFastButtonPos + (right * 8.f), trainFastButtonPos - (right * 8.f)))
 				{
 					m_iTrain = TRAIN_FAST;
-					newspeed = pTrain->pev->impulse * 0.75f;
+					newspeed = pTrain->pev->impulse * GetTrainSpeed("vr_train_speed_fast");
 				}
 				else if (CheckVRTRainButtonTouched(trainBackButtonPos + (right * 8.f), trainBackButtonPos - (right * 8.f)))
 				{
 					m_iTrain = TRAIN_BACK;
-					newspeed = -pTrain->pev->impulse * 0.25f;
+					newspeed = -pTrain->pev->impulse * GetTrainSpeed("vr_train_speed_back");
 				}
 
 				if (newspeed != pTrain->pev->speed)
