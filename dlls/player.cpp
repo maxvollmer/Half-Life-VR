@@ -2024,6 +2024,8 @@ void CBasePlayer::PreThink(void)
 
 				if (newspeed != pTrain->pev->speed)
 				{
+					EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use2.wav", 0.6, ATTN_NORM);
+
 					pTrain->pev->speed = newspeed;
 					auto pActualTrain = dynamic_cast<CFuncTrackTrain*>(pTrain);
 					if (pActualTrain) pActualTrain->Next();

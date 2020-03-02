@@ -883,6 +883,7 @@ void ClientPrecache(void)
 	PRECACHE_SOUND("debris/wood3.wav");
 
 	PRECACHE_SOUND("plats/train_use1.wav");  // use a train
+	PRECACHE_SOUND("plats/train_use2.wav");  // use a train in VR
 
 	PRECACHE_SOUND("buttons/spark5.wav");  // hit computer texture
 	PRECACHE_SOUND("buttons/spark6.wav");
