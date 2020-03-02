@@ -4,6 +4,7 @@
   * Fixed HUD train speed display
   * Implemented VR controls for usable trains
   * Added option to automatically stop trains when falling/jumping off
+  * Implemented haptic feedback
 
  HLVRConfig:
   * No changes
