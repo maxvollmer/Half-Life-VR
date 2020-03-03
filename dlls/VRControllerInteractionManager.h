@@ -62,4 +62,5 @@ private:
 
 	bool CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult);
 	bool IsDraggableEntity(EHANDLE<CBaseEntity> hEntity);
+	bool IsDraggableEntityThatCanTouchStuff(EHANDLE<CBaseEntity> hEntity);
 };

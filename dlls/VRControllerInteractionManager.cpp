@@ -132,7 +132,7 @@ bool IsNonInteractingEntity(EHANDLE<CBaseEntity> hEntity)
 	return (hEntity->pev->solid == SOLID_NOT && !IsUsableDoor(hEntity)) || FClassnameIs(hEntity->pev, "func_wall") || FClassnameIs(hEntity->pev, "func_illusionary") || FClassnameIs(hEntity->pev, "vr_controllermodel");  // TODO/NOTE: If this mod gets ever patched up for multiplayer, and you want players to be able to crowbar-fight, this should probably be changed
 }
 
-bool IsReachable(CBasePlayer* pPlayer, const VRController::HitBox& hitbox, bool strict)
+bool IsReachable(CBasePlayer* pPlayer, const StudioHitBox& hitbox, bool strict)
 {
 	TraceResult tr{ 0 };
 	UTIL_TraceLine(pPlayer->pev->origin, hitbox.origin, ignore_monsters, nullptr, &tr);
@@ -158,6 +158,32 @@ bool IsTriggerOrButton(EHANDLE<CBaseEntity> hEntity)
 	if (hEntity->pev->solid == SOLID_TRIGGER && hEntity->pev->model && STRING(hEntity->pev->model)[0] == '*')
 		return true;
 
+	return false;
+}
+
+bool CheckIfEntityAndHitboxesTouch(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const std::vector<StudioHitBox>& hitboxes, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
+{
+	// Check each hitbox of current weapon
+	for (auto hitbox : hitboxes)
+	{
+		// Prevent interaction with stuff through walls
+		// (simple check for non-important stuff like ammo, strict check using physics engine for important things like triggers, NPCs and buttons)
+		if (!IsReachable(pPlayer, hitbox, IsTriggerOrButton(hEntity)))
+			continue;
+
+		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult)
+			// TODO: Use VRPhysicsHelper to check if point is inside entity with proper raytracing
+			|| UTIL_IsPointInEntity(hEntity, hitbox.origin))
+		{
+			if (!intersectResult->hasresult)
+			{
+				intersectResult->hitpoint = hitbox.origin;
+				intersectResult->hitgroup = 0;
+				intersectResult->hasresult = true;
+			}
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -194,25 +220,35 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 	g_VRDebugBBoxDrawer.DrawBBoxes(hEntity);
 #endif
 
-	// Check each hitbox of current weapon
-	for (auto hitbox : controller.GetHitBoxes())
+	// first check controller hitboxes
+	if (CheckIfEntityAndHitboxesTouch(pPlayer, hEntity, controller.GetHitBoxes(), intersectResult))
 	{
-		// Prevent interaction with stuff through walls
-		// (simple check for non-important stuff like ammo, strict check using physics engine for important things like triggers, NPCs and buttons)
-		if (!IsReachable(pPlayer, hitbox, IsTriggerOrButton(hEntity)))
-			continue;
+		return true;
+	}
 
-		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult)
-			// TODO: Use VRPhysicsHelper to check if point is inside entity with proper raytracing
-			|| UTIL_IsPointInEntity(hEntity, hitbox.origin))
+	// then check hitboxes of dragged entity (if any)
+	if (controller.HasDraggedEntity())
+	{
+		EHANDLE<CBaseEntity> hDraggedEntity = controller.GetDraggedEntity();
+		if (IsDraggableEntityThatCanTouchStuff(hDraggedEntity))
 		{
-			if (!intersectResult->hasresult)
+			void* pmodel = GET_MODEL_PTR(hDraggedEntity->edict());
+			if (pmodel)
 			{
-				intersectResult->hitpoint = hitbox.origin;
-				intersectResult->hitgroup = 0;
-				intersectResult->hasresult = true;
+				int numhitboxes = GetNumHitboxes(pmodel);
+				if (numhitboxes > 0)
+				{
+					std::vector<StudioHitBox> draggedentityhitboxes;
+					draggedentityhitboxes.resize(numhitboxes);
+					if (GetHitboxesAndAttachments(hDraggedEntity->pev, pmodel, hDraggedEntity->pev->sequence, hDraggedEntity->pev->frame, draggedentityhitboxes.data(), nullptr))
+					{
+						if (CheckIfEntityAndHitboxesTouch(pPlayer, hEntity, draggedentityhitboxes, intersectResult))
+						{
+							return true;
+						}
+					}
+				}
 			}
-			return true;
 		}
 	}
 
@@ -221,6 +257,9 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 
 bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE<CBaseEntity> hEntity)
 {
+	if (!hEntity)
+		return false;
+
 	return FClassnameIs(hEntity->pev, "vr_easteregg")
 		|| FClassnameIs(hEntity->pev, "func_rot_button")
 		|| FClassnameIs(hEntity->pev, "momentary_rot_button")
@@ -228,6 +267,24 @@ bool VRControllerInteractionManager::IsDraggableEntity(EHANDLE<CBaseEntity> hEnt
 		|| FClassnameIs(hEntity->pev, "func_pushable")
 		|| (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f && FClassnameIs(hEntity->pev, "func_ladder"))
 		|| hEntity->IsDraggable();
+}
+
+bool VRControllerInteractionManager::IsDraggableEntityThatCanTouchStuff(EHANDLE<CBaseEntity> hEntity)
+{
+	if (!hEntity)
+		return false;
+
+	if (FClassnameIs(hEntity->pev, "func_rot_button")
+		|| FClassnameIs(hEntity->pev, "momentary_rot_button")
+		|| FClassnameIs(hEntity->pev, "func_door_rotating")
+		|| FClassnameIs(hEntity->pev, "func_pushable")
+		|| FClassnameIs(hEntity->pev, "func_ladder"))
+		return false;
+
+	if (hEntity->IsBSPModel() || !hEntity->pev->model || STRING(hEntity->pev->model)[0] == '*')
+		return false;
+
+	return FClassnameIs(hEntity->pev, "vr_easteregg") || hEntity->IsDraggable();
 }
 
 constexpr const int VR_DRAG_DISTANCE_TOLERANCE = 64;

@@ -557,6 +557,13 @@ private:
 // For precise position when rendering
 struct ControllerModelData
 {
+	struct DraggedEntData
+	{
+		int entindex{ 0 };
+		vec3_t origin_offset;
+		vec3_t angles_offset;
+	};
+
 	int body{ 0 };
 	int skin{ 0 };
 	int sequence{ 0 };
@@ -564,6 +571,9 @@ struct ControllerModelData
 	float framerate{ 0.f };
 	float animtime{ 0.f };
 	char modelname[1024];
+
+	bool hasDraggedEnt{ false };
+	DraggedEntData draggedEnt;
 };
 
 

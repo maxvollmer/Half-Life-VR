@@ -8,6 +8,7 @@ class CVRControllerModel;
 typedef int string_t;
 
 #include "weapons.h"
+#include "animation.h"
 
 // #define RENDER_DEBUG_HITBOXES
 
@@ -17,14 +18,6 @@ public:
 #ifndef CLIENT_DLL
 	~VRController();
 #endif
-
-	struct HitBox
-	{
-		Vector origin;
-		Vector angles;
-		Vector mins;
-		Vector maxs;
-	};
 
 	enum class TouchType
 	{
@@ -53,7 +46,7 @@ public:
 	inline int GetWeaponId() const { return m_weaponId; }
 	inline bool IsMirrored() const { return m_isMirrored; }
 	inline bool IsBlocked() const { return m_isBlocked; }
-	inline const std::vector<HitBox>& GetHitBoxes() const { return m_hitboxes; }
+	inline const std::vector<StudioHitBox>& GetHitBoxes() const { return m_hitboxes; }
 
 	bool IsDragging() const;
 	bool GetAttachment(size_t index, Vector& attachment) const;
@@ -68,6 +61,7 @@ public:
 	bool RemoveDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
 	bool IsDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
 	bool HasDraggedEntity() const;
+	inline EHANDLE<CBaseEntity> GetDraggedEntity() const { return m_draggedEntity; }
 
 	bool AddHitEntity(EHANDLE<CBaseEntity> hEntity) const;
 	bool RemoveHitEntity(EHANDLE<CBaseEntity> hEntity) const;
@@ -133,7 +127,7 @@ private:
 	mutable EHANDLE<CBaseEntity> m_draggedEntity;
 	mutable std::unique_ptr<DraggedEntityPositions> m_draggedEntityPositions;
 
-	std::vector<HitBox> m_hitboxes;
+	std::vector<StudioHitBox> m_hitboxes;
 	std::vector<Vector> m_attachments;
 	string_t m_hitboxModelName{ 0 };
 	int m_hitboxSequence{ 0 };

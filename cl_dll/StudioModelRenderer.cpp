@@ -1303,6 +1303,20 @@ void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controlle
 	m_isCurrentModelMirrored = false;
 }
 
+void UpdatePosIfDragged(cl_entity_t* ent)
+{
+	if (gVRRenderer.HasValidLeftController() && gHUD.m_leftControllerModelData.hasDraggedEnt && ent->index == gHUD.m_leftControllerModelData.draggedEnt.entindex)
+	{
+		ent->curstate.origin = ent->origin = gVRRenderer.GetLeftControllerPosition() + gHUD.m_leftControllerModelData.draggedEnt.origin_offset;
+		ent->curstate.angles = ent->angles = gVRRenderer.GetLeftControllerAngles() + gHUD.m_leftControllerModelData.draggedEnt.angles_offset;
+	}
+	else if (gVRRenderer.HasValidRightController() && gHUD.m_rightControllerModelData.hasDraggedEnt && ent->index == gHUD.m_rightControllerModelData.draggedEnt.entindex)
+	{
+		ent->curstate.origin = ent->origin = gVRRenderer.GetLeftControllerPosition() + gHUD.m_rightControllerModelData.draggedEnt.origin_offset;
+		ent->curstate.angles = ent->angles = gVRRenderer.GetLeftControllerAngles() + gHUD.m_rightControllerModelData.draggedEnt.angles_offset;
+	}
+}
+
 /*
 ====================
 StudioDrawModel
@@ -1323,6 +1337,9 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 	vec3_t dir;
 
 	m_pCurrentEntity = IEngineStudio.GetCurrentEntity();
+
+	// entities dragged by controllers in VR have their origin and angles updated here to avoid lag - Max Vollmer, 2020-03-03
+	UpdatePosIfDragged(m_pCurrentEntity);
 
 	GetTimes();
 	IEngineStudio.GetViewInfo(m_vRenderOrigin, m_vUp, m_vRight, m_vNormal);

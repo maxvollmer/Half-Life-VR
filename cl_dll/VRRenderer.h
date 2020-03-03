@@ -91,6 +91,14 @@ public:
 	Vector GetWeaponPosition();
 	Vector GetWeaponAngles();
 
+	bool HasValidLeftController();
+	Vector GetLeftControllerPosition();
+	Vector GetLeftControllerAngles();
+
+	bool HasValidRightController();
+	Vector GetRightControllerPosition();
+	Vector GetRightControllerAngles();
+
 	bool IsDeadInGame();
 	bool IsInGame();
 	struct cl_entity_s* SaveGetLocalPlayer();

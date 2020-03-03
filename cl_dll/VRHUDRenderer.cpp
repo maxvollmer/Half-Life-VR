@@ -574,6 +574,32 @@ Vector VRRenderer::GetWeaponAngles()
 	return vrHelper->GetWeaponAngles();
 }
 
+bool VRRenderer::HasValidLeftController()
+{
+	return vrHelper->HasValidLeftController();
+}
+Vector VRRenderer::GetLeftControllerPosition()
+{
+	return vrHelper->GetLeftControllerPosition();
+}
+Vector VRRenderer::GetLeftControllerAngles()
+{
+	return vrHelper->GetLeftControllerAngles();
+}
+
+bool VRRenderer::HasValidRightController()
+{
+	return vrHelper->HasValidRightController();
+}
+Vector VRRenderer::GetRightControllerPosition()
+{
+	return vrHelper->GetRightControllerPosition();
+}
+Vector VRRenderer::GetRightControllerAngles()
+{
+	return vrHelper->GetRightControllerAngles();
+}
+
 // For extern declarations in cl_util.h
 void InterceptSPR_Set(HSPRITE_VALVE hPic, int r, int g, int b)
 {

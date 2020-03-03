@@ -135,6 +135,20 @@ int CHud::MsgFunc_VRCtrlEnt(const char* pszName, int iSize, void* pbuf)
 	data.framerate = READ_FLOAT();
 	data.animtime = READ_FLOAT();
 
+	bool hasDraggedEntity = READ_BYTE() != 0;
+
+	if (hasDraggedEntity)
+	{
+		data.hasDraggedEnt = true;
+		data.draggedEnt.entindex = READ_SHORT();
+		data.draggedEnt.origin_offset = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
+		data.draggedEnt.angles_offset = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
+	}
+	else
+	{
+		data.hasDraggedEnt = false;
+	}
+
 	strncpy_s(data.modelname, READ_STRING(), 1024);
 
 	return 1;

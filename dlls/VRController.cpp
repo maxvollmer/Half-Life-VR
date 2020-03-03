@@ -139,8 +139,6 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 
 	ClearOutDeadEntities();
 
-	SendEntityDataToClient(pPlayer, id);
-
 #ifdef RENDER_DEBUG_BBOXES
 	g_VRDebugBBoxDrawer.DrawBBoxes(GetModel());
 #endif
@@ -186,6 +184,8 @@ void VRController::PostFrame()
 		WRITE_FLOAT(vibrateintensity);
 		MESSAGE_END();
 	}
+
+	SendEntityDataToClient(m_hPlayer, m_id);
 }
 
 void VRController::AddTouch(TouchType touch, float duration)
@@ -330,6 +330,20 @@ void VRController::SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID i
 	WRITE_FLOAT(GetModel()->pev->framerate);
 	WRITE_FLOAT(GetModel()->pev->animtime);
 
+	if (m_draggedEntity && m_draggedEntityPositions)
+	{
+		// Send dragged entity offsets to client
+		WRITE_BYTE(1);
+		WRITE_ENTITY(ENTINDEX(m_draggedEntity->edict()));
+		WRITE_PRECISE_VECTOR(GetPosition() - m_draggedEntity->pev->origin);
+		WRITE_PRECISE_VECTOR(GetAngles() - m_draggedEntity->pev->angles);
+	}
+	else
+	{
+		// no dragged entity
+		WRITE_BYTE(0);
+	}
+
 	WRITE_STRING(STRING(GetModel()->pev->model));
 
 	MESSAGE_END();
@@ -386,7 +400,7 @@ void VRController::UpdateHitBoxes()
 				continue;
 			}
 
-			m_hitboxes.push_back(HitBox{ studiohitbox.origin, studiohitbox.angles, studiohitbox.mins, studiohitbox.maxs });
+			m_hitboxes.push_back(StudioHitBox{ studiohitbox.origin, studiohitbox.angles, studiohitbox.mins, studiohitbox.maxs });
 			m_radius = max(m_radius, l1);
 			m_radius = max(m_radius, l2);
 		}
