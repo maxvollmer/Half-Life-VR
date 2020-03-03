@@ -60,6 +60,9 @@ typedef enum
 	TLK_WOUND,
 	TLK_MORTAL,
 
+	TLK_GIB_NEUTRAL,
+	TLK_GIB_BLOODY,
+
 	TLK_CGROUPS,  // MUST be last entry
 } TALKGROUPNAMES;
 
@@ -171,6 +174,9 @@ public:
 
 	EHANDLE<CBaseMonster> m_hTalkTarget;  // who to look at while talking
 	CUSTOM_SCHEDULES;
+
+	// react to player throwing stuff at me
+	virtual void GibAttack(EHANDLE<CBaseEntity> thrower, const Vector& pos, int bloodcolor) override;
 };
 
 

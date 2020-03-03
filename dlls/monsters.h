@@ -172,6 +172,7 @@ public:
 		if (m_pfnTouch) sticky = m_pfnTouch == &CGib::StickyGibTouch;
 		SetThink(nullptr);
 		SetTouch(nullptr);
+		m_hThrower = m_vrDragger;	// set this here. once the player let's go we check in StickyGibTouch or BounceGibTouch if we hit an NPC
 	}
 	virtual void HandleDragStop() override
 	{
@@ -182,6 +183,8 @@ public:
 
 private:
 	bool sticky = false;
+
+	EHANDLE<CBaseEntity> m_hThrower;
 };
 
 

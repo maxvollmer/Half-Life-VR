@@ -476,6 +476,9 @@ void CBarney::TalkInit()
 	m_szGrp[TLK_WOUND] = "BA_WOUND";
 	m_szGrp[TLK_MORTAL] = "BA_MORTAL";
 
+	m_szGrp[TLK_GIB_NEUTRAL] = "BA_GIB_NEUTRAL";
+	m_szGrp[TLK_GIB_BLOODY] = "BA_GIB_BLOODY";
+
 	// get voice for head - just one barney voice for now
 	m_voicePitch = 100;
 }

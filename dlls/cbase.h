@@ -670,7 +670,8 @@ public:
 	EHANDLE<CBaseEntity> m_vrDragger;
 	VRControllerID m_vrDragController{ VRControllerID::INVALID };
 
-	// std::unordered_map<EHANDLE<CBaseEntity>, std::unordered_set<VRControllerID>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_isBeingDragged;
+	// overriden by NPCs that react to the player throwing stuff at them
+	virtual void GibAttack(EHANDLE<CBaseEntity> thrower, const Vector& pos, int bloodcolor) {}
 };
 
 

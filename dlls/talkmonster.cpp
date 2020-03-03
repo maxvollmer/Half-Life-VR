@@ -1455,3 +1455,27 @@ void CTalkMonster::Precache(void)
 	if (m_iszUnUse)
 		m_szGrp[TLK_UNUSE] = STRING(m_iszUnUse);
 }
+
+
+// react to player throwing stuff at me
+void CTalkMonster::GibAttack(EHANDLE<CBaseEntity> thrower, const Vector& pos, int bloodcolor)
+{
+	if (!thrower || !thrower->IsPlayer())
+		return;
+
+	if (!FOkToSpeak())
+		return;
+
+	if ((bloodcolor == BLOOD_COLOR_RED || bloodcolor == BLOOD_COLOR_GREEN) && g_engfuncs.pfnRandomLong(0, 1) == 0)
+	{
+		PlaySentence(m_szGrp[TLK_GIB_BLOODY], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE);
+	}
+	else
+	{
+		PlaySentence(m_szGrp[TLK_GIB_NEUTRAL], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE);
+	}
+
+	MakeIdealYaw(thrower->pev->origin);
+	IdleHeadTurn(thrower->pev->origin);
+}
+

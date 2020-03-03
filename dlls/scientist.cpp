@@ -738,6 +738,9 @@ void CScientist::TalkInit()
 	m_szGrp[TLK_WOUND] = "SC_WOUND";
 	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
 
+	m_szGrp[TLK_GIB_NEUTRAL] = "SC_GIB_NEUTRAL";
+	m_szGrp[TLK_GIB_BLOODY] = "SC_GIB_BLOODY";
+
 	// get voice for head
 	switch (pev->body % 3)
 	{

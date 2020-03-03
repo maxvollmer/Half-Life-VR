@@ -719,6 +719,12 @@ void CGib::WaitTillLand(void)
 //
 void CGib::BounceGibTouch(CBaseEntity* pOther)
 {
+	if (m_hThrower)
+	{
+		pOther->GibAttack(m_hThrower, pev->origin, m_bloodColor);
+		m_hThrower = nullptr;
+	}
+
 	Vector vecSpot;
 	TraceResult tr;
 
@@ -767,6 +773,12 @@ void CGib::StickyGibTouch(CBaseEntity* pOther)
 
 	SetThink(&CGib::SUB_Remove);
 	pev->nextthink = gpGlobals->time + 10;
+
+	if (m_hThrower)
+	{
+		pOther->GibAttack(m_hThrower, pev->origin, m_bloodColor);
+		m_hThrower = nullptr;
+	}
 
 	if (!FClassnameIs(pOther->pev, "worldspawn"))
 	{
