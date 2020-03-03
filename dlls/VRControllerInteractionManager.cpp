@@ -287,7 +287,14 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
 
 			isDragging = isTouching && controller.IsDragging();
-			didDragChange = isDragging ? controller.AddDraggedEntity(hEntity) : controller.RemoveDraggedEntity(hEntity);
+			if (isDragging)
+			{
+				didDragChange = !controller.IsDraggedEntity(hEntity);
+			}
+			else
+			{
+				didDragChange = controller.RemoveDraggedEntity(hEntity);
+			}
 
 			if (isTouching)
 			{
@@ -316,7 +323,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 		}
 
 		// vibrate if touching something solid (but not if we are dragging it!)
-		if (isTouching && hEntity->m_vrDragger != pPlayer && hEntity->m_vrDragController != controller.GetID())
+		if (isTouching && hEntity->m_vrDragger != pPlayer && hEntity->m_vrDragController != controller.GetID() && !controller.IsDraggedEntity(hEntity))
 		{
 			if ((hEntity->pev->solid != SOLID_NOT && hEntity->pev->solid != SOLID_TRIGGER)
 				|| (hEntity->pev->solid == SOLID_TRIGGER && (hEntity->pev->movetype == MOVETYPE_TOSS || hEntity->pev->movetype == MOVETYPE_BOUNCE))
@@ -500,11 +507,14 @@ bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer* pPlayer, EHAND
 			{
 				if (interaction.dragging.didChange)
 				{
-					hEntity->m_vrDragger = pPlayer;
-					hEntity->m_vrDragController = controller.GetID();
+					if (controller.SetDraggedEntity(hEntity))
+					{
+						hEntity->m_vrDragger = pPlayer;
+						hEntity->m_vrDragController = controller.GetID();
+					}
 				}
 				// If we are the same player and controller that last started dragging the entity, update drag
-				if (hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
+				if (controller.IsDraggedEntity(hEntity) && hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
 				{
 					pWorldsSmallestCup->pev->origin = controller.GetGunPosition();
 					pWorldsSmallestCup->pev->angles = controller.GetAngles();
@@ -622,72 +632,30 @@ bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer* pPlayer,
 			{
 				if (interaction.dragging.didChange)
 				{
-					pRotatableEnt->ClearDraggingCancelled();
-				}
-				if (!pRotatableEnt->IsDraggingCancelled())
-				{
-					Vector pos;
-					if (controller.GetAttachment(VR_MUZZLE_ATTACHMENT, pos))
+					if (controller.SetDraggedEntity(hEntity))
 					{
-						pRotatableEnt->VRRotate(pPlayer, pos, interaction.dragging.didChange);
+						pRotatableEnt->ClearDraggingCancelled();
 					}
-					else
+				}
+				if (controller.IsDraggedEntity(hEntity))
+				{
+					if (!pRotatableEnt->IsDraggingCancelled())
 					{
-						pRotatableEnt->VRRotate(pPlayer, controller.GetPosition(), interaction.dragging.didChange);
+						Vector pos;
+						if (controller.GetAttachment(VR_MUZZLE_ATTACHMENT, pos))
+						{
+							pRotatableEnt->VRRotate(pPlayer, pos, interaction.dragging.didChange);
+						}
+						else
+						{
+							pRotatableEnt->VRRotate(pPlayer, controller.GetPosition(), interaction.dragging.didChange);
+						}
 					}
 				}
 			}
 			else if (interaction.dragging.didChange)
 			{
 				pRotatableEnt->VRStopRotate();
-			}
-		}
-		else
-		{
-			if (interaction.dragging.isSet && interaction.dragging.didChange)
-			{
-				ALERT(at_console, "Error: Found rotating button not of type VRRotatableEnt: %s %s\n", STRING(hEntity->pev->classname), STRING(hEntity->pev->targetname));
-			}
-			if (FClassnameIs(hEntity->pev, "func_rot_button"))
-			{
-				if (interaction.dragging.isSet)
-				{
-					if (interaction.dragging.didChange || FBitSet(hEntity->ObjectCaps(), FCAP_CONTINUOUS_USE))
-					{
-						if (FBitSet(hEntity->pev->spawnflags, SF_BUTTON_TOUCH_ONLY))  // touchable button
-						{
-							hEntity->Touch(pPlayer);
-						}
-						else
-						{
-							hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
-						}
-					}
-				}
-				return true;
-			}
-			else if (FClassnameIs(hEntity->pev, "momentary_rot_button"))
-			{
-				if (interaction.dragging.isSet)
-				{
-					hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
-				}
-				return true;
-			}
-			else if (FClassnameIs(hEntity->pev, "func_door_rotating"))
-			{
-				if (interaction.dragging.isSet && interaction.dragging.didChange)
-				{
-					if (FBitSet(hEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
-					{
-						hEntity->Use(pPlayer, pPlayer, USE_SET, 1);
-					}
-					else
-					{
-						hEntity->Touch(pPlayer);
-					}
-				}
-				return true;
 			}
 		}
 		return true;
@@ -820,7 +788,8 @@ bool VRControllerInteractionManager::HandlePushables(CBasePlayer* pPlayer, EHAND
 			Vector controllerDragStartPos;
 			Vector entityDragStartOrigin;
 			Vector dummy;
-			if (!onlyZ && interaction.dragging.isSet && controller.GetDraggedEntityPositions(hEntity, dummy, controllerDragStartPos, entityDragStartOrigin, dummy, dummy, dummy, dummy, dummy))
+
+			if (!onlyZ && interaction.dragging.isSet && controller.SetDraggedEntity(hEntity) && controller.GetDraggedEntityPositions(hEntity, dummy, controllerDragStartPos, entityDragStartOrigin, dummy, dummy, dummy, dummy, dummy))
 			{
 				pPushable->pev->gravity = 0;
 				targetPos = entityDragStartOrigin + controller.GetPosition() - controllerDragStartPos;
@@ -921,15 +890,18 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 		{
 			if (interaction.dragging.didChange)
 			{
-				hEntity->m_vrDragger = pPlayer;
-				hEntity->m_vrDragController = controller.GetID();
-				hEntity->SetThink(&CBaseEntity::DragStartThink);
-				hEntity->pev->nextthink = gpGlobals->time;
+				if (controller.SetDraggedEntity(hEntity))
+				{
+					hEntity->m_vrDragger = pPlayer;
+					hEntity->m_vrDragController = controller.GetID();
+					hEntity->SetThink(&CBaseEntity::DragStartThink);
+					hEntity->pev->nextthink = gpGlobals->time;
+				}
 			}
 			else
 			{
 				// If we are the same player and controller that last started dragging the entity, update drag
-				if (hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
+				if (controller.IsDraggedEntity(hEntity) && hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
 				{
 					hEntity->SetThink(&CBaseEntity::DragThink);
 					hEntity->pev->nextthink = gpGlobals->time;
@@ -965,7 +937,10 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, EHANDLE
 		{
 			if (interaction.dragging.isSet)
 			{
-				pPlayer->SetLadderGrabbingController(controller.GetID(), hEntity);
+				if (controller.SetDraggedEntity(hEntity))
+				{
+					pPlayer->SetLadderGrabbingController(controller.GetID(), hEntity);
+				}
 			}
 			else
 			{
@@ -982,7 +957,7 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, EHANDLE
 		}
 		else
 		{
-			if (interaction.dragging.isSet && pPlayer->IsLadderGrabbingController(controller.GetID(), hEntity))
+			if (interaction.dragging.isSet && controller.IsDraggedEntity(hEntity) && pPlayer->IsLadderGrabbingController(controller.GetID(), hEntity))
 			{
 				Vector controllerDragStartOffset;
 				Vector playerDragStartOrigin;
@@ -1166,7 +1141,7 @@ void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer* pPlay
 	if (isTouching)
 	{
 		pMonster->vr_flStopSignalTime = 0;
-		if (!IsWeapon(controller.GetWeaponId()) && (controller.IsDragging() || CheckShoulderTouch(pMonster, controller.GetPosition())))
+		if (!IsWeapon(controller.GetWeaponId()) && ((controller.IsDragging() && !controller.HasDraggedEntity()) || CheckShoulderTouch(pMonster, controller.GetPosition())))
 		{
 			pMonster->ClearConditions(bits_COND_CLIENT_PUSH);
 			if (dynamic_cast<CTalkMonster*>(pMonster)->CanFollow())  // Ignore if can't follow

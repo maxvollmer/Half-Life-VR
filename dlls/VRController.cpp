@@ -204,9 +204,11 @@ void VRController::ClearOutDeadEntities()
 		if (!it->Get()) it = m_hitEntities.erase(it);
 		else it++;
 
-	for (auto& it = m_draggedEntities.begin(); it != m_draggedEntities.end();)
-		if (!it->first.Get()) it = m_draggedEntities.erase(it);
-		else it++;
+	if (!m_draggedEntity)
+	{
+		m_draggedEntity = nullptr;
+		m_draggedEntityPositions.reset();
+	}
 }
 
 void VRController::UpdateLaserSpot()
@@ -458,29 +460,41 @@ bool VRController::RemoveTouchedEntity(EHANDLE<CBaseEntity> hEntity) const
 	return true;
 }
 
-bool VRController::AddDraggedEntity(EHANDLE<CBaseEntity> hEntity) const
+bool VRController::SetDraggedEntity(EHANDLE<CBaseEntity> hEntity) const
 {
-	if (m_draggedEntities.count(hEntity) != 0)
+	if (m_draggedEntity && m_draggedEntity != hEntity)
 		return false;
 
-	EHANDLE<CBaseEntity> hPlayer = m_hPlayer;  // need copy due to const
+	if (m_draggedEntity == hEntity)
+		return true;
 
-	m_draggedEntities.insert(std::pair<EHANDLE<CBaseEntity>, DraggedEntityPositions>(hEntity, DraggedEntityPositions{ GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin, GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin }));
+	EHANDLE<CBasePlayer> hPlayer = m_hPlayer;
+
+	m_draggedEntity = hEntity;
+	m_draggedEntityPositions.reset(new DraggedEntityPositions{ GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin, GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin });
+
 	return true;
 }
 
 bool VRController::RemoveDraggedEntity(EHANDLE<CBaseEntity> hEntity) const
 {
-	if (m_draggedEntities.count(hEntity) == 0)
+	if (m_draggedEntity != hEntity)
 		return false;
 
-	m_draggedEntities.erase(hEntity);
+	m_draggedEntity = nullptr;
+	m_draggedEntityPositions.reset();
+
 	return true;
 }
 
 bool VRController::IsDraggedEntity(EHANDLE<CBaseEntity> hEntity) const
 {
-	return m_draggedEntities.count(hEntity) != 0;
+	return m_draggedEntity == hEntity;
+}
+
+bool VRController::HasDraggedEntity() const
+{
+	return m_draggedEntity;
 }
 
 bool VRController::GetDraggedEntityPositions(EHANDLE<CBaseEntity> hEntity,
@@ -493,22 +507,20 @@ bool VRController::GetDraggedEntityPositions(EHANDLE<CBaseEntity> hEntity,
 	Vector& entityLastOrigin,
 	Vector& playerLastOrigin) const
 {
-	auto draggedEntityData = m_draggedEntities.find(hEntity);
-	if (draggedEntityData != m_draggedEntities.end())
+	if (m_draggedEntity == hEntity && m_draggedEntityPositions)
 	{
-		controllerStartOffset = draggedEntityData->second.controllerStartOffset;
-		controllerStartPos = draggedEntityData->second.controllerStartPos;
-		entityStartOrigin = draggedEntityData->second.entityStartOrigin;
-		playerStartOrigin = draggedEntityData->second.playerStartOrigin;
-		controllerLastOffset = draggedEntityData->second.controllerLastOffset;
-		controllerLastPos = draggedEntityData->second.controllerLastPos;
-		entityLastOrigin = draggedEntityData->second.entityLastOrigin;
-		playerLastOrigin = draggedEntityData->second.playerLastOrigin;
-		draggedEntityData->second.controllerLastOffset = GetOffset();
-		draggedEntityData->second.controllerLastPos = GetPosition();
-		draggedEntityData->second.entityLastOrigin = hEntity->pev->origin;
-		draggedEntityData->second.playerLastOrigin = EHANDLE<CBaseEntity>{ m_hPlayer }
-		->pev->origin;
+		controllerStartOffset = m_draggedEntityPositions->controllerStartOffset;
+		controllerStartPos = m_draggedEntityPositions->controllerStartPos;
+		entityStartOrigin = m_draggedEntityPositions->entityStartOrigin;
+		playerStartOrigin = m_draggedEntityPositions->playerStartOrigin;
+		controllerLastOffset = m_draggedEntityPositions->controllerLastOffset;
+		controllerLastPos = m_draggedEntityPositions->controllerLastPos;
+		entityLastOrigin = m_draggedEntityPositions->entityLastOrigin;
+		playerLastOrigin = m_draggedEntityPositions->playerLastOrigin;
+		m_draggedEntityPositions->controllerLastOffset = GetOffset();
+		m_draggedEntityPositions->controllerLastPos = GetPosition();
+		m_draggedEntityPositions->entityLastOrigin = hEntity->pev->origin;
+		m_draggedEntityPositions->playerLastOrigin = EHANDLE<CBaseEntity>{ m_hPlayer }->pev->origin;
 		return true;
 	}
 	return false;

@@ -64,9 +64,10 @@ public:
 	bool AddTouchedEntity(EHANDLE<CBaseEntity> hEntity) const;
 	bool RemoveTouchedEntity(EHANDLE<CBaseEntity> hEntity) const;
 
-	bool AddDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
+	bool SetDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
 	bool RemoveDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
 	bool IsDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
+	bool HasDraggedEntity() const;
 
 	bool AddHitEntity(EHANDLE<CBaseEntity> hEntity) const;
 	bool RemoveHitEntity(EHANDLE<CBaseEntity> hEntity) const;
@@ -126,8 +127,11 @@ private:
 	mutable EHANDLE<CLaserSpot> m_hLaserSpot;
 
 	mutable std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_touchedEntities;
-	mutable std::unordered_map<EHANDLE<CBaseEntity>, DraggedEntityPositions, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_draggedEntities;
+	//mutable std::unordered_map<EHANDLE<CBaseEntity>, DraggedEntityPositions, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_draggedEntities;
 	mutable std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_hitEntities;
+
+	mutable EHANDLE<CBaseEntity> m_draggedEntity;
+	mutable std::unique_ptr<DraggedEntityPositions> m_draggedEntityPositions;
 
 	std::vector<HitBox> m_hitboxes;
 	std::vector<Vector> m_attachments;
