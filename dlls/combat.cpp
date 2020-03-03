@@ -719,17 +719,21 @@ void CGib::WaitTillLand(void)
 //
 void CGib::BounceGibTouch(CBaseEntity* pOther)
 {
+	bool playsound = false;
+	float volume = 0.f;
+	int material = 0;
+
 	if (m_hThrower)
 	{
 		pOther->GibAttack(m_hThrower, pev->origin, m_bloodColor);
 		m_hThrower = nullptr;
+
+		// play a satisfying sound if we throw a gib
+		float vel = pev->velocity.Length();
+		volume = min(1.f, vel / 450.f);
+		material = (pOther->BloodColor() == DONT_BLEED) ? m_material : Materials::matFlesh;
+		playsound = true;
 	}
-
-	Vector vecSpot;
-	TraceResult tr;
-
-	//if ( RANDOM_LONG(0,1) )
-	//	return;// don't bleed everytime
 
 	if (pev->flags & FL_ONGROUND)
 	{
@@ -743,7 +747,9 @@ void CGib::BounceGibTouch(CBaseEntity* pOther)
 	{
 		if (g_Language != LANGUAGE_GERMAN && m_cBloodDecals > 0 && m_bloodColor != DONT_BLEED)
 		{
-			vecSpot = pev->origin + Vector(0, 0, 8);  //move up a bit, and trace down.
+			Vector vecSpot = pev->origin + Vector(0, 0, 8);  //move up a bit, and trace down.
+
+			TraceResult tr;
 			UTIL_TraceLine(vecSpot, vecSpot + Vector(0, 0, -24), ignore_monsters, ENT(pev), &tr);
 
 			UTIL_BloodDecalTrace(&tr, m_bloodColor);
@@ -751,15 +757,21 @@ void CGib::BounceGibTouch(CBaseEntity* pOther)
 			m_cBloodDecals--;
 		}
 
-		if (m_material != matNone && RANDOM_LONG(0, 2) == 0)
+		if (!playsound)
 		{
-			float volume = 0.f;
-			float zvel = fabs(pev->velocity.z);
-
-			volume = 0.8 * min(1.0, ((float)zvel) / 450.0);
-
-			CBreakable::MaterialSoundRandom(edict(), (Materials)m_material, volume);
+			if (m_material != matNone && RANDOM_LONG(0, 2) == 0)
+			{
+				float zvel = fabs(pev->velocity.z);
+				volume = 0.8 * min(1.f, zvel / 450.f);
+				material = m_material;
+				playsound = true;
+			}
 		}
+	}
+
+	if (playsound && material != matNone)
+	{
+		CBreakable::MaterialSoundRandom(edict(), static_cast<Materials>(material), volume);
 	}
 }
 
@@ -778,6 +790,12 @@ void CGib::StickyGibTouch(CBaseEntity* pOther)
 	{
 		pOther->GibAttack(m_hThrower, pev->origin, m_bloodColor);
 		m_hThrower = nullptr;
+
+		// play a satisfying sound if we throw a gib
+		float vel = pev->velocity.Length();
+		float volume = min(1.f, vel / 450.f);
+		int material = (pOther->BloodColor() == DONT_BLEED) ? m_material : Materials::matFlesh;
+		CBreakable::MaterialSoundRandom(edict(), static_cast<Materials>(material), volume);
 	}
 
 	if (!FClassnameIs(pOther->pev, "worldspawn"))

@@ -1466,7 +1466,7 @@ void CTalkMonster::GibAttack(EHANDLE<CBaseEntity> thrower, const Vector& pos, in
 	if (!FOkToSpeak())
 		return;
 
-	if ((bloodcolor == BLOOD_COLOR_RED || bloodcolor == BLOOD_COLOR_GREEN) && g_engfuncs.pfnRandomLong(0, 1) == 0)
+	if ((bloodcolor == BLOOD_COLOR_RED || bloodcolor == BLOOD_COLOR_GREEN) && RANDOM_LONG(0, 1) == 0)
 	{
 		PlaySentence(m_szGrp[TLK_GIB_BLOODY], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE);
 	}
