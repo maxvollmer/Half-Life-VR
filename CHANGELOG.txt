@@ -2,6 +2,8 @@
  Mod:
   * Fixed some bugs with height offsets
   * Fixed HUD train speed display
+  * Fixed stuff lagging behind controller when being picked up
+  * Stuff being held (debris, gibs etc) now interacts with buttons and other things
   * Implemented VR controls for usable trains
   * Added option to automatically stop trains when falling/jumping off
   * Implemented haptic feedback
