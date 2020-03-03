@@ -396,7 +396,11 @@ private:
 	bool m_vrIsUsingTankWithVRControllers{ false };
 	Vector m_vrTankVRControllerAngles;
 
-	bool CheckVRTRainButtonTouched(const Vector& buttonLeftPos, const Vector& buttonRightPos);
+	// filled with current item if virtual backpack is used
+	EHANDLE<CBasePlayerItem> m_vrhBackPackItem;
+
+	// set to true when player grabs backpack area
+	bool m_vrHasGrabbedBackPack = false;
 
 // public VR members:
 public:
@@ -417,6 +421,8 @@ public:
 // private VR methods:
 private:
 
+	bool CheckVRTRainButtonTouched(const Vector& buttonLeftPos, const Vector& buttonRightPos);
+
 	void GetTeleporterPose(Vector& position, Vector& dir);
 	void GetFlashlightPose(Vector& position, Vector& dir);
 
@@ -428,6 +434,12 @@ private:
 	// Called by PostThink()
 	void VRUseOrUnuseTank();
 	bool IsTankVRControlled(EHANDLE<CBaseEntity> hTank);
+
+	// virtual backpack, called by PostThink()
+	void VRDoTheBackPackThing();
+	void VRSwitchBackPackItem();
+	bool IsInBackPackArea(const Vector& pos);
+	bool IsInNonBackPackArea(const Vector& pos);
 
 	VRGroundEntityHandler& GetGroundEntityHandler()
 	{

@@ -2242,6 +2242,7 @@ void CItemSoda::Spawn()
 
 	CGib::Spawn("models/can.mdl");
 
+	SET_MODEL(ENT(pev), STRING(pev->model));
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 	pev->classname = MAKE_STRING("item_sodacan");
 

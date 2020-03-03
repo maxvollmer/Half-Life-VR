@@ -3073,7 +3073,7 @@ void PM_Jump(void)
 		// Adjust for super long jump module
 		// UNDONE -- note this should be based on forward angles, not current velocity.
 		if (cansuperjump &&
-			(pmove->cmd.buttons & IN_DUCK | X_IN_VRDUCK) &&
+			(pmove->cmd.buttons & (IN_DUCK | X_IN_VRDUCK)) &&
 			(pmove->flDuckTime > 0) &&
 			Length(pmove->velocity) > 50)
 		{
