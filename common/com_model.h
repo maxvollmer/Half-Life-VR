@@ -31,7 +31,7 @@
 #define STUDIO_EVENTS 2
 
 #define MAX_CLIENTS 32
-#define MAX_EDICTS  900
+#define MAX_EDICTS  3072
 
 #define SURF_PLANEBACK 2  // plane should be negated // Added from bspfile.h - Max Vollmer, 2018-02-04
 

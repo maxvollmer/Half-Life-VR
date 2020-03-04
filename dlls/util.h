@@ -108,70 +108,31 @@ typedef int BOOL;
 //
 // Conversion among the three types of "entity", including identity-conversions.
 //
-inline edict_t* ENT(const entvars_t* pev)
-{
-	if (!pev)
-		return nullptr;
+edict_t* ENT(const entvars_t* pev);
+edict_t* ENT(edict_t* pent);
+edict_t* ENT(EOFFSET eoffset);
+EOFFSET OFFSET(EOFFSET eoffset);
+EOFFSET OFFSET(const edict_t* pent);
+EOFFSET OFFSET(entvars_t* pev);
+entvars_t* VARS(entvars_t* pev);
+entvars_t* VARS(edict_t* pent);
+entvars_t* VARS(EOFFSET eoffset);
+int ENTINDEX(edict_t* pEdict);
+edict_t* INDEXENT(int iEdictNum);
 
-	if (!pev->pContainingEntity || &pev->pContainingEntity->v != pev)
-	{
-		const_cast<entvars_t*>(pev)->pContainingEntity = (*g_engfuncs.pfnFindEntityByVars)(pev);
-	}
+// Testing the three types of "entity" for nullity
+#define eoNullEntity 0
+BOOL FNullEnt(EOFFSET eoffset);
+BOOL FNullEnt(const edict_t* pent);
+BOOL FNullEnt(entvars_t* pev);
+BOOL FWorldEnt(const edict_t* pent);
+BOOL FWorldEnt(entvars_t* pev);
 
-	return pev->pContainingEntity;
-}
-inline edict_t* ENT(edict_t* pent)
-{
-	return pent;
-}
-inline edict_t* ENT(EOFFSET eoffset) { return (*g_engfuncs.pfnPEntityOfEntOffset)(eoffset); }
-inline EOFFSET OFFSET(EOFFSET eoffset) { return eoffset; }
-inline EOFFSET OFFSET(const edict_t* pent)
-{
-#if _DEBUG
-	if (!pent)
-		ALERT(at_error, "Bad ent in OFFSET()\n");
-#endif
-	return (*g_engfuncs.pfnEntOffsetOfPEntity)(pent);
-}
-inline EOFFSET OFFSET(entvars_t* pev)
-{
-#if _DEBUG
-	if (!pev)
-		ALERT(at_error, "Bad pev in OFFSET()\n");
-#endif
-	return OFFSET(ENT(pev));
-}
-inline entvars_t* VARS(entvars_t* pev) { return pev; }
 
-inline entvars_t* VARS(edict_t* pent)
-{
-	if (!pent)
-		return nullptr;
-
-	return &pent->v;
-}
-
-inline entvars_t* VARS(EOFFSET eoffset) { return VARS(ENT(eoffset)); }
-inline int ENTINDEX(edict_t* pEdict) { return (*g_engfuncs.pfnIndexOfEdict)(pEdict); }
-inline edict_t* INDEXENT(int iEdictNum) { return (*g_engfuncs.pfnPEntityOfEntIndex)(iEdictNum); }
 inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, entvars_t* ent)
 {
 	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ENT(ent));
 }
-
-// Testing the three types of "entity" for nullity
-#define eoNullEntity 0
-inline BOOL FNullEnt(EOFFSET eoffset)
-{
-	return eoffset == eoNullEntity;
-}
-
-inline BOOL FNullEnt(const edict_t* pent) { return pent == nullptr || pent->free || pent->v.pContainingEntity != pent || FNullEnt(OFFSET(pent)); }
-inline BOOL FNullEnt(entvars_t* pev) { return pev == nullptr || FNullEnt(ENT(pev)); }
-
-inline BOOL FWorldEnt(const edict_t* pent) { return pent != nullptr && !pent->free && pent->v.pContainingEntity == pent && OFFSET(pent) == 0; }
-inline BOOL FWorldEnt(entvars_t* pev) { return pev != nullptr && FWorldEnt(ENT(pev)); }
 
 // Testing strings for nullity
 #define iStringNull 0

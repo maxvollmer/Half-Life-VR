@@ -1090,3 +1090,100 @@ void _DLLEXPORT HUD_PostRunCmd(struct local_state_s* from, struct local_state_s*
 	// All games can use FOV state
 	g_lastFOV = to->client.fov;
 }
+
+
+
+
+// Client side implementations of entity functions for proper debugging (no more inline) - Max Vollmer, 2020-03-04
+
+edict_t* ENT(const entvars_t* pev)
+{
+	if (!pev)
+		return nullptr;
+
+	return pev->pContainingEntity;
+}
+
+edict_t* ENT(edict_t* pent)
+{
+	return pent;
+}
+
+edict_t* ENT(EOFFSET eoffset)
+{
+	// not implemented on client side
+	return nullptr;
+}
+
+EOFFSET OFFSET(EOFFSET eoffset)
+{
+	return eoffset;
+}
+
+EOFFSET OFFSET(const edict_t* pent)
+{
+	// not implemented on client side
+	return 0;
+}
+
+EOFFSET OFFSET(entvars_t* pev)
+{
+	// not implemented on client side
+	return 0;
+}
+
+entvars_t* VARS(entvars_t* pev)
+{
+	return pev;
+}
+
+entvars_t* VARS(edict_t* pent)
+{
+	if (FNullEnt(pent) && !FWorldEnt(pent))
+		return nullptr;
+
+	return &pent->v;
+}
+
+entvars_t* VARS(EOFFSET eoffset)
+{
+	// not implemented on client side
+	return nullptr;
+}
+
+int ENTINDEX(edict_t* pEdict)
+{
+	// not implemented on client side
+	return 0;
+}
+
+edict_t* INDEXENT(int iEdictNum)
+{
+	// not implemented on client side
+	return nullptr;
+}
+
+BOOL FNullEnt(EOFFSET eoffset)
+{
+	return TRUE;
+}
+
+BOOL FNullEnt(const edict_t* pent)
+{
+	return pent == nullptr || pent->free || pent->v.pContainingEntity != pent;
+}
+
+BOOL FNullEnt(entvars_t* pev)
+{
+	return pev == nullptr || FNullEnt(ENT(pev));
+}
+
+BOOL FWorldEnt(const edict_t* pent)
+{
+	return FALSE;
+}
+
+BOOL FWorldEnt(entvars_t* pev)
+{
+	return FALSE;
+}
