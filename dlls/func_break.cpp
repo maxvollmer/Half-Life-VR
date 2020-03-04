@@ -294,52 +294,60 @@ void CBreakable::Precache(void)
 	{
 	case matWood:
 		pGibName = "models/woodgibs.mdl";
+		m_numGibBodies = 3;
 
 		PRECACHE_SOUND("debris/bustcrate1.wav");
 		PRECACHE_SOUND("debris/bustcrate2.wav");
 		break;
 	case matFlesh:
 		pGibName = "models/fleshgibs.mdl";
+		m_numGibBodies = 4;
 
 		PRECACHE_SOUND("debris/bustflesh1.wav");
 		PRECACHE_SOUND("debris/bustflesh2.wav");
 		break;
 	case matComputer:
-		PRECACHE_SOUND("buttons/spark5.wav");
-		PRECACHE_SOUND("buttons/spark6.wav");
 		pGibName = "models/computergibs.mdl";
+		m_numGibBodies = 15;
 
 		PRECACHE_SOUND("debris/bustmetal1.wav");
 		PRECACHE_SOUND("debris/bustmetal2.wav");
+		PRECACHE_SOUND("buttons/spark5.wav");
+		PRECACHE_SOUND("buttons/spark6.wav");
 		break;
 
 	case matUnbreakableGlass:
 	case matGlass:
 		pGibName = "models/glassgibs.mdl";
+		m_numGibBodies = 8;
 
 		PRECACHE_SOUND("debris/bustglass1.wav");
 		PRECACHE_SOUND("debris/bustglass2.wav");
 		break;
 	case matMetal:
 		pGibName = "models/metalplategibs.mdl";
+		m_numGibBodies = 13;
 
 		PRECACHE_SOUND("debris/bustmetal1.wav");
 		PRECACHE_SOUND("debris/bustmetal2.wav");
 		break;
 	case matCinderBlock:
 		pGibName = "models/cindergibs.mdl";
+		m_numGibBodies = 9;
 
 		PRECACHE_SOUND("debris/bustconcrete1.wav");
 		PRECACHE_SOUND("debris/bustconcrete2.wav");
 		break;
 	case matRocks:
 		pGibName = "models/rockgibs.mdl";
+		m_numGibBodies = 3;
 
 		PRECACHE_SOUND("debris/bustconcrete1.wav");
 		PRECACHE_SOUND("debris/bustconcrete2.wav");
 		break;
 	case matCeilingTile:
 		pGibName = "models/ceilinggibs.mdl";
+		m_numGibBodies = 4;
 
 		PRECACHE_SOUND("debris/bustceiling.wav");
 		break;
@@ -350,7 +358,14 @@ void CBreakable::Precache(void)
 	MaterialSoundPrecache(m_Material);
 
 	if (m_iszGibModel)
+	{
 		pGibName = STRING(m_iszGibModel);
+		// TODO: m_numGibBodies???
+	}
+	else if (pGibName)
+	{
+		m_iszGibModel = ALLOC_STRING(pGibName);
+	}
 
 	if (pGibName)
 		m_idShard = PRECACHE_MODEL(pGibName);
@@ -695,7 +710,7 @@ void CBreakable::Die(void)
 	}
 
 	vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
-	VRSpawnBreakModels(vecSpot, pev->size, vecVelocity, 10, 2.5f, 0, STRING(m_iszGibModel), m_idShard, m_Material, cFlag);
+	VRSpawnBreakModels(vecSpot, pev->size, vecVelocity, 10, 2.5f, 0, STRING(m_iszGibModel), m_idShard, m_Material, 0, m_numGibBodies, cFlag);
 
 	// !!! HACK  This should work!
 	// Build a box above the entity that looks like an 8 pixel high sheet
@@ -742,7 +757,18 @@ void CBreakable::Die(void)
 	}
 }
 
-void CBreakable::VRSpawnBreakModels(const Vector& pos, const Vector& size, Vector direction, float random, float life, int count, const char* model, int modelIndex, int material, char flags)
+void CBreakable::VRSpawnBreakModels(
+	const Vector& pos,
+	const Vector& size,
+	Vector direction,
+	float random,
+	float life,
+	int count,
+	const char* model,
+	int modelIndex,
+	int material,
+	int body, int numBodies,
+	char flags)
 {
 	// boring classic client-side temp entities that disappear quickly and can't be picked up
 	if (CVAR_GET_FLOAT("vr_enable_interactive_debris") == 0.f)
@@ -765,7 +791,7 @@ void CBreakable::VRSpawnBreakModels(const Vector& pos, const Vector& size, Vecto
 		return;
 	}
 
-	if (!model)
+	if (!model || strlen(model) == 0)
 		return;
 
 	if (count <= 0)
@@ -804,8 +830,9 @@ void CBreakable::VRSpawnBreakModels(const Vector& pos, const Vector& size, Vecto
 		CGib* pGib = GetClassPtr<CGib>(nullptr);
 		pGib->Spawn(model);
 
-		int numBodies = GetNumBodies(GET_MODEL_PTR(pGib->edict()));
-		if (numBodies > 1)
+		if (body > 0)
+			pGib->pev->body = body;
+		else if (numBodies > 0)
 			pGib->pev->body = g_engfuncs.pfnRandomLong(0, numBodies - 1);
 
 		if ((type == BREAK_GLASS) || (flags & BREAK_TRANS))
@@ -832,6 +859,7 @@ void CBreakable::VRSpawnBreakModels(const Vector& pos, const Vector& size, Vecto
 		pGib->pev->velocity.x = direction.x + g_engfuncs.pfnRandomFloat(-random, random);
 		pGib->pev->velocity.y = direction.y + g_engfuncs.pfnRandomFloat(-random, random);
 		pGib->pev->velocity.z = direction.z + g_engfuncs.pfnRandomFloat(0, random);
+		pGib->pev->velocity = pGib->pev->velocity * 100;
 
 		if (g_engfuncs.pfnRandomLong(0, 255) < 200)
 		{
@@ -852,6 +880,8 @@ void CBreakable::VRSpawnBreakModels(const Vector& pos, const Vector& size, Vecto
 			WRITE_BYTE(224); WRITE_BYTE(224); WRITE_BYTE(255); WRITE_BYTE(255);	// rgba
 			MESSAGE_END();
 		}
+
+		pGib->m_bloodColor = (m_Material == matFlesh) ? BLOOD_COLOR_RED : DONT_BLEED;
 
 		UTIL_SetSize(pGib->pev, Vector(0, 0, 0), Vector(0, 0, 0));
 		pGib->LimitVelocity();

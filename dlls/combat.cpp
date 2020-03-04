@@ -179,6 +179,9 @@ void CGib::SpawnHeadGib(entvars_t* pevVictim)
 
 void CGib::SpawnGibs(entvars_t* pevVictim, const char* model, int cGibs, int minBody, int maxBody)
 {
+	if (!model || strlen(model) == 0)
+		return;
+
 	int cSplat = 0;
 
 	for (cSplat = 0; cSplat < cGibs; cSplat++)
@@ -820,6 +823,8 @@ void CGib::StickyGibTouch(CBaseEntity* pOther)
 //
 void CGib::Spawn(const char* szGibModel)
 {
+	ASSERT(szGibModel && strlen(szGibModel) > 0);
+
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->friction = 0.55;  // deading the bounce a bit
 
