@@ -1065,6 +1065,7 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 			});
 	}
 
+	std::shared_ptr<Sound> firstSound;
 	std::shared_ptr<Sound> previousSound;
 	for (auto& soundInfo : soundInfos)
 	{
@@ -1087,17 +1088,25 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 			sound->delayed_by = soundInfo.delayed_by;
 			sound->end_offset = soundInfo.end_offset;
 
+			if (!firstSound)
+			{
+				firstSound = sound;
+			}
 			if (previousSound)
 			{
 				previousSound->nextSound = sound;
 			}
 			else
 			{
-				g_allSounds[EntnumChannelSoundname{ entnum, entchannel, sfx->name }] = *sound;
+				previousSound = sound;
 			}
 
 			previousSound = sound;
 		}
+	}
+	if (firstSound)
+	{
+		g_allSounds[EntnumChannelSoundname{ entnum, entchannel, sfx->name }] = *firstSound;
 	}
 
 	// Start with closed mouth if playing new audio
@@ -1327,13 +1336,17 @@ void VRSoundUpdate(bool paused, double frametime)
 				{
 				}
 
-				if (sound.nextSound && !IsPlaying(sound.fmodChannel))
+				bool hasNextSound = !!sound.nextSound;
+				bool isPlaying = IsPlaying(sound.fmodChannel);
+
+				if (hasNextSound && !isPlaying)
 				{
 					if (sound.fmodChannel)
 						sound.fmodChannel->stop();
 					if (sound.fmodSound)
 						sound.fmodSound->release();
-					sound = *sound.nextSound;
+					Sound copy = *sound.nextSound;
+					sound = copy;
 				}
 			}
 			else
