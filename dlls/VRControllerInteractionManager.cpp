@@ -206,9 +206,14 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 	CBaseEntity* pWorld = CBaseEntity::InstanceOrWorld(INDEXENT(0));
 	if (hEntity != pWorld)
 	{
+		float entityRadius = (std::max)(hEntity->pev->mins.Length(), hEntity->pev->maxs.Length());
+		if (entityRadius == 0.f)
+		{
+			// assume this is a gib and use sensible radius
+			entityRadius = 16.f;
+		}
 		Vector entityCenter = hEntity->pev->origin + (hEntity->pev->maxs + hEntity->pev->mins) * 0.5f;
 		float distance = (controller.GetPosition() - entityCenter).Length();
-		float entityRadius = (std::max)(hEntity->pev->mins.Length(), hEntity->pev->maxs.Length());
 		if (distance > (controller.GetRadius() + entityRadius))
 		{
 			return false;

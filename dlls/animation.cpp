@@ -1082,7 +1082,7 @@ namespace
 
 		mstudiobone_t* pbones = reinterpret_cast<mstudiobone_t*>(reinterpret_cast<byte*>(pstudiohdr) + pstudiohdr->boneindex);
 
-		if (pev->scale > 0)
+		if (pev->scale != 0.f)
 		{
 			for (int j = 0; j < 3; j++)
 			{
@@ -1174,21 +1174,32 @@ int GetHitboxesAndAttachments(entvars_t* pev, void* pmodel, int sequence, float 
 
 	for (int i = 0; i < pstudiohdr->numhitboxes; i++)
 	{
-		VectorScale(pbbox[i].bbmin, pev->scale, hitboxes[i].mins);
-		VectorScale(pbbox[i].bbmax, pev->scale, hitboxes[i].maxs);
-		VectorCopy(bonetransforms[pbbox[i].bone].origin, hitboxes[i].origin);
-		VectorCopy(bonetransforms[pbbox[i].bone].angles, hitboxes[i].angles);
-		hitboxes[i].hitgroup = pbbox[i].group;
+		auto& bbox = pbbox[i];
+		auto& hitbox = hitboxes[i];
+
+		if (pev->scale != 0.f)
+		{
+			VectorScale(bbox.bbmin, pev->scale, hitbox.mins);
+			VectorScale(bbox.bbmax, pev->scale, hitbox.maxs);
+		}
+		else
+		{
+			VectorCopy(bbox.bbmin, hitbox.mins);
+			VectorCopy(bbox.bbmax, hitbox.maxs);
+		}
+		VectorCopy(bonetransforms[bbox.bone].origin, hitbox.origin);
+		VectorCopy(bonetransforms[bbox.bone].angles, hitbox.angles);
+		hitbox.hitgroup = bbox.group;
 
 		// Some models have hitboxes with size 0. Fix that here
 		vec3_t size;
-		VectorSubtract(hitboxes[i].maxs, hitboxes[i].mins, size);
+		VectorSubtract(hitbox.maxs, hitbox.mins, size);
 		for (int j = 0; j < 3; j++)
 		{
-			if (fabs(size[0]) < 0.1f)
+			if (fabs(size[j]) < 0.1f)
 			{
-				pbbox[i].bbmin[j] = -4.f;
-				pbbox[i].bbmax[j] = 4.f;
+				hitbox.mins[j] = -4.f;
+				hitbox.maxs[j] = 4.f;
 			}
 		}
 	}
