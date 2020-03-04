@@ -1,3 +1,10 @@
+0.7.0-beta
+ Mod:
+  * Fixed playback of long sentences
+
+HLVRConfig:
+  * No changes
+
 0.6.9-beta - 2020-03-04
  Mod:
   * Fixed crash introduced in 0.6.8-beta due to gibs being spawned without valid model
