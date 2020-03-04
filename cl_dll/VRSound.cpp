@@ -727,8 +727,15 @@ std::string ParseVOX(const std::string& sound, float* next_delayed_by)
 	}
 }
 
-std::vector<SoundInfo> ParseSentence(const std::string& sentenceName, float initial_pitch, float initial_volume)
+std::vector<SoundInfo> ParseSentence(const std::string& sentenceName, float initial_pitch, float initial_volume, bool forcefemalesciaudio)
 {
+	// for some reason sometimes there are still female scientists speaking with a male audio file
+	// we brutefix this here when playing audio
+	if (forcefemalesciaudio && sentenceName.find("SC_") == 0)
+	{
+		return ParseSentence("FS_" + sentenceName.substr(3), initial_pitch, initial_volume, false);
+	}
+
 	auto parsedSentence = g_parsedSentences.find(sentenceName);
 	if (parsedSentence != g_parsedSentences.end())
 		return parsedSentence->second;
@@ -926,6 +933,20 @@ void MyStopAllSounds(qboolean clear)
 	g_soundtime = 0.0;
 }
 
+// for some reason sometimes there are still female scientists speaking with a male audio file
+// we brutefix this here when playing audio
+bool IsFemaleScientist(int entnum)
+{
+	cl_entity_t* pent = gEngfuncs.GetEntityByIndex(entnum);
+	if (!pent)
+		return false;
+
+	if (!pent->model)
+		return false;
+
+	return std::string_view{ pent->model->name }.find("/femalesci.mdl") != std::string_view::npos;
+}
+
 void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float fvol, float attenuation, int flags, int pitch, bool isStaticChannel)
 {
 	if (!fmodSystem)
@@ -1044,7 +1065,7 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 
 	if (sfx->name[0] == '!')
 	{
-		soundInfos = ParseSentence(sfx->name + 1, fpitch, fvol);
+		soundInfos = ParseSentence(sfx->name + 1, fpitch, fvol, IsFemaleScientist(entnum));
 	}
 	else
 	{
