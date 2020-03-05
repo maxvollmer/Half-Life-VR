@@ -115,6 +115,7 @@ class CBaseEntity;
 class CBaseMonster;
 class CBasePlayerItem;
 class CSquadMonster;
+class CTalkMonster;
 
 
 #define SF_NORESPAWN (1 << 30)  // !!!set this bit on guns and stuff that should never respawn.

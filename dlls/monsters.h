@@ -110,7 +110,11 @@ BOOL FBoxVisible(entvars_t* pevLooker, entvars_t* pevTarget, Vector& vecTargetOr
 #define bits_MEMORY_CUSTOM2       (1 << 30)  // Monster-specific memory
 #define bits_MEMORY_CUSTOM1       (1 << 31)  // Monster-specific memory
 
-#define bits_MEMORY_GUNPOINT (bits_MEMORY_CUSTOM1)  // For when a player in VR holds a barney or scientist at gunpoint
+// For when a player in VR holds a barney or scientist at gunpoint
+#define bits_MEMORY_GUNPOINT_ONE (bits_MEMORY_CUSTOM1)
+#define bits_MEMORY_GUNPOINT_TWO (bits_MEMORY_CUSTOM2)
+#define bits_MEMORY_GUNPOINT_THREE (bits_MEMORY_CUSTOM3)
+#define bits_MEMORY_GUNPOINT_ATTACK (bits_MEMORY_CUSTOM4)
 
 // trigger conditions for scripted AI
 // these MUST match the CHOICES interface in halflife.fgd for the base monster

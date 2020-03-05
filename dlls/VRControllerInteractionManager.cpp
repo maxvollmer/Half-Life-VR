@@ -38,8 +38,8 @@ static VRDebugBBoxDrawer g_VRDebugBBoxDrawer;
 
 constexpr const int VR_MAX_ANGRY_GUNPOINT_DIST = 256;
 constexpr const int VR_INITIAL_ANGRY_GUNPOINT_TIME = 2;
-constexpr const int VR_MIN_ANGRY_GUNPOINT_TIME = 3;
-constexpr const int VR_MAX_ANGRY_GUNPOINT_TIME = 7;
+constexpr const int VR_MIN_ANGRY_GUNPOINT_TIME = 2;
+constexpr const int VR_MAX_ANGRY_GUNPOINT_TIME = 5;
 
 constexpr const int VR_SHOULDER_TOUCH_TIME = 1.5f;
 constexpr const int VR_STOP_SIGNAL_TIME = 1;
@@ -1080,7 +1080,7 @@ bool VRControllerInteractionManager::HandleTossables(CBasePlayer* pPlayer, EHAND
 bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage)
 {
 	// Special handling of barneys and scientists that don't hate us (yet)
-	EHANDLE<CBaseMonster> hMonster = hEntity;
+	EHANDLE<CTalkMonster> hMonster = hEntity;
 	if (hMonster && (FClassnameIs(hMonster->pev, "monster_barney") || FClassnameIs(hMonster->pev, "monster_scientist")) && !hMonster->HasMemory(bits_MEMORY_PROVOKED))
 	{
 		if (isTouching)
@@ -1121,12 +1121,26 @@ bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer* pPlayer, 
 	return false;
 }
 
-void VRControllerInteractionManager::GetAngryIfAtGunpoint(CBasePlayer* pPlayer, CBaseMonster* pMonster, const VRController& controller)
+void VRControllerInteractionManager::GetAngryIfAtGunpoint(CBasePlayer* pPlayer, CTalkMonster* pMonster, const VRController& controller)
 {
-	Vector weaponForward;
-	UTIL_MakeVectorsPrivate(pPlayer->GetWeaponViewAngles(), weaponForward, nullptr, nullptr);
+	float vr_npc_gunpoint = CVAR_GET_FLOAT("vr_npc_gunpoint");
+	if (vr_npc_gunpoint == 0.f)
+		return;
 
-	if (!pMonster->m_hEnemy && controller.IsValid() && IsWeaponWithRange(controller.GetWeaponId()) && (controller.GetPosition() - pMonster->pev->origin).Length() < VR_MAX_ANGRY_GUNPOINT_DIST && UTIL_IsFacing(controller.GetPosition(), pPlayer->GetWeaponViewAngles(), pMonster->pev->origin) && UTIL_IsFacing(pMonster->pev->origin, pMonster->pev->angles.ToViewAngles(), controller.GetPosition()) && pMonster->HasClearSight(controller.GetPosition()) && UTIL_CheckTraceIntersectsEntity(controller.GetPosition(), controller.GetPosition() + (weaponForward * VR_MAX_ANGRY_GUNPOINT_DIST), pMonster))
+	// if we already hate the player, no need to react to guns
+	if (pMonster->HasMemory(bits_MEMORY_PROVOKED) || pMonster->HasMemory(bits_MEMORY_GUNPOINT_ATTACK))
+		return;
+
+	if (!pMonster->m_hEnemy
+		&& controller.GetID() == VRControllerID::WEAPON
+		&& controller.IsValid()
+		&& IsWeaponWithRange(controller.GetWeaponId())
+		&& controller.GetWeaponId() != WEAPON_HORNETGUN	// hornetgun is too weird to react to
+		&& (pPlayer->GetGunPosition() - pMonster->EyePosition()).Length() < VR_MAX_ANGRY_GUNPOINT_DIST
+		&& UTIL_IsFacing(pPlayer->GetGunPosition(), pPlayer->GetWeaponViewAngles(), pMonster->pev->origin)
+		&& UTIL_IsFacing(pMonster->pev->origin, pMonster->pev->angles.ToViewAngles(), pPlayer->GetGunPosition())
+		&& pMonster->HasClearSight(pPlayer->GetGunPosition())
+		&& UTIL_CheckTraceIntersectsEntity(pPlayer->GetGunPosition(), pPlayer->GetGunPosition() + (pPlayer->GetAutoaimVector() * VR_MAX_ANGRY_GUNPOINT_DIST), pMonster))
 	{
 		pMonster->vr_flStopSignalTime = 0;
 		pMonster->vr_flShoulderTouchTime = 0;
@@ -1134,70 +1148,79 @@ void VRControllerInteractionManager::GetAngryIfAtGunpoint(CBasePlayer* pPlayer, 
 		{
 			pMonster->vr_flGunPointTime = gpGlobals->time + VR_INITIAL_ANGRY_GUNPOINT_TIME;
 		}
-		else if (gpGlobals->time > pMonster->vr_flGunPointTime)
+		else if (gpGlobals->time > pMonster->vr_flGunPointTime && pMonster->FOkToSpeak())
 		{
-			if (pMonster->HasMemory(bits_MEMORY_GUNPOINT) && pMonster->HasMemory(bits_MEMORY_SUSPICIOUS))
+			pMonster->MakeIdealYaw(pPlayer->pev->origin);
+			if (pMonster->HasMemory(bits_MEMORY_GUNPOINT_THREE) && vr_npc_gunpoint > 1.f)
 			{
 				if (FClassnameIs(pMonster->pev, "monster_barney"))
 				{
-					pMonster->PlaySentence("BA_GNPNT_PSSD", 4, VOL_NORM, ATTN_NORM);
+					pMonster->PlaySentence("BA_GUN_ATT", 4, VOL_NORM, ATTN_NORM);
+				}
+				else
+				{
+					pMonster->PlaySentence("SC_GUN_RUN", 4, VOL_NORM, ATTN_NORM);
+				}
+				pMonster->StopFollowing(TRUE);
+				pMonster->Remember(bits_MEMORY_PROVOKED);
+				pMonster->Remember(bits_MEMORY_GUNPOINT_ATTACK);
+			}
+			else if (pMonster->HasMemory(bits_MEMORY_GUNPOINT_TWO))
+			{
+				if (FClassnameIs(pMonster->pev, "monster_barney"))
+				{
+					pMonster->PlaySentence("BA_GUN_THR", 4, VOL_NORM, ATTN_NORM);
 					pMonster->m_MonsterState = MONSTERSTATE_COMBAT;  // Make barneys draw their gun and point at player
 				}
 				else
 				{
-					pMonster->PlaySentence("SC_GNPNT_PSSD", 4, VOL_NORM, ATTN_NORM);
+					pMonster->PlaySentence("SC_GUN_THR", 4, VOL_NORM, ATTN_NORM);
 				}
-				pMonster->StopFollowing(TRUE);
-
-				// TODO: Add a difficulty setting to make allies go provoked from having a gun pointed at them
-				// if (setting...)
-				// {
-				// pMonster->Remember(bits_MEMORY_PROVOKED);
-				// }
+				pMonster->Remember(bits_MEMORY_SUSPICIOUS);
+				pMonster->Remember(bits_MEMORY_GUNPOINT_THREE);
 			}
-			else
+			else if (pMonster->HasMemory(bits_MEMORY_GUNPOINT_ONE))
 			{
-				if (pMonster->HasMemory(bits_MEMORY_GUNPOINT))
+				if (FClassnameIs(pMonster->pev, "monster_barney"))
 				{
-					if (FClassnameIs(pMonster->pev, "monster_barney"))
-					{
-						pMonster->PlaySentence("BA_GNPNT_SND", 4, VOL_NORM, ATTN_NORM);
-					}
-					else
-					{
-						pMonster->PlaySentence("SC_GNPNT_SND", 4, VOL_NORM, ATTN_NORM);
-					}
-					pMonster->Remember(bits_MEMORY_SUSPICIOUS);
+					pMonster->PlaySentence("BA_GUN_TWO", 4, VOL_NORM, ATTN_NORM);
 				}
 				else
 				{
-					if (FClassnameIs(pMonster->pev, "monster_barney"))
-					{
-						pMonster->PlaySentence("BA_GNPNT_FRST", 4, VOL_NORM, ATTN_NORM);
-					}
-					else
-					{
-						pMonster->PlaySentence("SC_GNPNT_FRST", 4, VOL_NORM, ATTN_NORM);
-					}
-					pMonster->Remember(bits_MEMORY_GUNPOINT);
+					pMonster->PlaySentence("SC_GUN_TWO", 4, VOL_NORM, ATTN_NORM);
 				}
+				pMonster->Remember(bits_MEMORY_GUNPOINT_TWO);
+			}
+			else
+			{
+				if (FClassnameIs(pMonster->pev, "monster_barney"))
+				{
+					pMonster->PlaySentence("BA_GUN_ONE", 4, VOL_NORM, ATTN_NORM);
+				}
+				else
+				{
+					pMonster->PlaySentence("SC_GUN_ONE", 4, VOL_NORM, ATTN_NORM);
+				}
+				pMonster->Remember(bits_MEMORY_GUNPOINT_ONE);
 			}
 			pMonster->vr_flGunPointTime = gpGlobals->time + RANDOM_FLOAT(VR_MIN_ANGRY_GUNPOINT_TIME, VR_MAX_ANGRY_GUNPOINT_TIME);
 		}
 	}
 	else
 	{
-		if (!pMonster->m_hEnemy && pMonster->HasMemory(bits_MEMORY_GUNPOINT) && FClassnameIs(pMonster->pev, "monster_barney"))
+		if (!pMonster->m_hEnemy && pMonster->HasMemory(bits_MEMORY_GUNPOINT_THREE) && FClassnameIs(pMonster->pev, "monster_barney"))
 		{
-			// TODO: Make barney put away his gun
 			pMonster->m_MonsterState = MONSTERSTATE_ALERT;
+			pMonster->ChangeSchedule(pMonster->ScheduleFromName("Barney Disarm"));
 		}
 		pMonster->vr_flGunPointTime = 0;
-		pMonster->Forget(bits_MEMORY_GUNPOINT);
+		pMonster->Forget(bits_MEMORY_GUNPOINT_ONE);
+		pMonster->Forget(bits_MEMORY_GUNPOINT_TWO);
+		pMonster->Forget(bits_MEMORY_GUNPOINT_THREE);
 	}
 }
 
-void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer* pPlayer, CBaseMonster* pMonster, const VRController& controller, bool isTouching)
+void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer* pPlayer, CTalkMonster* pMonster, const VRController& controller, bool isTouching)
 {
 	// Check if we're touching the shoulder for 1 second (follow me!)
 	if (isTouching)
@@ -1206,7 +1229,7 @@ void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer* pPlay
 		if (!IsWeapon(controller.GetWeaponId()) && ((controller.IsDragging() && !controller.HasDraggedEntity()) || CheckShoulderTouch(pMonster, controller.GetPosition())))
 		{
 			pMonster->ClearConditions(bits_COND_CLIENT_PUSH);
-			if (dynamic_cast<CTalkMonster*>(pMonster)->CanFollow())  // Ignore if can't follow
+			if (pMonster->CanFollow())  // Ignore if can't follow
 			{
 				if (pMonster->vr_flShoulderTouchTime == 0)
 				{
@@ -1214,7 +1237,7 @@ void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer* pPlay
 				}
 				else if ((gpGlobals->time - pMonster->vr_flShoulderTouchTime) > VR_SHOULDER_TOUCH_TIME)
 				{
-					dynamic_cast<CTalkMonster*>(pMonster)->FollowerUse(pPlayer, pPlayer, USE_ON, 1.f);
+					pMonster->FollowerUse(pPlayer, pPlayer, USE_ON, 1.f);
 					pMonster->vr_flShoulderTouchTime = 0;
 				}
 			}
@@ -1241,7 +1264,7 @@ void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer* pPlay
 		}
 		else if ((gpGlobals->time - pMonster->vr_flStopSignalTime) > VR_STOP_SIGNAL_TIME)
 		{
-			dynamic_cast<CTalkMonster*>(pMonster)->StopFollowing(TRUE);
+			pMonster->StopFollowing(TRUE);
 			pMonster->vr_flStopSignalTime = 0;
 		}
 	}

@@ -142,6 +142,21 @@ Schedule_t slBarneyEnemyDraw[] =
 	 0,
 	 "Barney Enemy Draw"} };
 
+// Disarm barney if gun was drawn due to player pointing gun
+Task_t tlBarneyDisarm[] =
+{
+	{TASK_STOP_MOVING, 0},
+	{TASK_PLAY_SEQUENCE, (float)ACT_DISARM},
+};
+
+Schedule_t slBarneyDisarm[] =
+{
+	{tlBarneyDisarm,
+	 (int)std::size(tlBarneyDisarm),
+	 0,
+	 0,
+	 "Barney Disarm"} };
+
 Task_t tlBaFaceTarget[] =
 {
 	{TASK_SET_ACTIVITY, (float)ACT_IDLE},
@@ -200,6 +215,7 @@ DEFINE_CUSTOM_SCHEDULES(CBarney) {
 		slBarneyEnemyDraw,
 		slBaFaceTarget,
 		slIdleBaStand,
+		slBarneyDisarm,
 };
 
 
@@ -617,7 +633,7 @@ Schedule_t* CBarney::GetScheduleOfType(int Type)
 	switch (Type)
 	{
 	case SCHED_ARM_WEAPON:
-		if (m_hEnemy != nullptr || (HasMemory(bits_MEMORY_GUNPOINT) && HasMemory(bits_MEMORY_SUSPICIOUS)))
+		if (m_hEnemy != nullptr || (HasMemory(bits_MEMORY_GUNPOINT_THREE) && HasMemory(bits_MEMORY_SUSPICIOUS)))
 		{
 			// face enemy, then draw.
 			return slBarneyEnemyDraw;

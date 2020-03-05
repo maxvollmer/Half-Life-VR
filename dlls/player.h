@@ -96,6 +96,7 @@ enum sbar_data
 class CSprite;
 class CBeam;
 class CFuncTank;
+class CTalkMonster;
 
 #include <map>
 

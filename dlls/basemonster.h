@@ -16,6 +16,8 @@
 #ifndef BASEMONSTER_H
 #define BASEMONSTER_H
 
+class CTalkMonster;
+
 //
 // generic Monster
 //
