@@ -4,6 +4,7 @@
   * Fixed NPCs not reacting to being held at gunpoint
   * Fixed grab behaving like a "magnet"
   * Fixed interaction with triggers that aren't simple boxes
+  * Fixed held objects not being rendered correctly
   * HD textures now respect value of gl_texturemode
   * Classic mode sets gl_texturemode to GL_NEAREST for that crisp clear pixelated 1998 look
 
