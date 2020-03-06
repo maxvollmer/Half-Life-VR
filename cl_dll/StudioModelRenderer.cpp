@@ -1166,31 +1166,44 @@ void CStudioModelRenderer::StudioMergeBones(model_t* m_pSubModel)
 	}
 }
 
-void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controllerModelData, const Vector& origin, const Vector& angles, bool mirrored, int* out_numattachments, float out_attachments[4][3])
+bool CStudioModelRenderer::DrawVREntity(
+	const char* modelname,
+	const Vector& origin, const Vector& angles,
+	int body, int skin, float scale,
+	float frame, float framerate,
+	float animtime, int sequence,
+	int effects,
+	int rendermode, int renderamt, int renderfx, color24 rendercolor,
+	bool isController, bool mirrored)
 {
-	if (strlen(controllerModelData.modelname) == 0)
-		return;
+	if (strlen(modelname) == 0)
+		return false;
 
 	m_pCurrentEntity = IEngineStudio.GetViewEntity();
 	if (!m_pCurrentEntity)
-		return;
+		return false;
 
-	auto model = IEngineStudio.Mod_ForName(controllerModelData.modelname, 0);
+	auto model = IEngineStudio.Mod_ForName(modelname, 0);
 	if (!model)
-		return;
+		return false;
 
 	IEngineStudio.SetRenderModel(m_pCurrentEntity->model = m_pRenderModel = model);
-	m_pCurrentEntity->curstate.body = controllerModelData.body;
-	m_pCurrentEntity->curstate.skin = controllerModelData.skin;
-	m_pCurrentEntity->curstate.frame = controllerModelData.frame;
-	m_pCurrentEntity->curstate.framerate = controllerModelData.framerate;
-	m_pCurrentEntity->curstate.animtime = controllerModelData.animtime;
-	m_pCurrentEntity->curstate.sequence = controllerModelData.sequence;
-	m_pCurrentEntity->curstate.origin = origin;
-	m_pCurrentEntity->curstate.angles = angles;
+	m_pCurrentEntity->baseline.body = m_pCurrentEntity->prevstate.body = m_pCurrentEntity->curstate.body = body;
+	m_pCurrentEntity->baseline.skin = m_pCurrentEntity->prevstate.skin = m_pCurrentEntity->curstate.skin = skin;
+	m_pCurrentEntity->baseline.scale = m_pCurrentEntity->prevstate.scale = m_pCurrentEntity->curstate.scale = scale;
+	m_pCurrentEntity->baseline.frame = m_pCurrentEntity->prevstate.frame = m_pCurrentEntity->curstate.frame = frame;
+	m_pCurrentEntity->baseline.framerate = m_pCurrentEntity->prevstate.framerate = m_pCurrentEntity->curstate.framerate = framerate;
+	m_pCurrentEntity->baseline.animtime = m_pCurrentEntity->prevstate.animtime = m_pCurrentEntity->curstate.animtime = animtime;
+	m_pCurrentEntity->baseline.sequence = m_pCurrentEntity->prevstate.sequence = m_pCurrentEntity->curstate.sequence = sequence;
+	m_pCurrentEntity->baseline.origin = m_pCurrentEntity->prevstate.origin = m_pCurrentEntity->curstate.origin = origin;
+	m_pCurrentEntity->baseline.angles = m_pCurrentEntity->prevstate.angles = m_pCurrentEntity->curstate.angles = angles;
+	m_pCurrentEntity->baseline.effects = m_pCurrentEntity->prevstate.effects = m_pCurrentEntity->curstate.effects = effects;
+	m_pCurrentEntity->baseline.rendermode = m_pCurrentEntity->prevstate.rendermode = m_pCurrentEntity->curstate.rendermode = rendermode;
+	m_pCurrentEntity->baseline.renderamt = m_pCurrentEntity->prevstate.renderamt = m_pCurrentEntity->curstate.renderamt = renderamt;
+	m_pCurrentEntity->baseline.renderfx = m_pCurrentEntity->prevstate.renderfx = m_pCurrentEntity->curstate.renderfx = renderfx;
+	m_pCurrentEntity->baseline.rendercolor = m_pCurrentEntity->prevstate.rendercolor = m_pCurrentEntity->curstate.rendercolor = rendercolor;
 	m_pCurrentEntity->origin = origin;
 	m_pCurrentEntity->angles = angles;
-	m_pCurrentEntity->curstate.effects = 0;
 	m_pCurrentEntity->curstate.movetype = MOVETYPE_NOCLIP;
 
 	m_isCurrentModelMirrored = mirrored;
@@ -1199,11 +1212,11 @@ void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controlle
 	IEngineStudio.GetViewInfo(m_vRenderOrigin, m_vUp, m_vRight, m_vNormal);
 	IEngineStudio.GetAliasScale(&m_fSoftwareXScale, &m_fSoftwareYScale);
 
-	m_pStudioHeader = Mod_Extradata("StudioDrawModel", m_pCurrentEntity, m_pRenderModel);
+	m_pStudioHeader = Mod_Extradata("StudioDrawVRHand", m_pCurrentEntity, m_pRenderModel);
 	if (!m_pStudioHeader)
 	{
 		m_isCurrentModelMirrored = false;
-		return;
+		return false;
 	}
 
 	IEngineStudio.StudioSetHeader(m_pStudioHeader);
@@ -1212,7 +1225,7 @@ void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controlle
 	StudioSetUpTransform(0);
 
 	float fingerCurl[Finger_Count];
-	if (gVRRenderer.IsHandModel(controllerModelData.modelname) && gVRRenderer.HasSkeletalDataForHand(mirrored, fingerCurl))
+	if (isController && gVRRenderer.IsHandModel(modelname) && gVRRenderer.HasSkeletalDataForHand(mirrored, fingerCurl))
 	{
 		// Use skeletal data from OpenVR to animate curled fingers on hand models:
 		// 1. Call StudioSetupBones twice: Once with initial frame of IDLE (flat hand), and once with initial frame of FULLGRAB_END (fist)
@@ -1267,14 +1280,6 @@ void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controlle
 	}
 	StudioSaveBones();
 
-	int numattachments = min(4, m_pStudioHeader->numattachments);
-	mstudioattachment_t* pattachment = reinterpret_cast<mstudioattachment_t*>(reinterpret_cast<byte*>(m_pStudioHeader) + m_pStudioHeader->attachmentindex);
-	for (int i = 0; i < numattachments; i++)
-	{
-		VectorTransform(pattachment[i].org, (*m_plighttransform)[pattachment[i].bone], out_attachments[i]);
-	}
-	*out_numattachments = numattachments;
-
 	if (m_isCurrentModelMirrored)
 		gVRRenderer.ReverseCullface();
 	else
@@ -1299,22 +1304,48 @@ void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controlle
 
 	gVRRenderer.RestoreCullface();
 
-
 	m_isCurrentModelMirrored = false;
+
+	return true;
 }
 
-void UpdatePosIfDragged(cl_entity_t* ent)
+void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controllerModelData, const Vector& origin, const Vector& angles, bool mirrored, int* out_numattachments, float out_attachments[4][3])
 {
-	if (gVRRenderer.HasValidLeftController() && gHUD.m_leftControllerModelData.hasDraggedEnt && ent->index == gHUD.m_leftControllerModelData.draggedEnt.entindex)
+	if (DrawVREntity(controllerModelData.controller.modelname,
+		origin, angles,
+		controllerModelData.controller.body, controllerModelData.controller.skin, 1.f,
+		controllerModelData.controller.frame, controllerModelData.controller.framerate,
+		controllerModelData.controller.animtime, controllerModelData.controller.sequence,
+		controllerModelData.controller.effects,
+		controllerModelData.controller.rendermode, controllerModelData.controller.renderamt, controllerModelData.controller.renderfx, controllerModelData.controller.rendercolor,
+		true, mirrored))
 	{
-		ent->curstate.origin = ent->origin = gVRRenderer.GetLeftControllerPosition() + gHUD.m_leftControllerModelData.draggedEnt.origin_offset;
-		ent->curstate.angles = ent->angles = gVRRenderer.GetLeftControllerAngles() + gHUD.m_leftControllerModelData.draggedEnt.angles_offset;
+		int numattachments = min(4, m_pStudioHeader->numattachments);
+		mstudioattachment_t* pattachment = reinterpret_cast<mstudioattachment_t*>(reinterpret_cast<byte*>(m_pStudioHeader) + m_pStudioHeader->attachmentindex);
+		for (int i = 0; i < numattachments; i++)
+		{
+			VectorTransform(pattachment[i].org, (*m_plighttransform)[pattachment[i].bone], out_attachments[i]);
+		}
+		*out_numattachments = numattachments;
 	}
-	else if (gVRRenderer.HasValidRightController() && gHUD.m_rightControllerModelData.hasDraggedEnt && ent->index == gHUD.m_rightControllerModelData.draggedEnt.entindex)
+
+	if (controllerModelData.hasDraggedEnt)
 	{
-		ent->curstate.origin = ent->origin = gVRRenderer.GetLeftControllerPosition() + gHUD.m_rightControllerModelData.draggedEnt.origin_offset;
-		ent->curstate.angles = ent->angles = gVRRenderer.GetLeftControllerAngles() + gHUD.m_rightControllerModelData.draggedEnt.angles_offset;
+		DrawVREntity(controllerModelData.draggedEnt.modelname,
+			origin, angles,
+			controllerModelData.draggedEnt.body, controllerModelData.draggedEnt.skin, controllerModelData.draggedEnt.scale,
+			controllerModelData.draggedEnt.frame, controllerModelData.draggedEnt.framerate,
+			controllerModelData.draggedEnt.animtime, controllerModelData.draggedEnt.sequence,
+			controllerModelData.draggedEnt.effects,
+			controllerModelData.draggedEnt.rendermode, controllerModelData.draggedEnt.renderamt, controllerModelData.draggedEnt.renderfx, controllerModelData.draggedEnt.rendercolor,
+			false, false);
 	}
+}
+
+bool IsDraggedEntity(cl_entity_t* ent)
+{
+	return (gVRRenderer.HasValidLeftController() && gHUD.m_leftControllerModelData.hasDraggedEnt && ent->index == gHUD.m_leftControllerModelData.draggedEntIndex)
+		|| (gVRRenderer.HasValidRightController() && gHUD.m_rightControllerModelData.hasDraggedEnt && ent->index == gHUD.m_rightControllerModelData.draggedEntIndex);
 }
 
 /*
@@ -1337,9 +1368,6 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 	vec3_t dir;
 
 	m_pCurrentEntity = IEngineStudio.GetCurrentEntity();
-
-	// entities dragged by controllers in VR have their origin and angles updated here to avoid lag - Max Vollmer, 2020-03-03
-	UpdatePosIfDragged(m_pCurrentEntity);
 
 	GetTimes();
 	IEngineStudio.GetViewInfo(m_vRenderOrigin, m_vUp, m_vRight, m_vNormal);
@@ -1459,7 +1487,11 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 
 		IEngineStudio.StudioSetRemapColors(m_nTopColor, m_nBottomColor);
 
-		StudioRenderModel();
+		// entities dragged by controllers in VR are drawn in StudioDrawVRHand - Max Vollmer, 2020-03-06
+		if (!IsDraggedEntity(m_pCurrentEntity))
+		{
+			StudioRenderModel();
+		}
 
 		gVRRenderer.RestoreCullface();
 	}

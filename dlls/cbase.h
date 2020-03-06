@@ -193,7 +193,8 @@ public:
 	template <class ENTITY2>
 	bool operator==(EHANDLE<ENTITY2>& other)
 	{
-		return m_pent == other.m_pent && m_serialnumber == other.m_serialnumber;
+		EHANDLE<ENTITY> copy = other;
+		return copy && m_pent == copy.m_pent && m_serialnumber == copy.m_serialnumber;
 	}
 
 	template <class ENTITY2>
@@ -670,6 +671,8 @@ public:
 
 	EHANDLE<CBaseEntity> m_vrDragger;
 	VRControllerID m_vrDragController{ VRControllerID::INVALID };
+	Vector m_vrDragOriginOffset;
+	Vector m_vrDragAnglesOffset;
 
 	// overriden by NPCs that react to the player throwing stuff at them
 	virtual void GibAttack(EHANDLE<CBaseEntity> thrower, const Vector& pos, int bloodcolor) {}

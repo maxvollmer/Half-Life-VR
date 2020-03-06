@@ -33,6 +33,18 @@ public:
 	virtual int StudioDrawPlayer(int flags, struct entity_state_s* pplayer);
 	virtual void StudioDrawVRHand(const ControllerModelData& controllerModelData, const Vector& origin, const Vector& angles, bool mirrored, int* out_numattachments, float out_attachments[4][3]);
 
+private:
+
+	bool DrawVREntity(
+		const char* modelname,
+		const Vector& origin, const Vector& angles,
+		int body, int skin, float scale,
+		float frame, float framerate,
+		float animtime, int sequence,
+		int effects,
+		int rendermode, int renderamt, int renderfx, color24 rendercolor,
+		bool isController, bool mirrored);
+
 public:
 	// Local interfaces
 	//

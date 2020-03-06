@@ -258,11 +258,27 @@ void VRRenderer::RenderVRHandsAndHUDAndStuff()
 
 	m_numLeftControllerAttachments = 0;
 	if (vrHelper->HasValidLeftController())
-		g_StudioRenderer.StudioDrawVRHand(gHUD.m_leftControllerModelData, vrHelper->GetLeftControllerPosition(), vrHelper->GetLeftControllerAngles(), true, &m_numLeftControllerAttachments, m_leftControllerAttachments);
+	{
+		g_StudioRenderer.StudioDrawVRHand(
+			gHUD.m_leftControllerModelData,
+			vrHelper->GetLeftControllerPosition(),
+			vrHelper->GetLeftControllerAngles(),
+			true,
+			&m_numLeftControllerAttachments,
+			m_leftControllerAttachments);
+	}
 
 	m_numRightControllerAttachments = 0;
 	if (vrHelper->HasValidRightController())
-		g_StudioRenderer.StudioDrawVRHand(gHUD.m_rightControllerModelData, vrHelper->GetRightControllerPosition(), vrHelper->GetRightControllerAngles(), false, &m_numRightControllerAttachments, m_rightControllerAttachments);
+	{
+		g_StudioRenderer.StudioDrawVRHand(
+			gHUD.m_rightControllerModelData,
+			vrHelper->GetRightControllerPosition(),
+			vrHelper->GetRightControllerAngles(),
+			false,
+			&m_numRightControllerAttachments,
+			m_rightControllerAttachments);
+	}
 
 	if (CVAR_GET_FLOAT("vr_debug_controllers") != 0.f)
 	{

@@ -126,30 +126,47 @@ int CHud::MsgFunc_VRCtrlEnt(const char* pszName, int iSize, void* pbuf)
 
 	bool isLeftHand = READ_BYTE() != 0;
 	auto& data = isLeftHand ? m_leftControllerModelData : m_rightControllerModelData;
-	data.body = READ_BYTE();
-	data.skin = READ_BYTE();
+	data.controller.body = READ_BYTE();
+	data.controller.skin = READ_BYTE();
 
-	data.sequence = READ_LONG();
+	data.controller.sequence = READ_LONG();
+	data.controller.frame = READ_FLOAT();
+	data.controller.framerate = READ_FLOAT();
+	data.controller.animtime = READ_FLOAT();
 
-	data.frame = READ_FLOAT();
-	data.framerate = READ_FLOAT();
-	data.animtime = READ_FLOAT();
+	strncpy_s(data.controller.modelname, READ_STRING(), 1024);
+
+	data.hasDraggedEnt = false;
 
 	bool hasDraggedEntity = READ_BYTE() != 0;
-
 	if (hasDraggedEntity)
 	{
-		data.hasDraggedEnt = true;
-		data.draggedEnt.entindex = READ_SHORT();
-		data.draggedEnt.origin_offset = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
-		data.draggedEnt.angles_offset = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
-	}
-	else
-	{
-		data.hasDraggedEnt = false;
-	}
+		data.draggedEntIndex = READ_SHORT();
 
-	strncpy_s(data.modelname, READ_STRING(), 1024);
+		data.draggedEntOriginOffset = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
+		data.draggedEntAnglesOffset = Vector{ READ_FLOAT(), READ_FLOAT(), READ_FLOAT() };
+
+		data.draggedEnt.body = READ_BYTE();
+		data.draggedEnt.skin = READ_BYTE();
+		data.draggedEnt.scale = READ_FLOAT();
+
+		data.draggedEnt.sequence = READ_LONG();
+		data.draggedEnt.frame = READ_FLOAT();
+		data.draggedEnt.framerate = READ_FLOAT();
+		data.draggedEnt.animtime = READ_FLOAT();
+
+		data.draggedEnt.effects = READ_LONG();
+		data.draggedEnt.rendermode = READ_BYTE() & 0xFF;
+		data.draggedEnt.renderamt = READ_BYTE() & 0xFF;
+		data.draggedEnt.renderfx = READ_BYTE() & 0xFF;
+		data.draggedEnt.rendercolor.r = READ_BYTE() & 0xFF;
+		data.draggedEnt.rendercolor.g = READ_BYTE() & 0xFF;
+		data.draggedEnt.rendercolor.b = READ_BYTE() & 0xFF;
+
+		strncpy_s(data.draggedEnt.modelname, READ_STRING(), 1024);
+
+		data.hasDraggedEnt = true;
+	}
 
 	return 1;
 }

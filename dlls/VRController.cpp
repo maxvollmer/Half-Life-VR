@@ -196,6 +196,16 @@ void VRController::PostFrame()
 		MESSAGE_END();
 	}
 
+	// did i lose my dragged entity?
+	if (m_draggedEntity)
+	{
+		if (m_draggedEntity->m_vrDragController != m_id || m_draggedEntity->m_vrDragger != m_hPlayer)
+		{
+			m_draggedEntity = nullptr;
+			m_draggedEntityPositions.reset();
+		}
+	}
+
 	SendEntityDataToClient(m_hPlayer, m_id);
 }
 
@@ -336,26 +346,47 @@ void VRController::SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID i
 	WRITE_BYTE(GetModel()->pev->skin);
 
 	WRITE_LONG(GetModel()->pev->sequence);
-
 	WRITE_FLOAT(GetModel()->pev->frame);
 	WRITE_FLOAT(GetModel()->pev->framerate);
 	WRITE_FLOAT(GetModel()->pev->animtime);
+
+	WRITE_STRING(STRING(GetModel()->pev->model));
 
 	if (m_draggedEntity && m_draggedEntityPositions)
 	{
 		// Send dragged entity offsets to client
 		WRITE_BYTE(1);
+
 		WRITE_ENTITY(ENTINDEX(m_draggedEntity->edict()));
-		WRITE_PRECISE_VECTOR(GetPosition() - m_draggedEntity->pev->origin);
-		WRITE_PRECISE_VECTOR(GetAngles() - m_draggedEntity->pev->angles);
+
+		WRITE_PRECISE_VECTOR(m_draggedEntity->m_vrDragOriginOffset);
+		WRITE_PRECISE_VECTOR(m_draggedEntity->m_vrDragAnglesOffset);
+
+		WRITE_BYTE(m_draggedEntity->pev->body);
+		WRITE_BYTE(m_draggedEntity->pev->skin);
+		WRITE_FLOAT(m_draggedEntity->pev->scale);
+
+		WRITE_LONG(m_draggedEntity->pev->sequence);
+		WRITE_FLOAT(m_draggedEntity->pev->frame);
+		WRITE_FLOAT(m_draggedEntity->pev->framerate);
+		WRITE_FLOAT(m_draggedEntity->pev->animtime);
+
+		WRITE_LONG(m_draggedEntity->pev->effects);
+
+		WRITE_BYTE(m_draggedEntity->pev->rendermode);
+		WRITE_BYTE(m_draggedEntity->pev->renderamt);
+		WRITE_BYTE(m_draggedEntity->pev->renderfx);
+		WRITE_BYTE(static_cast<unsigned int>(m_draggedEntity->pev->rendercolor.x));
+		WRITE_BYTE(static_cast<unsigned int>(m_draggedEntity->pev->rendercolor.y));
+		WRITE_BYTE(static_cast<unsigned int>(m_draggedEntity->pev->rendercolor.z));
+
+		WRITE_STRING(STRING(m_draggedEntity->pev->model));
 	}
 	else
 	{
 		// no dragged entity
 		WRITE_BYTE(0);
 	}
-
-	WRITE_STRING(STRING(GetModel()->pev->model));
 
 	MESSAGE_END();
 }
