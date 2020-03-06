@@ -181,7 +181,16 @@ namespace HLVRConfig.Utilities
 
             { CategoryQuality, new OrderedDictionary<string, Setting>() {
                 { "vr_use_hd_models", Setting.Create( new I18N.I18NString("vr_use_hd_models", "Use HD models"), false ) },
-                { "vr_hd_textures_enabled", Setting.Create( new I18N.I18NString("vr_hd_textures_enabled", "Use HD textures"), false ) }
+                { "vr_hd_textures_enabled", Setting.Create( new I18N.I18NString("vr_hd_textures_enabled", "Use HD textures"), false ) },
+                { "vr_texturemode", Setting.Create( new I18N.I18NString("vr_texturemode", "Texture Mode"),
+                    new OrderedDictionary<string, I18N.I18NString>(){
+                        {"GL_NEAREST", new I18N.I18NString("vr_texturemode.GL_NEAREST", "GL_NEAREST (Crisp clear pixelated 1998 texture look.)") },
+                        { "GL_LINEAR", new I18N.I18NString("vr_texturemode.GL_LINEAR", "GL_LINEAR (Smoothes pixels a bit, no mipmaps.)") },
+                        { "GL_NEAREST_MIPMAP_NEAREST", new I18N.I18NString("vr_texturemode.GL_NEAREST_MIPMAP_NEAREST", "GL_NEAREST_MIPMAP_NEAREST (Crisp clear pixels, uses nearest mipmap.)") },
+                        { "GL_LINEAR_MIPMAP_NEAREST", new I18N.I18NString("vr_texturemode.GL_LINEAR_MIPMAP_NEAREST", "GL_LINEAR_MIPMAP_NEAREST (Smoothes pixels, uses nearest mipmap.)") },
+                        { "GL_NEAREST_MIPMAP_LINEAR", new I18N.I18NString("vr_texturemode.GL_NEAREST_MIPMAP_LINEAR", "GL_NEAREST_MIPMAP_LINEAR (Crisp clear pixels, merges mipmaps.)") },
+                        { "GL_LINEAR_MIPMAP_LINEAR", new I18N.I18NString("vr_texturemode.GL_LINEAR_MIPMAP_LINEAR", "GL_LINEAR_MIPMAP_LINEAR (Smoothes pixels and merges mipmaps.)") },
+                    }, "GL_LINEAR_MIPMAP_LINEAR" ) },
             } },
 
             { CategoryWorldCustomizationAndScaling, new OrderedDictionary<string, Setting>() {

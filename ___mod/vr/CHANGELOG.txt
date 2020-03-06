@@ -3,10 +3,14 @@
   * Fixed playback of long sentences
   * Fixed NPCs not reacting to being held at gunpoint
   * Fixed grab behaving like a "magnet"
+  * Fixed interaction with triggers that aren't simple boxes
+  * HD textures now respect value of gl_texturemode
+  * Classic mode sets gl_texturemode to GL_NEAREST for that crisp clear pixelated 1998 look
 
 HLVRConfig:
   * Added option to disable NPCs reacting to being held at gunpoint
   * Added option to chose if NPCs being held at gunpoint for too long turn hostile or not
+  * gl_texturemode can now be set in HLVRConfig
 
 0.6.9-beta - 2020-03-04
  Mod:

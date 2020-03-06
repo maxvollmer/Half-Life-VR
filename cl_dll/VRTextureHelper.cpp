@@ -38,8 +38,7 @@ void VRTextureHelper::Init()
 	if (m_isInitialized)
 		return;
 
-	PreloadAllTextures(GetPathFor("/textures/hud"));
-	//PreloadAllTextures(GetPathFor("/textures/skybox"));
+	UpdateTextureMode();
 
 	m_isInitialized = true;
 }
@@ -111,8 +110,53 @@ const char* VRTextureHelper::GetCurrentSkyboxName()
 		return "desert";
 }
 
+void VRTextureHelper::UpdateTextureMode()
+{
+	std::string textureMode = CVAR_GET_STRING("gl_texturemode");
+	std::transform(textureMode.begin(), textureMode.end(), textureMode.begin(), ::toupper);
+	if (textureMode != m_lastTextureMode)
+	{
+		if (textureMode == "GL_NEAREST")
+		{
+			m_glTexMinFilter = GL_NEAREST;
+			m_glTexMagFilter = GL_NEAREST;
+		}
+		else if (textureMode == "GL_LINEAR")
+		{
+			m_glTexMinFilter = GL_LINEAR;
+			m_glTexMagFilter = GL_LINEAR;
+		}
+		else if (textureMode == "GL_NEAREST_MIPMAP_NEAREST")
+		{
+			m_glTexMinFilter = GL_NEAREST_MIPMAP_NEAREST;
+			m_glTexMagFilter = GL_NEAREST;
+		}
+		else if (textureMode == "GL_LINEAR_MIPMAP_NEAREST")
+		{
+			m_glTexMinFilter = GL_LINEAR_MIPMAP_NEAREST;
+			m_glTexMagFilter = GL_LINEAR;
+		}
+		else if (textureMode == "GL_NEAREST_MIPMAP_LINEAR")
+		{
+			m_glTexMinFilter = GL_NEAREST_MIPMAP_LINEAR;
+			m_glTexMagFilter = GL_NEAREST;
+		}
+		else /*if (textureMode == "GL_LINEAR_MIPMAP_LINEAR")*/
+		{
+			m_glTexMinFilter = GL_LINEAR_MIPMAP_LINEAR;
+			m_glTexMagFilter = GL_LINEAR;
+		}
+
+		m_lastTextureMode = textureMode;
+
+		PreloadAllTextures(GetPathFor("/textures/hud"));
+	}
+}
+
 unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& path, unsigned int& outwidth, unsigned int& outheight)
 {
+	UpdateTextureMode();
+
 	std::string canonicalpathstring;
 	try
 	{
@@ -162,8 +206,8 @@ unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& pa
 				TryGLCall(glGenTextures, 1, &texture);
 				TryGLCall(glBindTexture, GL_TEXTURE_2D, texture);
 				TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA8, lodewidth, lodeheight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
-				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_glTexMinFilter);
+				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_glTexMagFilter);
 				TryGLCall(glGenerateMipmap, GL_TEXTURE_2D);
 				TryGLCall(glBindTexture, GL_TEXTURE_2D, 0);
 			}

@@ -45,4 +45,9 @@ private:
 	static const std::array<std::string, 6> m_hlMapSkyboxIndices;
 
 	bool m_isInitialized{ false };
+
+	void UpdateTextureMode();
+	std::string m_lastTextureMode;
+	int m_glTexMinFilter = 0;
+	int m_glTexMagFilter = 0;
 };

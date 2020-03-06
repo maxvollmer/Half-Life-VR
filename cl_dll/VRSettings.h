@@ -33,6 +33,10 @@ private:
 	RetryMode m_needsRetry{ RetryMode::NONE };
 	long long m_lastSettingsFileChangedTime{ 0 };
 	long long m_nextSettingCheckTime{ 0 };
+
+	void UpdateTextureMode();
+	std::string m_gl_texturemode;
+	std::string m_vr_texturemode;
 };
 
 extern VRSettings g_vrSettings;

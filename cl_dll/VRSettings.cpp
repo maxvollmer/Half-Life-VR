@@ -138,6 +138,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_walkspeedfactor", "0.3");	// cl_movespeedkey
 	RegisterCVAR("vr_togglewalk", "0");
 
+	RegisterCVAR("vr_texturemode", "GL_LINEAR_MIPMAP_LINEAR");
 
 	// Initialize time that settings file was last changed
 	std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
@@ -235,6 +236,12 @@ void VRSettings::CheckCVARsForChanges()
 	{
 		gEngfuncs.Cvar_SetValue("vr_hd_textures_enabled", 0.f);
 		gEngfuncs.Cvar_SetValue("vr_use_hd_models", 0.f);
+		gEngfuncs.pfnClientCmd("gl_texturemode NEAREST");
+		gEngfuncs.pfnClientCmd("vr_texturemode NEAREST");
+	}
+	else
+	{
+		UpdateTextureMode();
 	}
 
 	// only check every 100ms
@@ -382,4 +389,59 @@ void VRSettings::RegisterCVAR(const char* name, const char* value)
 void VRSettings::InitialUpdateCVARSFromFile()
 {
 	UpdateCVARSFromFile();
+}
+
+void VRSettings::UpdateTextureMode()
+{
+	std::string vr_texturemode = CVAR_GET_STRING("vr_texturemode");
+	std::transform(vr_texturemode.begin(), vr_texturemode.end(), vr_texturemode.begin(), ::toupper);
+
+	std::string gl_texturemode = CVAR_GET_STRING("gl_texturemode");
+	std::transform(gl_texturemode.begin(), gl_texturemode.end(), gl_texturemode.begin(), ::toupper);
+
+	std::string newtexturemode;
+	if (vr_texturemode != m_vr_texturemode)
+	{
+		newtexturemode = vr_texturemode;
+	}
+	else if (gl_texturemode != m_gl_texturemode)
+	{
+		newtexturemode = gl_texturemode;
+	}
+
+	if (!newtexturemode.empty())
+	{
+		if (newtexturemode == "GL_NEAREST")
+		{
+			gEngfuncs.pfnClientCmd("gl_texturemode GL_NEAREST");
+			gEngfuncs.pfnClientCmd("vr_texturemode GL_NEAREST");
+		}
+		else if (newtexturemode == "GL_LINEAR")
+		{
+			gEngfuncs.pfnClientCmd("gl_texturemode GL_LINEAR");
+			gEngfuncs.pfnClientCmd("vr_texturemode GL_LINEAR");
+		}
+		else if (newtexturemode == "GL_NEAREST_MIPMAP_NEAREST")
+		{
+			gEngfuncs.pfnClientCmd("gl_texturemode GL_NEAREST_MIPMAP_NEAREST");
+			gEngfuncs.pfnClientCmd("vr_texturemode GL_NEAREST_MIPMAP_NEAREST");
+		}
+		else if (newtexturemode == "GL_LINEAR_MIPMAP_NEAREST")
+		{
+			gEngfuncs.pfnClientCmd("gl_texturemode GL_LINEAR_MIPMAP_NEAREST");
+			gEngfuncs.pfnClientCmd("vr_texturemode GL_LINEAR_MIPMAP_NEAREST");
+		}
+		else if (newtexturemode == "GL_NEAREST_MIPMAP_LINEAR")
+		{
+			gEngfuncs.pfnClientCmd("gl_texturemode GL_NEAREST_MIPMAP_LINEAR");
+			gEngfuncs.pfnClientCmd("vr_texturemode GL_NEAREST_MIPMAP_LINEAR");
+		}
+		else /*if (newtexturemode == "GL_LINEAR_MIPMAP_LINEAR")*/
+		{
+			gEngfuncs.pfnClientCmd("gl_texturemode GL_LINEAR_MIPMAP_LINEAR");
+			gEngfuncs.pfnClientCmd("vr_texturemode GL_LINEAR_MIPMAP_LINEAR");
+		}
+		m_vr_texturemode = newtexturemode;
+		m_gl_texturemode = newtexturemode;
+	}
 }
