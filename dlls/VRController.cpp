@@ -116,6 +116,8 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 		m_previousAngles = angles;
 	}
 
+	bool m_wasDragging = m_isDragging;
+
 	// Store data
 	m_id = id;
 	m_isValid = isValid;
@@ -128,6 +130,15 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 	m_isDragging = m_isValid && isDragging;
 	m_isMirrored = isMirrored;
 	m_weaponId = weaponId;
+
+	if (!m_wasDragging && m_isDragging)
+	{
+		m_dragStartTime = gpGlobals->time;
+	}
+	else if (!m_isDragging)
+	{
+		m_dragStartTime = 0.f;
+	}
 
 	m_isBlocked = !UTIL_CheckClearSight(pPlayer->EyePosition(), m_position, ignore_monsters, dont_ignore_glass, pPlayer->edict()) || VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->EyePosition(), m_position);
 

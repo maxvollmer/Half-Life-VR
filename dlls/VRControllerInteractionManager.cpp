@@ -56,7 +56,8 @@ constexpr const int VR_STOP_SIGNAL_MAX_X = 36;
 constexpr const int VR_STOP_SIGNAL_MIN_Y = -12;
 constexpr const int VR_STOP_SIGNAL_MAX_Y = 12;
 
-constexpr const float VR_RETINASCANNER_ACTIVATE_LOOK_TIME = 1.5f;
+constexpr const float VR_RETINASCANNER_ACTIVATE_LOOK_TIME = 1.f;
+constexpr const float VR_MAX_DRAG_START_TIME = 0.5f;
 
 // Global VR related stuffs - Max Vollmer, 2018-04-02
 #include <vector>
@@ -325,7 +326,6 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 
 		EHANDLE<CBaseEntity> hEntity = pEntity;
 
-		VRPhysicsHelperModelBBoxIntersectResult intersectResult;
 		bool isTouching;
 		bool didTouchChange;
 		bool isDragging;
@@ -333,8 +333,11 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 		bool isHitting;
 		bool didHitChange;
 
+		VRPhysicsHelperModelBBoxIntersectResult intersectResult;
+		isTouching = CheckIfEntityAndControllerTouch(pPlayer, hEntity, controller, &intersectResult);
+
 		// If we are dragging something draggable, we override all the booleans to avoid "losing" the entity due to fast movements
-		if (controller.IsDragging() && controller.IsDraggedEntity(hEntity) && IsDraggableEntity(hEntity) && !DistanceTooBigForDragging(hEntity, controller))
+		if (controller.IsDragging() && controller.IsDraggedEntity(hEntity) && (isTouching || !DistanceTooBigForDragging(hEntity, controller)))
 		{
 			isTouching = true;
 			didTouchChange = false;
@@ -345,17 +348,27 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 		}
 		else
 		{
-			isTouching = CheckIfEntityAndControllerTouch(pPlayer, hEntity, controller, &intersectResult);
 			didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
 
-			isDragging = isTouching && controller.IsDragging();
-			if (isDragging)
+			if (!isTouching
+				|| !controller.IsDragging()
+				|| (controller.HasDraggedEntity() && !controller.IsDraggedEntity(hEntity)))
 			{
-				didDragChange = !controller.IsDraggedEntity(hEntity);
+				isDragging = false;
+				didDragChange = controller.RemoveDraggedEntity(hEntity);
+			}
+			else if (!controller.HasDraggedEntity() && std::fabs(controller.GetDragStartTime() - gpGlobals->time) <= VR_MAX_DRAG_START_TIME)
+			{
+				isDragging = true;
+				didDragChange = true;
 			}
 			else
 			{
-				didDragChange = controller.RemoveDraggedEntity(hEntity);
+				// controller.IsDraggedEntity(hEntity) is probably false always,
+				// as that should be covered by the if-statement above that overrides all booleans,
+				// but just to be sure
+				isDragging = controller.IsDraggedEntity(hEntity);
+				didDragChange = false;
 			}
 
 			if (isTouching)

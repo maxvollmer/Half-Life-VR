@@ -47,6 +47,7 @@ public:
 	inline bool IsMirrored() const { return m_isMirrored; }
 	inline bool IsBlocked() const { return m_isBlocked; }
 	inline const std::vector<StudioHitBox>& GetHitBoxes() const { return m_hitboxes; }
+	inline float GetDragStartTime() const { return m_dragStartTime; }
 
 	bool IsDragging() const;
 	bool GetAttachment(size_t index, Vector& attachment) const;
@@ -116,6 +117,7 @@ private:
 	string_t m_modelName{ 0 };
 	string_t m_bboxModelName{ 0 };
 	int m_bboxModelSequence{ 0 };
+	float m_dragStartTime{ 0.f };
 
 	mutable EHANDLE<CVRControllerModel> m_hModel;
 	mutable EHANDLE<CLaserSpot> m_hLaserSpot;
