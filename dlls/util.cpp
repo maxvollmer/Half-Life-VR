@@ -1057,10 +1057,7 @@ CBaseEntity* UTIL_TraceTriggers(CBaseEntity* pStartEntity, const Vector& vecStar
 	CBaseEntity* pEntity = pStartEntity;
 	while (UTIL_FindAllEntities(&pEntity))
 	{
-		// TODO: Problem with tracing bboxes is that some triggers are actually more "elaborate" 3d meshes,
-		// e.g. the sloped train tracks in On A Rail have sloped trigger_hurt's for electric damage.
-		// So we actually need to trace the actual 3d data from the bsp model.
-		if (pEntity->pev->solid == SOLID_TRIGGER && UTIL_TraceBBox(vecStart, vecEnd, pEntity->pev->absmin, pEntity->pev->absmax))
+		if (pEntity->pev->solid == SOLID_TRIGGER && VRPhysicsHelper::Instance().ModelIntersectsLine(pEntity, vecStart, vecEnd))
 		{
 			return pEntity;
 		}
