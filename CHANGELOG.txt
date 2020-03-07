@@ -2,6 +2,8 @@
  Mod:
   * Fixed issue with ladders introduced with last update
   * Fixed hitboxes on hand models
+  * Fixed weapon scale not working
+  * Fixed minor issue with virtual backpack if player reselects weapon the usual way
 
  HLVRConfig:
   * No changes
