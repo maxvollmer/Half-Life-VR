@@ -6,7 +6,7 @@
   * Fixed minor issue with virtual backpack if player reselects weapon the usual way
 
  HLVRConfig:
-  * No changes
+  * Fixed "Number Of Displayed Log Lines" label wrongly displaying "Language"
 
 0.6.10-beta - 2020-03-06
  Mod:
