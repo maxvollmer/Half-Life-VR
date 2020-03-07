@@ -1,3 +1,11 @@
+0.6.11-beta
+ Mod:
+  * Fixed issue with ladders introduced with last update
+  * Fixed hitboxes on hand models
+
+ HLVRConfig:
+  * No changes
+
 0.6.10-beta - 2020-03-06
  Mod:
   * Fixed playback of long sentences
