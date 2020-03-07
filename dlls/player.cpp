@@ -5962,7 +5962,7 @@ void CBasePlayer::VRSwitchBackPackItem()
 	EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/wpn_select.wav", 0.4, ATTN_NORM);
 
 	auto previousItem = m_pActiveItem;
-	if (m_vrhBackPackItem)
+	if (m_vrhBackPackItem && m_vrhBackPackItem != previousItem)
 	{
 		SelectItem(STRING(m_vrhBackPackItem->pev->classname));
 	}

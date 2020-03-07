@@ -128,6 +128,7 @@ int CHud::MsgFunc_VRCtrlEnt(const char* pszName, int iSize, void* pbuf)
 	auto& data = isLeftHand ? m_leftControllerModelData : m_rightControllerModelData;
 	data.controller.body = READ_BYTE();
 	data.controller.skin = READ_BYTE();
+	data.controller.scale = READ_FLOAT();
 
 	data.controller.sequence = READ_LONG();
 	data.controller.frame = READ_FLOAT();

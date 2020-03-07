@@ -1315,7 +1315,7 @@ void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controlle
 {
 	if (DrawVREntity(controllerModelData.controller.modelname,
 		origin, angles,
-		controllerModelData.controller.body, controllerModelData.controller.skin, 1.f,
+		controllerModelData.controller.body, controllerModelData.controller.skin, controllerModelData.controller.scale,
 		controllerModelData.controller.frame, controllerModelData.controller.framerate,
 		controllerModelData.controller.animtime, controllerModelData.controller.sequence,
 		controllerModelData.controller.effects,

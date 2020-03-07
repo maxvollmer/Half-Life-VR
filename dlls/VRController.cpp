@@ -334,6 +334,7 @@ void VRController::SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID i
 	WRITE_BYTE(IsMirrored() ? 1 : 0);
 	WRITE_BYTE(GetModel()->pev->body);
 	WRITE_BYTE(GetModel()->pev->skin);
+	WRITE_FLOAT(GetModel()->pev->scale);
 
 	WRITE_LONG(GetModel()->pev->sequence);
 	WRITE_FLOAT(GetModel()->pev->frame);
