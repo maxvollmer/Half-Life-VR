@@ -1,4 +1,6 @@
-﻿using Microsoft.Collections.Extensions;
+﻿using HLVRConfig.Utilities.Process;
+using HLVRConfig.Utilities.Settings;
+using Microsoft.Collections.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HLVRConfig.Utilities
+namespace HLVRConfig.Utilities.UI
 {
     public class I18N
     {
@@ -55,7 +57,9 @@ namespace HLVRConfig.Utilities
 
         public static void Init()
         {
-            CurrentLanguage = HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLanguage][HLVRLauncherSettings.Language].Value;
+            string previouslanguage = CurrentLanguage;
+
+            CurrentLanguage = HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryLanguage][LauncherSettings.Language].Value;
             if (CurrentLanguage == null || CurrentLanguage.Length == 0)
             {
                 CurrentLanguage = "en";
@@ -87,6 +91,11 @@ namespace HLVRConfig.Utilities
             }
 
             UpdateLanguages();
+
+            if (previouslanguage != CurrentLanguage)
+            {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.RefreshConfigTabs(true, true)));
+            }
         }
 
         public static void SaveI18NFile()
@@ -190,9 +199,9 @@ namespace HLVRConfig.Utilities
             }
 
             // Make sure selected language exists in current list - if not, select first available language
-            if (!HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.ContainsKey(HLVRSettingsManager.ModSettings.AudioSettings[HLVRModSettings.CategorySpeechRecognition][HLVRModSettings.SpeechRecognitionLanguage].Value))
+            if (!HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.ContainsKey(HLVRSettingsManager.ModSettings.AudioSettings[ModSettings.CategorySpeechRecognition][ModSettings.SpeechRecognitionLanguage].Value))
             {
-                HLVRSettingsManager.SetModSetting(HLVRSettingsManager.ModSettings.AudioSettings, HLVRModSettings.CategorySpeechRecognition, HLVRModSettings.SpeechRecognitionLanguage, "vr_speech_language_id." + HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.Keys.First());
+                HLVRSettingsManager.SetModSetting(HLVRSettingsManager.ModSettings.AudioSettings, ModSettings.CategorySpeechRecognition, ModSettings.SpeechRecognitionLanguage, "vr_speech_language_id." + HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.Keys.First());
             }
         }
     }

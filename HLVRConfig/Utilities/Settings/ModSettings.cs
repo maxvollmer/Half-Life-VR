@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HLVRConfig.Utilities.UI;
 
-namespace HLVRConfig.Utilities
+namespace HLVRConfig.Utilities.Settings
 {
-    public class HLVRModSettings : ISettingsContainer
+    public class ModSettings : ISettingsContainer
     {
         public OrderedDictionary<string, I18N.I18NString> SpeechRecognitionLanguages
         {
@@ -20,7 +21,7 @@ namespace HLVRConfig.Utilities
 
         public float GetWorldScale()
         {
-            float.TryParse(GraphicsSettings[HLVRModSettings.CategoryWorldCustomizationAndScaling][HLVRModSettings.WorldScale].Value, out float value);
+            float.TryParse(GraphicsSettings[ModSettings.CategoryWorldCustomizationAndScaling][ModSettings.WorldScale].Value, out float value);
             return value;
         }
 
@@ -314,7 +315,7 @@ namespace HLVRConfig.Utilities
             return false;
         }
 
-        public HLVRModSettings()
+        public ModSettings()
         {
         }
     }

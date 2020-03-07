@@ -9,9 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
+using HLVRConfig.Utilities.Settings;
 using Microsoft.Win32;
 
-namespace HLVRConfig.Utilities
+namespace HLVRConfig.Utilities.Process
 {
     public class HLVRPaths
     {
@@ -21,12 +22,12 @@ namespace HLVRConfig.Utilities
         {
             get
             {
-                return HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryModLocation][HLVRLauncherSettings.HLDirectory].Value;
+                return HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModLocation][LauncherSettings.HLDirectory].Value;
             }
 
             private set
             {
-                HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryModLocation][HLVRLauncherSettings.HLDirectory].Value = value;
+                HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModLocation][LauncherSettings.HLDirectory].Value = value;
                 LastHLDirectory = value;
             }
         }

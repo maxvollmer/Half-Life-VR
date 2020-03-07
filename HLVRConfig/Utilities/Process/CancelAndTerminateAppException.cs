@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HLVRConfig.Utilities
+namespace HLVRConfig.Utilities.Process
 {
     class CancelAndTerminateAppException : Exception
     {

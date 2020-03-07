@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
-namespace HLVRConfig.Utilities.Controls
+namespace HLVRConfig.Utilities.UI.Controls
 {
     public class I18NTabItem : TabItem, II18NControl
     {

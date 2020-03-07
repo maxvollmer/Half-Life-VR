@@ -1,17 +1,18 @@
 ﻿using DbMon.NET;
+using HLVRConfig.Utilities.Settings;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Media;
 
-namespace HLVRConfig.Utilities
+namespace HLVRConfig.Utilities.Process
 {
-    public class HLVRModLauncher
+    public class ModLauncher
     {
         private readonly object patchLock = new object();
         private readonly object gameLock = new object();
 
-        private Process hlProcess = null;
+        private System.Diagnostics.Process hlProcess = null;
 
         public void LaunchMod(bool terminateIfAlreadyRunning)
         {
@@ -29,7 +30,7 @@ namespace HLVRConfig.Utilities
                     }
                 }
 
-                hlProcess = Process.Start(new ProcessStartInfo
+                hlProcess = System.Diagnostics.Process.Start(new ProcessStartInfo
                 {
                     WorkingDirectory = HLVRPaths.HLDirectory,
                     FileName = HLVRPaths.HLExecutable,
@@ -86,7 +87,7 @@ namespace HLVRConfig.Utilities
             lock (gameLock)
             {
                 hlProcess = null;
-                if (HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLauncher][HLVRLauncherSettings.AutoCloseLauncher].IsTrue())
+                if (HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryLauncher][LauncherSettings.AutoCloseLauncher].IsTrue())
                 {
                     System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => System.Windows.Application.Current.Shutdown()));
                 }
@@ -117,8 +118,8 @@ namespace HLVRConfig.Utilities
             {
                 if (hlProcess == null)
                 {
-                    var potentialHLProcesses = Process.GetProcessesByName("hl");
-                    foreach (Process potentialHLProcess in potentialHLProcesses)
+                    var potentialHLProcesses = System.Diagnostics.Process.GetProcessesByName("hl");
+                    foreach (var potentialHLProcess in potentialHLProcesses)
                     {
                         var path1 = Path.GetFullPath(HLVRPaths.HLExecutable);
                         var path2 = Path.GetFullPath(potentialHLProcess.MainModule.FileName);
@@ -137,7 +138,7 @@ namespace HLVRConfig.Utilities
                 if (hlProcess.HasExited)
                     return false;
 
-                try { Process.GetProcessById(hlProcess.Id); }
+                try { System.Diagnostics.Process.GetProcessById(hlProcess.Id); }
                 catch (InvalidOperationException) { return false; }
                 catch (ArgumentException) { return false; }
                 return true;

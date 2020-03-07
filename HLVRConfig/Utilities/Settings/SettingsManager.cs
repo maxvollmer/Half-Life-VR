@@ -7,10 +7,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using HLVRConfig.Utilities.Process;
 using HLVRConfig.Utilities.Settings;
+using HLVRConfig.Utilities.UI;
 using Microsoft.Collections.Extensions;
 
-namespace HLVRConfig.Utilities
+namespace HLVRConfig.Utilities.Settings
 {
     public class HLVRSettingsManager
     {
@@ -36,8 +38,8 @@ namespace HLVRConfig.Utilities
 
         private static readonly object settingsFileLock = new object();
 
-        public static HLVRModSettings ModSettings { get; private set; } = new HLVRModSettings();
-        public static HLVRLauncherSettings LauncherSettings { get; private set; } = new HLVRLauncherSettings();
+        public static ModSettings ModSettings { get; private set; } = new ModSettings();
+        public static LauncherSettings LauncherSettings { get; private set; } = new LauncherSettings();
 
 
         public static bool AreModSettingsInitialized { get; private set; } = false;
@@ -52,7 +54,7 @@ namespace HLVRConfig.Utilities
             if (AreLauncherSettingsInitialized)
                 return;
 
-            LauncherSettings = new HLVRLauncherSettings();
+            LauncherSettings = new LauncherSettings();
 
             if (File.Exists(HLVRPaths.VRLauncherSettingsFile))
             {
@@ -78,7 +80,7 @@ namespace HLVRConfig.Utilities
                 return;
             }
 
-            ModSettings = new HLVRModSettings();
+            ModSettings = new ModSettings();
 
             if (!HLVRPaths.CheckHLDirectory() || !HLVRPaths.CheckModDirectory())
             {
@@ -184,7 +186,7 @@ namespace HLVRConfig.Utilities
             if (!AreLauncherSettingsInitialized)
                 return;
 
-            LauncherSettings.LauncherSettings[category][name].Value = value ? "1" : "0";
+            LauncherSettings.GeneralSettings[category][name].Value = value ? "1" : "0";
             DelayedStoreLauncherSettings();
         }
 
@@ -193,20 +195,20 @@ namespace HLVRConfig.Utilities
             if (!AreLauncherSettingsInitialized)
                 return;
 
-            if (LauncherSettings.LauncherSettings[category][name].AllowedValues.Count > 0)
+            if (LauncherSettings.GeneralSettings[category][name].AllowedValues.Count > 0)
             {
-                foreach (var allowedValue in LauncherSettings.LauncherSettings[category][name].AllowedValues)
+                foreach (var allowedValue in LauncherSettings.GeneralSettings[category][name].AllowedValues)
                 {
                     if (allowedValue.Value.Key.Equals(value))
                     {
-                        LauncherSettings.LauncherSettings[category][name].Value = allowedValue.Key;
+                        LauncherSettings.GeneralSettings[category][name].Value = allowedValue.Key;
                         break;
                     }
                 }
             }
             else
             {
-                LauncherSettings.LauncherSettings[category][name].Value = value;
+                LauncherSettings.GeneralSettings[category][name].Value = value;
             }
             DelayedStoreLauncherSettings();
         }
@@ -245,14 +247,14 @@ namespace HLVRConfig.Utilities
 
         public static void RestoreLauncherSettings()
         {
-            HLVRLauncherSettings defaultSettings = new HLVRLauncherSettings();
-            LauncherSettings.LauncherSettings = defaultSettings.LauncherSettings;
+            LauncherSettings defaultSettings = new LauncherSettings();
+            LauncherSettings.GeneralSettings = defaultSettings.GeneralSettings;
             DelayedStoreLauncherSettings();
         }
 
         public static void RestoreModSettings()
         {
-            HLVRModSettings defaultSettings = new HLVRModSettings();
+            ModSettings defaultSettings = new ModSettings();
             ModSettings.InputSettings = defaultSettings.InputSettings;
             ModSettings.GraphicsSettings = defaultSettings.GraphicsSettings;
             ModSettings.AudioSettings = defaultSettings.AudioSettings;
@@ -284,7 +286,7 @@ namespace HLVRConfig.Utilities
             foreach (var category in ModSettings.OtherSettings)
                 if (category.Value.ContainsKey(setting))
                     return category.Key;
-            foreach (var category in LauncherSettings.LauncherSettings)
+            foreach (var category in LauncherSettings.GeneralSettings)
                 if (category.Value.ContainsKey(setting))
                     return category.Key;
             return null;

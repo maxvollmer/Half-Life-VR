@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
 
-namespace HLVRConfig.Utilities.Controls
+namespace HLVRConfig.Utilities.UI.Controls
 {
     public class I18NText : Run, II18NControl
     {

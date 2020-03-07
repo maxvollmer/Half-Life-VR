@@ -1,4 +1,6 @@
-﻿using HLVRConfig.Utilities.Settings;
+﻿using HLVRConfig.Utilities.Process;
+using HLVRConfig.Utilities.Settings;
+using HLVRConfig.Utilities.UI;
 using Microsoft.Collections.Extensions;
 using System;
 using System.Collections.Generic;
@@ -7,15 +9,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HLVRConfig.Utilities
+namespace HLVRConfig.Utilities.Settings
 {
-    public class HLVRLauncherSettings : ISettingsContainer
+    public class LauncherSettings : ISettingsContainer
     {
         public OrderedDictionary<string, I18N.I18NString> Languages
         {
             get
             {
-                return LauncherSettings[CategoryLanguage][Language].AllowedValues;
+                return GeneralSettings[CategoryLanguage][Language].AllowedValues;
             }
         }
 
@@ -23,7 +25,7 @@ namespace HLVRConfig.Utilities
         {
             get
             {
-                string value = LauncherSettings[HLVRLauncherSettings.CategoryLog][HLVRLauncherSettings.NumberOfDisplayedLogLines].Value;
+                string value = GeneralSettings[CategoryLog][NumberOfDisplayedLogLines].Value;
                 if (int.TryParse(value, out int result))
                 {
                     return result;
@@ -47,10 +49,10 @@ namespace HLVRConfig.Utilities
         public static readonly string AutoCloseGame = "AutoCloseGame";
         public static readonly string HLDirectory = "HLDirectory";
         public static readonly string Language = "Language";
-        public static readonly string NumberOfDisplayedLogLines = "Language";
+        public static readonly string NumberOfDisplayedLogLines = "NumberOfDisplayedLogLines";
 
 
-        public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> LauncherSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
+        public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> GeneralSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
         {
             { CategoryModLocation, new OrderedDictionary<string, Setting>() {
                 { HLDirectory, Setting.Create( new I18N.I18NString(HLDirectory, "Half-Life directory"), HLVRPaths.LastHLDirectory ).MakeFolderSetting() },
@@ -77,7 +79,7 @@ namespace HLVRConfig.Utilities
         {
             get
             {
-                foreach (var foo in new[] { LauncherSettings })
+                foreach (var foo in new[] { GeneralSettings })
                 {
                     foreach (var bar in foo)
                     {
@@ -92,7 +94,7 @@ namespace HLVRConfig.Utilities
 
         public bool SetValue(string key, string value)
         {
-            foreach (var foo in new[] { LauncherSettings })
+            foreach (var foo in new[] { GeneralSettings })
             {
                 foreach (var bar in foo)
                 {
@@ -106,7 +108,7 @@ namespace HLVRConfig.Utilities
             return false;
         }
 
-        public HLVRLauncherSettings()
+        public LauncherSettings()
         {
         }
     }

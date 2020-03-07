@@ -66,22 +66,23 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DbMon.NET\DebugMonitor.cs" />
-    <Compile Include="Utilities\CancelAndTerminateAppException.cs" />
-    <Compile Include="Utilities\Controls\I18NTabItem.cs" />
-    <Compile Include="Utilities\Controls\I18NText.cs" />
-    <Compile Include="Utilities\Controls\II18NControl.cs" />
-    <Compile Include="Utilities\HLVRLauncherConfig.cs" />
-    <Compile Include="Utilities\HLVRModConfig.cs" />
-    <Compile Include="Utilities\HLVRModLauncher.cs" />
-    <Compile Include="Utilities\HLVRPaths.cs" />
-    <Compile Include="Utilities\I18N.cs" />
-    <Compile Include="Utilities\Settings\HLVRLauncherSettings.cs" />
-    <Compile Include="Utilities\Settings\HLVRModSettings.cs" />
-    <Compile Include="Utilities\HLVRSettingsManager.cs" />
-    <Compile Include="Utilities\ProcessStandardListener.cs" />
+    <Compile Include="Utilities\Process\CancelAndTerminateAppException.cs" />
+    <Compile Include="Utilities\UI\Config\IConfig.cs" />
+    <Compile Include="Utilities\UI\Controls\I18NTabItem.cs" />
+    <Compile Include="Utilities\UI\Controls\I18NText.cs" />
+    <Compile Include="Utilities\UI\Controls\II18NControl.cs" />
+    <Compile Include="Utilities\UI\Config\LauncherConfig.cs" />
+    <Compile Include="Utilities\UI\Config\ModConfig.cs" />
+    <Compile Include="Utilities\Process\ModLauncher.cs" />
+    <Compile Include="Utilities\Process\HLVRPaths.cs" />
+    <Compile Include="Utilities\UI\I18N.cs" />
+    <Compile Include="Utilities\Settings\LauncherSettings.cs" />
+    <Compile Include="Utilities\Settings\ModSettings.cs" />
+    <Compile Include="Utilities\Settings\SettingsManager.cs" />
+    <Compile Include="Utilities\Process\ProcessStandardListener.cs" />
     <Compile Include="Utilities\Settings\Setting.cs" />
     <Compile Include="Utilities\Settings\ISettingsContainer.cs" />
-    <Compile Include="Utilities\SingleProcessEnforcer.cs" />
+    <Compile Include="Utilities\Process\SingleProcessEnforcer.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HLVRConfig.Utilities.Controls
+namespace HLVRConfig.Utilities.UI.Controls
 {
     public interface II18NControl
     {

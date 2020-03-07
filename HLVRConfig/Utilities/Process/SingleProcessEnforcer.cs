@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HLVRConfig.Utilities
+namespace HLVRConfig.Utilities.Process
 {
     class SingleProcessEnforcer
     {

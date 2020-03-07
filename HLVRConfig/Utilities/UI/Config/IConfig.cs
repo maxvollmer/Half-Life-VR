@@ -6,27 +6,16 @@ using HLVRConfig.Utilities.Settings;
 using Microsoft.Collections.Extensions;
 using static HLVRConfig.Utilities.Settings.Setting;
 
-namespace HLVRConfig.Utilities
+namespace HLVRConfig.Utilities.UI.Config
 {
-    public class HLVRModConfig
+    public abstract class IConfig
     {
         private static readonly float CM_TO_UNIT = 0.375f;
         private static readonly float UNIT_TO_CM = 1.0f / CM_TO_UNIT;
 
-        private static readonly I18N.I18NString ModDefaultLabel = new I18N.I18NString("ModDefault", "Mod Default");
-        private static readonly I18N.I18NString CheckboxOnLabel = new I18N.I18NString("CheckboxOn", "on");
-        private static readonly I18N.I18NString CheckboxOffLabel = new I18N.I18NString("CheckboxOff", "off");
+        protected abstract I18N.I18NString DefaultLabel { get; }
 
-        public static void Initialize(StackPanel panel, OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories)
-        {
-            panel.Children.Clear();
-            foreach (var category in settingcategories)
-            {
-                AddCategory(settingcategories, panel, category.Key, category.Value);
-            }
-        }
-
-        private static void AddCategory(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, OrderedDictionary<string, Setting> settings)
+        protected void AddCategory(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, OrderedDictionary<string, Setting> settings)
         {
             if (category.Dependency != null && !category.Dependency.IsSatisfied())
                 return;
@@ -63,7 +52,7 @@ namespace HLVRConfig.Utilities
                 panel.Children.Add(categoryPanel);
         }
 
-        private static void AddInput(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, string name, I18N.I18NString label, Setting value)
+        private void AddInput(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, string name, I18N.I18NString label, Setting value)
         {
             StackPanel inputPanel = new StackPanel()
             {
@@ -158,15 +147,15 @@ namespace HLVRConfig.Utilities
             panel.Children.Add(inputPanel);
         }
 
-        private static TextBlock CreateDefaultLabel(string defaultValue)
+        private TextBlock CreateDefaultLabel(string defaultValue)
         {
             if (defaultValue.Contains("("))
                 defaultValue = defaultValue.Substring(0, defaultValue.IndexOf("(")).Trim();
 
-            return CreateMiniText("(" + I18N.Get(ModDefaultLabel) + ": " + defaultValue + ")", 20);
+            return CreateMiniText("(" + I18N.Get(DefaultLabel) + ": " + defaultValue + ")", 20);
         }
 
-        private static TextBlock CreateMiniText(string text, double leftmargin=0)
+        private TextBlock CreateMiniText(string text, double leftmargin = 0)
         {
             return new TextBlock(new Run(text))
             {
@@ -177,7 +166,7 @@ namespace HLVRConfig.Utilities
             };
         }
 
-        private static void AddTitle(StackPanel panel, I18N.I18NString title)
+        private void AddTitle(StackPanel panel, I18N.I18NString title)
         {
             TextBlock textBlock = new TextBlock()
             {
@@ -190,7 +179,7 @@ namespace HLVRConfig.Utilities
             panel.Children.Add(textBlock);
         }
 
-        private static void AddDescription(StackPanel panel, I18N.I18NString description)
+        private void AddDescription(StackPanel panel, I18N.I18NString description)
         {
             if (description == null)
                 return;
@@ -206,7 +195,7 @@ namespace HLVRConfig.Utilities
             panel.Children.Add(textBlock);
         }
 
-        private static void AddCheckBox(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, string name, I18N.I18NString label, bool isChecked, bool isDefaultChecked)
+        private void AddCheckBox(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settingcategories, StackPanel panel, SettingCategory category, string name, I18N.I18NString label, bool isChecked, bool isDefaultChecked)
         {
             StackPanel inputPanel = new StackPanel()
             {
@@ -237,7 +226,7 @@ namespace HLVRConfig.Utilities
             panel.Children.Add(inputPanel);
         }
 
-        private static TextBox MakeTextBox(Setting value)
+        private TextBox MakeTextBox(Setting value)
         {
             var textbox = new TextBox()
             {
@@ -253,7 +242,7 @@ namespace HLVRConfig.Utilities
             return textbox;
         }
 
-        private static double GetTextBoxWidth(SettingType type)
+        private double GetTextBoxWidth(SettingType type)
         {
             switch (type)
             {
@@ -272,7 +261,7 @@ namespace HLVRConfig.Utilities
             }
         }
 
-        private static string UnitToMeter(string text)
+        private string UnitToMeter(string text)
         {
             try
             {
@@ -285,7 +274,7 @@ namespace HLVRConfig.Utilities
             }
         }
 
-        private static string MeterToUnit(string text)
+        private string MeterToUnit(string text)
         {
             try
             {

@@ -1,6 +1,6 @@
 ﻿using DbMon.NET;
 using HLVRConfig.Utilities;
-using HLVRConfig.Utilities.Controls;
+using HLVRConfig.Utilities.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,6 +14,10 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
+using HLVRConfig.Utilities.UI;
+using HLVRConfig.Utilities.Settings;
+using HLVRConfig.Utilities.UI.Config;
+using HLVRConfig.Utilities.Process;
 
 namespace HLVRConfig
 {
@@ -22,7 +26,7 @@ namespace HLVRConfig
         private System.Windows.Forms.NotifyIcon notifyIcon;
 
         private readonly SingleProcessEnforcer singleProcessEnforcer = new SingleProcessEnforcer();
-        private readonly HLVRModLauncher hlvrModLauncher = new HLVRModLauncher();
+        private readonly ModLauncher hlvrModLauncher = new ModLauncher();
 
         public bool IsValidProcess
         {
@@ -74,12 +78,12 @@ namespace HLVRConfig
 
         private void HandleInitialSettings()
         {
-            if (HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLauncher][HLVRLauncherSettings.StartMinimized].IsTrue())
+            if (HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryLauncher][LauncherSettings.StartMinimized].IsTrue())
             {
                 WindowState = WindowState.Minimized;
                 OnWindowStateChanged();
             }
-            if (HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLauncher][HLVRLauncherSettings.AutoRunMod].IsTrue()
+            if (HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryLauncher][LauncherSettings.AutoRunMod].IsTrue()
                 && HLVRPaths.CheckHLDirectory()
                 && HLVRPaths.CheckModDirectory())
             {
@@ -160,7 +164,7 @@ namespace HLVRConfig
 
             if (IsValidProcess 
                 && hlvrModLauncher.IsGameRunning()
-                && HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLauncher][HLVRLauncherSettings.AutoCloseGame].IsTrue())
+                && HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryLauncher][LauncherSettings.AutoCloseGame].IsTrue())
             {
                 hlvrModLauncher.TerminateGame();
             }
@@ -178,7 +182,7 @@ namespace HLVRConfig
         private void OnWindowStateChanged()
         {
             if (WindowState == WindowState.Minimized
-                && HLVRSettingsManager.LauncherSettings.LauncherSettings[HLVRLauncherSettings.CategoryLauncher][HLVRLauncherSettings.MinimizeToTray].IsTrue())
+                && HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryLauncher][LauncherSettings.MinimizeToTray].IsTrue())
             {
                 ShowInTaskbar = false;
                 notifyIcon.Visible = true;
@@ -209,10 +213,10 @@ namespace HLVRConfig
             {
                 if (HLVRSettingsManager.AreModSettingsInitialized)
                 {
-                    HLVRModConfig.Initialize(InputConfig, HLVRSettingsManager.ModSettings.InputSettings);
-                    HLVRModConfig.Initialize(GraphicsConfig, HLVRSettingsManager.ModSettings.GraphicsSettings);
-                    HLVRModConfig.Initialize(AudioConfig, HLVRSettingsManager.ModSettings.AudioSettings);
-                    HLVRModConfig.Initialize(OtherConfig, HLVRSettingsManager.ModSettings.OtherSettings);
+                    ModConfig.Initialize(InputConfig, HLVRSettingsManager.ModSettings.InputSettings);
+                    ModConfig.Initialize(GraphicsConfig, HLVRSettingsManager.ModSettings.GraphicsSettings);
+                    ModConfig.Initialize(AudioConfig, HLVRSettingsManager.ModSettings.AudioSettings);
+                    ModConfig.Initialize(OtherConfig, HLVRSettingsManager.ModSettings.OtherSettings);
                 }
                 else
                 {
@@ -230,7 +234,7 @@ namespace HLVRConfig
 
             if (launcher)
             {
-                HLVRLauncherConfig.Initialize(LauncherConfig);
+                Utilities.UI.Config.LauncherConfig.Initialize(LauncherConfig);
                 if (!HLVRSettingsManager.AreLauncherSettingsInitialized)
                 {
                     var errorMsg = I18N.Get(new I18N.I18NString("ErrorMsgCouldNotSynchronizeLauncherSettings", "Couldn't synchronize launcher settings. You can modify these settings, but they might be lost after closing HLVRConfig."));
