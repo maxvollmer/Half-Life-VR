@@ -578,36 +578,7 @@ bool VRControllerInteractionManager::HandleEasterEgg(CBasePlayer* pPlayer, EHAND
 		EHANDLE<CWorldsSmallestCup> pWorldsSmallestCup = hEntity;
 		if (pWorldsSmallestCup)
 		{
-			if (interaction.dragging.isSet)
-			{
-				if (interaction.dragging.didChange)
-				{
-					if (controller.SetDraggedEntity(hEntity))
-					{
-						hEntity->m_vrDragger = pPlayer;
-						hEntity->m_vrDragController = controller.GetID();
-					}
-				}
-				// If we are the same player and controller that last started dragging the entity, update drag
-				if (controller.IsDraggedEntity(hEntity) && hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
-				{
-					pWorldsSmallestCup->pev->origin = controller.GetGunPosition();
-					pWorldsSmallestCup->pev->angles = controller.GetAngles();
-					pWorldsSmallestCup->pev->velocity = controller.GetVelocity();
-				}
-			}
-			else
-			{
-				if (interaction.dragging.didChange)
-				{
-					// If we are the same player and controller that last started dragging the entity, stop dragging
-					if (hEntity->m_vrDragger == pPlayer && hEntity->m_vrDragController == controller.GetID())
-					{
-						hEntity->m_vrDragger = nullptr;
-						hEntity->m_vrDragController = VRControllerID::INVALID;
-					}
-				}
-			}
+			HandleGrabbables(pPlayer, pWorldsSmallestCup, controller, interaction);
 		}
 		return true;
 	}
@@ -967,6 +938,15 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, EHAN
 			{
 				if (controller.SetDraggedEntity(hEntity))
 				{
+					// did another controller lose this dragged entity?
+					if (hEntity->m_vrDragger)
+					{
+						EHANDLE<CBasePlayer> hOtherPlayer = hEntity->m_vrDragger;
+						if (hOtherPlayer)
+						{
+							hOtherPlayer->GetController(hEntity->m_vrDragController).RemoveDraggedEntity(hEntity);
+						}
+					}
 					hEntity->m_vrDragger = pPlayer;
 					hEntity->m_vrDragController = controller.GetID();
 					hEntity->SetThink(&CBaseEntity::DragStartThink);

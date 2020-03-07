@@ -196,16 +196,6 @@ void VRController::PostFrame()
 		MESSAGE_END();
 	}
 
-	// did i lose my dragged entity?
-	if (m_draggedEntity)
-	{
-		if (m_draggedEntity->m_vrDragController != m_id || m_draggedEntity->m_vrDragger != m_hPlayer)
-		{
-			m_draggedEntity = nullptr;
-			m_draggedEntityPositions.reset();
-		}
-	}
-
 	SendEntityDataToClient(m_hPlayer, m_id);
 }
 

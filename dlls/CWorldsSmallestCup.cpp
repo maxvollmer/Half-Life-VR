@@ -36,9 +36,28 @@ void CWorldsSmallestCup::Spawn()
 	pev->nextthink = gpGlobals->time + 0.1f;
 	if (m_instance && m_instance != this)
 	{
+		m_hAlreadySpokenKleiners.insert(m_instance->m_hAlreadySpokenKleiners.begin(), m_instance->m_hAlreadySpokenKleiners.end());
 		m_instance->SetThink(&CBaseEntity::SUB_Remove);
 	}
 	m_instance = this;
+}
+
+void CWorldsSmallestCup::HandleDragStart()
+{
+	pev->flags &= ~FL_ALWAYSTHINK;
+}
+
+void CWorldsSmallestCup::HandleDragStop()
+{
+	SetThink(&CWorldsSmallestCup::CupThink);
+	pev->nextthink = gpGlobals->time;
+	pev->flags |= FL_ALWAYSTHINK;
+}
+
+void CWorldsSmallestCup::HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles)
+{
+	CBaseEntity::HandleDragUpdate(origin, velocity, angles);
+	CupThink();
 }
 
 void CWorldsSmallestCup::CupThink()

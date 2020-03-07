@@ -1013,8 +1013,7 @@ void CStudioModelRenderer::StudioSetupBonesInline(float bonetransform[MAXSTUDIOB
 	// Added studio model scaling - Max Vollmer, 2017-08-26
 	if (g_curFrameTempEnts.count(m_pCurrentEntity) == 0
 		&& m_pCurrentEntity->curstate.scale > 0.f
-		&& m_pCurrentEntity->prevstate.scale == m_pCurrentEntity->curstate.scale
-		&& (m_pCurrentEntity->curstate.scale < 1.f || m_pCurrentEntity->baseline.scale == m_pCurrentEntity->curstate.scale))
+		&& m_pCurrentEntity->prevstate.scale == m_pCurrentEntity->curstate.scale)
 	{
 		for (int j = 0; j < 3; j++)
 		{

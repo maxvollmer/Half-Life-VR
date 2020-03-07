@@ -13,6 +13,11 @@ public:
 	virtual void Precache() override;
 	void EXPORT CupThink(void);
 
+	virtual bool IsDraggable() override { return true; }
+	virtual void HandleDragStart() override;
+	virtual void HandleDragStop() override;
+	virtual void HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles) override;
+
 private:
 	bool AmIInKleinersFace(CTalkMonster* pKleiner);
 	bool IsFallingOutOfWorld();
