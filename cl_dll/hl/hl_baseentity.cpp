@@ -59,7 +59,8 @@ int CBaseEntity::IsDormant(void) { return 0; }
 BOOL CBaseEntity::IsInWorld(void) { return TRUE; }
 int CBaseEntity::ShouldToggle(USE_TYPE useType, BOOL currentState) { return 0; }
 int	CBaseEntity::DamageDecal(int bitsDamageType) { return -1; }
-void CBaseEntity::SUB_Remove(void) { }
+void CBaseEntity::SUB_Remove() {}
+void CBaseEntity::UpdateOnRemove() {}
 
 // CBaseDelay Stubs
 void CBaseDelay::KeyValue(struct KeyValueData_s*) { }

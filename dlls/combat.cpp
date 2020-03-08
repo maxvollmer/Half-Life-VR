@@ -40,6 +40,8 @@ extern entvars_t* g_pevLastInflictor;
 #define HUMAN_GIB_COUNT  6
 #define ALIEN_GIB_COUNT  4
 
+constexpr const int MAX_GIBS = 128;
+int CGib::m_numGibs = 0;
 
 // HACKHACK -- The gib velocity equations don't work
 void CGib::LimitVelocity(void)
@@ -258,6 +260,63 @@ void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, int human)
 	else
 	{
 		CGib::SpawnGibs(pevVictim, "models/agibs.mdl", cGibs, 0, ALIEN_GIB_COUNT - 1);
+	}
+}
+
+void CGib::UpdateOnRemove()
+{
+	CBaseEntity::UpdateOnRemove();
+	m_numGibs--;
+}
+
+void CGib::LimitNumberOfGibs()
+{
+	if (m_numGibs >= MAX_GIBS)
+	{
+		// Delete all gibs not in PVS
+		int numgibsremoved = 0;
+		CBaseEntity* pGib = nullptr;
+		while (pGib = UTIL_FindEntityByClassname(pGib, "gib"))
+		{
+			if (!pGib->m_isInPVS)
+			{
+				UTIL_Remove(pGib);
+				numgibsremoved++;
+			}
+		}
+
+		// too many gibs are in PVS! remove 1/4 of all gibs immediately
+		// (this automagically deletes gibs by age, as older gibs are "earlier" in the engine's edict array)
+		while (m_numGibs >= (MAX_GIBS * 3 / 4))
+		{
+			pGib = nullptr;
+			while (pGib = UTIL_FindEntityByClassname(pGib, "gib"))
+			{
+				// Don't remove gibs currently being dragged
+				if (!pGib->m_vrDragger)
+				{
+					UTIL_Remove(pGib);
+				}
+			}
+		}
+
+		// Fade out enough gibs to reduce to half of max gibs
+		// (this automagically fades out gibs by age, as older gibs are "earlier" in the engine's edict array)
+		int fadeoutgibs = m_numGibs - MAX_GIBS / 2;
+		while (fadeoutgibs > 0)
+		{
+			pGib = nullptr;
+			while (pGib = UTIL_FindEntityByClassname(pGib, "gib"))
+			{
+				// Don't fade out gibs currently being dragged
+				if (!pGib->m_vrDragger)
+				{
+					pGib->SetThink(&CGib::SUB_StartFadeOut);
+					pGib->pev->nextthink = gpGlobals->time;
+				}
+				fadeoutgibs--;
+			}
+		}
 	}
 }
 
@@ -697,11 +756,13 @@ void CGib::WaitTillLand(void)
 
 	if (pev->velocity == g_vecZero)
 	{
+		/*
 		if (m_lifeTime > 0)
 		{
 			SetThink(&CGib::SUB_StartFadeOut);
 			pev->nextthink = gpGlobals->time + m_lifeTime;
 		}
+		*/
 
 		// If you bleed, you stink!
 		if (m_bloodColor != DONT_BLEED)
@@ -825,6 +886,8 @@ void CGib::Spawn(const char* szGibModel)
 {
 	ASSERT(szGibModel && strlen(szGibModel) > 0);
 
+	LimitNumberOfGibs();
+
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->friction = 0.55;  // deading the bounce a bit
 
@@ -840,12 +903,14 @@ void CGib::Spawn(const char* szGibModel)
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 
 	pev->nextthink = gpGlobals->time + 4;
-	m_lifeTime = 25;
+	//m_lifeTime = 25;
 	SetThink(&CGib::WaitTillLand);
 	SetTouch(&CGib::BounceGibTouch);
 
 	m_material = matNone;
 	m_cBloodDecals = 5;  // how many blood decals this gib can place (1 per bounce until none remain).
+
+	m_numGibs++;
 }
 
 // take health

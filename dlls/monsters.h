@@ -167,7 +167,7 @@ public:
 	int m_bloodColor = 0;
 	int m_cBloodDecals = 0;
 	int m_material = 0;
-	float m_lifeTime = 0.f;
+	// float m_lifeTime = 0.f;
 
 	virtual bool IsDraggable() override { return !(pev->effects & EF_NODRAW) && pev->rendermode != kRenderTransTexture; }
 	virtual void HandleDragStart() override
@@ -185,10 +185,15 @@ public:
 		SetTouch(sticky ? &CGib::StickyGibTouch : &CGib::BounceGibTouch);
 	}
 
+	virtual void UpdateOnRemove() override;
+
 private:
 	bool sticky = false;
 
 	EHANDLE<CBaseEntity> m_hThrower;
+
+	static void LimitNumberOfGibs();
+	static int m_numGibs;
 };
 
 

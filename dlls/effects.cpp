@@ -1504,12 +1504,14 @@ void CGibShooter::ShootThink(void)
 
 		float thinkTime = pGib->pev->nextthink - gpGlobals->time;
 
+		/*
 		pGib->m_lifeTime = (m_flGibLife * RANDOM_FLOAT(0.95, 1.05));  // +/- 5%
 		if (pGib->m_lifeTime < thinkTime)
 		{
 			pGib->pev->nextthink = gpGlobals->time + pGib->m_lifeTime;
 			pGib->m_lifeTime = 0;
 		}
+		*/
 	}
 
 	if (--m_iGibs <= 0)
@@ -2246,7 +2248,7 @@ void CItemSoda::Spawn()
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 	pev->classname = MAKE_STRING("item_sodacan");
 
-	m_lifeTime = -1;	// live forever
+	//m_lifeTime = -1;	// live forever
 	m_material = matMetal;
 
 	// cans don't bleed

@@ -104,6 +104,28 @@ private:
 		int material,
 		int body, int numBodies,
 		char flags);
+
+	// returns number of gibs actually spawned
+	int VRSpawnGibs(const char* model,
+		const Vector& pos,
+		const Vector& size,
+		Vector direction,
+		float random,
+		float life,
+		int count,
+		int material,
+		int body, int numBodies,
+		char flags);
+
+	void VRSpawnTempEnts(
+		int modelIndex,
+		const Vector& pos,
+		const Vector& size,
+		Vector direction,
+		float random,
+		float life,
+		int count,
+		char flags);
 };
 
 class CPushable : public CBreakable

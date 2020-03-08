@@ -1054,6 +1054,11 @@ void SpectatorThink(edict_t* pEntity)
 // PAS and PVS routines for client messaging
 //
 
+namespace
+{
+	unsigned char* m_pvsCache = nullptr;
+}
+
 /*
 ================
 SetupVisibility
@@ -1077,12 +1082,15 @@ void SetupVisibility(edict_t* pViewEntity, edict_t* pClient, unsigned char** pvs
 	{
 		*pvs = nullptr;  // the spectator proxy sees
 		*pas = nullptr;  // and hears everything
+		m_pvsCache = nullptr;
 		return;
 	}
 
 	Vector org = pView->v.origin + pView->v.view_ofs;
 	*pvs = ENGINE_SET_PVS(org);
 	*pas = ENGINE_SET_PAS(org);
+
+	m_pvsCache = *pvs;
 }
 
 #include "entity_state.h"
@@ -1102,6 +1110,18 @@ we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to. 
 */
 int AddToFullPack(struct entity_state_s* state, int e, edict_t* ent, edict_t* host, int hostflags, int player, unsigned char* pSet)
 {
+	bool isInPVS = ENGINE_CHECK_VISIBILITY(ent, pSet);
+
+	// Remember if entity is in PVS
+	if (m_pvsCache == pSet)
+	{
+		EHANDLE<CBaseEntity> hEnt = CBaseEntity::SafeInstance<CBaseEntity>(ent);
+		if (hEnt)
+		{
+			hEnt->m_isInPVS = isInPVS;
+		}
+	}
+
 	int i = 0;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
@@ -1123,7 +1143,7 @@ int AddToFullPack(struct entity_state_s* state, int e, edict_t* ent, edict_t* ho
 	// If pSet is nullptr, then the test will always succeed and the entity will be added to the update
 	if (ent != host)
 	{
-		if (!ENGINE_CHECK_VISIBILITY(ent, pSet))
+		if (!isInPVS)
 		{
 			return 0;
 		}

@@ -445,7 +445,7 @@ public:
 	};
 #endif
 
-	void UpdateOnRemove(void);
+	virtual void UpdateOnRemove();
 
 	// common member functions
 	void EXPORT SUB_Remove(void);
@@ -676,6 +676,9 @@ public:
 
 	// overriden by NPCs that react to the player throwing stuff at them
 	virtual void GibAttack(EHANDLE<CBaseEntity> thrower, const Vector& pos, int bloodcolor) {}
+
+	// Remember if entity is in PVS this frame (last frame? doesn't matter), set in AddToFullPack in client.cpp - Max Vollmer, 2020-03-08
+	bool m_isInPVS = false;
 };
 
 
