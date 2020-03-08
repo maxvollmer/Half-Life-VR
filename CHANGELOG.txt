@@ -1,6 +1,6 @@
-0.6.12-beta
+0.6.12-beta - 2020-03-08
  Mod:
-  * Removed number of grabbable gibs spawned by breakables
+  * Reduced number of grabbable gibs spawned by breakables
   * Set maximum number of total gibs in a level to 128
 
  HLVRConfig:
