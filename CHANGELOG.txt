@@ -1,3 +1,12 @@
+0.6.13-beta - 2020-03-09
+ Mod:
+  * Fixed HD textures not loading due bug introduced with gl_texturemode
+  * Breakables spawn more gibs when melee'd by player, less otherwise
+  * Default maximum number of gibs in a level reduced to 50 from 128
+
+ HLVRConfig:
+  * Players can configure maximum number of gibs in a level
+
 0.6.12-beta - 2020-03-08
  Mod:
   * Reduced number of grabbable gibs spawned by breakables
