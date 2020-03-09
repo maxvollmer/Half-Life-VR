@@ -1,6 +1,7 @@
 
 #include <functional>
 #include <regex>
+#include <unordered_set>
 
 #include "Matrices.h"
 
@@ -61,6 +62,8 @@ namespace
 	constexpr const float VR_HUD_TRAINCONTROLS_SPRITE_SCALE = 0.25f;
 
 	constexpr const int VR_HUD_SPRITE_OFFSET_STEPSIZE = 40;
+
+	std::unordered_set<std::string> g_hudMissingSpriteTextures;
 
 	struct HUDSpriteSize
 	{
@@ -413,12 +416,18 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 		texture = VRTextureHelper::Instance().GetTexture(hudTextureName);
 	}
 
+	// give up
 	if (texture == 0)
 	{
-		// give up
-		gEngfuncs.Con_DPrintf("Warning: HUD sprite model %s has no texture!\n", pSpriteModel->name);
+		if (g_hudMissingSpriteTextures.count(pSpriteModel->name) == 0)
+		{
+			g_hudMissingSpriteTextures.insert(pSpriteModel->name);
+			gEngfuncs.Con_DPrintf("Warning: HUD sprite model %s has no texture!\n", pSpriteModel->name);
+		}
 		return;
 	}
+
+	g_hudMissingSpriteTextures.erase(pSpriteModel->name);
 
 	glBindTexture(GL_TEXTURE_2D, texture);
 
