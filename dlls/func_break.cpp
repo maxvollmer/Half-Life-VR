@@ -484,6 +484,9 @@ void CBreakable::BreakTouch(CBaseEntity* pOther)
 		// play creaking sound here.
 		DamageSound();
 
+		m_hKiller = pOther;
+		m_killMethod = KillMethod::TOUCH;
+
 		SetThink(&CBreakable::Die);
 		SetTouch(nullptr);
 
@@ -509,6 +512,9 @@ void CBreakable::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 		pev->angles.y = m_angle;
 		UTIL_MakeVectors(pev->angles);
 		g_vecAttackDir = gpGlobals->v_forward;
+
+		m_hKiller = pActivator;
+		m_killMethod = KillMethod::TRIGGER;
 
 		Die();
 	}
@@ -589,6 +595,10 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	if (pev->health <= 0)
 	{
 		Killed(pevAttacker, bitsDamageType, GIB_NORMAL);
+
+		m_hKiller = CBaseEntity::SafeInstance<CBaseEntity>(pevInflictor);
+		m_killMethod = (pevAttacker == pevInflictor) ? KillMethod::MELEE : KillMethod::PROJECTILE;
+
 		Die();
 		return 0;
 	}
@@ -786,6 +796,22 @@ void CBreakable::VRSpawnTempEnts(
 // never spawn more than 10 gibs
 constexpr const int MAX_BREAKABLE_GIBS = 10;
 
+int CBreakable::VRGetGibCount(int totalcount)
+{
+	// if not killed by player, only spawn 10% gibs (rest is tempents)
+	if (!m_hKiller || !m_hKiller->IsPlayer())
+		return totalcount / 10;
+
+	switch (m_killMethod)
+	{
+	case KillMethod::MELEE: return totalcount;				// melee'd by player, spawn as many gibs as possible
+	case KillMethod::PROJECTILE: return totalcount / 2;		// shot or exploded by player, spawn 50% gibs
+	case KillMethod::TOUCH: return totalcount / 3;			// player fell on this, spawn 30% gibs
+	case KillMethod::TRIGGER: return totalcount / 5;		// killed by player trigger, spawn 20% gibs
+	default: return totalcount / 10;						// default 10% gibs
+	}
+}
+
 int CBreakable::VRSpawnGibs(const char* model,
 	const Vector& pos,
 	const Vector& size,
@@ -803,6 +829,10 @@ int CBreakable::VRSpawnGibs(const char* model,
 	// Don't spawn any gibs if we aren't in the PVS
 	if (!m_isInPVS)
 		return 0;
+
+	count = VRGetGibCount(count);
+	if (count == 0)
+		count = 1;
 
 	// never spawn more than MAX_BREAKABLE_GIBS gibs
 	if (count > MAX_BREAKABLE_GIBS)

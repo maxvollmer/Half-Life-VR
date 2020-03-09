@@ -114,7 +114,7 @@ void VRTextureHelper::UpdateTextureMode()
 {
 	std::string textureMode = CVAR_GET_STRING("gl_texturemode");
 	std::transform(textureMode.begin(), textureMode.end(), textureMode.begin(), ::toupper);
-	if (textureMode != m_lastTextureMode)
+	if (m_lastTextureMode.empty() || textureMode != m_lastTextureMode)
 	{
 		if (textureMode == "GL_NEAREST")
 		{
@@ -206,8 +206,8 @@ unsigned int VRTextureHelper::GetTextureInternal(const std::filesystem::path& pa
 				TryGLCall(glGenTextures, 1, &texture);
 				TryGLCall(glBindTexture, GL_TEXTURE_2D, texture);
 				TryGLCall(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA8, lodewidth, lodeheight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
-				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_glTexMinFilter);
-				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_glTexMagFilter);
+				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_glTexMinFilter);
+				TryGLCall(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_glTexMagFilter);
 				TryGLCall(glGenerateMipmap, GL_TEXTURE_2D);
 				TryGLCall(glBindTexture, GL_TEXTURE_2D, 0);
 			}

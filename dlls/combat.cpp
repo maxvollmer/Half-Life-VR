@@ -40,7 +40,6 @@ extern entvars_t* g_pevLastInflictor;
 #define HUMAN_GIB_COUNT  6
 #define ALIEN_GIB_COUNT  4
 
-constexpr const int MAX_GIBS = 128;
 int CGib::m_numGibs = 0;
 
 // HACKHACK -- The gib velocity equations don't work
@@ -271,7 +270,14 @@ void CGib::UpdateOnRemove()
 
 void CGib::LimitNumberOfGibs()
 {
-	if (m_numGibs >= MAX_GIBS)
+	constexpr const int DEFAULT_MAX_GIBS = 50;
+	int maxGibs = atoi(CVAR_GET_STRING("vr_max_interactive_debris"));
+	if (maxGibs <= 0)
+	{
+		maxGibs = DEFAULT_MAX_GIBS;
+	}
+
+	if (m_numGibs >= maxGibs)
 	{
 		// Delete all gibs not in PVS
 		int numgibsremoved = 0;
@@ -287,7 +293,7 @@ void CGib::LimitNumberOfGibs()
 
 		// too many gibs are in PVS! remove 1/4 of all gibs immediately
 		// (this automagically deletes gibs by age, as older gibs are "earlier" in the engine's edict array)
-		while (m_numGibs >= (MAX_GIBS * 3 / 4))
+		while (m_numGibs >= (maxGibs * 3 / 4))
 		{
 			pGib = nullptr;
 			while (pGib = UTIL_FindEntityByClassname(pGib, "gib"))
@@ -302,7 +308,7 @@ void CGib::LimitNumberOfGibs()
 
 		// Fade out enough gibs to reduce to half of max gibs
 		// (this automagically fades out gibs by age, as older gibs are "earlier" in the engine's edict array)
-		int fadeoutgibs = m_numGibs - MAX_GIBS / 2;
+		int fadeoutgibs = m_numGibs - maxGibs / 2;
 		while (fadeoutgibs > 0)
 		{
 			pGib = nullptr;

@@ -120,6 +120,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_headset_offset", "0");
 	RegisterCVAR("vr_classic_mode", "0");
 	RegisterCVAR("vr_enable_interactive_debris", "1");
+	RegisterCVAR("vr_max_interactive_debris", "50");
 	RegisterCVAR("vr_drag_onlyhand", "0");
 	RegisterCVAR("vr_npc_gunpoint", "1");
 

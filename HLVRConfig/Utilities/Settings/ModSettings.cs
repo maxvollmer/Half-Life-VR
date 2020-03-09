@@ -133,6 +133,7 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_movement_attachment", Setting.Create( new I18N.I18NString("vr_movement_attachment", "Movement attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0") },
 
                 { "vr_enable_interactive_debris", Setting.Create( new I18N.I18NString("vr_enable_interactive_debris", "Enable interactive debris"), true ) },
+                { "vr_max_interactive_debris", Setting.Create( new I18N.I18NString("vr_max_interactive_debris", "Maximum number of interactive debris in a level (Warning: Going higher can wreck the game!)"), SettingType.COUNT, "50", new SettingDependency("vr_enable_interactive_debris", "1") ) },
                 { "vr_drag_onlyhand", Setting.Create( new I18N.I18NString("vr_drag_onlyhand", "Only allow dragging and grabbing objects with bare hands (not with a weapon)"), false ) },
             } },
 

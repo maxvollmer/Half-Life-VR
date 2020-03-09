@@ -126,6 +126,21 @@ private:
 		float life,
 		int count,
 		char flags);
+
+	int VRGetGibCount(int totalcount);
+
+	enum class KillMethod
+	{
+		UNKNOWN,
+		MELEE,
+		PROJECTILE,
+		TRIGGER,
+		TOUCH
+	};
+
+	// Remember who killed us and how (for deciding how many interactive gibs to spawn)
+	EHANDLE<CBaseEntity> m_hKiller;
+	KillMethod m_killMethod{ KillMethod::UNKNOWN };
 };
 
 class CPushable : public CBreakable
