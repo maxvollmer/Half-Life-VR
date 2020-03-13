@@ -1,4 +1,4 @@
-0.6.15-beta
+0.6.15-beta - 2020-03-13
  Mod:
   * Fixed copypaste error causing gl_texturemode to be set to invalid value in classic mode
   * Fixed false positive error message when grabbing brush based entities
