@@ -237,8 +237,8 @@ void VRSettings::CheckCVARsForChanges()
 	{
 		gEngfuncs.Cvar_SetValue("vr_hd_textures_enabled", 0.f);
 		gEngfuncs.Cvar_SetValue("vr_use_hd_models", 0.f);
-		gEngfuncs.pfnClientCmd("gl_texturemode NEAREST");
-		gEngfuncs.pfnClientCmd("vr_texturemode NEAREST");
+		gEngfuncs.pfnClientCmd("gl_texturemode GL_NEAREST");
+		gEngfuncs.pfnClientCmd("vr_texturemode GL_NEAREST");
 	}
 	else
 	{
