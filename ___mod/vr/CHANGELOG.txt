@@ -1,3 +1,11 @@
+0.6.15-beta
+ Mod:
+  * Fixed copypaste error causing gl_texturemode to be set to invalid value in classic mode
+  * Fixed false positive error message when grabbing brush based entities
+
+ HLVRConfig:
+  * No changes
+
 0.6.14-beta - 2020-03-09
  Mod:
   * Limit error message for missing or broken HUD textures to be printed once instead of every frame
