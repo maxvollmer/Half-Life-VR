@@ -1181,12 +1181,15 @@ bool CStudioModelRenderer::DrawVREntity(
 	if (strlen(modelname) == 0)
 		return false;
 
+	if (modelname[0] == '*')
+		return false;
+
 	m_pCurrentEntity = IEngineStudio.GetViewEntity();
 	if (!m_pCurrentEntity)
 		return false;
 
 	auto model = IEngineStudio.Mod_ForName(modelname, 0);
-	if (!model)
+	if (!model || model->type != mod_studio)
 		return false;
 
 	IEngineStudio.SetRenderModel(m_pCurrentEntity->model = m_pRenderModel = model);
@@ -1214,7 +1217,7 @@ bool CStudioModelRenderer::DrawVREntity(
 	IEngineStudio.GetViewInfo(m_vRenderOrigin, m_vUp, m_vRight, m_vNormal);
 	IEngineStudio.GetAliasScale(&m_fSoftwareXScale, &m_fSoftwareYScale);
 
-	m_pStudioHeader = Mod_Extradata("StudioDrawVRHand", m_pCurrentEntity, m_pRenderModel);
+	m_pStudioHeader = Mod_Extradata("DrawVREntity", m_pCurrentEntity, m_pRenderModel);
 	if (!m_pStudioHeader)
 	{
 		m_isCurrentModelMirrored = false;
