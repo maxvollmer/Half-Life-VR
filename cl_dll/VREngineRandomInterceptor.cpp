@@ -23,6 +23,8 @@ namespace
     std::default_random_engine rng{ random_device() };
 
     std::default_random_engine rngbackup = rng;
+
+    std::uniform_real_distribution<float> floatdistribution(0.f, 1.f);
 }
 
 void VRRandomResetSeed(unsigned int seed/* = 0*/)
@@ -50,14 +52,12 @@ void VRRandomRestoreSeed()
 
 float VRRandomFloat(float low, float high)
 {
-    std::uniform_real_distribution<float> distribution((std::min)(low, high), (std::max)(low, high));
-    return distribution(rng);
+    return floatdistribution(rng) * (high - low) + low;
 }
 
 long VRRandomLong(long low, long high)
 {
-    std::uniform_int_distribution<long> distribution((std::min)(low, high), (std::max)(low, high));
-    return distribution(rng);
+    return static_cast<long>(floatdistribution(rng) * (high + 1 - low)) + low;
 }
 
 
@@ -87,7 +87,6 @@ bool HookRandomMethod(const char* name, void* originalmethod, void* hookmethod)
 
 bool VRHookRandomFunctions()
 {
-    return
-        HookRandomMethod("RandomFloat", gEngfuncs.pfnRandomFloat, VRRandomFloat)
+    return HookRandomMethod("RandomFloat", gEngfuncs.pfnRandomFloat, VRRandomFloat)
         && HookRandomMethod("RandomLong", gEngfuncs.pfnRandomLong, VRRandomLong);
 }
