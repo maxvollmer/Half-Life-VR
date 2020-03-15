@@ -840,7 +840,12 @@ void CRotButton::Spawn(void)
 
 	pev->movetype = MOVETYPE_PUSH;
 
-	if (pev->spawnflags & SF_ROTBUTTON_NOTSOLID || CVAR_GET_FLOAT("vr_make_levers_nonsolid") != 0.f)
+	if (pev->health > 0)
+	{
+		pev->takedamage = DAMAGE_YES;
+	}
+
+	if (pev->spawnflags & SF_ROTBUTTON_NOTSOLID || (CVAR_GET_FLOAT("vr_make_levers_nonsolid") != 0.f && pev->takedamage == DAMAGE_NO))
 		pev->solid = SOLID_NOT;
 	else
 		pev->solid = SOLID_BSP;
@@ -852,11 +857,6 @@ void CRotButton::Spawn(void)
 
 	if (m_flWait == 0)
 		m_flWait = 1;
-
-	if (pev->health > 0)
-	{
-		pev->takedamage = DAMAGE_YES;
-	}
 
 	m_toggle_state = TS_AT_BOTTOM;
 	m_vecAngle1 = pev->angles;
