@@ -187,10 +187,11 @@ namespace HLVRConfig.Utilities.UI.Config
             TextBlock textBlock = new TextBlock()
             {
                 TextWrapping = TextWrapping.WrapWithOverflow,
-                Padding = new Thickness(5),
-                Margin = new Thickness(5),
+                Padding = new Thickness(5, 0, 5, 5),
+                Margin = new Thickness(5, 0, 5, 5),
                 Focusable = true
             };
+            textBlock.FontSize *= 0.8;
             textBlock.Inlines.Add(new Run(I18N.Get(description)));
             panel.Children.Add(textBlock);
         }

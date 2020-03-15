@@ -123,6 +123,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_max_interactive_debris", "50");
 	RegisterCVAR("vr_drag_onlyhand", "0");
 	RegisterCVAR("vr_npc_gunpoint", "1");
+	RegisterCVAR("vr_eye_mode", "0");
 
 	RegisterCVAR("vr_use_fmod", "1");
 	RegisterCVAR("vr_fmod_3d_occlusion", "1");

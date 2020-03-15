@@ -163,6 +163,14 @@ private:
 	float m_flDrawingDamageTime = 0.f;
 	Vector m_damageColor;
 
+	enum class EyeMode
+	{
+		Both,
+		LeftOnly,
+		RightOnly
+	};
+	EyeMode m_eyeMode{ EyeMode::Both };
+
 	bool m_isVeryFirstFrameEver{ true };
 
 	void GetStartingPosForHUDRenderType(const VRHUDRenderType m_hudRenderType, float& hudStartPositionUpOffset, float& hudStartPositionRightOffset);

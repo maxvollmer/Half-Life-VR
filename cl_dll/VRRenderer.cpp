@@ -185,11 +185,28 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 
 		VRTextureHelper::Instance().Init();
 		CheckAndIfNecessaryReplaceHDTextures();
+
+		m_eyeMode = static_cast<EyeMode>(std::atoi(CVAR_GET_STRING("vr_eye_mode")));
+	}
+
+	// skip second eye if m_eyeMode is LeftOnly or RightOnly
+	if (pparams->nextView == 1 && m_eyeMode != EyeMode::Both)
+	{
+		pparams->nextView = 2;
 	}
 
 	if (pparams->nextView == 0)
 	{
-		vrHelper->PrepareVRScene(VRHelper::VRSceneMode::LeftEye);
+		if (m_eyeMode == EyeMode::RightOnly)
+		{
+			// right eye if RightOnly
+			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
+		}
+		else
+		{
+			// left eye if LeftOnly or Both
+			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::LeftEye);
+		}
 
 		pparams->nextView = 1;
 		pparams->onlyClientDraw = 0;

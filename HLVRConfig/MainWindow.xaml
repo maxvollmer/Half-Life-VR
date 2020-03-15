@@ -53,7 +53,7 @@
                     </ScrollViewer>
                 </DockPanel>
             </controls:I18NTabItem>
-            <controls:I18NTabItem Key="GUI.Tab.InputAndMovementSettings" DefaultValue="Input &amp; Movement Settings">
+            <controls:I18NTabItem Key="GUI.Tab.InputSettings" DefaultValue="Input Settings">
                 <DockPanel>
                     <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                         <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
@@ -63,13 +63,33 @@
                     </ScrollViewer>
                 </DockPanel>
             </controls:I18NTabItem>
-            <controls:I18NTabItem Key="GUI.Tab.GraphicsAndDisplaySettings" DefaultValue="Graphics &amp; Display Settings">
+            <controls:I18NTabItem Key="GUI.Tab.ImmersionSettings" DefaultValue="Immersion Settings">
                 <DockPanel>
                     <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                         <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
                     </Button>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
-                        <StackPanel Orientation="Vertical" x:Name="GraphicsConfig"/>
+                        <StackPanel Orientation="Vertical" x:Name="ImmersionConfig"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </controls:I18NTabItem>
+            <controls:I18NTabItem Key="GUI.Tab.PerformanceSettings" DefaultValue="Performance Settings">
+                <DockPanel>
+                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                        <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
+                    </Button>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Vertical" x:Name="PerformanceConfig"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </controls:I18NTabItem>
+            <controls:I18NTabItem Key="GUI.Tab.VisualsSettings" DefaultValue="Visuals Settings">
+                <DockPanel>
+                    <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                        <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
+                    </Button>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Vertical" x:Name="VisualsConfig"/>
                     </ScrollViewer>
                 </DockPanel>
             </controls:I18NTabItem>

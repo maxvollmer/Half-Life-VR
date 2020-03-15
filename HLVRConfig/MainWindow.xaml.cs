@@ -214,19 +214,25 @@ namespace HLVRConfig
                 if (HLVRSettingsManager.AreModSettingsInitialized)
                 {
                     ModConfig.Initialize(InputConfig, HLVRSettingsManager.ModSettings.InputSettings);
-                    ModConfig.Initialize(GraphicsConfig, HLVRSettingsManager.ModSettings.GraphicsSettings);
+                    ModConfig.Initialize(ImmersionConfig, HLVRSettingsManager.ModSettings.ImmersionSettings);
+                    ModConfig.Initialize(PerformanceConfig, HLVRSettingsManager.ModSettings.PerformanceSettings);
+                    ModConfig.Initialize(VisualsConfig, HLVRSettingsManager.ModSettings.VisualsSettings);
                     ModConfig.Initialize(AudioConfig, HLVRSettingsManager.ModSettings.AudioSettings);
                     ModConfig.Initialize(OtherConfig, HLVRSettingsManager.ModSettings.OtherSettings);
                 }
                 else
                 {
                     InputConfig.Children.Clear();
-                    GraphicsConfig.Children.Clear();
+                    ImmersionConfig.Children.Clear();
+                    PerformanceConfig.Children.Clear();
+                    VisualsConfig.Children.Clear();
                     AudioConfig.Children.Clear();
                     OtherConfig.Children.Clear();
                     var errorMsg = I18N.Get(new I18N.I18NString("ErrorMsgCouldNotSynchronizeModSettings", "Couldn't synchronize mod settings. Config tabs are not available."));
                     AddNopeText(InputConfig, errorMsg);
-                    AddNopeText(GraphicsConfig, errorMsg);
+                    AddNopeText(ImmersionConfig, errorMsg);
+                    AddNopeText(PerformanceConfig, errorMsg);
+                    AddNopeText(VisualsConfig, errorMsg);
                     AddNopeText(AudioConfig, errorMsg);
                     AddNopeText(OtherConfig, errorMsg);
                 }

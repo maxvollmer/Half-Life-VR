@@ -256,7 +256,9 @@ namespace HLVRConfig.Utilities.Settings
         {
             ModSettings defaultSettings = new ModSettings();
             ModSettings.InputSettings = defaultSettings.InputSettings;
-            ModSettings.GraphicsSettings = defaultSettings.GraphicsSettings;
+            ModSettings.ImmersionSettings = defaultSettings.ImmersionSettings;
+            ModSettings.PerformanceSettings = defaultSettings.PerformanceSettings;
+            ModSettings.VisualsSettings = defaultSettings.VisualsSettings;
             ModSettings.AudioSettings = defaultSettings.AudioSettings;
             ModSettings.OtherSettings = defaultSettings.OtherSettings;
             DelayedStoreModSettings();
@@ -277,10 +279,16 @@ namespace HLVRConfig.Utilities.Settings
             foreach (var category in ModSettings.InputSettings)
                 if (category.Value.ContainsKey(setting))
                     return category.Key;
-            foreach (var category in ModSettings.AudioSettings)
+            foreach (var category in ModSettings.ImmersionSettings)
                 if (category.Value.ContainsKey(setting))
                     return category.Key;
-            foreach (var category in ModSettings.GraphicsSettings)
+            foreach (var category in ModSettings.PerformanceSettings)
+                if (category.Value.ContainsKey(setting))
+                    return category.Key;
+            foreach (var category in ModSettings.VisualsSettings)
+                if (category.Value.ContainsKey(setting))
+                    return category.Key;
+            foreach (var category in ModSettings.AudioSettings)
                 if (category.Value.ContainsKey(setting))
                     return category.Key;
             foreach (var category in ModSettings.OtherSettings)

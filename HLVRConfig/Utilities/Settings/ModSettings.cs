@@ -21,15 +21,16 @@ namespace HLVRConfig.Utilities.Settings
 
         public float GetWorldScale()
         {
-            float.TryParse(GraphicsSettings[ModSettings.CategoryWorldCustomizationAndScaling][ModSettings.WorldScale].Value, out float value);
+            float.TryParse(VisualsSettings[ModSettings.CategoryWorldCustomizationAndScaling][ModSettings.WorldScale].Value, out float value);
             return value;
         }
+        
+
+        public static readonly SettingCategory CategoryGeneralInput = new SettingCategory(
+            new I18N.I18NString("InputSettings.General", "General"));
 
         public static readonly SettingCategory CategoryAntinauseaFeatures = new SettingCategory(
             new I18N.I18NString("InputSettings.AntinauseaFeatures", "Anti-nausea features"));
-
-        public static readonly SettingCategory CategoryMovementSpeed = new SettingCategory(
-            new I18N.I18NString("InputSettings.MovementSpeed", "Movement Speed"));
 
         public static readonly SettingCategory CategoryControlsAndAccessibility = new SettingCategory(
              new I18N.I18NString("InputSettings.ControlsAndAccessibility", "Controls & Accessibility"));
@@ -37,29 +38,44 @@ namespace HLVRConfig.Utilities.Settings
         public static readonly SettingCategory CategoryMovement = new SettingCategory(
              new I18N.I18NString("InputSettings.Movement", "Movement"));
 
+        public static readonly SettingCategory CategoryMovementSpeed = new SettingCategory(
+            new I18N.I18NString("InputSettings.MovementSpeed", "Movement Speed"));
+
+        public static readonly SettingCategory CategoryAttachments = new SettingCategory(
+            new I18N.I18NString("InputSettings.Attachments", "Attachments")); 
+
+
+        public static readonly SettingCategory CategoryGeneralImmersion = new SettingCategory(
+            new I18N.I18NString("ImmersionSettings.General", "General"));
+
         public static readonly SettingCategory CategoryLadders = new SettingCategory(
-            new I18N.I18NString("InputSettings.Ladders", "Ladders"));
+            new I18N.I18NString("ImmersionSettings.Ladders", "Ladders"));
 
         public static readonly SettingCategory CategoryTrains = new SettingCategory(
-            new I18N.I18NString("InputSettings.Trains", "Usable trains"));
+            new I18N.I18NString("ImmersionSettings.Trains", "Usable trains"));
 
         public static readonly SettingCategory CategoryMountedGuns = new SettingCategory(
-            new I18N.I18NString("InputSettings.MountedGuns", "Mounted guns"));
+            new I18N.I18NString("ImmersionSettings.MountedGuns", "Mounted guns"));
 
 
-        public static readonly SettingCategory CategoryFPSAndPerformance = new SettingCategory(
-            new I18N.I18NString("GraphicsSettings.FPSAndPerformance", "FPS & Performance"));
+        public static readonly SettingCategory CategoryRenderer = new SettingCategory(
+            new I18N.I18NString("PerformanceSettings.Renderer", "Renderer"),
+            new I18N.I18NString("PerformanceSettings.RendererDescription", "Sync FPS with your SteamVR settings. It is highly recommended that you play Half-Life: VR at no more than 90fps."));
+
+        public static readonly SettingCategory CategoryInteractiveDebris = new SettingCategory(
+            new I18N.I18NString("PerformanceSettings.InteractiveDebris", "Interactive Debris"));
+
 
         public static readonly SettingCategory CategoryQuality = new SettingCategory(
-            new I18N.I18NString("GraphicsSettings.Quality", "Quality"),
+            new I18N.I18NString("VisualsSettings.Quality", "Quality"),
             new SettingDependency("vr_classic_mode", "0"));
 
         public static readonly SettingCategory CategoryWorldCustomizationAndScaling = new SettingCategory(
-            new I18N.I18NString("GraphicsSettings.WorldCustomizationAndScaling", "World customization & scaling"));
+            new I18N.I18NString("VisualsSettings.WorldCustomizationAndScaling", "World customization & scaling"));
         public static readonly string WorldScale = "vr_world_scale";
 
         public static readonly SettingCategory CategoryHUD = new SettingCategory(
-            new I18N.I18NString("GraphicsSettings.HUD", "HUD"));
+            new I18N.I18NString("VisualsSettings.HUD", "HUD"));
 
 
         public static readonly SettingCategory CategoryFMOD = new SettingCategory(
@@ -87,6 +103,15 @@ namespace HLVRConfig.Utilities.Settings
 
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> InputSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
         {
+            { CategoryGeneralInput, new OrderedDictionary<string, Setting>() {
+                { "vr_flashlight_toggle", Setting.Create( new I18N.I18NString("vr_flashlight_toggle", "Flashlight should toggle"), false ) },
+                { "vr_enable_aim_laser", Setting.Create( new I18N.I18NString("vr_enable_aim_laser", "Enable aim laser pointer for range weapons"), false ) },
+                { "vr_crowbar_vanilla_attack_enabled", Setting.Create( new I18N.I18NString("vr_crowbar_vanilla_attack_enabled", "Enable crowbar melee attack on 'fire' action."), false ) },
+                { "vr_weapon_grenade_mode", Setting.Create( new I18N.I18NString("vr_weapon_grenade_mode", "Grenade throw mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_weapon_grenade_mode.ControllerVelocity", "Use controller velocity") }, { "1", new I18N.I18NString("vr_weapon_grenade_mode.ControllerAimGameVelocity", "Aim with controller, but fly with fixed speed (as in original game)") } }, "0" ) },
+                { "vr_togglewalk", Setting.Create( new I18N.I18NString("vr_togglewalk", "Walk Input Mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_togglewalk.Hold", "Hold (Hold to Walk, release to run)") }, { "1", new I18N.I18NString("vr_togglewalk.Toggle", "Toggle (Click to switch between walking and running)") } }, "0" ) },
+                { "vr_melee_swing_speed", Setting.Create( new I18N.I18NString("vr_melee_swing_speed", "Minimum controller speed to trigger melee damage"), SettingType.SPEED, "100" ) },
+            } },
+
             { CategoryAntinauseaFeatures, new OrderedDictionary<string, Setting>() {
                 { "vr_move_instant_accelerate", Setting.Create( new I18N.I18NString("vr_move_instant_accelerate", "Instant acceleration"), true ) },
                 { "vr_move_instant_decelerate", Setting.Create( new I18N.I18NString("vr_move_instant_decelerate", "Instant deceleration"), true ) },
@@ -97,44 +122,6 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_xenjumpthingies_teleporteronly", Setting.Create( new I18N.I18NString("vr_xenjumpthingies_teleporteronly", "Disable being pushed up by xen jump thingies (you can use the teleporter on those things)"), true ) },
                 { "vr_semicheat_spinthingyspeed", Setting.Create( new I18N.I18NString("vr_semicheat_spinthingyspeed", "Set maximum speed for those fast spinning platforms near the tentacle monster (map c1a4f) (Game Default: 110)"), SettingType.SPEED, "50" ) },
                 //{ "vr_smooth_steps", Setting.Create( new I18N.I18NString("vr_smooth_steps", "Smooth out steps (may affect performance!)"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_smooth_steps.Disabled", "Disabled") }, { "1", new I18N.I18NString("vr_smooth_steps.Most", "Smooth out most steps") }, { "2", new I18N.I18NString("vr_smooth_steps.All", "Smooth out all steps") } }, "0" ) },
-            } },
-
-            { CategoryMovementSpeed, new OrderedDictionary<string, Setting>() {
-                { "vr_forwardspeed", Setting.Create( new I18N.I18NString("vr_forwardspeed", "Forward speed"), SettingType.SPEED, "200" ) },
-                { "vr_backspeed", Setting.Create( new I18N.I18NString("vr_backspeed", "Backward speed"), SettingType.SPEED, "200" ) },
-                { "vr_sidespeed", Setting.Create( new I18N.I18NString("vr_sidespeed", "Sideways speed"), SettingType.SPEED, "200" ) },
-                { "vr_upspeed", Setting.Create( new I18N.I18NString("vr_upspeed", "Up/Down speed"), SettingType.SPEED, "200" ) },
-                { "vr_yawspeed", Setting.Create( new I18N.I18NString("vr_yawspeed", "Turn speed (degrees/s)"), SettingType.COUNT, "210" ) },
-                { "vr_togglewalk", Setting.Create( new I18N.I18NString("vr_togglewalk", "Walk Input Mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_togglewalk.Hold", "Hold (Hold to Walk, release to run)") }, { "1", new I18N.I18NString("vr_togglewalk.Toggle", "Toggle (Click to switch between walking and running)") } }, "0" ) },
-                { "vr_walkspeedfactor", Setting.Create( new I18N.I18NString("vr_walkspeedfactor", "Speed factor when 'walk' is active"), SettingType.FACTOR, "0.3" ) },
-            } },
-
-            { CategoryControlsAndAccessibility, new OrderedDictionary<string, Setting>() {
-                { "vr_lefthand_mode", Setting.Create( new I18N.I18NString("vr_lefthand_mode", "Left hand mode"), false ) },
-
-                { "vr_crowbar_vanilla_attack_enabled", Setting.Create( new I18N.I18NString("vr_crowbar_vanilla_attack_enabled", "Enable crowbar melee attack on 'fire' action."), false ) },
-
-                { "vr_flashlight_toggle", Setting.Create( new I18N.I18NString("vr_flashlight_toggle", "Flashlight should toggle"), false ) },
-
-                { "vr_enable_aim_laser", Setting.Create( new I18N.I18NString("vr_enable_aim_laser", "Enable aim laser pointer for range weapons"), false ) },
-
-                { "vr_make_levers_nonsolid", Setting.Create( new I18N.I18NString("vr_make_levers_nonsolid", "Make levers non-solid (fixes some collision issues)"), true ) },
-
-                { "vr_use_animated_weapons", Setting.Create( new I18N.I18NString("vr_use_animated_weapons", "Use weapon models with animated movement (affects aiming)"), false ) },
-
-                { "vr_melee_swing_speed", Setting.Create( new I18N.I18NString("vr_melee_swing_speed", "Minimum controller speed to trigger melee damage"), SettingType.SPEED, "100" ) },
-
-                { "vr_headset_offset", Setting.Create( new I18N.I18NString("vr_headset_offset", "HMD height offset"), SettingType.DISTANCE, "0" ) },
-
-                { "vr_weapon_grenade_mode", Setting.Create( new I18N.I18NString("vr_weapon_grenade_mode", "Grenade throw mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_weapon_grenade_mode.ControllerVelocity", "Use controller velocity") }, { "1", new I18N.I18NString("vr_weapon_grenade_mode.ControllerAimGameVelocity", "Aim with controller, but fly with fixed speed (as in original game)") } }, "0" ) },
-
-                { "vr_teleport_attachment", Setting.Create( new I18N.I18NString("vr_teleport_attachment", "Teleporter attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0" ) },
-                { "vr_flashlight_attachment", Setting.Create( new I18N.I18NString("vr_flashlight_attachment", "Flashlight attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0") },
-                { "vr_movement_attachment", Setting.Create( new I18N.I18NString("vr_movement_attachment", "Movement attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0") },
-
-                { "vr_enable_interactive_debris", Setting.Create( new I18N.I18NString("vr_enable_interactive_debris", "Enable interactive debris"), true ) },
-                { "vr_max_interactive_debris", Setting.Create( new I18N.I18NString("vr_max_interactive_debris", "Maximum number of interactive debris in a level (Warning: Going higher can wreck the game!)"), SettingType.COUNT, "50", new SettingDependency("vr_enable_interactive_debris", "1") ) },
-                { "vr_drag_onlyhand", Setting.Create( new I18N.I18NString("vr_drag_onlyhand", "Only allow dragging and grabbing objects with bare hands (not with a weapon)"), false ) },
             } },
 
             { CategoryMovement, new OrderedDictionary<string, Setting>() {
@@ -148,6 +135,31 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_move_analogturn_inverted", Setting.Create( new I18N.I18NString("vr_move_analogturn_inverted", "Invert analog turn input"), false ) },
                 { "vr_move_analog_deadzone", Setting.Create( new I18N.I18NString("vr_move_analog_deadzone", "Minimum analog input to trigger action"), SettingType.FACTOR, "0.1" ) },
             } },
+
+            { CategoryMovementSpeed, new OrderedDictionary<string, Setting>() {
+                { "vr_forwardspeed", Setting.Create( new I18N.I18NString("vr_forwardspeed", "Forward speed"), SettingType.SPEED, "200" ) },
+                { "vr_backspeed", Setting.Create( new I18N.I18NString("vr_backspeed", "Backward speed"), SettingType.SPEED, "200" ) },
+                { "vr_sidespeed", Setting.Create( new I18N.I18NString("vr_sidespeed", "Sideways speed"), SettingType.SPEED, "200" ) },
+                { "vr_upspeed", Setting.Create( new I18N.I18NString("vr_upspeed", "Up/Down speed"), SettingType.SPEED, "200" ) },
+                { "vr_yawspeed", Setting.Create( new I18N.I18NString("vr_yawspeed", "Turn speed (degrees/s)"), SettingType.COUNT, "210" ) },
+                { "vr_walkspeedfactor", Setting.Create( new I18N.I18NString("vr_walkspeedfactor", "Speed factor when 'walk' is active"), SettingType.FACTOR, "0.3" ) },
+            } },
+
+            { CategoryAttachments, new OrderedDictionary<string, Setting>() {
+                { "vr_teleport_attachment", Setting.Create( new I18N.I18NString("vr_teleport_attachment", "Teleporter attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0" ) },
+                { "vr_flashlight_attachment", Setting.Create( new I18N.I18NString("vr_flashlight_attachment", "Flashlight attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0") },
+                { "vr_movement_attachment", Setting.Create( new I18N.I18NString("vr_movement_attachment", "Movement attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0") },
+            } },
+        };
+
+        public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> ImmersionSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
+        {
+            { CategoryGeneralImmersion, new OrderedDictionary<string, Setting>() {
+                { "vr_drag_onlyhand", Setting.Create( new I18N.I18NString("vr_drag_onlyhand", "Only allow dragging and grabbing objects with bare hands (not with a weapon)"), false ) },
+                { "vr_use_animated_weapons", Setting.Create( new I18N.I18NString("vr_use_animated_weapons", "Use weapon models with animated movement (affects aiming)"), false ) },
+                { "vr_make_levers_nonsolid", Setting.Create( new I18N.I18NString("vr_make_levers_nonsolid", "Make levers non-solid (fixes some collision issues)"), true ) },
+                { "vr_headset_offset", Setting.Create( new I18N.I18NString("vr_headset_offset", "HMD height offset"), SettingType.DISTANCE, "0" ) },
+           } },
 
             { CategoryLadders, new OrderedDictionary<string, Setting>() {
                 { "vr_ladder_immersive_movement_enabled", Setting.Create( new I18N.I18NString("vr_ladder_immersive_movement_enabled", "Enabled immersive climbing of ladders"), true ) },
@@ -175,12 +187,22 @@ namespace HLVRConfig.Utilities.Settings
             } },
         };
 
-        public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> GraphicsSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
+        public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> PerformanceSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
         {
-            { CategoryFPSAndPerformance, new OrderedDictionary<string, Setting>() {
-                { "vr_headset_fps", Setting.Create( new I18N.I18NString("vr_headset_fps", "FPS (Sync these with your SteamVR settings. It is highly recommended that you play Half-Life: VR at no more than 90fps.)"), SettingType.COUNT, "90" ) },
+            { CategoryRenderer, new OrderedDictionary<string, Setting>() {
+                { "vr_headset_fps", Setting.Create( new I18N.I18NString("vr_headset_fps", "FPS"), SettingType.COUNT, "90" ) },
+                { "vr_eye_mode", Setting.Create( new I18N.I18NString("vr_eye_mode", "Render to..."), new OrderedDictionary<string, I18N.I18NString>(){ { "0", new I18N.I18NString("vr_eye_mode.BothEyes", "Both Eyes") }, { "1", new I18N.I18NString("vr_eye_mode.LeftEye", "Left Eye Only") }, { "2", new I18N.I18NString("vr_eye_mode.RightEye", "Right Eye Only") } }, "0" ) },
             } },
 
+            { CategoryInteractiveDebris, new OrderedDictionary<string, Setting>() {
+                { "vr_enable_interactive_debris", Setting.Create( new I18N.I18NString("vr_enable_interactive_debris", "Enable interactive debris"), true ) },
+                { "vr_max_interactive_debris", Setting.Create( new I18N.I18NString("vr_max_interactive_debris", "Maximum number of interactive debris in a level (Warning: Going higher can wreck the game!)"), SettingType.COUNT, "50", new SettingDependency("vr_enable_interactive_debris", "1") ) },
+            } },
+
+        };
+
+        public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> VisualsSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
+        {
             { CategoryQuality, new OrderedDictionary<string, Setting>() {
                 { "vr_use_hd_models", Setting.Create( new I18N.I18NString("vr_use_hd_models", "Use HD models"), false ) },
                 { "vr_hd_textures_enabled", Setting.Create( new I18N.I18NString("vr_hd_textures_enabled", "Use HD textures"), false ) },
@@ -287,7 +309,7 @@ namespace HLVRConfig.Utilities.Settings
         {
             get
             {
-                foreach (var foo in new[] { InputSettings, GraphicsSettings, AudioSettings, OtherSettings })
+                foreach (var foo in new[] { InputSettings, ImmersionSettings, PerformanceSettings, VisualsSettings, AudioSettings, OtherSettings })
                 {
                     foreach (var bar in foo)
                     {
@@ -302,7 +324,7 @@ namespace HLVRConfig.Utilities.Settings
 
         public bool SetValue(string key, string value)
         {
-            foreach (var foo in new[] { InputSettings, GraphicsSettings, AudioSettings, OtherSettings })
+            foreach (var foo in new[] { InputSettings, ImmersionSettings, PerformanceSettings, VisualsSettings, AudioSettings, OtherSettings })
             {
                 foreach (var bar in foo)
                 {
