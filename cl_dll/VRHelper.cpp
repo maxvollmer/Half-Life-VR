@@ -746,11 +746,13 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 	extern playermove_t* pmove;
 	if (pmove)
 	{
+		float headToCeilingDistance_units = CVAR_GET_FLOAT("vr_view_dist_to_walls");
+
 		cl_entity_t* localPlayer = SaveGetLocalPlayer();
 		float maxPlayerViewPosHeight_meter = originalHeight_meter;
 		if (!g_vrInput.IsVRDucking() && (pmove->flags & FL_DUCKING))
 		{
-			maxPlayerViewPosHeight_meter = UnitToMeter(m_viewOfs.z - VEC_DUCK_HULL_MIN.z);
+			maxPlayerViewPosHeight_meter = UnitToMeter(VEC_DUCK_HULL_MAX.z - VEC_DUCK_HULL_MIN.z - headToCeilingDistance_units);
 		}
 		else if (localPlayer)
 		{
@@ -764,13 +766,11 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 				float totalDistance_units = 1024.f * tr.fraction;
 				if (pmove->flags & FL_DUCKING)
 				{
-					float viewofsToHead_units = fabs(m_viewOfs.z - VEC_DUCK_HULL_MAX.z);
-					maxPlayerViewPosHeight_meter = UnitToMeter(totalDistance_units - viewofsToHead_units - VEC_DUCK_HULL_MIN.z);
+					maxPlayerViewPosHeight_meter = UnitToMeter(totalDistance_units - VEC_DUCK_HULL_MIN.z - headToCeilingDistance_units);
 				}
 				else
 				{
-					float viewofsToHead_units = fabs(m_viewOfs.z - VEC_HULL_MAX.z);
-					maxPlayerViewPosHeight_meter = UnitToMeter(totalDistance_units - viewofsToHead_units - VEC_HULL_MIN.z);
+					maxPlayerViewPosHeight_meter = UnitToMeter(totalDistance_units - VEC_HULL_MIN.z - headToCeilingDistance_units);
 				}
 			}
 		}
@@ -902,7 +902,7 @@ void VRHelper::GetViewOrg(float* origin)
 	cl_entity_t* localPlayer = SaveGetLocalPlayer();
 	if (localPlayer)
 	{
-		viewOrg.z = (std::min)(viewOrg.z, localPlayer->curstate.origin.z + m_viewOfs.z);
+		// viewOrg.z = (std::min)(viewOrg.z, localPlayer->curstate.origin.z + m_viewOfs.z);
 		if (VRGetSmoothStepsSetting() != 0.f)
 		{
 			viewOrg.z += GetStepHeight();

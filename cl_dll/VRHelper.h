@@ -172,8 +172,6 @@ private:
 	Vector m_rightControllerUp;
 	Vector m_rightControllerVelocity;
 
-	Vector m_viewOfs;
-
 	bool mIsViewEntMirrored{ false };
 
 	float m_hmdHeightOffset{ 0.f };
@@ -220,8 +218,6 @@ public:
 	Vector GetLocalPlayerAngles();
 
 	bool IsViewEntMirrored() { return mIsViewEntMirrored; }
-
-	void SetViewOfs(const Vector& viewOfs) { m_viewOfs = viewOfs; }
 
 	bool CanAttack();
 };

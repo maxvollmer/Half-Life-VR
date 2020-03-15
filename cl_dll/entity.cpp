@@ -92,9 +92,6 @@ void DLLEXPORT HUD_TxferLocalOverrides(struct entity_state_s* state, const struc
 {
 	VectorCopy(client->origin, state->origin);
 
-	// set current view_ofs to adjust ingame headset height (for ducking and to avoid big players looking through ceilings)
-	gVRRenderer.SetViewOfs(client->view_ofs);
-
 	// Spectator
 	state->iuser1 = client->iuser1;
 	state->iuser2 = client->iuser2;

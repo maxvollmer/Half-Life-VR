@@ -103,8 +103,6 @@ public:
 	bool IsInGame();
 	struct cl_entity_s* SaveGetLocalPlayer();
 
-	void SetViewOfs(const Vector& viewOfs);
-
 	void RotateVectorX(Vector& vecToRotate, const float angle);
 	void RotateVectorY(Vector& vecToRotate, const float angle);
 	void RotateVectorZ(Vector& vecToRotate, const float angle);

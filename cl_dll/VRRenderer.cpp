@@ -635,11 +635,6 @@ vr::IVRSystem* VRRenderer::GetVRSystem()
 	return vrHelper->GetVRSystem();
 }
 
-void VRRenderer::SetViewOfs(const Vector& viewOfs)
-{
-	vrHelper->SetViewOfs(viewOfs);
-}
-
 
 void VRRenderer::DrawHDSkyBox()
 {
