@@ -1,3 +1,10 @@
+0.6.17-beta
+ Mod:
+  * Fixed shootable rotating buttons not reacting to being shot at when "non-solid levers" is enabled
+
+ HLVRConfig:
+  * No changes
+
 0.6.16-beta - 2020-03-14
  Mod:
   * Fixed performance issues in custom random number generator
