@@ -123,9 +123,9 @@ extern "C"
 		void (*pfnSetCrosshair)(HSPRITE_VALVE hspr, wrect_t rc, int r, int g, int b);
 
 		// cvar handlers
-		struct cvar_s* (*pfnRegisterVariable)(char* szName, char* szValue, int flags);
-		float (*pfnGetCvarFloat)(char* szName);
-		char* (*pfnGetCvarString)(char* szName);
+		struct cvar_s* (*pfnRegisterVariable)(const char* szName, const char* szValue, int flags);
+		float (*pfnGetCvarFloat)(const char* szName);
+		char* (*pfnGetCvarString)(const char* szName);
 
 		// command handlers
 		int (*pfnAddCommand)(const char* cmd_name, void (*function)(void));
@@ -136,7 +136,7 @@ extern "C"
 		void (*pfnGetPlayerInfo)(int ent_num, hud_player_info_t* pinfo);
 
 		// sound handlers
-		void (*pfnPlaySoundByName)(char* szSound, float volume);
+		void (*pfnPlaySoundByName)(const char* szSound, float volume);
 		void (*pfnPlaySoundByIndex)(int iSound, float volume);
 
 		// vector helpers
@@ -163,8 +163,8 @@ extern "C"
 
 		int (*Cmd_Argc)(void);
 		char* (*Cmd_Argv)(int arg);
-		void (*Con_Printf)(char* fmt, ...);
-		void (*Con_DPrintf)(char* fmt, ...);
+		void (*Con_Printf)(const char* fmt, ...);
+		void (*Con_DPrintf)(const char* fmt, ...);
 		void (*Con_NPrintf)(int pos, char* fmt, ...);
 		void (*Con_NXPrintf)(struct con_nprint_s* info, char* fmt, ...);
 

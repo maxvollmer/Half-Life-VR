@@ -140,6 +140,7 @@ void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* mins, fl
 	}
 }
 
+
 void CCrowbar::ItemPostFrame()
 {
 #ifndef CLIENT_DLL
@@ -163,6 +164,21 @@ void CCrowbar::ItemPostFrame()
 		playedWooshSound = false;
 	}
 #endif
+
+	if (CVAR_GET_FLOAT("vr_crowbar_vanilla_attack_enabled") != 0.f
+		&& (m_pPlayer->pev->button & IN_ATTACK || m_pPlayer->GetAnalogFire() > 0.f))
+	{
+#ifdef CLIENT_DLL
+		extern bool CanAttack(float flNextAttack);
+		if (CanAttack(m_flNextPrimaryAttack))
+#else
+		extern bool CanAttack(CBasePlayer* pPlayer, float attack_time, float curtime, BOOL isPredicted);
+		if (CanAttack(m_pPlayer, m_flNextPrimaryAttack, gpGlobals->time, UseDecrement()))
+#endif
+		{
+			PrimaryAttack();
+		}
+	}
 }
 
 
@@ -200,15 +216,13 @@ void CCrowbar::Smack()
 
 void CCrowbar::SwingAgain(void)
 {
-	if (CVAR_GET_FLOAT("vr_crowbar_vanilla_attack_enabled") != 0.f)
-	{
-		Swing(0);
-	}
-	else
+	if (CVAR_GET_FLOAT("vr_crowbar_vanilla_attack_enabled") == 0.f)
 	{
 		SetThink(nullptr);
 		return;
 	}
+
+	Swing(0);
 }
 
 int CCrowbar::Swing(int fFirst)

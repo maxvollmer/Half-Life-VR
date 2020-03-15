@@ -327,7 +327,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	return Vector(x * vecSpread.x, y * vecSpread.y, 0.0);
 }
 
-bool CanAttack(float flNextSecondaryAttack)
+bool CanAttack(float flNextAttack)
 {
 	extern bool GetHUDWeaponBlocked();
 	if (GetHUDWeaponBlocked())
@@ -336,7 +336,7 @@ bool CanAttack(float flNextSecondaryAttack)
 	}
 	else
 	{
-		return flNextSecondaryAttack <= 0.0;
+		return flNextAttack <= 0.0;
 	}
 }
 
@@ -640,6 +640,7 @@ void HUD_InitClientWeapons(void)
 	g_engfuncs.pfnPrecacheEvent = gEngfuncs.pfnPrecacheEvent;
 	g_engfuncs.pfnRandomFloat = gEngfuncs.pfnRandomFloat;
 	g_engfuncs.pfnRandomLong = gEngfuncs.pfnRandomLong;
+	g_engfuncs.pfnCVarGetFloat = gEngfuncs.pfnGetCvarFloat;
 
 	// Allocate a slot for the local player
 	HUD_PrepEntity(&player, nullptr);
