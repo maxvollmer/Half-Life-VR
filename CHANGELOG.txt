@@ -1,6 +1,9 @@
 0.6.17-beta
  Mod:
   * Fixed shootable rotating buttons not reacting to being shot at when "non-solid levers" is enabled
+  * Fixed view height getting all messed up in some situations
+  * Fixed analog attack for crowbar
+  * Fixed auto-duck wrongly ducking player on sloped surfaces
 
  HLVRConfig:
   * No changes
