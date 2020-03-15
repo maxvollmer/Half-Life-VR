@@ -3584,8 +3584,7 @@ void PM_PlayerMove(qboolean server)
 
 	// Always calculate movement (on land) as if ducking, then afterwards unduck if possible or stay ducked if not possible (this essentially makes players autoduck if necessary)
 	// In water we don't do this, as it messes with waterjump
-	bool isDucking = pmove->usehull == 1;
-	bool tryAutoDuck = VRIsAutoDuckingEnabled(pmove->player_index) && !isDucking && !pLadder && pmove->waterlevel == 0;
+	bool tryAutoDuck = VRIsAutoDuckingEnabled(pmove->player_index) && pmove->usehull == 0 && !(pmove->flags & FL_DUCKING) && !pLadder && pmove->waterlevel == 0;
 
 	if (tryAutoDuck && pmove->onground != -1)
 	{
@@ -3638,6 +3637,8 @@ void PM_PlayerMove(qboolean server)
 			if (pmove->onground == -1)
 			{
 				VectorCopy(standmove_origin, pmove->origin);
+				pmove->usehull = 0;
+				pmove->flags &= ~FL_DUCKING;
 				PM_CategorizePosition();
 				return;
 			}
