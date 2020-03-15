@@ -4,9 +4,14 @@
   * Fixed view height getting all messed up in some situations
   * Fixed analog attack for crowbar
   * Fixed auto-duck wrongly ducking player on sloped surfaces
+  * Implemented renderer optimization for people who see predominantly or only with one eye
+  * Several performance optimizations (see commit logs in source code for details)
 
  HLVRConfig:
-  * No changes
+  * Reorganized HLVRConfig tabs:
+    * "Input & Movement" split into "Input" and "Immersion"
+    * "Graphics & Performance" split into "Visuals" and "Performance"
+  * Added option to enable rendering to only one eye (left or right)
 
 0.6.16-beta - 2020-03-14
  Mod:
