@@ -36,6 +36,18 @@ constexpr const float EPSILON_D = 0.000001;
 
 extern globalvars_t* gpGlobals;
 
+//
+// How did I ever live without ASSERT?
+//
+#ifdef DEBUG
+void DBG_AssertFunction(BOOL fExpr, const char* szExpr, const char* szFile, int szLine, const char* szMessage);
+#define ASSERT(f)       DBG_AssertFunction(f, #f, __FILE__, __LINE__, nullptr)
+#define ASSERTSZ(f, sz) DBG_AssertFunction(f, #f, __FILE__, __LINE__, sz)
+#else  // !DEBUG
+#define ASSERT(f)
+#define ASSERTSZ(f, sz)
+#endif  // !DEBUG
+
 // Use this instead of ALLOC_STRING on constant strings
 #define STRING(offset)   (gpGlobals->pStringBase + static_cast<int>(offset))
 #define MAKE_STRING(str) ((int)str - (int)STRING(0))
@@ -105,28 +117,171 @@ typedef int BOOL;
 #endif
 
 
-//
-// Conversion among the three types of "entity", including identity-conversions.
-//
-edict_t* ENT(const entvars_t* pev);
-edict_t* ENT(edict_t* pent);
-edict_t* ENT(EOFFSET eoffset);
-EOFFSET OFFSET(EOFFSET eoffset);
-EOFFSET OFFSET(const edict_t* pent);
-EOFFSET OFFSET(entvars_t* pev);
-entvars_t* VARS(entvars_t* pev);
-entvars_t* VARS(edict_t* pent);
-entvars_t* VARS(EOFFSET eoffset);
-int ENTINDEX(edict_t* pEdict);
-edict_t* INDEXENT(int iEdictNum);
 
 // Testing the three types of "entity" for nullity
 #define eoNullEntity 0
-BOOL FNullEnt(EOFFSET eoffset);
-BOOL FNullEnt(const edict_t* pent);
-BOOL FNullEnt(entvars_t* pev);
-BOOL FWorldEnt(const edict_t* pent);
-BOOL FWorldEnt(entvars_t* pev);
+
+inline BOOL FNullEnt(EOFFSET eoffset)
+{
+	return eoffset == eoNullEntity;
+}
+
+inline BOOL FNullEnt(const edict_t* pent)
+{
+	if (pent == nullptr)
+		return TRUE;
+
+#ifdef _DEBUG
+	// entities are stored in an array of length 3072
+	// check that pointer is pointing into that array, and isn't misaligned
+	edict_t* pentstart = INDEXENT(0);
+	unsigned long long pentstartaddress = reinterpret_cast<unsigned long long>(pentstart);
+	unsigned long long pentaddress = reinterpret_cast<unsigned long long>(pent);
+	if (pentaddress < pentstartaddress)
+	{
+		ASSERT(!"edict pointer before edict array");
+		return TRUE;
+	}
+	unsigned long long offset = pentaddress - pentstartaddress;
+	if (offset > (MAX_EDICTS - 1) * sizeof(edict_t))
+	{
+		assert(!"edict pointer after edict array");
+		return TRUE;
+	}
+	if ((offset % sizeof(edict_t)) != 0)
+	{
+		ASSERT(!"edict pointer is misaligned");
+		return TRUE;
+	}
+#endif
+
+	if (pent->free)
+		return TRUE;
+
+	if (pent->v.pContainingEntity != pent)
+		return TRUE;
+
+	if ((*g_engfuncs.pfnEntOffsetOfPEntity)(pent) == eoNullEntity)
+		return TRUE;
+
+	return FALSE;
+}
+
+inline BOOL FNullEnt(entvars_t* pev)
+{
+	return pev == nullptr || FNullEnt(pev->pContainingEntity) || &pev->pContainingEntity->v != pev;
+}
+
+inline BOOL FWorldEnt(const edict_t* pent)
+{
+	return pent != nullptr && !pent->free && pent->v.pContainingEntity == pent && (*g_engfuncs.pfnEntOffsetOfPEntity)(pent) == eoNullEntity;
+}
+
+inline BOOL FWorldEnt(entvars_t* pev)
+{
+	return !FNullEnt(pev) && FWorldEnt(pev->pContainingEntity);
+}
+
+
+
+//
+// Conversion among the three types of "entity", including identity-conversions.
+//
+
+inline edict_t* ENT(const entvars_t* pev)
+{
+	if (!pev)
+		return nullptr;
+
+	if ((FNullEnt(pev->pContainingEntity) && !FWorldEnt(pev->pContainingEntity)) || &pev->pContainingEntity->v != pev)
+	{
+		const_cast<entvars_t*>(pev)->pContainingEntity = (*g_engfuncs.pfnFindEntityByVars)(pev);
+	}
+
+	if ((FNullEnt(pev->pContainingEntity) && !FWorldEnt(pev->pContainingEntity)) || &pev->pContainingEntity->v != pev)
+	{
+		return nullptr;
+	}
+
+	return pev->pContainingEntity;
+}
+
+inline edict_t* ENT(edict_t* pent)
+{
+	return pent;
+}
+
+inline edict_t* ENT(EOFFSET eoffset)
+{
+	return (*g_engfuncs.pfnPEntityOfEntOffset)(eoffset);
+}
+
+inline EOFFSET OFFSET(EOFFSET eoffset)
+{
+	return eoffset;
+}
+
+inline EOFFSET OFFSET(const edict_t* pent)
+{
+	if (FNullEnt(pent))
+	{
+#if _DEBUG
+		if (!FWorldEnt(pent))
+		{
+			ALERT(at_error, "Bad ent in OFFSET()\n");
+		}
+#endif
+		return 0;
+	}
+
+	return (*g_engfuncs.pfnEntOffsetOfPEntity)(pent);
+}
+
+inline EOFFSET OFFSET(entvars_t* pev)
+{
+#if _DEBUG
+	if (!pev)
+	{
+		ALERT(at_error, "Bad pev in OFFSET()\n");
+	}
+#endif
+
+	return OFFSET(ENT(pev));
+}
+
+inline entvars_t* VARS(entvars_t* pev)
+{
+	return pev;
+}
+
+inline entvars_t* VARS(edict_t* pent)
+{
+	if (FNullEnt(pent) && !FWorldEnt(pent))
+		return nullptr;
+
+	return &pent->v;
+}
+
+inline entvars_t* VARS(EOFFSET eoffset)
+{
+	return VARS(ENT(eoffset));
+}
+
+inline int ENTINDEX(edict_t* pEdict)
+{
+	if (FNullEnt(pEdict))
+		return 0;
+
+	return (*g_engfuncs.pfnIndexOfEdict)(pEdict);
+}
+
+inline edict_t* INDEXENT(int iEdictNum)
+{
+	return (*g_engfuncs.pfnPEntityOfEntIndex)(iEdictNum);
+}
+
+
+
 
 
 inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, entvars_t* ent)
@@ -214,12 +369,8 @@ extern CBaseEntity* UTIL_FindEntityByClassname(CBaseEntity* pStartEntity, const 
 extern CBaseEntity* UTIL_FindEntityByTargetname(CBaseEntity* pStartEntity, const char* szName);
 extern CBaseEntity* UTIL_FindEntityGeneric(const char* szName, Vector& vecSrc, float flRadius);
 
-// Find entity using a lambda expression - Max Vollmer, 2017-12-28
-typedef bool(EntityFilterCallback)(CBaseEntity*);
-typedef void(EntityCallback)(CBaseEntity*);
-extern bool UTIL_FindEntityByFilter(CBaseEntity** pEntity, EntityFilterCallback filter);
-void UTIL_BatchEntities(EntityCallback batch, EntityFilterCallback filter = nullptr);  // Calls batch for all entities that match filter (or all entities, if filter is nullptr)
-extern bool UTIL_FindAllEntities(CBaseEntity** pEntity);
+extern edict_t* UTIL_FindEntitiesInPVS(edict_t* pentstart, edict_t* pentPlayer);
+
 
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns nullptr
@@ -298,7 +449,6 @@ extern void UTIL_GetAnglesFromVectors(const Vector& forward, const Vector& right
 
 extern bool UTIL_TraceBBox(const Vector& vecStart, const Vector& vecEnd, const Vector& absmin, const Vector& absmax);
 extern bool UTIL_IsPointInEntity(CBaseEntity* pStartEntity, const Vector& p);
-extern CBaseEntity* UTIL_TraceTriggers(CBaseEntity* pStartEntity, const Vector& vecStart, const Vector& vecEnd);
 
 extern bool UTIL_CheckClearSight(const Vector& pos1, const Vector& pos2, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t* pentIgnore = nullptr);
 
@@ -406,18 +556,6 @@ extern bool UTIL_ShouldCollide(CBaseEntity* pTouched, CBaseEntity* pOther);
 extern void SetMovedir(entvars_t* pev);
 extern Vector VecBModelOrigin(entvars_t* pevBModel);
 extern int BuildChangeList(LEVELLIST* pLevelList, int maxList);
-
-//
-// How did I ever live without ASSERT?
-//
-#ifdef DEBUG
-void DBG_AssertFunction(BOOL fExpr, const char* szExpr, const char* szFile, int szLine, const char* szMessage);
-#define ASSERT(f)       DBG_AssertFunction(f, #f, __FILE__, __LINE__, nullptr)
-#define ASSERTSZ(f, sz) DBG_AssertFunction(f, #f, __FILE__, __LINE__, sz)
-#else  // !DEBUG
-#define ASSERT(f)
-#define ASSERTSZ(f, sz)
-#endif  // !DEBUG
 
 
 extern DLL_GLOBAL const Vector g_vecZero;

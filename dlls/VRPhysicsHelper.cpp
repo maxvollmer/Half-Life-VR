@@ -162,13 +162,13 @@ void* FindStudioModelByName(const char* name)
 */
 
 // Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
-const model_t* GetBSPModel(CBaseEntity* pEntity)
+const model_t* GetBSPModel(edict_t* pent)
 {
 	// Check if entity is world
-	if (pEntity->edict() == INDEXENT(0))
+	if (pent == INDEXENT(0))
 		return GetWorldBSPModel();
 
-	const char* modelname = STRING(pEntity->pev->model);
+	const char* modelname = STRING(pent->v.model);
 
 	// Check that the entity has a brush model
 	if (modelname != nullptr && modelname[0] == '*')
@@ -179,9 +179,15 @@ const model_t* GetBSPModel(CBaseEntity* pEntity)
 	return nullptr;
 }
 
-bool IsSolidInPhysicsWorld(CBaseEntity* pEntity)
+// Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
+const model_t* GetBSPModel(CBaseEntity* pEntity)
 {
-	return FClassnameIs(pEntity->pev, "func_wall") || FClassnameIs(pEntity->pev, "func_illusionary");
+	return GetBSPModel(pEntity->edict());
+}
+
+bool IsSolidInPhysicsWorld(edict_t* pent)
+{
+	return FClassnameIs(&pent->v, "func_wall") || FClassnameIs(&pent->v, "func_illusionary");
 }
 
 
@@ -677,10 +683,16 @@ void TriangulateBSPModel(const model_t* model, PlaneFacesMap& planeFaces, PlaneV
 	// If world, also collect faces of non-moving solid entities
 	if (model == GetWorldBSPModel())
 	{
-		CBaseEntity* pEnt = nullptr;
-		while (UTIL_FindEntityByFilter(&pEnt, IsSolidInPhysicsWorld))
+		for (int index = 0; index < gpGlobals->maxEntities; index++)
 		{
-			CollectFaces(GetBSPModel(pEnt), pEnt->pev->origin, planeFaces, planeVertexMetaData);
+			edict_t* pent = INDEXENT(index);
+			if (FNullEnt(pent))
+				continue;
+
+			if (!IsSolidInPhysicsWorld(pent))
+				continue;
+
+			CollectFaces(GetBSPModel(pent), pent->v.origin, planeFaces, planeVertexMetaData);
 		}
 	}
 
@@ -1329,46 +1341,43 @@ void VRPhysicsHelper::TraceLine(const Vector& vecStart, const Vector& vecEnd, ed
 		}
 
 		// Check ladders as well...
-		CBaseEntity* pEntity = nullptr;
-		while (UTIL_FindAllEntities(&pEntity))
+		edict_t* pent = FIND_ENTITY_BY_CLASSNAME(nullptr, "func_ladder");
+		while (!FNullEnt(pent))
 		{
-			if (FClassnameIs(pEntity->pev, "func_ladder"))
+			Vector3 ladderSize = HLVecToRP3DVec(pent->v.size);
+			Vector3 ladderPosition = HLVecToRP3DVec(pent->v.absmin);
+
+			if (ladderSize.x <= 0. || ladderSize.y <= 0. || ladderSize.z <= 0.)
 			{
-				Vector3 ladderSize = HLVecToRP3DVec(pEntity->pev->size);
-				Vector3 ladderPosition = HLVecToRP3DVec(pEntity->pev->absmin);
-
-				if (ladderSize.x <= 0. || ladderSize.y <= 0. || ladderSize.z <= 0.)
-				{
-					ALERT(at_console, "Warning, found ladder with invalid size: %s (%f %f %f)\n", STRING(pEntity->pev->targetname), pEntity->pev->size.x, pEntity->pev->size.y, pEntity->pev->size.z);
-					continue;
-				}
-
-				BoxShape boxShape{ ladderSize };
-
-				CollisionBody* body = m_collisionWorld->createCollisionBody(rp3d::Transform{ ladderPosition, Matrix3x3::identity() });
-				body->addCollisionShape(&boxShape, rp3d::Transform::identity());
-
-				if (body->raycast(ray, raycastInfo))
-				{
-					Vector hitPoint = RP3DVecToHLVec(raycastInfo.worldPoint);
-					float distanceToPreviousPoint = (hitPoint - ptr->vecEndPos).Length();
-					if (raycastInfo.hitFraction <= ptr->flFraction || distanceToPreviousPoint < LADDER_EPSILON)
-					{
-						ptr->vecEndPos = RP3DVecToHLVec(raycastInfo.worldPoint);
-						ptr->vecPlaneNormal = RP3DVecToHLVec(raycastInfo.worldNormal).Normalize();
-						ptr->flPlaneDist = DotProduct(ptr->vecPlaneNormal, -ptr->vecEndPos);
-
-						ptr->fAllSolid = false;
-						ptr->fInOpen = false;
-						ptr->fInWater = UTIL_PointContents(ptr->vecEndPos) == CONTENTS_WATER;
-						ptr->flFraction = raycastInfo.hitFraction;
-						ptr->iHitgroup = 0;
-						ptr->pHit = pEntity->edict();
-					}
-				}
-
-				m_collisionWorld->destroyCollisionBody(body);
+				ALERT(at_console, "Warning, found ladder with invalid size: %s (%f %f %f)\n", STRING(pent->v.targetname), pent->v.size.x, pent->v.size.y, pent->v.size.z);
+				continue;
 			}
+
+			BoxShape boxShape{ ladderSize };
+
+			CollisionBody* body = m_collisionWorld->createCollisionBody(rp3d::Transform{ ladderPosition, Matrix3x3::identity() });
+			body->addCollisionShape(&boxShape, rp3d::Transform::identity());
+
+			if (body->raycast(ray, raycastInfo))
+			{
+				Vector hitPoint = RP3DVecToHLVec(raycastInfo.worldPoint);
+				float distanceToPreviousPoint = (hitPoint - ptr->vecEndPos).Length();
+				if (raycastInfo.hitFraction <= ptr->flFraction || distanceToPreviousPoint < LADDER_EPSILON)
+				{
+					ptr->vecEndPos = RP3DVecToHLVec(raycastInfo.worldPoint);
+					ptr->vecPlaneNormal = RP3DVecToHLVec(raycastInfo.worldNormal).Normalize();
+					ptr->flPlaneDist = DotProduct(ptr->vecPlaneNormal, -ptr->vecEndPos);
+
+					ptr->fAllSolid = false;
+					ptr->fInOpen = false;
+					ptr->fInWater = UTIL_PointContents(ptr->vecEndPos) == CONTENTS_WATER;
+					ptr->flFraction = raycastInfo.hitFraction;
+					ptr->iHitgroup = 0;
+					ptr->pHit = pent;
+				}
+			}
+
+			m_collisionWorld->destroyCollisionBody(body);
 		}
 	}
 }
@@ -1584,10 +1593,16 @@ void VRPhysicsHelper::DynamicBSPModelData::DeleteData()
 
 bool DoesAnyBrushModelNeedLoading(const model_t* const models)
 {
-	CBaseEntity* pEnt = nullptr;
-	while (UTIL_FindEntityByFilter(&pEnt, IsSolidInPhysicsWorld))
+	for (int index = 0; index < gpGlobals->maxEntities; index++)
 	{
-		const model_t* const model = GetBSPModel(pEnt);
+		edict_t* pent = INDEXENT(index);
+		if (FNullEnt(pent))
+			continue;
+
+		if (!IsSolidInPhysicsWorld(pent))
+			continue;
+
+		const model_t* const model = GetBSPModel(pent);
 		if (model == nullptr || model->needload != 0)
 		{
 			return true;
@@ -1906,10 +1921,13 @@ void VRPhysicsHelper::GetPhysicsMapDataFromModel()
 	m_dynamicBSPModelData.clear();
 
 	// create bsp data for collision world
-	CBaseEntity* pEntity = nullptr;
-	while (UTIL_FindAllEntities(&pEntity))
+	for (int index = 0; index < gpGlobals->maxEntities; index++)
 	{
-		const model_t* model = GetBSPModel(pEntity);
+		edict_t* pent = INDEXENT(index);
+		if (FNullEnt(pent))
+			continue;
+
+		const model_t* model = GetBSPModel(pent);
 		if (!model)
 			continue;
 

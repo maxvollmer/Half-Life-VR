@@ -305,26 +305,53 @@ bool DistanceTooBigForDragging(EHANDLE<CBaseEntity> hEntity, const VRController&
 
 void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, VRController& controller)
 {
-	CBaseEntity* pEntity = nullptr;
-	while (UTIL_FindAllEntities(&pEntity))
+	if (!controller.IsValid())
 	{
-		if (pEntity == pPlayer)
+		if (controller.HasDraggedEntity())
+		{
+			EHANDLE<CBaseEntity> hDraggedEntity = controller.GetDraggedEntity();
+			if (hDraggedEntity && hDraggedEntity->m_vrDragger == pPlayer && hDraggedEntity->m_vrDragController == controller.GetID())
+			{
+				hDraggedEntity->m_vrDragger = nullptr;
+				hDraggedEntity->m_vrDragController = VRControllerID::INVALID;
+				if (hDraggedEntity->IsDraggable())
+				{
+					hDraggedEntity->SetThink(&CBaseEntity::DragStopThink);
+					hDraggedEntity->pev->nextthink = gpGlobals->time;
+				}
+			}
+			controller.ClearDraggedEntity();
+		}
+		return;
+	}
+
+	edict_t* pentcontrollermodel = controller.GetModel()->edict();
+	edict_t* pentplayer = pPlayer->edict();
+
+	edict_t* pent = nullptr;
+	while (pent = UTIL_FindEntitiesInPVS(pent, pentplayer))
+	{
+		if (pent == pentplayer)
 		{
 			continue;
 		}
 
-		if (pEntity == controller.GetModel())
+		if (pent == pentcontrollermodel)
 		{
 			continue;
 		}
 
 		// skip point entities (no model and/or no size)
-		if (FStringNull(pEntity->pev->model) && pEntity->pev->size.LengthSquared() < EPSILON)
+		if (FStringNull(pent->v.model) && pent->v.size.x == 0.f && pent->v.size.y == 0.f && pent->v.size.z == 0.f)
 		{
 			continue;
 		}
 
-		EHANDLE<CBaseEntity> hEntity = pEntity;
+		EHANDLE<CBaseEntity> hEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
+		if (!hEntity)
+		{
+			continue;
+		}
 
 		bool isTouching;
 		bool didTouchChange;

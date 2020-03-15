@@ -434,7 +434,8 @@ private:
 
 	// Called by PostThink()
 	void VRUseOrUnuseTank();
-	bool IsTankVRControlled(EHANDLE<CBaseEntity> hTank);
+	bool IsTankVRControlled(entvars_t* pevTank);
+	CBaseEntity* VRFindTank(const char* func_tank_classname);
 
 	// virtual backpack, called by PostThink()
 	void VRDoTheBackPackThing();

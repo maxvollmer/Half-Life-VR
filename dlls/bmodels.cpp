@@ -142,20 +142,22 @@ void CFuncWall::CheckIsSpecialVREntity()
 
 					// Find our button! (func_button with rendermode kRenderTransTexture, renderamt 0 and model center not further away than 16 units away from our center)
 					Vector retinaScannerCenter = (pev->absmin + pev->absmax) / 2.f;
-					CBaseEntity* pButton = nullptr;
-					while (UTIL_FindAllEntities(&pButton))
+					edict_t* pentButton = FIND_ENTITY_BY_CLASSNAME(nullptr, "func_button");
+					while (!FNullEnt(pentButton))
 					{
 						// Add retina scanner and button to global list
-						if (FClassnameIs(pButton->pev, "func_button") && pButton->pev->renderamt == 0 && pButton->pev->rendermode == kRenderTransTexture)
+						if (pentButton->v.renderamt == 0 && pentButton->v.rendermode == kRenderTransTexture)
 						{
-							Vector buttonScannerCenter = (pButton->pev->absmin + pButton->pev->absmax) / 2.f;
+							Vector buttonScannerCenter = (pentButton->v.absmin + pentButton->v.absmax) * 0.5f;
 							if ((buttonScannerCenter - retinaScannerCenter).Length() <= 16.f)
 							{
-								g_vrRetinaScanners[EHANDLE<CBaseEntity>{ this }] = EHANDLE<CBaseEntity>{ pButton };
-								g_vrRetinaScannerButtons.insert(EHANDLE<CBaseEntity>{ pButton });
+								EHANDLE<CBaseEntity> hButton = CBaseEntity::SafeInstance<CBaseEntity>(pentButton);
+								g_vrRetinaScanners[EHANDLE<CBaseEntity>{ this }] = hButton;
+								g_vrRetinaScannerButtons.insert(hButton);
 								break;
 							}
 						}
+						pentButton = FIND_ENTITY_BY_CLASSNAME(pentButton, "func_button");
 					}
 					return;
 				}

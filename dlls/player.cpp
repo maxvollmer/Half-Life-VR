@@ -20,6 +20,7 @@
 
 */
 
+#include <chrono>
 #include <algorithm>
 
 #include "extdll.h"
@@ -2840,9 +2841,6 @@ pt_end:
 			m_flAmmoStartCharge = -0.001;
 	}
 
-
-#else
-	return;
 #endif
 }
 
@@ -5784,37 +5782,33 @@ void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 	edict_t* pent = UTIL_EntitiesInPVS(edict());
 	while (pent && !FNullEnt(pent))
 	{
-		CBaseEntity* pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
-		if (pEntity)
+		CTalkMonster* pMonster = CBaseEntity::SafeInstance<CTalkMonster>(pent);
+		if (pMonster)
 		{
-			CTalkMonster* pMonster = dynamic_cast<CTalkMonster*>(dynamic_cast<CBaseMonster*>(pEntity));
-			if (pMonster)
+			if (FClassnameIs(pent, "monster_barney") || FClassnameIs(pent, "monster_scientist"))
 			{
-				if (FClassnameIs(pent, "monster_barney") || FClassnameIs(pent, "monster_scientist"))
+				// If command is MUMBLE or HELLO, only add monsters that can speak
+				// If command is FOLLOW or WAIT, always add to list
+				float biggestdot = 0.f;
+				float shortestdist = VR_MAX_TALK_DISTANCE;
+				if (command == VRSpeechCommand::FOLLOW || command == VRSpeechCommand::WAIT || pMonster->FOkToSpeak())
 				{
-					// If command is MUMBLE or HELLO, only add monsters that can speak
-					// If command is FOLLOW or WAIT, always add to list
-					float biggestdot = 0.f;
-					float shortestdist = VR_MAX_TALK_DISTANCE;
-					if (command == VRSpeechCommand::FOLLOW || command == VRSpeechCommand::WAIT || pMonster->FOkToSpeak())
+					if (FVisible(pMonster) && pMonster->FVisible(this))
 					{
-						if (FVisible(pMonster) && pMonster->FVisible(this))
+						Vector dir = pMonster->EyePosition() - EyePosition();
+						float distance = dir.Length();
+						if (distance < VR_MAX_TALK_DISTANCE)
 						{
-							Vector dir = pEntity->EyePosition() - EyePosition();
-							float distance = dir.Length();
-							if (distance < VR_MAX_TALK_DISTANCE)
-							{
-								pMonster->MakeIdealYaw(pev->origin);
+							pMonster->MakeIdealYaw(pev->origin);
 
-								float dot = DotProduct(dir.Normalize(), lookDir);
-								if (dot > 0.8f)
+							float dot = DotProduct(dir.Normalize(), lookDir);
+							if (dot > 0.8f)
+							{
+								reactingNPCs.push_back(pMonster);
+								if (dot > biggestdot)
 								{
-									reactingNPCs.push_back(pMonster);
-									if (dot > biggestdot)
-									{
-										closestReactingNPC = pMonster;
-										biggestdot = dot;
-									}
+									closestReactingNPC = pMonster;
+									biggestdot = dot;
 								}
 							}
 						}
@@ -5867,34 +5861,35 @@ void CBasePlayer::HandleSpeechCommand(VRSpeechCommand command)
 
 constexpr const int SF_TANK_CANCONTROL = 0x0020;
 
-bool IsValidTankDraggingController(const VRController& controller, EHANDLE<CBaseEntity> hTank)
+bool IsValidTankDraggingController(const VRController& controller, entvars_t* pevTank)
 {
 	return controller.IsValid() &&
 		controller.IsDragging() &&
-		((controller.GetPosition() - hTank->pev->origin).Length() < CVAR_GET_FLOAT("vr_tankcontrols_max_distance"));
+		((controller.GetPosition() - pevTank->origin).Length() < CVAR_GET_FLOAT("vr_tankcontrols_max_distance"));
 }
 
-bool CBasePlayer::IsTankVRControlled(EHANDLE<CBaseEntity> hTank)
+bool CBasePlayer::IsTankVRControlled(entvars_t* pevTank)
 {
 	if (CVAR_GET_FLOAT("vr_tankcontrols") == 0.f)
 		return false;
 
-	if (!hTank)
+	if (!pevTank)
 		return false;
 
-	if (FBitSet(hTank->pev->spawnflags, SF_TANK_CANCONTROL) && UTIL_StartsWith(STRING(hTank->pev->classname), "func_tank"))
+	if (FBitSet(pevTank->spawnflags, SF_TANK_CANCONTROL) && UTIL_StartsWith(STRING(pevTank->classname), "func_tank"))
 	{
 		if (CVAR_GET_FLOAT("vr_tankcontrols") == 1.f)
 		{
-			return IsValidTankDraggingController(m_vrControllers[VRControllerID::HAND], hTank) ||
-				IsValidTankDraggingController(m_vrControllers[VRControllerID::WEAPON], hTank);
+			return IsValidTankDraggingController(m_vrControllers[VRControllerID::HAND], pevTank) ||
+				IsValidTankDraggingController(m_vrControllers[VRControllerID::WEAPON], pevTank);
 		}
 		else
 		{
-			return IsValidTankDraggingController(m_vrControllers[VRControllerID::HAND], hTank) &&
-				IsValidTankDraggingController(m_vrControllers[VRControllerID::WEAPON], hTank);
+			return IsValidTankDraggingController(m_vrControllers[VRControllerID::HAND], pevTank) &&
+				IsValidTankDraggingController(m_vrControllers[VRControllerID::WEAPON], pevTank);
 		}
 	}
+
 	return false;
 }
 
@@ -6019,18 +6014,33 @@ bool CBasePlayer::IsInNonBackPackArea(const Vector& pos)
 	return dot >= 0.f;
 }
 
+CBaseEntity* CBasePlayer::VRFindTank(const char* func_tank_classname)
+{
+	edict_t* pent = FIND_ENTITY_BY_CLASSNAME(nullptr, func_tank_classname);
+	while (!FNullEnt(pent))
+	{
+		if (IsTankVRControlled(&pent->v) &&
+			(UTIL_IsFacing(pev->origin, pev->angles.ToViewAngles(), pent->v.origin)
+				|| UTIL_IsFacing(pev->origin, pev->angles.ToViewAngles(), (pent->v.absmax + pent->v.absmin) * 0.5)))
+		{
+			return CBaseEntity::SafeInstance<CBaseEntity>(pent);
+		}
+		pent = FIND_ENTITY_BY_CLASSNAME(pent, "func_tank");
+	}
+	return nullptr;
+}
 
 void CBasePlayer::VRUseOrUnuseTank()
 {
 	if (m_vrIsUsingTankWithVRControllers)
 	{
 		bool cancelUse = false;
-		if (IsTankVRControlled(m_pTank))
+		if (m_pTank && IsTankVRControlled(m_pTank->pev))
 		{
 			std::vector<Vector> allControllerPositions;
 			for (auto& [id, controller] : m_vrControllers)
 			{
-				if (IsValidTankDraggingController(controller, m_pTank))
+				if (IsValidTankDraggingController(controller, m_pTank->pev))
 				{
 					allControllerPositions.push_back(controller.GetPosition());
 				}
@@ -6080,17 +6090,10 @@ void CBasePlayer::VRUseOrUnuseTank()
 
 	if (!m_vrIsUsingTankWithVRControllers)
 	{
-		CBaseEntity* pTank = nullptr;
-		CBaseEntity* pEntity = nullptr;
-		while (UTIL_FindAllEntities(&pEntity))
-		{
-			if (IsTankVRControlled(pEntity) &&
-				(UTIL_IsFacing(pev->origin, pev->angles.ToViewAngles(), pEntity->pev->origin) || UTIL_IsFacing(pev->origin, pev->angles.ToViewAngles(), pEntity->Center())))
-			{
-				pTank = pEntity;
-				break;
-			}
-		}
+		CBaseEntity* pTank = VRFindTank("func_tank");
+		if (!pTank) pTank = VRFindTank("func_tanklaser");
+		if (!pTank) pTank = VRFindTank("func_tankrocket");
+		if (!pTank) pTank = VRFindTank("func_tankmortar");
 
 		if (pTank)
 		{

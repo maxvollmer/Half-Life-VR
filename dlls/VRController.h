@@ -60,6 +60,7 @@ public:
 
 	bool SetDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
 	bool RemoveDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
+	void ClearDraggedEntity() const;
 	bool IsDraggedEntity(EHANDLE<CBaseEntity> hEntity) const;
 	bool HasDraggedEntity() const;
 	inline EHANDLE<CBaseEntity> GetDraggedEntity() const { return m_draggedEntity; }

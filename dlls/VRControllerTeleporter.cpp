@@ -192,35 +192,42 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer* pPlayer, const Vector& tele
 
 void VRControllerTeleporter::TouchTriggersInTeleportPath(CBasePlayer* pPlayer)
 {
-	CBaseEntity* pEntity = nullptr;
-	while (UTIL_FindEntityByFilter(&pEntity, [](CBaseEntity* pEnt) { return pEnt->pev->solid == SOLID_TRIGGER; }))
+	edict_t* pent = nullptr;
+	while (pent = UTIL_FindEntitiesInPVS(pent, pPlayer->edict()))
 	{
-		// Don't touch xen jump triggers with the teleporter
-		if (pEntity->IsXenJumpTrigger())
+		if (pent->v.solid  != SOLID_TRIGGER)
 			continue;
 
-		bool fTouched = vr_pTeleBeam && UTIL_TraceBBox(vr_pTeleBeam->pev->origin, vr_pTeleBeam->pev->angles, pEntity->pev->absmin, pEntity->pev->absmax);
+		EHANDLE<CBaseEntity> hEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
+		if (!hEntity)
+			continue;
+
+		// Don't touch xen jump triggers with the teleporter
+		if (hEntity->IsXenJumpTrigger())
+			continue;
+
+		bool fTouched = vr_pTeleBeam && UTIL_TraceBBox(vr_pTeleBeam->pev->origin, vr_pTeleBeam->pev->angles, hEntity->pev->absmin, hEntity->pev->absmax);
 
 		if (!fTouched && vr_pTeleBeam && vr_pTeleSprite && (vr_pTeleSprite->pev->origin - vr_pTeleBeam->pev->angles).Length() > 0.1f)
 		{
-			fTouched = UTIL_TraceBBox(vr_pTeleBeam->pev->angles, vr_pTeleSprite->pev->origin, pEntity->pev->absmin, pEntity->pev->absmax);
+			fTouched = UTIL_TraceBBox(vr_pTeleBeam->pev->angles, vr_pTeleSprite->pev->origin, hEntity->pev->absmin, hEntity->pev->absmax);
 		}
 
 		for (int i = 0; !fTouched && i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
 		{
 			if (vr_parabolaBeams[i] != nullptr)
 			{
-				fTouched = UTIL_TraceBBox(vr_parabolaBeams[i]->pev->origin, vr_parabolaBeams[i]->pev->angles, pEntity->pev->absmin, pEntity->pev->absmax);
+				fTouched = UTIL_TraceBBox(vr_parabolaBeams[i]->pev->origin, vr_parabolaBeams[i]->pev->angles, hEntity->pev->absmin, hEntity->pev->absmax);
 			}
 		}
 
 		if (fTouched)
 		{
-			if (FClassnameIs(pEntity->pev, "trigger_changelevel"))
+			if (FClassnameIs(hEntity->pev, "trigger_changelevel"))
 			{
 				pPlayer->vr_didJustTeleportThroughChangeLevel = true;
 			}
-			pEntity->Touch(pPlayer);
+			hEntity->Touch(pPlayer);
 		}
 	}
 }

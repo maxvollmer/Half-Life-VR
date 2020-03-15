@@ -19,9 +19,9 @@ private:
 	static constexpr const int VR_MIN_VALID_LIFT_OR_TRAIN_WIDTH = 64;  // Special handling of entities that are less than 64x64 in horizontal size
 
 	void DetectAndSetGroundEntity();
-	bool CheckIfPotentialGroundEntityForPlayer(CBaseEntity* pEntity);
-	bool IsExcludedAsGroundEntity(CBaseEntity* pEntity);
-	CBaseEntity* ChoseBetterGroundEntityForPlayer(CBaseEntity* pEntity1, CBaseEntity* pEntity2);
+	bool CheckIfPotentialGroundEntityForPlayer(edict_t* pent);
+	bool IsExcludedAsGroundEntity(edict_t* pent);
+	edict_t* ChoseBetterGroundEntityForPlayer(edict_t* pent1, edict_t* pent2);
 	void SendGroundEntityToClient();
 	void MoveWithGroundEntity();
 	Vector CalculateNewOrigin();

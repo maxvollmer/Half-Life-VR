@@ -51,36 +51,36 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 		return;
 	}
 
-	CBaseEntity* pGroundEntity = nullptr;
+	edict_t* pentground = nullptr;
 
 	// Take train if conditions are met
 	bool forceIntroTrainRide = CVAR_GET_FLOAT("vr_force_introtrainride") != 0.f;
 	std::string mapName{ STRING(INDEXENT(0)->v.model) };
 	if (forceIntroTrainRide && IntroTrainRideMapNames.count(mapName) != 0)
 	{
-		pGroundEntity = UTIL_FindEntityByTargetname(nullptr, "train");
-		if (pGroundEntity)
+		pentground = FIND_ENTITY_BY_STRING(nullptr, "targetname", "train");
+		if (!FNullEnt(pentground))
 		{
 			// if we fell out, teleport us back in
-			if (!UTIL_PointInsideBBox(m_pPlayer->pev->origin, pGroundEntity->pev->absmin, pGroundEntity->pev->absmax) || m_pPlayer->pev->origin.z < (pGroundEntity->pev->origin.z + pGroundEntity->pev->mins.z))
+			if (!UTIL_PointInsideBBox(m_pPlayer->pev->origin, pentground->v.absmin, pentground->v.absmax) || m_pPlayer->pev->origin.z < (pentground->v.origin.z + pentground->v.mins.z))
 			{
-				m_pPlayer->pev->origin = pGroundEntity->pev->origin;
+				m_pPlayer->pev->origin = pentground->v.origin;
 				m_pPlayer->pev->origin.z += 64.f;
 				m_pPlayer->pev->velocity = Vector{};
 			}
 		}
 	}
 
-	if (!pGroundEntity)
+	if (!pentground)
 	{
 		// If engine has found a groundentity, take it
-		if (m_pPlayer->pev->groundentity && !m_pPlayer->pev->groundentity->free && !FNullEnt(m_pPlayer->pev->groundentity))
+		if (!FNullEnt(m_pPlayer->pev->groundentity))
 		{
-			pGroundEntity = CBaseEntity::SafeInstance<CBaseEntity>(m_pPlayer->pev->groundentity);
+			pentground = m_pPlayer->pev->groundentity;
 		}
 
 		// Try to find a ground entity using PM code
-		if (!pGroundEntity)
+		if (!pentground)
 		{
 			extern playermove_t* pmove;
 			if (pmove && pmove->numphysent > 1 && pmove->physents[0].model->needload == 0)
@@ -88,110 +88,114 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 				int entindex = pmove->PM_TestPlayerPosition(m_pPlayer->pev->origin, nullptr);
 				if (entindex > 0)
 				{
-					pGroundEntity = CBaseEntity::SafeInstance<CBaseEntity>(INDEXENT(pmove->physents[entindex].info));
-					if (IsExcludedAsGroundEntity(pGroundEntity))
+					edict_t *pentground = INDEXENT(pmove->physents[entindex].info);
+					if (IsExcludedAsGroundEntity(pentground))
 					{
-						pGroundEntity = nullptr;
+						pentground = nullptr;
 					}
 				}
 			}
 		}
 
 		// Use physics engine to find potentially better ground entity
-		CBaseEntity* pEntity = nullptr;
-		while (UTIL_FindAllEntities(&pEntity))
+		edict_t* pent = nullptr;
+		while (pent = UTIL_FindEntitiesInPVS(pent, m_pPlayer->edict()))
 		{
-			if (CheckIfPotentialGroundEntityForPlayer(pEntity) && !IsExcludedAsGroundEntity(pEntity))
+			if (CheckIfPotentialGroundEntityForPlayer(pent) && !IsExcludedAsGroundEntity(pent))
 			{
-				pGroundEntity = ChoseBetterGroundEntityForPlayer(pGroundEntity, pEntity);
+				pentground = ChoseBetterGroundEntityForPlayer(pentground, pent);
 			}
 		}
 	}
 
-	if (pGroundEntity && m_hGroundEntity != pGroundEntity)
+	if (pentground && m_hGroundEntity.Get() != pentground)
 	{
-		m_lastGroundEntityOrigin = pGroundEntity->pev->origin;
-		m_lastGroundEntityAngles = pGroundEntity->pev->angles;
+		m_lastGroundEntityOrigin = pentground->v.origin;
+		m_lastGroundEntityAngles = pentground->v.angles;
 	}
 
-	if (pGroundEntity)
+	if (pentground)
 	{
-		m_pPlayer->pev->groundentity = pGroundEntity->edict();
+		m_pPlayer->pev->groundentity = pentground;
 	}
 	else
 	{
-		if (m_hGroundEntity && m_pPlayer->pev->groundentity == m_hGroundEntity->edict())
+		if (m_pPlayer->pev->groundentity == m_hGroundEntity.Get())
 		{
 			m_pPlayer->pev->groundentity = nullptr;
 		}
 	}
 
-	m_hGroundEntity = pGroundEntity;
+	m_hGroundEntity = CBaseEntity::SafeInstance<CBaseEntity>(pentground);
 }
 
-CBaseEntity* VRGroundEntityHandler::ChoseBetterGroundEntityForPlayer(CBaseEntity* pEntity1, CBaseEntity* pEntity2)
+edict_t* VRGroundEntityHandler::ChoseBetterGroundEntityForPlayer(edict_t* pent1, edict_t* pent2)
 {
-	if (!pEntity1)
-		return pEntity2;
+	if (!pent1)
+		return pent2;
 
-	if (!pEntity2)
-		return pEntity1;
+	if (!pent2)
+		return pent1;
 
 	// Check which one moves faster
-	if (pEntity1->pev->velocity.LengthSquared() > pEntity2->pev->velocity.LengthSquared())
-		return pEntity1;
+	if (pent1->v.velocity.LengthSquared() > pent2->v.velocity.LengthSquared())
+		return pent1;
 
-	if (pEntity2->pev->velocity.LengthSquared() > pEntity1->pev->velocity.LengthSquared())
-		return pEntity2;
+	if (pent2->v.velocity.LengthSquared() > pent1->v.velocity.LengthSquared())
+		return pent2;
 
 	// Check which one rotates faster
-	if (pEntity1->pev->avelocity.LengthSquared() > pEntity2->pev->avelocity.LengthSquared())
-		return pEntity1;
+	if (pent1->v.avelocity.LengthSquared() > pent2->v.avelocity.LengthSquared())
+		return pent1;
 
-	if (pEntity2->pev->avelocity.LengthSquared() > pEntity1->pev->avelocity.LengthSquared())
-		return pEntity2;
+	if (pent2->v.avelocity.LengthSquared() > pent1->v.avelocity.LengthSquared())
+		return pent2;
 
 	// Both move and rotate at the same speed, check which one is closer
 
-	return pEntity2;
+	return pent2;
 }
 
-bool VRGroundEntityHandler::CheckIfPotentialGroundEntityForPlayer(CBaseEntity* pEntity)
+bool VRGroundEntityHandler::CheckIfPotentialGroundEntityForPlayer(edict_t* pent)
 {
-	if (pEntity->pev->solid != SOLID_BSP)
+	if (pent->v.solid != SOLID_BSP)
 		return false;
 
-	if (ValidGroundEntityClassnames.count(std::string{ STRING(pEntity->pev->classname) }) == 0)
+	if (ValidGroundEntityClassnames.count(STRING(pent->v.classname)) == 0)
 		return false;
 
-	if (pEntity->pev->velocity.LengthSquared() == 0.f && pEntity->pev->avelocity.LengthSquared() == 0.f)
+	if (pent->v.velocity.LengthSquared() == 0.f && pent->v.avelocity.LengthSquared() == 0.f)
+		return false;
+
+	EHANDLE<CBaseEntity> hEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
+	if (!hEntity)
 		return false;
 
 	// Detect if player is in control area of a usable train
-	if ((pEntity->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pEntity->OnControls(m_pPlayer->pev))
+	if ((hEntity->ObjectCaps() & FCAP_DIRECTIONAL_USE) && hEntity->OnControls(m_pPlayer->pev))
 		return true;
 
 	// We use the physics engine to do proper collision detection with the bsp model.
 	// We half the player's width to avoid being "pulled" or slung around by objects nearby.
 	// We extend the player's height and lower the origin a bit to make sure we detect movement even if slightly above ground (HMD jittering etc.)
 	return VRPhysicsHelper::Instance().ModelIntersectsCapsule(
-		pEntity,
+		hEntity,
 		/*center*/ m_pPlayer->pev->origin - Vector{ 0.f, 0.f, 8.f },
 		/*radius*/ m_pPlayer->pev->size.x,
 		/*height*/ double(m_pPlayer->pev->size.z) + 8.0);
 }
 
-bool VRGroundEntityHandler::IsExcludedAsGroundEntity(CBaseEntity* pEntity)
+bool VRGroundEntityHandler::IsExcludedAsGroundEntity(edict_t* pent)
 {
-	if (!pEntity || pEntity->pev->size.x < EPSILON || pEntity->pev->size.y < EPSILON || pEntity->pev->size.z < EPSILON)
+	if (FNullEnt(pent) || pent->v.size.x < EPSILON || pent->v.size.y < EPSILON || pent->v.size.z < EPSILON)
 		return true;
 
-	if (FClassnameIs(pEntity->pev, "func_door_rotating"))
+	if (FClassnameIs(&pent->v, "func_door_rotating"))
 	{
-		if (pEntity->pev->size.z > pEntity->pev->size.y&& pEntity->pev->size.z > pEntity->pev->size.x)
+		if (pent->v.size.z > pent->v.size.y && pent->v.size.z > pent->v.size.x)
 		{
 			constexpr const float DoorRatio = 4.f;
-			float ratio = pEntity->pev->size.x / pEntity->pev->size.y;
+			float ratio = pent->v.size.x / pent->v.size.y;
 			if (ratio > DoorRatio || ratio < (1.f / DoorRatio))
 				return true;
 		}

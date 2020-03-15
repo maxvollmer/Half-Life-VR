@@ -161,23 +161,27 @@ void UTIL_UpdateSDModels()
 	if (sdModelsEnabled != gSDModelsEnabled)
 	{
 		gSDModelsEnabled = sdModelsEnabled;
-		CBaseEntity* pEntity = nullptr;
-		while (UTIL_FindAllEntities(&pEntity))
+
+		for (int index = 0; index < gpGlobals->maxEntities; index++)
 		{
-			if (pEntity->pev->model)
+			edict_t* pent = INDEXENT(index);
+			if (FNullEnt(pent))
+				continue;
+
+			if (pent->v.model)
 			{
-				const char* modelName = STRING(pEntity->pev->model);
+				const char* modelName = STRING(pent->v.model);
 				if (gSDModelsEnabled)
 				{
 					char* sdModel = GetSDModel(modelName);
 					if (sdModel != nullptr)
 					{
-						UTIL_SetModelKeepSize(pEntity->edict(), sdModel);
+						UTIL_SetModelKeepSize(pent, sdModel);
 					}
 				}
 				else if (!gSDModelsEnabled && std::string{ modelName }.find("models/SD/") != std::string::npos)
 				{
-					UTIL_SetModelKeepSize(pEntity->edict(), GetHDModel(modelName));
+					UTIL_SetModelKeepSize(pent, GetHDModel(modelName));
 				}
 			}
 		}

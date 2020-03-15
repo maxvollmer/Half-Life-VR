@@ -523,13 +523,18 @@ bool VRController::SetDraggedEntity(EHANDLE<CBaseEntity> hEntity) const
 	return true;
 }
 
+void VRController::ClearDraggedEntity() const
+{
+	m_draggedEntity = nullptr;
+	m_draggedEntityPositions.reset();
+}
+
 bool VRController::RemoveDraggedEntity(EHANDLE<CBaseEntity> hEntity) const
 {
 	if (m_draggedEntity != hEntity)
 		return false;
 
-	m_draggedEntity = nullptr;
-	m_draggedEntityPositions.reset();
+	ClearDraggedEntity();
 
 	return true;
 }
