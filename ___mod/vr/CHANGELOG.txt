@@ -1,3 +1,10 @@
+0.6.19-beta - 2020-03-16
+ Mod:
+  * Fixed crashes introduced with performance optimizations in 0.6.18-beta
+
+ HLVRConfig:
+  * No changes
+
 0.6.18-beta - 2020-03-16
  Mod:
   * Fixed rare crash that occurs when generating physics data for a map
