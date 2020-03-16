@@ -2,6 +2,7 @@
  Mod:
   * Fixed buttons and other entities sometimes "blocking" themselves when trying to interact
   * Fixed bug that caused too many entities being checked for collision with controllers
+  * Several performance optimizations (see commit logs in source code for details)
 
  HLVRConfig:
   * No changes
