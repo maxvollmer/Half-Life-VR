@@ -93,6 +93,9 @@ BOOL ClientConnect(edict_t* pEntity, const char* pszName, const char* pszAddress
 	if (g_didRestoreSaveGameFail)
 		return FALSE;
 
+	if (!pEntity)
+		return FALSE;
+
 	if (!pEntity->pvPrivateData)
 		ClientPutInServer(pEntity);
 
