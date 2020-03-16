@@ -2,7 +2,7 @@
  Mod:
   * Fixed rare crash that occurs when generating physics data for a map
   * Fixed rare crash that occurs when loading a savegame
-  * Minor performance optimizations
+  * Several performance optimizations (see commit logs in source code for details)
 
  HLVRConfig:
   * No changes
