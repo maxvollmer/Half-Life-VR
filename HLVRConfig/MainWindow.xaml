@@ -53,7 +53,7 @@
                     </ScrollViewer>
                 </DockPanel>
             </controls:I18NTabItem>
-            <controls:I18NTabItem Key="GUI.Tab.InputSettings" DefaultValue="Input Settings">
+            <controls:I18NTabItem Key="GUI.Tab.InputSettings" DefaultValue="Input">
                 <DockPanel>
                     <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                         <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
@@ -63,7 +63,7 @@
                     </ScrollViewer>
                 </DockPanel>
             </controls:I18NTabItem>
-            <controls:I18NTabItem Key="GUI.Tab.ImmersionSettings" DefaultValue="Immersion Settings">
+            <controls:I18NTabItem Key="GUI.Tab.ImmersionSettings" DefaultValue="Immersion">
                 <DockPanel>
                     <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                         <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
@@ -73,7 +73,7 @@
                     </ScrollViewer>
                 </DockPanel>
             </controls:I18NTabItem>
-            <controls:I18NTabItem Key="GUI.Tab.PerformanceSettings" DefaultValue="Performance Settings">
+            <controls:I18NTabItem Key="GUI.Tab.PerformanceSettings" DefaultValue="Performance">
                 <DockPanel>
                     <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                         <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
@@ -83,7 +83,7 @@
                     </ScrollViewer>
                 </DockPanel>
             </controls:I18NTabItem>
-            <controls:I18NTabItem Key="GUI.Tab.VisualsSettings" DefaultValue="Visuals Settings">
+            <controls:I18NTabItem Key="GUI.Tab.VisualsSettings" DefaultValue="Visuals">
                 <DockPanel>
                     <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                         <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
@@ -93,7 +93,7 @@
                     </ScrollViewer>
                 </DockPanel>
             </controls:I18NTabItem>
-            <controls:I18NTabItem Key="GUI.Tab.AudioSettings" DefaultValue="Audio Settings">
+            <controls:I18NTabItem Key="GUI.Tab.AudioSettings" DefaultValue="Audio">
                 <DockPanel>
                     <Button Click="RestoreDefaultModConfig_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
                         <controls:I18NText Key="GUI.RestoreDefaults" DefaultValue="Restore defaults"></controls:I18NText>
