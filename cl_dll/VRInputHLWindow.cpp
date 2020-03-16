@@ -134,7 +134,10 @@ namespace
 	void VRForceWindowToForeground()
 	{
 		VRFindHLWindow();
-		SwitchToThisWindow(hlWindow, TRUE);
+		if (hlWindow != GetFocus())
+		{
+			SwitchToThisWindow(hlWindow, TRUE);
+		}
 	}
 
 	void VRDisplayErrorPopup(const char* errorMessage)

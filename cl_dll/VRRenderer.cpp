@@ -93,8 +93,9 @@ void VRRenderer::VidInit()
 
 void VRRenderer::Frame(double frametime)
 {
-	static std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-	m_clientTime = std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - begin).count();
+	const static auto begin = std::chrono::steady_clock::now();
+	const auto now = std::chrono::steady_clock::now();
+	m_clientTime = std::chrono::duration<double>(now - begin).count();
 
 	if (m_isVeryFirstFrameEver)
 	{
@@ -160,6 +161,8 @@ void VRRenderer::UpdateGameRenderState()
 
 void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 {
+	const int in_nextview = pparams->nextView;
+
 	m_CalcRefdefWasCalled = true;
 
 	if (m_isInMenu || !IsInGame())
@@ -176,8 +179,9 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 
 	if (pparams->nextView == 0)
 	{
-		vrHelper->PollEvents(true, m_isInMenu);
-		if (!vrHelper->UpdatePositions())
+		vrHelper->PollEvents(true, m_isInMenu); // 200~300탎
+
+		if (!vrHelper->UpdatePositions()) // 100~200탎, sometimes spikes to 3000+탎(!)
 		{
 			// No valid HMD input, render default (2D pancake mode)
 			return;
@@ -197,6 +201,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 
 	if (pparams->nextView == 0)
 	{
+		//200탎
 		if (m_eyeMode == EyeMode::RightOnly)
 		{
 			// right eye if RightOnly
@@ -214,6 +219,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 	}
 	else if (pparams->nextView == 1)
 	{
+		//300탎
 		RenderVRHandsAndHUDAndStuff();
 		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
 		vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
@@ -224,6 +230,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 	}
 	else if (pparams->nextView == 2)
 	{
+		//900탎
 		RenderVRHandsAndHUDAndStuff();
 		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
 		vrHelper->SubmitImages();
@@ -248,7 +255,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		}
 	}
 
-	if (pparams->nextView == 0)
+	if (in_nextview == 0)
 	{
 		VRRandomBackupSeed();
 	}

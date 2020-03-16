@@ -40,14 +40,8 @@
 		gHUD.##y.UserCmd_##x(); \
 	}
 
-inline float CVAR_GET_FLOAT(const char* x)
-{
-	return gEngfuncs.pfnGetCvarFloat((char*)x);
-}
-inline char* CVAR_GET_STRING(const char* x)
-{
-	return gEngfuncs.pfnGetCvarString((char*)x);
-}
+float CVAR_GET_FLOAT(const char* x);
+const char* CVAR_GET_STRING(const char* x);
 inline struct cvar_s* CVAR_CREATE(const char* cv, const char* val, const int flags)
 {
 	return gEngfuncs.pfnRegisterVariable((char*)cv, (char*)val, flags);

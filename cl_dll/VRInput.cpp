@@ -540,7 +540,9 @@ void VRInput::HandleInput(bool isInGame)
 		}
 	}
 
-	if (!actionSets.empty() && UpdateActionStates(activeActionSets))
+	bool thething = !actionSets.empty() && UpdateActionStates(activeActionSets);
+
+	if (thething)
 	{
 		for (auto& actionSet : actionSets)
 		{

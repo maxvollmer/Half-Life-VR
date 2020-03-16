@@ -185,7 +185,7 @@ bool VRSettings::WasAnyCVARChanged()
 	bool cvarsChanged = false;
 	for (auto& cvar : m_cvarCache)
 	{
-		char* value = CVAR_GET_STRING(cvar.first.data());
+		const char* value = CVAR_GET_STRING(cvar.first.data());
 		if (cvar.second != value)
 		{
 			cvar.second = value;
@@ -197,13 +197,16 @@ bool VRSettings::WasAnyCVARChanged()
 
 void SyncCvars(const char* src, const char* dst)
 {
-	gEngfuncs.Cvar_SetValue(dst, CVAR_GET_FLOAT(src));
+	gEngfuncs.Cvar_SetValue(dst, gEngfuncs.pfnGetCvarFloat(src));
 }
 
 void VRSettings::CheckCVARsForChanges()
 {
+	extern void VRClearCvarCache();
+	void VRClearCvarCache();
+
 	// make sure these are always properly set
-	float vr_headset_fps = CVAR_GET_FLOAT("vr_headset_fps");
+	float vr_headset_fps = gEngfuncs.pfnGetCvarFloat("vr_headset_fps");
 	if (vr_headset_fps <= 0.f)
 	{
 		gEngfuncs.Cvar_SetValue("vr_headset_fps", 90.f);
@@ -218,7 +221,7 @@ void VRSettings::CheckCVARsForChanges()
 	//gEngfuncs.pfnClientCmd("firstperson");
 
 	// reset cheats if cheats are disabled
-	if (CVAR_GET_FLOAT("sv_cheats") == 0.f)
+	if (gEngfuncs.pfnGetCvarFloat("sv_cheats") == 0.f)
 	{
 		gEngfuncs.Cvar_SetValue("vr_debug_physics", 0.f);
 		gEngfuncs.Cvar_SetValue("vr_debug_controllers", 0.f);
@@ -234,7 +237,7 @@ void VRSettings::CheckCVARsForChanges()
 	SyncCvars("vr_walkspeedfactor", "cl_movespeedkey");
 
 	// reset HD cvars if classic mode is enabled
-	if (CVAR_GET_FLOAT("vr_classic_mode") != 0.f)
+	if (gEngfuncs.pfnGetCvarFloat("vr_classic_mode") != 0.f)
 	{
 		gEngfuncs.Cvar_SetValue("vr_hd_textures_enabled", 0.f);
 		gEngfuncs.Cvar_SetValue("vr_use_hd_models", 0.f);
@@ -246,12 +249,12 @@ void VRSettings::CheckCVARsForChanges()
 		UpdateTextureMode();
 	}
 
-	// only check every 100ms
+	// only check every 100~200ms
 	auto now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).time_since_epoch().count();
 	if (now < m_nextSettingCheckTime)
 		return;
 
-	m_nextSettingCheckTime = now + 100;
+	m_nextSettingCheckTime = now + 100 + (rand() % 100);
 
 	if (WasSettingsFileChanged() || m_needsRetry == RetryMode::LOAD)
 	{

@@ -521,11 +521,10 @@ bool VRHelper::UpdatePositions()
 	UpdateVRHLConversionVectors();
 	UpdateWorldRotation();
 
-	//std::lock_guard<std::mutex> lockCompositor{ g_vr_compositorMutex };
-
 	if (vrSystem != nullptr && vrCompositor != nullptr)
 	{
 		vrCompositor->SetTrackingSpace(isVRRoomScale ? vr::TrackingUniverseStanding : vr::TrackingUniverseSeated);
+
 		vrCompositor->WaitGetPoses(positions.m_rTrackedDevicePose.data(), vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
 		if (positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bDeviceIsConnected && positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid && positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].eTrackingResult == vr::TrackingResult_Running_OK)

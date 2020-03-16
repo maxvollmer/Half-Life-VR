@@ -112,16 +112,6 @@ void VRInputAction::HandleSkeletalInput()
 	{
 		if (data.bActive)
 		{
-			/*
-			uint32_t numBones = 0;
-			result = vr::VRInput()->GetBoneCount(m_handle, &numBones);
-
-			std::vector<vr::VRBoneTransform_t> boneTransforms;
-			boneTransforms.resize(numBones);
-
-			result = vr::VRInput()->GetSkeletalBoneData(m_handle, vr::VRSkeletalTransformSpace_Parent, vr::VRSkeletalMotionRange_WithoutController, boneTransforms.data(), numBones);
-			*/
-
 			vr::VRSkeletalSummaryData_t summaryData{ 0 };
 			result = vr::VRInput()->GetSkeletalSummaryData(m_handle, vr::EVRSummaryType::VRSummaryType_FromAnimation, &summaryData);
 			if (result == vr::VRInputError_None)

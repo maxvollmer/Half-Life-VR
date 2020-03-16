@@ -18,6 +18,10 @@
 // implementation of class-less helper functions
 //
 
+#include <unordered_map>
+#include <memory>
+#include <string>
+
 #include "STDIO.H"
 #include "STDLIB.H"
 #include "MATH.H"
@@ -189,4 +193,52 @@ void GetAnglesFromVectors(const Vector& forward, const Vector& right, const Vect
 	angles[2] = roll / (M_PI * 2.f / 360.f);
 
 	NormalizeAngles(angles);
+}
+
+
+
+// The CVAR_GET_* functions are incredibly slow. (O(n))
+// They get called repeatedly during a single frame for the same cvars, in a worst case scenario this can lead to O(n²).
+// This cache dramatically improves performance.
+// VRClearCvarCache() needs to be called once per frame, ideally at the beginning.
+// - Max Vollmer, 2020-03-16
+namespace
+{
+	static std::unordered_map<const char*, float> cvarfloatcache;
+	static std::unordered_map<const char*, std::unique_ptr<std::string>> cvarstringcache;
+}
+void VRClearCvarCache()
+{
+	cvarfloatcache.clear();
+	cvarstringcache.clear();
+}
+
+float CVAR_GET_FLOAT(const char* x)
+{
+	auto& it = cvarfloatcache.find(x);
+	if (it != cvarfloatcache.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		float result = gEngfuncs.pfnGetCvarFloat(x);
+		cvarfloatcache[x] = result;
+		return result;
+	}
+}
+
+const char* CVAR_GET_STRING(const char* x)
+{
+	auto& it = cvarstringcache.find(x);
+	if (it != cvarstringcache.end())
+	{
+		return it->second->data();
+	}
+	else
+	{
+		const char* result = gEngfuncs.pfnGetCvarString(x);
+		cvarstringcache[x] = std::make_unique<std::string>(result);
+		return result;
+	}
 }

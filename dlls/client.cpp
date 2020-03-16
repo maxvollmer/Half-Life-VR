@@ -783,6 +783,9 @@ void ParmsChangeLevel(void)
 //
 void StartFrame(void)
 {
+	extern void VRClearCvarCache();
+	VRClearCvarCache();
+
 	// Don't think in game loaded from invalid savegame (see world.cpp RestoreGlobalState)
 	extern bool g_didRestoreSaveGameFail;
 	if (g_didRestoreSaveGameFail)
