@@ -25,6 +25,7 @@ extern struct playermove_s* PM_GetPlayerMove(void);
 
 #include "VRPhysicsHelper.h"
 #include "VRModelHelper.h"
+
 #include "util.h"
 #include "cbase.h"
 #include "effects.h"
@@ -48,6 +49,81 @@ enum NeedLoadFlag
 	NEEDS_LOADING = 1,  // If set, this brush model still needs to be loaded
 	UNREFERENCED = 2   // If set, this brush model isn't used by the current map
 };
+
+namespace
+{
+	class VRException : public std::exception
+	{
+	private:
+		std::string m_message;
+
+	public:
+		VRException(const std::string& message) :
+			std::exception{},
+			m_message{ message }
+		{
+
+		}
+
+		virtual char const* what() const override
+		{
+			return m_message.data();
+		}
+	};
+
+	class VRAllocatorException : public VRException
+	{
+	public:
+		VRAllocatorException(const std::string& message) :
+			VRException{ message }
+		{
+		}
+	};
+
+	template <class RP3DAllocator>
+	class VRAllocator : public RP3DAllocator
+	{
+		virtual void* allocate(size_t size) override
+		{
+			if (size == 0)
+				throw VRAllocatorException{ "VRAllocator: Cannot allocate memory of size 0" };
+
+			void* result = RP3DAllocator::allocate(size);
+
+			if (!result)
+				throw VRAllocatorException{ "VRAllocator: Unable to allocate memory of size " + std::to_string(size) + ", please check your system memory for errors." };
+
+			return result;
+		}
+	};
+
+	static VRAllocator<rp3d::DefaultAllocator> vrAllocator;
+	static VRAllocator<rp3d::DefaultPoolAllocator> vrPoolAllocator;
+	static VRAllocator<rp3d::DefaultSingleFrameAllocator> vrSingleFrameAllocator;
+
+	class VRDynamicsWorld : public rp3d::DynamicsWorld
+	{
+	public:
+		VRDynamicsWorld(const rp3d::Vector3& mGravity) :
+			rp3d::DynamicsWorld{ mGravity }
+		{
+			this->mMemoryManager.setBaseAllocator(&vrAllocator);
+			this->mMemoryManager.setPoolAllocator(&vrPoolAllocator);
+			this->mMemoryManager.setSingleFrameAllocator(&vrSingleFrameAllocator);
+		}
+	};
+	class VRCollisionWorld : public rp3d::CollisionWorld
+	{
+	public:
+		VRCollisionWorld() :
+			rp3d::CollisionWorld{}
+		{
+			this->mMemoryManager.setBaseAllocator(&vrAllocator);
+			this->mMemoryManager.setPoolAllocator(&vrPoolAllocator);
+			this->mMemoryManager.setSingleFrameAllocator(&vrSingleFrameAllocator);
+		}
+	};
+}
 
 uint64_t HashFileData(const std::string& filename)
 {
@@ -792,84 +868,88 @@ VRPhysicsHelper::VRPhysicsHelper()
 
 VRPhysicsHelper::~VRPhysicsHelper()
 {
-	m_bspModelData.clear();
-	m_dynamicBSPModelData.clear();
-	m_hitboxCaches.clear();
-
-	if (m_collisionWorld)
+	try
 	{
-		if (m_capsuleBody)
+		m_bspModelData.clear();
+		m_dynamicBSPModelData.clear();
+		m_hitboxCaches.clear();
+
+		if (m_collisionWorld)
 		{
-			if (m_capsuleProxyShape)
+			if (m_capsuleBody)
 			{
-				m_capsuleBody->removeCollisionShape(m_capsuleProxyShape);
-				m_capsuleProxyShape = nullptr;
+				if (m_capsuleProxyShape)
+				{
+					m_capsuleBody->removeCollisionShape(m_capsuleProxyShape);
+					m_capsuleProxyShape = nullptr;
+				}
+				m_collisionWorld->destroyCollisionBody(m_capsuleBody);
+				m_capsuleBody = nullptr;
 			}
-			m_collisionWorld->destroyCollisionBody(m_capsuleBody);
-			m_capsuleBody = nullptr;
+
+			delete m_collisionWorld;
+			m_collisionWorld = nullptr;
 		}
 
-		delete m_collisionWorld;
-		m_collisionWorld = nullptr;
-	}
-
-	if (m_dynamicsWorld)
-	{
-		if (m_worldsSmallestCupBody)
+		if (m_dynamicsWorld)
 		{
-			if (m_worldsSmallestCupTopProxyShape)
+			if (m_worldsSmallestCupBody)
 			{
-				m_worldsSmallestCupBody->removeCollisionShape(m_worldsSmallestCupTopProxyShape);
-				m_worldsSmallestCupTopProxyShape = nullptr;
+				if (m_worldsSmallestCupTopProxyShape)
+				{
+					m_worldsSmallestCupBody->removeCollisionShape(m_worldsSmallestCupTopProxyShape);
+					m_worldsSmallestCupTopProxyShape = nullptr;
+				}
+				if (m_worldsSmallestCupBottomProxyShape)
+				{
+					m_worldsSmallestCupBody->removeCollisionShape(m_worldsSmallestCupBottomProxyShape);
+					m_worldsSmallestCupBottomProxyShape = nullptr;
+				}
+				m_dynamicsWorld->destroyRigidBody(m_worldsSmallestCupBody);
+				m_worldsSmallestCupBody = nullptr;
 			}
-			if (m_worldsSmallestCupBottomProxyShape)
-			{
-				m_worldsSmallestCupBody->removeCollisionShape(m_worldsSmallestCupBottomProxyShape);
-				m_worldsSmallestCupBottomProxyShape = nullptr;
-			}
-			m_dynamicsWorld->destroyRigidBody(m_worldsSmallestCupBody);
-			m_worldsSmallestCupBody = nullptr;
+
+			delete m_dynamicsWorld;
+			m_dynamicsWorld = nullptr;
 		}
 
-		delete m_dynamicsWorld;
-		m_dynamicsWorld = nullptr;
-	}
+		if (m_capsuleShape)
+		{
+			delete m_capsuleShape;
+			m_capsuleShape = nullptr;
+		}
 
-	if (m_capsuleShape)
-	{
-		delete m_capsuleShape;
-		m_capsuleShape = nullptr;
-	}
+		if (m_worldsSmallestCupTopSphereShape)
+		{
+			delete m_worldsSmallestCupTopSphereShape;
+			m_worldsSmallestCupTopSphereShape = nullptr;
+		}
 
-	if (m_worldsSmallestCupTopSphereShape)
-	{
-		delete m_worldsSmallestCupTopSphereShape;
-		m_worldsSmallestCupTopSphereShape = nullptr;
-	}
+		if (m_worldsSmallestCupBottomSphereShape)
+		{
+			delete m_worldsSmallestCupBottomSphereShape;
+			m_worldsSmallestCupBottomSphereShape = nullptr;
+		}
 
-	if (m_worldsSmallestCupBottomSphereShape)
-	{
-		delete m_worldsSmallestCupBottomSphereShape;
-		m_worldsSmallestCupBottomSphereShape = nullptr;
-	}
+		if (m_worldsSmallestCupPolyhedronMesh)
+		{
+			delete m_worldsSmallestCupPolyhedronMesh;
+			m_worldsSmallestCupPolyhedronMesh = nullptr;
+		}
 
-	if (m_worldsSmallestCupPolyhedronMesh)
-	{
-		delete m_worldsSmallestCupPolyhedronMesh;
-		m_worldsSmallestCupPolyhedronMesh = nullptr;
-	}
+		if (m_worldsSmallestCupPolygonVertexArray)
+		{
+			delete m_worldsSmallestCupPolygonVertexArray;
+			m_worldsSmallestCupPolygonVertexArray = nullptr;
+		}
 
-	if (m_worldsSmallestCupPolygonVertexArray)
-	{
-		delete m_worldsSmallestCupPolygonVertexArray;
-		m_worldsSmallestCupPolygonVertexArray = nullptr;
+		if (m_worldsSmallestCupPolygonFaces)
+		{
+			delete[] static_cast<reactphysics3d::PolygonVertexArray::PolygonFace*>(m_worldsSmallestCupPolygonFaces);
+			m_worldsSmallestCupPolygonFaces = nullptr;
+		}
 	}
-
-	if (m_worldsSmallestCupPolygonFaces)
-	{
-		delete[] static_cast<reactphysics3d::PolygonVertexArray::PolygonFace*>(m_worldsSmallestCupPolygonFaces);
-		m_worldsSmallestCupPolygonFaces = nullptr;
-	}
+	catch (...) {}
 }
 
 bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector& hlPos1, const Vector& hlPos2)
@@ -1386,17 +1466,21 @@ void VRPhysicsHelper::InitPhysicsWorld()
 {
 	if (m_collisionWorld == nullptr)
 	{
-		m_collisionWorld = new CollisionWorld{};
+		m_collisionWorld = new VRCollisionWorld{};
 	}
 	if (m_dynamicsWorld == nullptr)
 	{
-		m_dynamicsWorld = new DynamicsWorld{ Vector3{0, 0, 0} };
+		m_dynamicsWorld = new VRDynamicsWorld{ rp3d::Vector3{0, 0, 0} };
 	}
 }
 
 VRPhysicsHelper::HitBoxModelData::~HitBoxModelData()
 {
-	DeleteData();
+	try
+	{
+		DeleteData();
+	}
+	catch (...) {}
 }
 
 void VRPhysicsHelper::HitBoxModelData::CreateData(CollisionWorld* collisionWorld, const Vector& origin, const Vector& mins, const Vector& maxs, const Vector& angles)
@@ -1453,9 +1537,13 @@ void VRPhysicsHelper::HitBoxModelData::DeleteData()
 
 VRPhysicsHelper::BSPModelData::~BSPModelData()
 {
-	m_vertices.clear();
-	m_indices.clear();
-	DeleteData();
+	try
+	{
+		m_vertices.clear();
+		m_indices.clear();
+		DeleteData();
+	}
+	catch (...) {}
 }
 
 void VRPhysicsHelper::BSPModelData::CreateData(CollisionWorld* collisionWorld)
@@ -1522,10 +1610,14 @@ void VRPhysicsHelper::BSPModelData::DeleteData()
 
 VRPhysicsHelper::DynamicBSPModelData::~DynamicBSPModelData()
 {
-	m_vertices.clear();
-	m_normals.clear();
-	m_indices.clear();
-	DeleteData();
+	try
+	{
+		m_vertices.clear();
+		m_normals.clear();
+		m_indices.clear();
+		DeleteData();
+	}
+	catch (...) {}
 }
 
 void VRPhysicsHelper::DynamicBSPModelData::CreateData(DynamicsWorld* dynamicsWorld)
@@ -1633,11 +1725,11 @@ void ReadBinaryData(std::ifstream& in, T& value)
 	in.read(reinterpret_cast<char*>(&value), sizeof(value));
 	if (in.eof())
 	{
-		throw std::runtime_error{ "unexpected eof" };
+		throw VRException{ "unexpected eof" };
 	}
 	if (!in.good())
 	{
-		throw std::runtime_error{ "unexpected error" };
+		throw VRException{ "unexpected error" };
 	}
 }
 
@@ -1656,11 +1748,11 @@ std::string ReadString(std::ifstream& in)
 	in.read(const_cast<char*>(result.data()), size);
 	if (in.eof())
 	{
-		throw std::runtime_error{ "unexpected eof" };
+		throw VRException{ "unexpected eof" };
 	}
 	if (!in.good())
 	{
-		throw std::runtime_error{ "unexpected error" };
+		throw VRException{ "unexpected error" };
 	}
 	return result;
 }
@@ -1698,7 +1790,7 @@ void ReadVerticesAndIndices(
 		ReadBinaryData(physicsMapDataFileStream, index);
 		if (index < 0 || static_cast<unsigned>(index) > vertices.size())
 		{
-			throw std::runtime_error{ "invalid bsp data: index out of bounds!" };
+			throw VRException{ "invalid bsp data: index out of bounds!" };
 		}
 		indices.push_back(index);
 	}
@@ -1757,13 +1849,13 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& mapFilePath, 
 							}
 							else
 							{
-								throw std::runtime_error{ "invalid bsp data name at index " + std::to_string(bspDataIndex) };
+								throw VRException{ "invalid bsp data name at index " + std::to_string(bspDataIndex) };
 							}
 						}
 					}
 					else
 					{
-						throw std::runtime_error{ "invalid bsp data size" };
+						throw VRException{ "invalid bsp data size" };
 					}
 				}
 
@@ -1794,25 +1886,25 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& mapFilePath, 
 							}
 							else
 							{
-								throw std::runtime_error{ "invalid dynamic bsp data name at index " + std::to_string(dynamicBSPDataIndex) };
+								throw VRException{ "invalid dynamic bsp data name at index " + std::to_string(dynamicBSPDataIndex) };
 							}
 						}
 					}
 					else
 					{
-						throw std::runtime_error{ "invalid dynamic dynamic bsp data size" };
+						throw VRException{ "invalid dynamic dynamic bsp data size" };
 					}
 				}
 
 				char checkeof;
 				if (physicsMapDataFileStream >> checkeof)  // this should fail
 				{
-					throw std::runtime_error{ "expected eof, but didn't reach eof" };
+					throw VRException{ "expected eof, but didn't reach eof" };
 				}
 
 				if (m_bspModelData.count(m_currentMapName) == 0 || m_dynamicBSPModelData.count(m_currentMapName) == 0)
 				{
-					throw std::runtime_error{ "sanity check failed, invalid physics data" };
+					throw VRException{ "sanity check failed, invalid physics data" };
 				}
 
 				ALERT(at_console, "Successfully loaded physics data from %s\n", physicsMapDataFilePath.c_str());
@@ -1820,7 +1912,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& mapFilePath, 
 			}
 			else
 			{
-				throw std::runtime_error{ "invalid header" };
+				throw VRException{ "invalid header" };
 			}
 		}
 		else
@@ -1829,7 +1921,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& mapFilePath, 
 			return false;
 		}
 	}
-	catch (const std::runtime_error & e)
+	catch (const VRException& e)
 	{
 		ALERT(at_console, "Game must recalculate physics data due to error while trying to parse %s: %s\n", physicsMapDataFilePath.c_str(), e.what());
 		m_bspModelData.clear();
@@ -2000,7 +2092,18 @@ bool VRPhysicsHelper::CheckWorld()
 
 			if (!GetPhysicsMapDataFromFile(mapFilePath, physicsMapDataFilePath))
 			{
-				GetPhysicsMapDataFromModel();
+				try
+				{
+					GetPhysicsMapDataFromModel();
+				}
+				catch (const VRException & e)
+				{
+					ALERT(at_console, "ERROR: Couldn't create physics data for map %s, some VR features will not work correctly: %s\n", physicsMapDataFilePath.c_str(), e.what());
+					m_bspModelData.clear();
+					m_dynamicBSPModelData.clear();
+					m_hlWorldModel = world; // Don't try again
+					return false;
+				}
 				StorePhysicsMapDataToFile(mapFilePath, physicsMapDataFilePath);
 			}
 
