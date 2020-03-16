@@ -3,9 +3,10 @@
   * Fixed rare crash that occurs when generating physics data for a map
   * Fixed rare crash that occurs when loading a savegame
   * Several performance optimizations (see commit logs in source code for details)
+  * Allow players to reduce number of gibs/debris spawned by breakables
 
  HLVRConfig:
-  * No changes
+  * Renamed tabs for better clarity
 
 0.6.17-beta - 2020-03-15
  Mod:
