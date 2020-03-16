@@ -193,6 +193,7 @@ inline edict_t* ENT(const entvars_t* pev)
 	if (!pev)
 		return nullptr;
 
+#if _DEBUG
 	if ((FNullEnt(pev->pContainingEntity) && !FWorldEnt(pev->pContainingEntity)) || &pev->pContainingEntity->v != pev)
 	{
 		const_cast<entvars_t*>(pev)->pContainingEntity = (*g_engfuncs.pfnFindEntityByVars)(pev);
@@ -202,6 +203,7 @@ inline edict_t* ENT(const entvars_t* pev)
 	{
 		return nullptr;
 	}
+#endif
 
 	return pev->pContainingEntity;
 }
@@ -223,16 +225,19 @@ inline EOFFSET OFFSET(EOFFSET eoffset)
 
 inline EOFFSET OFFSET(const edict_t* pent)
 {
+#if _DEBUG
 	if (FNullEnt(pent))
 	{
-#if _DEBUG
 		if (!FWorldEnt(pent))
 		{
 			ALERT(at_error, "Bad ent in OFFSET()\n");
 		}
-#endif
 		return 0;
 	}
+#else
+	if (!pent)
+		return 0;
+#endif
 
 	return (*g_engfuncs.pfnEntOffsetOfPEntity)(pent);
 }
@@ -256,7 +261,7 @@ inline entvars_t* VARS(entvars_t* pev)
 
 inline entvars_t* VARS(edict_t* pent)
 {
-	if (FNullEnt(pent) && !FWorldEnt(pent))
+	if (!pent)
 		return nullptr;
 
 	return &pent->v;
@@ -269,9 +274,6 @@ inline entvars_t* VARS(EOFFSET eoffset)
 
 inline int ENTINDEX(edict_t* pEdict)
 {
-	if (FNullEnt(pEdict))
-		return 0;
-
 	return (*g_engfuncs.pfnIndexOfEdict)(pEdict);
 }
 
