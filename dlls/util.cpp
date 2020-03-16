@@ -2547,6 +2547,9 @@ void CSave::WriteFunction(const char* pname, const int* data, int count)
 
 void EntvarsKeyvalue(entvars_t* pev, KeyValueData* pkvd)
 {
+	if (!pev || !pkvd)
+		return;
+
 	int i = 0;
 	TYPEDESCRIPTION* pField;
 
