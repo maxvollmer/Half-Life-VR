@@ -1,6 +1,8 @@
 0.6.18-beta
  Mod:
-  * Fixed rare crash bug when generating physics data for a map
+  * Fixed rare crash that occurs when generating physics data for a map
+  * Fixed rare crash that occurs when loading a savegame
+  * Minor performance optimizations
 
  HLVRConfig:
   * No changes
