@@ -358,9 +358,6 @@
     <ClCompile Include="VRInputHLMenu.cpp">
       <Filter>VR\input</Filter>
     </ClCompile>
-    <ClCompile Include="VRMODExtradataErrorIntercepter.cpp">
-      <Filter>VR\helpers</Filter>
-    </ClCompile>
     <ClCompile Include="VRModExtraDataCacheHook.cpp">
       <Filter>VR\helpers</Filter>
     </ClCompile>
@@ -551,9 +548,6 @@
     </ClInclude>
     <ClInclude Include="IGameConsole.h">
       <Filter>Header Files\gameui</Filter>
-    </ClInclude>
-    <ClInclude Include="VRMODExtradataErrorIntercepter.h">
-      <Filter>VR\helpers</Filter>
     </ClInclude>
     <ClInclude Include="VRSpeechListener.h">
       <Filter>VR\input</Filter>

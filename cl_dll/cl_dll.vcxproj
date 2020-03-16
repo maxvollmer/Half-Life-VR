@@ -270,7 +270,6 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClCompile Include="VRInputWeaponsHandlers.cpp" />
     <ClCompile Include="VRIntermissionAndMenuRenderer.cpp" />
     <ClCompile Include="VRModExtraDataCacheHook.cpp" />
-    <ClCompile Include="VRMODExtradataErrorIntercepter.cpp" />
     <ClCompile Include="VROpenGLInterceptor.cpp" />
     <ClCompile Include="VRSettings.cpp" />
     <ClCompile Include="VRSound.cpp" />
@@ -337,7 +336,6 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClInclude Include="VREngineRandomInterceptor.h" />
     <ClInclude Include="VRInputAction.h" />
     <ClInclude Include="VRInputHandlers.h" />
-    <ClInclude Include="VRMODExtradataErrorIntercepter.h" />
     <ClInclude Include="VROpenGLInterceptor.h" />
     <ClInclude Include="VRSettings.h" />
     <ClInclude Include="VRSound.h" />
