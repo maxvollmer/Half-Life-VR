@@ -515,10 +515,8 @@ bool VRController::SetDraggedEntity(EHANDLE<CBaseEntity> hEntity) const
 	if (m_draggedEntity == hEntity)
 		return true;
 
-	EHANDLE<CBasePlayer> hPlayer = m_hPlayer;
-
 	m_draggedEntity = hEntity;
-	m_draggedEntityPositions.reset(new DraggedEntityPositions{ GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin, GetOffset(), GetPosition(), hEntity->pev->origin, hPlayer->pev->origin });
+	m_draggedEntityPositions.reset(new DraggedEntityPositions{ GetOffset(), GetPosition(), hEntity->pev->origin, m_hPlayer->pev->origin, GetOffset(), GetPosition(), hEntity->pev->origin, m_hPlayer->pev->origin });
 
 	return true;
 }

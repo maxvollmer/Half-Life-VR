@@ -20,6 +20,10 @@
 
 */
 
+#include <vector>
+#include <algorithm>
+#include <unordered_set>
+#include <unordered_map>
 #include <chrono>
 #include <algorithm>
 
@@ -48,6 +52,11 @@
 #include "VRModelHelper.h"
 #include "VRMovementHandler.h"
 #include "VRControllerModel.h"
+
+
+constexpr const float VR_RETINASCANNER_ACTIVATE_LOOK_TIME = 1.f;
+std::unordered_map<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScanners;
+std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScannerButtons;
 
 
 // #define DUCKFIX
@@ -1903,17 +1912,33 @@ void CBasePlayer::PreThink(void)
 		return;
 	}
 
+	auto t1 = std::chrono::steady_clock::now();
+
 	// VR stuff: Calculate controller interactions with world
 	for (auto& controller : m_vrControllers)
 	{
 		m_vrControllerInteractionManager.CheckAndPressButtons(this, controller.second);
 	}
 
+	auto t2 = std::chrono::steady_clock::now();
+
 	// Special interaction with 2 controllers at once (e.g. pull up on ledges)
 	if (m_vrControllers[VRControllerID::HAND].IsValid() && m_vrControllers[VRControllerID::WEAPON].IsValid())
 	{
 		m_vrControllerInteractionManager.DoMultiControllerActions(this, m_vrControllers[VRControllerID::HAND], m_vrControllers[VRControllerID::WEAPON]);
 	}
+
+	auto t3 = std::chrono::steady_clock::now();
+
+	// Handle retina scanners
+	VRHandleRetinaScanners();
+
+	auto t4 = std::chrono::steady_clock::now();
+
+	ALERT(at_console, "time: %i (%i, %i, %i)\n", (int)std::chrono::duration_cast<std::chrono::microseconds>(t4 - t1).count(),
+		(int)std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count(),
+		(int)std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count(),
+		(int)std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count());
 
 	// Check if we are on a train
 	if (CVAR_GET_FLOAT("vr_train_controls") == 0.f)
@@ -6149,6 +6174,49 @@ void EXPORT CBaseEntity::DragThink(void)
 			Vector angles = controller.GetAngles();
 
 			HandleDragUpdate(origin, velocity, UTIL_AnglesMod(angles));
+		}
+	}
+}
+
+void CBasePlayer::VRHandleRetinaScanners()
+{
+	for (auto [hRetinaScanner, hRetinaScannerButton] : g_vrRetinaScanners)
+	{
+		Vector retinaScannerPosition = (hRetinaScanner->pev->absmax + hRetinaScanner->pev->absmin) * 0.5;
+		bool isLookingAtRetinaScanner =
+			UTIL_IsFacing(pev->origin, pev->angles.ToViewAngles(), retinaScannerPosition)
+			&& ((EyePosition() - retinaScannerPosition).Length() < 32.f)
+			&& (EyePosition().z >= hRetinaScanner->pev->absmin.z)
+			&& (EyePosition().z <= hRetinaScanner->pev->absmax.z);
+
+		if (isLookingAtRetinaScanner)
+		{
+			if (m_vrHRetinaScanner == hRetinaScanner)
+			{
+				if ((gpGlobals->time - m_vrRetinaScannerLookTime) >= VR_RETINASCANNER_ACTIVATE_LOOK_TIME)
+				{
+					if (!m_vrRetinaScannerUsed)
+					{
+						g_vrRetinaScanners[hRetinaScanner]->Use(this, this, USE_SET, 1);
+						m_vrRetinaScannerUsed = true;
+					}
+				}
+			}
+			else
+			{
+				m_vrHRetinaScanner = hRetinaScanner;
+				m_vrRetinaScannerLookTime = gpGlobals->time;
+				m_vrRetinaScannerUsed = false;
+			}
+		}
+		else
+		{
+			if (m_vrHRetinaScanner == hRetinaScanner)
+			{
+				m_vrHRetinaScanner = nullptr;
+				m_vrRetinaScannerLookTime = 0.f;
+				m_vrRetinaScannerUsed = false;
+			}
 		}
 	}
 }

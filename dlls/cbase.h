@@ -147,9 +147,16 @@ public:
 	}
 
 	template <class ENTITY2>
-	EHANDLE(EHANDLE<ENTITY2> other) :
-		EHANDLE{ dynamic_cast<ENTITY*>(static_cast<CBaseEntity*>(other.operator ENTITY2* ())) }
+	EHANDLE(const EHANDLE<ENTITY2>& other) :
+		EHANDLE{ dynamic_cast<ENTITY*>(static_cast<CBaseEntity*>(const_cast<EHANDLE<ENTITY2>&>(other).operator ENTITY2* ())) }
 	{
+	}
+
+	template<>
+	EHANDLE(const EHANDLE<ENTITY>& other)
+	{
+		m_pent = other.m_pent;
+		m_serialnumber = other.m_serialnumber;
 	}
 
 	edict_t* Get(void) const
@@ -177,7 +184,12 @@ public:
 
 	operator ENTITY* ()
 	{
-		return dynamic_cast<ENTITY*>(static_cast<CBaseEntity*>(GET_PRIVATE(Get())));
+		return static_cast<ENTITY*>(GET_PRIVATE(Get()));
+	};
+
+	operator const ENTITY* () const
+	{
+		return static_cast<const ENTITY*>(GET_PRIVATE(Get()));
 	};
 
 	operator int() const
@@ -187,18 +199,22 @@ public:
 
 	ENTITY* operator->()
 	{
-		return dynamic_cast<ENTITY*>(static_cast<CBaseEntity*>(GET_PRIVATE(Get())));
+		return static_cast<ENTITY*>(GET_PRIVATE(Get()));
 	}
 
-	template <class ENTITY2>
-	bool operator==(EHANDLE<ENTITY2>& other)
+	const ENTITY* operator->() const
 	{
-		EHANDLE<ENTITY> copy = other;
-		return copy && m_pent == copy.m_pent && m_serialnumber == copy.m_serialnumber;
+		return static_cast<ENTITY*>(GET_PRIVATE(Get()));
 	}
 
-	template <class ENTITY2>
-	bool operator!=(EHANDLE<ENTITY2>& other)
+	template<class ENTITY2>
+	bool operator==(const EHANDLE<ENTITY2>& other) const
+	{
+		return Get() == other.Get();
+	}
+
+	template<class ENTITY2>
+	bool operator!=(const EHANDLE<ENTITY2>& other) const
 	{
 		return !(operator==(other));
 	}
@@ -478,6 +494,10 @@ public:
 	inline static CBaseEntity* InstanceOrWorld(const entvars_t* pev) { return InstanceOrWorld(ENT(pev)); }
 	inline static CBaseEntity* InstanceOrWorld(int eoffset) { return InstanceOrWorld(ENT(eoffset)); }
 
+	inline static CBaseEntity* UnsafeInstance(const edict_t* pent)
+	{
+		return static_cast<CBaseEntity*>(GET_PRIVATE(pent));
+	}
 
 	template<class T>
 	inline static EHANDLE<T> SafeInstance(const edict_t* pent)
@@ -489,6 +509,19 @@ public:
 		else
 		{
 			return dynamic_cast<T*>(static_cast<CBaseEntity*>(GET_PRIVATE(pent)));
+		}
+	}
+
+	template<>
+	inline static EHANDLE<CBaseEntity> SafeInstance(const edict_t* pent)
+	{
+		if (FNullEnt(pent) && !FWorldEnt(pent))
+		{
+			return nullptr;
+		}
+		else
+		{
+			return UnsafeInstance(pent);
 		}
 	}
 
@@ -585,9 +618,9 @@ public:
 	}
 
 	virtual BOOL FBecomeProne(void) { return FALSE; };
-	edict_t* edict() { return ENT(pev); };
-	EOFFSET eoffset() { return OFFSET(pev); };
-	int entindex() { return ENTINDEX(edict()); };
+	inline edict_t* edict() { return pev->pContainingEntity; };
+	inline EOFFSET eoffset() { return OFFSET(edict()); };
+	inline int entindex() { return ENTINDEX(edict()); };
 
 	virtual Vector Center() { return (pev->absmax + pev->absmin) * 0.5; };  // center point of entity
 	virtual Vector EyePosition() { return pev->origin + pev->view_ofs; };   // position of eyes

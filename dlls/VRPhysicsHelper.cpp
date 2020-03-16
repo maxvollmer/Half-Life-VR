@@ -221,29 +221,6 @@ const model_t* FindEngineModelByName(const char* name)
 	return nullptr;
 }
 
-/*
-void* FindStudioModelByName(const char* name)
-{
-	void* result = nullptr;
-	CBaseEntity *pEntity = UTIL_FindEntityByString(nullptr, "model", name);
-	if (pEntity != nullptr)
-	{
-		result = GET_MODEL_PTR(pEntity->edict());
-	}
-	else
-	{
-		const model_t* model = FindEngineModelByName(name);
-		if (model != nullptr && model->type == modtype_t::mod_studio)
-		{
-			CSprite *pSprite = CSprite::SpriteCreate(name, Vector{}, TRUE);
-			result = GET_MODEL_PTR(pSprite->edict());
-			UTIL_Remove(pSprite);
-		}
-	}
-	return result;
-}
-*/
-
 // Returns a pointer to a model_t instance holding BSP data for this entity's BSP model (if it is a BSP model) - Max Vollmer, 2018-01-21
 const model_t* GetBSPModel(edict_t* pent)
 {
@@ -1269,7 +1246,9 @@ bool VRPhysicsHelper::ModelIntersectsLine(CBaseEntity* pModel, const Vector& lin
 		return BBoxIntersectsLine(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, lineA, lineB, result);
 	}
 
-	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
+	std::string modelName{ STRING(pModel->pev->model) };
+
+	auto& bspModelData = m_bspModelData.find(modelName);
 	if (bspModelData != m_bspModelData.end() && bspModelData->second.HasData())
 	{
 		// BSP model
@@ -1291,7 +1270,11 @@ bool VRPhysicsHelper::ModelIntersectsLine(CBaseEntity* pModel, const Vector& lin
 	else
 	{
 		// Studio model
-		void* pmodel = GET_MODEL_PTR(pModel->edict());
+		void* pmodel = nullptr;
+		if (modelName.find(".mdl") == modelName.size() - 4)
+		{
+			pmodel = GET_MODEL_PTR(pModel->edict());
+		}
 		if (!pmodel)
 		{
 			// Invalid studio model, use bounding box
@@ -1341,7 +1324,9 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity* pModel, const Vector& bbo
 		return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles, result);
 	}
 
-	auto& bspModelData = m_bspModelData.find(std::string{ STRING(pModel->pev->model) });
+	std::string modelName{ STRING(pModel->pev->model) };
+
+	auto& bspModelData = m_bspModelData.find(modelName);
 	if (bspModelData != m_bspModelData.end() && bspModelData->second.HasData())
 	{
 		// BSP model
@@ -1355,10 +1340,15 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity* pModel, const Vector& bbo
 	else
 	{
 		// Studio model
-		void* pmodel = GET_MODEL_PTR(pModel->edict());
+		void* pmodel = nullptr;
+		if (modelName.find(".mdl") == modelName.size() - 4)
+		{
+			pmodel = GET_MODEL_PTR(pModel->edict());
+		}
 		if (!pmodel)
 		{
 			// Invalid studio model, use bounding box
+			// TODO: If it's a sprite, a sphere is probably better
 			return ModelBBoxIntersectsBBox(pModel->pev->origin, pModel->pev->mins, pModel->pev->maxs, Vector{}, bboxCenter, bboxMins, bboxMaxs, bboxAngles, result);
 		}
 

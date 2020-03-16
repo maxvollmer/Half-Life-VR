@@ -37,6 +37,8 @@ private:
 		{
 		}
 
+		bool IsInteresting();
+
 		const InteractionInfo touching;
 		const InteractionInfo dragging;
 		const InteractionInfo hitting;
@@ -44,23 +46,22 @@ private:
 		const Vector intersectPoint;
 	};
 
-	bool HandleEasterEgg(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction);
-	bool HandleRetinaScanners(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange);
-	bool HandleButtonsAndDoors(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction);
-	bool HandleRechargers(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange);
-	bool HandleTriggers(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange);
-	bool HandleBreakables(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage);
-	bool HandlePushables(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction);
-	bool HandleAlliedMonsters(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, bool isTouching, bool didTouchChange, bool isHitting, bool didHitChange, float flHitDamage);
-	bool HandleGrabbables(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction);
-	bool HandleLadders(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction);
-	bool HandleTossables(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const Interaction& interaction);
+	bool HandleButtonsAndDoors(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
+	bool HandleRechargers(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
+	bool HandleTriggers(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
+	bool HandleBreakables(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
+	bool HandlePushables(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
+	bool HandleAlliedMonsters(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
+	bool HandleGrabbables(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
+	bool HandleLadders(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
+	bool HandleTossables(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
 
 	void DoFollowUnfollowCommands(CBasePlayer* pPlayer, CTalkMonster* pMonster, const VRController& controller, bool isTouching);
 	void GetAngryIfAtGunpoint(CBasePlayer* pPlayer, CTalkMonster* pMonster, const VRController& controller);
-	float DoDamage(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult);
 
-	bool CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult);
-	bool IsDraggableEntity(EHANDLE<CBaseEntity> hEntity);
-	bool IsDraggableEntityThatCanTouchStuff(EHANDLE<CBaseEntity> hEntity);
+	float DoDamage(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult);
+
+	bool CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult);
+	bool IsDraggableEntity(CBaseEntity* pEntity);
+	bool IsDraggableEntityThatCanTouchStuff(CBaseEntity* pEntity);
 };

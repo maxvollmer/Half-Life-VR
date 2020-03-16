@@ -355,7 +355,7 @@ private:
 
 	EHANDLE<CBaseEntity> m_vrHRetinaScanner;
 	float m_vrRetinaScannerLookTime = 0;
-	bool m_vrHRetinaScannerUsed = false;
+	bool m_vrRetinaScannerUsed = false;
 
 	// for save/restore
 	// client sends these every frame
@@ -452,6 +452,7 @@ private:
 		return *m_vrGroundEntityHandler;
 	}
 
+	void VRHandleRetinaScanners();
 
 // public VR methods:
 public:
