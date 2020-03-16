@@ -1,4 +1,4 @@
-0.6.18-beta
+0.6.18-beta - 2020-03-16
  Mod:
   * Fixed rare crash that occurs when generating physics data for a map
   * Fixed rare crash that occurs when loading a savegame
