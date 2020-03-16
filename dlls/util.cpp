@@ -505,12 +505,18 @@ CBaseEntity* UTIL_FindEntityInSphere(CBaseEntity* pStartEntity, const Vector& ve
 
 edict_t* UTIL_FindEntitiesInPVS(edict_t* pentstart, edict_t* pentPlayer)
 {
-	edict_t* pent = FNullEnt(pentstart) ? UTIL_EntitiesInPVS(pentPlayer) : pentstart->v.chain;
-
-	if (!FNullEnt(pent))
-		return pent;
-
-	return nullptr;
+	if (FNullEnt(pentstart))
+	{
+		return UTIL_EntitiesInPVS(pentPlayer);
+	}
+	else if (!FNullEnt(pentstart->v.chain))
+	{
+		return pentstart->v.chain;
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 CBaseEntity* UTIL_FindEntityByString(CBaseEntity* pStartEntity, const char* szKeyword, const char* szValue)

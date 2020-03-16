@@ -133,10 +133,13 @@ bool IsNonInteractingEntity(EHANDLE<CBaseEntity> hEntity)
 	return (hEntity->pev->solid == SOLID_NOT && !IsUsableDoor(hEntity)) || FClassnameIs(hEntity->pev, "func_wall") || FClassnameIs(hEntity->pev, "func_illusionary") || FClassnameIs(hEntity->pev, "vr_controllermodel");  // TODO/NOTE: If this mod gets ever patched up for multiplayer, and you want players to be able to crowbar-fight, this should probably be changed
 }
 
-bool IsReachable(CBasePlayer* pPlayer, const StudioHitBox& hitbox, bool strict)
+bool IsReachable(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hEntity, const StudioHitBox& hitbox, bool strict)
 {
 	TraceResult tr{ 0 };
 	UTIL_TraceLine(pPlayer->pev->origin, hitbox.origin, ignore_monsters, nullptr, &tr);
+	if (tr.pHit == hEntity->edict())
+		return true;
+
 	if (tr.flFraction < 1.f)
 		return false;
 
@@ -169,7 +172,7 @@ bool CheckIfEntityAndHitboxesTouch(CBasePlayer* pPlayer, EHANDLE<CBaseEntity> hE
 	{
 		// Prevent interaction with stuff through walls
 		// (simple check for non-important stuff like ammo, strict check using physics engine for important things like triggers, NPCs and buttons)
-		if (!IsReachable(pPlayer, hitbox, IsTriggerOrButton(hEntity)))
+		if (!IsReachable(pPlayer, hEntity, hitbox, IsTriggerOrButton(hEntity)))
 			continue;
 
 		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(hEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult)
@@ -207,13 +210,13 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 	CBaseEntity* pWorld = CBaseEntity::InstanceOrWorld(INDEXENT(0));
 	if (hEntity != pWorld)
 	{
-		float entityRadius = (std::max)(hEntity->pev->mins.Length(), hEntity->pev->maxs.Length());
+		float entityRadius = hEntity->pev->size.Length() * 0.5f;
 		if (entityRadius == 0.f)
 		{
 			// assume this is a gib and use sensible radius
 			entityRadius = 16.f;
 		}
-		Vector entityCenter = hEntity->pev->origin + (hEntity->pev->maxs + hEntity->pev->mins) * 0.5f;
+		Vector entityCenter = hEntity->Center();
 		float distance = (controller.GetPosition() - entityCenter).Length();
 		if (distance > (controller.GetRadius() + entityRadius))
 		{
@@ -376,6 +379,11 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 		else
 		{
 			didTouchChange = isTouching ? controller.AddTouchedEntity(hEntity) : controller.RemoveTouchedEntity(hEntity);
+
+			if (isTouching)
+			{
+				ALERT(at_console, "isTouching!\n");
+			}
 
 			if (!isTouching
 				|| !controller.IsDragging()
