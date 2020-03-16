@@ -943,13 +943,23 @@ void CBreakable::VRSpawnBreakModels(
 	int body, int numBodies,
 	char flags)
 {
+	int maxcount = atoi(CVAR_GET_STRING("vr_breakable_max_gibs"));
+	if (maxcount < 1)
+		return;
+
 	if (count <= 0)
 	{
 		constexpr const float volumePerShard = 432.f;
 		count = (size[0] * size[1] + size[1] * size[2] + size[2] * size[0]) / (volumePerShard);
 	}
 
-	count = std::clamp(count, 1, 100);
+	int countpercentage = atoi(CVAR_GET_STRING("vr_breakable_gib_percentage"));
+	if (countpercentage > 0 && countpercentage < 100)
+	{
+		count = (count * countpercentage) / 100;
+	}
+
+	count = std::clamp(count, 1, maxcount);
 
 	if (random = 0.f)
 		random = 10.f;

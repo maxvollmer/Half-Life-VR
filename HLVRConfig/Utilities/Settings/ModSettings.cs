@@ -62,6 +62,9 @@ namespace HLVRConfig.Utilities.Settings
             new I18N.I18NString("PerformanceSettings.Renderer", "Renderer"),
             new I18N.I18NString("PerformanceSettings.RendererDescription", "Sync FPS with your SteamVR settings. It is highly recommended that you play Half-Life: VR at no more than 90fps."));
 
+        public static readonly SettingCategory CategoryDebris = new SettingCategory(
+            new I18N.I18NString("PerformanceSettings.Debris", "Debris"));
+
         public static readonly SettingCategory CategoryInteractiveDebris = new SettingCategory(
             new I18N.I18NString("PerformanceSettings.InteractiveDebris", "Interactive Debris"));
 
@@ -194,11 +197,15 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_eye_mode", Setting.Create( new I18N.I18NString("vr_eye_mode", "Render to..."), new OrderedDictionary<string, I18N.I18NString>(){ { "0", new I18N.I18NString("vr_eye_mode.BothEyes", "Both Eyes") }, { "1", new I18N.I18NString("vr_eye_mode.LeftEye", "Left Eye Only") }, { "2", new I18N.I18NString("vr_eye_mode.RightEye", "Right Eye Only") } }, "0" ) },
             } },
 
-            { CategoryInteractiveDebris, new OrderedDictionary<string, Setting>() {
-                { "vr_enable_interactive_debris", Setting.Create( new I18N.I18NString("vr_enable_interactive_debris", "Enable interactive debris"), true ) },
-                { "vr_max_interactive_debris", Setting.Create( new I18N.I18NString("vr_max_interactive_debris", "Maximum number of interactive debris in a level (Warning: Going higher can wreck the game!)"), SettingType.COUNT, "50", new SettingDependency("vr_enable_interactive_debris", "1") ) },
+            { CategoryDebris, new OrderedDictionary<string, Setting>() {
+                { "vr_breakable_max_gibs", Setting.Create( new I18N.I18NString("vr_breakable_max_gibs", "Absolute maximum number of debris to spawn from breakable objects (total)"), SettingType.COUNT, "50" ) },
+                { "vr_breakable_gib_percentage", Setting.Create( new I18N.I18NString("vr_breakable_gib_multiplyer", "Relative number of debris to spawn from breakable objects (percentage)"), SettingType.COUNT, "100" ) },
             } },
 
+            { CategoryInteractiveDebris, new OrderedDictionary<string, Setting>() {
+                { "vr_enable_interactive_debris", Setting.Create( new I18N.I18NString("vr_enable_interactive_debris", "Enable interactive debris"), true ) },
+                { "vr_max_interactive_debris", Setting.Create( new I18N.I18NString("vr_max_interactive_debris", "Maximum number of interactive debris in a level"), SettingType.COUNT, "50", new SettingDependency("vr_enable_interactive_debris", "1") ) },
+            } },
         };
 
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> VisualsSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
