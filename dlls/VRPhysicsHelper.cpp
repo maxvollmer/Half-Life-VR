@@ -749,7 +749,7 @@ void TriangulateBSPModel(const model_t* model, PlaneFacesMap& planeFaces, PlaneV
 	// If world, also collect faces of non-moving solid entities
 	if (model == GetWorldBSPModel())
 	{
-		for (int index = 0; index < gpGlobals->maxEntities; index++)
+		for (int index = 1; index < gpGlobals->maxEntities; index++)
 		{
 			edict_t* pent = INDEXENT(index);
 			if (FNullEnt(pent))
@@ -1428,8 +1428,9 @@ void VRPhysicsHelper::TraceLine(const Vector& vecStart, const Vector& vecEnd, ed
 		}
 
 		// Check ladders as well...
-		edict_t* pent = FIND_ENTITY_BY_CLASSNAME(nullptr, "func_ladder");
-		while (!FNullEnt(pent))
+		for (edict_t* pent = FIND_ENTITY_BY_CLASSNAME(nullptr, "func_ladder");
+			!FNullEnt(pent);
+			pent = FIND_ENTITY_BY_CLASSNAME(pent, "func_ladder"))
 		{
 			Vector3 ladderSize = HLVecToRP3DVec(pent->v.size);
 			Vector3 ladderPosition = HLVecToRP3DVec(pent->v.absmin);
@@ -1437,6 +1438,7 @@ void VRPhysicsHelper::TraceLine(const Vector& vecStart, const Vector& vecEnd, ed
 			if (ladderSize.x <= 0. || ladderSize.y <= 0. || ladderSize.z <= 0.)
 			{
 				ALERT(at_console, "Warning, found ladder with invalid size: %s (%f %f %f)\n", STRING(pent->v.targetname), pent->v.size.x, pent->v.size.y, pent->v.size.z);
+				pent = FIND_ENTITY_BY_CLASSNAME(pent, "func_ladder");
 				continue;
 			}
 
@@ -1695,7 +1697,7 @@ bool DoesAnyBrushModelNeedLoading(const model_t* const models)
 	for (int index = 0; index < gpGlobals->maxEntities; index++)
 	{
 		edict_t* pent = INDEXENT(index);
-		if (FNullEnt(pent))
+		if (FNullEnt(pent) && !FWorldEnt(pent))
 			continue;
 
 		if (!IsSolidInPhysicsWorld(pent))
