@@ -1,8 +1,11 @@
-0.6.20-beta - 2020-03-16
+0.6.20-beta
  Mod:
   * Fixed buttons and other entities sometimes "blocking" themselves when trying to interact
   * Fixed bug that caused too many entities being checked for collision with controllers
+  * Fixed memory leaks in FMOD implementation
+  * Fixed bug in physics helper affecting collisions with brush based entities
   * Several performance optimizations (see commit logs in source code for details)
+  * Improved precision of collision detections
 
  HLVRConfig:
   * No changes
