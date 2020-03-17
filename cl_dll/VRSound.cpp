@@ -67,8 +67,12 @@ namespace
 		return FMOD_VECTOR{ vec.y * HL_TO_METERS, vec.z * HL_TO_METERS, vec.x * HL_TO_METERS };
 	}
 
-	struct LetHalfLifeHandleThisSoundException : public std::exception
-	{};
+	enum StartSoundResult
+	{
+		Good,
+		NotGood,
+		LetHalfLifeHandleThisSound
+	};
 
 	struct EntnumChannelSoundname
 	{
@@ -125,6 +129,8 @@ namespace
 	{
 		FMOD::Channel* fmodChannel;
 		FMOD::Sound* fmodSound;
+		FMOD::DSP* timestretchDSP;
+		FMOD::DSP* fftDSP;
 
 		std::shared_ptr<Sound> nextSound;		// For sentences
 		float delayed_by = 0.f;					// Only set for sentences
@@ -132,14 +138,33 @@ namespace
 		double time_marker = -1.f;				// Is set as soon as VRSoundUpdate touches this sound for the first time
 		bool has_started = false;				// Set to true when VRSoundUpdate starts playing this sound for the first time
 
+		void Release()
+		{
+			if (fmodChannel) fmodChannel->stop();
+			if (timestretchDSP)
+			{
+				fmodChannel->removeDSP(timestretchDSP);
+				timestretchDSP->release();
+			}
+			if (fftDSP)
+			{
+				fmodChannel->removeDSP(fftDSP);
+				fftDSP->release();
+			}
+			if (fmodSound) fmodSound->release();
+			*this = Sound{};
+		}
+
 		Sound() :
 			fmodChannel{ nullptr },
 			fmodSound{ nullptr }
 		{}
 
-		Sound(FMOD::Channel* fmodChannel, FMOD::Sound* fmodSound, bool startedpaused) :
+		Sound(FMOD::Channel* fmodChannel, FMOD::Sound* fmodSound, FMOD::DSP* timestretchDSP, FMOD::DSP* fftDSP, bool startedpaused) :
 			fmodChannel{ fmodChannel },
-			fmodSound{ fmodSound }
+			fmodSound{ fmodSound },
+			timestretchDSP{ timestretchDSP },
+			fftDSP{ fftDSP }
 		{}
 	};
 
@@ -154,6 +179,45 @@ namespace
 	std::unordered_map<std::string, std::string> g_allSentences;				// This contains all sentences from valve/sound/sentences.txt and vr/sound/sentences.txt, where the latter overrides the former
 	std::unordered_map<std::string, std::vector<SoundInfo>> g_parsedSentences;	// This is a cache for all sentences that are in use.
 }
+
+
+#ifdef DEBUG_FMOD_MEMORY
+namespace
+{
+	std::unordered_set<void*> g_keepTrackOfMemory;
+	int alloccalls = 0;
+	int freecalls = 0;
+	int realloccalls = 0;
+
+	void* F_CALLBACK FMODMemoryAlloc(unsigned int size, FMOD_MEMORY_TYPE type, const char* sourcestr)
+	{
+		alloccalls++;
+		void* result = std::malloc(size);
+		g_keepTrackOfMemory.insert(result);
+		return result;
+	}
+	void* F_CALLBACK FMODMemoryRealloc(void* ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char* sourcestr)
+	{
+		realloccalls++;
+		void* result = std::realloc(ptr, size);
+		if (ptr != result)
+		{
+			g_keepTrackOfMemory.erase(ptr);
+			g_keepTrackOfMemory.insert(result);
+		}
+		gEngfuncs.Con_DPrintf("fmod_realloc: %i (%i, %i, %i, %i)\n", (int)g_keepTrackOfMemory.size(), alloccalls, realloccalls, freecalls, (alloccalls - freecalls));
+		return result;
+	}
+	void F_CALLBACK FMODMemoryFree(void* ptr, FMOD_MEMORY_TYPE type, const char* sourcestr)
+	{
+		freecalls++;
+		std::free(ptr);
+		g_keepTrackOfMemory.erase(ptr);
+		gEngfuncs.Con_DPrintf("fmod_free: %i (%i, %i, %i, %i)\n", (int)g_keepTrackOfMemory.size(), alloccalls, realloccalls, freecalls, (alloccalls - freecalls));
+	}
+}
+#endif
+
 
 void ReleaseAllGeometries()
 {
@@ -382,7 +446,7 @@ std::string GetFullSoundFilePath(const std::string& name)
 
 bool IsUISound(const std::string& name)
 {
-	return name.find("/sound/UI/") != name.npos;
+	return name.find("sound/UI/") == 0;
 }
 
 bool IsPlaying(FMOD::Channel* fmodChannel)
@@ -436,23 +500,14 @@ void UpdateMouth(int entnum, Sound& sound)
 	if (!pent)
 		return;
 
-	FMOD::DSP* fft = nullptr;
-	FMOD_RESULT result = sound.fmodChannel->getDSP(FMOD_CHANNELCONTROL_DSP_HEAD, &fft);
-
-	if (result == FMOD_ERR_CHANNEL_STOLEN)
-	{
-		FMOD_RESULT result3 = sound.fmodChannel->stop();
-		FMOD_RESULT result4 = result3;
-	}
-
-	if (result != FMOD_OK || !fft)
+	if (!sound.fftDSP)
 	{
 		CloseMouth(entnum);
 		return;
 	}
 
 	FMOD_DSP_PARAMETER_FFT* data = nullptr;
-	FMOD_RESULT result2 = fft->getParameterData(FMOD_DSP_FFT_SPECTRUMDATA, (void**)&data, 0, 0, 0);
+	FMOD_RESULT result2 = sound.fftDSP->getParameterData(FMOD_DSP_FFT_SPECTRUMDATA, (void**)&data, 0, 0, 0);
 	if (result2 != FMOD_OK || !data)
 	{
 		CloseMouth(entnum);
@@ -856,9 +911,11 @@ std::shared_ptr<Sound> CreateSound(
 			fmodChannel->setPitch(fpitch);
 			fmodChannel->setVolume(fvol);
 
+			FMOD::DSP* timestretchDSP = nullptr;
+			FMOD::DSP* fftDSP = nullptr;
+
 			if (timecompress > 0.f)
 			{
-				FMOD::DSP* timestretchDSP = nullptr;
 				FMOD_RESULT result3 = fmodSystem->createDSPByType(FMOD_DSP_TYPE_PITCHSHIFT, &timestretchDSP);
 				if (result3 == FMOD_OK && timestretchDSP != nullptr)
 				{
@@ -872,7 +929,6 @@ std::shared_ptr<Sound> CreateSound(
 
 			if (entchannel == CHAN_VOICE || entchannel == CHAN_STREAM)
 			{
-				FMOD::DSP* fftDSP = nullptr;
 				FMOD_RESULT result3 = fmodSystem->createDSPByType(FMOD_DSP_TYPE_FFT, &fftDSP);
 				if (result3 == FMOD_OK && fftDSP != nullptr)
 				{
@@ -888,7 +944,7 @@ std::shared_ptr<Sound> CreateSound(
 				fmodChannel->setPosition(length * start_offset, FMOD_TIMEUNIT_MS);
 			}
 
-			return std::make_shared<Sound>(fmodChannel, fmodSound, g_soundspaused);
+			return std::make_shared<Sound>(fmodChannel, fmodSound, timestretchDSP, fftDSP, g_soundspaused);
 		}
 	}
 
@@ -903,12 +959,7 @@ void MyStopSound(int entnum, int entchannel)
 	{
 		if (entnumChannelSoundname.entnum == entnum && entnumChannelSoundname.channel == entchannel)
 		{
-			if (sound.fmodChannel)
-				sound.fmodChannel->stop();
-			if (sound.fmodSound)
-				sound.fmodSound->release();
-
-			sound = Sound{};
+			sound.Release();
 		}
 	}
 
@@ -921,10 +972,7 @@ void MyStopAllSounds(qboolean clear)
 
 	for (auto& [entnumChannelSoundname, sound] : g_allSounds)
 	{
-		if (sound.fmodChannel)
-			sound.fmodChannel->stop();
-		if (sound.fmodSound)
-			sound.fmodSound->release();
+		sound.Release();
 	}
 	g_allSounds.clear();
 
@@ -947,47 +995,49 @@ bool IsFemaleScientist(int entnum)
 	return std::string_view{ pent->model->name }.find("/femalesci.mdl") != std::string_view::npos;
 }
 
-void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float fvol, float attenuation, int flags, int pitch, bool isStaticChannel)
+StartSoundResult MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float fvol, float attenuation, int flags, int pitch, bool isStaticChannel)
 {
 	if (!fmodSystem)
-		return;
+		return StartSoundResult::NotGood;
 
 	if (!sfx)
-		return;
+		return StartSoundResult::NotGood;
 
 	if (!sfx->name)
-		return;
+		return StartSoundResult::NotGood;
 
 	if (!sfx->name[0])
-		return;
+		return StartSoundResult::NotGood;
 
 	if (_stricmp(sfx->name, "common/null.wav") == 0)
-		return;
+		return StartSoundResult::NotGood;
 
 	if (_stricmp(sfx->name, "!xxtestxx") == 0)
 	{
 		// This is a "speak" console command, no need to handle this with FMOD
-		throw LetHalfLifeHandleThisSoundException{};
+		return StartSoundResult::LetHalfLifeHandleThisSound;
 	}
 
 	if (IsUISound(sfx->name))
 	{
 		// Let Half-Life handle UI sounds
-		throw LetHalfLifeHandleThisSoundException{};
+		//return StartSoundResult::LetHalfLifeHandleThisSound;
 	}
 
 	if ( sfx->name[0] == '?' || /*entchannel == CHAN_STREAM ||*/ (entchannel >= CHAN_NETWORKVOICE_BASE && entchannel <= CHAN_NETWORKVOICE_END))
 	{
 		// Let Half-Life handle streams
+#ifdef _DEBUG
 		gEngfuncs.Con_DPrintf("Got a stream sound, falling back to GoldSrc audio.\n");
-		throw LetHalfLifeHandleThisSoundException{};
+#endif
+		return StartSoundResult::LetHalfLifeHandleThisSound;
 	}
 
 	if (sfx->name[0] == '#')
 	{
 		// Let Half-Life handle sentences run by index (we should actually never get these anyways)
 		gEngfuncs.Con_DPrintf("Got a sentence by index, falling back to GoldSrc audio.\n");
-		throw LetHalfLifeHandleThisSoundException{};
+		return StartSoundResult::LetHalfLifeHandleThisSound;
 	}
 
 	if (fvol > 1.f) fvol = 1.f;
@@ -1005,12 +1055,10 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 				// gEngfuncs.Con_DPrintf("[%f] SND_STOP:  ent: %i, chan: %i, soundname: %s\n", gVRRenderer.m_clientTime, entnum, entchannel, sfx->name);
 
 				// Stop signal received, stop sound and forget
-				entnumChannelSound->second.fmodChannel->stop();
-				if (entnumChannelSound->second.fmodSound)
-					entnumChannelSound->second.fmodSound->release();
+				entnumChannelSound->second.Release();
 				g_allSounds.erase(entnumChannelSound);
 				CloseMouth(entnum);
-				return;
+				return StartSoundResult::Good;
 			}
 			else if (flags & (SND_CHANGE_VOL | SND_CHANGE_PITCH))
 			{
@@ -1025,7 +1073,7 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 
 				UpdateMouth(entnum, entnumChannelSound->second);
 
-				return;
+				return StartSoundResult::Good;
 			}
 		}
 		else
@@ -1035,10 +1083,7 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 
 		// Stop (if playing) and delete old sound
 
-		if (entnumChannelSound->second.fmodChannel)
-			entnumChannelSound->second.fmodChannel->stop();
-		if (entnumChannelSound->second.fmodSound)
-			entnumChannelSound->second.fmodSound->release();
+		entnumChannelSound->second.Release();
 		g_allSounds.erase(entnumChannelSound);
 		CloseMouth(entnum);
 	}
@@ -1047,7 +1092,7 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 	{
 		// Got stop signal, but already stopped or playing different audio, ignore
 		// gEngfuncs.Con_DPrintf("[%f] SND_STOP ignored (already stopped): %s, ent: %i, chan: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel);
-		return;
+		return StartSoundResult::Good;
 	}
 
 	bool is2DSound = attenuation <= 0.f || IsPlayerAudio(entnum, origin);
@@ -1132,6 +1177,8 @@ void MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float f
 
 	// Start with closed mouth if playing new audio
 	CloseMouth(entnum);
+
+	return StartSoundResult::Good;
 }
 
 void MyStartDynamicSound(int entnum, int entchannel, sfx_t* sfx, float* origin, float fvol, float attenuation, int flags, int pitch)
@@ -1142,11 +1189,8 @@ void MyStartDynamicSound(int entnum, int entchannel, sfx_t* sfx, float* origin, 
 		return;
 	}
 
-	try
-	{
-		MyStartSound(entnum, entchannel, sfx, origin, fvol, attenuation, flags, pitch, false);
-	}
-	catch (const LetHalfLifeHandleThisSoundException&)
+	StartSoundResult result = MyStartSound(entnum, entchannel, sfx, origin, fvol, attenuation, flags, pitch, false);
+	if (result == StartSoundResult::LetHalfLifeHandleThisSound)
 	{
 		gAudEngine.S_StartDynamicSound(entnum, entchannel, sfx, origin, fvol, attenuation, flags, pitch);
 	}
@@ -1160,11 +1204,8 @@ void MyStartStaticSound(int entnum, int entchannel, sfx_t* sfx, float* origin, f
 		return;
 	}
 
-	try
-	{
-		MyStartSound(entnum, entchannel, sfx, origin, fvol, attenuation, flags, pitch, true);
-	}
-	catch (const LetHalfLifeHandleThisSoundException&)
+	StartSoundResult result = MyStartSound(entnum, entchannel, sfx, origin, fvol, attenuation, flags, pitch, true);
+	if (result == StartSoundResult::LetHalfLifeHandleThisSound)
 	{
 		gAudEngine.S_StartStaticSound(entnum, entchannel, sfx, origin, fvol, attenuation, flags, pitch);
 	}
@@ -1217,10 +1258,20 @@ bool VRInitFMOD()
 		return false;
 	}
 
+	FMOD_RESULT result = FMOD_OK;
+
+#ifdef DEBUG_FMOD_MEMORY
+	result = FMOD::Memory_Initialize(0, 0, FMODMemoryAlloc, FMODMemoryRealloc, FMODMemoryFree);
+	if (result != FMOD_OK)
+	{
+		gEngfuncs.Con_DPrintf("Couldn't initialize FMOD memory. Error %i: %s\n", result, FMOD_ErrorString(result));
+	}
+#endif
+
 	// Stop all engine sounds, in case user switches to FMOD during play
 	MyStopAllSounds(1);
 
-	FMOD_RESULT result = FMOD::System_Create(&fmodSystem);
+	result = FMOD::System_Create(&fmodSystem);
 	if (result != FMOD_OK)
 	{
 		gEngfuncs.Con_DPrintf("Couldn't create FMOD system, falling back to GoldSrc audio. Error %i: %s\n", result, FMOD_ErrorString(result));
@@ -1228,7 +1279,7 @@ bool VRInitFMOD()
 		return false;
 	}
 
-	fmodSystem->setGeometrySettings(8192.f * HL_TO_METERS);
+	result = fmodSystem->setGeometrySettings(8192.f * HL_TO_METERS);
 
 	// TODO:
 	// FMOD_ADVANCEDSETTINGS settings;
@@ -1362,11 +1413,8 @@ void VRSoundUpdate(bool paused, double frametime)
 
 				if (hasNextSound && !isPlaying)
 				{
-					if (sound.fmodChannel)
-						sound.fmodChannel->stop();
-					if (sound.fmodSound)
-						sound.fmodSound->release();
 					Sound copy = *sound.nextSound;
+					sound.Release();
 					sound = copy;
 				}
 			}
