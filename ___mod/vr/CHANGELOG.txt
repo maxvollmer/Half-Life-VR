@@ -1,3 +1,10 @@
+0.6.21-beta - 2020-03-17
+ Mod:
+  * Fixed bug that freezes game when teleporting in a level with ladders
+
+ HLVRConfig:
+  * No changes
+
 0.6.20-beta - 2020-03-17
  Mod:
   * Fixed buttons and other entities sometimes "blocking" themselves when trying to interact
