@@ -3121,8 +3121,8 @@ int CRestore::BufferCheckZString(const char* string)
 // - Max Vollmer, 2020-03-16
 namespace
 {
-	static std::unordered_map<const char*, float> cvarfloatcache;
-	static std::unordered_map<const char*, std::unique_ptr<std::string>> cvarstringcache;
+	static std::unordered_map<std::string, float> cvarfloatcache;
+	static std::unordered_map<std::string, std::unique_ptr<std::string>> cvarstringcache;
 }
 void VRClearCvarCache()
 {
@@ -3148,7 +3148,7 @@ float CVAR_GET_FLOAT(const char* x)
 const char* CVAR_GET_STRING(const char* x)
 {
 	auto& it = cvarstringcache.find(x);
-	if (it != cvarstringcache.end())
+	if (it != cvarstringcache.end() && it->second)
 	{
 		return it->second->data();
 	}
