@@ -45,6 +45,7 @@ int ExtractBbox(void* pmodel, int sequence, float* mins, float* maxs);
 
 struct StudioHitBox
 {
+	vec3_t abscenter;
 	vec3_t origin;
 	vec3_t angles;
 	vec3_t mins;

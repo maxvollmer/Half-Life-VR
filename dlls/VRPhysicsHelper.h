@@ -147,8 +147,6 @@ public:
 private:
 	struct HitBox
 	{
-		//Vector origin;
-		//Vector angles;
 		Vector mins;
 		Vector maxs;
 		class Hash
@@ -157,11 +155,12 @@ private:
 			std::size_t operator()(const HitBox& hitbox) const
 			{
 				std::hash<float> floatHasher;
-				return
-					//floatHasher(hitbox.origin.x) ^ floatHasher(hitbox.origin.y) ^ floatHasher(hitbox.origin.z)
-					//^ floatHasher(hitbox.angles.x) ^ floatHasher(hitbox.angles.y) ^ floatHasher(hitbox.angles.z)
-					//^
-					floatHasher(hitbox.mins.x) ^ floatHasher(hitbox.mins.y) ^ floatHasher(hitbox.mins.z) ^ floatHasher(hitbox.maxs.x) ^ floatHasher(hitbox.maxs.y) ^ floatHasher(hitbox.maxs.z);
+				return floatHasher(hitbox.mins.x)
+					^ floatHasher(hitbox.mins.y)
+					^ floatHasher(hitbox.mins.z)
+					^ floatHasher(hitbox.maxs.x)
+					^ floatHasher(hitbox.maxs.y)
+					^ floatHasher(hitbox.maxs.z);
 			}
 		};
 		class Equal
@@ -169,10 +168,7 @@ private:
 		public:
 			bool operator()(const HitBox& hitbox1, const HitBox& hitbox2) const
 			{
-				return  //hitbox1.origin == hitbox2.origin
-					//&& hitbox1.angles == hitbox2.angles
-					//&&
-					hitbox1.mins == hitbox2.mins && hitbox1.maxs == hitbox2.maxs;
+				return hitbox1.mins == hitbox2.mins && hitbox1.maxs == hitbox2.maxs;
 			}
 		};
 	};

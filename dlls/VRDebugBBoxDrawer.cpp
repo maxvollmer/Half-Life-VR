@@ -13,6 +13,8 @@
 #include "VRDebugBBoxDrawer.h"
 #include "VRPhysicsHelper.h"
 
+#define VR_SET_BEAM_ENDS(x, a, b) dynamic_cast<CBeam*>((CBaseEntity*)lasers[i * numlinesperbox + x])->SetStartAndEndPos(a, b)
+
 VRDebugBBoxDrawer::~VRDebugBBoxDrawer()
 {
 	for (auto& [hEntity, lasers] : m_bboxes)
@@ -25,45 +27,109 @@ VRDebugBBoxDrawer::~VRDebugBBoxDrawer()
 	m_bboxes.clear();
 }
 
-void VRDebugBBoxDrawer::ClearBBoxes(EHANDLE<CBaseEntity> hEntity)
+void VRDebugBBoxDrawer::Clear(EHANDLE<CBaseEntity> hEntity)
 {
-	auto& lasers = m_bboxes[hEntity];
-	for (auto& laser : lasers)
+	for (auto& hLaser : m_bboxes[hEntity])
 	{
-		UTIL_Remove(laser);
+		UTIL_Remove(hLaser);
 	}
 	m_bboxes.erase(hEntity);
+
+	ClearPoint(hEntity);
 }
 
-void VRDebugBBoxDrawer::DrawBBoxes(EHANDLE<CBaseEntity> hEntity)
+void VRDebugBBoxDrawer::ClearPoint(EHANDLE<CBaseEntity> hEntity)
+{
+	UTIL_Remove(m_points[hEntity]);
+	m_points.erase(hEntity);
+}
+
+void VRDebugBBoxDrawer::ClearAllBut(EHANDLE<CBaseEntity> hEntity)
+{
+	std::vector<EHANDLE<CBaseEntity>> lasers = m_bboxes[hEntity];
+	m_bboxes.erase(hEntity);
+
+	EHANDLE<CBaseEntity> hPoint = m_points[hEntity];
+	m_points.erase(hEntity);
+
+	ClearAll();
+
+	m_bboxes[hEntity] = lasers;
+	m_points[hEntity] = hPoint;
+}
+
+void VRDebugBBoxDrawer::ClearAll()
+{
+	for (auto& [hEntity, lasers] : m_bboxes)
+	{
+		for (auto& hLaser : lasers)
+		{
+			UTIL_Remove(hLaser);
+		}
+	}
+	m_bboxes.clear();
+
+	for (auto& [hEntity, hPoint] : m_points)
+	{
+		UTIL_Remove(hPoint);
+	}
+	m_points.clear();
+}
+
+void VRDebugBBoxDrawer::DrawPoint(EHANDLE<CBaseEntity> hEntity, const Vector& point)
+{
+	if (m_points[hEntity])
+	{
+		m_points[hEntity]->pev->origin = point;
+		UTIL_SetOrigin(m_points[hEntity]->pev, m_points[hEntity]->pev->origin);
+	}
+	else
+	{
+		CSprite* pSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", point, FALSE);
+		pSprite->Spawn();
+		pSprite->SetTransparency(kRenderTransAdd, m_r, m_g, m_b, 255, kRenderFxNone);
+		pSprite->TurnOn();
+		pSprite->pev->scale = 0.1f;
+		pSprite->pev->effects &= ~EF_NODRAW;
+		EHANDLE<CBaseEntity> hSprite = pSprite;
+		m_points[hEntity] = hSprite;
+	}
+}
+
+void VRDebugBBoxDrawer::DrawBBoxes(EHANDLE<CBaseEntity> hEntity, bool mirrored)
 {
 	if (!hEntity)
 		return;
 
-	void* pmodel = GET_MODEL_PTR(hEntity->edict());
-
-	if (!pmodel)
-	{
-		ClearBBoxes(hEntity);
-		return;
-	}
-
-	int numhitboxes = GetNumHitboxes(pmodel);
-	if (numhitboxes <= 0)
-	{
-		ClearBBoxes(hEntity);
-		return;
-	}
-
 	std::vector<StudioHitBox> studiohitboxes;
-	studiohitboxes.resize(numhitboxes);
-	if (!GetHitboxesAndAttachments(hEntity->pev, pmodel, hEntity->pev->sequence, hEntity->pev->frame, studiohitboxes.data(), nullptr, false))
+
+	void* pmodel = GET_MODEL_PTR(hEntity->edict());
+	if (pmodel)
 	{
-		ClearBBoxes(hEntity);
-		return;
+		int numhitboxes = GetNumHitboxes(pmodel);
+		if (numhitboxes > 0)
+		{
+			studiohitboxes.resize(numhitboxes);
+			if (!GetHitboxesAndAttachments(hEntity->pev, pmodel, hEntity->pev->sequence, hEntity->pev->frame, studiohitboxes.data(), nullptr, mirrored))
+			{
+				studiohitboxes.clear();
+			}
+		}
 	}
 
-	constexpr const int numlinesperbox = 6;
+	if (studiohitboxes.empty())
+	{
+		studiohitboxes.push_back(StudioHitBox
+			{
+				hEntity->pev->origin,
+				Vector{},
+				hEntity->pev->mins,
+				hEntity->pev->maxs,
+				0
+			});
+	}
+
+	constexpr const int numlinesperbox = 14;
 	size_t numlasers = studiohitboxes.size() * numlinesperbox;
 
 	auto& lasers = m_bboxes[hEntity];
@@ -86,13 +152,13 @@ void VRDebugBBoxDrawer::DrawBBoxes(EHANDLE<CBaseEntity> hEntity)
 		pBeam->Spawn();
 		pBeam->PointsInit(hEntity->pev->origin, hEntity->pev->origin);
 		pBeam->pev->owner = hEntity->edict();
-		pBeam->SetColor(255, 0, 0);
+		pBeam->SetColor(m_r, m_g, m_b);
 		pBeam->SetBrightness(255);
 		EHANDLE<CBaseEntity> hBeam = pBeam;
 		lasers.push_back(hBeam);
 	}
 
-	// Update laser positions for each hitbox (6 lasers, 3 per opposite corner (min and max))
+	// Update laser positions for each hitbox (14 lasers, 12 for each edge + diagonal (center to min and max))
 	int i = 0;
 	for (const auto& hitbox : studiohitboxes)
 	{
@@ -111,13 +177,23 @@ void VRDebugBBoxDrawer::DrawBBoxes(EHANDLE<CBaseEntity> hEntity)
 			VRPhysicsHelper::Instance().RotateVector(points[j], hitbox.angles);
 		}
 
-		dynamic_cast<CBeam*>((CBaseEntity*)lasers[i * numlinesperbox + 0])->SetStartAndEndPos(hitbox.origin + points[0], hitbox.origin + points[1]);
-		dynamic_cast<CBeam*>((CBaseEntity*)lasers[i * numlinesperbox + 1])->SetStartAndEndPos(hitbox.origin + points[0], hitbox.origin + points[2]);
-		dynamic_cast<CBeam*>((CBaseEntity*)lasers[i * numlinesperbox + 2])->SetStartAndEndPos(hitbox.origin + points[0], hitbox.origin + points[3]);
+		VR_SET_BEAM_ENDS(0, hitbox.origin + points[0], hitbox.origin + points[1]);
+		VR_SET_BEAM_ENDS(1, hitbox.origin + points[0], hitbox.origin + points[2]);
+		VR_SET_BEAM_ENDS(2, hitbox.origin + points[1], hitbox.origin + points[3]);
+		VR_SET_BEAM_ENDS(3, hitbox.origin + points[2], hitbox.origin + points[3]);
 
-		dynamic_cast<CBeam*>((CBaseEntity*)lasers[i * numlinesperbox + 3])->SetStartAndEndPos(hitbox.origin + points[7], hitbox.origin + points[6]);
-		dynamic_cast<CBeam*>((CBaseEntity*)lasers[i * numlinesperbox + 4])->SetStartAndEndPos(hitbox.origin + points[7], hitbox.origin + points[5]);
-		dynamic_cast<CBeam*>((CBaseEntity*)lasers[i * numlinesperbox + 5])->SetStartAndEndPos(hitbox.origin + points[7], hitbox.origin + points[4]);
+		VR_SET_BEAM_ENDS(4, hitbox.origin + points[0], hitbox.origin + points[4]);
+		VR_SET_BEAM_ENDS(5, hitbox.origin + points[1], hitbox.origin + points[5]);
+		VR_SET_BEAM_ENDS(6, hitbox.origin + points[2], hitbox.origin + points[6]);
+		VR_SET_BEAM_ENDS(7, hitbox.origin + points[3], hitbox.origin + points[7]);
+
+		VR_SET_BEAM_ENDS(8, hitbox.origin + points[4], hitbox.origin + points[5]);
+		VR_SET_BEAM_ENDS(9, hitbox.origin + points[4], hitbox.origin + points[6]);
+		VR_SET_BEAM_ENDS(10, hitbox.origin + points[5], hitbox.origin + points[7]);
+		VR_SET_BEAM_ENDS(11, hitbox.origin + points[6], hitbox.origin + points[7]);
+
+		VR_SET_BEAM_ENDS(12, hitbox.abscenter, hitbox.origin + points[0]);
+		VR_SET_BEAM_ENDS(13, hitbox.abscenter, hitbox.origin + points[7]);
 
 		i++;
 	}

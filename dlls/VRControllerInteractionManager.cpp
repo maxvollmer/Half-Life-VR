@@ -30,7 +30,6 @@
 
 #include "VRRotatableEnt.h"
 
-
 #ifdef RENDER_DEBUG_BBOXES
 #include "VRDebugBBoxDrawer.h"
 static VRDebugBBoxDrawer g_VRDebugBBoxDrawer;
@@ -137,7 +136,7 @@ bool IsNonInteractingEntity(edict_t* pent)
 bool IsReachable(CBasePlayer* pPlayer, edict_t* pent, const StudioHitBox& hitbox, bool strict)
 {
 	TraceResult tr{ 0 };
-	UTIL_TraceLine(pPlayer->pev->origin, hitbox.origin, ignore_monsters, nullptr, &tr);
+	UTIL_TraceLine(pPlayer->pev->origin, hitbox.abscenter, ignore_monsters, nullptr, &tr);
 	if (tr.pHit == pent)
 		return true;
 
@@ -147,7 +146,7 @@ bool IsReachable(CBasePlayer* pPlayer, edict_t* pent, const StudioHitBox& hitbox
 	if (!strict)
 		return true;
 
-	return !VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->pev->origin, hitbox.origin);
+	return !VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->pev->origin, hitbox.abscenter);
 }
 
 bool IsTriggerOrButton(CBaseEntity *pEntity)
@@ -178,11 +177,11 @@ bool CheckIfEntityAndHitboxesTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, c
 
 		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(pEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult)
 			// TODO: Use VRPhysicsHelper to check if point is inside entity with proper raytracing
-			|| UTIL_IsPointInEntity(pEntity, hitbox.origin))
+			|| UTIL_IsPointInEntity(pEntity, hitbox.abscenter))
 		{
 			if (!intersectResult->hasresult)
 			{
-				intersectResult->hitpoint = hitbox.origin;
+				intersectResult->hitpoint = hitbox.abscenter;
 				intersectResult->hitgroup = 0;
 				intersectResult->hasresult = true;
 			}
@@ -195,17 +194,37 @@ bool CheckIfEntityAndHitboxesTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, c
 bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
 {
 	if (!controller.IsValid())
+	{
+#ifdef RENDER_DEBUG_BBOXES
+		g_VRDebugBBoxDrawer.Clear(pEntity);
+#endif
 		return false;
+	}
 
 	if (controller.GetRadius() <= 0.f)
+	{
+#ifdef RENDER_DEBUG_BBOXES
+		g_VRDebugBBoxDrawer.Clear(pEntity);
+#endif
 		return false;
+	}
 
 	if (IsNonInteractingEntity(pEntity->edict()) && !IsDraggableEntity(pEntity))
+	{
+#ifdef RENDER_DEBUG_BBOXES
+		g_VRDebugBBoxDrawer.Clear(pEntity);
+#endif
 		return false;
+	}
 
 	// Don't hit stuff we just threw ourselfes
 	if (WasJustThrownByPlayer(pPlayer, pEntity))
+	{
+#ifdef RENDER_DEBUG_BBOXES
+		g_VRDebugBBoxDrawer.Clear(pEntity);
+#endif
 		return false;
+	}
 
 	// Rule out entities too far away
 	if (pEntity->edict() != INDEXENT(0))
@@ -220,18 +239,25 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 		float distance = (controller.GetPosition() - entityCenter).Length();
 		if (distance > (controller.GetRadius() + entityRadius))
 		{
+#ifdef RENDER_DEBUG_BBOXES
+			g_VRDebugBBoxDrawer.Clear(pEntity);
+#endif
 			return false;
 		}
 	}
 
 #ifdef RENDER_DEBUG_BBOXES
 	// draw bboxes of entities in close proximity of controller
-	g_VRDebugBBoxDrawer.DrawBBoxes(hEntity);
+	g_VRDebugBBoxDrawer.SetColor(0, 0, 255);
+	g_VRDebugBBoxDrawer.DrawBBoxes(pEntity);
 #endif
 
 	// first check controller hitboxes
 	if (CheckIfEntityAndHitboxesTouch(pPlayer, pEntity, controller.GetHitBoxes(), intersectResult))
 	{
+#ifdef RENDER_DEBUG_BBOXES
+		g_VRDebugBBoxDrawer.DrawPoint(pEntity, intersectResult->hitpoint);
+#endif
 		return true;
 	}
 
@@ -261,6 +287,9 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 		}
 	}
 
+#ifdef RENDER_DEBUG_BBOXES
+	g_VRDebugBBoxDrawer.ClearPoint(pEntity);
+#endif
 	return false;
 }
 
@@ -308,23 +337,11 @@ bool DistanceTooBigForDragging(CBaseEntity* pEntity, const VRController& control
 
 void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, VRController& controller)
 {
-	if (!controller.IsValid())
+	// Skip invalid controllers.
+	// (Except if it has any entities, as we need to tell them that they were let go.
+	// Next frame all entities will have been cleared.)
+	if (!controller.IsValid() && !controller.HasAnyEntites())
 	{
-		if (controller.HasDraggedEntity())
-		{
-			EHANDLE<CBaseEntity> hDraggedEntity = controller.GetDraggedEntity();
-			if (hDraggedEntity && hDraggedEntity->m_vrDragger == pPlayer && hDraggedEntity->m_vrDragController == controller.GetID())
-			{
-				hDraggedEntity->m_vrDragger = nullptr;
-				hDraggedEntity->m_vrDragController = VRControllerID::INVALID;
-				if (hDraggedEntity->IsDraggable())
-				{
-					hDraggedEntity->SetThink(&CBaseEntity::DragStopThink);
-					hDraggedEntity->pev->nextthink = gpGlobals->time;
-				}
-			}
-			controller.ClearDraggedEntity();
-		}
 		return;
 	}
 
@@ -365,6 +382,18 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 
 		VRPhysicsHelperModelBBoxIntersectResult intersectResult;
 		isTouching = CheckIfEntityAndControllerTouch(pPlayer, pEntity, controller, &intersectResult);
+
+#ifdef RENDER_DEBUG_BBOXES
+		if (isTouching)
+		{
+			pEntity->pev->rendermode = kRenderTransTexture;
+			pEntity->pev->renderamt = 128;
+			pEntity->pev->renderfx = kRenderFxGlowShell;
+			pEntity->pev->rendercolor.x = 0;
+			pEntity->pev->rendercolor.y = 255;
+			pEntity->pev->rendercolor.z = 0;
+		}
+#endif
 
 		// If we are dragging something draggable, we override all the booleans to avoid "losing" the entity due to fast movements
 		if (controller.IsDragging() && controller.IsDraggedEntity(pEntity) && (isTouching || !DistanceTooBigForDragging(pEntity, controller)))

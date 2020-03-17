@@ -144,14 +144,23 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 
 	UpdateModel(pPlayer);
 
-	UpdateHitBoxes();
-
 	UpdateLaserSpot();
 
 	ClearOutDeadEntities();
 
 #ifdef RENDER_DEBUG_BBOXES
-	g_VRDebugBBoxDrawer.DrawBBoxes(GetModel());
+	if (m_isValid)
+	{
+		if (m_isMirrored) g_VRDebugBBoxDrawer.SetColor(255, 0, 0);
+		else g_VRDebugBBoxDrawer.SetColor(0, 255, 0);
+
+		g_VRDebugBBoxDrawer.ClearAllBut(GetModel());
+		g_VRDebugBBoxDrawer.DrawBBoxes(GetModel(), IsMirrored());
+	}
+	else
+	{
+		g_VRDebugBBoxDrawer.ClearAll();
+	}
 #endif
 }
 
@@ -283,32 +292,6 @@ void VRController::UpdateModel(CBasePlayer* pPlayer)
 		PlayWeaponAnimation(0, 0);
 	}
 
-	if (m_isValid)
-	{
-		pModel->TurnOn();
-		pModel->pev->mins = Vector{ -m_radius, -m_radius, -m_radius };
-		pModel->pev->maxs = Vector{ m_radius, m_radius, m_radius };
-		pModel->pev->size = pModel->pev->maxs - pModel->pev->mins;
-		pModel->pev->absmin = pModel->pev->origin + pModel->pev->mins;
-		pModel->pev->absmax = pModel->pev->origin + pModel->pev->maxs;
-	}
-	else
-	{
-		pModel->TurnOff();
-	}
-
-	if (m_weaponId == WEAPON_BAREHAND)
-	{
-		if (m_isDragging && pModel->pev->sequence != FULLGRAB_START)
-		{
-			PlayWeaponAnimation(FULLGRAB_START, 0);
-		}
-		else if (!m_isDragging && pModel->pev->sequence == FULLGRAB_START)
-		{
-			PlayWeaponAnimation(FULLGRAB_END, 0);
-		}
-	}
-
 	if (m_weaponId == WEAPON_BAREHAND && m_hasFlashlight)
 	{
 		if (pPlayer->FlashlightIsOn())
@@ -323,6 +306,34 @@ void VRController::UpdateModel(CBasePlayer* pPlayer)
 	else
 	{
 		pModel->pev->body = 0;
+	}
+
+	if (m_weaponId == WEAPON_BAREHAND)
+	{
+		if (m_isDragging && pModel->pev->sequence != FULLGRAB_START)
+		{
+			PlayWeaponAnimation(FULLGRAB_START, 0);
+		}
+		else if (!m_isDragging && pModel->pev->sequence == FULLGRAB_START)
+		{
+			PlayWeaponAnimation(FULLGRAB_END, 0);
+		}
+	}
+
+	UpdateHitBoxes();
+
+	if (m_isValid)
+	{
+		pModel->TurnOn();
+		pModel->pev->mins = Vector{ -m_radius, -m_radius, -m_radius };
+		pModel->pev->maxs = Vector{ m_radius, m_radius, m_radius };
+		pModel->pev->size = pModel->pev->maxs - pModel->pev->mins;
+		pModel->pev->absmin = pModel->pev->origin + pModel->pev->mins;
+		pModel->pev->absmax = pModel->pev->origin + pModel->pev->maxs;
+	}
+	else
+	{
+		pModel->TurnOff();
 	}
 }
 
@@ -405,8 +416,16 @@ void VRController::UpdateHitBoxes()
 		return;
 	}
 
-	if (m_hitboxes.size() == numhitboxes && FStrEq(STRING(m_hitboxModelName), STRING(pModel->pev->model)) && gpGlobals->time < (m_hitboxLastUpdateTime + (1.f / 25.f)))
+	// for more accurate weapon handling we should update every frame
+#if 0
+	if (m_hitboxes.size() == numhitboxes
+		&& FStrEq(STRING(m_hitboxModelName), STRING(pModel->pev->model))
+		&& m_hitboxFrame == pModel->pev->frame
+		&& m_hitboxSequence == pModel->pev->sequence
+		&& m_hitboxMirrored == m_isMirrored
+		&& std::fabs(m_hitboxLastUpdateTime - gpGlobals->time) < 0.1f)
 		return;
+#endif
 
 	int numattachments = GetNumAttachments(pmodel);
 
@@ -415,6 +434,7 @@ void VRController::UpdateHitBoxes()
 
 	m_radius = 0.f;
 
+	float radiusSquared = 0.f;
 	std::vector<StudioHitBox> studiohitboxes;
 	studiohitboxes.resize(numhitboxes);
 	std::vector<StudioAttachment> studioattachments;
@@ -423,27 +443,33 @@ void VRController::UpdateHitBoxes()
 	{
 		for (const auto& studiohitbox : studiohitboxes)
 		{
-			float l1 = studiohitbox.mins.Length();
-			float l2 = studiohitbox.maxs.Length();
+			float distance = (studiohitbox.abscenter - GetPosition()).Length();
+			float radius = (studiohitbox.maxs - studiohitbox.mins).Length();
 
-			// Skip hitboxes too far away or too big
-			if (l1 > 256.f || l2 > 256.f)
+			// Skip hitboxes too far away
+			if (distance > 512.f)
 			{
-				int fjskajfes = 0;  // to set breakpoint in debug mode
 				continue;
 			}
 
-			m_hitboxes.push_back(StudioHitBox{ studiohitbox.origin, studiohitbox.angles, studiohitbox.mins, studiohitbox.maxs });
-			m_radius = max(m_radius, l1);
-			m_radius = max(m_radius, l2);
+			m_hitboxes.push_back(studiohitbox);
+
+			Vector localabsmin = studiohitbox.origin + studiohitbox.mins - GetPosition();
+			Vector localabsmax = studiohitbox.origin + studiohitbox.maxs - GetPosition();
+
+			radiusSquared = (std::max)(radiusSquared, localabsmin.LengthSquared());
+			radiusSquared = (std::max)(radiusSquared, localabsmax.LengthSquared());
 		}
 		for (const auto& studioattachment : studioattachments)
 		{
 			m_attachments.push_back(studioattachment.pos);
 		}
 	}
+	m_radius = std::sqrtf(radiusSquared);
+	m_hitboxModelName = pModel->pev->model;
 	m_hitboxFrame = pModel->pev->frame;
 	m_hitboxSequence = pModel->pev->sequence;
+	m_hitboxMirrored = m_isMirrored;
 	m_hitboxLastUpdateTime = gpGlobals->time;
 }
 
@@ -641,3 +667,7 @@ bool VRController::IsDragging() const
 	return m_isDragging;
 }
 
+bool VRController::HasAnyEntites() const
+{
+	return m_draggedEntity || !m_touchedEntities.empty() || !m_hitEntities.empty();
+}

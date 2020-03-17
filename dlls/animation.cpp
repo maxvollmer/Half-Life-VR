@@ -1187,6 +1187,7 @@ int GetHitboxesAndAttachments(entvars_t* pev, void* pmodel, int sequence, float 
 			VectorCopy(bbox.bbmin, hitbox.mins);
 			VectorCopy(bbox.bbmax, hitbox.maxs);
 		}
+
 		VectorCopy(bonetransforms[bbox.bone].origin, hitbox.origin);
 		VectorCopy(bonetransforms[bbox.bone].angles, hitbox.angles);
 		hitbox.hitgroup = bbox.group;
@@ -1202,6 +1203,10 @@ int GetHitboxesAndAttachments(entvars_t* pev, void* pmodel, int sequence, float 
 				hitbox.maxs[j] = 4.f;
 			}
 		}
+
+		// Defined in VRPhysicsHelper.cpp
+		extern void CalculateHitboxAbsCenter(StudioHitBox& hitbox);
+		CalculateHitboxAbsCenter(hitbox);
 	}
 
 	return 1;

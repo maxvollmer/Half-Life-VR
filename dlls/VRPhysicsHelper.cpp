@@ -50,6 +50,12 @@ enum NeedLoadFlag
 	UNREFERENCED = 2   // If set, this brush model isn't used by the current map
 };
 
+// For animation.cpp
+void CalculateHitboxAbsCenter(StudioHitBox& hitbox)
+{
+	hitbox.abscenter = hitbox.origin + VRPhysicsHelper::Instance().RotateVectorInline((hitbox.mins + hitbox.maxs) * 0.5f, hitbox.angles);
+}
+
 namespace
 {
 	class VRException : public std::exception
@@ -1177,7 +1183,20 @@ bool VRPhysicsHelper::ModelBBoxIntersectsBBox(
 	if (!bboxBody2)
 		return false;
 
-	return TestCollision(bboxBody1, bboxBody2, result);
+	if (TestCollision(bboxBody1, bboxBody2, result))
+	{
+		// If r3pd didn't return a manifold point, get middle point between rotated box centers
+		if (!result->hasresult)
+		{
+			Vector center1 = bboxCenter1 + RotateVectorInline((bboxMins1 + bboxMaxs1) * 0.5f, bboxAngles1);
+			Vector center2 = bboxCenter2 + RotateVectorInline((bboxMins2 + bboxMaxs2) * 0.5f, bboxAngles2);
+			result->hitpoint = (center1 + center2) * 0.5f;
+			result->hasresult = true;
+		}
+		return true;
+	}
+
+	return false;
 }
 
 // internal helper function
@@ -1270,11 +1289,7 @@ bool VRPhysicsHelper::ModelIntersectsLine(CBaseEntity* pModel, const Vector& lin
 	else
 	{
 		// Studio model
-		void* pmodel = nullptr;
-		if (modelName.find(".mdl") == modelName.size() - 4)
-		{
-			pmodel = GET_MODEL_PTR(pModel->edict());
-		}
+		void* pmodel = GET_MODEL_PTR(pModel->edict());
 		if (!pmodel)
 		{
 			// Invalid studio model, use bounding box
@@ -1369,11 +1384,6 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity* pModel, const Vector& bbo
 				{
 					if (result)
 					{
-						if (!result->hasresult)
-						{
-							result->hitpoint = (studiohitbox.origin + bboxCenter) * 0.5f;
-							result->hasresult = true;
-						}
 						result->hitgroup = studiohitbox.hitgroup;
 					}
 					return true;
@@ -2013,7 +2023,7 @@ void VRPhysicsHelper::GetPhysicsMapDataFromModel()
 	for (int index = 0; index < gpGlobals->maxEntities; index++)
 	{
 		edict_t* pent = INDEXENT(index);
-		if (FNullEnt(pent))
+		if (FNullEnt(pent) && !FWorldEnt(pent))
 			continue;
 
 		const model_t* model = GetBSPModel(pent);

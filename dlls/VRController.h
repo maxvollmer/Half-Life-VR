@@ -49,6 +49,8 @@ public:
 	inline const std::vector<StudioHitBox>& GetHitBoxes() const { return m_hitboxes; }
 	inline float GetDragStartTime() const { return m_dragStartTime; }
 
+	bool HasAnyEntites() const;
+
 	bool IsDragging() const;
 	bool GetAttachment(size_t index, Vector& attachment) const;
 
@@ -119,12 +121,12 @@ private:
 	string_t m_bboxModelName{ 0 };
 	int m_bboxModelSequence{ 0 };
 	float m_dragStartTime{ 0.f };
+	float m_radius{ 0.f };
 
 	mutable EHANDLE<CVRControllerModel> m_hModel;
 	mutable EHANDLE<CLaserSpot> m_hLaserSpot;
 
 	mutable std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_touchedEntities;
-	//mutable std::unordered_map<EHANDLE<CBaseEntity>, DraggedEntityPositions, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_draggedEntities;
 	mutable std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_hitEntities;
 
 	mutable EHANDLE<CBaseEntity> m_draggedEntity;
@@ -136,7 +138,7 @@ private:
 	int m_hitboxSequence{ 0 };
 	float m_hitboxFrame{ 0.f };
 	float m_hitboxLastUpdateTime{ 0.f };
-	float m_radius{ 0.f };
+	bool m_hitboxMirrored{ false };
 	inline void ClearHitBoxes()
 	{
 		m_hitboxes.clear();
