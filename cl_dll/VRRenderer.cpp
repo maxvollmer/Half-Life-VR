@@ -97,6 +97,9 @@ void VRRenderer::Frame(double frametime)
 	const auto now = std::chrono::steady_clock::now();
 	m_clientTime = std::chrono::duration<double>(now - begin).count();
 
+	extern void VRClearCvarCache();
+	VRClearCvarCache();
+
 	if (m_isVeryFirstFrameEver)
 	{
 		g_vrSettings.InitialUpdateCVARSFromFile();

@@ -3123,11 +3123,13 @@ namespace
 {
 	static std::unordered_map<std::string, float> cvarfloatcache;
 	static std::unordered_map<std::string, std::unique_ptr<std::string>> cvarstringcache;
+	static std::unordered_map<std::string, void*> modelpointercache;
 }
 void VRClearCvarCache()
 {
 	cvarfloatcache.clear();
 	cvarstringcache.clear();
+	modelpointercache.clear();
 }
 
 float CVAR_GET_FLOAT(const char* x)
@@ -3160,6 +3162,34 @@ const char* CVAR_GET_STRING(const char* x)
 	}
 }
 
+void* GET_MODEL_PTR(edict_t* pent)
+{
+	std::string modelName = STRING(pent->v.model);
+
+	auto& it = modelpointercache.find(modelName);
+	if (it != modelpointercache.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		void* model = nullptr;
+		if (modelName.size() > 4
+			&& modelName[0] != '*'
+			&& modelName.find(".mdl") == modelName.size() - 4)
+		{
+			model = (*g_engfuncs.pfnGetModelPtr)(pent);
+		}
+#ifdef _DEBUG
+		else
+		{
+			ALERT(at_console, "Warning: Tried to get model pointer to non-studio model (%s)\n", modelName.c_str());
+		}
+#endif
+		modelpointercache[modelName] = model;
+		return model;
+	}
+}
 
 
 // Moved all the entity functions here for proper debugging (no more inline) - Max Vollmer, 2020-03-04

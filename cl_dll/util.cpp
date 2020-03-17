@@ -204,8 +204,8 @@ void GetAnglesFromVectors(const Vector& forward, const Vector& right, const Vect
 // - Max Vollmer, 2020-03-16
 namespace
 {
-	static std::unordered_map<const char*, float> cvarfloatcache;
-	static std::unordered_map<const char*, std::unique_ptr<std::string>> cvarstringcache;
+	static std::unordered_map<std::string, float> cvarfloatcache;
+	static std::unordered_map<std::string, std::unique_ptr<std::string>> cvarstringcache;
 }
 void VRClearCvarCache()
 {

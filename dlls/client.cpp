@@ -1116,6 +1116,7 @@ we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to. 
 */
 int AddToFullPack(struct entity_state_s* state, int e, edict_t* ent, edict_t* host, int hostflags, int player, unsigned char* pSet)
 {
+	// If pSet is nullptr, then the test will always succeed and the entity will be added to the update
 	bool isInPVS = ENGINE_CHECK_VISIBILITY(ent, pSet);
 
 	// Remember if entity is in PVS
@@ -1146,7 +1147,6 @@ int AddToFullPack(struct entity_state_s* state, int e, edict_t* ent, edict_t* ho
 	}
 
 	// Ignore if not the host and not touching a PVS/PAS leaf
-	// If pSet is nullptr, then the test will always succeed and the entity will be added to the update
 	if (ent != host)
 	{
 		if (!isInPVS)
