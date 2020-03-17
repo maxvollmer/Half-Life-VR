@@ -1912,15 +1912,11 @@ void CBasePlayer::PreThink(void)
 		return;
 	}
 
-	auto t1 = std::chrono::steady_clock::now();
-
 	// VR stuff: Calculate controller interactions with world
 	for (auto& controller : m_vrControllers)
 	{
 		m_vrControllerInteractionManager.CheckAndPressButtons(this, controller.second);
 	}
-
-	auto t2 = std::chrono::steady_clock::now();
 
 	// Special interaction with 2 controllers at once (e.g. pull up on ledges)
 	if (m_vrControllers[VRControllerID::HAND].IsValid() && m_vrControllers[VRControllerID::WEAPON].IsValid())
@@ -1928,17 +1924,8 @@ void CBasePlayer::PreThink(void)
 		m_vrControllerInteractionManager.DoMultiControllerActions(this, m_vrControllers[VRControllerID::HAND], m_vrControllers[VRControllerID::WEAPON]);
 	}
 
-	auto t3 = std::chrono::steady_clock::now();
-
 	// Handle retina scanners
 	VRHandleRetinaScanners();
-
-	auto t4 = std::chrono::steady_clock::now();
-
-	ALERT(at_console, "time: %i (%i, %i, %i)\n", (int)std::chrono::duration_cast<std::chrono::microseconds>(t4 - t1).count(),
-		(int)std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count(),
-		(int)std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count(),
-		(int)std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count());
 
 	// Check if we are on a train
 	if (CVAR_GET_FLOAT("vr_train_controls") == 0.f)
