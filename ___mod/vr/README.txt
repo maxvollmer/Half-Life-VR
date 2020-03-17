@@ -5,7 +5,7 @@ github: https://github.com/maxvollmer/Half-Life-VR
 
 VERSION 0.6.20-beta
 
-Release date:
+Release date: 2020-03-17
 
 Copyright (c) 2017-2020 Max Vollmer (if not otherwise stated)
 
