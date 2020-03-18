@@ -127,38 +127,36 @@ namespace
 
 	struct Sound
 	{
-		FMOD::Channel* fmodChannel;
-		FMOD::Sound* fmodSound;
-		FMOD::DSP* timestretchDSP;
-		FMOD::DSP* fftDSP;
+		FMOD::Channel* fmodChannel{ nullptr };
+		FMOD::Sound* fmodSound{ nullptr };
+		FMOD::DSP* timestretchDSP{ nullptr };
+		FMOD::DSP* fftDSP{ nullptr };
 
 		std::shared_ptr<Sound> nextSound;		// For sentences
-		float delayed_by = 0.f;					// Only set for sentences
-		float end_offset = 0.f;					// Only set for sentences
-		double time_marker = -1.f;				// Is set as soon as VRSoundUpdate touches this sound for the first time
-		bool has_started = false;				// Set to true when VRSoundUpdate starts playing this sound for the first time
+		float delayed_by{ 0.f };				// Only set for sentences
+		float end_offset{ 0.f };				// Only set for sentences
+		double time_marker{ -1.0 };				// Is set as soon as VRSoundUpdate touches this sound for the first time
+		bool has_started{ false };				// Set to true when VRSoundUpdate starts playing this sound for the first time
 
 		void Release()
 		{
-			if (fmodChannel) fmodChannel->stop();
 			if (timestretchDSP)
 			{
-				fmodChannel->removeDSP(timestretchDSP);
+				if (fmodChannel) fmodChannel->removeDSP(timestretchDSP);
 				timestretchDSP->release();
 			}
 			if (fftDSP)
 			{
-				fmodChannel->removeDSP(fftDSP);
+				if (fmodChannel) fmodChannel->removeDSP(fftDSP);
 				fftDSP->release();
 			}
+			if (fmodChannel) fmodChannel->stop();
 			if (fmodSound) fmodSound->release();
+
 			*this = Sound{};
 		}
 
-		Sound() :
-			fmodChannel{ nullptr },
-			fmodSound{ nullptr }
-		{}
+		Sound() {}
 
 		Sound(FMOD::Channel* fmodChannel, FMOD::Sound* fmodSound, FMOD::DSP* timestretchDSP, FMOD::DSP* fftDSP, bool startedpaused) :
 			fmodChannel{ fmodChannel },
@@ -166,6 +164,11 @@ namespace
 			timestretchDSP{ timestretchDSP },
 			fftDSP{ fftDSP }
 		{}
+
+		~Sound()
+		{
+			Release();
+		}
 	};
 
 	FMOD::System* fmodSystem = nullptr;
@@ -801,7 +804,9 @@ std::vector<SoundInfo> ParseSentence(const std::string& sentenceName, float init
 		std::string path;
 		std::string sentence = RemovePathFromSentence(sentencePair->second, path);
 
+#ifdef _DEBUG
 		gEngfuncs.Con_DPrintf("sentence name: %s, full sentence: %s, path: %s, sentence wo path: %s\n", sentenceName.c_str(), sentencePair->second.c_str(), path.c_str(), sentence.c_str());
+#endif
 
 		std::vector<SoundInfo> soundInfos;
 
@@ -890,7 +895,6 @@ std::shared_ptr<Sound> CreateSound(
 		if (isLooping)
 		{
 			fmodSound->setMode(fmodMode | FMOD_LOOP_NORMAL);
-			// gEngfuncs.Con_DPrintf("[%f] LOOPING: %s, ent: %i, chan: %i, origin: %f %f %f, fvol: %f, attenuation: %f, flags: %i, pitch: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel, origin[0], origin[1], origin[2], fvol, attenuation, flags, pitch);
 		}
 
 		FMOD::Channel* fmodChannel = nullptr;
@@ -953,8 +957,6 @@ std::shared_ptr<Sound> CreateSound(
 
 void MyStopSound(int entnum, int entchannel)
 {
-	// gEngfuncs.Con_DPrintf("MyStopSound: %i, %i\n", entnum, entchannel);
-
 	for (auto& [entnumChannelSoundname, sound] : g_allSounds)
 	{
 		if (entnumChannelSoundname.entnum == entnum && entnumChannelSoundname.channel == entchannel)
@@ -968,8 +970,6 @@ void MyStopSound(int entnum, int entchannel)
 
 void MyStopAllSounds(qboolean clear)
 {
-	// gEngfuncs.Con_DPrintf("MyStopAllSounds\n");
-
 	for (auto& [entnumChannelSoundname, sound] : g_allSounds)
 	{
 		sound.Release();
@@ -1021,7 +1021,7 @@ StartSoundResult MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* ori
 	if (IsUISound(sfx->name))
 	{
 		// Let Half-Life handle UI sounds
-		//return StartSoundResult::LetHalfLifeHandleThisSound;
+		return StartSoundResult::LetHalfLifeHandleThisSound;
 	}
 
 	if ( sfx->name[0] == '?' || /*entchannel == CHAN_STREAM ||*/ (entchannel >= CHAN_NETWORKVOICE_BASE && entchannel <= CHAN_NETWORKVOICE_END))
@@ -1036,7 +1036,9 @@ StartSoundResult MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* ori
 	if (sfx->name[0] == '#')
 	{
 		// Let Half-Life handle sentences run by index (we should actually never get these anyways)
+#ifdef _DEBUG
 		gEngfuncs.Con_DPrintf("Got a sentence by index, falling back to GoldSrc audio.\n");
+#endif
 		return StartSoundResult::LetHalfLifeHandleThisSound;
 	}
 
@@ -1052,8 +1054,6 @@ StartSoundResult MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* ori
 		{
 			if (flags & SND_STOP)
 			{
-				// gEngfuncs.Con_DPrintf("[%f] SND_STOP:  ent: %i, chan: %i, soundname: %s\n", gVRRenderer.m_clientTime, entnum, entchannel, sfx->name);
-
 				// Stop signal received, stop sound and forget
 				entnumChannelSound->second.Release();
 				g_allSounds.erase(entnumChannelSound);
@@ -1062,7 +1062,6 @@ StartSoundResult MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* ori
 			}
 			else if (flags & (SND_CHANGE_VOL | SND_CHANGE_PITCH))
 			{
-				// gEngfuncs.Con_DPrintf("[%f] (SND_CHANGE_VOL | SND_CHANGE_PITCH): ent: %i, chan: %i, oldsound: %s, newsound: %s\n", gVRRenderer.m_clientTime, entnum, entchannel, entnumChannelSound->second.soundname.data(), sfx->name);
 				// Modify signal received, modify sound and return
 
 				if (flags & SND_CHANGE_PITCH)
@@ -1076,13 +1075,8 @@ StartSoundResult MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* ori
 				return StartSoundResult::Good;
 			}
 		}
-		else
-		{
-			// gEngfuncs.Con_DPrintf("[%f] died: ent: %i, chan: %i, soundname: %s\n", gVRRenderer.m_clientTime, entnum, entchannel, sfx->name);
-		}
 
 		// Stop (if playing) and delete old sound
-
 		entnumChannelSound->second.Release();
 		g_allSounds.erase(entnumChannelSound);
 		CloseMouth(entnum);
@@ -1091,12 +1085,10 @@ StartSoundResult MyStartSound(int entnum, int entchannel, sfx_t* sfx, float* ori
 	if (flags & SND_STOP)
 	{
 		// Got stop signal, but already stopped or playing different audio, ignore
-		// gEngfuncs.Con_DPrintf("[%f] SND_STOP ignored (already stopped): %s, ent: %i, chan: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel);
 		return StartSoundResult::Good;
 	}
 
 	bool is2DSound = attenuation <= 0.f || IsPlayerAudio(entnum, origin);
-	// gEngfuncs.Con_DPrintf("[%f] Playing new sound: %s, ent: %i, chan: %i, origin: %f %f %f, fvol: %f, attenuation: %f, flags: %i, pitch: %i, isStatic: %i\n", gVRRenderer.m_clientTime, sfx->name, entnum, entchannel, origin[0], origin[1], origin[2], fvol, attenuation, flags, pitch, isStaticChannel);
 
 	// If we are here we have a new audiofile that needs to be played
 	// if this is a voice, we stop all previous voices first
