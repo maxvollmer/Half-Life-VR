@@ -61,9 +61,9 @@ void VRPhysicsHelper::TraceLine(const Vector& vecStart, const Vector& vecEnd, ed
 	{
 		Internal_TraceLine(vecStart, vecEnd, pentIgnore, ptr);
 	}
-	catch (VRException & e)
+	catch (VRException& e)
 	{
-		ALERT(at_console, "VRException in VRPhysicsHelper::TraceLine: %s\n", e.what());
+		ALERT(at_console, "ERROR: VRException in VRPhysicsHelper::TraceLine: %s\n", e.what());
 		ptr->fAllSolid = true;
 		ptr->flFraction = 0.f;
 	}
@@ -79,9 +79,9 @@ bool VRPhysicsHelper::CheckIfLineIsBlocked(const Vector& hlPos1, const Vector& h
 	{
 		return Internal_CheckIfLineIsBlocked(hlPos1, hlPos2, result);
 	}
-	catch (VRException & e)
+	catch (VRException& e)
 	{
-		ALERT(at_console, "VRException in VRPhysicsHelper::CheckIfLineIsBlocked: %s\n", e.what());
+		ALERT(at_console, "ERROR: VRException in VRPhysicsHelper::CheckIfLineIsBlocked: %s\n", e.what());
 		return false;
 	}
 }
@@ -91,9 +91,9 @@ bool VRPhysicsHelper::ModelIntersectsBBox(CBaseEntity* pModel, const Vector& bbo
 	{
 		return Internal_ModelIntersectsBBox(pModel, bboxCenter, bboxMins, bboxMaxs, bboxAngles, result);
 	}
-	catch (VRException & e)
+	catch (VRException& e)
 	{
-		ALERT(at_console, "VRException in VRPhysicsHelper::ModelIntersectsBBox: %s\n", e.what());
+		ALERT(at_console, "ERROR: VRException in VRPhysicsHelper::ModelIntersectsBBox: %s\n", e.what());
 		return false;
 	}
 }
@@ -103,9 +103,9 @@ bool VRPhysicsHelper::ModelIntersectsCapsule(CBaseEntity* pModel, const Vector& 
 	{
 		return Internal_ModelIntersectsCapsule(pModel, capsuleCenter, radius, height);
 	}
-	catch (VRException & e)
+	catch (VRException& e)
 	{
-		ALERT(at_console, "VRException in VRPhysicsHelper::ModelIntersectsCapsule: %s\n", e.what());
+		ALERT(at_console, "ERROR: VRException in VRPhysicsHelper::ModelIntersectsCapsule: %s\n", e.what());
 		return false;
 	}
 }
@@ -115,9 +115,9 @@ bool VRPhysicsHelper::ModelIntersectsLine(CBaseEntity* pModel, const Vector& lin
 	{
 		return Internal_ModelIntersectsLine(pModel, lineA, lineB, result);
 	}
-	catch (VRException & e)
+	catch (VRException& e)
 	{
-		ALERT(at_console, "VRException in VRPhysicsHelper::ModelIntersectsLine: %s\n", e.what());
+		ALERT(at_console, "ERROR: VRException in VRPhysicsHelper::ModelIntersectsLine: %s\n", e.what());
 		return false;
 	}
 }
@@ -127,9 +127,9 @@ bool VRPhysicsHelper::BBoxIntersectsLine(const Vector& bboxCenter, const Vector&
 	{
 		return Internal_BBoxIntersectsLine(bboxCenter, bboxMins, bboxMaxs, bboxAngles, lineA, lineB, result);
 	}
-	catch (VRException & e)
+	catch (VRException& e)
 	{
-		ALERT(at_console, "VRException in VRPhysicsHelper::BBoxIntersectsLine: %s\n", e.what());
+		ALERT(at_console, "ERROR: VRException in VRPhysicsHelper::BBoxIntersectsLine: %s\n", e.what());
 		return false;
 	}
 }
@@ -223,12 +223,10 @@ VRPhysicsHelper::~VRPhysicsHelper()
 			m_worldsSmallestCupPolygonFaces = nullptr;
 		}
 	}
-#ifdef _DEBUG
 	catch (VRException& e)
 	{
-		ALERT(at_console, "Caught VRException in ~VRPhysicsHelper: %s\n", e.what());
+		ALERT(at_console, "ERROR: VRException in ~VRPhysicsHelper: %s\n", e.what());
 	}
-#endif
 	catch (...) {}
 }
 
@@ -984,7 +982,7 @@ bool VRPhysicsHelper::GetPhysicsMapDataFromFile(const std::string& mapFilePath, 
 			return false;
 		}
 	}
-	catch (const VRException & e)
+	catch (VRException& e)
 	{
 		ALERT(at_console, "Game must recalculate physics data due to error while trying to parse %s: %s\n", physicsMapDataFilePath.c_str(), e.what());
 		m_bspModelData.clear();
@@ -1161,7 +1159,7 @@ bool VRPhysicsHelper::CheckWorld()
 					{
 						GetPhysicsMapDataFromModel();
 					}
-					catch (const VRException & e)
+					catch (VRException& e)
 					{
 						ALERT(at_console, "ERROR: Couldn't create physics data for map %s, some VR features will not work correctly: %s\n", physicsMapDataFilePath.c_str(), e.what());
 						m_bspModelData.clear();
@@ -1179,11 +1177,9 @@ bool VRPhysicsHelper::CheckWorld()
 			}
 		}
 	}
-	catch (VRException & e)
+	catch (VRException& e)
 	{
-#ifdef _DEBUG
-		ALERT(at_console, "Caught VRException in StartFrame: %s\n", e.what());
-#endif
+		ALERT(at_console, "ERROR: VRException in VRPhysicsHelper::CheckWorld: %s\n", e.what());
 	}
 
 	return m_hlWorldModel != nullptr && m_hlWorldModel == world && m_collisionWorld != nullptr && !m_bspModelData.empty() && m_bspModelData.count(m_currentMapName) > 0 && m_dynamicBSPModelData.count(m_currentMapName) > 0;
