@@ -36,7 +36,9 @@
 #include <unordered_map>
 #include <algorithm>
 #include <string>
-extern const model_t* GetBSPModel(CBaseEntity* pEntity);
+
+extern const model_t* VRGetBSPModel(CBaseEntity* pEntity);
+
 extern std::unordered_map<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScanners;
 extern std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScannerButtons;
 
@@ -102,7 +104,7 @@ void CFuncWall::Spawn(void)
 
 void CFuncWall::CheckIsSpecialVREntity()
 {
-	const model_t* model = GetBSPModel(this);
+	const model_t* model = VRGetBSPModel(this);
 	if (model == nullptr)
 	{
 		// Repeat Think until GetBSPModel returns a value

@@ -354,7 +354,7 @@ void VRController::SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID i
 
 	WRITE_STRING(STRING(GetModel()->pev->model));
 
-	if (m_draggedEntity && m_draggedEntityPositions)
+	if (IsDragging() && m_draggedEntity && m_draggedEntityPositions)
 	{
 		// Send dragged entity offsets to client
 		WRITE_BYTE(1);

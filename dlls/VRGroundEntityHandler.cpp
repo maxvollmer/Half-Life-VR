@@ -98,9 +98,12 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 		}
 
 		// Use physics engine to find potentially better ground entity
-		edict_t* pent = nullptr;
-		while (pent = UTIL_FindEntitiesInPVS(pent, m_pPlayer->edict()))
+		for (int index = 1; index < gpGlobals->maxEntities; index++)
 		{
+			edict_t* pent = INDEXENT(index);
+			if (FNullEnt(pent))
+				continue;
+
 			if (CheckIfPotentialGroundEntityForPlayer(pent) && !IsExcludedAsGroundEntity(pent))
 			{
 				pentground = ChoseBetterGroundEntityForPlayer(pentground, pent);

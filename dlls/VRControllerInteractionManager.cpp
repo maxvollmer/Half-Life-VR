@@ -23,7 +23,6 @@
 
 #include "VRControllerInteractionManager.h"
 #include "VRPhysicsHelper.h"
-#include "CWorldsSmallestCup.h"
 #include "VRModelHelper.h"
 #include "VRMovementHandler.h"
 #include "VRControllerModel.h"
@@ -348,9 +347,14 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 	edict_t* pentcontrollermodel = controller.GetModel()->edict();
 	edict_t* pentplayer = pPlayer->edict();
 
-	edict_t* pent = nullptr;
-	while (pent = UTIL_FindEntitiesInPVS(pent, pentplayer))
+	bool isDraggingAnEntity = false;
+
+	for (int index = 1; index < gpGlobals->maxEntities; index++)
 	{
+		edict_t* pent = INDEXENT(index);
+		if (FNullEnt(pent))
+			continue;
+
 		if (pent == pentplayer)
 		{
 			continue;
@@ -394,6 +398,15 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			pEntity->pev->rendercolor.z = 0;
 		}
 #endif
+
+		if (FClassnameIs(pEntity->pev, "vr_easteregg"))
+		{
+			bool b1 = controller.IsDraggedEntity(pEntity);
+			bool b2 = controller.IsDragging();
+			bool b3 = controller.HasDraggedEntity();
+			CBaseEntity *pDraggedEntity = controller.GetDraggedEntity();
+			ALERT(at_console, "eastergg: %i, %i, %i | %i, %i\n", b1, b2, b3, (int)(void*)pEntity, (int)(void*)pDraggedEntity);
+		}
 
 		// If we are dragging something draggable, we override all the booleans to avoid "losing" the entity due to fast movements
 		if (controller.IsDragging() && controller.IsDraggedEntity(pEntity) && (isTouching || !DistanceTooBigForDragging(pEntity, controller)))
@@ -523,6 +536,11 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			pPlayer->pev->velocity = controller.GetVelocity();
 			pEntity->Touch(pPlayer);
 			pPlayer->pev->velocity = backupVel;
+		}
+
+		if (isDragging && controller.IsDraggedEntity(pEntity))
+		{
+			isDraggingAnEntity = true;
 		}
 	}
 }

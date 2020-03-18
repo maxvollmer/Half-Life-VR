@@ -317,6 +317,12 @@ copy .\Debug\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
     <ClInclude Include="items.h" />
     <ClInclude Include="VRDebugBBoxDrawer.h" />
     <ClInclude Include="VRMovementHandler.h" />
+    <ClInclude Include="VRPhysicsBSPModels.hpp" />
+    <ClInclude Include="VRPhysicsHelperHelpers.hpp" />
+    <ClInclude Include="VRPhysicsHL2RP3D.hpp" />
+    <ClInclude Include="VRPhysicsIO.hpp" />
+    <ClInclude Include="VRPhysicsRP3DCustomization.hpp" />
+    <ClInclude Include="VRPhysicsTriangulateBSP.hpp" />
     <ClInclude Include="VRRotatableEnt.h" />
     <ClInclude Include="monsterevent.h" />
     <ClInclude Include="monsters.h" />

@@ -33,6 +33,34 @@ struct VRPhysicsHelperModelBBoxIntersectResult
 	bool hasresult{ false };
 };
 
+class VRException : public std::exception
+{
+private:
+	std::string m_message;
+
+public:
+	VRException(const std::string& message) :
+		std::exception{},
+		m_message{ message }
+	{
+
+	}
+
+	virtual char const* what() const override
+	{
+		return m_message.data();
+	}
+};
+
+class VRAllocatorException : public VRException
+{
+public:
+	VRAllocatorException(const std::string& message) :
+		VRException{ message }
+	{
+	}
+};
+
 class VRPhysicsHelper
 {
 public:
@@ -50,28 +78,36 @@ public:
 		CheckWorld();
 	}
 
-	bool CheckIfLineIsBlocked(const Vector& hlPos1, const Vector& hlPos2);
-	bool CheckIfLineIsBlocked(const Vector& pos1, const Vector& pos2, Vector& result);
-
-	Vector RotateVectorInline(const Vector& vecToRotate, const Vector& vecAngles, const Vector& vecOffset = Vector(), const bool reverse = false);
+	void RotateVectorX(Vector& vecToRotate, const float angle);
+	void RotateVectorY(Vector& vecToRotate, const float angle);
+	void RotateVectorZ(Vector& vecToRotate, const float angle);
 	void RotateVector(Vector& vecToRotate, const Vector& vecAngles, const Vector& vecOffset = Vector(), const bool reverse = false);
+	Vector RotateVectorInline(const Vector& vecToRotate, const Vector& vecAngles, const Vector& vecOffset = Vector(), const bool reverse = false);
 	Vector AngularVelocityToLinearVelocity(const Vector& avelocity, const Vector& pos);
 
 	void TraceLine(const Vector& vecStart, const Vector& vecEnd, edict_t* pentIgnore, TraceResult* ptr);
+
+	bool CheckIfLineIsBlocked(const Vector& hlPos1, const Vector& hlPos2);
+	bool CheckIfLineIsBlocked(const Vector& hlPos1, const Vector& hlPos2, Vector& result);
 
 	bool ModelIntersectsBBox(CBaseEntity* pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles = Vector{}, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
 	bool ModelIntersectsCapsule(CBaseEntity* pModel, const Vector& capsuleCenter, double radius, double height);
 	bool ModelIntersectsLine(CBaseEntity* pModel, const Vector& lineA, const Vector& lineB, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
 	bool BBoxIntersectsLine(const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles, const Vector& lineA, const Vector& lineB, VRPhysicsHelperModelBBoxIntersectResult* result);
 
-	bool ModelBBoxIntersectsBBox(
-		const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1, const Vector& bboxAngles1, const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
+private:
 
-	bool GetBSPModelBBox(CBaseEntity* pModel, Vector* bboxMins, Vector* bboxMaxs, Vector* bboxCenter = nullptr);
+	bool Internal_CheckIfLineIsBlocked(const Vector& hlPos1, const Vector& hlPos2, Vector& result);
 
-	// easter egg, see CWorldsSmallestCup
-	void SetWorldsSmallestCupPosition(CBaseEntity* pWorldsSmallestCup);
-	void GetWorldsSmallestCupPosition(CBaseEntity* pWorldsSmallestCup);
+	void Internal_TraceLine(const Vector& vecStart, const Vector& vecEnd, edict_t* pentIgnore, TraceResult* ptr);
+
+	bool Internal_ModelIntersectsBBox(CBaseEntity* pModel, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles = Vector{}, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
+	bool Internal_ModelIntersectsCapsule(CBaseEntity* pModel, const Vector& capsuleCenter, double radius, double height);
+	bool Internal_ModelIntersectsLine(CBaseEntity* pModel, const Vector& lineA, const Vector& lineB, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
+	bool Internal_BBoxIntersectsLine(const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles, const Vector& lineA, const Vector& lineB, VRPhysicsHelperModelBBoxIntersectResult* result);
+
+
+	bool ModelBBoxIntersectsBBox(const Vector& bboxCenter1, const Vector& bboxMins1, const Vector& bboxMaxs1, const Vector& bboxAngles1, const Vector& bboxCenter2, const Vector& bboxMins2, const Vector& bboxMaxs2, const Vector& bboxAngles2, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
 
 
 	class HitBoxModelData
@@ -144,7 +180,6 @@ public:
 		bool m_hasData{ false };
 	};
 
-private:
 	struct HitBox
 	{
 		Vector mins;
@@ -181,8 +216,6 @@ private:
 	void StorePhysicsMapDataToFile(const std::string& mapFilePath, const std::string& physicsMapDataFilePath);
 	void GetPhysicsMapDataFromModel();
 
-	void EnsureWorldsSmallestCupExists(CBaseEntity* pWorldsSmallestCup);
-
 	reactphysics3d::CollisionBody* GetHitBoxBody(size_t cacheIndex, const Vector& bboxCenter, const Vector& bboxMins, const Vector& bboxMaxs, const Vector& bboxAngles = Vector{});
 
 	bool TestCollision(reactphysics3d::CollisionBody* body1, reactphysics3d::CollisionBody* body2, VRPhysicsHelperModelBBoxIntersectResult* result = nullptr);
@@ -196,16 +229,6 @@ private:
 	const struct model_s* m_hlWorldModel{ nullptr };
 	reactphysics3d::CollisionWorld* m_collisionWorld{ nullptr };
 	reactphysics3d::DynamicsWorld* m_dynamicsWorld{ nullptr };
-
-	/*
-	reactphysics3d::CollisionBody*							m_bboxBody1{ nullptr };
-	reactphysics3d::BoxShape*								m_bboxShape1{ nullptr };
-	reactphysics3d::ProxyShape*								m_bboxProxyShape1{ nullptr };
-
-	reactphysics3d::CollisionBody*							m_bboxBody2{ nullptr };
-	reactphysics3d::BoxShape*								m_bboxShape2{ nullptr };
-	reactphysics3d::ProxyShape*								m_bboxProxyShape2{ nullptr };
-	*/
 
 	reactphysics3d::CollisionBody* m_capsuleBody{ nullptr };
 	reactphysics3d::CapsuleShape* m_capsuleShape{ nullptr };

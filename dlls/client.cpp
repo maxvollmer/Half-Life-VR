@@ -23,6 +23,8 @@
 
 */
 
+#include <vector>
+#include <unordered_map>
 #include <algorithm>
 
 #include "extdll.h"
@@ -40,11 +42,9 @@
 #include "weaponinfo.h"
 #include "usercmd.h"
 #include "netadr.h"
+
 #include "VRPhysicsHelper.h"
 #include "vr_shared/VRShared.h"
-
-#include <vector>
-#include <unordered_map>
 
 extern DLL_GLOBAL ULONG g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL g_fGameOver;
@@ -761,7 +761,12 @@ void PlayerPostThink(edict_t* pEntity)
 {
 	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pEntity);
 	if (pPlayer)
+	{
 		pPlayer->PostThink();
+
+		extern void EnsureEasteregg(CBasePlayer* pPlayer);
+		EnsureEasteregg(pPlayer);
+	}
 }
 
 

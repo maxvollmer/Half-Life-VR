@@ -34,6 +34,9 @@
     <Filter Include="VR\Controller">
       <UniqueIdentifier>{fb1c902e-fae5-4a88-969e-468c14fc0079}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\Helpers\VRPhysicsHelperHelpers">
+      <UniqueIdentifier>{b7e62c83-471b-4fc5-8d74-44dbd0aed532}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="aflock.cpp">
@@ -574,6 +577,24 @@
     </ClInclude>
     <ClInclude Include="VRDebugBBoxDrawer.h">
       <Filter>VR\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRPhysicsTriangulateBSP.hpp">
+      <Filter>VR\Helpers\VRPhysicsHelperHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRPhysicsHL2RP3D.hpp">
+      <Filter>VR\Helpers\VRPhysicsHelperHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRPhysicsBSPModels.hpp">
+      <Filter>VR\Helpers\VRPhysicsHelperHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRPhysicsRP3DCustomization.hpp">
+      <Filter>VR\Helpers\VRPhysicsHelperHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRPhysicsHelperHelpers.hpp">
+      <Filter>VR\Helpers\VRPhysicsHelperHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRPhysicsIO.hpp">
+      <Filter>VR\Helpers\VRPhysicsHelperHelpers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

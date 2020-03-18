@@ -175,8 +175,8 @@ VRCrushEntityHandler::CrushMode VRCrushEntityHandler::GetCrushModeFromEntity(CBa
 	if (modelname.empty() || modelname[0] != '*')
 		return CrushMode::NEVER;
 
-	extern const model_t* GetWorldBSPModel();
-	const model_t* mapmodel = GetWorldBSPModel();
+	extern const model_t* VRGetBSPModel(CBaseEntity * pEntity);
+	const model_t* mapmodel = VRGetBSPModel(CWorld::InstanceOrWorld(ENT(0)));
 
 	if (mapmodel == nullptr || mapmodel->needload)
 		return CrushMode::NEVER;

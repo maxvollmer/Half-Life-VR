@@ -192,9 +192,12 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer* pPlayer, const Vector& tele
 
 void VRControllerTeleporter::TouchTriggersInTeleportPath(CBasePlayer* pPlayer)
 {
-	edict_t* pent = nullptr;
-	while (pent = UTIL_FindEntitiesInPVS(pent, pPlayer->edict()))
+	for (int index = 1; index < gpGlobals->maxEntities; index++)
 	{
+		edict_t* pent = INDEXENT(index);
+		if (FNullEnt(pent))
+			continue;
+
 		if (pent->v.solid  != SOLID_TRIGGER)
 			continue;
 
