@@ -285,22 +285,45 @@ namespace HLVRConfig
             }
         }
 
+        string lastmsg = null;
+        string lastfullmsg = null;
+        Run lastrun = null;
+        int lastmsgcount = 1;
+
         public void ConsoleLog(string msg, Brush color)
         {
-            msg = MakeTimeStamp() + msg;
+            string timestamp = DateTime.Now.ToString("HH:mm:ss.ffff");
+            if (lastmsg != null && lastrun != null && msg.Equals(lastmsg))
+            {
+                lastmsgcount++;
+                if (msg.Trim().Length > 0)
+                {
+                    if (lastmsgcount > 2)
+                    {
+                        lastrun.Text = lastfullmsg += " [Repeats " + lastmsgcount + " times, last at " + timestamp + "]";
+                    }
+                }
+                return;
+            }
+
+            lastmsgcount = 1;
+            lastmsg = msg;
+            if (msg.Trim().Length > 0)
+            {
+                msg = "[" + timestamp + "] " + msg;
+            }
+            lastfullmsg = msg;
+
+            Run run = new Run(msg) { Foreground = color };
+            lastrun = run;
 
             SkipTooManyLines();
-            ConsoleOutput.Inlines.Add(new Run(msg) { Foreground = color });
+            ConsoleOutput.Inlines.Add(run);
             try
             {
                 File.AppendAllText(HLVRPaths.VRLogFile, msg);
             }
             catch (IOException) { } // TODO: Somehow notify user of exception
-        }
-
-        private string MakeTimeStamp()
-        {
-            return "[" + DateTime.Now.ToString("HH:mm:ss.ffff") + "] ";
         }
 
         private IEnumerable<II18NControl> Find18NControls(DependencyObject control)
