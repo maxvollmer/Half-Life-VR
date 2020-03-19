@@ -173,11 +173,6 @@ namespace
 			timestretchDSP{ timestretchDSP },
 			fftDSP{ fftDSP }
 		{}
-
-		~Sound()
-		{
-			Release();
-		}
 	};
 
 	FMOD::System* fmodSystem = nullptr;
