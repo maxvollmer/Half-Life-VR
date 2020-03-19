@@ -1,9 +1,11 @@
 0.6.23-beta
  Mod:
-  * Fixed crash bug when playing with FMOD
+  * Fixed crashes related to FMOD
+  * Fixed special entities not being recognized after save/load
+  * Fixed broken retina scanner after resonance cascade not reacting to touch
 
  HLVRConfig:
-  * No changes
+  * Log output now merges duplicate lines into one line and adds a repeat counter
 
 0.6.22-beta - 2020-03-18
  Mod:
