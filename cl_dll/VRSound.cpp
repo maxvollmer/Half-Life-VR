@@ -153,7 +153,10 @@ namespace
 			if (fmodChannel) fmodChannel->stop();
 			if (fmodSound) fmodSound->release();
 
-			*this = Sound{};
+			fmodChannel = nullptr;
+			fmodSound = nullptr;
+			timestretchDSP = nullptr;
+			fftDSP = nullptr;
 		}
 
 		Sound() {}
