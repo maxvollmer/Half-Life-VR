@@ -1865,7 +1865,7 @@ public:
 	void KeyValue(KeyValueData* pkvd);
 	void Touch(CBaseEntity* pOther);
 
-	virtual void CheckIsSpecialVREntity() override;
+	virtual bool CheckIsSpecialVREntity() override;
 
 private:
 	bool IsXenJumpPad();
@@ -1911,7 +1911,7 @@ bool CTriggerPush::IsXenJumpPad()
 	return false;
 }
 
-void CTriggerPush::CheckIsSpecialVREntity()
+bool CTriggerPush::CheckIsSpecialVREntity()
 {
 	if (IsXenJumpPad())
 	{
@@ -1928,11 +1928,12 @@ void CTriggerPush::CheckIsSpecialVREntity()
 				// so players can disable xen jump push in VR (then only controller beam will activate the mound)
 				m_isXenJumpTrigger = true;
 				dynamic_cast<CBaseTrigger*>(pTriggerMultiple)->m_isXenJumpTrigger = true;
-				return;
+				return true;
 			}
 		}
 	}
 	SetThink(nullptr);
+	return true;
 }
 
 void CTriggerPush::Spawn()

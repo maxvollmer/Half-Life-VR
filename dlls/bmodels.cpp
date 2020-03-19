@@ -77,7 +77,7 @@ public:
 	// Bmodels don't go across transitions
 	virtual int ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
-	virtual void CheckIsSpecialVREntity() override;
+	virtual bool CheckIsSpecialVREntity() override;
 };
 
 LINK_ENTITY_TO_CLASS(func_wall, CFuncWall);
@@ -98,15 +98,13 @@ void CFuncWall::Spawn(void)
 	pev->flags |= FL_WORLDBRUSH;
 }
 
-void CFuncWall::CheckIsSpecialVREntity()
+bool CFuncWall::CheckIsSpecialVREntity()
 {
 	const model_t* model = VRGetBSPModel(this);
 	if (model == nullptr)
 	{
-		// Repeat Think until GetBSPModel returns a value
-		SetThink(&CFuncWall::CheckIsSpecialVREntity);
-		pev->nextthink = gpGlobals->time + 1.f;
-		return;
+		// Repeat until GetBSPModel returns a value
+		return false;
 	}
 	else
 	{
@@ -124,7 +122,7 @@ void CFuncWall::CheckIsSpecialVREntity()
 			}
 			SetThink(&CFuncWall::SUB_Remove);
 			pev->nextthink = gpGlobals->time;
-			return;
+			return true;
 		}
 
 		for (int i = 0; i < model->nummodelsurfaces; ++i)
@@ -164,11 +162,13 @@ void CFuncWall::CheckIsSpecialVREntity()
 
 						pentButton = FIND_ENTITY_BY_CLASSNAME(pentButton, "func_button");
 					}
-					return;
+					return true;
 				}
 			}
 		}
 	}
+
+	return true;
 }
 
 void CFuncWall::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)

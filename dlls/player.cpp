@@ -1860,6 +1860,7 @@ void CBasePlayer::PreThink(void)
 	// gets reset by ClientPrecache everytime new map is loaded (new game, changelevel, load save)
 	if (g_vrNeedRecheckForSpecialEntities)
 	{
+		g_vrNeedRecheckForSpecialEntities = false;
 		for (int index = 1; index < gpGlobals->maxEntities; index++)
 		{
 			edict_t* pent = INDEXENT(index);
@@ -1869,10 +1870,12 @@ void CBasePlayer::PreThink(void)
 			EHANDLE<CBaseEntity> hEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 			if (hEntity)
 			{
-				hEntity->CheckIsSpecialVREntity();
+				if (!hEntity->CheckIsSpecialVREntity())
+				{
+					g_vrNeedRecheckForSpecialEntities = true;
+				}
 			}
 		}
-		g_vrNeedRecheckForSpecialEntities = false;
 	}
 
 	// Make sure we always have the right hand model
