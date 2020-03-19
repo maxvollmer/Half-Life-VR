@@ -399,15 +399,6 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 		}
 #endif
 
-		if (FClassnameIs(pEntity->pev, "vr_easteregg"))
-		{
-			bool b1 = controller.IsDraggedEntity(pEntity);
-			bool b2 = controller.IsDragging();
-			bool b3 = controller.HasDraggedEntity();
-			CBaseEntity *pDraggedEntity = controller.GetDraggedEntity();
-			ALERT(at_console, "eastergg: %i, %i, %i | %i, %i\n", b1, b2, b3, (int)(void*)pEntity, (int)(void*)pDraggedEntity);
-		}
-
 		// If we are dragging something draggable, we override all the booleans to avoid "losing" the entity due to fast movements
 		if (controller.IsDragging() && controller.IsDraggedEntity(pEntity) && (isTouching || !DistanceTooBigForDragging(pEntity, controller)))
 		{
@@ -561,7 +552,7 @@ bool IsSoftWeapon(int weaponId)
 
 float VRControllerInteractionManager::DoDamage(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult)
 {
-	if (!pEntity || pEntity->pev->takedamage != DAMAGE_YES || pEntity->pev->solid == SOLID_NOT || pEntity->pev->solid == SOLID_TRIGGER)
+	if (!pEntity || pEntity->pev->takedamage == DAMAGE_NO || pEntity->pev->solid == SOLID_NOT || pEntity->pev->solid == SOLID_TRIGGER)
 		return 0.f;
 
 	Vector controllerSwingVelocity = controller.GetVelocity();
