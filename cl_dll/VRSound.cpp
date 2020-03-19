@@ -35,6 +35,9 @@
 #define SND_CHANGE_PITCH	(1 << 7)
 #define SND_SPAWNING		(1 << 8)
 
+// global for VRClientDLLUnloadHandler
+bool g_fmodIgnoreEverythingWeAreShuttingDown = false;
+
 namespace
 {
 	// We have so much stuff here, probs would make sense to actually create a VRSound class, but oh well
@@ -140,18 +143,21 @@ namespace
 
 		void Release()
 		{
-			if (timestretchDSP)
+			if (!g_fmodIgnoreEverythingWeAreShuttingDown)
 			{
-				if (fmodChannel) fmodChannel->removeDSP(timestretchDSP);
-				timestretchDSP->release();
+				if (timestretchDSP)
+				{
+					if (fmodChannel) fmodChannel->removeDSP(timestretchDSP);
+					timestretchDSP->release();
+				}
+				if (fftDSP)
+				{
+					if (fmodChannel) fmodChannel->removeDSP(fftDSP);
+					fftDSP->release();
+				}
+				if (fmodChannel) fmodChannel->stop();
+				if (fmodSound) fmodSound->release();
 			}
-			if (fftDSP)
-			{
-				if (fmodChannel) fmodChannel->removeDSP(fftDSP);
-				fftDSP->release();
-			}
-			if (fmodChannel) fmodChannel->stop();
-			if (fmodSound) fmodSound->release();
 
 			fmodChannel = nullptr;
 			fmodSound = nullptr;

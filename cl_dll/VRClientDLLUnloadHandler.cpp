@@ -23,6 +23,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 		if (g_wasthreadattached)
 		{
 			LhUninstallAllHooks();
+			extern bool g_fmodIgnoreEverythingWeAreShuttingDown;
+			g_fmodIgnoreEverythingWeAreShuttingDown = true; // ah, beautifuly wacky-hacky wackhacks
 			std::exit(0);
 		}
 	}
