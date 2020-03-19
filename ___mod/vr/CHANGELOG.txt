@@ -3,6 +3,7 @@
   * Fixed crashes related to FMOD
   * Fixed special entities not being recognized after save/load
   * Fixed broken retina scanner after resonance cascade not reacting to touch
+  * Fixed NPCs and monsters not receiving damage from melee attacks
 
  HLVRConfig:
   * Log output now merges duplicate lines into one line and adds a repeat counter
