@@ -947,9 +947,11 @@ void ClientPrecache(void)
 	extern GlobalXenMounds gGlobalXenMounds;
 	extern std::unordered_map<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScanners;
 	extern std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScannerButtons;
+	extern bool g_vrNeedRecheckForSpecialEntities;
 	gGlobalXenMounds.Clear();
 	g_vrRetinaScanners.clear();
 	g_vrRetinaScannerButtons.clear();
+	g_vrNeedRecheckForSpecialEntities = true;
 }
 
 /*

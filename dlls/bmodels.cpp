@@ -77,7 +77,7 @@ public:
 	// Bmodels don't go across transitions
 	virtual int ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
-	void EXPORT CheckIsSpecialVREntity(void);
+	virtual void CheckIsSpecialVREntity() override;
 };
 
 LINK_ENTITY_TO_CLASS(func_wall, CFuncWall);
@@ -96,10 +96,6 @@ void CFuncWall::Spawn(void)
 
 	// If it can't move/go away, it's really part of the world
 	pev->flags |= FL_WORLDBRUSH;
-
-	// Detect if I am a retina scanner or gordon's coffee cup!
-	SetThink(&CFuncWall::CheckIsSpecialVREntity);
-	pev->nextthink = gpGlobals->time + 1.f;
 }
 
 void CFuncWall::CheckIsSpecialVREntity()
@@ -118,7 +114,7 @@ void CFuncWall::CheckIsSpecialVREntity()
 
 		// If we are the coffee cup and flask in gordon's locker, replace us with the Worlds Smallest Cup (easter egg)
 		// see https://www.youtube.com/watch?v=M_AnIizeH1Q
-		if (strcmp(STRING(pev->model), "*67") == 0 && strcmp(STRING(INDEXENT(0)->v.model), "maps/c1a0d.bsp") == 0)
+		if (strcmp(STRING(pev->model), "*67") == 0 && FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a0d.bsp"))
 		{
 			edict_t* pentCup = CREATE_NAMED_ENTITY(MAKE_STRING("vr_easteregg"));
 			if (!FNullEnt(pentCup))
@@ -147,18 +143,25 @@ void CFuncWall::CheckIsSpecialVREntity()
 					edict_t* pentButton = FIND_ENTITY_BY_CLASSNAME(nullptr, "func_button");
 					while (!FNullEnt(pentButton))
 					{
-						// Add retina scanner and button to global list
-						if (pentButton->v.renderamt == 0 && pentButton->v.rendermode == kRenderTransTexture)
+						// Don't add broken retina scanner after resonance cascade to list,
+						// it must not react to eyes, but to use and controller touch
+						bool isBrokenRetinaScannerAfterResonanceCascade = FStrEq(STRING(pentButton->v.target), "broken_airlockmm") && FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a0c.bsp");
+						if (!isBrokenRetinaScannerAfterResonanceCascade)
 						{
-							Vector buttonScannerCenter = (pentButton->v.absmin + pentButton->v.absmax) * 0.5f;
-							if ((buttonScannerCenter - retinaScannerCenter).Length() <= 16.f)
+							// Add retina scanner and button to global list
+							if (pentButton->v.renderamt == 0 && pentButton->v.rendermode == kRenderTransTexture)
 							{
-								EHANDLE<CBaseEntity> hButton = CBaseEntity::SafeInstance<CBaseEntity>(pentButton);
-								g_vrRetinaScanners[EHANDLE<CBaseEntity>{ this }] = hButton;
-								g_vrRetinaScannerButtons.insert(hButton);
-								break;
+								Vector buttonScannerCenter = (pentButton->v.absmin + pentButton->v.absmax) * 0.5f;
+								if ((buttonScannerCenter - retinaScannerCenter).Length() <= 16.f)
+								{
+									EHANDLE<CBaseEntity> hButton = CBaseEntity::SafeInstance<CBaseEntity>(pentButton);
+									g_vrRetinaScanners[EHANDLE<CBaseEntity>{ this }] = hButton;
+									g_vrRetinaScannerButtons.insert(hButton);
+									break;
+								}
 							}
 						}
+
 						pentButton = FIND_ENTITY_BY_CLASSNAME(pentButton, "func_button");
 					}
 					return;

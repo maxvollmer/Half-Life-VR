@@ -57,6 +57,7 @@
 constexpr const float VR_RETINASCANNER_ACTIVATE_LOOK_TIME = 1.f;
 std::unordered_map<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScanners;
 std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScannerButtons;
+bool g_vrNeedRecheckForSpecialEntities = true;
 
 
 // #define DUCKFIX
@@ -1856,6 +1857,24 @@ float GetTrainSpeed(const char* cvarname)
 
 void CBasePlayer::PreThink(void)
 {
+	// gets reset by ClientPrecache everytime new map is loaded (new game, changelevel, load save)
+	if (g_vrNeedRecheckForSpecialEntities)
+	{
+		for (int index = 1; index < gpGlobals->maxEntities; index++)
+		{
+			edict_t* pent = INDEXENT(index);
+			if (FNullEnt(pent))
+				continue;
+
+			EHANDLE<CBaseEntity> hEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
+			if (hEntity)
+			{
+				hEntity->CheckIsSpecialVREntity();
+			}
+		}
+		g_vrNeedRecheckForSpecialEntities = false;
+	}
+
 	// Make sure we always have the right hand model
 	if (HasSuit() && FStrEq(STRING(pev->viewmodel), "models/v_hand_labcoat.mdl"))
 	{

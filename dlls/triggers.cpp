@@ -1864,7 +1864,8 @@ public:
 	void Spawn(void);
 	void KeyValue(KeyValueData* pkvd);
 	void Touch(CBaseEntity* pOther);
-	void EXPORT DetectXenJumpPadThink(void);
+
+	virtual void CheckIsSpecialVREntity() override;
 
 private:
 	bool IsXenJumpPad();
@@ -1910,7 +1911,7 @@ bool CTriggerPush::IsXenJumpPad()
 	return false;
 }
 
-void CTriggerPush::DetectXenJumpPadThink()
+void CTriggerPush::CheckIsSpecialVREntity()
 {
 	if (IsXenJumpPad())
 	{
@@ -1952,10 +1953,6 @@ void CTriggerPush::Spawn()
 	SetUse(&CTriggerPush::ToggleUse);
 
 	UTIL_SetOrigin(pev, pev->origin);  // Link into the list
-
-	// need to do this detection in a delayed think method, so that trigger_multiple is spawned
-	SetThink(&CTriggerPush::DetectXenJumpPadThink);
-	pev->nextthink = gpGlobals->time + 0.1;
 }
 
 
