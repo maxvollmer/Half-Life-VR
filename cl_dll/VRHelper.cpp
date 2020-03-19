@@ -277,6 +277,9 @@ float VRHelper::UnitToMeter(float unit)
 
 void VRHelper::Init()
 {
+	// Make compiler insert correct version here automagically.
+	gEngfuncs.Con_DPrintf("[Half-Life: VR Initializing. Version: 0.6.23]\n");
+
 	g_vrSettings.Init();
 
 	if (!IEngineStudio.IsHardware())
@@ -315,7 +318,7 @@ void VRHelper::Init()
 			CreateGLTexture(&vrGLMenuTexture, viewport[2], viewport[3]);
 			if (vrGLLeftEyeTexture == 0 || vrGLRightEyeTexture == 0 || vrGLMenuTexture == 0)
 			{
-				Exit("Failed to initialize OpenGL textures for VR enviroment. Make sure you have a graphics card that can handle VR and up-to-date drivers.");
+				Exit("Failed to initialize OpenGL textures for VR enviroment. Make sure you have a graphics card that can handle VR and up-to-date drivers. (Or if you are living in the future, not up-to-date drivers, but drivers that are kind of old enough to still have the features this mod needs. I dunno, ask hyperreddit or whatever you cybernetic future people have.)");
 			}
 			else
 			{
@@ -323,7 +326,7 @@ void VRHelper::Init()
 				CreateGLFrameBuffer(&vrGLRightEyeFrameBuffer, vrGLRightEyeTexture, vrRenderWidth, vrRenderHeight);
 				if (vrGLLeftEyeFrameBuffer == 0 || vrGLRightEyeFrameBuffer == 0)
 				{
-					Exit("Failed to initialize OpenGL framebuffers for VR enviroment. Make sure you have a graphics card that can handle VR and up-to-date drivers.");
+					Exit("Failed to initialize OpenGL framebuffers for VR enviroment. Make sure you have a graphics card that can handle VR and up-to-date drivers. (Or if you are living in the future, not up-to-date drivers, but drivers that are kind of old enough to still have the features this mod needs. I dunno, ask hyperreddit or whatever you cybernetic future people have.)");
 				}
 			}
 		}
