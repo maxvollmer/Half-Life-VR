@@ -300,7 +300,7 @@ namespace HLVRConfig
                 {
                     if (lastmsgcount > 2)
                     {
-                        lastrun.Text = lastfullmsg += " [Repeats " + lastmsgcount + " times, last at " + timestamp + "]";
+                        lastrun.Text = lastfullmsg.Trim() + " [Repeats " + lastmsgcount + " times, last at " + timestamp + "]\n";
                     }
                 }
                 return;
