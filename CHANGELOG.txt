@@ -1,8 +1,9 @@
-0.6.24-beta
+0.6.24-beta - 2020-03-20
  Mod:
   * Fixed crash bug in model cache
   * Fixed scientist audio announcement sometimes using female voices in classic mode
   * Fixed train control offsets that were wrong on some trains
+  * Added missing 320px HUD textures and fixed train menu not appearing
 
  HLVRConfig:
   * No changes
