@@ -1488,7 +1488,7 @@ int PRECACHE_SOUND(const char* s)
 	std::string ssoundFilePath{ s };
 	if (ssoundFilePath.find("scientist/") == 0)
 	{
-		ssoundFilePath = std::regex_replace(ssoundFilePath, std::regex{ "scientist/", std::regex_constants::icase }, "fsci/");
+		ssoundFilePath = "fsci/" + ssoundFilePath.substr(10);
 		ALERT(at_console, "Precaching sound %s\n", ssoundFilePath.data());
 		PRECACHE_SOUND2(soundFilePathHolder.GetSoundFilePathPointer(ssoundFilePath));
 	}
@@ -1505,11 +1505,11 @@ void EMIT_AMBIENT_SOUND(edict_t* entity, float* pos, const char* sample, float v
 	{
 		// Intercept and use female audio files with 50% chance
 		std::string ssample{ sample };
-		if (rand() % 2 == 1)
+		if (CVAR_GET_FLOAT("vr_classic_mode") == 0.f && rand() % 2 == 1)
 		{
 			if (ssample.find("!SC_") == 0)
 			{
-				ssample = std::regex_replace(ssample, std::regex{ "SC_", std::regex_constants::icase }, "FS_");
+				ssample =  "FS_" + ssample.substr(4);
 			}
 		}
 
@@ -1526,11 +1526,15 @@ void EMIT_AMBIENT_SOUND(edict_t* entity, float* pos, const char* sample, float v
 	else
 	{
 		std::string ssample{ sample };
-		if (rand() % 2 == 1)
+		if (CVAR_GET_FLOAT("vr_classic_mode") == 0.f && rand() % 2 == 1)
 		{
 			if (ssample.find("scientist/") == 0)
 			{
-				ssample = std::regex_replace(ssample, std::regex{ "scientist/", std::regex_constants::icase }, "fsci/");
+				ssample = "fsci/" + ssample.substr(10);
+			}
+			else if (ssample.find("*scientist/") == 0)
+			{
+				ssample = "*fsci/" + ssample.substr(10);
 			}
 		}
 
@@ -1549,7 +1553,10 @@ void EMIT_SOUND_DYN(edict_t* entity, int channel, const char* sample, float volu
 		std::string ssample{ sample };
 		if (CBaseEntity::InstanceOrWorld(entity)->IsFemaleNPC())
 		{
-			ssample = std::regex_replace(ssample, std::regex{ "SC_", std::regex_constants::icase }, "FS_");
+			if (ssample.find("!SC_") == 0)
+			{
+				ssample = "!FS_" + ssample.substr(4);
+			}
 		}
 
 		char name[32];
@@ -1565,9 +1572,16 @@ void EMIT_SOUND_DYN(edict_t* entity, int channel, const char* sample, float volu
 	else
 	{
 		std::string ssample{ sample };
-		if (CBaseEntity::InstanceOrWorld(entity)->IsFemaleNPC() && ssample.find("scientist/") == 0)
+		if (CBaseEntity::InstanceOrWorld(entity)->IsFemaleNPC())
 		{
-			ssample = std::regex_replace(ssample, std::regex{ "scientist/", std::regex_constants::icase }, "fsci/");
+			if (ssample.find("scientist/") == 0)
+			{
+				ssample = "fsci/" + ssample.substr(10);
+			}
+			else if (ssample.find("*scientist/") == 0)
+			{
+				ssample = "*fsci/" + ssample.substr(10);
+			}
 		}
 
 		EMIT_SOUND_DYN2(entity, channel, ssample.data(), volume, attenuation, flags, pitch);
