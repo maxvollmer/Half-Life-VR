@@ -2003,7 +2003,18 @@ void CBasePlayer::PreThink(void)
 			Vector right;
 			Vector up;
 			UTIL_MakeVectorsPrivate(pTrain->pev->angles, forward, right, up);
-			vr_trainControlPosition = pTrain->pev->origin + (forward * -48.f) + (right * 20.f) + (up * 40.f);
+
+			Vector controlsOffset;
+			auto pTrackTrain = dynamic_cast<CFuncTrackTrain*>(pTrain);
+			if (pTrackTrain)
+			{
+				controlsOffset = pTrackTrain->GetVRControlsOffset();
+			}
+			else
+			{
+				controlsOffset = Vector{ -48.f, 20.f, pev->maxs.z };
+			}
+			vr_trainControlPosition = pTrain->pev->origin + (forward * controlsOffset.x) + (right * controlsOffset.y) + (up * controlsOffset.z);
 			vr_trainControlYaw = pTrain->pev->angles.y;
 
 			if (m_iTrain == TRAIN_OFF)
@@ -2069,8 +2080,8 @@ void CBasePlayer::PreThink(void)
 					EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use2.wav", 0.6, ATTN_NORM);
 
 					pTrain->pev->speed = newspeed;
-					auto pActualTrain = dynamic_cast<CFuncTrackTrain*>(pTrain);
-					if (pActualTrain) pActualTrain->Next();
+					auto pTrackTrain = dynamic_cast<CFuncTrackTrain*>(pTrain);
+					if (pTrackTrain) pTrackTrain->Next();
 				}
 			}
 
