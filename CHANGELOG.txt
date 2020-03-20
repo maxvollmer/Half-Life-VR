@@ -1,3 +1,10 @@
+0.6.25-beta
+ Mod:
+  * Fixed some female scientist scripts using male audio
+
+ HLVRConfig:
+  * No changes
+
 0.6.24-beta - 2020-03-20
  Mod:
   * Fixed crash bug in model cache

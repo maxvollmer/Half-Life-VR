@@ -278,7 +278,7 @@ float VRHelper::UnitToMeter(float unit)
 void VRHelper::Init()
 {
 	// Make compiler insert correct version here automagically.
-	gEngfuncs.Con_DPrintf("[Half-Life: VR Initializing. Version: 0.6.24]\n");
+	gEngfuncs.Con_DPrintf("[Half-Life: VR Initializing. Version: 0.6.25]\n");
 
 	g_vrSettings.Init();
 
