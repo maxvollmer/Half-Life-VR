@@ -2,6 +2,7 @@
  Mod:
   * Fixed crash bug in model cache
   * Fixed scientist audio announcement sometimes using female voices in classic mode
+  * Fixed train control offsets that were wrong on some trains
 
  HLVRConfig:
   * No changes
