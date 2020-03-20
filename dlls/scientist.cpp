@@ -644,7 +644,7 @@ void CScientist::HandleAnimEvent(MonsterEvent_t* pEvent)
 //=========================================================
 void CScientist::Spawn(void)
 {
-	m_fIsFemale = 1;// CVAR_GET_FLOAT("vr_classic_mode") == 0.f && rand() % 2 == 1;
+	m_fIsFemale = CVAR_GET_FLOAT("vr_classic_mode") == 0.f && rand() % 2 == 1;
 	Precache();
 
 	SET_MODEL(ENT(pev), m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");
