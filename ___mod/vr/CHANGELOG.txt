@@ -1,4 +1,4 @@
-0.6.25-beta
+0.6.25-beta - 2020-03-20
  Mod:
   * Fixed some female scientist scripts using male audio
 
