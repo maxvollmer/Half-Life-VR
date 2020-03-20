@@ -3107,7 +3107,7 @@ namespace
 {
 	static std::unordered_map<std::string, float> cvarfloatcache;
 	static std::unordered_map<std::string, std::unique_ptr<std::string>> cvarstringcache;
-	static std::unordered_map<std::string, void*> modelpointercache;
+	static std::unordered_map<std::string, std::vector<unsigned char>> modelpointercache;
 }
 void VRClearCvarCache()
 {
@@ -3148,12 +3148,17 @@ const char* CVAR_GET_STRING(const char* x)
 
 void* GET_MODEL_PTR(edict_t* pent)
 {
+	constexpr const int STUDIO_HEADER_LENGTH_OFFSET = 72; // see studiohdr_t in studio.h
+
 	std::string modelName = STRING(pent->v.model);
 
 	auto& it = modelpointercache.find(modelName);
 	if (it != modelpointercache.end())
 	{
-		return it->second;
+		if (it->second.empty())
+			return nullptr;
+		else
+			return it->second.data();
 	}
 	else
 	{
@@ -3170,7 +3175,14 @@ void* GET_MODEL_PTR(edict_t* pent)
 			ALERT(at_console, "Warning: Tried to get model pointer to non-studio model (%s)\n", modelName.c_str());
 		}
 #endif
-		modelpointercache[modelName] = model;
+		if (model != nullptr)
+		{
+			// models live only temporarily (not even surviving during a single frame), so we create a copy here
+			auto& modelcopy = modelpointercache[modelName];
+			unsigned char* modeldata = static_cast<unsigned char*>(model);
+			int length = *reinterpret_cast<int*>(modeldata + STUDIO_HEADER_LENGTH_OFFSET);
+			modelcopy.assign(modeldata, modeldata + length);
+		}
 		return model;
 	}
 }
