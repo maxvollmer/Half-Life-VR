@@ -81,6 +81,12 @@ namespace
 		{std::string{"sprites/640hud8.spr"}, HUDSpriteSize{256, 64}},
 		{std::string{"sprites/640hud9.spr"}, HUDSpriteSize{256, 64}},
 		{std::string{"sprites/640_train.spr"}, HUDSpriteSize{96, 96}},
+
+		{std::string{"sprites/320hud1.spr"}, HUDSpriteSize{256, 256}},
+		{std::string{"sprites/320hud2.spr"}, HUDSpriteSize{128, 128}},
+		{std::string{"sprites/320hud3.spr"}, HUDSpriteSize{256, 64}},
+		{std::string{"sprites/320hud4.spr"}, HUDSpriteSize{256, 32}},
+		{std::string{"sprites/320_train.spr"}, HUDSpriteSize{48, 48}},
 	};
 }  // namespace
 
@@ -405,6 +411,10 @@ void VRRenderer::InterceptSPR_DrawAdditive(int frame, int x, int y, const wrect_
 
 	// "sprites/640hud7.spr" -> "hud/640hud7.png"
 	std::string hudTextureName = std::regex_replace(pSpriteModel->name, std::regex{ "^sprites/([a-z0-9_]+)\\.spr$" }, m_hdTexturesEnabled ? "/hud/HD/$1.png" : "/hud/$1.png");
+	if (hudTextureName.find("320_train") != std::string::npos)
+	{
+		hudTextureName = std::regex_replace(hudTextureName, std::regex{ "^(.+)320_train(.+)$" }, "$1640_train$2");
+	}
 	if (frame == 0 && hudTextureName.find("640_train") == std::string::npos)
 	{
 		texture = VRTextureHelper::Instance().GetTexture(hudTextureName);
