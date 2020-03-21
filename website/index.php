@@ -87,7 +87,7 @@
         <div class="content_title">
           <h3>Downloads</h3>
         </div>
-        <a class="button button2" href="">
+        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/download/0.6.26-beta/HLVR_0.6.26-beta-Installer.exe">
           <div class="button_text">
             <h4>Download Installer</h4>
             <p>
@@ -98,17 +98,15 @@
               </ul>
             </p>
           </div>
-          <div class="button_overlay">Not available yet</div>
         </a>
-        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/download/0.6.2-beta/HLVR_0.6.2-beta.zip">
+        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/download/0.6.26-beta/HLVR_0.6.26-beta.zip">
           <div class="button_text">
             <h4>Download Archive</h4>
             <p>
               <ul>
                 <li>Download</li>
-                <li>Extract into Half-Life directory</li>
-                <li>Run Steam</li>
-                <li>Run HLVRlauncher.exe</li>
+                <li>Copy vr folder into Half-Life directory</li>
+                <li>Play</li>
               </ul>
             </p>
           </div>
@@ -130,7 +128,7 @@
         <div class="feature_list">
           <p>
             <ul>
-              <li>Dedicated launcher that patches the game for you with easy to use config menu</li>
+              <li>Dedicated HLVRConfig.exe that let's you modify almost anything to your liking</li>
               <li>Supports every headset and controller compatible with SteamVR</li>
               <li>Every weapon can act as melee weapon</li>
               <li>Free locomotion with a variety of options</li>
@@ -142,6 +140,7 @@
               <li>Pull yourself up on ledges</li>
               <li>Give NPCs commands via Windows backed speech recognition</li>
               <li>Immersive controls for mounted guns and controllable trains</li>
+              <li>Virtual backpack</li>
               <li>Crouch via button or through real-life ducking/lying down (with configurable height)</li>
               <li>Auto-crouch when moving or jumping against ducts, holes and caves</li>
               <li>Single-button long jump for easy jump&amp;run</li>
@@ -153,7 +152,8 @@
               <li>Plenty of anti-nausea features for the light-stomached</li>
               <li>Scalable world, NPCs and weapons for people of different body heights and sizes</li>
               <li>Support for play without controllers (aim with your head, shoot with ENTER or mouse)</li>
-              <li>Support for <a href="https://github.com/LAGonauta/metahook/releases">Metahook</a></li>
+              <li>Support for 3d sound and occlusion using FMOD</li>
+              <li>Classic mode: Play as if it was 1998 - just in VR!</li>
             </ul>
           </p>
         </div>
@@ -166,10 +166,8 @@
             <ul>
               <li>Two-handed weapon handling</li>
               <li>Gunstock configuration</li>
-              <li>Vibration feedback</li>
               <li>Forward pulling with controllers while crouching</li>
               <li>Stair/step-smoothing</li>
-              <li>Virtual backpack</li>
               <li>Proper main and config menus in VR</li>
               <li>Proper teleporter arc (following path of jumping player)</li>
               <li></li>
