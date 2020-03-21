@@ -109,7 +109,10 @@ bool WasJustThrownByPlayer(CBasePlayer* pPlayer, CBaseEntity *pEntity)
 	if (pEntity->pev->owner != pPlayer->edict())
 		return false;
 
-	if (!FClassnameIs(pEntity->pev, "monster_satchel") && !FClassnameIs(pEntity->pev, "grenade") && !FClassnameIs(pEntity->pev, "monster_snark"))
+	if (!FClassnameIs(pEntity->pev, "monster_satchel")
+		&& !FClassnameIs(pEntity->pev, "grenade")
+		&& !FClassnameIs(pEntity->pev, "monster_snark")
+		&& !FClassnameIs(pEntity->pev, "rpg_rocket"))
 		return false;
 
 	return (gpGlobals->time - pEntity->m_spawnTime) < 2.f;
@@ -520,7 +523,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			;
 		else if (HandleTossables(pPlayer, pEntity, controller, interaction))
 			;
-		else if (isTouching)
+		else if (isTouching && didTouchChange)
 		{
 			// Touch any entity not handled yet and set player velocity temporarily to controller velocity, as some entities (e.g. cockroaches) use the velocity in their touch logic
 			Vector backupVel = pPlayer->pev->velocity;

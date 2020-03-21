@@ -152,6 +152,10 @@ void CRpgRocket::Spawn(void)
 //=========================================================
 void CRpgRocket::RocketTouch(CBaseEntity* pOther)
 {
+	// don't collide with ourselves
+	if (!pOther || pOther->edict() == pev->owner)
+		return;
+
 	if (m_pLauncher)
 	{
 		// my launcher is still around, tell it I'm dead.

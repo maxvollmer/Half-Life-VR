@@ -1,3 +1,12 @@
+0.6.26-beta
+ Mod:
+  * Fixed trajecture and HUD position on 9mmAR
+  * Fixed rockets fired from rocket launcher exploding immediately because they think they collided with the rocket launcher
+  * Added missing xen9 sky textures
+
+ HLVRConfig:
+  * No changes
+
 0.6.25-beta - 2020-03-20
  Mod:
   * Fixed some female scientist scripts using male audio
