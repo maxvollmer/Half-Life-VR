@@ -1,4 +1,4 @@
-0.6.26-beta
+0.6.26-beta - 2020-03-21
  Mod:
   * Fixed trajecture and HUD position on 9mmAR
   * Fixed rockets fired from rocket launcher exploding immediately because they think they collided with the rocket launcher
