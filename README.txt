@@ -41,8 +41,6 @@ This mod is released as is without any guarantee that it works and without any w
 ===
 NO SUPPORT IS OFFERED WHATSOEVER. Bug reports are welcome, but "it's not working" is not a bug report and will be ignored. The best thing is to upload a video of the issue you want to report.
 
-Please use HLVRLauncher.exe to run this mod.
-
 Please read this file carefully, especially the third party section, if you plan on using any of the files for anything.
 
 ====
