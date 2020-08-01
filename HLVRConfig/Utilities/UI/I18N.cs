@@ -230,7 +230,7 @@ namespace HLVRConfig.Utilities.UI
             return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out result);
         }
 
-        public static string FloatToString(int value)
+        public static string FloatToString(float value)
         {
             return value.ToString(CultureInfo.InvariantCulture.NumberFormat);
         }
