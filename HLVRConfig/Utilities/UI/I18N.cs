@@ -151,8 +151,8 @@ namespace HLVRConfig.Utilities.UI
         {
             HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.Clear();
 
-            System.UInt32 pulNumLanguages = 0;
-            System.UInt32 pcchLanguagesBuffer = 0;
+            uint pulNumLanguages = 0;
+            uint pcchLanguagesBuffer = 0;
             if (GetUserPreferredUILanguages(MUI_LANGUAGE_ID, ref pulNumLanguages, IntPtr.Zero, ref pcchLanguagesBuffer)
                 && pcchLanguagesBuffer > 0)
             {
@@ -177,7 +177,7 @@ namespace HLVRConfig.Utilities.UI
                                 CultureInfo cultureInfo;
                                 try
                                 {
-                                    int cultureId = int.Parse(hexCultureId, System.Globalization.NumberStyles.HexNumber);
+                                    int cultureId = I18N.ParseInt(hexCultureId, NumberStyles.HexNumber);
                                     cultureInfo = new CultureInfo(cultureId, true);
                                 }
                                 catch (Exception)
@@ -203,6 +203,26 @@ namespace HLVRConfig.Utilities.UI
             {
                 HLVRSettingsManager.SetModSetting(HLVRSettingsManager.ModSettings.AudioSettings, ModSettings.CategorySpeechRecognition, ModSettings.SpeechRecognitionLanguage, "vr_speech_language_id." + HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.Keys.First());
             }
+        }
+
+        public static int ParseInt(string value, NumberStyles style = NumberStyles.Integer)
+        {
+            return int.Parse(value, style, CultureInfo.InvariantCulture.NumberFormat);
+        }
+
+        public static bool TryParseInt(string value, out int result)
+        {
+            return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture.NumberFormat, out result);
+        }
+
+        public static float ParseFloat(string value)
+        {
+            return float.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat);
+        }
+
+        public static bool TryParseFloat(string value, out float result)
+        {
+            return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out result);
         }
     }
 }

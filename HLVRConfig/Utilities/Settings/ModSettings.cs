@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using HLVRConfig.Utilities.UI;
+using System.Globalization;
 
 namespace HLVRConfig.Utilities.Settings
 {
@@ -21,10 +22,10 @@ namespace HLVRConfig.Utilities.Settings
 
         public float GetWorldScale()
         {
-            float.TryParse(VisualsSettings[ModSettings.CategoryWorldCustomizationAndScaling][ModSettings.WorldScale].Value, out float value);
+            I18N.TryParseFloat(VisualsSettings[CategoryWorldCustomizationAndScaling][WorldScale].Value, out float value);
             return value;
         }
-        
+
 
         public static readonly SettingCategory CategoryGeneralInput = new SettingCategory(
             new I18N.I18NString("InputSettings.General", "General"));

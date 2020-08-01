@@ -4,6 +4,7 @@ using HLVRConfig.Utilities.UI;
 using Microsoft.Collections.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -26,7 +27,7 @@ namespace HLVRConfig.Utilities.Settings
             get
             {
                 string value = GeneralSettings[CategoryLog][NumberOfDisplayedLogLines].Value;
-                if (int.TryParse(value, out int result))
+                if (I18N.TryParseInt(value, out int result))
                 {
                     return result;
                 }
