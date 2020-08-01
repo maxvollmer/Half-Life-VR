@@ -107,22 +107,18 @@ UTIL_SharedRandomFloat
 */
 float UTIL_SharedRandomFloat(unsigned int seed, float low, float high)
 {
+	if (low == high)
+		return low;
+
 	U_Srand(seed + *reinterpret_cast<unsigned int*>(&low) + *reinterpret_cast<unsigned int*>(&high));
 
 	U_Random();
 	U_Random();
 
-	unsigned int range = static_cast<unsigned int>(high) - static_cast<unsigned int>(low);
-	if (!range)
-	{
-		return low;
-	}
-	else
-	{
-		unsigned int tensixrand = U_Random() & 65535U;
-		float offset = static_cast<float>(tensixrand) / 65536.f;
-		return (low + offset * range);
-	}
+	float range = high - low;
+	unsigned int tensixrand = U_Random() & 65535U;
+	float offset = static_cast<float>(tensixrand) / 65536.f;
+	return (low + offset * range);
 }
 
 void UTIL_ParametricRocket(entvars_t* pev, Vector vecOrigin, Vector vecAngles, edict_t* owner)
