@@ -3602,19 +3602,24 @@ void PM_PlayerMove(qboolean server)
 
 	if (tryAutoDuck)
 	{
-		// Backup original origin
+		// Backup original origin and velocity (velocity gets changed to add in gravity!)
 		vec3_t original_origin;
+		vec3_t original_velocity;
 		VectorCopy(pmove->origin, original_origin);
+		VectorCopy(pmove->velocity, original_velocity);
 
 		// Move standing up
 		PM_HandleMovement(pLadder);
 
 		// Backup standmove origin
 		vec3_t standmove_origin;
+		vec3_t standmove_velocity;
 		VectorCopy(pmove->origin, standmove_origin);
+		VectorCopy(pmove->velocity, standmove_velocity);
 
-		// Restore original origin
+		// Restore original origin and velocity
 		VectorCopy(original_origin, pmove->origin);
+		VectorCopy(original_velocity, pmove->velocity);
 		PM_CategorizePosition();
 
 		// Set crouching
@@ -3637,6 +3642,7 @@ void PM_PlayerMove(qboolean server)
 			if (pmove->onground == -1)
 			{
 				VectorCopy(standmove_origin, pmove->origin);
+				VectorCopy(standmove_velocity, pmove->velocity);
 				pmove->usehull = 0;
 				pmove->flags &= ~FL_DUCKING;
 				PM_CategorizePosition();
@@ -3672,6 +3678,7 @@ void PM_PlayerMove(qboolean server)
 			{
 				// use standing origin, if we can actually stand at the ducking origin!
 				VectorCopy(standmove_origin, pmove->origin);
+				VectorCopy(standmove_velocity, pmove->velocity);
 			}
 			else
 			{
@@ -3684,6 +3691,7 @@ void PM_PlayerMove(qboolean server)
 		else  // Use standing otherwise
 		{
 			VectorCopy(standmove_origin, pmove->origin);
+			VectorCopy(standmove_velocity, pmove->velocity);
 		}
 	}
 	else
