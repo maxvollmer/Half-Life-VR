@@ -143,6 +143,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_togglewalk", "0");
 
 	RegisterCVAR("vr_texturemode", "GL_LINEAR_MIPMAP_LINEAR");
+	RegisterCVAR("vr_display_game", "0");
 
 	// Initialize time that settings file was last changed
 	std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");

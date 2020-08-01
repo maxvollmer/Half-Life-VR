@@ -353,7 +353,10 @@ void VRRenderer::DrawTransparent()
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	return;
+	if (CVAR_GET_FLOAT("vr_display_game") == 0.f)
+	{
+		return;
+	}
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 
@@ -382,12 +385,12 @@ void VRRenderer::DrawTransparent()
 		bool renderUpsideDown = false;
 		if (m_isInMenu)
 		{
-			//glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+			glBindTexture(GL_TEXTURE_2D, backgroundTexture);
 			m_wasMenuJustRendered = true;
 		}
 		else
 		{
-			//glBindTexture(GL_TEXTURE_2D, vrHelper->GetVRTexture(vr::EVREye::Eye_Left));
+			glBindTexture(GL_TEXTURE_2D, vrHelper->GetVRTexture(vr::EVREye::Eye_Left));
 			m_wasMenuJustRendered = false;
 			renderUpsideDown = true;
 		}
@@ -396,18 +399,16 @@ void VRRenderer::DrawTransparent()
 
 		float size = 1.f;
 
-		/*
 		glBegin(GL_QUADS);
-		//glTexCoord2f(0, renderUpsideDown ? 0 : 1);
+		glTexCoord2f(0, renderUpsideDown ? 0 : 1);
 		glVertex3f(-size, -size, -1.f);
-		//glTexCoord2f(1, renderUpsideDown ? 0 : 1);
+		glTexCoord2f(1, renderUpsideDown ? 0 : 1);
 		glVertex3f(size, -size, -1.f);
-		//glTexCoord2f(1, renderUpsideDown ? 1 : 0);
+		glTexCoord2f(1, renderUpsideDown ? 1 : 0);
 		glVertex3f(size, size, -1.f);
-		//glTexCoord2f(0, renderUpsideDown ? 1 : 0);
+		glTexCoord2f(0, renderUpsideDown ? 1 : 0);
 		glVertex3f(-size, size, -1.f);
 		glEnd();
-		*/
 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
@@ -419,7 +420,7 @@ void VRRenderer::DrawTransparent()
 	}
 	else
 	{
-		DrawHDSkyBox();
+		// DrawHDSkyBox();
 
 		/*
 		if (CVAR_GET_FLOAT("vr_debug_controllers") != 0.f)
