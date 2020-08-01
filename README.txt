@@ -72,7 +72,7 @@ THIRD PARTIES BELOW
 (Full licenses where applicable in folder vr/licenses)
 
 ====
-Female scientist audio files have been generated using MorphVox Pro with the Batch Converter Plugin, postprocessed using Auphonic, and then converted to a Half-Life friendly wav format with GoldWave. They are based on the original scientist audio files for Half-Life by Valve.
+Female scientist audio files recorded by Katie Otten: https://www.katieotten.com/. They are based on the original scientist audio files for Half-Life by Valve.
 
 ====
 Smallest cup audio track by Michael Hillard. Permission for use in this mod generously granted.

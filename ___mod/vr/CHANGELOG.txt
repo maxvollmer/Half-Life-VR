@@ -6,6 +6,7 @@
   * Fixed gravity being applied twice each frame
   * Fixed some weapons shooting slightly to the lower left of where you actually aim
   * Re-enabled VR view in game window and added setting to turn it on or off
+  * Added female scientist voice files recorded by Katie Otten
 
  HLVRConfig:
   * Fixed issues caused by using system language settings for number conversion
