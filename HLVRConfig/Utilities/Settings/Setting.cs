@@ -114,10 +114,10 @@ namespace HLVRConfig.Utilities.Settings
                 case SettingType.SPEED:
                 case SettingType.DISTANCE:
                 case SettingType.FACTOR:
-                    if (I18N.TryParseFloat(value, out float fvalue)) Value = fvalue.ToString(); else Value = "0";
+                    if (I18N.TryParseFloat(value, out float fvalue)) Value = I18N.FloatToString(fvalue); else Value = "0";
                     break;
                 case SettingType.COUNT:
-                    if (I18N.TryParseInt(value, out int ivalue)) Value = ivalue.ToString(); else Value = "0";
+                    if (I18N.TryParseInt(value, out int ivalue)) Value = I18N.IntToString(ivalue); else Value = "0";
                     break;
             }
         }

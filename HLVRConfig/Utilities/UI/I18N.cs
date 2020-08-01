@@ -215,6 +215,11 @@ namespace HLVRConfig.Utilities.UI
             return int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture.NumberFormat, out result);
         }
 
+        public static string IntToString(int value)
+        {
+            return value.ToString(CultureInfo.InvariantCulture.NumberFormat);
+        }
+
         public static float ParseFloat(string value)
         {
             return float.Parse(value, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat);
@@ -223,6 +228,11 @@ namespace HLVRConfig.Utilities.UI
         public static bool TryParseFloat(string value, out float result)
         {
             return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out result);
+        }
+
+        public static string FloatToString(int value)
+        {
+            return value.ToString(CultureInfo.InvariantCulture.NumberFormat);
         }
     }
 }

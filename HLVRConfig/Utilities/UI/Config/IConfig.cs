@@ -267,7 +267,7 @@ namespace HLVRConfig.Utilities.UI.Config
             try
             {
                 float worldScale = HLVRSettingsManager.ModSettings.GetWorldScale();
-                return ((int)(I18N.ParseFloat(text) * UNIT_TO_CM * worldScale)).ToString();
+                return I18N.IntToString((int)(I18N.ParseFloat(text) * UNIT_TO_CM * worldScale));
             }
             catch (Exception)
             {
@@ -281,7 +281,7 @@ namespace HLVRConfig.Utilities.UI.Config
             {
                 float worldScale = HLVRSettingsManager.ModSettings.GetWorldScale();
                 float invWorldScale = worldScale != 0 ? 1 / worldScale : 0;
-                return ((int)(I18N.ParseFloat(text) * CM_TO_UNIT * invWorldScale)).ToString();
+                return I18N.IntToString((int)(I18N.ParseFloat(text) * CM_TO_UNIT * invWorldScale));
             }
             catch (Exception)
             {
