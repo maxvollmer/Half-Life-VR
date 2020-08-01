@@ -814,6 +814,7 @@ protected:
 	virtual bool SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta) override;
 	virtual void StopVRDragRotation() override;
 	virtual CBaseEntity* MyEntityPointer() override { return this; }
+	virtual VRRotatableEnt* MyRotatableEntPtr() override { return this; }
 };
 
 LINK_ENTITY_TO_CLASS(func_door_rotating, CRotDoor);
@@ -983,6 +984,7 @@ bool CRotDoor::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, flo
 		SetThink(nullptr);
 		SetTouch(nullptr);
 		SetUse(nullptr);
+		ALERT(at_console, "ANGLES: %f %f %f\n", angles.x, angles.y, angles.z);
 		pev->angles = angles;
 		return true;
 	}

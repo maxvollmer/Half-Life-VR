@@ -27,6 +27,43 @@ constexpr const inline void ClampDeltaAngle(float& angle)
 	while (angle < -180.f) angle += 360.f;
 }
 
+constexpr const inline float MoveIntoRange(float angle, float angleStart)
+{
+	while (angle < angleStart)
+		angle += 360.f;
+	return angle;
+}
+
+const inline Vector MoveIntoRange(const Vector& angles, const Vector& angleStart)
+{
+	return Vector{
+		MoveIntoRange(angles.x, angleStart.x),
+		MoveIntoRange(angles.y, angleStart.y),
+		MoveIntoRange(angles.z, angleStart.z)
+	};
+}
+
+constexpr const inline float ForcePositiveAngles(float& angleStart, float& angleEnd)
+{
+	float delta = 0.f;
+	while (angleStart < 0.f || angleEnd < 0.f)
+	{
+		angleStart += 360.f;
+		angleEnd += 360.f;
+		delta += 360.f;
+	}
+	return delta;
+}
+
+const inline Vector ForcePositiveAngles(Vector& anglesStart, Vector& anglesEnd)
+{
+	return Vector{
+		ForcePositiveAngles(anglesStart.x, anglesEnd.x),
+		ForcePositiveAngles(anglesStart.y, anglesEnd.y),
+		ForcePositiveAngles(anglesStart.z, anglesEnd.z)
+	};
+}
+
 Vector VRRotatableEnt::GetWishAngles(float wishDeltaAngle)
 {
 	Vector wishAngles = m_vrRotateStartAngles;
@@ -42,7 +79,6 @@ Vector VRRotatableEnt::GetWishAngles(float wishDeltaAngle)
 	{
 		wishAngles.y += wishDeltaAngle;
 	}
-	//ALERT(at_console, "GetWishAngles: %f; m_vrRotateStartAngles: %f, %f, %f; wishAngles: %f, %f, %f\n", wishDeltaAngle, m_vrRotateStartAngles.x, m_vrRotateStartAngles.y, m_vrRotateStartAngles.z, wishAngles.x, wishAngles.y, wishAngles.z);
 	return wishAngles;
 }
 
@@ -68,18 +104,19 @@ float VRRotatableEnt::CalculateDeltaAngle(const Vector& currentRotatePos)
 	Vector2D currentPos2D = CalculateDeltaPos2D(currentRotatePos).Normalize();
 	float startAngle = atan2f(startPos2D.y, startPos2D.x) * 180.f / M_PI;
 	float currentAngle = atan2f(currentPos2D.y, currentPos2D.x) * 180.f / M_PI;
-	//ALERT(at_console, "CalculateDeltaAngle: startPos2D: %f, %f; currentPos2D: %f, %f; startAngle: %f; currentAngle: %f; deltaAngle: %f\n", startPos2D.x, startPos2D.y, currentPos2D.x, currentPos2D.y, startAngle, currentAngle, (currentAngle - startAngle));
 	return currentAngle - startAngle;
 }
 
-Vector VRRotatableEnt::CalculateAnglesFromWishAngles(const Vector& wishAngles, float maxRotSpeed)
+Vector VRRotatableEnt::CalculateAnglesFromWishAngles(const Vector& wishAngles, const Vector& angleStart, const Vector& angleEnd, float maxRotSpeed)
 {
+	Vector anglesInRange = MoveIntoRange(MyEntityPointer()->pev->angles, angleStart.Length() < angleEnd.Length() ? angleStart : angleEnd);
+
 	float timeSinceLasttime = gpGlobals->time - m_vrLastWishAngleTime;
 	m_vrLastWishAngleTime = gpGlobals->time;
 	if (timeSinceLasttime <= 0.f)
-		return MyEntityPointer()->pev->angles;
+		return anglesInRange;
 
-	Vector angleDiff = wishAngles - MyEntityPointer()->pev->angles;
+	Vector angleDiff = wishAngles - anglesInRange;
 	float angleDiffLength = angleDiff.Length();
 	if (angleDiffLength <= (timeSinceLasttime * maxRotSpeed))
 	{
@@ -87,7 +124,7 @@ Vector VRRotatableEnt::CalculateAnglesFromWishAngles(const Vector& wishAngles, f
 	}
 	else
 	{
-		return MyEntityPointer()->pev->angles + angleDiff.Normalize() * timeSinceLasttime * maxRotSpeed;
+		return anglesInRange + angleDiff.Normalize() * timeSinceLasttime * maxRotSpeed;
 	}
 }
 
@@ -115,11 +152,13 @@ void VRRotatableEnt::VRRotate(CBaseEntity* pPlayer, const Vector& pos, bool fSta
 	float maxRotSpeed = 0.f;
 	if (CanDoVRDragRotation(pPlayer, angleStart, angleEnd, maxRotSpeed))
 	{
+		Vector delta = ForcePositiveAngles(angleStart, angleEnd);
+
 		if (fStart)
 		{
 			NormalizeAngles(MyEntityPointer()->pev->angles);
 			m_vrRotateStartPos = pos - MyEntityPointer()->pev->origin;
-			m_vrRotateStartAngles = MyEntityPointer()->pev->angles;
+			m_vrRotateStartAngles = MyEntityPointer()->pev->angles + delta;
 			m_vrWishDeltaAngle = 0.f;
 			m_vrLastWishAngleTime = gpGlobals->time;
 			StartVRDragRotation();
@@ -128,10 +167,8 @@ void VRRotatableEnt::VRRotate(CBaseEntity* pPlayer, const Vector& pos, bool fSta
 		{
 			float wishDeltaAngle = CalculateDeltaAngle(pos - MyEntityPointer()->pev->origin);
 			ClampDeltaAngle(wishDeltaAngle);
-			ALERT(at_console, "wishDeltaAngle: %f\n", wishDeltaAngle);
 			if (fabs(wishDeltaAngle) > 45)
 			{
-				ALERT(at_console, "!!!!!! fabs(wishDeltaAngle) > 45 !!!!!!!!!!!\n");
 				m_vrRotateStartPos = pos - MyEntityPointer()->pev->origin;
 				m_vrWishDeltaAngle += wishDeltaAngle;
 				wishDeltaAngle = 0.f;
@@ -143,9 +180,8 @@ void VRRotatableEnt::VRRotate(CBaseEntity* pPlayer, const Vector& pos, bool fSta
 
 void VRRotatableEnt::FollowWishDeltaAngle(CBaseEntity* pPlayer, const Vector& wishAngles, const Vector& angleStart, const Vector& angleEnd, float maxRotSpeed)
 {
-	Vector actualAngles = CalculateAnglesFromWishAngles(wishAngles, maxRotSpeed);
+	Vector actualAngles = CalculateAnglesFromWishAngles(wishAngles, angleStart, angleEnd, maxRotSpeed);
 	float delta = CalculateAngleDelta(actualAngles, angleStart, angleEnd);
-	//ALERT(at_console, "CalculateAngleDelta: %f; actualAngles: %f, %f, %f; angleStart: %f, %f, %f; angleEnd: %f, %f, %f\n", delta, actualAngles.x, actualAngles.y, actualAngles.z, angleStart.x, angleStart.y, angleStart.z, angleEnd.x, angleEnd.y, angleEnd.z);
 	if (delta <= 0.f)
 	{
 		MyEntityPointer()->pev->angles = angleStart;

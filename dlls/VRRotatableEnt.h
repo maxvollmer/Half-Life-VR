@@ -21,7 +21,7 @@ private:
 	Vector2D CalculateDeltaPos2D(const Vector& pos);
 	float CalculateDeltaAngle(const Vector& currentRotatePos);
 	Vector GetWishAngles(float wishDeltaAngle);
-	Vector CalculateAnglesFromWishAngles(const Vector& wishAngles, float maxRotSpeed);
+	Vector CalculateAnglesFromWishAngles(const Vector& wishAngles, const Vector& angleStart, const Vector& angleEnd, float maxRotSpeed);
 	float CalculateAngleDelta(const Vector& angles, const Vector& angleStart, const Vector& angleEnd);
 	void FollowWishDeltaAngle(CBaseEntity* pPlayer, const Vector& wishAngles, const Vector& angleStart, const Vector& angleEnd, float maxRotSpeed);
 
