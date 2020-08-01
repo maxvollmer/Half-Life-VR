@@ -87,16 +87,6 @@ const char* GetAnimatedWeaponModelName(const char* modelName)
 }
 
 
-VRController::~VRController()
-{
-	if (m_hLaserSpot)
-	{
-		UTIL_Remove(m_hLaserSpot);
-		m_hLaserSpot = nullptr;
-	}
-}
-
-
 void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, VRControllerID id, int weaponId)
 {
 	m_hPlayer = pPlayer;
@@ -143,8 +133,6 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 	m_isBlocked = !UTIL_CheckClearSight(pPlayer->EyePosition(), m_position, ignore_monsters, dont_ignore_glass, pPlayer->edict()) || VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->EyePosition(), m_position);
 
 	UpdateModel(pPlayer);
-
-	UpdateLaserSpot();
 
 	ClearOutDeadEntities();
 
@@ -228,32 +216,6 @@ void VRController::ClearOutDeadEntities()
 	{
 		m_draggedEntity = nullptr;
 		m_draggedEntityPositions.reset();
-	}
-}
-
-void VRController::UpdateLaserSpot()
-{
-	if (IsWeaponWithVRLaserSpot(m_weaponId) && CVAR_GET_FLOAT("vr_enable_aim_laser") != 0.f)
-	{
-		if (!m_hLaserSpot)
-		{
-			CLaserSpot* pLaserSpot = CLaserSpot::CreateSpot();
-			pLaserSpot->Revive();
-			pLaserSpot->pev->scale = 0.1f;
-			m_hLaserSpot = pLaserSpot;
-		}
-
-		TraceResult tr;
-		UTIL_TraceLine(GetPosition(), GetPosition() + (GetAim() * 8192.f), dont_ignore_monsters, GetModel()->edict(), &tr);
-		UTIL_SetOrigin(m_hLaserSpot->pev, tr.vecEndPos);
-	}
-	else
-	{
-		if (m_hLaserSpot)
-		{
-			UTIL_Remove(m_hLaserSpot);
-			m_hLaserSpot = nullptr;
-		}
 	}
 }
 
@@ -650,7 +612,7 @@ const Vector VRController::GetAim() const
 
 bool VRController::GetAttachment(size_t index, Vector& attachment) const
 {
-	if (index >= 0 && index <= m_attachments.size())
+	if (index >= 0 && index < m_attachments.size())
 	{
 		attachment = m_attachments[index];
 		return true;

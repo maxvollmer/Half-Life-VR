@@ -2720,6 +2720,7 @@ void CBasePlayer::PostThink()
 
 	UpdateFlashlight();
 	UpdateVRTele();
+	UpdateVRLaserSpot();
 
 	VRUseOrUnuseTank();
 
@@ -6235,6 +6236,39 @@ void CBasePlayer::VRHandleRetinaScanners()
 				m_vrRetinaScannerLookTime = 0.f;
 				m_vrRetinaScannerUsed = false;
 			}
+		}
+	}
+}
+
+void CBasePlayer::UpdateVRLaserSpot()
+{
+	int weaponId = WEAPON_BAREHAND;
+	ItemInfo itemInfo = {};
+	if (m_pActiveItem != nullptr && m_pActiveItem->GetItemInfo(&itemInfo))
+	{
+		weaponId = itemInfo.iId;
+	}
+
+	if (IsAlive() && IsWeaponWithVRLaserSpot(weaponId) && CVAR_GET_FLOAT("vr_enable_aim_laser") != 0.f)
+	{
+		if (!m_hLaserSpot)
+		{
+			CLaserSpot* pLaserSpot = CLaserSpot::CreateSpot();
+			pLaserSpot->Revive();
+			pLaserSpot->pev->scale = 0.1f;
+			m_hLaserSpot = pLaserSpot;
+		}
+
+		TraceResult tr;
+		UTIL_TraceLine(GetWeaponPosition(), GetWeaponPosition() + (GetAutoaimVector() * 8192.f), dont_ignore_monsters, edict(), &tr);
+		UTIL_SetOrigin(m_hLaserSpot->pev, tr.vecEndPos);
+	}
+	else
+	{
+		if (m_hLaserSpot)
+		{
+			UTIL_Remove(m_hLaserSpot);
+			m_hLaserSpot = nullptr;
 		}
 	}
 }

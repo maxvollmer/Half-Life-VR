@@ -15,10 +15,6 @@ typedef int string_t;
 class VRController
 {
 public:
-#ifndef CLIENT_DLL
-	~VRController();
-#endif
-
 	enum class TouchType
 	{
 		LIGHT_TOUCH,
@@ -96,7 +92,6 @@ public:
 
 private:
 	void UpdateModel(CBasePlayer* pPlayer);
-	void UpdateLaserSpot();
 	void UpdateHitBoxes();
 	void ClearOutDeadEntities();
 	void SendEntityDataToClient(CBasePlayer* pPlayer, VRControllerID id);
@@ -124,7 +119,6 @@ private:
 	float m_radius{ 0.f };
 
 	mutable EHANDLE<CVRControllerModel> m_hModel;
-	mutable EHANDLE<CLaserSpot> m_hLaserSpot;
 
 	mutable std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_touchedEntities;
 	mutable std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_hitEntities;

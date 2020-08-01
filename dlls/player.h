@@ -403,6 +403,8 @@ private:
 	// set to true when player grabs backpack area
 	bool m_vrHasGrabbedBackPack = false;
 
+	mutable EHANDLE<CLaserSpot> m_hLaserSpot;
+
 // public VR members:
 public:
 	float vr_spawnYaw{ 0.f };
@@ -429,6 +431,7 @@ private:
 
 	void UpdateFlashlight();
 	void UpdateVRTele();
+	void UpdateVRLaserSpot();
 
 	void ClearLadderGrabbingControllers();
 
