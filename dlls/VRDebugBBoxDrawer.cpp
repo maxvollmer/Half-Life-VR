@@ -103,16 +103,19 @@ void VRDebugBBoxDrawer::DrawBBoxes(EHANDLE<CBaseEntity> hEntity, bool mirrored)
 
 	std::vector<StudioHitBox> studiohitboxes;
 
-	void* pmodel = GET_MODEL_PTR(hEntity->edict());
-	if (pmodel)
+	if (std::string(STRING(hEntity->pev->model)).find(".mdl") != std::string::npos)
 	{
-		int numhitboxes = GetNumHitboxes(pmodel);
-		if (numhitboxes > 0)
+		void* pmodel = GET_MODEL_PTR(hEntity->edict());
+		if (pmodel)
 		{
-			studiohitboxes.resize(numhitboxes);
-			if (!GetHitboxesAndAttachments(hEntity->pev, pmodel, hEntity->pev->sequence, hEntity->pev->frame, studiohitboxes.data(), nullptr, mirrored))
+			int numhitboxes = GetNumHitboxes(pmodel);
+			if (numhitboxes > 0)
 			{
-				studiohitboxes.clear();
+				studiohitboxes.resize(numhitboxes);
+				if (!GetHitboxesAndAttachments(hEntity->pev, pmodel, hEntity->pev->sequence, hEntity->pev->frame, studiohitboxes.data(), nullptr, mirrored))
+				{
+					studiohitboxes.clear();
+				}
 			}
 		}
 	}
