@@ -1325,8 +1325,11 @@ Vector VRHelper::GetWeaponAngles()
 	}
 	else
 	{
-		Vector angles = GetLocalPlayerAngles();
-		angles.x = -angles.x;
+		Vector hmdForward;
+		Vector dummy;
+		GetViewVectors(hmdForward, dummy, dummy);
+		Vector angles;
+		VectorAngles(hmdForward, angles);
 		return angles;
 	}
 }

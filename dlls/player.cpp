@@ -5173,7 +5173,7 @@ const Vector CBasePlayer::GetWeaponPosition()
 	}
 	else
 	{
-		return EyePosition();  // +(GetAutoaimVector() * 32.f);
+		return EyePosition();
 	}
 }
 const Vector CBasePlayer::GetWeaponAngles()
@@ -5184,9 +5184,7 @@ const Vector CBasePlayer::GetWeaponAngles()
 	}
 	else
 	{
-		Vector angles = pev->v_angle + pev->punchangle;
-		angles.x = -angles.x;
-		return angles;
+		return UTIL_VecToAngles(vr_hmdForward);
 	}
 }
 const Vector CBasePlayer::GetWeaponViewAngles()
