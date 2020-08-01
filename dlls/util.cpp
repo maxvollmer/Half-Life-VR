@@ -78,26 +78,17 @@ UTIL_SharedRandomLong
 */
 int UTIL_SharedRandomLong(unsigned int seed, int low, int high)
 {
-	unsigned int range = 0;
-
-	U_Srand((int)seed + low + high);
-
-	range = high - low + 1;
-	if (!(range - 1))
-	{
+	if (low == high)
 		return low;
-	}
-	else
-	{
-		int offset = 0;
-		int rnum = 0;
 
-		rnum = U_Random();
+	U_Srand(seed + static_cast<unsigned int>(low) + static_cast<unsigned int>(high));
 
-		offset = rnum % range;
+	unsigned int range = static_cast<unsigned int>(high - low + 1);
+	unsigned int rnum = U_Random();
 
-		return (low + offset);
-	}
+	unsigned int offset = rnum % range;
+
+	return (low + static_cast<int>(offset));
 }
 
 /*
