@@ -1,12 +1,16 @@
 0.6.27-beta
  Mod:
   * Fixed headset aim when playing with keyboard and without controllers
-  * Fixed shotgun shots disappearing
+  * Fixed crash when enabling aim laser while playing with keyboard and without controllers
+  * Fixed shotgun shots not hitting monsters
   * Fixed gravity being applied twice each frame
+  * Fixed some weapons shooting slightly to the lower left of where you actually aim
+  * Re-enabled VR view in game window and added setting to turn it on or off
 
  HLVRConfig:
   * Fixed issues caused by using system language settings for number conversion
-  * Added left hand mode
+  * Added option to enable left hand mode
+  * Added option to enable VR view in game window
 
 0.6.26-beta - 2020-03-21
  Mod:
