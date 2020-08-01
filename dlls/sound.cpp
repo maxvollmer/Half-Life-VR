@@ -1428,6 +1428,26 @@ int SENTENCEG_Lookup(const char* sample, char* sentencenum, int sentencenumsize)
 #include <string>
 #include <regex>
 #include <memory>
+#include <filesystem>
+
+
+bool IsFemaleScientistAudioAvailable(const std::string& soundfile)
+{
+	if (soundfile.length() == 0)
+		return false;
+
+	if (soundfile[0] == '*')
+		return IsFemaleScientistAudioAvailable(soundfile.substr(1));
+
+	if (soundfile.find("scientist/") != 0)
+		return false;
+
+	auto femalesoundfile = UTIL_GetGameDir() + "/sound/fsci/" + soundfile.substr(10);
+
+	auto absfemalesoundfile = std::filesystem::absolute(femalesoundfile);
+
+	return std::filesystem::exists(absfemalesoundfile);
+}
 
 
 // Intercept PRECACHE_SOUND to precache female NPC sounds when precaching NPC sounds - Max Vollmer, 2018-11-23
@@ -1486,10 +1506,9 @@ SoundFilePathHolder soundFilePathHolder;
 int PRECACHE_SOUND(const char* s)
 {
 	std::string ssoundFilePath{ s };
-	if (ssoundFilePath.find("scientist/") == 0)
+	if (IsFemaleScientistAudioAvailable(ssoundFilePath))
 	{
 		ssoundFilePath = "fsci/" + ssoundFilePath.substr(10);
-		ALERT(at_console, "Precaching sound %s\n", ssoundFilePath.data());
 		PRECACHE_SOUND2(soundFilePathHolder.GetSoundFilePathPointer(ssoundFilePath));
 	}
 	return PRECACHE_SOUND2(s);
@@ -1526,15 +1545,17 @@ void EMIT_AMBIENT_SOUND(edict_t* entity, float* pos, const char* sample, float v
 	else
 	{
 		std::string ssample{ sample };
-		if (CVAR_GET_FLOAT("vr_classic_mode") == 0.f && rand() % 2 == 1)
+		if (CVAR_GET_FLOAT("vr_classic_mode") == 0.f
+			&& rand() % 2 == 1
+			&& IsFemaleScientistAudioAvailable(ssample))
 		{
-			if (ssample.find("scientist/") == 0)
+			if (ssample.find("*") == 0)
+			{
+				ssample = "*fsci/" + ssample.substr(11);
+			}
+			else
 			{
 				ssample = "fsci/" + ssample.substr(10);
-			}
-			else if (ssample.find("*scientist/") == 0)
-			{
-				ssample = "*fsci/" + ssample.substr(10);
 			}
 		}
 
@@ -1572,15 +1593,15 @@ void EMIT_SOUND_DYN(edict_t* entity, int channel, const char* sample, float volu
 	else
 	{
 		std::string ssample{ sample };
-		if (CBaseEntity::InstanceOrWorld(entity)->IsFemaleNPC())
+		if (CBaseEntity::InstanceOrWorld(entity)->IsFemaleNPC() && IsFemaleScientistAudioAvailable(ssample))
 		{
-			if (ssample.find("scientist/") == 0)
+			if (ssample.find("*") == 0)
+			{
+				ssample = "*fsci/" + ssample.substr(11);
+			}
+			else
 			{
 				ssample = "fsci/" + ssample.substr(10);
-			}
-			else if (ssample.find("*scientist/") == 0)
-			{
-				ssample = "*fsci/" + ssample.substr(10);
 			}
 		}
 
