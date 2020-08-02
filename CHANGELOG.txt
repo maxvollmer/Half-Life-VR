@@ -6,6 +6,7 @@
   * Fixed gravity being applied twice each frame
   * Fixed some weapons shooting slightly to the lower left of where you actually aim
   * Fixed some levers not reacting to controller grab
+  * Fixed game freezing on rare occasion when the player gets gibbed
   * Re-enabled VR view in game window and added setting to turn it on or off
   * Added female scientist voice files recorded by Katie Otten
 
