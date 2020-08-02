@@ -46,6 +46,7 @@
 #include "explode.h"
 #include "talkmonster.h"
 #include "trains.h"
+#include "com_model.h"
 
 #include "VRPhysicsHelper.h"
 #include "VRGroundEntityHandler.h"
@@ -1541,7 +1542,7 @@ void CBasePlayer::PlayerUse(void)
 				{
 					// Check if we are on a train
 					CBaseEntity* pMaybeTrain = CBaseEntity::InstanceOrWorld(pev->groundentity);
-					if (pMaybeTrain && !FBitSet(pMaybeTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) && FBitSet(pMaybeTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) && pMaybeTrain->OnControls(pev))
+					if (IsUsableTrackTrain(pMaybeTrain))
 					{
 						// Start controlling the train!
 						m_afPhysicsFlags |= PFLAG_ONTRAIN;
@@ -1855,6 +1856,34 @@ float GetTrainSpeed(const char* cvarname)
 	return speed;
 }
 
+bool IsTrashCompactor(CBaseEntity* pEntity)
+{
+	std::string modelname = STRING(pEntity->pev->model);
+
+	if (modelname.empty() || modelname[0] != '*')
+		return false;
+
+	extern const model_t* VRGetBSPModel(CBaseEntity* pEntity);
+	const model_t* mapmodel = VRGetBSPModel(CWorld::InstanceOrWorld(ENT(0)));
+
+	if (mapmodel == nullptr || mapmodel->needload)
+		return false;
+
+	if (mapmodel->name != std::string{ "maps/c2a3e.bsp" })
+		return false;
+
+	return modelname == "*6" || modelname == "*13";
+}
+
+bool CBasePlayer::IsUsableTrackTrain(CBaseEntity* pTrain)
+{
+	return pTrain
+		&& !FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL)
+		&& FBitSet(pTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE)
+		&& pTrain->OnControls(pev)
+		&& !IsTrashCompactor(pTrain);
+}
+
 void CBasePlayer::PreThink(void)
 {
 	// gets reset by ClientPrecache everytime new map is loaded (new game, changelevel, load save)
@@ -1955,7 +1984,7 @@ void CBasePlayer::PreThink(void)
 		if (pev->groundentity && !FBitSet(m_afPhysicsFlags, PFLAG_ONTRAIN))
 		{
 			CBaseEntity* pMaybeTrain = CBaseEntity::InstanceOrWorld(pev->groundentity);
-			if (pMaybeTrain && !FBitSet(pMaybeTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) && FBitSet(pMaybeTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) && pMaybeTrain->OnControls(pev))
+			if (IsUsableTrackTrain(pMaybeTrain))
 			{
 				// Start controlling the train!
 				m_afPhysicsFlags |= PFLAG_ONTRAIN;
@@ -1990,7 +2019,7 @@ void CBasePlayer::PreThink(void)
 			}
 		}
 
-		if (!pTrain || FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL) || !FBitSet(pTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE) || !pTrain->OnControls(pev))
+		if (!IsUsableTrackTrain(pTrain))
 		{
 			// Turn off the train if the train controls go dead or you leave the control area
 			m_afPhysicsFlags &= ~PFLAG_ONTRAIN;

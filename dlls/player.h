@@ -311,6 +311,8 @@ public:
 
 	void CBasePlayer::TabulateAmmo(void);
 
+	bool IsUsableTrackTrain(CBaseEntity* pTrain);
+
 	float m_flStartCharge = 0.f;
 	float m_flAmmoStartCharge = 0.f;
 	float m_flPlayAftershock = 0.f;
