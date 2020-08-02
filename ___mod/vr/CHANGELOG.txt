@@ -7,6 +7,9 @@
   * Fixed some weapons shooting slightly to the lower left of where you actually aim
   * Fixed some levers not reacting to controller grab
   * Fixed game freezing on rare occasion when the player gets gibbed
+  * Fixed trash compactor walls having VR train controls
+  * Fixed crush traps not killing the player
+  * Fixed issues with the corridor cut scene after Gordon gets apprehended
   * Re-enabled VR view in game window and added setting to turn it on or off
   * Added female scientist voice files recorded by Katie Otten
 
