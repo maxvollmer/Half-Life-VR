@@ -26,46 +26,46 @@ private:
 
 	const std::unordered_map<std::string, std::unordered_map<std::string, CrushMode>> m_entityCrushModes{
 		{
-			{"c1a0c",
+			{"maps/c1a0c.bsp",
 			 {{
 				 {"*63", CrushMode::WHEN_MOVING}  // toppling over server rack
 			 }}},
-			{"c1a1c",
+			{"maps/c1a1c.bsp",
 			 {{
 				 {"*147", CrushMode::WHEN_MOVING},  // under water grinder thingies
 				 {"*148", CrushMode::WHEN_MOVING},
 				 {"*31", CrushMode::WHEN_MOVING},
 				 {"*32", CrushMode::WHEN_MOVING},
 			 }}},
-			{"c1a1f",
+			{"maps/c1a1f.bsp",
 			 {{
 				 {"*47", CrushMode::WHEN_MOVING}  // toppling over server rack
 			 }}},
-			{"c1a2",
+			{"maps/c1a2.bsp",
 			 {{
 				 {"*76", CrushMode::WHEN_MOVING}  // that one evil ventilator
 			 }}},
-			{"c1a3",
+			{"maps/c1a3.bsp",
 			 {{
 				 {"*18", CrushMode::NEVER}  // ventilator in we got hostiles
 			 }}},
-			{"c1a3c",
+			{"maps/c1a3c.bsp",
 			 {{
 				 {"*1", CrushMode::NEVER}  // ventilator in we got hostiles
 			 }}},
-			{"c1a4e",
+			{"maps/c1a4e.bsp",
 			 {{
 				 {"*1", CrushMode::WHEN_MOVING}  // that huge ventilator near the tentacles
 			 }}},
-			{"c2a1",
+			{"maps/c2a1.bsp",
 			 {{
 				 {"*97", CrushMode::WHEN_MOVING}  // cave-in near gargantua before on a rail
 			 }}},
-			{"c2a3",
+			{"maps/c2a3.bsp",
 			 {{
 				 {"*89", CrushMode::WHEN_MOVING}  // cave-in under water after on a rail
 			 }}},
-			{"c2a3b",
+			{"maps/c2a3b.bsp",
 			 {{
 				 {"*4", CrushMode::NEVER},  // stompy thingies where that spit monster is
 				 {"*8", CrushMode::NEVER},  // these are the bottom ones and should not kill
@@ -74,10 +74,10 @@ private:
 				 {"*11", CrushMode::WHEN_MOVING_DOWN},
 				 {"*12", CrushMode::WHEN_MOVING_DOWN},
 			 }}},
-			{"c2a3e",
+			{"maps/c2a3e.bsp",
 			 {{{"*6", CrushMode::WHEN_MOVING},  // the trash compactor walls
 			   {"*13", CrushMode::WHEN_MOVING}}}},
-			{"c2a4b",
+			{"maps/c2a4b.bsp",
 			 {{
 				 {"*3", CrushMode::NEVER},        // underwater ventilator players need to swim through
 				 {"*6", CrushMode::WHEN_MOVING},  // underwater grinder thingy players must avoid
@@ -91,7 +91,7 @@ private:
 				 {"*23", CrushMode::WHEN_MOVING_DOWN},
 				 {"*24", CrushMode::WHEN_MOVING_DOWN},
 			 }}},
-			{"c2a4c",
+			{"maps/c2a4c.bsp",
 			 {{
 				 {"*4", CrushMode::WHEN_MOVING},  // the sideways murder thingies in residue processing
 				 {"*5", CrushMode::WHEN_MOVING},
@@ -108,20 +108,20 @@ private:
 				 {"*38", CrushMode::WHEN_MOVING},  // the crushy-bity murder thingies at the end of residue processing
 				 {"*39", CrushMode::WHEN_MOVING},
 			 }}},
-			{"c2a4e",
+			{"maps/c2a4e.bsp",
 			 {{{"*54", CrushMode::WHEN_MOVING},  // that super weird automated murder equipment in questionable ethics
 			   {"*56", CrushMode::WHEN_MOVING}}}},
-			{"c2a5",
+			{"maps/c2a5.bsp",
 			 {{{"*133", CrushMode::WHEN_MOVING},  // underwater ventilators in the canyon dam (need to be shut off from control tower)
 			   {"*134", CrushMode::WHEN_MOVING}}}},
-			{"c2a5f",
+			{"maps/c2a5f.bsp",
 			 {{{"*139", CrushMode::HEALING_EXPLOIT},  // the healing exploit doors
 			   {"*144", CrushMode::HEALING_EXPLOIT}}}},
-			{"c2a5g",
+			{"maps/c2a5g.bsp",
 			 {{{"*95", CrushMode::WHEN_MOVING},  // the cars being kicked by gargantua in that underground parking lot
 			   {"*93", CrushMode::WHEN_MOVING},
 			   {"*96", CrushMode::WHEN_MOVING}}}},
-			{"c3a1",
+			{"maps/c3a1.bsp",
 			 {{
 				 {"*8", CrushMode::WHEN_MOVING},  // cave-in ceiling pieces
 				 {"*9", CrushMode::WHEN_MOVING},
@@ -132,7 +132,7 @@ private:
 				 {"*14", CrushMode::WHEN_MOVING},
 				 {"*27", CrushMode::WHEN_MOVING},
 			 }}},
-			{"c3a1b",
+			{"maps/c3a1b.bsp",
 			 {{
 				 {"*47", CrushMode::WHEN_MOVING},  // collapsing walls in that alien vs military warzone
 				 {"*48", CrushMode::WHEN_MOVING},
@@ -154,7 +154,7 @@ bool VRNotifyStuckEnt(int player, int ent)
 	if (ent <= 0)
 		return false;
 
-	CBaseEntity* pPlayer = UTIL_PlayerByIndex(player);
+	CBaseEntity* pPlayer = UTIL_PlayerByIndex(player + 1);
 	if (pPlayer == nullptr)
 		return false;
 
