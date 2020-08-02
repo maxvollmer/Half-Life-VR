@@ -184,7 +184,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 	{
 		vrHelper->PollEvents(true, m_isInMenu); // 200~300탎
 
-		if (!vrHelper->UpdatePositions()) // 100~200탎, sometimes spikes to 3000+탎(!)
+		if (!vrHelper->UpdatePositions(pparams->viewentity > pparams->maxclients ? pparams->viewentity : -1)) // 100~200탎, sometimes spikes to 3000+탎(!)
 		{
 			// No valid HMD input, render default (2D pancake mode)
 			return;

@@ -38,7 +38,7 @@ public:
 	};
 
 	void PollEvents(bool isInGame, bool isInMenu);
-	bool UpdatePositions();
+	bool UpdatePositions(int viewent);
 	void SubmitImages();
 	void PrepareVRScene(VRSceneMode sceneMode);
 	void FinishVRScene(float width, float height);
@@ -69,7 +69,7 @@ public:
 private:
 	void Exit(const char* lpErrorMessage = nullptr);
 
-	void UpdateHMD();
+	void UpdateHMD(int viewent);
 	void UpdateControllers();
 	bool UpdateController(
 		vr::TrackedDeviceIndex_t controllerIndex,

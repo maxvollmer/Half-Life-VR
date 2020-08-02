@@ -519,7 +519,7 @@ void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 	g_vrInput.HandleInput(isInGame);
 }
 
-bool VRHelper::UpdatePositions()
+bool VRHelper::UpdatePositions(int viewent)
 {
 	UpdateVRHLConversionVectors();
 	UpdateWorldRotation();
@@ -532,7 +532,7 @@ bool VRHelper::UpdatePositions()
 
 		if (positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bDeviceIsConnected && positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid && positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].eTrackingResult == vr::TrackingResult_Running_OK)
 		{
-			UpdateHMD();
+			UpdateHMD(viewent);
 			UpdateControllers();
 			SendPositionUpdateToServer();
 			return true;
@@ -951,7 +951,7 @@ bool VRHelper::UpdateController(
 	return false;
 }
 
-void VRHelper::UpdateHMD()
+void VRHelper::UpdateHMD(int viewent)
 {
 	Matrix4 m_mat4HMDPose = GetAbsoluteHMDTransform().invert();
 
@@ -965,6 +965,20 @@ void VRHelper::UpdateHMD()
 		clientGroundPosition = localPlayer->curstate.origin;
 		clientGroundPosition.z += localPlayer->curstate.mins.z;
 	}
+
+	// override positions if the viewent isn't the client
+	if (viewent > -1)
+	{
+		cl_entity_t* viewentity = gEngfuncs.GetEntityByIndex(viewent);
+		if (viewentity)
+		{
+			m_mat4HMDPose[12] = 0.f;
+			m_mat4HMDPose[13] = 0.f;
+			m_mat4HMDPose[14] = 0.f;
+			clientGroundPosition = viewentity->origin;
+		}
+	}
+
 	positions.m_mat4LeftModelView = GetHMDMatrixPoseEye(vr::Eye_Left) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, -clientGroundPosition);
 	positions.m_mat4RightModelView = GetHMDMatrixPoseEye(vr::Eye_Right) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, -clientGroundPosition);
 }
