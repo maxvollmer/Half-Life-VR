@@ -280,48 +280,47 @@ void CGib::LimitNumberOfGibs()
 	if (m_numGibs >= maxGibs)
 	{
 		// Delete all gibs not in PVS
-		int numgibsremoved = 0;
+		int numGibs = m_numGibs;
 		CBaseEntity* pGib = nullptr;
-		while (pGib = UTIL_FindEntityByClassname(pGib, "gib"))
+		int counter = 0;
+		while (counter < m_numGibs && (pGib = UTIL_FindEntityByClassname(pGib, "gib")))
 		{
 			if (!pGib->m_isInPVS)
 			{
 				UTIL_Remove(pGib);
-				numgibsremoved++;
+				numGibs--;
 			}
+			counter++;
 		}
 
 		// too many gibs are in PVS! remove 1/4 of all gibs immediately
 		// (this automagically deletes gibs by age, as older gibs are "earlier" in the engine's edict array)
-		while (m_numGibs >= (maxGibs * 3 / 4))
+		counter = 0;
+		while (counter < m_numGibs && numGibs >= (maxGibs * 3 / 4) && (pGib = UTIL_FindEntityByClassname(pGib, "gib")))
 		{
-			pGib = nullptr;
-			while (pGib = UTIL_FindEntityByClassname(pGib, "gib"))
+			// Don't remove gibs currently being dragged
+			if (!pGib->m_vrDragger)
 			{
-				// Don't remove gibs currently being dragged
-				if (!pGib->m_vrDragger)
-				{
-					UTIL_Remove(pGib);
-				}
+				UTIL_Remove(pGib);
+				numGibs--;
 			}
+			counter++;
 		}
+		m_numGibs = numGibs;
 
 		// Fade out enough gibs to reduce to half of max gibs
 		// (this automagically fades out gibs by age, as older gibs are "earlier" in the engine's edict array)
 		int fadeoutgibs = m_numGibs - maxGibs / 2;
-		while (fadeoutgibs > 0)
+		pGib = nullptr;
+		while (fadeoutgibs > 0 && (pGib = UTIL_FindEntityByClassname(pGib, "gib")))
 		{
-			pGib = nullptr;
-			while (pGib = UTIL_FindEntityByClassname(pGib, "gib"))
+			// Don't fade out gibs currently being dragged
+			if (!pGib->m_vrDragger)
 			{
-				// Don't fade out gibs currently being dragged
-				if (!pGib->m_vrDragger)
-				{
-					pGib->SetThink(&CGib::SUB_StartFadeOut);
-					pGib->pev->nextthink = gpGlobals->time;
-				}
-				fadeoutgibs--;
+				pGib->SetThink(&CGib::SUB_StartFadeOut);
+				pGib->pev->nextthink = gpGlobals->time;
 			}
+			fadeoutgibs--;
 		}
 	}
 }
