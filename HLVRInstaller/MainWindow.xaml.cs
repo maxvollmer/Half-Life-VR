@@ -150,7 +150,7 @@ namespace HLVRInstaller
                             UseShellExecute = false
                         });
                     }
-                    Application.Current.Shutdown();
+                    Application.Current?.Shutdown();
                 }
                 else
                 {
@@ -182,7 +182,7 @@ namespace HLVRInstaller
 
         private void Invoke(Action action)
         {
-            Application.Current.Dispatcher.BeginInvoke(action);
+            Application.Current?.Dispatcher?.BeginInvoke(action);
         }
 
         private void ExtractToDirectory(ZipArchive archive, string halflifeDirectory)
