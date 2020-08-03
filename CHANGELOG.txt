@@ -1,4 +1,4 @@
-0.6.27-beta
+0.6.27-beta - 2020-08-03
  Mod:
   * Fixed headset aim when playing with keyboard and without controllers
   * Fixed crash when enabling aim laser while playing with keyboard and without controllers
@@ -15,8 +15,11 @@
 
  HLVRConfig:
   * Fixed issues caused by using system language settings for number conversion
+  * Fixed a rare occuring crash when closing HLVRConfig shortly after changing a setting
+  * Fixed launcher settings not correctly getting stored in the settings file
   * Added option to enable left hand mode
   * Added option to enable VR view in game window
+  * Added option to create minidumps of Half-Life's current state, no matter what state it is in (useful for creating dumps when the game is frozen)
 
 0.6.26-beta - 2020-03-21
  Mod:
