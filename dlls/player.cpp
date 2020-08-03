@@ -46,7 +46,6 @@
 #include "explode.h"
 #include "talkmonster.h"
 #include "trains.h"
-#include "com_model.h"
 
 #include "VRPhysicsHelper.h"
 #include "VRGroundEntityHandler.h"
@@ -1863,13 +1862,9 @@ bool IsTrashCompactor(CBaseEntity* pEntity)
 	if (modelname.empty() || modelname[0] != '*')
 		return false;
 
-	extern const model_t* VRGetBSPModel(CBaseEntity* pEntity);
-	const model_t* mapmodel = VRGetBSPModel(CWorld::InstanceOrWorld(ENT(0)));
+	std::string mapname = STRING(INDEXENT(0)->v.model);
 
-	if (mapmodel == nullptr || mapmodel->needload)
-		return false;
-
-	if (mapmodel->name != std::string{ "maps/c2a3e.bsp" })
+	if (mapname != std::string{ "maps/c2a3e.bsp" })
 		return false;
 
 	return modelname == "*6" || modelname == "*13";
