@@ -13,14 +13,9 @@ namespace HLVRConfig.Utilities.Process
 {
     public class MiniDumpCreator
     {
-        private static readonly uint GENERIC_READ = 0x80000000;
         private static readonly uint GENERIC_WRITE = 0x40000000;
 
-        private static readonly uint CREATE_NEW = 1;
         private static readonly uint CREATE_ALWAYS = 2;
-        private static readonly uint OPEN_EXISTING = 3;
-        private static readonly uint OPEN_ALWAYS = 4;
-        private static readonly uint TRUNCATE_EXISTING = 5;
 
         private static readonly uint FILE_ATTRIBUTE_NORMAL = 0x80;
 
@@ -28,28 +23,9 @@ namespace HLVRConfig.Utilities.Process
         private static readonly uint MiniDumpWithDataSegs = 0x00000001;
         private static readonly uint MiniDumpWithFullMemory = 0x00000002;
         private static readonly uint MiniDumpWithHandleData = 0x00000004;
-        private static readonly uint MiniDumpFilterMemory = 0x00000008;
         private static readonly uint MiniDumpScanMemory = 0x00000010;
-        private static readonly uint MiniDumpWithUnloadedModules = 0x00000020;
         private static readonly uint MiniDumpWithIndirectlyReferencedMemory = 0x00000040;
-        private static readonly uint MiniDumpFilterModulePaths = 0x00000080;
-        private static readonly uint MiniDumpWithProcessThreadData = 0x00000100;
-        private static readonly uint MiniDumpWithPrivateReadWriteMemory = 0x00000200;
-        private static readonly uint MiniDumpWithoutOptionalData = 0x00000400;
-        private static readonly uint MiniDumpWithFullMemoryInfo = 0x00000800;
-        private static readonly uint MiniDumpWithThreadInfo = 0x00001000;
-        private static readonly uint MiniDumpWithCodeSegs = 0x00002000;
-        private static readonly uint MiniDumpWithoutAuxiliaryState = 0x00004000;
-        private static readonly uint MiniDumpWithFullAuxiliaryState = 0x00008000;
-        private static readonly uint MiniDumpWithPrivateWriteCopyMemory = 0x00010000;
         private static readonly uint MiniDumpIgnoreInaccessibleMemory = 0x00020000;
-        private static readonly uint MiniDumpWithTokenInformation = 0x00040000;
-        private static readonly uint MiniDumpWithModuleHeaders = 0x00080000;
-        private static readonly uint MiniDumpFilterTriage = 0x00100000;
-        private static readonly uint MiniDumpWithAvxXStateContext = 0x00200000;
-        private static readonly uint MiniDumpWithIptTrace = 0x00400000;
-        private static readonly uint MiniDumpScanInaccessiblePartialPages = 0x00800000;
-        private static readonly uint MiniDumpValidTypeFlags = 0x00ffffff;
 
         [DllImport("dbghelp.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         public static extern bool MiniDumpWriteDump(
