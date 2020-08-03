@@ -57,7 +57,7 @@ namespace HLVRConfig
             }
             catch (CancelAndTerminateAppException)
             {
-                System.Windows.Application.Current.Shutdown();
+                Application.Current?.Shutdown();
             }
         }
 
@@ -149,12 +149,17 @@ namespace HLVRConfig
                 ModNotFoundPanel.Visibility = Visibility.Visible;
                 NotRunningGamePanel.Visibility = Visibility.Collapsed;
                 RunningGamePannel.Visibility = Visibility.Collapsed;
+                CreateMiniDumpButton.Visibility = Visibility.Collapsed;
             }
             else
             {
                 ModNotFoundPanel.Visibility = Visibility.Collapsed;
                 NotRunningGamePanel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Collapsed : Visibility.Visible;
                 RunningGamePannel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Visible : Visibility.Collapsed;
+                CreateMiniDumpButton.Visibility = 
+                    (HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryDebug][LauncherSettings.EnableMiniDumpButton].IsTrue()
+                    && hlvrModLauncher.IsGameRunning()
+                    ) ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -175,7 +180,7 @@ namespace HLVRConfig
 
         private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.OnWindowStateChanged()));
+            Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (Application.Current?.MainWindow as MainWindow)?.OnWindowStateChanged()));
             return IntPtr.Zero;
         }
 
@@ -203,6 +208,11 @@ namespace HLVRConfig
         private void ClearConsole_Click(object sender, RoutedEventArgs e)
         {
             ConsoleOutput.Inlines.Clear();
+        }
+
+        private void CreateMiniDump_Click(object sender, RoutedEventArgs e)
+        {
+            MiniDumpCreator.CreateMiniDump(hlvrModLauncher);
         }
 
         public void RefreshConfigTabs(bool mod = true, bool launcher = true)

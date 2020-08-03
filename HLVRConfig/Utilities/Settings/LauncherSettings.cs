@@ -42,6 +42,7 @@ namespace HLVRConfig.Utilities.Settings
         public static readonly SettingCategory CategoryLanguage = new SettingCategory(new I18N.I18NString("LauncherSettings.Language", "Language"));
         public static readonly SettingCategory CategoryLauncher = new SettingCategory(new I18N.I18NString("LauncherSettings.Launcher", "Launcher"));
         public static readonly SettingCategory CategoryLog = new SettingCategory(new I18N.I18NString("LauncherSettings.Log", "Log Settings"));
+        public static readonly SettingCategory CategoryDebug = new SettingCategory(new I18N.I18NString("LauncherSettings.Debug", "Debug Settings"));
 
         public static readonly string MinimizeToTray = "MinimizeToTray";
         public static readonly string StartMinimized = "StartMinimized";
@@ -51,6 +52,8 @@ namespace HLVRConfig.Utilities.Settings
         public static readonly string HLDirectory = "HLDirectory";
         public static readonly string Language = "Language";
         public static readonly string NumberOfDisplayedLogLines = "NumberOfDisplayedLogLines";
+        public static readonly string EnableMiniDumpButton = "EnableMiniDumpButton";
+        public static readonly string EnableFullMemoryMiniDump = "EnableFullMemoryMiniDump";
 
 
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> GeneralSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
@@ -73,6 +76,11 @@ namespace HLVRConfig.Utilities.Settings
 
             { CategoryLog, new OrderedDictionary<string, Setting>() {
                 { NumberOfDisplayedLogLines, Setting.Create( new I18N.I18NString(NumberOfDisplayedLogLines, "Max number of displayed lines"), SettingType.COUNT, "100" ) },
+            } },
+
+            { CategoryDebug, new OrderedDictionary<string, Setting>() {
+                { EnableMiniDumpButton, Setting.Create( new I18N.I18NString(EnableMiniDumpButton, "Enable Mini Dump Button"), false ) },
+                { EnableFullMemoryMiniDump, Setting.Create( new I18N.I18NString(EnableFullMemoryMiniDump, "Enable Full Memory Mini Dump (Creates huge files! Only enable this if directed or if you know what you are doing!)"), false, new SettingDependency(EnableMiniDumpButton, "1") ) },
             } },
         };
 

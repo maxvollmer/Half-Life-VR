@@ -75,7 +75,7 @@ namespace HLVRConfig.Utilities.UI.Config
                 var textbox = MakeTextBox(value);
                 textbox.TextChanged += (object sender, TextChangedEventArgs e) =>
                 {
-                    HLVRSettingsManager.SetModSetting(settingcategories, category, name, textbox.Text);
+                    HLVRSettingsManager.TrySetSetting(settingcategories, category, name, textbox.Text);
                 };
                 inputPanel.Children.Add(textbox);
 
@@ -136,7 +136,7 @@ namespace HLVRConfig.Utilities.UI.Config
                 combobox.SelectedIndex = selectedIndex;
                 combobox.SelectionChanged += (object sender, SelectionChangedEventArgs e) =>
                 {
-                    HLVRSettingsManager.SetModSetting(settingcategories, category, name, ((I18N.I18NString)(combobox.SelectedValue as ComboBoxItem).Content).Key);
+                    HLVRSettingsManager.TrySetSetting(settingcategories, category, name, ((I18N.I18NString)(combobox.SelectedValue as ComboBoxItem).Content).Key);
                 };
                 inputPanel.Children.Add(combobox);
 
@@ -212,15 +212,15 @@ namespace HLVRConfig.Utilities.UI.Config
             };
             cb.Checked += (object sender, RoutedEventArgs e) =>
             {
-                HLVRSettingsManager.SetModSetting(settingcategories, category, name, true);
+                HLVRSettingsManager.TrySetSetting(settingcategories, category, name, true);
             };
             cb.Unchecked += (object sender, RoutedEventArgs e) =>
             {
-                HLVRSettingsManager.SetModSetting(settingcategories, category, name, false);
+                HLVRSettingsManager.TrySetSetting(settingcategories, category, name, false);
             };
             cb.Indeterminate += (object sender, RoutedEventArgs e) =>
             {
-                HLVRSettingsManager.SetModSetting(settingcategories, category, name, false);
+                HLVRSettingsManager.TrySetSetting(settingcategories, category, name, false);
             };
             inputPanel.Children.Add(cb);
 

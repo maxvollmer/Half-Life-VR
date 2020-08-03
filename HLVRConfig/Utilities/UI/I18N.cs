@@ -94,7 +94,7 @@ namespace HLVRConfig.Utilities.UI
 
             if (previouslanguage != CurrentLanguage)
             {
-                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.RefreshConfigTabs(true, true)));
+                System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (System.Windows.Application.Current?.MainWindow as MainWindow)?.RefreshConfigTabs(true, true)));
             }
         }
 
@@ -142,7 +142,7 @@ namespace HLVRConfig.Utilities.UI
                 }
             }
 
-            System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.UpdateGUITexts()));
+            System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (System.Windows.Application.Current?.MainWindow as MainWindow)?.UpdateGUITexts()));
 
             UpdateSpeechLanguages();
         }
@@ -201,7 +201,7 @@ namespace HLVRConfig.Utilities.UI
             // Make sure selected language exists in current list - if not, select first available language
             if (!HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.ContainsKey(HLVRSettingsManager.ModSettings.AudioSettings[ModSettings.CategorySpeechRecognition][ModSettings.SpeechRecognitionLanguage].Value))
             {
-                HLVRSettingsManager.SetModSetting(HLVRSettingsManager.ModSettings.AudioSettings, ModSettings.CategorySpeechRecognition, ModSettings.SpeechRecognitionLanguage, "vr_speech_language_id." + HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.Keys.First());
+                HLVRSettingsManager.TrySetSetting(HLVRSettingsManager.ModSettings.AudioSettings, ModSettings.CategorySpeechRecognition, ModSettings.SpeechRecognitionLanguage, "vr_speech_language_id." + HLVRSettingsManager.ModSettings.SpeechRecognitionLanguages.Keys.First());
             }
         }
 

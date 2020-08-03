@@ -67,6 +67,7 @@
     </ApplicationDefinition>
     <Compile Include="DbMon.NET\DebugMonitor.cs" />
     <Compile Include="Utilities\Process\CancelAndTerminateAppException.cs" />
+    <Compile Include="Utilities\Process\MiniDumpCreator.cs" />
     <Compile Include="Utilities\UI\Config\IConfig.cs" />
     <Compile Include="Utilities\UI\Controls\I18NTabItem.cs" />
     <Compile Include="Utilities\UI\Controls\I18NText.cs" />

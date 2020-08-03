@@ -34,7 +34,7 @@ namespace HLVRConfig.Utilities.Process
                     {
                         if (mutexEventWaitHandle.WaitOne(1000))
                         {
-                            System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow).BringToForeground()));
+                            System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (System.Windows.Application.Current?.MainWindow as MainWindow).BringToForeground()));
                         }
                     }
                 })

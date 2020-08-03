@@ -31,6 +31,10 @@
                         </StackPanel>
                     </StackPanel>
 
+                    <Button Click="CreateMiniDump_Click" x:Name="CreateMiniDumpButton" Padding="5" Visibility="Collapsed" Margin="5" DockPanel.Dock="Bottom">
+                        <controls:I18NText Key="GUI.CreateMiniDump" DefaultValue="Create Mini Dump"></controls:I18NText>
+                    </Button>
+
                     <Button Click="ClearConsole_Click" Padding="5" Margin="5" DockPanel.Dock="Bottom">
                         <controls:I18NText Key="GUI.ClearConsole" DefaultValue="Clear Console"></controls:I18NText>
                     </Button>

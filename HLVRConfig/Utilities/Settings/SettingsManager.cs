@@ -181,51 +181,43 @@ namespace HLVRConfig.Utilities.Settings
             }
         }
 
-        public static void SetLauncherSetting(SettingCategory category, string name, bool value)
+        private static bool IsLauncherSettings(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settings)
         {
-            if (!AreLauncherSettingsInitialized)
-                return;
-
-            LauncherSettings.GeneralSettings[category][name].Value = value ? "1" : "0";
-            DelayedStoreLauncherSettings();
+            return settings == LauncherSettings.GeneralSettings;
         }
 
-        public static void SetLauncherSetting(SettingCategory category, string name, string value)
+        public static bool TrySetSetting(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settings, SettingCategory category, string name, bool value)
         {
-            if (!AreLauncherSettingsInitialized)
-                return;
+            bool isLauncherSetting = IsLauncherSettings(settings);
 
-            if (LauncherSettings.GeneralSettings[category][name].AllowedValues.Count > 0)
-            {
-                foreach (var allowedValue in LauncherSettings.GeneralSettings[category][name].AllowedValues)
-                {
-                    if (allowedValue.Value.Key.Equals(value))
-                    {
-                        LauncherSettings.GeneralSettings[category][name].Value = allowedValue.Key;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                LauncherSettings.GeneralSettings[category][name].Value = value;
-            }
-            DelayedStoreLauncherSettings();
-        }
+            if (isLauncherSetting && !AreLauncherSettingsInitialized)
+                return false;
 
-        public static void SetModSetting(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settings, SettingCategory category, string name, bool value)
-        {
-            if (!AreModSettingsInitialized)
-                return;
+            if (!isLauncherSetting && !AreModSettingsInitialized)
+                return false;
 
             settings[category][name].Value = value ? "1" : "0";
-            DelayedStoreModSettings();
+
+            if (isLauncherSetting)
+            {
+                DelayedStoreLauncherSettings();
+                Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (Application.Current?.MainWindow as MainWindow)?.UpdateState()));
+            }
+            else
+                DelayedStoreModSettings();
+
+            return true;
         }
 
-        public static void SetModSetting(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settings, SettingCategory category, string name, string value)
+        public static bool TrySetSetting(OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> settings, SettingCategory category, string name, string value)
         {
-            if (!AreModSettingsInitialized)
-                return;
+            bool isLauncherSetting = IsLauncherSettings(settings);
+
+            if (isLauncherSetting && !AreLauncherSettingsInitialized)
+                return false;
+
+            if (!isLauncherSetting && !AreModSettingsInitialized)
+                return false;
 
             if (settings[category][name].AllowedValues.Count > 0)
             {
@@ -242,7 +234,13 @@ namespace HLVRConfig.Utilities.Settings
             {
                 settings[category][name].Value = value;
             }
-            DelayedStoreModSettings();
+
+            if (isLauncherSetting)
+                DelayedStoreLauncherSettings();
+            else
+                DelayedStoreModSettings();
+
+            return true;
         }
 
         public static void RestoreLauncherSettings()
@@ -409,7 +407,7 @@ namespace HLVRConfig.Utilities.Settings
                             if (TryLoadSettings(HLVRPaths.VRModSettingsFile))
                             {
                                 currentModStoreLoadTask = StoreLoadTask.NONE;
-                                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.RefreshConfigTabs(true, false)));
+                                Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (Application.Current?.MainWindow as MainWindow)?.RefreshConfigTabs(true, false)));
                             }
                         }
                         else if (currentModStoreLoadTask == StoreLoadTask.STORE)
@@ -425,7 +423,7 @@ namespace HLVRConfig.Utilities.Settings
                             if (TryLoadSettings(HLVRPaths.VRLauncherSettingsFile))
                             {
                                 currentLauncherStoreLoadTask = StoreLoadTask.NONE;
-                                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.RefreshConfigTabs(false, true)));
+                                Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (Application.Current?.MainWindow as MainWindow)?.RefreshConfigTabs(false, true)));
                             }
                         }
                         else if (currentLauncherStoreLoadTask == StoreLoadTask.STORE)
@@ -433,7 +431,7 @@ namespace HLVRConfig.Utilities.Settings
                             if (TryStoreSettings(LauncherSettings, HLVRPaths.VRLauncherSettingsFile))
                             {
                                 currentLauncherStoreLoadTask = StoreLoadTask.NONE;
-                                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current?.MainWindow)?.RefreshConfigTabs(true, true)));
+                                Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (Application.Current?.MainWindow as MainWindow)?.RefreshConfigTabs(true, true)));
                             }
                         }
                     }

@@ -55,6 +55,8 @@ namespace HLVRConfig.Utilities.Process
 
         public static string VRI18NDirectory { get { return Path.Combine(HLVRPaths.VRDirectory, "i18n"); } }
 
+        public static string VRMiniDumpDirectory { get { return Path.Combine(HLVRPaths.VRDirectory, "dumps"); } }
+
 
         public static void Initialize()
         {

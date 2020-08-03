@@ -1,5 +1,6 @@
 ﻿using DbMon.NET;
 using HLVRConfig.Utilities.Settings;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -42,7 +43,7 @@ namespace HLVRConfig.Utilities.Process
 
                 HookIntoHLProcess();
 
-                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.UpdateState()));
+                System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (System.Windows.Application.Current?.MainWindow as MainWindow)?.UpdateState()));
             }
         }
 
@@ -69,7 +70,7 @@ namespace HLVRConfig.Utilities.Process
                                     color = Brushes.OrangeRed;
                                 else
                                     color = Brushes.Black;
-                                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.ConsoleLog(text, color)));
+                                System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (System.Windows.Application.Current?.MainWindow as MainWindow)?.ConsoleLog(text, color)));
                             }
                         };
                     }
@@ -77,7 +78,7 @@ namespace HLVRConfig.Utilities.Process
                 catch (Exception e)
                 {
                     string error = "ERROR Couldn't connect to Half-Life console: " + e.Message + "\n\n" + e.StackTrace;
-                    System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.ConsoleLog(error, Brushes.Red)));
+                    System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (System.Windows.Application.Current?.MainWindow as MainWindow)?.ConsoleLog(error, Brushes.Red)));
                 }
             }
         }
@@ -89,11 +90,11 @@ namespace HLVRConfig.Utilities.Process
                 hlProcess = null;
                 if (HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryLauncher][LauncherSettings.AutoCloseLauncher].IsTrue())
                 {
-                    System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => System.Windows.Application.Current.Shutdown()));
+                    System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() => System.Windows.Application.Current?.Shutdown()));
                 }
                 else
                 {
-                    System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.UpdateState()));
+                    System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (System.Windows.Application.Current?.MainWindow as MainWindow)?.UpdateState()));
                 }
             }
         }
@@ -108,7 +109,7 @@ namespace HLVRConfig.Utilities.Process
                     hlProcess = null;
                 }
 
-                System.Windows.Application.Current.Dispatcher.BeginInvoke((Action)(() => ((MainWindow)System.Windows.Application.Current.MainWindow)?.UpdateState()));
+                System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (System.Windows.Application.Current?.MainWindow as MainWindow)?.UpdateState()));
             }
         }
 
@@ -145,6 +146,15 @@ namespace HLVRConfig.Utilities.Process
             }
         }
 
+        public SafeProcessHandle GetProcessHandle()
+        {
+            return hlProcess?.SafeHandle;
+        }
+
+        public int? GetProcessID()
+        {
+            return hlProcess?.Id;
+        }
     }
 
 }
