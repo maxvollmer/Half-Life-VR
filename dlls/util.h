@@ -552,7 +552,7 @@ int SENTENCEG_Lookup(const char* sample, char* sentencenum, int sentencenumsize)
 
 void TEXTURETYPE_Init();
 char TEXTURETYPE_Find(char* name);
-float TEXTURETYPE_PlaySound(TraceResult* ptr, Vector vecSrc, Vector vecEnd, int iBulletType);
+float TEXTURETYPE_PlaySound(TraceResult* ptr, Vector vecSrc, Vector vecEnd, int iBulletType, float volume = 1.f);
 
 // NOTE: use EMIT_SOUND_DYN to set the pitch of a sound. Pitch of 100
 // is no pitch shift.  Pitch > 100 up to 255 is a higher pitch, pitch < 100

@@ -585,5 +585,8 @@
     <ClInclude Include="VREngineRandomInterceptor.h">
       <Filter>VR\helpers\random</Filter>
     </ClInclude>
+    <ClInclude Include="DoOnDestruct.h">
+      <Filter>VR\stuff</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

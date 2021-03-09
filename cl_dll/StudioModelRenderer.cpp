@@ -34,6 +34,7 @@
 #include "GameStudioModelRenderer.h"
 
 #include "VRRenderer.h"
+#include "DoOnDestruct.h"
 
 
 namespace
@@ -1184,13 +1185,18 @@ bool CStudioModelRenderer::DrawVREntity(
 	if (modelname[0] == '*')
 		return false;
 
-	m_pCurrentEntity = IEngineStudio.GetViewEntity();
-	if (!m_pCurrentEntity)
+	cl_entity_t* viewent = IEngineStudio.GetViewEntity();
+	if (!viewent)
 		return false;
 
 	auto model = IEngineStudio.Mod_ForName(modelname, 0);
 	if (!model || model->type != mod_studio)
 		return false;
+
+	cl_entity_t backupviewent = *viewent;
+	DoOnDestruct doOnDestruct{ [&]() { *viewent = backupviewent; } };
+
+	m_pCurrentEntity = viewent;
 
 	IEngineStudio.SetRenderModel(m_pCurrentEntity->model = m_pRenderModel = model);
 	m_pCurrentEntity->baseline.body = m_pCurrentEntity->prevstate.body = m_pCurrentEntity->curstate.body = body;
@@ -1457,6 +1463,13 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 		// copy attachments into global entity array
 		if (m_pCurrentEntity->index > 0)
 		{
+			// Special handling of view entity
+			cl_entity_t* viewmodel = gEngfuncs.GetViewModel();
+			if (viewmodel != nullptr && m_pCurrentEntity == viewmodel)
+			{
+				gEngfuncs.Con_DPrintf("Doing the viewwent attachement thing in StudioModelRenderer.\n");
+			}
+
 			cl_entity_t* ent = gEngfuncs.GetEntityByIndex(m_pCurrentEntity->index);
 
 			memcpy(ent->attachment, m_pCurrentEntity->attachment, sizeof(vec3_t) * 4);

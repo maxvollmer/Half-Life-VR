@@ -30,6 +30,19 @@ bool GlobalXenMounds::Has(const Vector& position)
 	return false;
 }
 
+bool GlobalXenMounds::IsSame(const Vector& pos1, const Vector& pos2)
+{
+	for (auto m_xen_mound : m_xen_mounds)
+	{
+		if ((m_xen_mound.first - pos1).Length2D() <= XEN_MOUND_MAX_TRIGGER_DISTANCE
+			&& (m_xen_mound.first - pos2).Length2D() <= XEN_MOUND_MAX_TRIGGER_DISTANCE)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool GlobalXenMounds::Trigger(CBasePlayer* pPlayer, const Vector& position)
 {
 	for (auto m_xen_mound : m_xen_mounds)
@@ -126,4 +139,13 @@ bool VRIsAutoDuckingEnabled(int player)
 float VRGetSmoothStepsSetting()
 {
 	return CVAR_GET_FLOAT("vr_smooth_steps");
+}
+
+bool VRIsInUpwardsTriggerPush(int player)
+{
+	CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(UTIL_PlayerByIndex(player + 1));
+	if (pPlayer == nullptr)
+		return false;
+
+	return pPlayer->GetCurrentUpwardsTriggerPush() != nullptr;
 }

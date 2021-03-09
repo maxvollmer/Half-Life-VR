@@ -522,6 +522,8 @@ public:
 
 	// Checks if the weapon can be fired (prevents shooting when controller is pointed through walls)
 	bool VRCanAttack();
+
+	void VRJustTeleported(const Vector& fromOrigin, const Vector& fromAngles);
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

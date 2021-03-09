@@ -2,12 +2,7 @@
 
 #include <filesystem>
 
-enum class VRPoseType
-{
-	FLASHLIGHT,
-	MOVEMENT,
-	TELEPORTER
-};
+#include "../vr_shared/VRShared.h"
 
 inline std::filesystem::path GetPathFor(const std::string& file)
 {

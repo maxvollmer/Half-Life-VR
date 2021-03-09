@@ -575,7 +575,7 @@ void CGrenade::BaseBalled(CBaseEntity* pPlayer, const Vector& velocity)
 {
 	// only play baseball if we are a draggable grenade
 	if (IsDraggable())
-		pev->velocity = velocity;
+		pev->velocity = velocity * 1.5f;
 }
 
 

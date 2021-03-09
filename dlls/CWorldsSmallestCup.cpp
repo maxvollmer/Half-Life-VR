@@ -20,10 +20,18 @@ LINK_ENTITY_TO_CLASS(vr_easteregg, CWorldsSmallestCup);
 
 extern const model_t* VRGetBSPModel(edict_t* pent);
 
-
 EHANDLE<CWorldsSmallestCup> CWorldsSmallestCup::m_instance{};
-std::string CWorldsSmallestCup::m_lastMap;
-bool CWorldsSmallestCup::m_wasDraggedLastMap{ false };
+
+namespace
+{
+	std::string m_lastMap;
+	bool m_wasDraggedLastMap{ false };
+
+	EHANDLE<CTalkMonster> m_hKleiner;
+	float m_flKleinerFaceStart{ 0.f };
+	std::unordered_set<EHANDLE<CTalkMonster>, EHANDLE<CTalkMonster>::Hash, EHANDLE<CTalkMonster>::Equal> m_hAlreadySpokenKleiners;
+}
+
 
 TYPEDESCRIPTION CWorldsSmallestCup::m_SaveData[] =
 {
@@ -31,7 +39,6 @@ TYPEDESCRIPTION CWorldsSmallestCup::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE(CWorldsSmallestCup, CGib);
-
 
 void CWorldsSmallestCup::Spawn()
 {
@@ -53,7 +60,6 @@ void CWorldsSmallestCup::Spawn()
 
 	if (m_instance && m_instance != this)
 	{
-		m_hAlreadySpokenKleiners.insert(m_instance->m_hAlreadySpokenKleiners.begin(), m_instance->m_hAlreadySpokenKleiners.end());
 		m_instance->SetThink(&CBaseEntity::SUB_Remove);
 	}
 	m_instance = this;
@@ -84,14 +90,18 @@ void CWorldsSmallestCup::CupThink()
 
 	if (m_instance && m_instance != this)
 	{
-		m_instance->m_hAlreadySpokenKleiners.insert(m_hAlreadySpokenKleiners.begin(), m_hAlreadySpokenKleiners.end());
 		SetThink(&CBaseEntity::SUB_Remove);
 		return;
 	}
 
 	m_instance = this;
 
-	m_lastMap = STRING(INDEXENT(0)->v.model);
+	if (m_lastMap != STRING(INDEXENT(0)->v.model))
+	{
+		m_lastMap = STRING(INDEXENT(0)->v.model);
+		m_hAlreadySpokenKleiners.clear();
+		m_wasDraggedLastMap = false;
+	}
 
 	if (IsBeingDragged())
 	{
@@ -199,8 +209,8 @@ void CWorldsSmallestCup::EnsureInstance(CBasePlayer* pPlayer)
 		else
 		{
 			// If player carried cup last map, spawn a new one.
-			spawnnew = CWorldsSmallestCup::m_wasDraggedLastMap;
-			CWorldsSmallestCup::m_wasDraggedLastMap = false;
+			spawnnew = m_wasDraggedLastMap;
+			m_wasDraggedLastMap = false;
 		}
 		if (spawnnew)
 		{

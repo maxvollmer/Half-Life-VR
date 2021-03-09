@@ -37,6 +37,7 @@ public:
 	bool Trigger(CBasePlayer* pPlayer, const Vector& position);
 	bool Has(const Vector& position);
 	void Clear() { m_xen_mounds.clear(); }
+	bool IsSame(const Vector& pos1, const Vector& pos2);
 
 private:
 	std::map<const Vector, const string_t> m_xen_mounds;

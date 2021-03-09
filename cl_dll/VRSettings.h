@@ -35,7 +35,6 @@ private:
 	long long m_nextSettingCheckTime{ 0 };
 
 	void UpdateTextureMode();
-	std::string m_gl_texturemode;
 	std::string m_vr_texturemode;
 };
 

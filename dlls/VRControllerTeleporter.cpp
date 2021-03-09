@@ -17,29 +17,21 @@ void VRControllerTeleporter::StartTele(CBasePlayer* pPlayer, const Vector& teleP
 	// reset
 	pPlayer->vr_didJustTeleportThroughChangeLevel = false;
 
-	if (!vr_pTeleSprite)
+	if (!vr_hTeleSprite)
 	{
-		vr_pTeleSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", telePos, FALSE);
-		vr_pTeleSprite->Spawn();
-		vr_pTeleSprite->SetTransparency(kRenderTransAdd, 255, 255, 255, 255, kRenderFxNone);
-		vr_pTeleSprite->pev->owner = pPlayer->edict();
-		vr_pTeleSprite->TurnOn();
-		vr_pTeleSprite->pev->effects &= ~EF_NODRAW;
+		vr_hTeleSprite = CSprite::SpriteCreate("sprites/XSpark1.spr", telePos, FALSE);
+		vr_hTeleSprite->Spawn();
+		vr_hTeleSprite->SetTransparency(kRenderTransAdd, 255, 255, 255, 255, kRenderFxNone);
+		vr_hTeleSprite->pev->owner = pPlayer->edict();
+		vr_hTeleSprite->TurnOn();
 	}
+	vr_hTeleSprite->pev->effects &= ~EF_NODRAW;
 
-	if (!vr_pTeleBeam)
-	{
-		vr_pTeleBeam = CBeam::BeamCreate("sprites/xbeam1.spr", 20);
-		vr_pTeleBeam->Spawn();
-		vr_pTeleBeam->PointsInit(telePos, telePos);
-		vr_pTeleBeam->pev->owner = pPlayer->edict();
-		vr_pTeleBeam->pev->effects &= ~EF_NODRAW;
-	}
-
-	vr_fValidTeleDestination = false;
-	vr_fTelePointsAtXenMound = false;
-	vr_fTelePointsInWater = false;
+	ClearTeleportParabola();
+	vr_teleportResult = TeleportResult::INVALID;
+	vr_vecTeleDestination = telePos;
 	vr_needsToDuckAfterTeleport = false;
+	vr_teleportedXenMoundOrigins.clear();
 }
 
 void VRControllerTeleporter::StopTele(CBasePlayer* pPlayer)
@@ -47,7 +39,7 @@ void VRControllerTeleporter::StopTele(CBasePlayer* pPlayer)
 	// reset
 	pPlayer->vr_didJustTeleportThroughChangeLevel = false;
 
-	if (vr_fValidTeleDestination)
+	if (vr_teleportResult != TeleportResult::INVALID)
 	{
 		if (vr_needsToDuckAfterTeleport)
 		{
@@ -65,43 +57,60 @@ void VRControllerTeleporter::StopTele(CBasePlayer* pPlayer)
 			UTIL_SetSize(pPlayer->pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 		}
 
-		if (vr_fTelePointsAtXenMound && vr_parabolaBeams[0] != nullptr && gGlobalXenMounds.Has(vr_parabolaBeams[0]->pev->origin))
+		for (auto& xenMoundOrigin : vr_teleportedXenMoundOrigins)
 		{
-			gGlobalXenMounds.Trigger(pPlayer, vr_parabolaBeams[0]->pev->origin);
+			if (gGlobalXenMounds.Has(xenMoundOrigin))
+			{
+				gGlobalXenMounds.Trigger(pPlayer, xenMoundOrigin);
+			}
 		}
 
-		// Create sound
+		if (vr_teleportResult == TeleportResult::TRIGGER_TELEPORT)
+		{
+			if (vr_hTriggerTeleport)
+			{
+				vr_hTriggerTeleport->Touch(pPlayer);
+				vr_hTriggerTeleport = nullptr;
+			}
+		}
+		else
+		{
+			Vector prevOrigin = pPlayer->pev->origin;
+			Vector prevAngles = pPlayer->pev->angles;
+
+			pPlayer->pev->origin = vr_vecTeleDestination;
+			pPlayer->pev->origin.z -= pPlayer->pev->mins.z;
+			pPlayer->pev->origin.z += 1.f;
+			UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
+			pPlayer->pev->absmin = pPlayer->pev->origin + pPlayer->pev->mins;
+			pPlayer->pev->absmax = pPlayer->pev->origin + pPlayer->pev->maxs;
+
+			pPlayer->VRJustTeleported(prevOrigin, prevAngles);
+		}
+
+		TouchTriggersInTeleportPath(pPlayer);
+
+		// Create "sound" for AI
+		// (not actually a sound that plays back, this notifies monsters so players can't use the teleporter to sneak)
 		float distanceTeleported = (vr_vecTeleDestination - pPlayer->pev->origin).Length();
 		CSoundEnt::InsertSound(bits_SOUND_PLAYER, pPlayer->pev->origin, int(distanceTeleported), 0.2f);
 
-		pPlayer->pev->origin = vr_vecTeleDestination;
-		pPlayer->pev->origin.z -= pPlayer->pev->mins.z;
-		pPlayer->pev->origin.z += 1.f;
-		UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
-		pPlayer->pev->absmin = pPlayer->pev->origin + pPlayer->pev->mins;
-		pPlayer->pev->absmax = pPlayer->pev->origin + pPlayer->pev->maxs;
-		TouchTriggersInTeleportPath(pPlayer);
-
-
 		// used to disable gravity in water when using VR teleporter
 		extern bool g_vrTeleportInWater;
-		g_vrTeleportInWater = vr_fTelePointsInWater;
+		g_vrTeleportInWater = vr_teleportResult == TeleportResult::WATER;
 	}
-	if (vr_pTeleSprite)
+
+	if (vr_hTeleSprite)
 	{
-		UTIL_Remove(vr_pTeleSprite);
-		vr_pTeleSprite = nullptr;
+		UTIL_Remove(vr_hTeleSprite);
+		vr_hTeleSprite = nullptr;
 	}
-	if (vr_pTeleBeam)
-	{
-		UTIL_Remove(vr_pTeleBeam);
-		vr_pTeleBeam = nullptr;
-	}
-	DisableXenMoundParabola();
-	vr_fValidTeleDestination = false;
-	vr_fTelePointsAtXenMound = false;
-	vr_fTelePointsInWater = false;
+
+	ClearTeleportParabola();
+	vr_teleportResult = TeleportResult::INVALID;
+	vr_vecTeleDestination = Vector{};
 	vr_needsToDuckAfterTeleport = false;
+	vr_teleportedXenMoundOrigins.clear();
 }
 
 void VRControllerTeleporter::UpdateTele(CBasePlayer* pPlayer, const Vector& telePos, const Vector& teleDir)
@@ -109,54 +118,53 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer* pPlayer, const Vector& tele
 	// reset
 	pPlayer->vr_didJustTeleportThroughChangeLevel = false;
 
-	if (!vr_pTeleBeam || !vr_pTeleSprite)
+	if (!vr_hTeleSprite)
 	{
-		vr_fValidTeleDestination = false;
-		vr_fTelePointsAtXenMound = false;
-		vr_fTelePointsInWater = false;
+		vr_teleportResult = TeleportResult::INVALID;
 		vr_needsToDuckAfterTeleport = false;
 		StopTele(pPlayer);
 		return;
 	}
 
-	TraceResult tr;
-	VRPhysicsHelper::Instance().TraceLine(telePos, telePos + teleDir * GetCurrentTeleLength(pPlayer), pPlayer->edict(), &tr);
+	vr_teleportParabolaSegmentCounter = 0;
 
-	Vector beamEndPos = tr.vecEndPos;
-	Vector teleportDestination = tr.vecEndPos;
+	Vector teleportDestination;
 	bool needsToDuck = false;
+	vr_teleportResult = TeleportParabola(pPlayer, telePos, teleDir, teleportDestination, needsToDuck);
 
-	vr_fValidTeleDestination = CanTeleportHere(pPlayer, tr, telePos, beamEndPos, teleportDestination, needsToDuck);
-
-	vr_pTeleBeam->SetStartPos(telePos);
-	vr_pTeleBeam->SetEndPos(beamEndPos);
-
-	if (vr_fValidTeleDestination && vr_fTelePointsAtXenMound)
+	if (vr_teleportResult == TeleportResult::XEN_MOUND)
 	{
-		EnableXenMoundParabolaAndUpdateTeleDestination(pPlayer, telePos, beamEndPos, teleportDestination, needsToDuck);
+		EnableXenMoundParabolaAndUpdateTeleDestination(pPlayer,
+			vr_teleParabola.segments.back().startPoint,
+			vr_teleParabola.segments.back().endPoint,
+			teleportDestination, needsToDuck);
 	}
-	else
+
+	if (vr_teleportResult == TeleportResult::TRIGGER_TELEPORT && vr_hTriggerTeleport)
 	{
-		DisableXenMoundParabola();
+		vr_hTeleSprite->pev->effects |= EF_NODRAW;
+		ColorTeleporter(Vector(255, 255, 0));
+		return;
 	}
+	vr_hTeleSprite->pev->effects &= ~EF_NODRAW;
 
 	vr_vecTeleDestination = teleportDestination + Vector{ 0.f, 0.f, 1.f };
-	UTIL_SetOrigin(vr_pTeleSprite->pev, teleportDestination);
+	UTIL_SetOrigin(vr_hTeleSprite->pev, teleportDestination);
 
-	bool isTeleporterBlocked =
-		!UTIL_CheckClearSight(pPlayer->EyePosition(), telePos, ignore_monsters, dont_ignore_glass, pPlayer->edict()) || VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->EyePosition(), telePos);
-
-	if (isTeleporterBlocked)
+	if (vr_teleportResult != TeleportResult::INVALID)
 	{
-		vr_fValidTeleDestination = false;
-		vr_needsToDuckAfterTeleport = false;
+		bool isTeleporterBlocked =
+			GetDownwardsParabolaLength() > VR_TELEPORT_MAX_DOWNWARDS_TELE_LENGTH
+			|| !UTIL_CheckClearSight(pPlayer->EyePosition(), telePos, ignore_monsters, dont_ignore_glass, pPlayer->edict()) || VRPhysicsHelper::Instance().CheckIfLineIsBlocked(pPlayer->EyePosition(), telePos);
+
+		if (isTeleporterBlocked)
+		{
+			vr_teleportResult = TeleportResult::INVALID;
+		}
 	}
 
-	if (vr_fValidTeleDestination)
+	if (vr_teleportResult != TeleportResult::INVALID)
 	{
-		vr_pTeleSprite->pev->rendercolor = Vector(0, 255, 0);
-		vr_pTeleBeam->pev->rendercolor = Vector(0, 255, 0);
-
 		// Check if we need to duck for this destination (e.g. teleporting inside a duct)
 		vr_needsToDuckAfterTeleport = needsToDuck;
 		if (!vr_needsToDuckAfterTeleport)
@@ -176,19 +184,49 @@ void VRControllerTeleporter::UpdateTele(CBasePlayer* pPlayer, const Vector& tele
 				if (trDucking.flFraction < 1.f)
 				{
 					// Can't even duck here - This is probably an invalid destination!
-					vr_fValidTeleDestination = false;
+					vr_teleportResult = TeleportResult::INVALID;
 				}
 			}
 		}
 	}
 
-	if (!vr_fValidTeleDestination)
-	{
-		vr_pTeleSprite->pev->rendercolor = Vector(255, 0, 0);
-		vr_pTeleBeam->pev->rendercolor = Vector(255, 0, 0);
-	}
+	ColorTeleporter((vr_teleportResult != TeleportResult::INVALID) ? Vector(0, 255, 0) : Vector(255, 0, 0));
 }
 
+
+EHANDLE<CBaseEntity> CheckTriggerTeleport(CBasePlayer* pPlayer, const Vector& from, const Vector& to)
+{
+	for (int index = 1; index < gpGlobals->maxEntities; index++)
+	{
+		edict_t* pent = INDEXENT(index);
+		if (FNullEnt(pent))
+			continue;
+
+		if (pent->v.solid != SOLID_TRIGGER)
+			continue;
+
+		if (FBitSet(pent->v.spawnflags, SF_TRIGGER_NOCLIENTS))
+			continue;
+
+		if (!FClassnameIs(&pent->v, "trigger_teleport"))
+			continue;
+
+		if (!UTIL_TraceBBox(from, to, pent->v.absmin, pent->v.absmax))
+			continue;
+
+		edict_t* pentTarget = FIND_ENTITY_BY_TARGETNAME(nullptr, STRING(pent->v.target));
+		if (FNullEnt(pentTarget))
+			continue;
+
+		EHANDLE<CBaseEntity> hEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
+		if (!hEntity)
+			continue;
+
+		return hEntity;
+	}
+
+	return nullptr;
+}
 
 void VRControllerTeleporter::TouchTriggersInTeleportPath(CBasePlayer* pPlayer)
 {
@@ -198,7 +236,7 @@ void VRControllerTeleporter::TouchTriggersInTeleportPath(CBasePlayer* pPlayer)
 		if (FNullEnt(pent))
 			continue;
 
-		if (pent->v.solid  != SOLID_TRIGGER)
+		if (pent->v.solid != SOLID_TRIGGER)
 			continue;
 
 		EHANDLE<CBaseEntity> hEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
@@ -209,28 +247,24 @@ void VRControllerTeleporter::TouchTriggersInTeleportPath(CBasePlayer* pPlayer)
 		if (hEntity->IsXenJumpTrigger())
 			continue;
 
-		bool fTouched = vr_pTeleBeam && UTIL_TraceBBox(vr_pTeleBeam->pev->origin, vr_pTeleBeam->pev->angles, hEntity->pev->absmin, hEntity->pev->absmax);
+		// We handle trigger_teleport separately
+		if (FClassnameIs(hEntity->pev, "trigger_teleport"))
+			continue;
 
-		if (!fTouched && vr_pTeleBeam && vr_pTeleSprite && (vr_pTeleSprite->pev->origin - vr_pTeleBeam->pev->angles).Length() > 0.1f)
+		for (ParabolaSegment& segment : vr_teleParabola.segments)
 		{
-			fTouched = UTIL_TraceBBox(vr_pTeleBeam->pev->angles, vr_pTeleSprite->pev->origin, hEntity->pev->absmin, hEntity->pev->absmax);
-		}
-
-		for (int i = 0; !fTouched && i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
-		{
-			if (vr_parabolaBeams[i] != nullptr)
+			if (segment.beam && !FBitSet(segment.beam->pev->effects, EF_NODRAW))
 			{
-				fTouched = UTIL_TraceBBox(vr_parabolaBeams[i]->pev->origin, vr_parabolaBeams[i]->pev->angles, hEntity->pev->absmin, hEntity->pev->absmax);
+				if (UTIL_TraceBBox(segment.startPoint, segment.endPoint, hEntity->pev->absmin, hEntity->pev->absmax))
+				{
+					if (FClassnameIs(hEntity->pev, "trigger_changelevel"))
+					{
+						pPlayer->vr_didJustTeleportThroughChangeLevel = true;
+					}
+					hEntity->Touch(pPlayer);
+					break;
+				}
 			}
-		}
-
-		if (fTouched)
-		{
-			if (FClassnameIs(hEntity->pev, "trigger_changelevel"))
-			{
-				pPlayer->vr_didJustTeleportThroughChangeLevel = true;
-			}
-			hEntity->Touch(pPlayer);
 		}
 	}
 }
@@ -250,10 +284,11 @@ float VRControllerTeleporter::GetCurrentTeleLength(CBasePlayer* pPlayer)
 constexpr const int VR_MIN_LADDER_TOUCH_DEPTH = -16;
 constexpr const int VR_MAX_LADDER_TOUCH_DEPTH = 4;
 
-bool VRControllerTeleporter::CanTeleportHere(CBasePlayer* pPlayer, const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination, bool& needsToDuck)
+VRControllerTeleporter::TeleportResult VRControllerTeleporter::CanTeleportHere(CBasePlayer* pPlayer, const TraceResult& tr, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination, bool& needsToDuck)
 {
-	vr_fTelePointsAtXenMound = false;  // reset every frame
-	vr_fTelePointsInWater = false;  // reset every frame
+	if (vr_hTriggerTeleport)
+		return TeleportResult::TRIGGER_TELEPORT;
+
 	if (!tr.fAllSolid)
 	{
 		// Detect water
@@ -269,14 +304,12 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer* pPlayer, const TraceRe
 			{
 				teleportDestination = beamEndPos = beamEndPos - (delta.Normalize() * 32.0f);
 			}
-			vr_fTelePointsInWater = true;
-			return true;
+			return TeleportResult::WATER;
 		}
 		else if (pPlayer->pev->waterlevel > 0 && UTIL_PointContents(beamStartPos) == CONTENTS_WATER)
 		{
 			teleportDestination = beamEndPos = UTIL_WaterLevelPos(beamStartPos, beamEndPos);
-			vr_fTelePointsInWater = true;
-			return true;
+			return TeleportResult::WATER;
 		}
 		// Detect ladders
 		else if (tr.pHit != nullptr && FClassnameIs(tr.pHit, "func_ladder"))
@@ -335,13 +368,13 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer* pPlayer, const TraceRe
 								needsToDuck = true;
 							}
 							teleportDestination = beamEndPos = ladderHit;
-							return true;
+							return TeleportResult::VALID;
 						}
 					}
 				}
 			}
 
-			return false;
+			return TeleportResult::INVALID;
 		}
 		else if (tr.flFraction < 1.0f)
 		{
@@ -351,24 +384,23 @@ bool VRControllerTeleporter::CanTeleportHere(CBasePlayer* pPlayer, const TraceRe
 			// Detect Xen jump pads
 			if (FStrEq(texturename, "c2a5mound") && gGlobalXenMounds.Has(beamEndPos))
 			{
-				vr_fTelePointsAtXenMound = true;
-				return true;
+				return TeleportResult::XEN_MOUND;
 			}
 			// Normal floor
 			else if (DotProduct(Vector(0, 0, 1), tr.vecPlaneNormal) > 0.2f)
 			{
 				teleportDestination = beamEndPos;
-				return true;  // !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+				return TeleportResult::VALID;  // !UTIL_BBoxIntersectsBSPModel(teleportDestination + Vector(0, 0, -VEC_DUCK_HULL_MIN.z), VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 			}
 			// else wall, ceiling or other surface we can't teleport on
 		}
 		// else beam ended in air, check if we are in an upwards trigger_push
 		else if (TryTeleportInUpwardsTriggerPush(pPlayer, beamStartPos, beamEndPos, teleportDestination))
 		{
-			return true;
+			return TeleportResult::VALID;
 		}
 	}
-	return false;
+	return TeleportResult::INVALID;
 }
 
 bool VRControllerTeleporter::TryTeleportInUpwardsTriggerPush(CBasePlayer* pPlayer, const Vector& beamStartPos, Vector& beamEndPos, Vector& teleportDestination)
@@ -400,27 +432,50 @@ bool VRControllerTeleporter::TryTeleportInUpwardsTriggerPush(CBasePlayer* pPlaye
 	return false;
 }
 
-void VRControllerTeleporter::EnableXenMoundParabolaAndUpdateTeleDestination(CBasePlayer* pPlayer, const Vector& beamStartPos, const Vector& beamEndPos, Vector& teleportDestination, bool& needsToDuck)
+void VRControllerTeleporter::ClearTeleportParabola()
 {
-	// Set this to false, in case we won't hit anything in the parabola loop (parabola goes into empty space), thus the teleport destination couldn't be determined and is invalid
-	vr_fValidTeleDestination = false;
-	needsToDuck = false;
+	for (auto& segment : vr_teleParabola.segments)
+	{
+		UTIL_Remove(segment.beam);
+	}
+	vr_teleParabola = Parabola{};
+}
 
-	// Get direction of beam and clamp at -0.1f z direction
-	Vector beamDir = (beamEndPos - beamStartPos).Normalize();
-	beamDir.z = min(beamDir.z, -0.1f);
-	beamDir = beamDir.Normalize();
+float VRControllerTeleporter::GetDownwardsParabolaLength()
+{
+	float length = 0.f;
+	for (auto& segment : vr_teleParabola.segments)
+	{
+		if (segment.beam && !FBitSet(segment.beam->pev->effects, EF_NODRAW))
+		{
+			if (segment.startPoint.z > segment.endPoint.z)
+			{
+				length += (segment.startPoint - segment.endPoint).Length();
+			}
+		}
+	}
+	return length;
+}
 
+void VRControllerTeleporter::ExtendTeleportParabola(CBasePlayer* pPlayer, const Vector& parabolaStartPos, const Vector& parabolaDir)
+{
 	// Get direction of parabola at beam end pos
-	Vector parabolaDir = beamDir;
-	parabolaDir.z = -parabolaDir.z * 4;  // Invert and make steeper
-	parabolaDir = parabolaDir.Normalize();
+	Vector parabolaEndDir = parabolaDir;
+	if (parabolaEndDir.z >= 0)
+	{
+		parabolaEndDir.z = -parabolaEndDir.z;
+	}
+	else
+	{
+		parabolaEndDir.z *= 2.f;
+	}
+	parabolaEndDir = parabolaEndDir.Normalize();
 
 	// Get vertex of parabola (approximation, but good enough for our purpose)
-	Vector parabolaVertex = beamEndPos + (parabolaDir * XEN_MOUND_PARABOLA_LENGTH * 0.5f);
+	Vector parabolaVertex = parabolaStartPos + (parabolaDir * VR_TELEPORT_PARABOLA_MAX_LENGTH * 0.5f);
 
 	// Get third parabola point
-	Vector thirdParabolaPoint = parabolaVertex + (beamDir * XEN_MOUND_PARABOLA_LENGTH * 0.5f);
+	Vector thirdParabolaPoint = parabolaVertex + (parabolaEndDir * VR_TELEPORT_PARABOLA_MAX_LENGTH * 0.5f);
 
 	// Vector for holding A B and C of parabola function: y = A*x*x + B*x + C
 	Vector parabolaConstants;
@@ -429,42 +484,44 @@ void VRControllerTeleporter::EnableXenMoundParabolaAndUpdateTeleDestination(CBas
 	bool fUseYForParabolaX = fabs(parabolaDir.y) > fabs(parabolaDir.x);
 	if (fUseYForParabolaX)
 	{
-		UTIL_ParabolaFromPoints(Vector2D(beamEndPos.y, beamEndPos.z), Vector2D(parabolaVertex.y, parabolaVertex.z), Vector2D(thirdParabolaPoint.y, thirdParabolaPoint.z), parabolaConstants);
+		UTIL_ParabolaFromPoints(Vector2D(parabolaStartPos.y, parabolaStartPos.z), Vector2D(parabolaVertex.y, parabolaVertex.z), Vector2D(thirdParabolaPoint.y, thirdParabolaPoint.z), parabolaConstants);
 	}
 	else
 	{
-		UTIL_ParabolaFromPoints(Vector2D(beamEndPos.x, beamEndPos.z), Vector2D(parabolaVertex.x, parabolaVertex.z), Vector2D(thirdParabolaPoint.x, thirdParabolaPoint.z), parabolaConstants);
+		UTIL_ParabolaFromPoints(Vector2D(parabolaStartPos.x, parabolaStartPos.z), Vector2D(parabolaVertex.x, parabolaVertex.z), Vector2D(thirdParabolaPoint.x, thirdParabolaPoint.z), parabolaConstants);
 	}
 
 	// Get length of parabola flattened into horizontal plane (linear projection)
-	float parabolaFlattenedLength = (thirdParabolaPoint - beamEndPos).Length();
-	float parabolaFlattenedSegmentLength = parabolaFlattenedLength / VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT;
+	float parabolaFlattenedLength = (thirdParabolaPoint - parabolaStartPos).Length();
+	float parabolaFlattenedSegmentLength = parabolaFlattenedLength / VR_TELEPORT_PARABOLA_BEAM_SEGMENT_COUNT;
 
 	// Get parabola linear projection direction vector
-	Vector parabolaFlattenedLinearDirection = (thirdParabolaPoint - beamEndPos).Normalize();
+	Vector parabolaFlattenedLinearDirection = (thirdParabolaPoint - parabolaStartPos).Normalize();
+
+	// Ensure enough segments
+	if (int(vr_teleParabola.segments.size()) < vr_teleportParabolaSegmentCounter + VR_TELEPORT_PARABOLA_BEAM_SEGMENT_COUNT)
+	{
+		vr_teleParabola.segments.resize(vr_teleportParabolaSegmentCounter + VR_TELEPORT_PARABOLA_BEAM_SEGMENT_COUNT);
+	}
 
 	// Get positions of parabola beam segments along linear parabola projection with parabola function
-	for (int i = 0; i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
+	for (int i = 0; i < VR_TELEPORT_PARABOLA_BEAM_SEGMENT_COUNT; i++)
 	{
 		// If necessary create the beam, and enable it
-		CBeam* pCurrentSegmentBeam = nullptr;
-		if (vr_parabolaBeams[i] == nullptr)
+		ParabolaSegment& currentSegment = vr_teleParabola.segments[vr_teleportParabolaSegmentCounter + i];
+		if (!currentSegment.beam)
 		{
-			pCurrentSegmentBeam = CBeam::BeamCreate("sprites/xbeam1.spr", 20);
+			CBeam* pCurrentSegmentBeam = CBeam::BeamCreate("sprites/xbeam1.spr", 20);
 			pCurrentSegmentBeam->Spawn();
 			pCurrentSegmentBeam->PointsInit(pPlayer->pev->origin, pPlayer->pev->origin);
 			pCurrentSegmentBeam->pev->owner = pPlayer->edict();
-			vr_parabolaBeams[i] = pCurrentSegmentBeam;
+			currentSegment.beam = pCurrentSegmentBeam;
 		}
-		else
-		{
-			pCurrentSegmentBeam = vr_parabolaBeams[i];
-		}
-		pCurrentSegmentBeam->pev->effects &= ~EF_NODRAW;
+		currentSegment.beam->pev->effects &= ~EF_NODRAW;
 
 		// Get positions on linear projection
-		Vector linearPos1 = beamEndPos + (parabolaFlattenedLinearDirection * i * parabolaFlattenedSegmentLength);
-		Vector linearPos2 = beamEndPos + (parabolaFlattenedLinearDirection * (i + 1) * parabolaFlattenedSegmentLength);
+		Vector linearPos1 = parabolaStartPos + (parabolaFlattenedLinearDirection * i * parabolaFlattenedSegmentLength);
+		Vector linearPos2 = parabolaStartPos + (parabolaFlattenedLinearDirection * (i + 1) * parabolaFlattenedSegmentLength);
 
 		// Determine z position of parabola in 3d space (y in 2d space determined by parabola function)
 		float z1, z2;
@@ -483,7 +540,7 @@ void VRControllerTeleporter::EnableXenMoundParabolaAndUpdateTeleDestination(CBas
 		Vector beamSegmentPos1(linearPos1.x, linearPos1.y, z1);
 		Vector beamSegmentPos2(linearPos2.x, linearPos2.y, z2);
 
-		if (i == VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT - 1)
+		if (i == VR_TELEPORT_PARABOLA_BEAM_SEGMENT_COUNT - 1)
 		{
 			// If this is the last beam segment, extend it to "infinity"
 			Vector dir = (beamSegmentPos2 - beamSegmentPos1).Normalize();
@@ -494,59 +551,84 @@ void VRControllerTeleporter::EnableXenMoundParabolaAndUpdateTeleDestination(CBas
 		TraceResult tr;
 		VRPhysicsHelper::Instance().TraceLine(beamSegmentPos1, beamSegmentPos2, pPlayer->edict(), &tr);
 
-		if (tr.flFraction < 1.0f)
+		// Check if we teleport into a trigger_teleport
+		vr_hTriggerTeleport = CheckTriggerTeleport(pPlayer, beamSegmentPos1, tr.vecEndPos);
+
+		if (tr.flFraction < 1.0f || vr_hTriggerTeleport)
 		{
 			// We hit something, update beam segment end position
-			teleportDestination = beamSegmentPos2 = tr.vecEndPos;
-
-			// Determine if this is a valid position
-			vr_fValidTeleDestination = CanTeleportHere(pPlayer, tr, beamSegmentPos1, beamSegmentPos2, teleportDestination, needsToDuck);
+			beamSegmentPos2 = tr.vecEndPos;
 
 			// Hide all further beams (and increment i, so this loop exits)
-			for (i++; i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
+			for (i++; i < VR_TELEPORT_PARABOLA_BEAM_SEGMENT_COUNT; i++)
 			{
-				if (vr_parabolaBeams[i] != nullptr)
+				ParabolaSegment& segment = vr_teleParabola.segments[vr_teleportParabolaSegmentCounter + i];
+				if (segment.beam)
 				{
-					vr_parabolaBeams[i]->pev->effects |= EF_NODRAW;
+					segment.beam->pev->effects |= EF_NODRAW;
 				}
 			}
 		}
-		else
-		{
-			// Move teleport destination to end of segment, so sprite will be drawn correctly even if we exit the loop without finding a correct spot
-			teleportDestination = beamSegmentPos2;
-		}
 
 		// Set beam segment positions
-		pCurrentSegmentBeam->SetStartPos(beamSegmentPos1);
-		pCurrentSegmentBeam->SetEndPos(beamSegmentPos2);
+		currentSegment.beam->SetStartPos(beamSegmentPos1);
+		currentSegment.beam->SetEndPos(beamSegmentPos2);
+		currentSegment.startPoint = beamSegmentPos1;
+		currentSegment.endPoint = beamSegmentPos2;
+		vr_teleParabola.endPoint = beamSegmentPos2;
 	}
 
-	// Set color of parabola beam
-	for (int i = 0; i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
-	{
-		if (vr_parabolaBeams[i] != nullptr)
-		{
-			if (vr_fValidTeleDestination)
-			{
-				vr_parabolaBeams[i]->pev->rendercolor = Vector(0, 255, 0);
-			}
-			else
-			{
-				vr_parabolaBeams[i]->pev->rendercolor = Vector(255, 0, 0);
-			}
-		}
-	}
+	vr_teleportParabolaSegmentCounter += VR_TELEPORT_PARABOLA_BEAM_SEGMENT_COUNT;
 }
 
-void VRControllerTeleporter::DisableXenMoundParabola()
+Vector CalculateXenMoundParabolaDir(const Vector& beamDir)
 {
-	for (int i = 0; i < VR_XEN_MOUND_PARABOLA_BEAM_SEGMENT_COUNT; i++)
+	// Get direction of parabola at beam end pos
+	Vector parabolaDir = beamDir;
+	parabolaDir.z = -parabolaDir.z * 4;  // Invert and make steeper
+	parabolaDir = parabolaDir.Normalize();
+	return parabolaDir;
+}
+
+VRControllerTeleporter::TeleportResult VRControllerTeleporter::TeleportParabola(CBasePlayer* pPlayer, const Vector& telePos, const Vector& teleDir, Vector& teleportDestination, bool& needsToDuck)
+{
+	// Set this to false, in case we won't hit anything in the parabola loop (parabola goes into empty space), thus the teleport destination couldn't be determined and is invalid
+	vr_teleportResult = TeleportResult::INVALID;
+	needsToDuck = false;
+
+	ExtendTeleportParabola(pPlayer, telePos, teleDir);
+
+	teleportDestination = vr_teleParabola.endPoint;
+	vr_teleportResult = CanTeleportHere(pPlayer, vr_teleParabola.segments.back().tr, vr_teleParabola.segments.back().startPoint, vr_teleParabola.segments.back().endPoint, teleportDestination, needsToDuck);
+	return vr_teleportResult;
+}
+
+void VRControllerTeleporter::EnableXenMoundParabolaAndUpdateTeleDestination(CBasePlayer* pPlayer, const Vector& beamStartPos, const Vector& beamEndPos, Vector& teleportDestination, bool& needsToDuck)
+{
+	// Get direction of beam and clamp at -0.1f z direction
+	Vector beamDir = (beamEndPos - beamStartPos).Normalize();
+	beamDir.z = min(beamDir.z, -0.1f);
+	beamDir = beamDir.Normalize();
+
+	vr_teleportResult = TeleportParabola(pPlayer, beamEndPos, CalculateXenMoundParabolaDir(beamDir), teleportDestination, needsToDuck);
+
+	// Don't hit xen mounds multiple times
+	if (vr_teleportResult == TeleportResult::XEN_MOUND)
 	{
-		if (vr_parabolaBeams[i] != nullptr)
+		vr_teleportResult = TeleportResult::VALID;
+	}
+
+	vr_teleportedXenMoundOrigins.push_back(beamEndPos);
+}
+
+void VRControllerTeleporter::ColorTeleporter(const Vector& color)
+{
+	for (auto& segment : vr_teleParabola.segments)
+	{
+		if (segment.beam)
 		{
-			UTIL_Remove(vr_parabolaBeams[i]);
-			vr_parabolaBeams[i] = nullptr;
+			segment.beam->pev->rendercolor = color;
 		}
 	}
+	vr_hTeleSprite->pev->rendercolor = color;
 }

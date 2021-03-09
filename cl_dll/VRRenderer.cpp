@@ -162,6 +162,7 @@ void VRRenderer::UpdateGameRenderState()
 		m_wasMenuJustRendered = false;
 }
 
+
 void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 {
 	const int in_nextview = pparams->nextView;
@@ -180,24 +181,37 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		return;
 	}
 
+	VREyeMode eyeMode = m_eyeMode;
+
 	if (pparams->nextView == 0)
 	{
+		eyeMode = m_eyeMode = static_cast<VREyeMode>(std::atoi(CVAR_GET_STRING("vr_eye_mode")));
+
 		vrHelper->PollEvents(true, m_isInMenu); // 200~300탎
 
 		if (!vrHelper->UpdatePositions(pparams->viewentity > pparams->maxclients ? pparams->viewentity : -1)) // 100~200탎, sometimes spikes to 3000+탎(!)
 		{
 			// No valid HMD input, render default (2D pancake mode)
+			eyeMode = VREyeMode::PancakeMode;
+			/*
+			auto* player = SaveGetLocalPlayer();
+			if (player)
+			{
+				VectorCopy(player->angles, pparams->cl_viewangles);
+				VectorCopy(player->angles, pparams->viewangles);
+			}
+			pparams->onlyClientDraw = 0;
+			m_fIsOnlyClientDraw = false;
 			return;
+			*/
 		}
 
 		VRTextureHelper::Instance().Init();
 		CheckAndIfNecessaryReplaceHDTextures();
-
-		m_eyeMode = static_cast<EyeMode>(std::atoi(CVAR_GET_STRING("vr_eye_mode")));
 	}
 
-	// skip second eye if m_eyeMode is LeftOnly or RightOnly
-	if (pparams->nextView == 1 && m_eyeMode != EyeMode::Both)
+	// skip second eye if m_eyeMode is not Both
+	if (pparams->nextView == 1 && m_eyeMode != VREyeMode::Both)
 	{
 		pparams->nextView = 2;
 	}
@@ -205,7 +219,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 	if (pparams->nextView == 0)
 	{
 		//200탎
-		if (m_eyeMode == EyeMode::RightOnly)
+		if (m_eyeMode == VREyeMode::RightOnly || m_eyeMode == VREyeMode::RightOnlyMirrored)
 		{
 			// right eye if RightOnly
 			vrHelper->PrepareVRScene(VRHelper::VRSceneMode::RightEye);
@@ -236,7 +250,7 @@ void VRRenderer::CalcRefdef(struct ref_params_s* pparams)
 		//900탎
 		RenderVRHandsAndHUDAndStuff();
 		vrHelper->FinishVRScene(pparams->viewport[2], pparams->viewport[3]);
-		vrHelper->SubmitImages();
+		vrHelper->SubmitImages(m_eyeMode);
 
 		pparams->nextView = 0;
 		pparams->onlyClientDraw = 1;
@@ -283,18 +297,6 @@ void VRRenderer::RenderVRHandsAndHUDAndStuff()
 {
 	extern CGameStudioModelRenderer g_StudioRenderer;
 
-	m_numLeftControllerAttachments = 0;
-	if (vrHelper->HasValidLeftController())
-	{
-		g_StudioRenderer.StudioDrawVRHand(
-			gHUD.m_leftControllerModelData,
-			vrHelper->GetLeftControllerPosition(),
-			vrHelper->GetLeftControllerAngles(),
-			true,
-			&m_numLeftControllerAttachments,
-			m_leftControllerAttachments);
-	}
-
 	m_numRightControllerAttachments = 0;
 	if (vrHelper->HasValidRightController())
 	{
@@ -305,6 +307,18 @@ void VRRenderer::RenderVRHandsAndHUDAndStuff()
 			false,
 			&m_numRightControllerAttachments,
 			m_rightControllerAttachments);
+	}
+
+	m_numLeftControllerAttachments = 0;
+	if (vrHelper->HasValidLeftController())
+	{
+		g_StudioRenderer.StudioDrawVRHand(
+			gHUD.m_leftControllerModelData,
+			vrHelper->GetLeftControllerPosition(),
+			vrHelper->GetLeftControllerAngles(),
+			true,
+			&m_numLeftControllerAttachments,
+			m_leftControllerAttachments);
 	}
 
 	if (CVAR_GET_FLOAT("vr_debug_controllers") != 0.f)

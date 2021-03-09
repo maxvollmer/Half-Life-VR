@@ -81,7 +81,7 @@
       <EnableModules>
       </EnableModules>
       <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Midl>
@@ -110,9 +110,9 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
-      <Command>ClientDLLIncludeFixer.exe .\Debug\client.dll
-copy .\Debug\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
-copy .\Debug\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
+      <Command>..\DLLIncludeFixer.exe .\$(Configuration)\client.dll
+copy .\$(Configuration)\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
+copy .\$(Configuration)\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -134,7 +134,7 @@ copy .\Debug\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
       <DisableSpecificWarnings>5208;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Midl>
@@ -162,9 +162,9 @@ copy .\Debug\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>ClientDLLIncludeFixer.exe .\Release\client.dll
-copy .\Release\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
-copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
+      <Command>..\DLLIncludeFixer.exe .\$(Configuration)\client.dll
+copy .\$(Configuration)\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
+copy .\$(Configuration)\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -299,6 +299,7 @@ copy .\Release\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
     <ClInclude Include="cl_dll.h" />
     <ClInclude Include="com_weapons.h" />
     <ClInclude Include="demo.h" />
+    <ClInclude Include="DoOnDestruct.h" />
     <ClInclude Include="dr_wav.h" />
     <ClInclude Include="eventscripts.h" />
     <ClInclude Include="ev_hldm.h" />

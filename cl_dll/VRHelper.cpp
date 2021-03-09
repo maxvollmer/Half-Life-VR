@@ -606,12 +606,31 @@ void VRHelper::FinishVRScene(float width, float height)
 	vr_scenePushCount--;
 }
 
-void VRHelper::InternalSubmitImage(vr::EVREye eEye)
+void VRHelper::InternalSubmitImage(VREyeMode eyeMode, vr::EVREye eEye)
 {
 	vr::Texture_t vrTexture;
 	vrTexture.eType = vr::ETextureType::TextureType_OpenGL;
 	vrTexture.eColorSpace = vr::EColorSpace::ColorSpace_Gamma;
-	vrTexture.handle = reinterpret_cast<void*>(eEye == vr::EVREye::Eye_Left ? vrGLLeftEyeTexture : vrGLRightEyeTexture);
+
+	switch (eyeMode)
+	{
+	case VREyeMode::LeftOnly:
+		if (eEye == vr::EVREye::Eye_Right)
+			return;
+	case VREyeMode::LeftOnlyMirrored:
+		vrTexture.handle = reinterpret_cast<void*>(vrGLLeftEyeTexture);
+		break;
+	case VREyeMode::RightOnly:
+		if (eEye == vr::EVREye::Eye_Left)
+			return;
+	case VREyeMode::RightOnlyMirrored:
+		vrTexture.handle = reinterpret_cast<void*>(vrGLRightEyeTexture);
+		break;
+	case VREyeMode::Both:
+	default:
+		vrTexture.handle = reinterpret_cast<void*>(eEye == vr::EVREye::Eye_Left ? vrGLLeftEyeTexture : vrGLRightEyeTexture);
+		break;
+	}
 
 	ClearGLErrors();
 	auto vrError = vrCompositor->Submit(eEye, &vrTexture);
@@ -624,19 +643,19 @@ void VRHelper::InternalSubmitImage(vr::EVREye eEye)
 	}
 }
 
-void VRHelper::InternalSubmitImages()
+void VRHelper::InternalSubmitImages(VREyeMode eyeMode)
 {
 	//std::lock_guard<std::mutex> lockCompositor{ g_vr_compositorMutex };
 
-	InternalSubmitImage(vr::EVREye::Eye_Left);
-	InternalSubmitImage(vr::EVREye::Eye_Right);
+	InternalSubmitImage(eyeMode, vr::EVREye::Eye_Left);
+	InternalSubmitImage(eyeMode, vr::EVREye::Eye_Right);
 	glFlush();
 	vrCompositor->PostPresentHandoff();
 }
 
-void VRHelper::SubmitImages()
+void VRHelper::SubmitImages(VREyeMode eyeMode)
 {
-	InternalSubmitImages();
+	InternalSubmitImages(eyeMode);
 	//std::thread thread{ [this] { InternalSubmitImages(); } };
 	//thread.detach();
 }
@@ -1278,14 +1297,14 @@ vr::IVRSystem* VRHelper::GetVRSystem()
 }
 
 // VR related functions
-extern struct cl_entity_s* GetViewEntity(void);
 #define VR_MUZZLE_ATTACHMENT 0
 Vector VRHelper::GetGunPosition()
 {
+	cl_entity_t* viewent = gEngfuncs.GetViewModel();
 	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t * ent);
-	if (HasValidWeaponController() && GetViewEntity() && VRGlobalNumAttachmentsForEntity(GetViewEntity()) >= 1)
+	if (HasValidWeaponController() && viewent && VRGlobalNumAttachmentsForEntity(viewent) >= 1)
 	{
-		return GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT];
+		return viewent->attachment[VR_MUZZLE_ATTACHMENT];
 	}
 	else
 	{
@@ -1295,11 +1314,12 @@ Vector VRHelper::GetGunPosition()
 
 Vector VRHelper::GetAutoaimVector()
 {
+	cl_entity_t* viewent = gEngfuncs.GetViewModel();
 	extern int VRGlobalNumAttachmentsForEntity(cl_entity_t * ent);
-	if (HasValidWeaponController() && GetViewEntity() && VRGlobalNumAttachmentsForEntity(GetViewEntity()) >= 2)
+	if (HasValidWeaponController() && viewent && VRGlobalNumAttachmentsForEntity(viewent) >= 2)
 	{
-		Vector pos1 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT];
-		Vector pos2 = GetViewEntity()->attachment[VR_MUZZLE_ATTACHMENT + 1];
+		Vector pos1 = viewent->attachment[VR_MUZZLE_ATTACHMENT];
+		Vector pos2 = viewent->attachment[VR_MUZZLE_ATTACHMENT + 1];
 		Vector dir = (pos2 - pos1).Normalize();
 		return dir;
 	}
@@ -1669,6 +1689,11 @@ bool VRIsAutoDuckingEnabled(int player)
 	return CVAR_GET_FLOAT("vr_autocrouch_enabled") != 0.f;
 }
 
+bool VRIsInUpwardsTriggerPush(int player)
+{
+	// TODO: Communicate this to client from server
+	return false;
+}
 
 
 void __stdcall HLVRConsoleCallback(char* msg)

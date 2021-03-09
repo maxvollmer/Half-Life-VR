@@ -5412,12 +5412,12 @@ CBaseEntity* CBasePlayer::GetCurrentUpwardsTriggerPush()
 	if (m_hCurrentUpwardsTriggerPush)
 	{
 		// Make sure it's still valid
-		if (
-			!UTIL_BBoxIntersectsBBox(m_hCurrentUpwardsTriggerPush->pev->absmin, m_hCurrentUpwardsTriggerPush->pev->absmax, pev->absmin, pev->absmax) || ((m_hCurrentUpwardsTriggerPush->pev->speed * m_hCurrentUpwardsTriggerPush->pev->movedir.z) <= (g_psv_gravity->value * pev->gravity)))
+		if (!UTIL_BBoxIntersectsBBox(m_hCurrentUpwardsTriggerPush->pev->absmin, m_hCurrentUpwardsTriggerPush->pev->absmax, pev->absmin, pev->absmax) || ((m_hCurrentUpwardsTriggerPush->pev->speed * m_hCurrentUpwardsTriggerPush->pev->movedir.z) <= (g_psv_gravity->value * pev->gravity)))
 			m_hCurrentUpwardsTriggerPush = nullptr;
 	}
 	return m_hCurrentUpwardsTriggerPush;
 }
+
 
 void CBasePlayer::SetFlashlightPose(const Vector& offset, const Vector& angles)
 {
@@ -6199,6 +6199,24 @@ bool CBasePlayer::VRCanAttack()
 	return tr.flFraction == 1.f;
 }
 
+void CBasePlayer::VRJustTeleported(const Vector& fromOrigin, const Vector& fromAngles)
+{
+	// Let go off ladders if teleporting
+	for (auto& bla : m_ladderGrabbingControllers)
+	{
+		m_vrControllers[bla.controller].ClearDraggedEntity();
+	}
+	ClearLadderGrabbingControllers();
+
+	// Let go off ledges if teleporting
+	StopPullingLedge();
+
+	// Make sure grabbed objects come with us
+	for (auto& [controllerID, controller] : m_vrControllers)
+	{
+		controller.VRJustTeleported(this, fromOrigin, fromAngles);
+	}
+}
 
 
 

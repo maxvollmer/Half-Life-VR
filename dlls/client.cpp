@@ -44,6 +44,7 @@
 #include "netadr.h"
 
 #include "VRPhysicsHelper.h"
+#include "VRNetworkManager.h"
 #include "vr_shared/VRShared.h"
 
 extern DLL_GLOBAL ULONG g_ulModelIndexPlayer;
@@ -700,6 +701,8 @@ void ServerActivate(edict_t* pEdictList, int edictCount, int clientMax)
 	extern bool g_didRestoreSaveGameFail;
 	if (g_didRestoreSaveGameFail)
 		return;
+
+	VRNetworkManager::InitNetwork();
 
 	VRPhysicsHelper::CreateInstance();
 

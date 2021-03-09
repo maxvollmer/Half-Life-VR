@@ -55,7 +55,7 @@ namespace
 	constexpr const float VOX_PERIOD_PAUSETIME = 0.43f;
 	constexpr const float VOX_COMMA_PAUSETIME = 0.25f;
 
-	constexpr const FMOD_VECTOR HL_TO_FMOD(const Vector& vec)
+	constexpr const FMOD_VECTOR HL_POS_TO_FMOD(const Vector& vec)
 	{
 		/*
 		HL.x = forward
@@ -68,6 +68,11 @@ namespace
 		*/
 
 		return FMOD_VECTOR{ vec.y * HL_TO_METERS, vec.z * HL_TO_METERS, vec.x * HL_TO_METERS };
+	}
+
+	constexpr const FMOD_VECTOR HL_DIR_TO_FMOD(const Vector& vec)
+	{
+		return FMOD_VECTOR{ vec.y, vec.z, vec.x };
 	}
 
 	enum StartSoundResult
@@ -264,7 +269,7 @@ FMOD::Geometry* CreateFMODGeometryFromHLModel(model_t* model, float directocclus
 			auto& verts = polys.emplace_back();
 			for (int j = 0; j < poly->numverts; j++)
 			{
-				verts.push_back(HL_TO_FMOD(poly->verts[j]));
+				verts.push_back(HL_POS_TO_FMOD(poly->verts[j]));
 			}
 
 			numvertices += poly->numverts;
@@ -387,14 +392,14 @@ void UpdateGeometries()
 				{
 					// update position and rotation, and set active (covers cached geometries from entities that left and re-entered audible set)
 
-					FMOD_VECTOR position = HL_TO_FMOD(pmove->physents[i].origin);
+					FMOD_VECTOR position = HL_POS_TO_FMOD(pmove->physents[i].origin);
 
 					Vector hlforward;
 					Vector hlup;
 					gEngfuncs.pfnAngleVectors(pmove->physents[i].angles, hlforward, nullptr, hlup);
 
-					FMOD_VECTOR forward{ hlforward.x, hlforward.y, hlforward.z };
-					FMOD_VECTOR up{ hlup.x, hlup.y, hlup.z };
+					FMOD_VECTOR forward = HL_DIR_TO_FMOD(hlforward);
+					FMOD_VECTOR up = HL_DIR_TO_FMOD(hlup);
 
 					fmod_geometry->setPosition(&position);
 					fmod_geometry->setRotation(&forward, &up);
@@ -595,8 +600,8 @@ void UpdateSoundPosition(FMOD::Channel* fmodChannel, int entnum, float* florigin
 	if (origin.LengthSquared() == 0.f && velocity.LengthSquared() == 0.f)
 		return;
 
-	FMOD_VECTOR fmodPosition = HL_TO_FMOD(origin);
-	FMOD_VECTOR fmodVelocity = HL_TO_FMOD(velocity);
+	FMOD_VECTOR fmodPosition = HL_POS_TO_FMOD(origin);
+	FMOD_VECTOR fmodVelocity = HL_POS_TO_FMOD(velocity);
 
 	if (onlyIfNew)
 	{
@@ -1202,14 +1207,14 @@ FMOD_3D_ATTRIBUTES GetFMODListenerAttributes()
 	 gVRRenderer.GetViewOrg(listenerpos);
 	 gVRRenderer.GetViewVectors(listenerforward, listenerright, listenerup);
 
-	 listenerattributes.position = HL_TO_FMOD(listenerpos);
-	 listenerattributes.forward = FMOD_VECTOR{ listenerforward.x, listenerforward.y, listenerforward.z };
-	 listenerattributes.up = FMOD_VECTOR{ listenerup.x, listenerup.y, listenerup.z };
+	 listenerattributes.position = HL_POS_TO_FMOD(listenerpos);
+	 listenerattributes.forward = HL_DIR_TO_FMOD(listenerforward);
+	 listenerattributes.up = HL_DIR_TO_FMOD(listenerup);
 
 	 cl_entity_t* localPlayer = SaveGetLocalPlayer();
 	 if (localPlayer)
 	 {
-		 listenerattributes.velocity = HL_TO_FMOD(localPlayer->curstate.velocity);
+		 listenerattributes.velocity = HL_POS_TO_FMOD(localPlayer->curstate.velocity);
 	 }
 
 	 return listenerattributes;

@@ -74,7 +74,7 @@
       <DisableSpecificWarnings>5208;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Midl>
@@ -100,12 +100,14 @@
       <ModuleDefinitionFile>.\hl.def</ModuleDefinitionFile>
       <OutputFile>.\Release\hl.dll</OutputFile>
       <ImportLibrary>.\Release\hl.lib</ImportLibrary>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;reactphysics3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\reactphysics3d\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;reactphysics3d.lib;steam_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\reactphysics3d\lib\Release;..\steam\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy .\Release\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"
-copy .\Release\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
+      <Command>..\DLLIncludeFixer.exe .\$(Configuration)\hl.dll
+copy .\$(Configuration)\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"
+copy .\$(Configuration)\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -129,7 +131,7 @@ copy .\Release\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
       <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <TreatSpecificWarningsAsErrors>4715;%(TreatSpecificWarningsAsErrors)</TreatSpecificWarningsAsErrors>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Midl>
@@ -156,13 +158,15 @@ copy .\Release\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
       <ModuleDefinitionFile>.\hl.def</ModuleDefinitionFile>
       <OutputFile>.\Debug\hl.dll</OutputFile>
       <ImportLibrary>.\Debug\hl.lib</ImportLibrary>
-      <AdditionalDependencies>user32.lib;advapi32.lib;reactphysics3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;advapi32.lib;reactphysics3d.lib;steam_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
-      <AdditionalLibraryDirectories>..\reactphysics3d\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\reactphysics3d\lib\Debug;..\steam\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy .\Debug\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"
-copy .\Debug\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
+      <Command>..\DLLIncludeFixer.exe .\$(Configuration)\hl.dll
+copy .\$(Configuration)\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"
+copy .\$(Configuration)\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -276,6 +280,7 @@ copy .\Debug\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
     <ClCompile Include="VRGroundEntityHandler.cpp" />
     <ClCompile Include="VRModelHelper.cpp" />
     <ClCompile Include="VRMovementHandler.cpp" />
+    <ClCompile Include="VRNetworkManager.cpp" />
     <ClCompile Include="VRPhysicsHelper.cpp" />
     <ClCompile Include="VRRotatableEnt.cpp" />
     <ClCompile Include="VRSDModelHelper.cpp" />
@@ -317,6 +322,7 @@ copy .\Debug\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"</Command>
     <ClInclude Include="items.h" />
     <ClInclude Include="VRDebugBBoxDrawer.h" />
     <ClInclude Include="VRMovementHandler.h" />
+    <ClInclude Include="VRNetworkManager.h" />
     <ClInclude Include="VRPhysicsBSPModels.hpp" />
     <ClInclude Include="VRPhysicsHelperHelpers.hpp" />
     <ClInclude Include="VRPhysicsHL2RP3D.hpp" />

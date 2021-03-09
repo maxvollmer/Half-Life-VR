@@ -495,12 +495,14 @@ void CHeadCrab::HandleDragStart()
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
 
+	if (!IsAlive())
+		return;
+
 	m_IdealMonsterState = MONSTERSTATE_NONE;
 	m_IdealActivity = ACT_IDLE;
 	m_iHintNode = -1;
 	m_afMemory = MEMORY_CLEAR;
 	m_hEnemy = nullptr;
-
 	ClearSchedule();
 	RouteClear();
 
@@ -514,12 +516,19 @@ void CHeadCrab::HandleDragStop()
 	SetThink(&CHeadCrab::CallMonsterThink);
 	pev->nextthink = gpGlobals->time + 0.1f;
 	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_STEP;
 	pev->angles.x = 0.f;
 	pev->angles.z = 0.f;
 
-	m_IdealMonsterState = MONSTERSTATE_IDLE;
-	m_IdealActivity = ACT_IDLE;
+	if (IsAlive())
+	{
+		m_IdealMonsterState = MONSTERSTATE_IDLE;
+		m_IdealActivity = ACT_IDLE;
+		pev->movetype = MOVETYPE_STEP;
+	}
+	else
+	{
+		pev->movetype = MOVETYPE_TOSS;
+	}
 
 	// give it a little throw
 	BaseBalled(nullptr, pev->velocity * 1.5f);
@@ -541,14 +550,18 @@ void CHeadCrab::HandleDragUpdate(const Vector& origin, const Vector& velocity, c
 
 void CHeadCrab::DragThink()
 {
-	if (m_fSequenceFinished)
-	{
-		pev->sequence = 13;
-		ResetSequenceInfo();
-		m_fSequenceLoops = true;
-	}
-	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1f;
+
+	if (IsAlive())
+	{
+		if (m_fSequenceFinished)
+		{
+			pev->sequence = 13;
+			ResetSequenceInfo();
+			m_fSequenceLoops = true;
+		}
+		StudioFrameAdvance();
+	}
 
 	// Check if player smashes us into a wall
 	if (CONTENTS_SOLID == UTIL_PointContents(pev->origin, true, nullptr))
@@ -564,10 +577,13 @@ void CHeadCrab::DragThink()
 
 void CHeadCrab::BaseBalled(CBaseEntity* pPlayer, const Vector& velocity)
 {
-	// scream if alive (we might have been killed by the melee attack)
 	if (IsAlive())
 	{
+		// scream if alive
 		PainSound();
+
+		// prevent attack for 2 seconds
+		m_flNextAttack = gpGlobals->time + 2.f;
 	}
 
 	// take off ground
@@ -577,9 +593,6 @@ void CHeadCrab::BaseBalled(CBaseEntity* pPlayer, const Vector& velocity)
 
 	// set velocity with a little kick
 	pev->velocity = velocity * 1.5f;
-
-	// prevent attack for 2 seconds
-	m_flNextAttack = gpGlobals->time + 2.f;
 }
 
 

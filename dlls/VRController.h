@@ -63,8 +63,15 @@ public:
 	bool HasDraggedEntity() const;
 	inline EHANDLE<CBaseEntity> GetDraggedEntity() const { return m_draggedEntity; }
 
+	inline bool IsHittingWorld() const { return m_isHittingWorld; }
+	inline void SetIsHittingWorld(bool isHittingWorld) { m_isHittingWorld = isHittingWorld; }
+	inline float GetLastTimeHitWorld() const { return m_lastTimeHitWorld; }
+	inline void SetLastTimeHitWorld(float time) { m_lastTimeHitWorld = time; }
+
 	bool AddHitEntity(EHANDLE<CBaseEntity> hEntity) const;
 	bool RemoveHitEntity(EHANDLE<CBaseEntity> hEntity) const;
+
+	void VRJustTeleported(CBasePlayer* pPlayer, const Vector& fromOrigin, const Vector& fromAngles);
 
 	struct DraggedEntityPositions
 	{
@@ -117,6 +124,9 @@ private:
 	int m_bboxModelSequence{ 0 };
 	float m_dragStartTime{ 0.f };
 	float m_radius{ 0.f };
+
+	bool m_isHittingWorld{ false };
+	float m_lastTimeHitWorld{ 0.f };
 
 	mutable EHANDLE<CVRControllerModel> m_hModel;
 

@@ -31,12 +31,5 @@ private:
 
 	Vector m_spawnOrigin;
 
-	EHANDLE<CTalkMonster> m_hKleiner;
-	float m_flKleinerFaceStart{ 0.f };
-
-	std::unordered_set<EHANDLE<CTalkMonster>, EHANDLE<CTalkMonster>::Hash, EHANDLE<CTalkMonster>::Equal> m_hAlreadySpokenKleiners;
-
 	static EHANDLE<CWorldsSmallestCup> m_instance;
-	static std::string m_lastMap;
-	static bool m_wasDraggedLastMap;
 };

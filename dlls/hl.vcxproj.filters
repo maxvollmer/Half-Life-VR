@@ -37,6 +37,9 @@
     <Filter Include="VR\Helpers\VRPhysicsHelperHelpers">
       <UniqueIdentifier>{b7e62c83-471b-4fc5-8d74-44dbd0aed532}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VR\Network">
+      <UniqueIdentifier>{f37fd09a-5aa9-4522-9529-cfe59210f69d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="aflock.cpp">
@@ -393,6 +396,9 @@
     <ClCompile Include="VRDebugBBoxDrawer.cpp">
       <Filter>VR\Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="VRNetworkManager.cpp">
+      <Filter>VR\Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activity.h">
@@ -595,6 +601,9 @@
     </ClInclude>
     <ClInclude Include="VRPhysicsIO.hpp">
       <Filter>VR\Helpers\VRPhysicsHelperHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRNetworkManager.h">
+      <Filter>VR\Network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

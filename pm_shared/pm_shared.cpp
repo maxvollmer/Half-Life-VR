@@ -47,6 +47,7 @@ inline bool VRIsGrabbingLadder() { return VRGetGrabbedLadder(pmove->player_index
 extern bool VRIsPullingOnLedge(int player);
 extern bool VRIsAutoDuckingEnabled(int player);
 extern float VRGetSmoothStepsSetting();
+extern bool VRIsInUpwardsTriggerPush(int player);
 
 
 // Forward declare methods, so we can move them around without the compiler going all "omg" - Max Vollmer, 2018-04-01
@@ -1393,7 +1394,7 @@ void PM_Friction(void)
 
 	// If player has enabled instant stop in VR,
 	// we simply set the velocity to 0 and are done here.
-	if (VRGlobalIsInstantDecelerateOn())
+	if (VRGlobalIsInstantDecelerateOn() || VRIsInUpwardsTriggerPush(pmove->player_index))
 	{
 		VectorClear(pmove->velocity);
 		return;
@@ -1474,6 +1475,12 @@ void PM_AirAccelerate(vec3_t wishdir, float wishspeed, float accel)
 		return;
 	if (pmove->waterjumptime)
 		return;
+
+	if (VRGlobalIsInstantAccelerateOn() || VRIsInUpwardsTriggerPush(pmove->player_index))
+	{
+		VectorScale(wishdir, wishspeed, pmove->velocity);
+		return;
+	}
 
 	// Cap speed
 	//wishspd = VectorNormalize (pmove->wishveloc);
@@ -2808,12 +2815,12 @@ Moved from PM_Move() switch statement for MOVETYPE_WALK - Max Vollmer, 2018-04-0
 void PM_YesClip(physent_t* pLadder)
 {
 	// No gravity in water - Max Vollmer, 2018-02-11
-	if (IsInWaterAndIsGravityDisabled() || (pmove->flags & FL_BARNACLED))
+	if (IsInWaterAndIsGravityDisabled() || (pmove->flags & FL_BARNACLED) || VRIsInUpwardsTriggerPush(pmove->player_index))
 	{
 		pmove->velocity[2] = max(0, pmove->velocity[2]);
 	}
 
-	if (!PM_InWater() && !(pmove->flags & FL_BARNACLED))
+	if (!PM_InWater() && !(pmove->flags & FL_BARNACLED) && !VRIsInUpwardsTriggerPush(pmove->player_index))
 	{
 		PM_AddCorrectGravity();
 	}
@@ -2871,7 +2878,7 @@ void PM_YesClip(physent_t* pLadder)
 
 		// Fricion is handled before we add in any base velocity. That way, if we are on a conveyor,
 		//  we don't slow when standing still, relative to the conveyor.
-		if (pmove->onground != -1)
+		if (pmove->onground != -1 || VRIsInUpwardsTriggerPush(pmove->player_index))
 		{
 			pmove->velocity[2] = 0.0;
 			PM_Friction();
@@ -2881,7 +2888,7 @@ void PM_YesClip(physent_t* pLadder)
 		PM_CheckVelocity();
 
 		// Are we on ground now
-		if (pmove->onground != -1)
+		if (pmove->onground != -1 && !VRIsInUpwardsTriggerPush(pmove->player_index))
 		{
 			PM_WalkMove();
 		}
@@ -2902,23 +2909,26 @@ void PM_YesClip(physent_t* pLadder)
 		PM_CheckVelocity();
 
 		// Add any remaining gravitational component.
-		if (!PM_InWater())
+		if (!PM_InWater() && !VRIsInUpwardsTriggerPush(pmove->player_index))
 		{
 			PM_FixupGravityVelocity();
 		}
 
 		// If we are on ground, no downward velocity.
-		if (pmove->onground != -1)
+		if (pmove->onground != -1 && !VRIsInUpwardsTriggerPush(pmove->player_index))
 		{
 			pmove->velocity[2] = 0;
 		}
 
 		// See if we landed on the ground with enough force to play
 		//  a landing sound.
-		PM_CheckFalling();
+		if (!VRIsInUpwardsTriggerPush(pmove->player_index))
+		{
+			PM_CheckFalling();
+		}
 	}
 
-	if (IsInWaterAndIsGravityDisabled() || (pmove->flags & FL_BARNACLED))
+	if (IsInWaterAndIsGravityDisabled() || (pmove->flags & FL_BARNACLED) || VRIsInUpwardsTriggerPush(pmove->player_index))
 	{
 		pmove->velocity[2] = max(0, pmove->velocity[2]);
 	}
@@ -3000,7 +3010,7 @@ void PM_Jump(void)
 	}
 
 	// If we are in the water most of the way...
-	if (pmove->waterlevel >= 2)
+	if (pmove->waterlevel >= 2 || VRIsInUpwardsTriggerPush(pmove->player_index))
 	{  // swimming, not jumping
 		pmove->onground = -1;
 
@@ -3012,7 +3022,7 @@ void PM_Jump(void)
 			pmove->velocity[2] = 50;
 
 		// play swiming sound
-		if (pmove->flSwimTime <= 0)
+		if (pmove->flSwimTime <= 0 && !VRIsInUpwardsTriggerPush(pmove->player_index))
 		{
 			// Don't play sound again for 1 second
 			pmove->flSwimTime = 1000;

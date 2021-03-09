@@ -120,6 +120,7 @@ public:
 	inline float LengthSquared() const { return x * x + y * y + z * z; }  // Added squared length for convenience - Max Vollmer, 2018-01-28
 	operator float* () { return &x; }                                          // Vectors will now automatically convert to float * when needed
 	operator const float* () const { return &x; }                              // Vectors will now automatically convert to float * when needed
+	inline Vector* operator+=(const Vector& v) { x += v.x; y += v.y; z += v.z; return this; }
 	inline Vector Normalize(void) const
 	{
 		float flLen = Length();

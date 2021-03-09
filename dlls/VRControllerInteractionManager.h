@@ -61,6 +61,8 @@ private:
 
 	float DoDamage(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult);
 
+	void HitWorld(CBasePlayer* pPlayer, VRController& controller);
+
 	bool CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult);
 	bool IsDraggableEntity(CBaseEntity* pEntity);
 	bool IsDraggableEntityThatCanTouchStuff(CBaseEntity* pEntity);

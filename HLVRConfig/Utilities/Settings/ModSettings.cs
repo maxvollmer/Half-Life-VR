@@ -196,7 +196,15 @@ namespace HLVRConfig.Utilities.Settings
         {
             { CategoryRenderer, new OrderedDictionary<string, Setting>() {
                 { "vr_headset_fps", Setting.Create( new I18N.I18NString("vr_headset_fps", "FPS"), SettingType.COUNT, "90" ) },
-                { "vr_eye_mode", Setting.Create( new I18N.I18NString("vr_eye_mode", "Render to..."), new OrderedDictionary<string, I18N.I18NString>(){ { "0", new I18N.I18NString("vr_eye_mode.BothEyes", "Both Eyes") }, { "1", new I18N.I18NString("vr_eye_mode.LeftEye", "Left Eye Only") }, { "2", new I18N.I18NString("vr_eye_mode.RightEye", "Right Eye Only") } }, "0" ) },
+                { "vr_eye_mode", Setting.Create( new I18N.I18NString("vr_eye_mode", "Render to..."),
+                    new OrderedDictionary<string, I18N.I18NString>(){
+                        { "0", new I18N.I18NString("vr_eye_mode.BothEyes", "Both Eyes") },
+                        { "1", new I18N.I18NString("vr_eye_mode.LeftEye", "Left Eye Only") },
+                        { "2", new I18N.I18NString("vr_eye_mode.RightEye", "Right Eye Only") },
+                        { "3", new I18N.I18NString("vr_eye_mode.LeftEyeMirrored", "Left Eye Only (Mirrored on Right Eye)") },
+                        { "4", new I18N.I18NString("vr_eye_mode.RightEyeMirrored", "Right Eye Only (Mirrored on Left Eye)") }
+                    },"0" )
+                },
                 { "vr_display_game", Setting.Create( new I18N.I18NString("vr_display_game", "Display VR view in game window"), false ) },
             } },
 

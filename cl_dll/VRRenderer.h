@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../vr_shared/VRShared.h"
+
 #define VEC_HULL_MIN      Vector(-16, -16, -36)
 #define VEC_HULL_MAX      Vector(16, 16, 36)
 #define VEC_DUCK_HULL_MIN Vector(-16, -16, -18)
@@ -163,13 +165,7 @@ private:
 	float m_flDrawingDamageTime = 0.f;
 	Vector m_damageColor;
 
-	enum class EyeMode
-	{
-		Both,
-		LeftOnly,
-		RightOnly
-	};
-	EyeMode m_eyeMode{ EyeMode::Both };
+	VREyeMode m_eyeMode{ VREyeMode::Both };
 
 	bool m_isVeryFirstFrameEver{ true };
 

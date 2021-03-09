@@ -6,7 +6,7 @@
 
 #include "Matrices.h"
 
-#include "VRCommon.h"
+#include "../vr_shared/VRShared.h"
 
 extern void VectorAngles(const float* forward, float* angles);
 
@@ -39,7 +39,7 @@ public:
 
 	void PollEvents(bool isInGame, bool isInMenu);
 	bool UpdatePositions(int viewent);
-	void SubmitImages();
+	void SubmitImages(VREyeMode eyeMode);
 	void PrepareVRScene(VRSceneMode sceneMode);
 	void FinishVRScene(float width, float height);
 
@@ -84,8 +84,8 @@ private:
 	void SendPositionUpdateToServer();
 	void UpdateViewEnt(bool isControllerValid, const Vector& controllerPosition, const Vector& controllerAngles, const Vector& controllerVelocity, bool isMirrored);
 
-	void InternalSubmitImages();
-	void InternalSubmitImage(vr::EVREye eEye);
+	void InternalSubmitImages(VREyeMode eyeMode);
+	void InternalSubmitImage(VREyeMode eyeMode, vr::EVREye eEye);
 
 	void MatrixVectors(const Matrix4& source, Vector& forward, Vector& right, Vector& up);
 

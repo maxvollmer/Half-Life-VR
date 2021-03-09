@@ -11,6 +11,8 @@
 #include "vector.h"
 #include "cbase.h"
 #include "player.h"
+#include "decals.h"
+#include "gamerules.h"
 
 #include "game.h"
 
@@ -344,6 +346,8 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 	// Next frame all entities will have been cleared.)
 	if (!controller.IsValid() && !controller.HasAnyEntites())
 	{
+		controller.SetIsHittingWorld(false);
+		controller.SetLastTimeHitWorld(0.f);
 		return;
 	}
 
@@ -368,7 +372,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			continue;
 		}
 
-		// skip point entities (no model and/or no size)
+		// skip point entities (no model and no size)
 		if (FStringNull(pent->v.model) && pent->v.size.x == 0.f && pent->v.size.y == 0.f && pent->v.size.z == 0.f)
 		{
 			continue;
@@ -537,6 +541,8 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			isDraggingAnEntity = true;
 		}
 	}
+
+	HitWorld(pPlayer, controller);
 }
 
 bool IsSoftWeapon(int weaponId)
@@ -551,6 +557,149 @@ bool IsSoftWeapon(int weaponId)
 	default:
 		return false;
 	}
+}
+
+bool CheckIntersectsWorld(VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* result)
+{
+	// Check each hitbox of current weapon
+	for (auto hitbox : controller.GetHitBoxes())
+	{
+		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(CBaseEntity::InstanceOrWorld(ENT(0)), hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, result))
+		{
+			return true;
+		}
+	}
+
+	/*
+	// TODO: check hitboxes of dragged entity (if any)
+	if (controller.HasDraggedEntity())
+	{
+		CBaseEntity* pDraggedEntity = controller.GetDraggedEntity();
+		if (IsDraggableEntityThatCanTouchStuff(pDraggedEntity))
+		{
+			void* pmodel = GET_MODEL_PTR(pDraggedEntity->edict());
+			if (pmodel)
+			{
+				int numhitboxes = GetNumHitboxes(pmodel);
+				if (numhitboxes > 0)
+				{
+					std::vector<StudioHitBox> draggedentityhitboxes;
+					draggedentityhitboxes.resize(numhitboxes);
+					if (GetHitboxesAndAttachments(pDraggedEntity->pev, pmodel, pDraggedEntity->pev->sequence, pDraggedEntity->pev->frame, draggedentityhitboxes.data(), nullptr))
+					{
+						if (CheckIfEntityAndHitboxesTouch(pPlayer, pDraggedEntity, draggedentityhitboxes, intersectResult))
+						{
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	*/
+
+	return false;
+}
+
+void VRControllerInteractionManager::HitWorld(CBasePlayer* pPlayer, VRController& controller)
+{
+	if (controller.GetVelocity().Length() < GetMeleeSwingSpeed())
+		return;
+
+	if (gpGlobals->time < controller.GetLastTimeHitWorld() + 1.5f)
+		return;
+
+	VRPhysicsHelperModelBBoxIntersectResult result;
+
+	bool wasHittingWorld = controller.IsHittingWorld();
+	bool isHittingWorld = CheckIntersectsWorld(controller, &result);
+
+	if (isHittingWorld == wasHittingWorld)
+		return;
+
+	controller.SetIsHittingWorld(isHittingWorld);
+
+	if (!isHittingWorld)
+		return;
+
+	controller.SetLastTimeHitWorld(gpGlobals->time);
+
+	float volume = 0.5f * (controller.GetVelocity().Length() / GetMeleeSwingSpeed());
+	if (volume > 1.f)
+		volume = 1.f;
+
+	if (IsSoftWeapon(controller.GetWeaponId()))
+	{
+		switch (RANDOM_LONG(0, 6))
+		{
+		case 0:
+			EMIT_AMBIENT_SOUND(pPlayer->edict(), result.hitpoint, "weapons/cbar_hitbod1.wav", volume, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+			break;
+		case 1:
+			EMIT_AMBIENT_SOUND(pPlayer->edict(), result.hitpoint, "weapons/cbar_hitbod2.wav", volume, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+			break;
+		case 2:
+			EMIT_AMBIENT_SOUND(pPlayer->edict(), result.hitpoint, "weapons/cbar_hitbod3.wav", volume, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+			break;
+		case 3:
+			EMIT_AMBIENT_SOUND(pPlayer->edict(), result.hitpoint, "weapons/bullet_hit1.wav", volume, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+			break;
+		case 4:
+			EMIT_AMBIENT_SOUND(pPlayer->edict(), result.hitpoint, "weapons/bullet_hit2.wav", volume, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+			break;
+		case 5:
+			EMIT_AMBIENT_SOUND(pPlayer->edict(), result.hitpoint, "weapons/xbow_hitbod1.wav", volume, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+			break;
+		case 6:
+			EMIT_AMBIENT_SOUND(pPlayer->edict(), result.hitpoint, "weapons/xbow_hitbod2.wav", volume, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+			break;
+		}
+	}
+	else
+	{
+		TraceResult fakeTr;
+		fakeTr.pHit = ENT(0);
+		fakeTr.flFraction = 0.5f;
+		fakeTr.vecEndPos = result.hitpoint;
+		fakeTr.iHitgroup = result.hitgroup;
+
+		float fvolbar = TEXTURETYPE_PlaySound(&fakeTr, controller.GetPosition(), (result.hitpoint * 2) - controller.GetPosition(), BULLET_PLAYER_CROWBAR, volume);
+
+		if (g_pGameRules->IsMultiplayer())
+		{
+			fvolbar = 1.f;
+		}
+
+		switch (RANDOM_LONG(0, 1))
+		{
+		case 0:
+			EMIT_AMBIENT_SOUND(pPlayer->edict(), result.hitpoint, "weapons/cbar_hit1.wav", fvolbar * volume, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+			break;
+		case 1:
+			EMIT_AMBIENT_SOUND(pPlayer->edict(), result.hitpoint, "weapons/cbar_hit2.wav", fvolbar * volume, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+			break;
+		}
+
+		int decalIndex = gDecals[DECAL_GUNSHOT1 + RANDOM_LONG(0, 4)].index;
+		if (decalIndex >= 0)
+		{
+			int message = TE_WORLDDECAL;
+			if (decalIndex > 255)
+			{
+				message = TE_WORLDDECALHIGH;
+				decalIndex -= 256;
+			}
+			MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+			WRITE_BYTE(message);
+			WRITE_COORD(result.hitpoint.x);
+			WRITE_COORD(result.hitpoint.y);
+			WRITE_COORD(result.hitpoint.z);
+			WRITE_BYTE(decalIndex);
+			MESSAGE_END();
+		}
+	}
+
+	pPlayer->m_iWeaponVolume = 512; // CROWBAR_WALLHIT_VOLUME = 512
 }
 
 float VRControllerInteractionManager::DoDamage(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult)

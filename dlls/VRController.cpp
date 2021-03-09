@@ -633,3 +633,20 @@ bool VRController::HasAnyEntites() const
 {
 	return m_draggedEntity || !m_touchedEntities.empty() || !m_hitEntities.empty();
 }
+
+void VRController::VRJustTeleported(CBasePlayer* pPlayer, const Vector& fromOrigin, const Vector& fromAngles)
+{
+	m_position = pPlayer->GetClientOrigin() + m_offset;
+
+	if (HasDraggedEntity())
+	{
+		Vector delta = fromOrigin - pPlayer->pev->origin;
+
+		m_draggedEntityPositions->controllerLastPos += delta;
+		m_draggedEntityPositions->entityLastOrigin += delta;
+		m_draggedEntityPositions->playerLastOrigin += delta;
+
+		m_draggedEntity->pev->origin += delta;
+		UTIL_SetOrigin(m_draggedEntity->pev, m_draggedEntity->pev->origin);
+	}
+}

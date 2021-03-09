@@ -407,39 +407,29 @@ void VRSettings::UpdateTextureMode()
 	std::string gl_texturemode = CVAR_GET_STRING("gl_texturemode");
 	std::transform(gl_texturemode.begin(), gl_texturemode.end(), gl_texturemode.begin(), ::toupper);
 
-	std::string newtexturemode;
-	if (vr_texturemode != m_vr_texturemode)
+	if (vr_texturemode != m_vr_texturemode || vr_texturemode != gl_texturemode)
 	{
-		newtexturemode = vr_texturemode;
-	}
-	else if (gl_texturemode != m_gl_texturemode)
-	{
-		newtexturemode = gl_texturemode;
-	}
-
-	if (!newtexturemode.empty())
-	{
-		if (newtexturemode == "GL_NEAREST")
+		if (vr_texturemode == "GL_NEAREST")
 		{
 			gEngfuncs.pfnClientCmd("gl_texturemode GL_NEAREST");
 			gEngfuncs.pfnClientCmd("vr_texturemode GL_NEAREST");
 		}
-		else if (newtexturemode == "GL_LINEAR")
+		else if (vr_texturemode == "GL_LINEAR")
 		{
 			gEngfuncs.pfnClientCmd("gl_texturemode GL_LINEAR");
 			gEngfuncs.pfnClientCmd("vr_texturemode GL_LINEAR");
 		}
-		else if (newtexturemode == "GL_NEAREST_MIPMAP_NEAREST")
+		else if (vr_texturemode == "GL_NEAREST_MIPMAP_NEAREST")
 		{
 			gEngfuncs.pfnClientCmd("gl_texturemode GL_NEAREST_MIPMAP_NEAREST");
 			gEngfuncs.pfnClientCmd("vr_texturemode GL_NEAREST_MIPMAP_NEAREST");
 		}
-		else if (newtexturemode == "GL_LINEAR_MIPMAP_NEAREST")
+		else if (vr_texturemode == "GL_LINEAR_MIPMAP_NEAREST")
 		{
 			gEngfuncs.pfnClientCmd("gl_texturemode GL_LINEAR_MIPMAP_NEAREST");
 			gEngfuncs.pfnClientCmd("vr_texturemode GL_LINEAR_MIPMAP_NEAREST");
 		}
-		else if (newtexturemode == "GL_NEAREST_MIPMAP_LINEAR")
+		else if (vr_texturemode == "GL_NEAREST_MIPMAP_LINEAR")
 		{
 			gEngfuncs.pfnClientCmd("gl_texturemode GL_NEAREST_MIPMAP_LINEAR");
 			gEngfuncs.pfnClientCmd("vr_texturemode GL_NEAREST_MIPMAP_LINEAR");
@@ -448,8 +438,8 @@ void VRSettings::UpdateTextureMode()
 		{
 			gEngfuncs.pfnClientCmd("gl_texturemode GL_LINEAR_MIPMAP_LINEAR");
 			gEngfuncs.pfnClientCmd("vr_texturemode GL_LINEAR_MIPMAP_LINEAR");
+			vr_texturemode = "GL_LINEAR_MIPMAP_LINEAR";
 		}
-		m_vr_texturemode = newtexturemode;
-		m_gl_texturemode = newtexturemode;
+		m_vr_texturemode = vr_texturemode;
 	}
 }

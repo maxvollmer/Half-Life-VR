@@ -1982,16 +1982,21 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 		break;
 	}
 
+	// If noclip is enabled we don't push the player
+	extern bool VRGlobalGetNoclipMode();
+	if (pOther->IsPlayer() && VRGlobalGetNoclipMode())
+	{
+		return;
+	}
+
 	// Allow disabling trigger_pushs to avoid nausea in VR - Max Vollmer, 2019-04-13
 	if (pOther->IsPlayer() && CVAR_GET_FLOAT("vr_disable_triggerpush") != 0.f)
 	{
 		// Dont' fall down if this is an upward push
 		// (but also don't get pushed up, instead players can use the teleporter here like under water)
 		extern cvar_t* g_psv_gravity;
-		if ((pev->speed * pev->movedir.z) > (g_psv_gravity->value * pOther->pev->gravity))
+		if (pev->movedir.z > 0.f && pev->speed > (g_psv_gravity->value * pOther->pev->gravity))
 		{
-			pOther->pev->velocity.z = max(0.f, pOther->pev->velocity.z);
-			pOther->pev->basevelocity.z = max(0.f, pOther->pev->basevelocity.z);
 			dynamic_cast<CBasePlayer*>(pOther)->SetCurrentUpwardsTriggerPush(this);
 		}
 		return;
@@ -2055,9 +2060,17 @@ void CBaseTrigger::TeleportTouch(CBaseEntity* pOther)
 		}
 	}
 
+	// Don't teleport items the player currently holds
+	// (we instead teleport the player and the player takes the items with them)
+	if (pOther->IsBeingDragged())
+		return;
+
 	pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(pev->target));
 	if (FNullEnt(pentTarget))
 		return;
+
+	Vector prevOrigin = pOther->pev->origin;
+	Vector prevAngles = pOther->pev->angles;
 
 	Vector tmp = VARS(pentTarget)->origin;
 
@@ -2081,6 +2094,15 @@ void CBaseTrigger::TeleportTouch(CBaseEntity* pOther)
 
 	pevToucher->fixangle = TRUE;
 	pevToucher->velocity = pevToucher->basevelocity = g_vecZero;
+
+	if (pOther->IsPlayer())
+	{
+		CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pOther);
+		if (pPlayer)
+		{
+			pPlayer->VRJustTeleported(prevOrigin, prevAngles);
+		}
+	}
 }
 
 
