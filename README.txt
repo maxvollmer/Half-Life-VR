@@ -3,13 +3,13 @@ Half-Life: VR
 Author: Max Vollmer and team
 github: https://github.com/maxvollmer/Half-Life-VR
 
-VERSION 0.6.27-beta
+VERSION 0.6.28-beta
 
-Release date: 2020-08-03
+Release date: -
 
-Copyright (c) 2017-2020 Max Vollmer (if not otherwise stated)
+Copyright (c) 2017-2021 Max Vollmer (if not otherwise stated)
 
-Half-Life: VR team consists of Max Vollmer, Formic.Sapien, Rorin and DoomMarine23.
+Half-Life: VR team consists of Max Vollmer, Formic.Sapien, Rorin, DoomMarine23, and Junt.
 
 Based on the Half-Life SDK by Valve Corporation. The Valve SDK LICENSE applies. All rights reserved.
 
@@ -29,7 +29,7 @@ This is a mod for Half-Life adding support for playing the game in Virtual Reali
 
 VR enabled weapon models by Formic.Sapien and Rorin.
 
-Substantial help provided by Formic.Sapien, Rorin and DoomMarine23.
+Substantial help provided by Formic.Sapien, Rorin, DoomMarine23, and Junt.
 
 Third party licenses apply where applicable.
 
@@ -44,26 +44,8 @@ NO SUPPORT IS OFFERED WHATSOEVER. Bug reports are welcome, but "it's not working
 Please read this file carefully, especially the third party section, if you plan on using any of the files for anything.
 
 ====
-If you are a coder and want to help, get in touch!
+If you are a coder and want to help, please get in touch!
 
-====
-List of known bugs and issues:
-
-- HUD text is rendered in the map center instead of in the player's view
-- HL VR menu blocks/overlays SteamVR menus
-- Skybox images in VR menu are mixed up
-- Damage feedback isn't properly visible on Index (and possibly other headsets)
-- It's possible to activate buttons, doors and other triggers through walls with the controllers
-
-====
-Unfinished/planned features:
-
-- Proper VR controls for controllable trains
-- Proper teleportation arc that matches path of a jumping player
-- Vibrational feedback (recoil etc.)
-- Smooth out stairs
-- Two-handed weapons
-- Being able to pull yourself forward while crouching
 
 ===================
 *******************

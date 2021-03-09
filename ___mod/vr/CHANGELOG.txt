@@ -1,3 +1,21 @@
+0.6.28-beta
+ Mod:
+  * Fixed rare crash bug
+  * Fixed game sometimes freezing during load/save when HLVRConfig is open
+  * Fixed texture mode getting reset
+  * Fixed issues when teleporting while holding onto a ladder
+  * Fixed issues when teleporting while holding objects
+  * Fixed issues when teleporting into teleporters
+  * Fixed dead headcrabs becoming alive and invincible after being picked up
+  * Fixed audio being 90° rotated in FMOD
+  * Fixed shooting effects coming from right hand in left-hand mode
+  * Fixed crowbar not making sounds/decals when hitting level geometry
+  * Added proper teleporter arc
+  * Added option to mirror eyes if only one eye is rendered
+
+ HLVRConfig:
+  * Added option to mirror eyes if only one eye is rendered
+
 0.6.27-beta - 2020-08-03
  Mod:
   * Fixed headset aim when playing with keyboard and without controllers
