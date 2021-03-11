@@ -6093,7 +6093,7 @@ CBaseEntity* CBasePlayer::VRFindTank(const char* func_tank_classname)
 		{
 			return CBaseEntity::SafeInstance<CBaseEntity>(pent);
 		}
-		pent = FIND_ENTITY_BY_CLASSNAME(pent, "func_tank");
+		pent = FIND_ENTITY_BY_CLASSNAME(pent, func_tank_classname);
 	}
 	return nullptr;
 }
