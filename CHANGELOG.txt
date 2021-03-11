@@ -10,6 +10,7 @@
   * Fixed audio being 90° rotated in FMOD
   * Fixed shooting effects coming from right hand in left-hand mode
   * Fixed crowbar not making sounds/decals when hitting level geometry
+  * Fixed some controllable stationary turrets/guns/rocket launchers not reacting to VR controllers
   * Added proper teleporter arc
   * Added option to mirror eyes if only one eye is rendered
 
