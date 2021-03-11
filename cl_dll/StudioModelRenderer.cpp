@@ -1463,13 +1463,6 @@ int CStudioModelRenderer::StudioDrawModel(int flags)
 		// copy attachments into global entity array
 		if (m_pCurrentEntity->index > 0)
 		{
-			// Special handling of view entity
-			cl_entity_t* viewmodel = gEngfuncs.GetViewModel();
-			if (viewmodel != nullptr && m_pCurrentEntity == viewmodel)
-			{
-				gEngfuncs.Con_DPrintf("Doing the viewwent attachement thing in StudioModelRenderer.\n");
-			}
-
 			cl_entity_t* ent = gEngfuncs.GetEntityByIndex(m_pCurrentEntity->index);
 
 			memcpy(ent->attachment, m_pCurrentEntity->attachment, sizeof(vec3_t) * 4);
