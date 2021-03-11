@@ -120,12 +120,12 @@ public:
 	float m_flBank = 0.f;
 	float m_oldSpeed = 0.f;
 
-	Vector GetVRControlsOffset();
+	Vector2D GetVRControlsOffset();
 
 private:
 	unsigned short m_usAdjustPitch = 0;
 
-	Vector m_vrControlsOffset;
+	Vector2D m_vrControlsOffset;
 };
 
 #endif

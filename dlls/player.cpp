@@ -2027,8 +2027,12 @@ void CBasePlayer::PreThink(void)
 			Vector right;
 			Vector up;
 			UTIL_MakeVectorsPrivate(pTrain->pev->angles, forward, right, up);
+			forward.z = 0.f;
+			right.z = 0.f;
+			forward = forward.Normalize();
+			right = right.Normalize();
 
-			Vector controlsOffset;
+			Vector2D controlsOffset;
 			auto pTrackTrain = dynamic_cast<CFuncTrackTrain*>(pTrain);
 			if (pTrackTrain)
 			{
@@ -2036,9 +2040,10 @@ void CBasePlayer::PreThink(void)
 			}
 			else
 			{
-				controlsOffset = Vector{ -48.f, 20.f, pev->maxs.z };
+				controlsOffset = Vector2D{ -48.f, 20.f };
 			}
-			vr_trainControlPosition = pTrain->pev->origin + (forward * controlsOffset.x) + (right * controlsOffset.y) + (up * controlsOffset.z);
+			vr_trainControlPosition = pTrain->pev->origin + (forward * controlsOffset.x) + (right * controlsOffset.y);
+			vr_trainControlPosition.z = pev->origin.z + 8.f;
 			vr_trainControlYaw = pTrain->pev->angles.y;
 
 			if (m_iTrain == TRAIN_OFF)

@@ -1562,7 +1562,7 @@ void CFuncTrackTrain::Precache(void)
 	m_usAdjustPitch = PRECACHE_EVENT(1, "events/train.sc");
 }
 
-Vector CFuncTrackTrain::GetVRControlsOffset()
+Vector2D CFuncTrackTrain::GetVRControlsOffset()
 {
 	// TODO: Do some magic to calculate this better.
 	// For now this should be sufficient for most trains in Half-Life,
@@ -1572,7 +1572,7 @@ Vector CFuncTrackTrain::GetVRControlsOffset()
 	//  - something else?
 	if (m_vrControlsOffset.LengthSquared() == 0.f)
 	{
-		m_vrControlsOffset = Vector{ -48.f, 20.f, pev->maxs.z };
+		m_vrControlsOffset = Vector2D{ -48.f, 20.f };
 	}
 	return m_vrControlsOffset;
 }

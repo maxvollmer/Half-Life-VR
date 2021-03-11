@@ -40,6 +40,7 @@ public:
 	inline Vector2D operator/(float fl) const { return Vector2D(x / fl, y / fl); }
 
 	inline float Length(void) const { return sqrtf(x * x + y * y); }
+	inline float LengthSquared() const { return x * x + y * y; }  // Added squared length for convenience - Max Vollmer, 2021-03-11
 
 	inline Vector2D Normalize(void) const
 	{
