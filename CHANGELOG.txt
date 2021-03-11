@@ -12,6 +12,7 @@
   * Fixed crowbar not making sounds/decals when hitting level geometry
   * Fixed some controllable stationary turrets/guns/rocket launchers not reacting to VR controllers
   * Added proper teleporter arc
+  * Teleporter beam length now takes gravity into account (longer beam in lower gravity)
   * Added option to mirror eyes if only one eye is rendered
 
  HLVRConfig:
