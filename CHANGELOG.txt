@@ -1,4 +1,4 @@
-0.6.28-beta
+0.6.28-beta - 2021-03-12
  Mod:
   * Fixed rare crash bug
   * Fixed game sometimes freezing during load/save when HLVRConfig is open
