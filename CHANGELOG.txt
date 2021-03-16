@@ -1,3 +1,7 @@
+0.6.29-beta
+ Mod:
+  * Fixed hornets colliding with hornet gun right when they spawn
+
 0.6.28-beta - 2021-03-12
  Mod:
   * Fixed rare crash bug
