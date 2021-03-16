@@ -114,7 +114,8 @@ bool WasJustThrownByPlayer(CBasePlayer* pPlayer, CBaseEntity *pEntity)
 	if (!FClassnameIs(pEntity->pev, "monster_satchel")
 		&& !FClassnameIs(pEntity->pev, "grenade")
 		&& !FClassnameIs(pEntity->pev, "monster_snark")
-		&& !FClassnameIs(pEntity->pev, "rpg_rocket"))
+		&& !FClassnameIs(pEntity->pev, "rpg_rocket")
+		&& !FClassnameIs(pEntity->pev, "hornet"))
 		return false;
 
 	return (gpGlobals->time - pEntity->m_spawnTime) < 2.f;
