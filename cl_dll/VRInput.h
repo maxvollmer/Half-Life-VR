@@ -2,13 +2,20 @@
 
 #include <unordered_map>
 #include <string>
+#include <memory>
 
 #include "openvr/openvr.h"
+
+#include "../vr_shared/VRShared.h"
 
 #include "VRInputAction.h"
 #include "VRInputHandlers.h"
 
 #include "kbutton.h"
+
+#ifndef MAXSTUDIOBONES
+#define MAXSTUDIOBONES 128
+#endif
 
 class VRInput
 {
@@ -67,8 +74,10 @@ public:
 		DAMAGE
 	};
 
-	void SetFingerSkeletalData(vr::ETrackedControllerRole controllerRole, const float fingerCurl[vr::VRFinger_Count]);
-	bool HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, float fingerCurl[5]) const;
+	void SetFingerSkeletalData(vr::ETrackedControllerRole controllerRole, const float fingerCurl[vr::VRFinger_Count], const float fingerSplay[vr::VRFingerSplay_Count], const vr::VRBoneTransform_t* bones, bool hasFingers, bool hasBones);
+	bool HasFingerDataForHand(vr::ETrackedControllerRole controllerRole, float fingerCurl[5]) const;
+	bool HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole) const;
+	bool HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, VRQuaternion* bone_quaternions, Vector* bone_positions) const;
 
 	void ExecuteCustomAction(const std::string& action);
 
@@ -93,6 +102,16 @@ public:
 	float recoilintensity = 0.f;
 
 private:
+	class FingerSkeletalData
+	{
+	public:
+		float fingerCurl[vr::VRFinger_Count];
+		float fingerSplay[vr::VRFingerSplay_Count];
+		vr::VRBoneTransform_t bones[31];
+		bool hasFingers{ false };
+		bool hasBones{ false };
+	};
+
 	struct ActionSet
 	{
 	public:
@@ -143,7 +162,7 @@ private:
 
 	std::unordered_map<vr::ETrackedControllerRole, bool> m_dragStates;
 
-	std::unordered_map<vr::ETrackedControllerRole, float[5]> m_fingerSkeletalData;
+	std::unordered_map<vr::ETrackedControllerRole, std::shared_ptr<FingerSkeletalData>> m_fingerSkeletalData;
 };
 
 extern VRInput g_vrInput;

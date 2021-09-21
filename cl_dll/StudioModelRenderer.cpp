@@ -49,6 +49,8 @@ namespace
 		Finger_Count
 	};
 
+	constexpr const int VRHAND_Bones_Count = 31;
+
 	enum HandModelSequences
 	{
 		IDLE = 0,
@@ -1235,8 +1237,45 @@ bool CStudioModelRenderer::DrawVREntity(
 
 	StudioSetUpTransform(0);
 
+	VRQuaternion bone_quaternions[VRHAND_Bones_Count];
+	Vector bone_positions[VRHAND_Bones_Count];
 	float fingerCurl[Finger_Count];
-	if (isController && gVRRenderer.IsHandModel(modelname) && gVRRenderer.HasSkeletalDataForHand(mirrored, fingerCurl))
+	if (isController && m_pStudioHeader->numbones == VRHAND_Bones_Count && gVRRenderer.IsHandSkeletalModel(modelname)
+		&& gVRRenderer.HasSkeletalDataForHand(mirrored, bone_quaternions, bone_positions))
+	{
+		m_pCurrentEntity->curstate.frame = 0;
+		m_pCurrentEntity->curstate.framerate = 0;
+		m_pCurrentEntity->curstate.animtime = m_clTime;
+		m_pCurrentEntity->curstate.sequence = IDLE;
+
+		mstudiobone_t* pbones = reinterpret_cast<mstudiobone_t*>(reinterpret_cast<byte*>(m_pStudioHeader) + m_pStudioHeader->boneindex);
+
+		for (int i = 0; i < VRHAND_Bones_Count; i++)
+		{
+			float bonematrix[3][4];
+
+			vec_t quat[4];
+			quat[0] = bone_quaternions[i].x;
+			quat[1] = bone_quaternions[i].y;
+			quat[2] = bone_quaternions[i].z;
+			quat[3] = bone_quaternions[i].w;
+			QuaternionMatrix(quat, bonematrix);
+			bonematrix[0][3] = bone_positions[i][0];
+			bonematrix[1][3] = bone_positions[i][1];
+			bonematrix[2][3] = bone_positions[i][2];
+
+			if (pbones[i].parent == -1)
+			{
+				ConcatTransforms((*m_protationmatrix), bonematrix, (*m_pbonetransform)[i]);
+			}
+			else
+			{
+				ConcatTransforms((*m_pbonetransform)[pbones[i].parent], bonematrix, (*m_pbonetransform)[i]);
+			}
+			MatrixCopy((*m_pbonetransform)[i], (*m_plighttransform)[i]);
+		}
+	}
+	else if (isController && gVRRenderer.IsHandModel(modelname) && gVRRenderer.HasFingerDataForHand(mirrored, fingerCurl))
 	{
 		// Use skeletal data from OpenVR to animate curled fingers on hand models:
 		// 1. Call StudioSetupBones twice: Once with initial frame of IDLE (flat hand), and once with initial frame of FULLGRAB_END (fist)
@@ -1322,7 +1361,14 @@ bool CStudioModelRenderer::DrawVREntity(
 
 void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controllerModelData, const Vector& origin, const Vector& angles, bool mirrored, int* out_numattachments, float out_attachments[4][3])
 {
-	if (DrawVREntity(controllerModelData.controller.modelname,
+	std::string controllermodelname = controllerModelData.controller.modelname;
+
+	if (gVRRenderer.IsHandSkeletalModel(controllermodelname.c_str()) && gVRRenderer.HasSkeletalDataForHand(mirrored))
+	{
+		controllermodelname = gVRRenderer.HandModelToHandSkeletalModel(controllermodelname.c_str());
+	}
+
+	if (DrawVREntity(controllermodelname.c_str(),
 		origin, angles,
 		controllerModelData.controller.body, controllerModelData.controller.skin, controllerModelData.controller.scale,
 		controllerModelData.controller.frame, controllerModelData.controller.framerate,

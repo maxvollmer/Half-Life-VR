@@ -114,7 +114,11 @@ public:
 	double m_clientTime{ 0.0 };	// keeps track of current time
 
 	bool IsHandModel(const char* modelname) const;
-	bool HasSkeletalDataForHand(bool isMirrored, float fingerCurl[5]) const;
+	bool IsHandSkeletalModel(const char* modelname) const;
+	const char* HandModelToHandSkeletalModel(const char* modelname) const;
+	bool HasFingerDataForHand(bool isMirrored, float fingerCurl[5]) const;
+	bool HasSkeletalDataForHand(bool isMirrored) const;
+	bool HasSkeletalDataForHand(bool isMirrored, VRQuaternion* bone_quaternions, Vector* bone_positions) const;
 
 	bool GetLeftControllerAttachment(Vector& out, int attachment);
 	bool GetRightControllerAttachment(Vector& out, int attachment);

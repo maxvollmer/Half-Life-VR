@@ -118,14 +118,14 @@ namespace VR
 			}
 		}
 
-		void Other::HandleLeftHandSkeleton(const vr::VRSkeletalSummaryData_t& data, const std::string& action)
+		void Other::HandleLeftHandSkeleton(const vr::VRSkeletalSummaryData_t& data, const vr::VRBoneTransform_t* bones, bool hasFingers, bool hasBones, const std::string& action)
 		{
-			g_vrInput.SetFingerSkeletalData(vr::TrackedControllerRole_LeftHand, data.flFingerCurl);
+			g_vrInput.SetFingerSkeletalData(vr::TrackedControllerRole_LeftHand, data.flFingerCurl, data.flFingerSplay, bones, hasFingers, hasBones);
 		}
 
-		void Other::HandleRightHandSkeleton(const vr::VRSkeletalSummaryData_t& data, const std::string& action)
+		void Other::HandleRightHandSkeleton(const vr::VRSkeletalSummaryData_t& data, const vr::VRBoneTransform_t* bones, bool hasFingers, bool hasBones, const std::string& action)
 		{
-			g_vrInput.SetFingerSkeletalData(vr::TrackedControllerRole_RightHand, data.flFingerCurl);
+			g_vrInput.SetFingerSkeletalData(vr::TrackedControllerRole_RightHand, data.flFingerCurl, data.flFingerSplay, bones, hasFingers, hasBones);
 		}
 
 	}  // namespace Input

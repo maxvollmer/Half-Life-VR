@@ -1,6 +1,8 @@
 
 #include <chrono>
 #include <unordered_set>
+#include <string>
+#include <regex>
 
 #include "VRTextureHelper.h"
 
@@ -64,6 +66,20 @@ namespace
 			"models/v_hand_hevsuit.mdl",
 			"models/SD/v_hand_labcoat.mdl",
 			"models/SD/v_hand_hevsuit.mdl",
+		} };
+	std::unordered_set<std::string> g_handskeletalmodels{
+		{
+			"models/vr_hand_labcoat.mdl",
+			"models/vr_hand_hevsuit.mdl",
+			"models/SD/vr_hand_labcoat.mdl",
+			"models/SD/vr_hand_hevsuit.mdl",
+		} };
+	std::unordered_map<std::string, std::string> g_handmodels_to_handskeletalmodels{
+		{
+			{"models/v_hand_labcoat.mdl", "models/vr_hand_labcoat.mdl"},
+			{"models/v_hand_hevsuit.mdl", "models/vr_hand_labcoat.mdl"},
+			{"models/SD/v_hand_labcoat.mdl", "models/vr_hand_labcoat.mdl"},
+			{"models/SD/v_hand_hevsuit.mdl", "models/vr_hand_labcoat.mdl"}
 		} };
 }
 
@@ -288,9 +304,36 @@ bool VRRenderer::IsHandModel(const char* modelname) const
 	return (g_handmodels.find(modelname) != g_handmodels.end());
 }
 
-bool VRRenderer::HasSkeletalDataForHand(bool isMirrored, float fingerCurl[5]) const
+bool VRRenderer::IsHandSkeletalModel(const char* modelname) const
 {
-	return g_vrInput.HasSkeletalDataForHand(isMirrored ? vr::TrackedControllerRole_LeftHand : vr::TrackedControllerRole_RightHand, fingerCurl);
+	return (g_handskeletalmodels.find(modelname) != g_handskeletalmodels.end());
+}
+
+const char* VRRenderer::HandModelToHandSkeletalModel(const char* modelname) const
+{
+	if (IsHandModel(modelname))
+	{
+		return g_handmodels_to_handskeletalmodels[modelname].c_str();
+	}
+	else
+	{
+		return modelname;
+	}
+}
+
+bool VRRenderer::HasFingerDataForHand(bool isMirrored, float fingerCurl[5]) const
+{
+	return g_vrInput.HasFingerDataForHand(isMirrored ? vr::TrackedControllerRole_LeftHand : vr::TrackedControllerRole_RightHand, fingerCurl);
+}
+
+bool VRRenderer::HasSkeletalDataForHand(bool isMirrored) const
+{
+	return g_vrInput.HasSkeletalDataForHand(isMirrored ? vr::TrackedControllerRole_LeftHand : vr::TrackedControllerRole_RightHand);
+}
+
+bool VRRenderer::HasSkeletalDataForHand(bool isMirrored, VRQuaternion* bone_quaternions, Vector* bone_positions) const
+{
+	return g_vrInput.HasSkeletalDataForHand(isMirrored ? vr::TrackedControllerRole_LeftHand : vr::TrackedControllerRole_RightHand, bone_quaternions, bone_positions);
 }
 
 void VRRenderer::RenderVRHandsAndHUDAndStuff()

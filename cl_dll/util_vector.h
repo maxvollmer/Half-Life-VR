@@ -16,6 +16,8 @@
 // A subset of the extdll.h in the project HL Entity DLL
 //
 
+#pragma once
+
 // Misc C-runtime library headers
 #include "STDIO.H"
 #include "STDLIB.H"

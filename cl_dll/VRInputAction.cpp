@@ -113,14 +113,26 @@ void VRInputAction::HandleSkeletalInput()
 		if (data.bActive)
 		{
 			vr::VRSkeletalSummaryData_t summaryData{ 0 };
-			result = vr::VRInput()->GetSkeletalSummaryData(m_handle, vr::EVRSummaryType::VRSummaryType_FromAnimation, &summaryData);
-			if (result == vr::VRInputError_None)
+			result = vr::VRInput()->GetSkeletalSummaryData(
+				m_handle,
+				vr::EVRSummaryType::VRSummaryType_FromAnimation,
+				&summaryData);
+
+			vr::VRBoneTransform_t bones[31];
+			vr::EVRInputError result2 = vr::VRInput()->GetSkeletalBoneData(
+				m_handle,
+				vr::EVRSkeletalTransformSpace::VRSkeletalTransformSpace_Parent,
+				vr::EVRSkeletalMotionRange::VRSkeletalMotionRange_WithoutController,
+				bones,
+				31);
+
+			if (result == vr::VRInputError_None || result2 == vr::VRInputError_None)
 			{
-				(m_skeletalActionHandler)(summaryData, m_id);
+				(m_skeletalActionHandler)(summaryData, bones, result == vr::VRInputError_None, result2 == vr::VRInputError_None, m_id);
 			}
 			else
 			{
-				gEngfuncs.Con_DPrintf("Error while trying to get skeletal summary data from input action %s. (Error code: %i)\n", m_id.data(), result);
+				gEngfuncs.Con_DPrintf("Error while trying to get skeletal data from input action %s. (Error codes: %i, %i)\n", m_id.data(), result, result2);
 			}
 		}
 	}

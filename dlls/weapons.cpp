@@ -461,6 +461,8 @@ void W_Precache(void)
 	// VR hand model
 	PRECACHE_MODEL("models/v_hand_labcoat.mdl");
 	PRECACHE_MODEL("models/v_hand_hevsuit.mdl");
+	PRECACHE_MODEL("models/vr_hand_labcoat.mdl");
+	PRECACHE_MODEL("models/vr_hand_hevsuit.mdl");
 }
 
 

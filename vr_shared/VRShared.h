@@ -26,3 +26,8 @@ enum class VREyeMode
 	RightOnlyMirrored,	// Right eye is rendered,  left eye is mirror of right eye
 	PancakeMode
 };
+
+struct VRQuaternion
+{
+	float x, y, z, w;
+};

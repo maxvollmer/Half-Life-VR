@@ -6,6 +6,23 @@
 #include <fstream>
 #include <cctype>
 #include <regex>
+#include <algorithm>
+
+namespace
+{
+	// For some reason the compiler finds a wrong isspace when we use std::isspace directly as predicate in std::find,
+	// so we wrap it here
+	bool IsSpace(const char c)
+	{
+		return std::isspace(c);
+	}
+
+	static inline void TrimString(std::string& s)
+	{
+		s.erase(s.begin(), std::find_if_not(s.begin(), s.end(), IsSpace));
+		s.erase(std::find_if_not(s.rbegin(), s.rend(), IsSpace).base(), s.end());
+	}
+}
 
 #include "hud.h"
 #include "cl_util.h"
@@ -23,13 +40,6 @@ VRInput g_vrInput;
 void VRRegisterRecoil(float intensity)
 {
 	g_vrInput.recoilintensity = intensity;
-}
-
-
-static inline void TrimString(std::string& s)
-{
-	s.erase(s.begin(), std::find_if_not(s.begin(), s.end(), std::isspace));
-	s.erase(std::find_if_not(s.rbegin(), s.rend(), std::isspace).base(), s.end());
 }
 
 void VRInput::Init()
@@ -76,7 +86,7 @@ void VRInput::LoadCustomActions()
 			if (line[0] == '#')
 				continue;
 
-			auto it = std::find_if(line.begin(), line.end(), std::isspace);
+			auto it = std::find_if(line.begin(), line.end(), IsSpace);
 			try
 			{
 				if (it != line.end())
@@ -599,19 +609,76 @@ float CalculateWeaponTimeOffset(float offset)
 	return offset;
 }
 
-void VRInput::SetFingerSkeletalData(vr::ETrackedControllerRole controllerRole, const float fingerCurl[vr::VRFinger_Count])
+void VRInput::SetFingerSkeletalData(vr::ETrackedControllerRole controllerRole, const float fingerCurl[vr::VRFinger_Count], const float fingerSplay[vr::VRFingerSplay_Count], const vr::VRBoneTransform_t* bones, bool hasFingers, bool hasBones)
 {
-	for (int i = 0; i < 5; i++)
-		m_fingerSkeletalData[controllerRole][i] = fingerCurl[i];
+	std::shared_ptr<FingerSkeletalData> data = std::make_shared<FingerSkeletalData>();
+	data->hasFingers = hasFingers;
+	data->hasBones = hasBones;
+	if (hasFingers)
+	{
+		for (int i = 0; i < vr::VRFinger_Count; i++)
+		{
+			data->fingerCurl[i] = fingerCurl[i];
+		}
+		for (int i = 0; i < vr::VRFingerSplay_Count; i++)
+		{
+			data->fingerSplay[i] = fingerSplay[i];
+		}
+	}
+	if (hasBones)
+	{
+		for (int i = 0; i < 31; i++)
+		{
+			data->bones[i] = bones[i];
+		}
+	}
+	m_fingerSkeletalData[controllerRole] = data;
 }
 
-bool VRInput::HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, float fingerCurl[5]) const
+bool VRInput::HasFingerDataForHand(vr::ETrackedControllerRole controllerRole, float fingerCurl[5]) const
 {
 	auto it = m_fingerSkeletalData.find(controllerRole);
-	if (it != m_fingerSkeletalData.end())
+	if (it != m_fingerSkeletalData.end() && it->second && it->second->hasFingers)
 	{
 		for (int i = 0; i < 5; i++)
-			fingerCurl[i] = it->second[i];
+		{
+			fingerCurl[i] = it->second->fingerCurl[i];
+		}
+		return true;
+	}
+	return false;
+}
+
+bool VRInput::HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole) const
+{
+	auto it = m_fingerSkeletalData.find(controllerRole);
+	return it != m_fingerSkeletalData.end() && it->second && it->second->hasBones;
+}
+
+bool VRInput::HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, VRQuaternion* bone_quaternions, Vector* bone_positions) const
+{
+	auto it = m_fingerSkeletalData.find(controllerRole);
+	if (it != m_fingerSkeletalData.end() && it->second && it->second->hasBones)
+	{
+		const Vector3& vrToHL = gVRRenderer.GetHelper()->GetVRToHL();
+
+		for (int i = 0; i < 31; i++)
+		{
+			vr::HmdQuaternionf_t& boneQuaternionInVRSpace = it->second->bones[i].orientation;
+			bone_quaternions[i] = VRQuaternion{
+				boneQuaternionInVRSpace.x * vrToHL.x,
+				-boneQuaternionInVRSpace.z * vrToHL.z,
+				boneQuaternionInVRSpace.y * vrToHL.y,
+				boneQuaternionInVRSpace.w
+			};
+
+			Vector bonePositionInVRSpace = it->second->bones[i].position.v;
+			bone_positions[i] = Vector{
+				bonePositionInVRSpace.x * vrToHL.x,
+				-bonePositionInVRSpace.z * vrToHL.z,
+				bonePositionInVRSpace.y * vrToHL.y
+			};
+		}
 		return true;
 	}
 	return false;

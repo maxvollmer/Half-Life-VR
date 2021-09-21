@@ -11,7 +11,7 @@ public:
 	typedef void (*DigitalActionHandler)(const vr::InputDigitalActionData_t&, const std::string&);
 	typedef void (*AnalogActionHandler)(const vr::InputAnalogActionData_t&, const std::string&);
 	typedef void (*PoseActionHandler)(const vr::InputPoseActionData_t&, const std::string&);
-	typedef void (*SkeletalActionHandler)(const vr::VRSkeletalSummaryData_t&, const std::string&);
+	typedef void (*SkeletalActionHandler)(const vr::VRSkeletalSummaryData_t&, const vr::VRBoneTransform_t*, bool, bool, const std::string&);
 
 	enum class ActionType
 	{
