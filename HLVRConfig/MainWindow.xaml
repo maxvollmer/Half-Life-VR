@@ -119,7 +119,24 @@
             </controls:I18NTabItem>
             <controls:I18NTabItem Key="GUI.Tab.CustomInputActions" DefaultValue="Custom Input Actions">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Orientation="Vertical" x:Name="CustomInputActions"/>
+                    <StackPanel Orientation="Vertical" x:Name="CustomInputActions">
+                        <Button>Halo</Button>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Separator/>
+                        <Button>Halo</Button>
+                    </StackPanel>
                 </ScrollViewer>
             </controls:I18NTabItem>
             <controls:I18NTabItem Key="GUI.Tab.About" DefaultValue="About">

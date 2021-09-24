@@ -96,6 +96,11 @@ https://www.nuget.org/packages/Microsoft.Experimental.Collections/
 Copyright (c) 2014-2019 Microsoft Corporation
 
 ===
+This mod uses Newtonsoft.Json
+https://www.newtonsoft.com/json
+Copyright (c) James Newton-King 2008
+
+===
 This mod uses FMOD Core API
 https://fmod.com/resources/documentation-api?version=2.0&page=core-api.html
 Copyright (c), Firelight Technologies Pty, Ltd. 2004-2019.

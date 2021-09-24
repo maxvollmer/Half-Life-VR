@@ -166,7 +166,7 @@ namespace HLVRConfig.Utilities.UI.Config
             };
         }
 
-        private void AddTitle(StackPanel panel, I18N.I18NString title)
+        protected TextBlock MakeTitle(I18N.I18NString title)
         {
             TextBlock textBlock = new TextBlock()
             {
@@ -176,7 +176,12 @@ namespace HLVRConfig.Utilities.UI.Config
                 Focusable = true
             };
             textBlock.Inlines.Add(new Bold(new Run(I18N.Get(title))));
-            panel.Children.Add(textBlock);
+            return textBlock;
+        }
+
+        protected void AddTitle(StackPanel panel, I18N.I18NString title)
+        {
+            panel.Children.Add(MakeTitle(title));
         }
 
         private void AddDescription(StackPanel panel, I18N.I18NString description)
@@ -227,7 +232,12 @@ namespace HLVRConfig.Utilities.UI.Config
             panel.Children.Add(inputPanel);
         }
 
-        private TextBox MakeTextBox(Setting value)
+        protected TextBox MakeTextBox(Setting value)
+        {
+            return MakeTextBox(value.Type, value.Value);
+        }
+
+        protected TextBox MakeTextBox(SettingType type, string text)
         {
             var textbox = new TextBox()
             {
@@ -237,8 +247,8 @@ namespace HLVRConfig.Utilities.UI.Config
                 Focusable = true,
                 MaxLines = 1,
                 MinLines = 1,
-                MinWidth = GetTextBoxWidth(value.Type),
-                Text = value.Value
+                MinWidth = GetTextBoxWidth(type),
+                Text = text
             };
             return textbox;
         }

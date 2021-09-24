@@ -37,8 +37,8 @@ namespace HLVRConfig.Utilities.Process
 
         public static string VROpenvr_apidll { get { return Path.Combine(HLVRPaths.VRDirectory, "opnvrpi.dll"); } }
         public static string VREasyHook32dll { get { return Path.Combine(HLVRPaths.VRDirectory, "ezhok32.dll"); } }
-        public static string VRServerdll { get { return Path.Combine(Path.Combine(VRDirectory, "dlls"), "vr.dll"); } }
-        public static string VRClientdll { get { return Path.Combine(Path.Combine(VRDirectory, "cl_dlls"), "client.dll"); } }
+        public static string VRServerdll { get { return Path.Combine(VRDirectory, "dlls", "vr.dll"); } }
+        public static string VRClientdll { get { return Path.Combine(VRDirectory, "cl_dlls", "client.dll"); } }
         public static string VRLiblistgam { get { return Path.Combine(HLVRPaths.VRDirectory, "liblist.gam"); } }
 
 
@@ -49,6 +49,9 @@ namespace HLVRConfig.Utilities.Process
         public static string VRModSettingsFile { get { return Path.Combine(HLVRPaths.VRDirectory, VRModSettingsFileName); } }
         public static string VRReadme { get { return Path.Combine(HLVRPaths.VRDirectory, "README.txt"); } }
         public static string VRLogFile { get { return Path.Combine(HLVRPaths.VRDirectory, "hlvr_log.txt"); } }
+
+        public static string VRActionsManifest { get { return Path.Combine(HLVRPaths.VRDirectory, "actions", "actions.manifest"); } }
+        public static string VRCustomActionsFile { get { return Path.Combine(HLVRPaths.VRDirectory, "actions", "customactions.cfg"); } }
 
         public static string VRLauncherSettingsFileName { get { return "hlvrlauncher.cfg"; } }
         public static string VRLauncherSettingsFile { get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, VRLauncherSettingsFileName); } }

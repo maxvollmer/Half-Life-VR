@@ -18,6 +18,7 @@ using HLVRConfig.Utilities.UI;
 using HLVRConfig.Utilities.Settings;
 using HLVRConfig.Utilities.UI.Config;
 using HLVRConfig.Utilities.Process;
+using HLVRConfig.Utilities.CustomActions;
 
 namespace HLVRConfig
 {
@@ -215,7 +216,7 @@ namespace HLVRConfig
             MiniDumpCreator.CreateMiniDump(hlvrModLauncher);
         }
 
-        public void RefreshConfigTabs(bool mod = true, bool launcher = true)
+        public void RefreshConfigTabs(bool mod = true, bool launcher = true, bool custominput = true)
         {
             UpdateSettingsAndLanguage();
 
@@ -256,6 +257,11 @@ namespace HLVRConfig
                     var errorMsg = I18N.Get(new I18N.I18NString("ErrorMsgCouldNotSynchronizeLauncherSettings", "Couldn't synchronize launcher settings. You can modify these settings, but they might be lost after closing HLVRConfig."));
                     AddNopeText(LauncherConfig, errorMsg);
                 }
+            }
+
+            if (custominput)
+            {
+                CustomInputActionsManager.Initialize(CustomInputActions);
             }
 
             SkipTooManyLines();
