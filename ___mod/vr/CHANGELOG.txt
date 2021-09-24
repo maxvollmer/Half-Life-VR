@@ -1,7 +1,9 @@
-0.6.29-beta - 
+0.6.29-beta
  Mod:
   * Fixed hornets colliding with hornet gun right when they spawn
-  * Added new VR hand model for improved finger tracking
+
+ HLVRConfig:
+  * Added GUI for custom actions
 
 0.6.28-beta - 2021-03-12
  Mod:
