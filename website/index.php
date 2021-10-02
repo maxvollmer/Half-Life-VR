@@ -7,6 +7,7 @@
   $header = $url . "header.png";
   $favicon = $url . "favicon.ico";
   $impressum = $url . "impressum.html";
+  $MOD_VERSION = "0.6.28-beta";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -87,7 +88,7 @@
         <div class="content_title">
           <h3>Downloads</h3>
         </div>
-        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/download/0.6.27-beta/HLVR_0.6.27-beta-Installer.exe">
+        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/download/<?php echo $MOD_VERSION; ?>/HLVR_<?php echo $MOD_VERSION; ?>-Installer.exe">
           <div class="button_text">
             <h4>Download Installer</h4>
             <p>
@@ -99,7 +100,7 @@
             </p>
           </div>
         </a>
-        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/download/0.6.27-beta/HLVR_0.6.27-beta.zip">
+        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/download/<?php echo $MOD_VERSION; ?>/HLVR_<?php echo $MOD_VERSION; ?>.zip">
           <div class="button_text">
             <h4>Download Archive</h4>
             <p>
@@ -111,6 +112,8 @@
             </p>
           </div>
         </a>
+        <br><br>
+        <a href="https://github.com/maxvollmer/Half-Life-VR/releases/">Older versions</a>
       </div>
 
       <div class="content_row">
