@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <mutex>
 #include <thread>
+#include <fstream>
+#include <regex>
 
 #include "Matrices.h"
 #include "hud.h"
@@ -23,6 +25,7 @@
 #include "VRSettings.h"
 #include "../vr_shared/VRShared.h"
 #include "VROpenGLInterceptor.h"
+#include "VRCommon.h"
 
 #ifndef DUCK_SIZE
 #define DUCK_SIZE 36
@@ -275,10 +278,41 @@ float VRHelper::UnitToMeter(float unit)
 	return unit * UNIT_TO_METER * m_worldScale * m_worldZStretch;
 }
 
+std::string GetHLVRModVersion()
+{
+	try
+	{
+		auto path = GetPathFor("/liblist.gam");
+		if (std::filesystem::exists(path))
+		{
+			std::ifstream liblistgam(path);
+			std::string line;
+			while (std::getline(liblistgam, line))
+			{
+				// version "0.6.27-beta"
+				const std::regex version_regex("version \\\"([0-9]+\\.[0-9]+\\.[0-9]+[-a-zA-Z0-9]*)\\\"");
+				std::smatch match;
+				if (std::regex_match(line, match, version_regex))
+				{
+					if (match.size() == 2)
+					{
+						return match[1].str();
+					}
+				}
+			}
+		}
+	}
+	catch (...)
+	{
+		return "Error";
+	}
+	return "Unknown";
+}
+
 void VRHelper::Init()
 {
-	// Make compiler insert correct version here automagically.
-	gEngfuncs.Con_DPrintf("[Half-Life: VR Initializing. Version: 0.6.26]\n");
+	std::string version = GetHLVRModVersion();
+	gEngfuncs.Con_DPrintf("[Half-Life: VR Initializing. Version: %s]\n", version.c_str());
 
 	g_vrSettings.Init();
 
