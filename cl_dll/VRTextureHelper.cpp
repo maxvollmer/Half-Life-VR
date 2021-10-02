@@ -247,12 +247,16 @@ unsigned int VRTextureHelper::GetTexture(const std::string& name)
 
 VRTextureHelper VRTextureHelper::instance{};
 
-// from openvr docs: Order is Front, Back, Left, Right, Top, Bottom.
+// From openvr docs: "Order is Front, Back, Left, Right, Top, Bottom."
+// But: SteamVR's left and right are switched, and top and bottom are rotated 90°,
+// so we need to adjust the order to get everything correctly in place.
+// The order as defined here works.
+// (Actually now that I look at the values I realize the sides are just in reverse.)
 const std::array<std::string, 6> VRTextureHelper::m_vrMapSkyboxIndices{
-	{{"ft"},
-	 {"bk"},
+	{{"rt"},
 	 {"lf"},
-	 {"rt"},
+	 {"bk"},
+	 {"ft"},
 	 {"up"},
 	 {"dn"}}
 };
