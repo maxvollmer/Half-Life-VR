@@ -1,6 +1,8 @@
 0.6.29-beta
  Mod:
   * Fixed hornets colliding with hornet gun right when they spawn
+  * Fixed nasty bug preventing players from moving downwards (sorry!)
+  * Fixed rare crash if custom actions file has invalid characters
 
  HLVRConfig:
   * Added GUI for custom actions

@@ -5,7 +5,7 @@ github: https://github.com/maxvollmer/Half-Life-VR
 
 VERSION 0.6.29-beta
 
-Release date: -
+Release date: 2021-02-10
 
 Copyright (c) 2017-2021 Max Vollmer (if not otherwise stated)
 
@@ -94,6 +94,11 @@ Copyright (c) 2006 Christian Birkl
 This mod uses Microsoft.Experimental.Collections
 https://www.nuget.org/packages/Microsoft.Experimental.Collections/
 Copyright (c) 2014-2019 Microsoft Corporation
+
+===
+This mod uses Newtonsoft.Json
+https://www.newtonsoft.com/json
+Copyright (c) James Newton-King 2008
 
 ===
 This mod uses FMOD Core API
