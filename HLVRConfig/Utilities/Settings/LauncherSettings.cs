@@ -38,7 +38,7 @@ namespace HLVRConfig.Utilities.Settings
             }
         }
 
-        public static readonly SettingCategory CategoryModLocation = new SettingCategory(new I18N.I18NString("LauncherSettings.ModLocation", "Mod Directory"));
+        public static readonly SettingCategory CategoryModSpecifics = new SettingCategory(new I18N.I18NString("LauncherSettings.ModSpecifics", "Mod Launch Options"));
         public static readonly SettingCategory CategoryLanguage = new SettingCategory(new I18N.I18NString("LauncherSettings.Language", "Language"));
         public static readonly SettingCategory CategoryLauncher = new SettingCategory(new I18N.I18NString("LauncherSettings.Launcher", "Launcher"));
         public static readonly SettingCategory CategoryLog = new SettingCategory(new I18N.I18NString("LauncherSettings.Log", "Log Settings"));
@@ -54,12 +54,14 @@ namespace HLVRConfig.Utilities.Settings
         public static readonly string NumberOfDisplayedLogLines = "NumberOfDisplayedLogLines";
         public static readonly string EnableMiniDumpButton = "EnableMiniDumpButton";
         public static readonly string EnableFullMemoryMiniDump = "EnableFullMemoryMiniDump";
+        public static readonly string ModWindowSize = "ModWindowSize";
 
 
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> GeneralSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
         {
-            { CategoryModLocation, new OrderedDictionary<string, Setting>() {
+            { CategoryModSpecifics, new OrderedDictionary<string, Setting>() {
                 { HLDirectory, Setting.Create( new I18N.I18NString(HLDirectory, "Half-Life directory"), HLVRPaths.LastHLDirectory ).MakeFolderSetting() },
+                { ModWindowSize, Setting.Create( new I18N.I18NString(ModWindowSize, "Mod Window Size"), MakeAllowedWindowSizes(), "-width 1600 -height 1200" ) },
             } },
 
             { CategoryLanguage, new OrderedDictionary<string, Setting>() {
@@ -83,6 +85,50 @@ namespace HLVRConfig.Utilities.Settings
                 { EnableFullMemoryMiniDump, Setting.Create( new I18N.I18NString(EnableFullMemoryMiniDump, "Enable Full Memory Mini Dump (Creates huge files! Only enable this if directed or if you know what you are doing!)"), false, new SettingDependency(EnableMiniDumpButton, "1") ) },
             } },
         };
+
+        public static void AddAllowedWindowSize(OrderedDictionary<string, I18N.I18NString> allowedWindowSizes, int width, int height)
+        {
+            allowedWindowSizes.Add($"-width {width} -height {height}", new I18N.I18NString($"{width}x{height}", $"{width}x{height}"));
+        }
+
+        private static OrderedDictionary<string, I18N.I18NString> MakeAllowedWindowSizes()
+        {
+            var allowedWindowSizes = new OrderedDictionary<string, I18N.I18NString>();
+
+            // "normal"
+            AddAllowedWindowSize(allowedWindowSizes, 640, 480);
+            AddAllowedWindowSize(allowedWindowSizes, 800, 600);
+            AddAllowedWindowSize(allowedWindowSizes, 1024, 768);
+            AddAllowedWindowSize(allowedWindowSizes, 1152, 864);
+            AddAllowedWindowSize(allowedWindowSizes, 1280, 960);
+            AddAllowedWindowSize(allowedWindowSizes, 1600, 1200);
+            AddAllowedWindowSize(allowedWindowSizes, 1920, 1440);
+            AddAllowedWindowSize(allowedWindowSizes, 2048, 1536);
+
+            // widescreen
+            AddAllowedWindowSize(allowedWindowSizes, 720, 480);
+            AddAllowedWindowSize(allowedWindowSizes, 720, 576);
+            AddAllowedWindowSize(allowedWindowSizes, 1176, 664);
+            AddAllowedWindowSize(allowedWindowSizes, 1280, 720);
+            AddAllowedWindowSize(allowedWindowSizes, 1280, 768);
+            AddAllowedWindowSize(allowedWindowSizes, 1280, 800);
+            AddAllowedWindowSize(allowedWindowSizes, 1280, 1024);
+            AddAllowedWindowSize(allowedWindowSizes, 1360, 768);
+            AddAllowedWindowSize(allowedWindowSizes, 1366, 768);
+            AddAllowedWindowSize(allowedWindowSizes, 1600, 900);
+            AddAllowedWindowSize(allowedWindowSizes, 1600, 1024);
+            AddAllowedWindowSize(allowedWindowSizes, 1680, 1050);
+            AddAllowedWindowSize(allowedWindowSizes, 1768, 992);
+            AddAllowedWindowSize(allowedWindowSizes, 1920, 1080);
+            AddAllowedWindowSize(allowedWindowSizes, 1920, 1200);
+            AddAllowedWindowSize(allowedWindowSizes, 2048, 1080);
+            AddAllowedWindowSize(allowedWindowSizes, 2048, 1280);
+            AddAllowedWindowSize(allowedWindowSizes, 2560, 1440);
+            AddAllowedWindowSize(allowedWindowSizes, 2560, 1600);
+            AddAllowedWindowSize(allowedWindowSizes, 3840, 2160);
+
+            return allowedWindowSizes;
+        }
 
         public IEnumerable<KeyValuePair<string, Setting>> KeyValuePairs
         {

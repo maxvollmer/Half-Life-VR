@@ -100,6 +100,15 @@ namespace HLVRConfig.Utilities.Settings
             return Type == SettingType.BOOLEAN && !Value.Equals("0");
         }
 
+        public int GetAsInt()
+        {
+            if (I18N.TryParseInt(Value, out int ivalue))
+                return ivalue;
+            if (I18N.TryParseInt(DefaultValue, out ivalue))
+                return ivalue;
+            return 0;
+        }
+
         public void SetValue(string value)
         {
             switch (Type)

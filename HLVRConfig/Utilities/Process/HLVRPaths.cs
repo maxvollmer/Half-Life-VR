@@ -22,12 +22,12 @@ namespace HLVRConfig.Utilities.Process
         {
             get
             {
-                return HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModLocation][LauncherSettings.HLDirectory].Value;
+                return HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.HLDirectory].Value;
             }
 
             private set
             {
-                HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModLocation][LauncherSettings.HLDirectory].Value = value;
+                HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.HLDirectory].Value = value;
                 LastHLDirectory = value;
             }
         }
