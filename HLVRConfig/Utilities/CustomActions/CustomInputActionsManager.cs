@@ -2,7 +2,6 @@
 using HLVRConfig.Utilities.Process;
 using HLVRConfig.Utilities.UI;
 using HLVRConfig.Utilities.UI.Config;
-using HLVRConfig.Utilities.UI.Controls;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -13,8 +12,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Xml;
-using System.Xml.Linq;
 using static HLVRConfig.Utilities.CustomActions.CustomAction;
 
 namespace HLVRConfig.Utilities.CustomActions
@@ -44,9 +41,9 @@ namespace HLVRConfig.Utilities.CustomActions
 
             try
             {
-                actionmanifest = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(HLVRPaths.VRActionsManifest, Encoding.UTF8));
+                actionmanifest = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(HLVRPaths.VRActionsManifest, new UTF8Encoding(false)));
                 actions = (JArray)actionmanifest.Property("actions").Value;
-                string customactionsfile = File.ReadAllText(HLVRPaths.VRCustomActionsFile, Encoding.UTF8);
+                string customactionsfile = File.ReadAllText(HLVRPaths.VRCustomActionsFile, new UTF8Encoding(false));
                 using (StringReader reader = new StringReader(customactionsfile))
                 {
                     Dictionary<string, List<string>> _customactions = new Dictionary<string, List<string>>();
@@ -441,15 +438,21 @@ namespace HLVRConfig.Utilities.CustomActions
 
             SyncCustomActions();
 
+            File.Delete(HLVRPaths.VRActionsManifest + ".bak");
             File.Copy(HLVRPaths.VRActionsManifest, HLVRPaths.VRActionsManifest + ".bak");
+            File.Delete(HLVRPaths.VRCustomActionsFile + ".bak");
             File.Copy(HLVRPaths.VRCustomActionsFile, HLVRPaths.VRCustomActionsFile + ".bak");
 
-            File.WriteAllText(HLVRPaths.VRActionsManifest, JsonConvert.SerializeObject(actionmanifest, Newtonsoft.Json.Formatting.Indented), Encoding.UTF8);
+            string json = JsonConvert.SerializeObject(actionmanifest, Newtonsoft.Json.Formatting.Indented);
+            File.Delete(HLVRPaths.VRActionsManifest);
+            File.WriteAllText(HLVRPaths.VRActionsManifest, json, new UTF8Encoding(false));
 
             StringBuilder customactionsfile = new StringBuilder();
             customactionsfilecomments.ForEach(c => customactionsfile.AppendLine(c));
             customactions.ForEach(c => c.Write(customactionsfile));
-            File.WriteAllText(HLVRPaths.VRCustomActionsFile, customactionsfile.ToString(), Encoding.UTF8);
+            string customactionsfiletext = customactionsfile.ToString();
+            File.Delete(HLVRPaths.VRCustomActionsFile);
+            File.WriteAllText(HLVRPaths.VRCustomActionsFile, customactionsfiletext, new UTF8Encoding(false));
 
             savechangesButton.IsEnabled = false;
             discardchangesButton.IsEnabled = false;

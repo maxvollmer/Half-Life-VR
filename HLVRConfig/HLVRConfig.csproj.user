@@ -4,4 +4,8 @@
     <StartAction>Program</StartAction>
     <StartProgram>E:\Spiele\Steam\steamapps\common\Half-Life\vr\HLVRConfig.exe</StartProgram>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <StartAction>Program</StartAction>
+    <StartProgram>E:\Spiele\Steam\steamapps\common\Half-Life\vr\HLVRConfig.exe</StartProgram>
+  </PropertyGroup>
 </Project>

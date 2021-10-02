@@ -67,7 +67,7 @@ namespace HLVRConfig
             AboutText.Inlines.Clear();
             try
             {
-                AboutText.Inlines.Add(File.ReadAllText(HLVRPaths.VRReadme, Encoding.UTF8));
+                AboutText.Inlines.Add(File.ReadAllText(HLVRPaths.VRReadme, new UTF8Encoding(false)));
             }
             catch (IOException e)
             {
