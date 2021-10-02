@@ -3,7 +3,7 @@
   * Fixed skybox in VR menu
 
  HLVRConfig:
-  * 
+  * Added mod window size to launcher config
 
 0.6.29-beta - 2021-10-02
  Mod:
