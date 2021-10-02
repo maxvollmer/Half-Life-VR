@@ -56,6 +56,14 @@ void PM_CheckFalling(void);
 void PM_PlayWaterSounds(void);
 void PM_Jump(void);
 
+bool IsOnGround()
+{
+	// i always get confused when i see if(IsOnGround()), so i made this wrapper function
+	// pmove->onground is -1 if NOT on ground, and 0 or higher if on ground
+	// (where the number is the entity index we are standing in)
+	return pmove->onground != -1;
+}
+
 
 #if 0
 float PM_GetStepHeight(playermove_t* pmove, vec3_t start, const float origdisttofloor, const float factor)
@@ -676,7 +684,7 @@ void PM_UpdateStepSound(void)
 	// If we're on a ladder or on the ground, and we're moving fast enough,
 	//  play step sound.  Also, if pmove->flTimeStepSound is zero, get the new
 	//  sound right away - we just started moving in new level.
-	if ((fLadder || (pmove->onground != -1)) &&
+	if ((fLadder || IsOnGround()) &&
 		(Length(pmove->velocity) > 0.0) &&
 		(speed >= velwalk || !pmove->flTimeStepSound))
 	{
@@ -1076,7 +1084,7 @@ int PM_FlyMove(void)
 		// modify original_velocity so it parallels all of the clip planes
 		//
 		if ((pmove->movetype == MOVETYPE_WALK || pmove->movetype == MOVETYPE_NOCLIP) &&
-			((pmove->onground == -1) || (pmove->friction != 1)))  // relfect player velocity
+			(IsOnGround() || (pmove->friction != 1)))  // relfect player velocity
 		{
 			for (i = 0; i < numplanes; i++)
 			{
@@ -1415,7 +1423,7 @@ void PM_Friction(void)
 	drop = 0;
 
 	// apply ground friction
-	if (pmove->onground != -1)  // On an entity that is the ground
+	if (IsOnGround())  // On an entity that is the ground
 	{
 		vec3_t start, stop;
 		pmtrace_t trace;
@@ -1476,12 +1484,6 @@ void PM_AirAccelerate(vec3_t wishdir, float wishspeed, float accel)
 	if (pmove->waterjumptime)
 		return;
 
-	if (VRGlobalIsInstantAccelerateOn() || VRIsInUpwardsTriggerPush(pmove->player_index))
-	{
-		VectorScale(wishdir, wishspeed, pmove->velocity);
-		return;
-	}
-
 	// Cap speed
 	//wishspd = VectorNormalize (pmove->wishveloc);
 
@@ -1496,10 +1498,17 @@ void PM_AirAccelerate(vec3_t wishdir, float wishspeed, float accel)
 		return;
 	// Determine acceleration speed after acceleration
 
-	accelspeed = accel * wishspeed * pmove->frametime * pmove->friction;
-	// Cap it
-	if (accelspeed > addspeed)
+	if (VRGlobalIsInstantAccelerateOn() || VRIsInUpwardsTriggerPush(pmove->player_index))
+	{
 		accelspeed = addspeed;
+	}
+	else
+	{
+		accelspeed = accel * wishspeed * pmove->frametime * pmove->friction;
+		// Cap it
+		if (accelspeed > addspeed)
+			accelspeed = addspeed;
+	}
 
 	// Adjust pmove vel.
 	for (i = 0; i < 3; i++)
@@ -1796,7 +1805,7 @@ void PM_CategorizePosition(void)
 			pmove->onground = tr.ent;  // Otherwise, point to index of ent under us.
 
 		// If we are on something...
-		if (pmove->onground != -1)
+		if (IsOnGround())
 		{
 			// Then we are not in water jump sequence
 			pmove->waterjumptime = 0;
@@ -2106,7 +2115,7 @@ void PM_UnDuck(void)
 
 	VectorCopy(pmove->origin, newOrigin);
 
-	if (pmove->onground != -1)
+	if (IsOnGround())
 	{
 		for (i = 0; i < 3; i++)
 		{
@@ -2199,7 +2208,7 @@ void PM_Duck(void)
 				switchToDuck = true;
 			}
 
-			if ((pmove->bInDuck && ((float)pmove->flDuckTime / 1000.0 <= (1.0 - TIME_TO_DUCK)) || (pmove->onground == -1)) || (pmove->cmd.buttons_ex & X_IN_VRDUCK && !(pmove->flags & FL_DUCKING)))
+			if ((pmove->bInDuck && ((float)pmove->flDuckTime / 1000.0 <= (1.0 - TIME_TO_DUCK)) || (!IsOnGround())) || (pmove->cmd.buttons_ex & X_IN_VRDUCK && !(pmove->flags & FL_DUCKING)))
 			{
 				pmove->bInDuck = false;
 				switchToDuck = true;
@@ -2211,7 +2220,7 @@ void PM_Duck(void)
 				pmove->flags |= FL_DUCKING;
 
 				// HACKHACK - Fudge for collision bug - no time to fix this properly
-				if (pmove->onground != -1)
+				if (IsOnGround())
 				{
 					for (int i = 0; i < 3; i++)
 					{
@@ -2587,7 +2596,7 @@ void PM_Physics_Toss()
 		pmove->onground = -1;
 
 	// If on ground and not moving, return.
-	if (pmove->onground != -1)
+	if (IsOnGround())
 	{
 		if (VectorCompare(pmove->basevelocity, vec3_origin) &&
 			VectorCompare(pmove->velocity, vec3_origin))
@@ -2878,7 +2887,7 @@ void PM_YesClip(physent_t* pLadder)
 
 		// Fricion is handled before we add in any base velocity. That way, if we are on a conveyor,
 		//  we don't slow when standing still, relative to the conveyor.
-		if (pmove->onground != -1 || VRIsInUpwardsTriggerPush(pmove->player_index))
+		if (IsOnGround() && !VRIsInUpwardsTriggerPush(pmove->player_index))
 		{
 			pmove->velocity[2] = 0.0;
 			PM_Friction();
@@ -2888,7 +2897,7 @@ void PM_YesClip(physent_t* pLadder)
 		PM_CheckVelocity();
 
 		// Are we on ground now
-		if (pmove->onground != -1 && !VRIsInUpwardsTriggerPush(pmove->player_index))
+		if (IsOnGround() && !VRIsInUpwardsTriggerPush(pmove->player_index))
 		{
 			PM_WalkMove();
 		}
@@ -2915,7 +2924,7 @@ void PM_YesClip(physent_t* pLadder)
 		}
 
 		// If we are on ground, no downward velocity.
-		if (pmove->onground != -1 && !VRIsInUpwardsTriggerPush(pmove->player_index))
+		if (IsOnGround() && !VRIsInUpwardsTriggerPush(pmove->player_index))
 		{
 			pmove->velocity[2] = 0;
 		}
@@ -3047,7 +3056,7 @@ void PM_Jump(void)
 	}
 
 	// No more effect
-	if (pmove->onground == -1)
+	if (!IsOnGround())
 	{
 		// Flag that we jumped.
 		// HACK HACK HACK
@@ -3188,7 +3197,7 @@ void PM_CheckWaterJump(void)
 
 void PM_CheckFalling(void)
 {
-	if (pmove->onground != -1 &&
+	if (IsOnGround() &&
 		!pmove->dead &&
 		pmove->flFallVelocity >= PLAYER_FALL_PUNCH_THRESHHOLD)
 	{
@@ -3249,7 +3258,7 @@ void PM_CheckFalling(void)
 		}
 	}
 
-	if (pmove->onground != -1)
+	if (IsOnGround())
 	{
 		pmove->flFallVelocity = 0;
 	}
@@ -3548,7 +3557,7 @@ void PM_PlayerMove(qboolean server)
 	pmove->oldwaterlevel = pmove->waterlevel;
 
 	// If we are not on ground, store off how fast we are moving down
-	if (pmove->onground == -1)
+	if (!IsOnGround())
 	{
 		pmove->flFallVelocity = -pmove->velocity[2];
 	}
@@ -3587,7 +3596,7 @@ void PM_PlayerMove(qboolean server)
 	}
 
 	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
-	if ((pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
+	if ((IsOnGround()) && (pmove->cmd.buttons & IN_USE))
 	{
 		VectorScale(pmove->velocity, 0.3, pmove->velocity);
 	}
@@ -3596,7 +3605,7 @@ void PM_PlayerMove(qboolean server)
 	// In water we don't do this, as it messes with waterjump
 	bool tryAutoDuck = VRIsAutoDuckingEnabled(pmove->player_index) && pmove->usehull == 0 && !(pmove->flags & FL_DUCKING) && !pLadder && pmove->waterlevel == 0;
 
-	if (tryAutoDuck && pmove->onground != -1)
+	if (tryAutoDuck && IsOnGround())
 	{
 		// same logic as in PM_CategorizePosition()
 		vec3_t point;
@@ -3638,18 +3647,18 @@ void PM_PlayerMove(qboolean server)
 		pmove->origin[2] = pmove->origin[2] + pmove->player_mins[0][2] - pmove->player_mins[1][2];
 
 		// Make sure we stay onground when switching to crouching
-		if (pmove->onground != -1)
+		if (IsOnGround())
 		{
 			PM_CategorizePosition();
 			int tries = 0;
-			while (pmove->onground == -1 && tries < 20)
+			while (!IsOnGround() && tries < 20)
 			{
 				pmove->origin[2] -= 0.1f;
 				PM_CategorizePosition();
 				tries++;
 			}
 			// if we can't get properly back on ground, smth is wrong, and we cannot reliably do auto-crouch (steep ground or whatever), cancel and use standing movement
-			if (pmove->onground == -1)
+			if (!IsOnGround())
 			{
 				VectorCopy(standmove_origin, pmove->origin);
 				VectorCopy(standmove_velocity, pmove->velocity);
@@ -3839,7 +3848,7 @@ void PM_Move(struct playermove_s* ppmove, int server)
 	pmove = ppmove;
 	PM_PlayerMove((server != 0) ? true : false);
 
-	if (pmove->onground != -1)
+	if (IsOnGround())
 	{
 		pmove->flags |= FL_ONGROUND;
 	}
