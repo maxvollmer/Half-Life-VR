@@ -7,7 +7,7 @@
   $header = $url . "header.png";
   $favicon = $url . "favicon.ico";
   $impressum = $url . "impressum.html";
-  $MOD_VERSION = "0.6.28-beta";
+  $MOD_VERSION = "0.6.29-beta";
 ?>
 <!DOCTYPE html>
 <html lang="en">
