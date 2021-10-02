@@ -12,9 +12,18 @@ namespace
 {
 	// For some reason the compiler finds a wrong isspace when we use std::isspace directly as predicate in std::find,
 	// so we wrap it here
-	bool IsSpace(const char c)
+	// in addition, std::isspace asserts in debug if a character is out of range, so we catch this here
+	bool IsSpace(const int c)
 	{
-		return std::isspace(c);
+		try
+		{
+			if (c >= -1 && c <= 255)
+			{
+				return std::isspace(c);
+			}
+		}
+		catch (...) {}
+		return false;
 	}
 
 	static inline void TrimString(std::string& s)
