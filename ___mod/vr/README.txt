@@ -129,7 +129,7 @@ Alex Coulter, DoesntDoot, Nicholas Kolettis, Xodetaetl, Zane, Rob L, Dan Mizu, D
 
 Beta testers:
 ---
-ajantaju, Junt, Lyo, bobloblaw, Moose, DetriniuM, Tiz68, Hamish, Arch [TuT VR], FriskyNoodle, Hermann Hetzer, optimumbox, Vince Crusty
+ajantaju, Junt, Lyo, bobloblaw, Moose, DetriniuM, Tiz68, Hamish, Arch [TuT VR], FriskyNoodle, Hermann Hetzer, optimumbox, Vince Crusty, SquidHominid
 
 Additional help:
 ---
