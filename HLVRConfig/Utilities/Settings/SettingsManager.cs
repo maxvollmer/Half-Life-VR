@@ -46,8 +46,7 @@ namespace HLVRConfig.Utilities.Settings
         public static bool AreLauncherSettingsInitialized { get; private set; } = false;
         private static bool IsFileSystemWatcherInitialized { get; set; } = false;
 
-        private static string ModPath = null;
-        private static string VRPath = null;
+        private static string HLVRPath = null;
 
         private static void InitLauncherSettings()
         {
@@ -67,7 +66,7 @@ namespace HLVRConfig.Utilities.Settings
                 AreLauncherSettingsInitialized = TryStoreSettings(LauncherSettings, HLVRPaths.VRLauncherSettingsFile);
             }
 
-            if (string.IsNullOrEmpty(HLVRPaths.HLDirectory))
+            if (string.IsNullOrEmpty(HLVRPaths.HLVRDirectory))
             {
                 HLVRPaths.RestoreLastHLDirectory();
             }
@@ -82,7 +81,7 @@ namespace HLVRConfig.Utilities.Settings
 
             ModSettings = new ModSettings();
 
-            if (!HLVRPaths.CheckHLDirectory() || !HLVRPaths.CheckModDirectory())
+            if (!HLVRPaths.CheckHLVRDirectory())
             {
                 AreModSettingsInitialized = false;
                 return;
@@ -137,11 +136,11 @@ namespace HLVRConfig.Utilities.Settings
                     fileSystemWatcher = null;
                 }
 
-                if (HLVRPaths.CheckHLDirectory() && HLVRPaths.CheckModDirectory())
+                if (HLVRPaths.CheckHLVRDirectory())
                 {
                     fileSystemWatcher = new FileSystemWatcher
                     {
-                        Path = HLVRPaths.VRDirectory,
+                        Path = HLVRPaths.HLVRDirectory,
                         EnableRaisingEvents = true,
                         IncludeSubdirectories = false,
                         NotifyFilter = NotifyFilters.LastWrite
@@ -156,13 +155,12 @@ namespace HLVRConfig.Utilities.Settings
         public static void InitSettings()
         {
             // If paths have changed, we need to reload mod settings
-            if (ModPath == null || VRPath == null || ModPath != HLVRPaths.HLDirectory || VRPath != HLVRPaths.VRDirectory)
+            if (HLVRPath == null || HLVRPath != HLVRPaths.HLVRDirectory)
             {
                 AreModSettingsInitialized = false;
                 IsFileSystemWatcherInitialized = false;
             }
-            ModPath = HLVRPaths.HLDirectory;
-            VRPath = HLVRPaths.VRDirectory;
+            HLVRPath = HLVRPaths.HLVRDirectory;
 
             InitFileSystemWatcherEtc();
             InitLauncherSettings();

@@ -85,8 +85,7 @@ namespace HLVRConfig
                 OnWindowStateChanged();
             }
             if (HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryLauncher][LauncherSettings.AutoRunMod].IsTrue()
-                && HLVRPaths.CheckHLDirectory()
-                && HLVRPaths.CheckModDirectory())
+                && HLVRPaths.CheckHLVRDirectory())
             {
                 hlvrModLauncher.LaunchMod(false);
             }
@@ -145,7 +144,7 @@ namespace HLVRConfig
         public void UpdateState()
         {
             UpdateSettingsAndLanguage();
-            if (!HLVRPaths.CheckHLDirectory() || !HLVRPaths.CheckModDirectory())
+            if (!HLVRPaths.CheckHLVRDirectory())
             {
                 ModNotFoundPanel.Visibility = Visibility.Visible;
                 NotRunningGamePanel.Visibility = Visibility.Collapsed;

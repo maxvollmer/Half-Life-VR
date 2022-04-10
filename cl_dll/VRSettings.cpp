@@ -146,7 +146,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_display_game", "0");
 
 	// Initialize time that settings file was last changed
-	std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
+	std::filesystem::path settingsPath = "./hlvr.cfg";
 	if (std::filesystem::exists(settingsPath))
 	{
 		m_lastSettingsFileChangedTime = std::filesystem::last_write_time(settingsPath).time_since_epoch().count();
@@ -157,7 +157,7 @@ void VRSettings::Init()
 	}
 
 	// Create a watch handle, so we can observe if hlvr.cfg has changed
-	m_watchVRFolderHandle = FindFirstChangeNotificationW((L"\\\\?\\" + GetPathFor("").wstring()).c_str(), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
+	m_watchVRFolderHandle = FindFirstChangeNotificationW(L"\\\\?\\./", FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
 
 	// If possible load existing settings
 	UpdateCVARSFromFile();
@@ -168,7 +168,7 @@ bool VRSettings::WasSettingsFileChanged()
 	DWORD result = WaitForSingleObjectEx(m_watchVRFolderHandle, 0, FALSE);
 	if (result == WAIT_OBJECT_0)
 	{
-		std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
+		std::filesystem::path settingsPath = "./hlvr.cfg";
 		if (std::filesystem::exists(settingsPath))
 		{
 			auto filechangedtime = std::filesystem::last_write_time(settingsPath).time_since_epoch().count();
@@ -283,7 +283,7 @@ void VRSettings::UpdateCVARSFromFile()
 
 	try
 	{
-		std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
+		std::filesystem::path settingsPath = "./hlvr.cfg";
 		if (std::filesystem::exists(settingsPath))
 		{
 			std::ifstream settingsstream(settingsPath);
@@ -345,7 +345,7 @@ void VRSettings::UpdateFileFromCVARS()
 
 	try
 	{
-		std::filesystem::path settingsPath = GetPathFor("/hlvr.cfg");
+		std::filesystem::path settingsPath = "./hlvr.cfg";
 		if (std::filesystem::exists(settingsPath))
 		{
 			std::ifstream settingsinstream(settingsPath);

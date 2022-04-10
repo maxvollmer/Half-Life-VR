@@ -35,9 +35,9 @@ namespace HLVRConfig.Utilities.Process
 
                 hlProcess = System.Diagnostics.Process.Start(new ProcessStartInfo
                 {
-                    WorkingDirectory = HLVRPaths.HLDirectory,
-                    FileName = HLVRPaths.HLExecutable,
-                    Arguments = $"-game vr -num_edicts 3072 -heapsize 131072 -dev 5 -env -console -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window {windowsize} +cl_mousegrab 0 +sv_lan 1 +gl_vsync 0 +fps_max 90 +fps_override 1",
+                    WorkingDirectory = HLVRPaths.HLVRDirectory,
+                    FileName = HLVRPaths.HLVRExecutable,
+                    Arguments = "-game vr -console -dev 2 -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0 +gl_vsync 0 +fps_max 90 +fps_override 1",
                     UseShellExecute = false,
                     RedirectStandardError = false,
                     RedirectStandardOutput = false
@@ -128,7 +128,7 @@ namespace HLVRConfig.Utilities.Process
                     var potentialHLProcesses = System.Diagnostics.Process.GetProcessesByName("hl");
                     foreach (var potentialHLProcess in potentialHLProcesses)
                     {
-                        var path1 = Path.GetFullPath(HLVRPaths.HLExecutable);
+                        var path1 = Path.GetFullPath(HLVRPaths.HLVRExecutable);
                         var path2 = Path.GetFullPath(potentialHLProcess.MainModule.FileName);
                         if (string.Equals(path1, path2, StringComparison.OrdinalIgnoreCase))
                         {

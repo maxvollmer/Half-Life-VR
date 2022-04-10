@@ -59,9 +59,9 @@ namespace HLVRConfig.Utilities.Process
 
         public static void CreateMiniDump(ModLauncher hlvrModLauncher)
         {
-            if (!HLVRPaths.CheckHLDirectory() || !HLVRPaths.CheckModDirectory())
+            if (!HLVRPaths.CheckHLVRDirectory())
             {
-                ShowError("Can't create mini dump, path to Half-Life and mod aren't set. (How did you press this button, it should be invisible?!)");
+                ShowError("Can't create mini dump, path to Half-Life VR isn't set. (How did you press this button, it should be invisible?!)");
                 return;
             }
 

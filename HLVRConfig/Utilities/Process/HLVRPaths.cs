@@ -16,49 +16,54 @@ namespace HLVRConfig.Utilities.Process
 {
     public class HLVRPaths
     {
-        public static string LastHLDirectory { get; private set; } = "";
+        public static string LastHLVRDirectory { get; private set; } = "";
 
-        public static string HLDirectory
+        public static string HLVRDirectory
         {
             get
             {
-                return HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.HLDirectory].Value;
+                return HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.HLVRDirectory].Value;
             }
 
             private set
             {
-                HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.HLDirectory].Value = value;
-                LastHLDirectory = value;
+                HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.HLVRDirectory].Value = value;
+                LastHLVRDirectory = value;
             }
         }
 
-        public static string VRDirectory { get; private set; }
+        public static string ValveDirectory
+        {
+            get
+            {
+                return Path.Combine(HLVRDirectory, "valve");
+            }
+        }
+
+        public static string VROpenvr_apidll { get { return Path.Combine(HLVRDirectory, "openvr_api.dll"); } }
+        public static string VREasyHook32dll { get { return Path.Combine(HLVRDirectory, "EasyHook32.dll"); } }
+        public static string VRServerdll { get { return Path.Combine(ValveDirectory, "dlls", "hl.dll"); } }
+        public static string VRClientdll { get { return Path.Combine(ValveDirectory, "cl_dlls", "client.dll"); } }
+        public static string VRLiblistgam { get { return Path.Combine(ValveDirectory, "liblist.gam"); } }
 
 
-        public static string VROpenvr_apidll { get { return Path.Combine(HLVRPaths.VRDirectory, "opnvrpi.dll"); } }
-        public static string VREasyHook32dll { get { return Path.Combine(HLVRPaths.VRDirectory, "ezhok32.dll"); } }
-        public static string VRServerdll { get { return Path.Combine(VRDirectory, "dlls", "vr.dll"); } }
-        public static string VRClientdll { get { return Path.Combine(VRDirectory, "cl_dlls", "client.dll"); } }
-        public static string VRLiblistgam { get { return Path.Combine(HLVRPaths.VRDirectory, "liblist.gam"); } }
-
-
-        public static string HLExecutable { get { return Path.Combine(HLVRPaths.HLDirectory, "hl.exe"); } }
+        public static string HLVRExecutable { get { return Path.Combine(HLVRDirectory, "hl.exe"); } }
 
 
         public static string VRModSettingsFileName { get { return "hlvr.cfg"; } }
-        public static string VRModSettingsFile { get { return Path.Combine(HLVRPaths.VRDirectory, VRModSettingsFileName); } }
-        public static string VRReadme { get { return Path.Combine(HLVRPaths.VRDirectory, "README.txt"); } }
-        public static string VRLogFile { get { return Path.Combine(HLVRPaths.VRDirectory, "hlvr_log.txt"); } }
+        public static string VRModSettingsFile { get { return Path.Combine(HLVRPaths.HLVRDirectory, VRModSettingsFileName); } }
+        public static string VRReadme { get { return Path.Combine(HLVRPaths.HLVRDirectory, "README.txt"); } }
+        public static string VRLogFile { get { return Path.Combine(HLVRPaths.HLVRDirectory, "hlvr_log.txt"); } }
 
-        public static string VRActionsManifest { get { return Path.Combine(HLVRPaths.VRDirectory, "actions", "actions.manifest"); } }
-        public static string VRCustomActionsFile { get { return Path.Combine(HLVRPaths.VRDirectory, "actions", "customactions.cfg"); } }
+        public static string VRActionsManifest { get { return Path.Combine(HLVRPaths.ValveDirectory, "actions", "actions.manifest"); } }
+        public static string VRCustomActionsFile { get { return Path.Combine(HLVRPaths.ValveDirectory, "actions", "customactions.cfg"); } }
 
         public static string VRLauncherSettingsFileName { get { return "hlvrlauncher.cfg"; } }
         public static string VRLauncherSettingsFile { get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, VRLauncherSettingsFileName); } }
 
-        public static string VRI18NDirectory { get { return Path.Combine(HLVRPaths.VRDirectory, "i18n"); } }
+        public static string VRI18NDirectory { get { return Path.Combine(HLVRPaths.HLVRDirectory, "i18n"); } }
 
-        public static string VRMiniDumpDirectory { get { return Path.Combine(HLVRPaths.VRDirectory, "dumps"); } }
+        public static string VRMiniDumpDirectory { get { return Path.Combine(HLVRPaths.HLVRDirectory, "dumps"); } }
 
 
         public static void Initialize()
@@ -73,21 +78,16 @@ namespace HLVRConfig.Utilities.Process
 
         public static void RestoreLastHLDirectory()
         {
-            HLDirectory = LastHLDirectory;
+            HLVRDirectory = LastHLVRDirectory;
         }
 
         private static bool InitializeFromLocation()
         {
             string currentLocation = Path.GetFullPath(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location));
-            if (IsModDirectory(currentLocation))
+            if (IsHLVRDirectory(currentLocation))
             {
-                string hlDirectory = Path.GetFullPath(Path.Combine(currentLocation, "..\\"));
-                if (IsHalflifeDirectory(hlDirectory))
-                {
-                    HLDirectory = hlDirectory;
-                    VRDirectory = currentLocation;
-                    return true;
-                }
+                HLVRDirectory = currentLocation;
+                return true;
             }
             return false;
         }
@@ -119,9 +119,9 @@ namespace HLVRConfig.Utilities.Process
             return steamDirectory;
         }
 
-        private static string GetHalfLifeDirectoryFromManifest(string libraryfolder, string manifest)
+        private static string GetHLVRDirectoryFromManifest(string libraryfolder, string manifest)
         {
-            string foldername = "Half-Life";
+            string foldername = "Half-Life VR";
             StreamReader file = new StreamReader(manifest);
             string line;
             while ((line = file.ReadLine()) != null)
@@ -147,19 +147,19 @@ namespace HLVRConfig.Utilities.Process
                 }
             }
 
-            return Path.Combine(Path.Combine(Path.Combine(libraryfolder, "steamapps"), "common"), "Half-Life");
+            return Path.Combine(Path.Combine(Path.Combine(libraryfolder, "steamapps"), "common"), "Half-Life VR");
         }
 
-        private static string FindHalflifeDirectoryFromSteam()
+        private static string FindHLVRDirectoryFromSteam()
         {
             string steamDirectory = GetSteamDirectory();
             if (steamDirectory == null || steamDirectory.Length == 0)
                 return null;
 
-            string hlmanifest = Path.Combine(Path.Combine(steamDirectory, "steamapps"), "appmanifest_70.acf");
+            string hlmanifest = Path.Combine(Path.Combine(steamDirectory, "steamapps"), "appmanifest_1908720.acf");
             if (File.Exists(hlmanifest))
             {
-                string hlDirectory = GetHalfLifeDirectoryFromManifest(steamDirectory, hlmanifest);
+                string hlDirectory = GetHLVRDirectoryFromManifest(steamDirectory, hlmanifest);
                 if (Directory.Exists(hlDirectory))
                 {
                     return hlDirectory;
@@ -182,10 +182,10 @@ namespace HLVRConfig.Utilities.Process
                     string libraryfolder = Regex.Unescape(regMatch.Groups[1].Value);
                     if (Directory.Exists(libraryfolder))
                     {
-                        hlmanifest = Path.Combine(Path.Combine(libraryfolder, "steamapps"), "appmanifest_70.acf");
+                        hlmanifest = Path.Combine(Path.Combine(libraryfolder, "steamapps"), "appmanifest_1908720.acf");
                         if (File.Exists(hlmanifest))
                         {
-                            string hlDirectory = GetHalfLifeDirectoryFromManifest(libraryfolder, hlmanifest);
+                            string hlDirectory = GetHLVRDirectoryFromManifest(libraryfolder, hlmanifest);
                             if (Directory.Exists(hlDirectory))
                             {
                                 return hlDirectory;
@@ -200,55 +200,56 @@ namespace HLVRConfig.Utilities.Process
 
         private static void InitializeFromSteam()
         {
-            HLDirectory = FindHalflifeDirectoryFromSteam();
-            if (CheckHLDirectory())
+            var directory = FindHLVRDirectoryFromSteam();
+            if (IsHLVRDirectory(directory))
             {
-                VRDirectory = Path.Combine(HLDirectory, "vr");
+                HLVRDirectory = directory;
             }
         }
 
-        public static bool CheckHLDirectory()
+        public static bool CheckHLVRDirectory()
         {
-            return IsHalflifeDirectory(HLDirectory);
+            return IsHLVRDirectory(HLVRDirectory);
         }
 
-        public static bool CheckModDirectory()
+        private static bool IsHLVRDirectory(string hlvrDir)
         {
-            if (!CheckHLDirectory())
+            if (hlvrDir == null || hlvrDir.Length == 0)
                 return false;
 
-            return IsModDirectory(VRDirectory);
-        }
-
-        private static bool IsHalflifeDirectory(string directory)
-        {
-            if (directory == null || directory.Length == 0)
+            if (!Directory.Exists(hlvrDir))
                 return false;
 
-            if (!Directory.Exists(directory))
+            if (!File.Exists(Path.Combine(hlvrDir, "hl.exe")))
                 return false;
 
-            if (!File.Exists(Path.Combine(directory, "hl.exe"))
-                || !Directory.Exists(Path.Combine(directory, "valve")))
+            if (!File.Exists(Path.Combine(hlvrDir, "HLVRConfig.exe")))
+                return false;
+
+            if (!File.Exists(Path.Combine(hlvrDir, "fmod.dll")))
+                return false;
+
+            if (!File.Exists(Path.Combine(hlvrDir, "openvr_api.dll")))
+                return false;
+
+            if (!File.Exists(Path.Combine(hlvrDir, "EasyHook32.dll")))
+                return false;
+
+            string valveDir = Path.Combine(hlvrDir, "valve");
+
+            if (!Directory.Exists(valveDir))
+                return false;
+
+            if (!File.Exists(Path.Combine(Path.Combine(valveDir, "dlls"), "hl.dll")))
+                return false;
+
+            if (!File.Exists(Path.Combine(Path.Combine(valveDir, "cl_dlls"), "client.dll")))
+                return false;
+
+            if (!File.Exists(Path.Combine(valveDir, "liblist.gam")))
                 return false;
 
             return true;
-        }
-
-        private static bool IsModDirectory(string directory)
-        {
-            string fmod_dll = Path.Combine(directory, "f.dll");
-            string openvr_apidll = Path.Combine(directory, "opnvrpi.dll");
-            string EasyHook32dll = Path.Combine(directory, "ezhok32.dll");
-            string vrdll = Path.Combine(Path.Combine(directory, "dlls"), "vr.dll");
-            string clientdll = Path.Combine(Path.Combine(directory, "cl_dlls"), "client.dll");
-            string liblistgam = Path.Combine(directory, "liblist.gam");
-            return File.Exists(fmod_dll)
-                && File.Exists(openvr_apidll)
-                && File.Exists(EasyHook32dll)
-                && File.Exists(vrdll)
-                && File.Exists(clientdll)
-                && File.Exists(liblistgam);
         }
     }
 }

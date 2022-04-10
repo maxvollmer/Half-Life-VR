@@ -104,9 +104,10 @@
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Release;..\steam\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>..\DLLIncludeFixer.exe .\$(Configuration)\hl.dll
-copy .\$(Configuration)\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"
-copy .\$(Configuration)\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"
+      <Command>..\DLLIncludeFixer.py -i "$(HLVRInstallDirectory)valve/dlls/hl.dll"
+
+copy .\$(Configuration)\hl.dll "$(HLVRInstallDirectory)valve/dlls/hl.dll"
+copy .\$(Configuration)\hl.pdb "$(HLVRInstallDirectory)valve/dlls/hl.pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -158,14 +159,15 @@ copy .\$(Configuration)\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"
       <ModuleDefinitionFile>.\hl.def</ModuleDefinitionFile>
       <OutputFile>.\Debug\hl.dll</OutputFile>
       <ImportLibrary>.\Debug\hl.lib</ImportLibrary>
-      <AdditionalDependencies>user32.lib;advapi32.lib;reactphysics3d.lib;steam_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;advapi32.lib;reactphysics3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Debug;..\steam\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>..\DLLIncludeFixer.exe .\$(Configuration)\hl.dll
-copy .\$(Configuration)\hl.dll "$(HalfLifeInstallDirectory)vr/dlls/vr.dll"
-copy .\$(Configuration)\hl.pdb "$(HalfLifeInstallDirectory)vr/dlls/vr.pdb"
+      <Command>..\DLLIncludeFixer.py -i "$(HLVRInstallDirectory)valve/dlls/hl.dll"
+
+copy .\$(Configuration)\hl.dll "$(HLVRInstallDirectory)valve/dlls/hl.dll"
+copy .\$(Configuration)\hl.pdb "$(HLVRInstallDirectory)valve/dlls/hl.pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

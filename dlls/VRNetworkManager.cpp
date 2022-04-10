@@ -9,6 +9,8 @@
 
 #include "VRNetworkManager.h"
 
+#ifdef ENABLESTEAMSTUFF
+
 #pragma warning(push) 
 #pragma warning(disable: 4996)
 
@@ -53,8 +55,12 @@ void ReceiveMessages()
     }
 }
 
+#endif
+
 void VRNetworkManager::InitNetwork()
 {
+#ifdef ENABLESTEAMSTUFF
+
     if (steamNetworking)
     {
         BlebSendMessage();
@@ -111,5 +117,7 @@ void VRNetworkManager::InitNetwork()
     }
 
     return;
+
+#endif
 }
 

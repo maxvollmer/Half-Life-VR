@@ -65,7 +65,7 @@ namespace HLVRConfig.Utilities.UI
                 CurrentLanguage = "en";
             }
 
-            if (HLVRPaths.CheckModDirectory())
+            if (HLVRPaths.CheckHLVRDirectory())
             {
                 if (!Directory.Exists(HLVRPaths.VRI18NDirectory))
                 {
@@ -100,7 +100,7 @@ namespace HLVRConfig.Utilities.UI
 
         public static void SaveI18NFile()
         {
-            if (HLVRPaths.CheckModDirectory())
+            if (HLVRPaths.CheckHLVRDirectory())
             {
                 if (!Directory.Exists(HLVRPaths.VRI18NDirectory))
                 {
@@ -130,7 +130,7 @@ namespace HLVRConfig.Utilities.UI
             HLVRSettingsManager.LauncherSettings.Languages.Clear();
             HLVRSettingsManager.LauncherSettings.Languages["en"] = new I18NString("Language.en", "English");
 
-            if (HLVRPaths.CheckModDirectory())
+            if (HLVRPaths.CheckHLVRDirectory())
             {
                 foreach (var file in Directory.GetFiles(HLVRPaths.VRI18NDirectory, "*.lang", SearchOption.AllDirectories))
                 {

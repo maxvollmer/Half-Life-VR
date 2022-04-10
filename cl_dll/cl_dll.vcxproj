@@ -110,9 +110,8 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
-      <Command>..\DLLIncludeFixer.exe .\$(Configuration)\client.dll
-copy .\$(Configuration)\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
-copy .\$(Configuration)\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
+      <Command>copy .\$(Configuration)\client.dll "$(HLVRInstallDirectory)valve/cl_dlls/client.dll"
+copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -162,9 +161,8 @@ copy .\$(Configuration)\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>..\DLLIncludeFixer.exe .\$(Configuration)\client.dll
-copy .\$(Configuration)\client.dll "$(HalfLifeInstallDirectory)vr/cl_dlls/client.dll"
-copy .\$(Configuration)\client.pdb "$(HalfLifeInstallDirectory)vr/cl_dlls/client.pdb"
+      <Command>copy .\$(Configuration)\client.dll "$(HLVRInstallDirectory)valve/cl_dlls/client.dll"
+copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.pdb"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

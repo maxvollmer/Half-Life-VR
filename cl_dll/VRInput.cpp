@@ -126,7 +126,7 @@ void VRInput::LoadCustomActions()
 			}
 			catch (...)
 			{
-				gEngfuncs.Con_DPrintf("Invalid custom command in /vr/actions/customactions.cfg (line %i): %s\n", lineNum, line.data());
+				gEngfuncs.Con_DPrintf("Invalid custom command in /actions/customactions.cfg (line %i): %s\n", lineNum, line.data());
 			}
 		}
 	}

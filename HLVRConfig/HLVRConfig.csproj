@@ -135,6 +135,6 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetDir)$(TargetName).exe" "$(HalfLifeInstallDirectory)vr/$(TargetName).exe"</PostBuildEvent>
+    <PostBuildEvent>copy "$(TargetDir)$(TargetName).exe" "$(HLVRInstallDirectory)$(TargetName).exe"</PostBuildEvent>
   </PropertyGroup>
 </Project>

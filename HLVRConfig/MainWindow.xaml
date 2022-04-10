@@ -14,7 +14,7 @@
                     <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="ModNotFoundPanel">
                             <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">
-                                <controls:I18NText Key="GUI.ModNotFoundMessage" DefaultValue="Couldn't find Half-Life or mod folder. Please go to &quot;Launcher Config&quot; to fix."></controls:I18NText>
+                                <controls:I18NText Key="GUI.ModNotFoundMessage" DefaultValue="Couldn't find Half-Life: VR folder. Please go to &quot;Launcher Config&quot; to fix."></controls:I18NText>
                             </TextBlock>
                         </StackPanel>
 
@@ -26,7 +26,7 @@
 
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="RunningGamePannel">
                             <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">
-                                <controls:I18NText Key="GUI.HLIsRunningMessage" DefaultValue="Half-Life is currently running."></controls:I18NText>
+                                <controls:I18NText Key="GUI.HLIsRunningMessage" DefaultValue="Half-Life: VR is currently running."></controls:I18NText>
                             </TextBlock>
                         </StackPanel>
                     </StackPanel>
