@@ -59,7 +59,7 @@ namespace
 	{
 		/*
 		HL.x = forward
-		HL.y = right
+		HL.y = left (-y = right)
 		HL.z = up
 
 		FMOD.x = right
@@ -67,12 +67,12 @@ namespace
 		FMOD.z = forwards
 		*/
 
-		return FMOD_VECTOR{ vec.y * HL_TO_METERS, vec.z * HL_TO_METERS, vec.x * HL_TO_METERS };
+		return FMOD_VECTOR{ -vec.y * HL_TO_METERS, vec.z * HL_TO_METERS, vec.x * HL_TO_METERS };
 	}
 
 	constexpr const FMOD_VECTOR HL_DIR_TO_FMOD(const Vector& vec)
 	{
-		return FMOD_VECTOR{ vec.y, vec.z, vec.x };
+		return FMOD_VECTOR{ -vec.y, vec.z, vec.x };
 	}
 
 	enum StartSoundResult

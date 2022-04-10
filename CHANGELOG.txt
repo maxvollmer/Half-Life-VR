@@ -1,6 +1,7 @@
 0.6.30-beta -
  Mod:
   * Fixed skybox in VR menu
+  * Fixed audio left and right being switched when using FMOD
 
  HLVRConfig:
   * Added mod window size to launcher config
