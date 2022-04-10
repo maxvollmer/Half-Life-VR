@@ -61,7 +61,10 @@ enum class VRControllerID : int32_t
 
 float VRGetSmoothStepsSetting()
 {
-	return CVAR_GET_FLOAT("vr_smooth_steps");
+	if (CVAR_GET_FLOAT("vr_smooth_steps") == 0.f)
+		return 0.f;
+
+	return std::clamp(CVAR_GET_FLOAT("vr_smooth_steps_intensity"), 0.f, 1.f);
 }
 
 VRHelper::VRHelper()
@@ -124,6 +127,7 @@ void VRHelper::UpdateWorldRotation()
 		m_currentYaw = 0.f;
 		m_instantRotateYawValue = 0.f;
 		m_currentYawOffsetDelta = Vector2D{};
+
 		return;
 	}
 
@@ -566,8 +570,8 @@ bool VRHelper::UpdatePositions(int viewent)
 
 		if (positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bDeviceIsConnected && positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid && positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].eTrackingResult == vr::TrackingResult_Running_OK)
 		{
-			UpdateHMD(viewent);
-			UpdateControllers();
+			Vector smoothOffset = UpdateHMD(viewent);
+			UpdateControllers(smoothOffset);
 			SendPositionUpdateToServer();
 			return true;
 		}
@@ -837,16 +841,6 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 		}
 	}
 
-	/*
-	// TODO: Smooth steps
-	if (VRGetSmoothStepsSetting() != 0.f)
-	{
-		float newHeight_meter = hlTransform[13] + GetStepHeight() / GetVRToHL().y;
-		m_hmdHeightOffset += newHeight_meter - originalHeight_meter;
-		hlTransform[13] = newHeight_meter;
-	}
-	*/
-
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
 		return hlTransform;
 
@@ -922,47 +916,9 @@ Matrix4 VRHelper::GetAbsoluteControllerTransform(vr::TrackedDeviceIndex_t contro
 	return GetAbsoluteTransform(vrTransform);
 }
 
-float VRHelper::GetStepHeight()
-{
-	if (VRGetSmoothStepsSetting() == 0.f)
-	{
-		m_stepHeightOrigin = Vector{};
-		m_stepHeight = 0.f;
-		return 0.f;
-	}
-
-	cl_entity_t* localPlayer = SaveGetLocalPlayer();
-	extern playermove_t* pmove;
-	if (localPlayer && pmove)
-	{
-		if (m_stepHeightOrigin != localPlayer->origin)
-		{
-			extern float PM_GetStepHeight(playermove_t * pmove, float origin[3]);
-			m_stepHeight = PM_GetStepHeight(pmove, localPlayer->origin);
-			m_stepHeightOrigin = localPlayer->origin;
-		}
-	}
-	else
-	{
-		m_stepHeightOrigin = Vector{};
-		m_stepHeight = 0.f;
-	}
-
-	return m_stepHeight;
-}
-
 void VRHelper::GetViewOrg(float* origin)
 {
 	Vector viewOrg = GetPositionInHLSpaceFromAbsoluteTrackingMatrix(GetAbsoluteHMDTransform());
-	cl_entity_t* localPlayer = SaveGetLocalPlayer();
-	if (localPlayer)
-	{
-		// viewOrg.z = (std::min)(viewOrg.z, localPlayer->curstate.origin.z + m_viewOfs.z);
-		if (VRGetSmoothStepsSetting() != 0.f)
-		{
-			viewOrg.z += GetStepHeight();
-		}
-	}
 	viewOrg.CopyToArray(origin);
 }
 
@@ -1004,7 +960,156 @@ bool VRHelper::UpdateController(
 	return false;
 }
 
-void VRHelper::UpdateHMD(int viewent)
+#include <deque>
+
+class OffsetThingy
+{
+public:
+	Vector offset;
+	Vector smoothedOffset;
+	std::array<double, 3> velocity;
+	double time;
+
+	OffsetThingy() :
+		offset{ 0.f, 0.f, 0.f },
+		smoothedOffset{ 0.f, 0.f, 0.f },
+		velocity{ 0.0, 0.0, 0.0 },
+		time{ 0.0 }
+	{
+	}
+
+	OffsetThingy(const Vector& offset, const Vector& smoothedOffset, const std::array<double, 3>& velocity, double time) :
+		offset{ offset },
+		smoothedOffset{ smoothedOffset },
+		velocity{ velocity },
+		time{ time }
+	{
+	}
+};
+
+std::deque<OffsetThingy> offsetThingies;
+double g_vrWalkedIntoWall = 0.0;
+double g_vrWalkedIntoWall = 0.0;
+void ResetOffsetThingies()
+{
+	offsetThingies.clear();
+	g_vrWalkedIntoWall = 0.0;
+}
+
+Vector SmoothRapidOffsetChanges(const Vector& currentOffset)
+{
+	const float smoothTime = VRGetSmoothStepsSetting() * 0.1f;
+	if (smoothTime <= 0.f)
+	{
+		ResetOffsetThingies();
+		return currentOffset;
+	}
+
+	cl_entity_t* localPlayer = SaveGetLocalPlayer();
+	if (!localPlayer)
+	{
+		ResetOffsetThingies();
+		return currentOffset;
+	}
+
+	extern playermove_t* pmove;
+	if (!pmove)
+	{
+		ResetOffsetThingies();
+		return currentOffset;
+	}
+
+	double currentTime = gVRRenderer.m_clientTime;
+
+	// Side smooth only while running into a wall
+	bool smoothSideMotion = false;// g_vrWalkedIntoWall >= (gVRRenderer.m_clientTime - smoothTime);
+
+	// Up smooth only when onground
+	bool smoothUpMotion = pmove->onground >= 0;
+
+	// remove all offsets older than smoothTime seconds
+	for (auto offsetThingy = offsetThingies.begin();
+		offsetThingy != offsetThingies.end() && offsetThingy->time < (currentTime - smoothTime);
+		offsetThingy = offsetThingies.erase(offsetThingy));
+
+	std::array<double, 3> currentVelocity{ 0.0, 0.0, 0.0 };
+
+	Vector smoothedOffset = currentOffset;
+	bool isSameFrame = false;
+
+	if (offsetThingies.size() > 0 && (smoothSideMotion || smoothUpMotion))
+	{
+		// Calculate average velocity over N:
+		std::array<double, 3> velocitiesSum{ 0.0, 0.0, 0.0 };
+		uint64_t velocitiesCount = 0;
+
+		// add in all the previous ones not older than N seconds ago
+		for (auto offsetThingy = offsetThingies.begin(); offsetThingy != offsetThingies.end(); offsetThingy++)
+		{
+			velocitiesCount++;
+			velocitiesSum[0] += offsetThingy->velocity[0];
+			velocitiesSum[1] += offsetThingy->velocity[1];
+			velocitiesSum[2] += offsetThingy->velocity[2];
+		}
+
+		// add in current offset
+		auto& lastOffsetThingy = offsetThingies.back();
+		if (currentTime == lastOffsetThingy.time)
+		{
+			// don't add duplicate frames (we still need to process them, to get the same smooth offset we calculated before)
+			isSameFrame = true;
+			smoothedOffset = lastOffsetThingy.smoothedOffset;
+		}
+		else
+		{
+			double timeDiff = currentTime - lastOffsetThingy.time;
+			currentVelocity[0] = (static_cast<double>(currentOffset.x) - lastOffsetThingy.offset.x) / timeDiff;
+			currentVelocity[1] = (static_cast<double>(currentOffset.y) - lastOffsetThingy.offset.y) / timeDiff;
+			currentVelocity[2] = (static_cast<double>(currentOffset.z) - lastOffsetThingy.offset.z) / timeDiff;
+
+			if (std::isfinite(currentVelocity[0]) && std::isfinite(currentVelocity[1]) && std::isfinite(currentVelocity[2]))
+			{
+				velocitiesSum[0] += currentVelocity[0];
+				velocitiesSum[1] += currentVelocity[1];
+				velocitiesSum[2] += currentVelocity[2];
+				velocitiesCount++;
+
+				Vector averageVelocity;
+				averageVelocity.x = static_cast<float>(velocitiesSum[0] / velocitiesCount);
+				averageVelocity.y = static_cast<float>(velocitiesSum[1] / velocitiesCount);
+				averageVelocity.z = static_cast<float>(velocitiesSum[2] / velocitiesCount);
+
+				// Then use average velocity to smooth offset
+				if (smoothSideMotion)
+				{
+					smoothedOffset.x = lastOffsetThingy.smoothedOffset.x + averageVelocity.x * timeDiff;
+					smoothedOffset.y = lastOffsetThingy.smoothedOffset.y + averageVelocity.y * timeDiff;
+				}
+				if (smoothUpMotion)
+				{
+					smoothedOffset.z = lastOffsetThingy.smoothedOffset.z + averageVelocity.z * timeDiff;
+				}
+			}
+			else
+			{
+				// skip frames with invalid data, use smoothed offset from previous frame
+				isSameFrame = true;
+				smoothedOffset = lastOffsetThingy.smoothedOffset;
+			}
+		}
+
+	}
+
+	// Add the new offset
+	if (!isSameFrame)
+	{
+		offsetThingies.emplace_back(currentOffset, smoothedOffset, currentVelocity, currentTime);
+	}
+
+	return smoothedOffset;
+}
+
+Vector VRHelper::UpdateHMD(int viewent)
 {
 	Matrix4 m_mat4HMDPose = GetAbsoluteHMDTransform().invert();
 
@@ -1032,11 +1137,16 @@ void VRHelper::UpdateHMD(int viewent)
 		}
 	}
 
-	positions.m_mat4LeftModelView = GetHMDMatrixPoseEye(vr::Eye_Left) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, -clientGroundPosition);
-	positions.m_mat4RightModelView = GetHMDMatrixPoseEye(vr::Eye_Right) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, -clientGroundPosition);
+	Vector offset = -clientGroundPosition;
+	Vector smoothedOffset = SmoothRapidOffsetChanges(offset);
+
+	positions.m_mat4LeftModelView = GetHMDMatrixPoseEye(vr::Eye_Left) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, smoothedOffset);
+	positions.m_mat4RightModelView = GetHMDMatrixPoseEye(vr::Eye_Right) * GetModelViewMatrixFromAbsoluteTrackingMatrix(m_mat4HMDPose, smoothedOffset);
+
+	return offset - smoothedOffset;
 }
 
-void VRHelper::UpdateControllers()
+void VRHelper::UpdateControllers(const Vector& smoothOffset)
 {
 	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
 
@@ -1063,6 +1173,9 @@ void VRHelper::UpdateControllers()
 		m_rightControllerForward,
 		m_rightControllerRight,
 		m_rightControllerUp);
+
+	m_leftControllerPosition += smoothOffset;
+	m_rightControllerPosition += smoothOffset;
 
 	if (leftHandMode)
 	{

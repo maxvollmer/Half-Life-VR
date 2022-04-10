@@ -69,8 +69,8 @@ public:
 private:
 	void Exit(const char* lpErrorMessage = nullptr);
 
-	void UpdateHMD(int viewent);
-	void UpdateControllers();
+	Vector UpdateHMD(int viewent);
+	void UpdateControllers(const Vector& smoothOffset);
 	bool UpdateController(
 		vr::TrackedDeviceIndex_t controllerIndex,
 		Matrix4& controllerMatrix,
@@ -104,10 +104,6 @@ private:
 
 	Vector GetHLViewAnglesFromVRMatrix(const Matrix4& mat);
 	Vector GetHLAnglesFromVRMatrix(const Matrix4& mat);
-
-	float GetStepHeight();
-	float m_stepHeight{ 0 };
-	Vector m_stepHeightOrigin;
 
 	Positions positions;
 

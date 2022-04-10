@@ -109,6 +109,8 @@ void VRRenderer::VidInit()
 
 void VRRenderer::Frame(double frametime)
 {
+	extern void ResetOffsetThingies();
+
 	const static auto begin = std::chrono::steady_clock::now();
 	const auto now = std::chrono::steady_clock::now();
 	m_clientTime = std::chrono::duration<double>(now - begin).count();
@@ -120,6 +122,7 @@ void VRRenderer::Frame(double frametime)
 	{
 		g_vrSettings.InitialUpdateCVARSFromFile();
 		m_isVeryFirstFrameEver = false;
+		ResetOffsetThingies();
 	}
 
 	g_vrSettings.CheckCVARsForChanges();
@@ -131,6 +134,7 @@ void VRRenderer::Frame(double frametime)
 		g_vrInput.ShowHLMenu();
 		vrHelper->PollEvents(false, m_isInMenu);
 		VRSoundUpdate(true, frametime);
+		ResetOffsetThingies();
 	}
 	else
 	{
@@ -142,6 +146,7 @@ void VRRenderer::Frame(double frametime)
 	{
 		CaptureCurrentScreenToTexture(vrHelper->GetVRGLMenuTexture());
 		m_wasMenuJustRendered = false;
+		ResetOffsetThingies();
 	}
 
 	if (IsDeadInGame())
@@ -158,11 +163,14 @@ void VRRenderer::Frame(double frametime)
 		}
 
 		gHUD.m_vrGrabbedLadderEntIndex = 0;
+
+		ResetOffsetThingies();
 	}
 
 	if (!IsInGame())
 	{
 		gHUD.m_vrGrabbedLadderEntIndex = 0;
+		ResetOffsetThingies();
 	}
 }
 

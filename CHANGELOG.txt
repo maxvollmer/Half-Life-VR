@@ -2,6 +2,7 @@
  Mod:
   * Fixed skybox in VR menu
   * Fixed audio left and right being switched when using FMOD
+  * Added feature that smoothes movement when walking up stairs
 
  HLVRConfig:
   * Added mod window size to launcher config

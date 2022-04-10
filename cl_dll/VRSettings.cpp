@@ -116,7 +116,8 @@ void VRSettings::Init()
 	RegisterCVAR("vr_make_levers_nonsolid", "1");
 	RegisterCVAR("vr_make_mountedguns_nonsolid", "1");
 	RegisterCVAR("vr_tankcontrols_instant_turn", "0");
-	RegisterCVAR("vr_smooth_steps", "0");
+	RegisterCVAR("vr_smooth_steps", "1");
+	RegisterCVAR("vr_smooth_steps_intensity", "0.5");
 	RegisterCVAR("vr_headset_offset", "0");
 	RegisterCVAR("vr_classic_mode", "0");
 	RegisterCVAR("vr_enable_interactive_debris", "1");
