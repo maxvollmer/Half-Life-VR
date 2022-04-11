@@ -2755,8 +2755,6 @@ void CBasePlayer::PostThink()
 
 	VRUseOrUnuseTank();
 
-	VRDoTheBackPackThing();
-
 	// Handle Tank controlling
 	if (!m_vrIsUsingTankWithVRControllers && m_pTank != nullptr)
 	{
@@ -5966,127 +5964,6 @@ bool CBasePlayer::IsTankVRControlled(entvars_t* pevTank)
 	}
 
 	return false;
-}
-
-void CBasePlayer::VRDoTheBackPackThing()
-{
-	if (CVAR_GET_FLOAT("vr_virtual_backpack_enabled") == 0.f)
-		return;
-
-	auto& controller = m_vrControllers[VRControllerID::WEAPON];
-
-	if (!controller.IsValid())
-		return;
-
-	// different logic for grabbing or touching
-	bool needsgrab = CVAR_GET_FLOAT("vr_virtual_backpack_needsgrab") == 0.f;
-
-	if (needsgrab)
-	{
-		bool isgrabbing = (controller.IsDragging() && !controller.HasDraggedEntity());
-		if (m_vrHasGrabbedBackPack && isgrabbing)
-		{
-			if (IsInNonBackPackArea(controller.GetPosition()))
-				m_vrHasGrabbedBackPack = false;
-			return;
-		}
-
-		if (!IsInBackPackArea(controller.GetPosition()))
-			return;
-
-		if (isgrabbing && !m_vrHasGrabbedBackPack)
-		{
-			VRSwitchBackPackItem();
-			m_vrHasGrabbedBackPack = true;
-		}
-		else if (m_vrHasGrabbedBackPack && !isgrabbing)
-		{
-			m_vrHasGrabbedBackPack = false;
-		}
-	}
-	else
-	{
-		if (IsInBackPackArea(controller.GetPosition()))
-		{
-			// already handled!
-			if (m_vrHasGrabbedBackPack)
-				return;
-
-			VRSwitchBackPackItem();
-			m_vrHasGrabbedBackPack = true;
-		}
-		// there is some space between backpack and non-backpack area, that's why we have two checks
-		else if (IsInNonBackPackArea(controller.GetPosition()))
-		{
-			m_vrHasGrabbedBackPack = false;
-		}
-	}
-}
-
-void CBasePlayer::VRSwitchBackPackItem()
-{
-	// nothing in backpack and nothing in hand
-	if (!m_pActiveItem && !m_vrhBackPackItem)
-		return;
-
-	EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/wpn_select.wav", 0.4, ATTN_NORM);
-
-	auto previousItem = m_pActiveItem;
-	if (m_vrhBackPackItem && m_vrhBackPackItem != previousItem)
-	{
-		SelectItem(STRING(m_vrhBackPackItem->pev->classname));
-	}
-	else
-	{
-		SelectItem("weapon_barehand");
-	}
-	m_vrhBackPackItem = previousItem;
-}
-
-bool CBasePlayer::IsInBackPackArea(const Vector& pos)
-{
-	Vector headsetPos = pev->origin + Vector{ vr_lastHMDOffset.x, vr_lastHMDOffset.y, pev->view_ofs.z };
-
-	// check between head and torso
-	if (pos.z > headsetPos.z)
-		return false;
-
-	if (pos.z < pev->origin.z)
-		return false;
-
-	// check far enough from head
-	Vector delta = headsetPos - pos;
-	delta.z = 0.f;
-	float distance = delta.Length();
-	if (distance < 8.f)
-		return false;
-
-	// check behind player
-	delta = delta / distance;
-
-	Vector dir = vr_hmdForward;
-	dir.z = 0.f;
-	dir.InlineNormalize();
-
-	float dot = DotProduct2D(dir, delta);
-	return dot > 0.7f;
-}
-
-bool CBasePlayer::IsInNonBackPackArea(const Vector& pos)
-{
-	Vector headsetPos = pev->origin + Vector{ vr_lastHMDOffset.x, vr_lastHMDOffset.y, pev->view_ofs.z };
-
-	// check in front of player
-	Vector delta = pos - headsetPos;
-	delta.z = 0.f;
-	delta.InlineNormalize();
-
-	Vector dir = vr_hmdForward;
-	dir.z = 0.f;
-	dir.InlineNormalize();
-
-	float dot = DotProduct2D(dir, delta);
-	return dot >= 0.f;
 }
 
 CBaseEntity* CBasePlayer::VRFindTank(const char* func_tank_classname)

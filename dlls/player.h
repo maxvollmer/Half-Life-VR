@@ -399,12 +399,6 @@ private:
 	bool m_vrIsUsingTankWithVRControllers{ false };
 	Vector m_vrTankVRControllerAngles;
 
-	// filled with current item if virtual backpack is used
-	EHANDLE<CBasePlayerItem> m_vrhBackPackItem;
-
-	// set to true when player grabs backpack area
-	bool m_vrHasGrabbedBackPack = false;
-
 	mutable EHANDLE<CLaserSpot> m_hLaserSpot;
 
 // public VR members:
@@ -441,12 +435,6 @@ private:
 	void VRUseOrUnuseTank();
 	bool IsTankVRControlled(entvars_t* pevTank);
 	CBaseEntity* VRFindTank(const char* func_tank_classname);
-
-	// virtual backpack, called by PostThink()
-	void VRDoTheBackPackThing();
-	void VRSwitchBackPackItem();
-	bool IsInBackPackArea(const Vector& pos);
-	bool IsInNonBackPackArea(const Vector& pos);
 
 	VRGroundEntityHandler& GetGroundEntityHandler()
 	{
