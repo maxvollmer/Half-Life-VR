@@ -12,7 +12,8 @@
   * Restored default walk speed and legacy ladder climb speed to pancake defaults
 
  HLVRConfig:
-  * Added mod window size to launcher config
+  * Added game window size to launcher config
+  * Added settings for stair smoothing (on/off and intensity)
 
 0.6.29-beta - 2021-10-02
  Mod:
