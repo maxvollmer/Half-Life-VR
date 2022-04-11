@@ -3,6 +3,7 @@
   * Fixed skybox in VR menu
   * Fixed audio left and right being switched when using FMOD
   * Added feature that smoothes movement when walking up stairs
+  * Restored default walk speed and legacy ladder climb speed to pancake defaults
 
  HLVRConfig:
   * Added mod window size to launcher config

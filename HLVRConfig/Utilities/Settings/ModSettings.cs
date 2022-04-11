@@ -143,10 +143,10 @@ namespace HLVRConfig.Utilities.Settings
             } },
 
             { CategoryMovementSpeed, new OrderedDictionary<string, Setting>() {
-                { "vr_forwardspeed", Setting.Create( new I18N.I18NString("vr_forwardspeed", "Forward speed"), SettingType.SPEED, "200" ) },
-                { "vr_backspeed", Setting.Create( new I18N.I18NString("vr_backspeed", "Backward speed"), SettingType.SPEED, "200" ) },
-                { "vr_sidespeed", Setting.Create( new I18N.I18NString("vr_sidespeed", "Sideways speed"), SettingType.SPEED, "200" ) },
-                { "vr_upspeed", Setting.Create( new I18N.I18NString("vr_upspeed", "Up/Down speed"), SettingType.SPEED, "200" ) },
+                { "vr_forwardspeed", Setting.Create( new I18N.I18NString("vr_forwardspeed", "Forward speed"), SettingType.SPEED, "270" ) },
+                { "vr_backspeed", Setting.Create( new I18N.I18NString("vr_backspeed", "Backward speed"), SettingType.SPEED, "270" ) },
+                { "vr_sidespeed", Setting.Create( new I18N.I18NString("vr_sidespeed", "Sideways speed"), SettingType.SPEED, "270" ) },
+                { "vr_upspeed", Setting.Create( new I18N.I18NString("vr_upspeed", "Up/Down speed"), SettingType.SPEED, "270" ) },
                 { "vr_yawspeed", Setting.Create( new I18N.I18NString("vr_yawspeed", "Turn speed (degrees/s)"), SettingType.COUNT, "210" ) },
                 { "vr_walkspeedfactor", Setting.Create( new I18N.I18NString("vr_walkspeedfactor", "Speed factor when 'walk' is active"), SettingType.FACTOR, "0.3" ) },
             } },
@@ -172,7 +172,7 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_ladder_immersive_movement_swinging_enabled", Setting.Create( new I18N.I18NString("vr_ladder_immersive_movement_swinging_enabled", "Enable momentum from immersive ladder climbing"), true, new SettingDependency("vr_ladder_immersive_movement_enabled", "1") ) },
                 { "vr_ladder_legacy_movement_enabled", Setting.Create( new I18N.I18NString("vr_ladder_legacy_movement_enabled", "Enable legacy climbing of ladders"), false ) },
                 { "vr_ladder_legacy_movement_only_updown", Setting.Create( new I18N.I18NString("vr_ladder_legacy_movement_only_updown", "Restrict movement on ladders to up/down only (legacy movement)"), false, new SettingDependency("vr_ladder_legacy_movement_enabled", "1") ) },
-                { "vr_ladder_legacy_movement_speed", Setting.Create( new I18N.I18NString("vr_ladder_legacy_movement_speed", "Climb speed on ladders (legacy movement)"), SettingType.SPEED, "100", new SettingDependency("vr_ladder_legacy_movement_enabled", "1") ) },
+                { "vr_ladder_legacy_movement_speed", Setting.Create( new I18N.I18NString("vr_ladder_legacy_movement_speed", "Climb speed on ladders (legacy movement)"), SettingType.SPEED, "200", new SettingDependency("vr_ladder_legacy_movement_enabled", "1") ) },
             } },
 
             { CategoryTrains, new OrderedDictionary<string, Setting>() {

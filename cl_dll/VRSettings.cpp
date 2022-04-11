@@ -68,7 +68,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_ladder_immersive_movement_swinging_enabled", "1");
 	RegisterCVAR("vr_ladder_legacy_movement_enabled", "0");
 	RegisterCVAR("vr_ladder_legacy_movement_only_updown", "1");
-	RegisterCVAR("vr_ladder_legacy_movement_speed", "100");
+	RegisterCVAR("vr_ladder_legacy_movement_speed", "200");
 	RegisterCVAR("vr_ledge_pull_mode", "1");
 	RegisterCVAR("vr_ledge_pull_speed", "50");
 	RegisterCVAR("vr_lefthand_mode", "0");
@@ -135,10 +135,10 @@ void VRSettings::Init()
 	RegisterCVAR("vr_fmod_water_occlusion", "20");
 	RegisterCVAR("vr_fmod_glass_occlusion", "10");
 
-	RegisterCVAR("vr_forwardspeed", "200");		// cl_forwardspeed
-	RegisterCVAR("vr_backspeed", "200");		// cl_backspeed
-	RegisterCVAR("vr_sidespeed", "200");		// cl_sidespeed
-	RegisterCVAR("vr_upspeed", "200");			// cl_upspeed
+	RegisterCVAR("vr_forwardspeed", "270");		// cl_forwardspeed
+	RegisterCVAR("vr_backspeed", "270");		// cl_backspeed
+	RegisterCVAR("vr_sidespeed", "270");		// cl_sidespeed
+	RegisterCVAR("vr_upspeed", "270");			// cl_upspeed
 	RegisterCVAR("vr_yawspeed", "210");			// cl_yawspeed
 	RegisterCVAR("vr_walkspeedfactor", "0.3");	// cl_movespeedkey
 	RegisterCVAR("vr_togglewalk", "0");
