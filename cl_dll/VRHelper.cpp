@@ -1004,7 +1004,6 @@ public:
 
 std::deque<OffsetThingy> offsetThingies;
 double g_vrWalkedIntoWall = 0.0;
-double g_vrWalkedIntoWall = 0.0;
 void ResetOffsetThingies()
 {
 	offsetThingies.clear();
