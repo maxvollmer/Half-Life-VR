@@ -6106,6 +6106,12 @@ void CBasePlayer::VRJustTeleported(const Vector& fromOrigin, const Vector& fromA
 
 void EXPORT CBaseEntity::DragThink(void)
 {
+	if (m_isFirstDragThink)
+	{
+		m_isFirstDragThink = false;
+		HandleDragStart();
+	}
+
 	m_pfnThink = nullptr;
 
 	EHANDLE<CBasePlayer> hPlayer = m_vrDragger;

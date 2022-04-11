@@ -17,45 +17,80 @@
 
 VRDebugBBoxDrawer::~VRDebugBBoxDrawer()
 {
-	for (auto& [hEntity, lasers] : m_bboxes)
-	{
-		for (auto& laser : lasers)
-		{
-			UTIL_Remove(laser);
-		}
-	}
-	m_bboxes.clear();
+	ClearAll();
 }
 
 void VRDebugBBoxDrawer::Clear(EHANDLE<CBaseEntity> hEntity)
 {
+	ClearBoxes(hEntity);
+
+	ClearPoint(hEntity);
+
+	ClearLine(hEntity);
+}
+
+void VRDebugBBoxDrawer::ClearBoxes(EHANDLE<CBaseEntity> hEntity)
+{
+	if (m_bboxes.find(hEntity) == m_bboxes.end())
+		return;
+
 	for (auto& hLaser : m_bboxes[hEntity])
 	{
 		UTIL_Remove(hLaser);
 	}
 	m_bboxes.erase(hEntity);
-
-	ClearPoint(hEntity);
 }
 
 void VRDebugBBoxDrawer::ClearPoint(EHANDLE<CBaseEntity> hEntity)
 {
+	if (m_points.find(hEntity) == m_points.end())
+		return;
+
+	UTIL_Remove(m_points[hEntity]);
+	m_points.erase(hEntity);
+}
+
+void VRDebugBBoxDrawer::ClearLine(EHANDLE<CBaseEntity> hEntity)
+{
+	if (m_lines.find(hEntity) == m_lines.end())
+		return;
+
 	UTIL_Remove(m_points[hEntity]);
 	m_points.erase(hEntity);
 }
 
 void VRDebugBBoxDrawer::ClearAllBut(EHANDLE<CBaseEntity> hEntity)
 {
-	std::vector<EHANDLE<CBaseEntity>> lasers = m_bboxes[hEntity];
-	m_bboxes.erase(hEntity);
+	bool hasBoxes = m_bboxes.find(hEntity) != m_bboxes.end();
+	bool hasPoint = m_points.find(hEntity) != m_points.end();
+	bool hasLine = m_lines.find(hEntity) != m_lines.end();
 
-	EHANDLE<CBaseEntity> hPoint = m_points[hEntity];
-	m_points.erase(hEntity);
+	std::vector<EHANDLE<CBaseEntity>> lasers;
+	if (hasBoxes)
+	{
+		lasers = m_bboxes[hEntity];
+		m_bboxes.erase(hEntity);
+	}
+
+	EHANDLE<CBaseEntity> hPoint;
+	if (hasPoint)
+	{
+		hPoint = m_points[hEntity];
+		m_points.erase(hEntity);
+	}
+
+	EHANDLE<CBaseEntity> hLine;
+	if (hasLine)
+	{
+		hLine = m_lines[hEntity];
+		m_lines.erase(hEntity);
+	}
 
 	ClearAll();
 
-	m_bboxes[hEntity] = lasers;
-	m_points[hEntity] = hPoint;
+	if (hasBoxes) m_bboxes[hEntity] = lasers;
+	if (hasPoint) m_points[hEntity] = hPoint;
+	if (hasLine) m_lines[hEntity] = hLine;
 }
 
 void VRDebugBBoxDrawer::ClearAll()
@@ -74,6 +109,12 @@ void VRDebugBBoxDrawer::ClearAll()
 		UTIL_Remove(hPoint);
 	}
 	m_points.clear();
+
+	for (auto& [hEntity, hLine] : m_lines)
+	{
+		UTIL_Remove(hLine);
+	}
+	m_lines.clear();
 }
 
 void VRDebugBBoxDrawer::DrawPoint(EHANDLE<CBaseEntity> hEntity, const Vector& point)
@@ -93,6 +134,26 @@ void VRDebugBBoxDrawer::DrawPoint(EHANDLE<CBaseEntity> hEntity, const Vector& po
 		pSprite->pev->effects &= ~EF_NODRAW;
 		EHANDLE<CBaseEntity> hSprite = pSprite;
 		m_points[hEntity] = hSprite;
+	}
+}
+
+void VRDebugBBoxDrawer::DrawLine(EHANDLE<CBaseEntity> hEntity, const Vector& start, const Vector& end)
+{
+	if (m_lines[hEntity])
+	{
+		dynamic_cast<CBeam*>((CBaseEntity*)m_lines[hEntity])->SetStartAndEndPos(start, end);
+	}
+	else
+	{
+		CBeam* pBeam = CBeam::BeamCreate("sprites/xbeam1.spr", 1);
+		pBeam->pev->spawnflags |= SF_BEAM_TEMPORARY;
+		pBeam->Spawn();
+		pBeam->PointsInit(start, end);
+		pBeam->pev->owner = hEntity->edict();
+		pBeam->SetColor(m_r, m_g, m_b);
+		pBeam->SetBrightness(255);
+		EHANDLE<CBaseEntity> hBeam = pBeam;
+		m_lines[hEntity] = hBeam;
 	}
 }
 

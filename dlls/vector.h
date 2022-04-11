@@ -154,7 +154,8 @@ public:
 
 		return Vec2;
 	}
-	inline float Length2D(void) const { return sqrtf(x * x + y * y); }
+	inline float Length2D(void) const { return sqrtf(Length2DSquared()); }
+	inline float Length2DSquared(void) const { return x * x + y * y; }
 
 	inline Vector ToViewAngles()
 	{

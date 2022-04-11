@@ -113,7 +113,6 @@ public:
 	virtual void HandleDragStop() override;
 	virtual void HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles) override;
 	virtual void BaseBalled(CBaseEntity* pPlayer, const Vector& velocity) override;
-	void EXPORT DragThink();
 };
 LINK_ENTITY_TO_CLASS(monster_headcrab, CHeadCrab);
 
@@ -546,11 +545,6 @@ void CHeadCrab::HandleDragUpdate(const Vector& origin, const Vector& velocity, c
 	pev->origin = origin + grabOffset;
 	*/
 	pev->origin = origin;
-}
-
-void CHeadCrab::DragThink()
-{
-	pev->nextthink = gpGlobals->time + 0.1f;
 
 	if (IsAlive())
 	{

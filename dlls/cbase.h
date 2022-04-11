@@ -691,13 +691,11 @@ public:
 		pev->angles = angles;
 	}
 	virtual void BaseBalled(CBaseEntity* pPlayer, const Vector& velocity) {}
-	void EXPORT DragStartThink(void)
-	{
-		m_pfnThink = nullptr;
-		HandleDragStart();
-	}
+
+	bool m_isFirstDragThink = true;
 	void EXPORT DragStopThink(void)
 	{
+		m_isFirstDragThink = true;
 		m_pfnThink = nullptr;
 		HandleDragStop();
 	}

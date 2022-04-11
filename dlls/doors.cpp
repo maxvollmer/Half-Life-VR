@@ -809,10 +809,11 @@ public:
 	virtual int Restore(CRestore& restore);
 
 protected:
-	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed) override;
+	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd) override;
 	virtual void StartVRDragRotation() override;
 	virtual bool SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta) override;
 	virtual void StopVRDragRotation() override;
+	virtual float GetVRDragRotationMoveDistance() override { return m_flMoveDistance; }
 	virtual CBaseEntity* MyEntityPointer() override { return this; }
 	virtual VRRotatableEnt* MyRotatableEntPtr() override { return this; }
 };
@@ -929,19 +930,22 @@ void CRotDoor::SetToggleState(int state)
 }
 
 
-bool CRotDoor::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed)
+bool CRotDoor::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd)
 {
 	if (!UTIL_IsMasterTriggered(m_sMaster, pPlayer))
+		return false;
+
+	// door is non-solid
+	if (FBitSet(pev->spawnflags, SF_DOOR_PASSABLE))
+		return false;
+
+	// door can only be used through a trigger
+	if (!FStringNull(pev->targetname))
 		return false;
 
 	m_hActivator = pPlayer;
 	angleStart = m_vecAngle1;
 	angleEnd = m_vecAngle2;
-	maxRotSpeed = pev->speed;
-
-	SetThink(nullptr);
-	SetTouch(nullptr);
-	SetUse(nullptr);
 
 	return true;
 }
@@ -950,6 +954,10 @@ void CRotDoor::StartVRDragRotation()
 {
 	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
 		EMIT_SOUND(ENT(pev), CHAN_STATIC, STRING(pev->noiseMoving), 1, ATTN_NORM);
+
+	SetThink(nullptr);
+	SetTouch(nullptr);
+	SetUse(nullptr);
 }
 
 bool CRotDoor::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta)
@@ -1000,12 +1008,12 @@ void CRotDoor::StopVRDragRotation()
 	if (m_toggle_state == TS_GOING_DOWN)
 	{
 		m_toggle_state = TS_AT_TOP;
-		SetMoveDone(&CBaseDoor::DoorHitBottom);
+		DoorGoDown();
 	}
 	else if (m_toggle_state == TS_GOING_UP)
 	{
 		m_toggle_state = TS_AT_BOTTOM;
-		SetMoveDone(&CBaseDoor::DoorHitTop);
+		DoorGoUp();
 	}
 }
 

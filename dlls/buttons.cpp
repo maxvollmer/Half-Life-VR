@@ -810,10 +810,13 @@ class CRotButton : public CBaseButton, VRRotatableEnt
 public:
 	void Spawn(void);
 
-	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed) override;
+	// rotatable ent stuff
+	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd) override;
 	virtual void StartVRDragRotation() override;
 	virtual bool SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta) override;
 	virtual void StopVRDragRotation() override;
+	virtual float GetVRDragRotationMoveDistance() override { return m_flMoveDistance; }
+
 	virtual CBaseEntity* MyEntityPointer() override { return this; }
 	virtual VRRotatableEnt* MyRotatableEntPtr() override { return this; }
 };
@@ -878,7 +881,7 @@ void CRotButton::Spawn(void)
 	//SetTouch( ButtonTouch );
 }
 
-bool CRotButton::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed)
+bool CRotButton::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd)
 {
 	if (!UTIL_IsMasterTriggered(m_sMaster, pPlayer))
 	{
@@ -886,28 +889,26 @@ bool CRotButton::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, V
 		return false;
 	}
 
-	if ((m_toggle_state != TS_AT_TOP) || (!m_fStayPushed && FBitSet(pev->spawnflags, SF_BUTTON_TOGGLE)))
+	// don't move levers that reached their final stop
+	if (m_toggle_state == TS_AT_TOP && (m_fStayPushed || !FBitSet(pev->spawnflags, SF_BUTTON_TOGGLE)))
 	{
-		PlayLockSounds(pev, &m_ls, FALSE, TRUE);
-		angleStart = m_vecAngle1;
-		angleEnd = m_vecAngle2;
-		maxRotSpeed = pev->speed;
-		m_hActivator = pPlayer;
-		SetThink(nullptr);
-		SetTouch(nullptr);
-		SetUse(nullptr);
-		return true;
+		return false;
 	}
 
-	return false;
+	angleStart = m_vecAngle1;
+	angleEnd = m_vecAngle2;
+	m_hActivator = pPlayer;
+
+	return true;
 }
 
 void CRotButton::StartVRDragRotation()
 {
-}
+	PlayLockSounds(pev, &m_ls, FALSE, TRUE);
 
-bool CRotButton::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta)
-{
+	SetThink(nullptr);
+	SetTouch(nullptr);
+
 	if (m_toggle_state == TS_AT_TOP)
 	{
 		m_toggle_state = TS_GOING_DOWN;
@@ -916,56 +917,46 @@ bool CRotButton::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, f
 	{
 		m_toggle_state = TS_GOING_UP;
 	}
+}
 
+bool CRotButton::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta)
+{
 	if (m_toggle_state == TS_GOING_UP && delta >= 1.f)
 	{
 		pev->angles = m_vecAngle2;
 		m_vecFinalAngle = m_vecAngle2;
+
 		SetMoveDone(&CBaseButton::TriggerAndWait);
 		AngularMoveDone();
 		return false;
 	}
-	else if (m_toggle_state == TS_GOING_DOWN && delta <= 0.f)
+
+	if (m_toggle_state == TS_GOING_DOWN && delta <= 0.f)
 	{
 		pev->angles = m_vecAngle1;
 		m_vecFinalAngle = m_vecAngle1;
+
 		SetMoveDone(&CBaseButton::ButtonBackHome);
 		AngularMoveDone();
 		return false;
 	}
-	else
-	{
-		SetThink(nullptr);
-		SetTouch(nullptr);
-		SetUse(nullptr);
-		pev->angles = angles;
-		return true;
-	}
+
+	pev->angles = angles;
+	return true;
 }
 
 void CRotButton::StopVRDragRotation()
 {
+	// when letting go of the lever, move it to its destination
 	if (m_toggle_state == TS_GOING_DOWN)
 	{
-		m_toggle_state = TS_AT_TOP;
+		SetMoveDone(&CBaseButton::ButtonBackHome);
+		AngularMove(m_vecAngle1, pev->speed);
 	}
 	else if (m_toggle_state == TS_GOING_UP)
 	{
-		m_toggle_state = TS_AT_BOTTOM;
-	}
-
-	if (FBitSet(pev->spawnflags, SF_BUTTON_TOUCH_ONLY))
-		SetTouch(&CBaseButton::ButtonTouch);
-	else
-		SetUse(&CBaseButton::ButtonUse);
-
-	if (m_toggle_state != TS_AT_BOTTOM && !m_fStayPushed && !FBitSet(pev->spawnflags, SF_BUTTON_TOGGLE))
-	{
-		SetThink(&CBaseButton::ButtonReturn);
-		if (m_toggle_state == TS_AT_TOP)
-			pev->nextthink = pev->ltime + m_flWait;
-		else
-			pev->nextthink = pev->ltime;
+		SetMoveDone(&CBaseButton::TriggerAndWait);
+		AngularMove(m_vecAngle2, pev->speed);
 	}
 }
 
@@ -1012,12 +1003,17 @@ public:
 	vec3_t m_end;
 	int m_sounds = 0;
 
-	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed) override;
+	// rotatable ent stuff
+	virtual bool CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd) override;
 	virtual void StartVRDragRotation() override;
 	virtual bool SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta) override;
 	virtual void StopVRDragRotation() override;
+	virtual float GetVRDragRotationMoveDistance() override { return m_flMoveDistance; }
+
 	virtual CBaseEntity* MyEntityPointer() override { return this; }
 	virtual VRRotatableEnt* MyRotatableEntPtr() override { return this; }
+
+	bool m_isVRDragging = false;
 };
 TYPEDESCRIPTION CMomentaryRotButton::m_SaveData[] =
 {
@@ -1095,38 +1091,42 @@ void CMomentaryRotButton::PlaySound(void)
 // current, not future position.
 void CMomentaryRotButton::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	if (m_isVRDragging)
+		return;
+
 	pev->ideal_yaw = CBaseToggle::AxisDelta(pev->spawnflags, pev->angles, m_start) / m_flMoveDistance;
 
 	UpdateAllButtons(pev->ideal_yaw, 1);
 	UpdateTarget(pev->ideal_yaw);
 }
 
-bool CMomentaryRotButton::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd, float& maxRotSpeed)
+bool CMomentaryRotButton::CanDoVRDragRotation(CBaseEntity* pPlayer, Vector& angleStart, Vector& angleEnd)
 {
 	m_hActivator = pPlayer;
 	angleStart = m_start;
 	angleEnd = m_end;
-	maxRotSpeed = pev->speed;
-	SetThink(nullptr);
 	return true;
 }
 
 void CMomentaryRotButton::StartVRDragRotation()
 {
+	SetThink(nullptr);
+	m_isVRDragging = true;
 }
 
 bool CMomentaryRotButton::SetVRDragRotation(CBaseEntity* pPlayer, const Vector& angles, float delta)
 {
-	pev->ideal_yaw = delta;
+	pev->angles = angles;
+	pev->ideal_yaw = CBaseToggle::AxisDelta(pev->spawnflags, pev->angles, m_start) / m_flMoveDistance;
 	UpdateAllButtons(pev->ideal_yaw, 2);
 	UpdateTarget(pev->ideal_yaw);
-	pev->angles = angles;
 	SetThink(nullptr);
 	return true;
 }
 
 void CMomentaryRotButton::StopVRDragRotation()
 {
+	m_isVRDragging = false;
 	pev->nextthink = pev->ltime + 0.1;
 	SetThink(&CMomentaryRotButton::Off);
 }

@@ -8,8 +8,11 @@ public:
 
 	void DrawBBoxes(EHANDLE<CBaseEntity> hEntity, bool mirrored = false);
 	void DrawPoint(EHANDLE<CBaseEntity> hEntity, const Vector& point);
+	void DrawLine(EHANDLE<CBaseEntity> hEntity, const Vector& start, const Vector& end);
 	void Clear(EHANDLE<CBaseEntity> hEntity);
+	void ClearBoxes(EHANDLE<CBaseEntity> hEntity);
 	void ClearPoint(EHANDLE<CBaseEntity> hEntity);
+	void ClearLine(EHANDLE<CBaseEntity> hEntity);
 	void ClearAllBut(EHANDLE<CBaseEntity> hEntity);
 	void ClearAll();
 
@@ -23,5 +26,6 @@ private:
 
 	std::unordered_map<EHANDLE<CBaseEntity>, std::vector<EHANDLE<CBaseEntity>>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_bboxes;
 	std::unordered_map<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_points;
+	std::unordered_map<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> m_lines;
 };
 

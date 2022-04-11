@@ -251,6 +251,16 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 		}
 	}
 
+	// rotatable entities have a very lenient touch radius for convenience
+	// if the controller origin is inside the entity's bbox, we are good
+	if (pEntity->MyRotatableEntPtr() != nullptr)
+	{
+		if (UTIL_PointInsideBBox(controller.GetPosition(), pEntity->pev->absmin, pEntity->pev->absmax))
+		{
+			return true;
+		}
+	}
+
 #ifdef RENDER_DEBUG_BBOXES
 	// draw bboxes of entities in close proximity of controller
 	g_VRDebugBBoxDrawer.SetColor(0, 0, 255);
@@ -797,7 +807,7 @@ bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer* pPlayer,
 {
 	// Don't touch activate retina scanners
 	extern std::unordered_set<EHANDLE<CBaseEntity>, EHANDLE<CBaseEntity>::Hash, EHANDLE<CBaseEntity>::Equal> g_vrRetinaScannerButtons;
-	if (g_vrRetinaScannerButtons.count(pEntity) > 0)
+	if (g_vrRetinaScannerButtons.find(pEntity) != g_vrRetinaScannerButtons.end())
 		return true;
 
 	if (FClassnameIs(pEntity->pev, "func_door") || (FClassnameIs(pEntity->pev, "func_door_rotating") && !FBitSet(pEntity->pev->spawnflags, SF_DOOR_USE_ONLY)))
@@ -851,20 +861,14 @@ bool VRControllerInteractionManager::HandleButtonsAndDoors(CBasePlayer* pPlayer,
 				{
 					if (!pRotatableEnt->IsDraggingCancelled())
 					{
-						Vector pos;
-						if (controller.GetAttachment(VR_MUZZLE_ATTACHMENT, pos))
-						{
-							pRotatableEnt->VRRotate(pPlayer, pos, interaction.dragging.didChange);
-						}
-						else
-						{
-							pRotatableEnt->VRRotate(pPlayer, controller.GetPosition(), interaction.dragging.didChange);
-						}
+						pRotatableEnt->VRRotate(pPlayer, controller.GetPosition(), interaction.dragging.didChange);
 					}
 				}
 			}
 			else if (interaction.dragging.didChange)
 			{
+				// TODO: BUG: If two controllers drag this and one let's go,
+				// this stops rotating, even if the other one is still holding on.
 				pRotatableEnt->VRStopRotate();
 			}
 		}
@@ -1094,7 +1098,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, CBas
 					}
 					pEntity->m_vrDragger = pPlayer;
 					pEntity->m_vrDragController = controller.GetID();
-					pEntity->SetThink(&CBaseEntity::DragStartThink);
+					pEntity->SetThink(&CBaseEntity::DragThink);
 					pEntity->pev->nextthink = gpGlobals->time;
 				}
 			}
