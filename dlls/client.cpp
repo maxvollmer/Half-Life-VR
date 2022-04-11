@@ -805,7 +805,7 @@ void StartFrame(void)
 		extern bool g_didRestoreSaveGameFail_MapChangedToSafety;
 		if (!g_didRestoreSaveGameFail_MapChangedToSafety)
 		{
-			g_engfuncs.pfnChangeLevel("crossfire", nullptr);
+			CHANGE_LEVEL("crossfire", nullptr);
 			g_didRestoreSaveGameFail_MapChangedToSafety = true;
 		}
 		return;
