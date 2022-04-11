@@ -19,16 +19,22 @@ namespace
 	int hlvr_PushCount = 0;
 }
 
-void HLVR_LockGLMatrices()
+void HLVR_LockGLMatrices(bool resetpushcount)
 {
 	hlvr_GLMatricesLocked = true;
-	hlvr_PushCount = 0;
+	if (resetpushcount)
+	{
+		hlvr_PushCount = 0;
+	}
 }
 
-void HLVR_UnlockGLMatrices()
+void HLVR_UnlockGLMatrices(bool resetpushcount)
 {
 	hlvr_GLMatricesLocked = false;
-	hlvr_PushCount = 0;
+	if (resetpushcount)
+	{
+		hlvr_PushCount = 0;
+	}
 }
 
 

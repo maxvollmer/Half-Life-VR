@@ -56,7 +56,7 @@ void VRInput::CreateHLMenu()
 	vr::Texture_t texture;
 	texture.eColorSpace = vr::ColorSpace_Gamma;
 	texture.eType = vr::TextureType_OpenGL;
-	texture.handle = reinterpret_cast<void*>(gVRRenderer.GetHelper()->GetVRGLMenuTexture());
+	texture.handle = reinterpret_cast<void*>(gVRRenderer.GetHelper()->GetVRGLCEGUITexture());
 	error = vr::VROverlay()->SetOverlayTexture(m_hlMenu, &texture);
 	if (error != vr::VROverlayError_None)
 	{
@@ -166,7 +166,7 @@ void VRInput::ShowHLMenu()
 	vr::Texture_t texture;
 	texture.eColorSpace = vr::ColorSpace_Auto;
 	texture.eType = vr::TextureType_OpenGL;
-	texture.handle = reinterpret_cast<void*>(gVRRenderer.GetHelper()->GetVRGLMenuTexture());
+	texture.handle = reinterpret_cast<void*>(gVRRenderer.GetHelper()->GetVRGLCEGUITexture());
 	error = vr::VROverlay()->SetOverlayTexture(m_hlMenu, &texture);
 	if (error != vr::VROverlayError_None)
 	{

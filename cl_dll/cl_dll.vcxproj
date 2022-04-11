@@ -69,7 +69,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\dlls;..\common;..\pm_shared;..\engine;..\utils\vgui\include;..\game_shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\cegui\include;..\dlls;..\common;..\pm_shared;..\engine;..\utils\vgui\include;..\game_shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;CLIENT_DLL;CLIENT_WEAPONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
@@ -106,7 +106,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Debug\client.dll</OutputFile>
       <ImportLibrary>.\Debug\client.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;fmod/lib/x86/fmodL_vc.lib;EasyHook/lib/EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;fmod/lib/x86/fmodL_vc.lib;EasyHook/lib/EasyHook32.lib;../cegui/lib/CEGUIBase-0_d.lib;../cegui/lib/CEGUIOpenGLRenderer-0_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
@@ -124,7 +124,7 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\utils\vgui\include;..\engine;..\common;..\pm_shared;..\dlls;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\cegui\include;..\dlls;..\common;..\pm_shared;..\engine;..\utils\vgui\include;..\game_shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;CLIENT_DLL;CLIENT_WEAPONS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <PrecompiledHeaderOutputFile>.\Release\cl_dll.pch</PrecompiledHeaderOutputFile>
@@ -157,7 +157,7 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\client.dll</OutputFile>
       <ImportLibrary>.\Release\client.lib</ImportLibrary>
-      <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;fmod/lib/x86/fmod_vc.lib;EasyHook/lib/EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;fmod/lib/x86/fmod_vc.lib;EasyHook/lib/EasyHook32.lib;../cegui/lib/CEGUIBase-0.lib;../cegui/lib/CEGUIOpenGLRenderer-0.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
@@ -256,6 +256,7 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
     <ClCompile Include="vgui_TeamFortressViewport.cpp" />
     <ClCompile Include="vgui_teammenu.cpp" />
     <ClCompile Include="view.cpp" />
+    <ClCompile Include="VRCEGUIWrapper.cpp" />
     <ClCompile Include="VRClientDLLUnloadHandler.cpp" />
     <ClCompile Include="VRDebugPhysicsRenderer.cpp" />
     <ClCompile Include="VREngineRandomInterceptor.cpp" />
@@ -331,6 +332,7 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
     <ClInclude Include="vgui_SpectatorPanel.h" />
     <ClInclude Include="vgui_TeamFortressViewport.h" />
     <ClInclude Include="view.h" />
+    <ClInclude Include="VRCEGUIWrapper.h" />
     <ClInclude Include="VRCommon.h" />
     <ClInclude Include="VREngineRandomInterceptor.h" />
     <ClInclude Include="VRInputAction.h" />

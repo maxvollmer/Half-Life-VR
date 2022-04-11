@@ -731,6 +731,19 @@ unsigned int VRHelper::GetVRGLMenuTexture()
 	return vrGLMenuTexture;
 }
 
+unsigned int VRHelper::GetVRGLCEGUITexture()
+{
+	int viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	if (m_vrGLCEGUITextureWidth != viewport[2] || m_vrGLCEGUITextureHeight != viewport[3])
+	{
+		m_vrGLCEGUITextureWidth = viewport[2];
+		m_vrGLCEGUITextureHeight = viewport[3];
+		CreateGLTexture(&vrGLCEGUITexture, m_vrGLCEGUITextureWidth, m_vrGLCEGUITextureHeight);
+	}
+	return vrGLCEGUITexture;
+}
+
 void VRHelper::GetViewAngles(vr::EVREye eEye, float* angles)
 {
 	if (eEye == vr::EVREye::Eye_Left)
@@ -1033,23 +1046,29 @@ Vector SmoothRapidOffsetChanges(const Vector& currentOffset)
 		return currentOffset;
 	}
 
-	double currentTime = gVRRenderer.m_clientTime;
-
 	// Side smooth only while running into a wall
 	bool smoothSideMotion = false;// g_vrWalkedIntoWall >= (gVRRenderer.m_clientTime - smoothTime);
 
 	// Up smooth only when onground
 	bool smoothUpMotion = pmove->onground >= 0;
 
+	/*
+	gEngfuncs.Con_Printf("SmoothRapidOffsetChanges\n");
+	gEngfuncs.Con_Printf("g_vrWalkedIntoWall: %f\n", (float)g_vrWalkedIntoWall);
+	gEngfuncs.Con_Printf("clienttime: %f\n", (float)gVRRenderer.m_clientTime);
+	gEngfuncs.Con_Printf("smoothTime: %f\n", (float)smoothTime);
+	gEngfuncs.Con_Printf("g_vrWalkedIntoWall: %i\n", g_vrWalkedIntoWall >= (gVRRenderer.m_clientTime - smoothTime));
+	*/
+
 	// remove all offsets older than smoothTime seconds
 	for (auto offsetThingy = offsetThingies.begin();
-		offsetThingy != offsetThingies.end() && offsetThingy->time < (currentTime - smoothTime);
+		offsetThingy != offsetThingies.end() && offsetThingy->time < (gVRRenderer.m_clientTime - smoothTime);
 		offsetThingy = offsetThingies.erase(offsetThingy));
 
 	std::array<double, 3> currentVelocity{ 0.0, 0.0, 0.0 };
+	double currentTime = gVRRenderer.m_clientTime;
 
 	Vector smoothedOffset = currentOffset;
-	bool isSameFrame = false;
 
 	if (offsetThingies.size() > 0 && (smoothSideMotion || smoothUpMotion))
 	{
@@ -1068,57 +1087,34 @@ Vector SmoothRapidOffsetChanges(const Vector& currentOffset)
 
 		// add in current offset
 		auto& lastOffsetThingy = offsetThingies.back();
-		if (currentTime == lastOffsetThingy.time)
+		double timeDiff = currentTime - lastOffsetThingy.time;
+		currentVelocity[0] = (static_cast<double>(currentOffset.x) - lastOffsetThingy.offset.x) / timeDiff;
+		currentVelocity[1] = (static_cast<double>(currentOffset.y) - lastOffsetThingy.offset.y) / timeDiff;
+		currentVelocity[2] = (static_cast<double>(currentOffset.z) - lastOffsetThingy.offset.z) / timeDiff;
+		velocitiesSum[0] += currentVelocity[0];
+		velocitiesSum[1] += currentVelocity[1];
+		velocitiesSum[2] += currentVelocity[2];
+		velocitiesCount++;
+
+		Vector averageVelocity;
+		averageVelocity.x = static_cast<float>(velocitiesSum[0] / velocitiesCount);
+		averageVelocity.y = static_cast<float>(velocitiesSum[1] / velocitiesCount);
+		averageVelocity.z = static_cast<float>(velocitiesSum[2] / velocitiesCount);
+
+		// Then use average velocity to smooth offset
+		if (smoothSideMotion)
 		{
-			// don't add duplicate frames (we still need to process them, to get the same smooth offset we calculated before)
-			isSameFrame = true;
-			smoothedOffset = lastOffsetThingy.smoothedOffset;
+			smoothedOffset.x = lastOffsetThingy.smoothedOffset.x + averageVelocity.x * timeDiff;
+			smoothedOffset.y = lastOffsetThingy.smoothedOffset.y + averageVelocity.y * timeDiff;
 		}
-		else
+		if (smoothUpMotion)
 		{
-			double timeDiff = currentTime - lastOffsetThingy.time;
-			currentVelocity[0] = (static_cast<double>(currentOffset.x) - lastOffsetThingy.offset.x) / timeDiff;
-			currentVelocity[1] = (static_cast<double>(currentOffset.y) - lastOffsetThingy.offset.y) / timeDiff;
-			currentVelocity[2] = (static_cast<double>(currentOffset.z) - lastOffsetThingy.offset.z) / timeDiff;
-
-			if (std::isfinite(currentVelocity[0]) && std::isfinite(currentVelocity[1]) && std::isfinite(currentVelocity[2]))
-			{
-				velocitiesSum[0] += currentVelocity[0];
-				velocitiesSum[1] += currentVelocity[1];
-				velocitiesSum[2] += currentVelocity[2];
-				velocitiesCount++;
-
-				Vector averageVelocity;
-				averageVelocity.x = static_cast<float>(velocitiesSum[0] / velocitiesCount);
-				averageVelocity.y = static_cast<float>(velocitiesSum[1] / velocitiesCount);
-				averageVelocity.z = static_cast<float>(velocitiesSum[2] / velocitiesCount);
-
-				// Then use average velocity to smooth offset
-				if (smoothSideMotion)
-				{
-					smoothedOffset.x = lastOffsetThingy.smoothedOffset.x + averageVelocity.x * timeDiff;
-					smoothedOffset.y = lastOffsetThingy.smoothedOffset.y + averageVelocity.y * timeDiff;
-				}
-				if (smoothUpMotion)
-				{
-					smoothedOffset.z = lastOffsetThingy.smoothedOffset.z + averageVelocity.z * timeDiff;
-				}
-			}
-			else
-			{
-				// skip frames with invalid data, use smoothed offset from previous frame
-				isSameFrame = true;
-				smoothedOffset = lastOffsetThingy.smoothedOffset;
-			}
+			smoothedOffset.z = lastOffsetThingy.smoothedOffset.z + averageVelocity.z * timeDiff;
 		}
-
 	}
 
 	// Add the new offset
-	if (!isSameFrame)
-	{
-		offsetThingies.emplace_back(currentOffset, smoothedOffset, currentVelocity, currentTime);
-	}
+	offsetThingies.emplace_back(currentOffset, smoothedOffset, currentVelocity, currentTime);
 
 	return smoothedOffset;
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <regex>
 
+#include "VRCEGUIWrapper.h"
 #include "VRTextureHelper.h"
 
 #include "Matrices.h"
@@ -53,9 +54,9 @@
 
 #include "vr_gl.h"
 
+
 // set by hud message from server
 double gVR_LastLevelChangeTime = 0.f;
-
 
 extern globalvars_t* gpGlobals;
 
@@ -96,6 +97,8 @@ VRRenderer::~VRRenderer()
 {
 	delete vrHelper;
 	vrHelper = nullptr;
+
+	VRCEGUIWrapper::DestroyCEGUI();
 }
 
 void VRRenderer::Init()
@@ -104,6 +107,8 @@ void VRRenderer::Init()
 
 	extern void InstallModExtraDataCacheHook();
 	InstallModExtraDataCacheHook();
+
+	VRCEGUIWrapper::InitCEGUI();
 }
 
 void VRRenderer::VidInit()
@@ -183,6 +188,25 @@ void VRRenderer::Frame(double frametime)
 		gHUD.m_vrGrabbedLadderEntIndex = 0;
 		ResetOffsetThingies();
 	}
+
+
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	VRCEGUIWrapper::DoTheThing();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glPopAttrib();
+
+	CaptureCurrentScreenToTexture(vrHelper->GetVRGLCEGUITexture());
+
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void VRRenderer::UpdateGameRenderState()

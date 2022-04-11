@@ -45,6 +45,7 @@ public:
 
 	unsigned int GetVRTexture(vr::EVREye eEye);
 	unsigned int GetVRGLMenuTexture();
+	unsigned int GetVRGLCEGUITexture();
 
 	int GetVRGLMenuTextureWidth() { return m_vrGLMenuTextureWidth; }
 	int GetVRGLMenuTextureHeight() { return m_vrGLMenuTextureHeight; }
@@ -124,6 +125,10 @@ private:
 
 	int m_vrGLMenuTextureWidth = 0;
 	int m_vrGLMenuTextureHeight = 0;
+
+	unsigned int vrGLCEGUITexture = 0;
+	int m_vrGLCEGUITextureWidth = 0;
+	int m_vrGLCEGUITextureHeight = 0;
 
 	unsigned int vrRenderWidth = 0;
 	unsigned int vrRenderHeight = 0;
