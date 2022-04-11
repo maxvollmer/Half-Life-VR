@@ -78,10 +78,6 @@
           <img class="button_icon" src="discord.png" alt="discord logo">
           <div class="button_text">Join our Discord server</div>
         </a>
-        <a class="button button3" href="https://www.reddit.com/r/HalfLife_VR/">
-          <img class="button_icon" src="reddit_logo.png" alt="reddit logo">
-          <div class="button_text">Half-Life: VR subreddit</div>
-        </a>
       </div>
 
       <div class="content_row">
@@ -120,9 +116,6 @@
         <div class="content_title"><h3>Support</h3></div>
         <a class="button button6" href="https://www.patreon.com/maxvollmer">
           <img class="button_icon" src="patreon.png" alt="patreon logo" title="Support">
-        </a>
-        <a class="button button6" href="https://www.paypal.me/maxvollmer">
-          <img class="button_icon" src="paypal.png" alt="paypal logo" title="Donate">
         </a>
       </div>
 
