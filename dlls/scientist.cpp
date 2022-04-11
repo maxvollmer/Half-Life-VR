@@ -639,12 +639,48 @@ void CScientist::HandleAnimEvent(MonsterEvent_t* pEvent)
 	}
 }
 
+
+bool VRIsRetConnedScientist(CScientist *pScientist)
+{
+	if (!pScientist || !pScientist->pev->targetname)
+		return false;
+
+	std::string_view mapName{ STRING(INDEXENT(0)->v.model) };
+	std::string_view sciName{ STRING(pScientist->pev->targetname) };
+
+	// eli and friend in pre-disaster map
+	if (mapName == "maps/c1a0b.bsp")
+	{
+		return sciName == "panic1sci" || sciName == "panic2sci";
+	}
+
+	// eli and friend in post-disaster map
+	if (mapName == "maps/c1a0c.bsp")
+	{
+		return sciName == "freak" || sciName == "console_guy";
+	}
+
+	// magnusson in pre-disaster map (microwave)
+	if (mapName ==  "maps/c1a0d.bsp")
+	{
+		return sciName == "coffee";
+	}
+
+	// kleiner in map shortly before xen (shotgun scene)
+	if (mapName == "maps/c3a2d.bsp")
+	{
+		return sciName == "thesci";
+	}
+
+	return false;
+}
+
 //=========================================================
 // Spawn
 //=========================================================
 void CScientist::Spawn(void)
 {
-	m_fIsFemale = CVAR_GET_FLOAT("vr_classic_mode") == 0.f && rand() % 2 == 1;
+	m_fIsFemale = CVAR_GET_FLOAT("vr_classic_mode") == 0.f && rand() % 2 == 1 && !VRIsRetConnedScientist(this);
 	Precache();
 
 	SET_MODEL(ENT(pev), m_fIsFemale ? "models/femalesci.mdl" : "models/scientist.mdl");

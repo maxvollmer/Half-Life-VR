@@ -2193,7 +2193,7 @@ static int gSizes[FIELD_TYPECOUNT] =
 	sizeof(float),      // FIELD_FLOAT
 	sizeof(int),        // FIELD_STRING
 	sizeof(int),        // FIELD_ENTITY
-	sizeof(int),        // FIELD_CLASSPTR
+	sizeof(int),        // FIELD_CLASSPTR_NOT_SUPPORTED_ANYMORE
 	sizeof(int),        // FIELD_EHANDLE
 	sizeof(int),        // FIELD_entvars_t
 	sizeof(int),        // FIELD_EDICT
