@@ -229,6 +229,14 @@ int __MsgFunc_VRSpawnYaw(const char* pszName, int iSize, void* pbuf)
 	return 0;
 }
 
+int __MsgFunc_VRWlkWl(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	extern double g_vrWalkedIntoWall;
+	g_vrWalkedIntoWall = gVRRenderer.m_clientTime;
+	return 0;
+}
+
 int __MsgFunc_VRLvlChng(const char* pszName, int iSize, void* pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
@@ -395,6 +403,7 @@ void CHud::Init(void)
 	HOOK_MESSAGE(PullLdg);
 	HOOK_MESSAGE(VRUpdEgon);
 	HOOK_MESSAGE(VRTouch);
+	HOOK_MESSAGE(VRWlkWl);
 	HOOK_MESSAGE(VRLvlChng);
 
 	CVAR_CREATE("hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO);  // controls whether or not to suicide immediately on TF class switch
