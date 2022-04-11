@@ -128,6 +128,21 @@ void VRHelper::UpdateWorldRotation()
 		m_instantRotateYawValue = 0.f;
 		m_currentYawOffsetDelta = Vector2D{};
 
+		if (g_vrRestoreYaw_HasData)
+		{
+			g_vrRestoreYaw_PrevYaw = 0.f;
+			g_vrRestoreYaw_CurrentYaw = 0.f;
+			g_vrRestoreYaw_HasData = false;
+			m_hasReceivedYawUpdate = true;
+		}
+
+		if (g_vrSpawnYaw_HasData)
+		{
+			g_vrSpawnYaw = 0.f;
+			g_vrSpawnYaw_HasData = false;
+			m_hasReceivedSpawnYaw = true;
+		}
+
 		return;
 	}
 
