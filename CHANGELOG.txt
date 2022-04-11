@@ -6,6 +6,8 @@
   * Fixed game window/menu being visible in VR during level changes
   * Fixed issue with longjump direction
   * Fixed levers and other issues with draggable entities
+  * Fixed huge crate gibs in blast pit levels
+  * Fixed soda cans not being drinkable
   * Added feature that smoothes movement when walking up stairs
   * Restored default walk speed and legacy ladder climb speed to pancake defaults
 

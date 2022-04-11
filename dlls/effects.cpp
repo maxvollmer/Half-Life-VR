@@ -1609,7 +1609,11 @@ CGib* CEnvShooter::CreateGib(void)
 	pGib->pev->renderamt = pev->renderamt;
 	pGib->pev->rendercolor = pev->rendercolor;
 	pGib->pev->renderfx = pev->renderfx;
-	pGib->pev->scale = pev->scale;
+	// only scale sprites
+	if (std::string_view(STRING(pev->model)).find(".mdl") == std::string::npos)
+	{
+		pGib->pev->scale = pev->scale;
+	}
 	pGib->pev->skin = pev->skin;
 
 	return pGib;
@@ -2281,8 +2285,9 @@ void CItemSoda::HandleDragUpdate(const Vector& origin, const Vector& velocity, c
 	EHANDLE<CBaseEntity> hPlayer = m_vrDragger;
 	if (hPlayer && hPlayer->IsPlayer())
 	{
-		float distance = (hPlayer->EyePosition() - pev->origin).Length();
-		if (distance < 8)
+		float distance2D = (hPlayer->EyePosition() - pev->origin).Length2D();
+		float distanceZ = fabs(hPlayer->EyePosition().z - pev->origin.z);
+		if (distanceZ < 8.f && distance2D < 16.f + (std::max)(0.f, CVAR_GET_FLOAT("vr_view_dist_to_walls")))
 		{
 			Drink(hPlayer);
 		}

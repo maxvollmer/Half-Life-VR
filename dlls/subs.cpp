@@ -508,11 +508,11 @@ float CBaseToggle::AxisValue(int flags, const Vector& angles)
 void CBaseToggle::AxisDir(entvars_t* pev)
 {
 	if (FBitSet(pev->spawnflags, SF_DOOR_ROTATE_Z))
-		pev->movedir = Vector(0, 0, 1);  // around z-axis
+		pev->movedir = Vector(0, 0, 1);  // z is roll, around y-axis
 	else if (FBitSet(pev->spawnflags, SF_DOOR_ROTATE_X))
-		pev->movedir = Vector(1, 0, 0);  // around x-axis
+		pev->movedir = Vector(1, 0, 0);  // x is pitch, around x-axis
 	else
-		pev->movedir = Vector(0, 1, 0);  // around y-axis
+		pev->movedir = Vector(0, 1, 0);  // y is yaw, around z-axis
 }
 
 

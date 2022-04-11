@@ -961,7 +961,7 @@ void CBreakable::VRSpawnBreakModels(
 
 	count = std::clamp(count, 1, maxcount);
 
-	if (random = 0.f)
+	if (random == 0.f)
 		random = 10.f;
 
 	int numtempents;

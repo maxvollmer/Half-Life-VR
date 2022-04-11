@@ -244,6 +244,7 @@ int gmsgVRPullingLedge = 0;
 int gmsgVRUpdateEgon = 0;
 int gmsgVRScreenShake = 0;
 int gmsgVRTouch = 0;
+int gmsgVRWalkedIntoWall = 0;
 int gmsgVRLevelChange = 0;
 
 
@@ -302,6 +303,7 @@ void LinkUserMessages(void)
 	gmsgVRUpdateEgon = REG_USER_MSG("VRUpdEgon", -1);
 	gmsgVRScreenShake = REG_USER_MSG("VRScrnShke", 3 * sizeof(float));
 	gmsgVRTouch = REG_USER_MSG("VRTouch", 5);
+	gmsgVRWalkedIntoWall = REG_USER_MSG("VRWlkWl", 0);
 	gmsgVRLevelChange = REG_USER_MSG("VRLvlChng", 0);
 }
 
@@ -3237,7 +3239,7 @@ int CBasePlayer::Restore(CRestore& restore)
 	if (!CBaseMonster::Restore(restore))
 		return 0;
 
-	int status = restore.ReadFields("PLAYER", this, m_playerSaveData, (int)std::size(m_playerSaveData)) && restore.ReadFields("PLAYERVROffsetsForLevelchange", &g_vrLevelChangeData, g_vrLevelChangeDataSaveData, (int)std::size(g_vrLevelChangeDataSaveData));
+	bool status = restore.ReadFields("PLAYER", this, m_playerSaveData, (int)std::size(m_playerSaveData)) && restore.ReadFields("PLAYERVROffsetsForLevelchange", &g_vrLevelChangeData, g_vrLevelChangeDataSaveData, (int)std::size(g_vrLevelChangeDataSaveData));
 
 	SAVERESTOREDATA* pSaveData = static_cast<SAVERESTOREDATA*>(gpGlobals->pSaveData);
 	// landmark isn't present.
@@ -3321,7 +3323,7 @@ int CBasePlayer::Restore(CRestore& restore)
 	vr_hasSentRestoreYawMsgToClient = false;
 	vr_hasSentSpawnYawToClient = false;
 
-	return status;
+	return status ? 1 : 0;
 }
 
 
@@ -5077,7 +5079,6 @@ LINK_ENTITY_TO_CLASS(info_intermission, CInfoIntermission);
 
 
 // VR methods:
-
 void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const float hmdOffsetZ, const Vector& hmdForward, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg, bool hasReceivedSpawnYaw)
 {
 	// Filter out outdated updates
@@ -5166,6 +5167,20 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	// Use movement handler to move to new position (instead of simply teleporting)
 	// Uses pm_shared code. Allows for climbing up stairs and handling all kinds of collisions with level geometry.
 	pev->origin = VRMovementHandler::DoMovement(pev->origin, newOrigin, this);
+
+	if (newOrigin.x != pev->origin.x || newOrigin.y != pev->origin.y)
+	{
+		//ALERT(at_console, "newOrigin != pev->origin: %f %f, %f %f\n", newOrigin.x, newOrigin.y, pev->origin.x, pev->origin.y);
+		//ALERT(at_console, "Sending gmsgVRWalkedIntoWall\n");
+
+		// tell client we walked into a wall
+		MESSAGE_BEGIN(MSG_ONE, gmsgVRWalkedIntoWall, nullptr, pev);
+		MESSAGE_END();
+	}
+	else
+	{
+		//ALERT(at_console, "newOrigin == pev->origin: %f %f, %f %f\n", newOrigin.x, newOrigin.y, pev->origin.x, pev->origin.y);
+	}
 
 	// Always add in newOrigin instead of pev->origin, creates much better and smoother results
 	vr_ClientOriginOffset.x = clientOrigin.x - newOrigin.x;
@@ -5711,6 +5726,8 @@ void CBasePlayer::DoLongJump()
 
 	if (m_fLongJump)
 	{
+		pev->punchangle.x = -5.f;
+
 		if (pev->velocity.Length2D() < EPSILON)
 		{
 			pev->velocity = vr_hmdForward;
@@ -5951,6 +5968,9 @@ bool CBasePlayer::IsTankVRControlled(entvars_t* pevTank)
 
 	if (FBitSet(pevTank->spawnflags, SF_TANK_CANCONTROL) && UTIL_StartsWith(STRING(pevTank->classname), "func_tank"))
 	{
+		// vr_tankcontrols is 0 for off (checked above)
+		// or 1 for one handed
+		// or 2 for two handed tank controls
 		if (CVAR_GET_FLOAT("vr_tankcontrols") == 1.f)
 		{
 			return IsValidTankDraggingController(m_vrControllers[VRControllerID::HAND], pevTank) ||

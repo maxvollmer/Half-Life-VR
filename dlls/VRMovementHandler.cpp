@@ -41,7 +41,7 @@ Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to, CBase
 	if (pmove->PM_TestPlayerPosition(to, nullptr) == -1)
 		return to;
 
-	// if "from" is blocked, we can't move (let normal pm_shared unstuck as first)
+	// if "from" is blocked, we can't move (let normal pm_shared unstuck us first)
 	if (pmove->PM_TestPlayerPosition(from, nullptr) >= 0)
 		return from;
 
