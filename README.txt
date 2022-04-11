@@ -7,7 +7,7 @@ VERSION 0.6.30-beta
 
 Release date: -
 
-Copyright (c) 2017-2021 Max Vollmer (if not otherwise stated)
+Copyright (c) 2017-2022 Max Vollmer (if not otherwise stated)
 
 Half-Life: VR team consists of Max Vollmer, Formic.Sapien, Rorin, DoomMarine23, and Junt.
 
@@ -33,7 +33,7 @@ Substantial help provided by Formic.Sapien, Rorin, DoomMarine23, and Junt.
 
 Third party licenses apply where applicable.
 
-For a list of third parties see bottom of file.
+For a list of third parties see below.
 
 ===
 This mod is released as is without any guarantee that it works and without any warranties whatsoever. Use on your own risk. If you don't know what you are doing, don't do it.
@@ -51,7 +51,7 @@ If you are a coder and want to help, please get in touch!
 *******************
 THIRD PARTIES BELOW
 
-(Full licenses where applicable in folder vr/licenses)
+(Full licenses where applicable in licenses folder)
 
 ====
 Female scientist audio files recorded by Katie Otten: https://www.katieotten.com/. They are based on the original scientist audio files for Half-Life by Valve.
@@ -117,6 +117,12 @@ https://github.com/nagist/metahook
 https://github.com/hzqst/MetaRenderer
 Copyright (c), LAGonauta, nagist, hzqst
 
+===
+This mod uses CEGUI 0.8.7
+http://cegui.org.uk/
+Copyright (c) 2004 - 2014 Paul D Turner & The CEGUI Development Team
+NOTE: CEGUI uses several additional third parties listed in the licenses subfolder!
+
 
 ===================
 *******************
@@ -125,15 +131,15 @@ Special thanks to (order randomized):
 
 Patreons (former and current):
 ---
-Alex Coulter, DoesntDoot, Nicholas Kolettis, Xodetaetl, Zane, Rob L, Dan Mizu, Daniel Hirt, IceTee, Thomas Nielsen, udwxmoose, Stratica, Vince Trust, William Kreusch, Roswitha Siedelberg, Gabriel Wiegan, Legion, Peter Anderson, Rhikter_937, Christopher Rose, Hamish Prendergast, EvilReFlex, Cereal, Devin Stapleford, David Masse, Hermann Hetzer, Chris, Sean Brown, Benjamin Stanley, DetriniuM, Joshua Cluelow, Sergio Berg, Woody G, Ari Tuohenmaa, David Kuhndt, FogStater, David Zwolinski, George Goodwin, Jay Sones, Alex Iliescu, Bernie Coors, Ruben Ruoff, Junt, Marek Järve, Samuel Bernstein, brandon domenichelli, Jobert, Eric Gulve, Aivars Zerg, Liz Edwards, Garrulous64, Jonathan Shihor, villain749, Tom, phantom lord, Franklyn Tackitt, Fabian, Harold Flower, kahvikone ., ScoobyAS, softboy rodvt, MochiVR, Michael Hoffmann, CoraBlue, Dante Teresi, Corom, Sophie Meier, Johnny Cambridge, Adam Sinclair, Viktor Vitebskiy, Ignacio García, rntlpbm
+Ari Tuohenmaa, Eric Gulve, Lev, Harold Flower, Ignacio García, Fabian, Liz Edwards, Viktor Vitebskiy, Garrulous64, Peter Anderson, DoesntDoot, Dan Mizu, Sophie Meier, Vince Trust, rntlpbm, FogStater, Ethan Davis, Tom, Nicholas Kolettis, Roswitha Siedelberg, Sean Brown, Gabriel Wiegan, Johnny Cambridge, DetriniuM, kahvikone ., Christopher Rose, Michael Hoffmann, Sergio Berg, Alex Iliescu, Jay Lucero, David Masse, Daniel Hirt, IceTee, Samuel Bernstein, brandon domenichelli, Devin Stapleford, CoraBlue, Rhikter_937, Cereal, Jobert, Alex Coulter, Thomas Nielsen, Franklyn Tackitt, Hamish Prendergast, Zane, Stratica, softboy rodvt, Xodetaetl, Jay Sones, Ruben Ruoff, MochiVR, Adam Sinclair, Joshua Cluelow, Corom, George Goodwin, udwxmoose, Bernie Coors, Chris, Jonathan Shihor, Marek Järve, Aivars Zerg, Rob L, Benjamin Stanley, David Kuhndt, Robert Curtin, ScoobyAS, David Zwolinski, Hermann Hetzer, EvilReFlex, Woody G, Legion, villain749, Dante Teresi, Junt, William Kreusch, phantom lord
 
 Beta testers:
 ---
-ajantaju, Junt, Lyo, bobloblaw, Moose, DetriniuM, Tiz68, Hamish, Arch [TuT VR], FriskyNoodle, Hermann Hetzer, optimumbox, Vince Crusty, SquidHominid
+bobloblaw, Vince Crusty, SquidHominid, Tiz68, optimumbox, Junt, Arch [TuT VR], Hermann Hetzer, DetriniuM, ajantaju, Moose, Lyo, Hamish, FriskyNoodle
 
 Additional help:
 ---
-Junt, ajantaju, Multinacho8, udwxMoose
+Skummeh, udwxMoose, ajantaju, Multinacho8
 
 Others:
 ---
