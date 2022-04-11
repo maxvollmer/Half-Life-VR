@@ -4,6 +4,7 @@
   * Fixed audio left and right being switched when using FMOD
   * Fixed wall collision and other visual bugs in roomscale VR if playerturn is disabled
   * Fixed game window/menu being visible in VR during level changes
+  * Fixed issue with longjump direction
   * Added feature that smoothes movement when walking up stairs
   * Restored default walk speed and legacy ladder climb speed to pancake defaults
 

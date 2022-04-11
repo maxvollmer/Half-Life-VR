@@ -5707,20 +5707,20 @@ void CBasePlayer::DoLongJump()
 	if (maxscaledspeed <= 0.f)
 		return;
 
-	float speed = pev->velocity.Length();
-	if (speed > maxscaledspeed)
-	{
-		pev->velocity = pev->velocity * (maxscaledspeed * 0.65f / speed);
-	}
-
 	extern void PM_PlayStepSound(int step, float fvol);
 	extern int PM_MapTextureTypeStepType(char chTextureType);
 	PM_PlayStepSound(PM_MapTextureTypeStepType(pmove->chtexturetype), 1.0f);
 
 	if (m_fLongJump)
 	{
-		pev->punchangle.x = -5.f;
-		pev->velocity = pmove->forward * PLAYER_LONGJUMP_SPEED * 1.6f;
+		if (pev->velocity.Length2D() < EPSILON)
+		{
+			pev->velocity = vr_hmdForward;
+		}
+		pev->velocity.z = 0.f;
+		pev->velocity = pev->velocity.Normalize();
+		pev->velocity.x = pmove->velocity.x * PLAYER_LONGJUMP_SPEED * 1.6f;
+		pev->velocity.y = pmove->velocity.y * PLAYER_LONGJUMP_SPEED * 1.6f;
 		pev->velocity.z = sqrt(2.f * 800.f * 56.f);
 		SetAnimation(PLAYER_SUPERJUMP);
 	}

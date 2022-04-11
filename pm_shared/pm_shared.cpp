@@ -65,150 +65,6 @@ bool IsOnGround()
 }
 
 
-#if 0
-float PM_GetStepHeight(playermove_t* pmove, vec3_t start, const float origdisttofloor, const float factor)
-{
-	vec3_t infdown;
-	VectorCopy(start, infdown);
-	infdown[2] = -8192.f;
-	pmtrace_t trace = pmove->PM_PlayerTrace(start, infdown, PM_NORMAL, -1);
-
-	// Don't check steps if in void or on sloped ground
-	if (trace.allsolid || trace.fraction >= 1.f || trace.plane.normal[2] != 1.f)
-		return 0.f;
-
-	float disttofloor = start[2] - trace.endpos[2];
-	if (disttofloor < origdisttofloor)
-	{
-		float stepsize = origdisttofloor - disttofloor;
-		if (stepsize > 0.1f && stepsize <= pmove->movevars->stepsize)
-		{
-			float stepHeight = stepsize * factor;
-			return stepHeight;
-		}
-	}
-
-	return 0.f;
-}
-
-float PM_GetStepHeight(playermove_t* pmove, vec3_t origin, const int xDir, const int yDir, const float origdisttofloor)
-{
-	vec3_t moveto;
-	VectorCopy(origin, moveto);
-	moveto[0] += pmove->movevars->stepsize * xDir;
-	moveto[1] += pmove->movevars->stepsize * yDir;
-	pmtrace_t trace = pmove->PM_PlayerTrace(origin, moveto, PM_NORMAL, -1);
-
-	// Don't check steps if we can't move at all in that direction
-	if (trace.allsolid || trace.fraction == 0.f || trace.fraction > 1.f)
-		return 0.f;
-
-	// Get actual maxdist
-	float maxdist = pmove->movevars->stepsize * trace.fraction;
-	float curdist = maxdist * 0.5f;
-	float curstep = curdist * 0.5f;
-
-	float highestStepHeight = 0.f;
-
-	// divide and conquer
-	while (curstep >= 0.5f && curdist > 0.1f && (maxdist - curdist) > 0.1f)
-	{
-		vec3_t start;
-		start[0] = origin[0] + curdist * xDir;
-		start[1] = origin[1] + curdist * yDir;
-		start[2] = origin[2];
-
-		float factor = 1.f - (curdist / pmove->movevars->stepsize);
-
-		float stepHeight = PM_GetStepHeight(pmove, start, origdisttofloor, factor);
-		if (stepHeight == 0.f)
-		{
-			curdist += curstep;
-		}
-		else
-		{
-			if (stepHeight > highestStepHeight)
-			{
-				highestStepHeight = stepHeight;
-			}
-
-			// unlikely, but not impossible, early exit
-			if (highestStepHeight >= pmove->movevars->stepsize)
-				return pmove->movevars->stepsize;
-
-			curdist -= curstep;
-		}
-
-		curstep *= 0.5f;
-	}
-
-	return highestStepHeight;
-}
-
-float PM_GetStepHeight(playermove_t* pmove, float origin[3])
-{
-	// CVAR_GET_FLOAT("vr_smooth_steps");
-	float vr_smooth_steps = VRGetSmoothStepsSetting();
-	if (vr_smooth_steps == 0.f)
-		return 0.f;
-
-	vec3_t uporigin;
-	VectorCopy(origin, uporigin);
-	uporigin[2] += pmove->movevars->stepsize;
-	pmtrace_t trace = pmove->PM_PlayerTrace(origin, uporigin, PM_NORMAL, -1);
-
-	// Don't check steps if we can't move upwards
-	if (trace.allsolid || trace.fraction != 1.f)
-		return 0.f;
-
-	vec3_t infdown;
-	VectorCopy(uporigin, infdown);
-	infdown[2] = -8192.f;
-	trace = pmove->PM_PlayerTrace(uporigin, infdown, PM_NORMAL, -1);
-
-	// Don't check steps if in void or on sloped ground
-	if (trace.allsolid || trace.fraction >= 1.f || trace.plane.normal[2] != 1.f)
-		return 0.f;
-
-	float disttofloor = uporigin[2] - trace.endpos[2];
-
-	float highestStepHeight = 0.f;
-
-	for (int x = -1; x <= 1; x++)
-	{
-		for (int y = -1; y <= 1; y++)
-		{
-			if (x == 0 && y == 0)
-				continue;
-
-			// if vr_smooth_steps is 1, we skip diagonal checks
-			// if vr_smooth_steps is 2, we do diagonal checks
-			if (vr_smooth_steps == 1.f)
-			{
-				if (x != 0 && y != 0)
-					continue;
-			}
-
-			float stepHeight = PM_GetStepHeight(pmove, uporigin, x, y, disttofloor);
-			if (stepHeight > highestStepHeight)
-				highestStepHeight = stepHeight;
-
-			// unlikely, but not impossible, early exit
-			if (highestStepHeight >= pmove->movevars->stepsize)
-				return pmove->movevars->stepsize;
-		}
-	}
-
-	return highestStepHeight;
-}
-#endif
-
-float PM_GetStepHeight(playermove_t* pmove, float origin[3])
-{
-	return 0.f;
-}
-
-
 #ifdef CLIENT_DLL
 // Spectator Mode
 int iJumpSpectator = 0;
@@ -3094,13 +2950,16 @@ void PM_Jump(void)
 		if (cansuperjump &&
 			(pmove->cmd.buttons & (IN_DUCK | X_IN_VRDUCK)) &&
 			(pmove->flDuckTime > 0) &&
-			Length(pmove->velocity) > 50)
+			Length2D(pmove->velocity) > 50)
 		{
 			pmove->punchangle[0] = -5;
 
+			pmove->velocity[2] = 0;
+			VectorNormalize(pmove->velocity);
+
 			for (i = 0; i < 2; i++)
 			{
-				pmove->velocity[i] = pmove->forward[i] * PLAYER_LONGJUMP_SPEED * 1.6;
+				pmove->velocity[i] = pmove->velocity[i] * PLAYER_LONGJUMP_SPEED * 1.6;
 			}
 
 			pmove->velocity[2] = sqrtf(2 * 800 * 56.0f);
