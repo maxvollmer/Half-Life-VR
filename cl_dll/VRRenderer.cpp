@@ -53,6 +53,9 @@
 
 #include "vr_gl.h"
 
+// set by hud message from server
+double gVR_LastLevelChangeTime = 0.f;
+
 
 extern globalvars_t* gpGlobals;
 
@@ -131,7 +134,15 @@ void VRRenderer::Frame(double frametime)
 
 	if (m_isInMenu || !IsInGame())
 	{
-		g_vrInput.ShowHLMenu();
+		// don't show menu during levelchange (we show it after 2 seconds, in case the load failed or froze)
+		if (gVR_LastLevelChangeTime > (m_clientTime - 2.f))
+		{
+			g_vrInput.HideHLMenu();
+		}
+		else
+		{
+			g_vrInput.ShowHLMenu();
+		}
 		vrHelper->PollEvents(false, m_isInMenu);
 		VRSoundUpdate(true, frametime);
 		ResetOffsetThingies();

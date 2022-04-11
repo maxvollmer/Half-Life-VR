@@ -30,7 +30,8 @@ extern enginefuncs_t g_engfuncs;
 #define MODEL_INDEX2         (*g_engfuncs.pfnModelIndex2)
 #define MODEL_FRAMES         (*g_engfuncs.pfnModelFrames)
 #define SET_SIZE             (*g_engfuncs.pfnSetSize)
-#define CHANGE_LEVEL         (*g_engfuncs.pfnChangeLevel)
+//#define CHANGE_LEVEL         (*g_engfuncs.pfnChangeLevel)
+void CHANGE_LEVEL(char* s1, char* s2);
 #define GET_SPAWN_PARMS      (*g_engfuncs.pfnGetSpawnParms)
 #define SAVE_SPAWN_PARMS     (*g_engfuncs.pfnSaveSpawnParms)
 #define VEC_TO_YAW           (*g_engfuncs.pfnVecToYaw)

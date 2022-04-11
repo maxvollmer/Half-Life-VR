@@ -229,6 +229,14 @@ int __MsgFunc_VRSpawnYaw(const char* pszName, int iSize, void* pbuf)
 	return 0;
 }
 
+int __MsgFunc_VRLvlChng(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	extern double gVR_LastLevelChangeTime;
+	gVR_LastLevelChangeTime = gVRRenderer.m_clientTime;
+	return 0;
+}
+
 // Sends index of current grund entity
 int __MsgFunc_GroundEnt(const char* pszName, int iSize, void* pbuf)
 {
@@ -387,6 +395,7 @@ void CHud::Init(void)
 	HOOK_MESSAGE(PullLdg);
 	HOOK_MESSAGE(VRUpdEgon);
 	HOOK_MESSAGE(VRTouch);
+	HOOK_MESSAGE(VRLvlChng);
 
 	CVAR_CREATE("hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO);  // controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE("hud_takesshots", "0", FCVAR_ARCHIVE);                      // controls whether or not to automatically take screenshots at the end of a round

@@ -3330,3 +3330,16 @@ BOOL FWorldEnt(entvars_t* pev)
 {
 	return pev != nullptr && FWorldEnt(ENT(pev));
 }
+
+
+
+// From enginecallback.h, intercepts changelevel calls
+
+void CHANGE_LEVEL(char* s1, char* s2)
+{
+	extern int gmsgVRLevelChange;
+	MESSAGE_BEGIN(MSG_ALL, gmsgVRLevelChange);
+	MESSAGE_END();
+
+	g_engfuncs.pfnChangeLevel(s1, s2);
+}

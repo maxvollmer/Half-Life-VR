@@ -244,6 +244,7 @@ int gmsgVRPullingLedge = 0;
 int gmsgVRUpdateEgon = 0;
 int gmsgVRScreenShake = 0;
 int gmsgVRTouch = 0;
+int gmsgVRLevelChange = 0;
 
 
 void LinkUserMessages(void)
@@ -301,6 +302,7 @@ void LinkUserMessages(void)
 	gmsgVRUpdateEgon = REG_USER_MSG("VRUpdEgon", -1);
 	gmsgVRScreenShake = REG_USER_MSG("VRScrnShke", 3 * sizeof(float));
 	gmsgVRTouch = REG_USER_MSG("VRTouch", 5);
+	gmsgVRLevelChange = REG_USER_MSG("VRLvlChng", 0);
 }
 
 LINK_ENTITY_TO_CLASS(player, CBasePlayer);
