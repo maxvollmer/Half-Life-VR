@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <HLVRInstallDirectory>E:/Spiele/Steam/steamapps/common/Half-life VR/</HLVRInstallDirectory>
+    <HLVRInstallDirectory>E:/SteamLibrary/steamapps/common/Half-life VR/</HLVRInstallDirectory>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
