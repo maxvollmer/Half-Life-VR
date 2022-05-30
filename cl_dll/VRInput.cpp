@@ -65,12 +65,16 @@ void VRInput::Init()
 		}
 		else
 		{
-			gEngfuncs.Con_DPrintf("Error: Couldn't load actions.manifest. (Error code: %i)\n", result);
+			std::wstring path(absoluteManifestPath.c_str());
+			std::string spath(path.begin(), path.end());
+			gEngfuncs.Con_DPrintf("Error: Couldn't load %s. (Error code: %i)\n", path.c_str(), result);
 		}
 	}
 	else
 	{
-		gEngfuncs.Con_DPrintf("Error: actions.manifest doesn't exist.\n");
+		std::wstring path(absoluteManifestPath.c_str());
+		std::string spath(path.begin(), path.end());
+		gEngfuncs.Con_DPrintf("Error: %s doesn't exist.\n", spath.c_str());
 	}
 }
 
