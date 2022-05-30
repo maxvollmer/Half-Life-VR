@@ -301,14 +301,13 @@ std::string GetHLVRModVersion()
 {
 	try
 	{
-		auto path = GetPathFor("/liblist.gam");
+		auto path = std::string("./valve/liblist.gam");
 		if (std::filesystem::exists(path))
 		{
 			std::ifstream liblistgam(path);
 			std::string line;
 			while (std::getline(liblistgam, line))
 			{
-				// version "0.6.27-beta"
 				const std::regex version_regex("version \\\"([0-9]+\\.[0-9]+\\.[0-9]+[-a-zA-Z0-9]*)\\\"");
 				std::smatch match;
 				if (std::regex_match(line, match, version_regex))
@@ -331,7 +330,14 @@ std::string GetHLVRModVersion()
 void VRHelper::Init()
 {
 	std::string version = GetHLVRModVersion();
-	gEngfuncs.Con_DPrintf("[Half-Life: VR Initializing. Version: %s]\n", version.c_str());
+	if (gEngfuncs.pfnGetGameDirectory() != std::string("valve"))
+	{
+		gEngfuncs.Con_DPrintf("[Half-Life: VR Initializing. Version: %s, with mod %s]\n", version.c_str(), gEngfuncs.pfnGetGameDirectory());
+	}
+	else
+	{
+		gEngfuncs.Con_DPrintf("[Half-Life: VR Initializing. Version: %s]\n", version.c_str());
+	}
 
 	g_vrSettings.Init();
 
@@ -407,12 +413,6 @@ void VRHelper::Init()
 	{
 		gEngfuncs.Con_DPrintf("Warning: Failed to intercept game engine's random number generator. Some visual effects will look... weird.\n");
 	}
-
-	/*
-	std::filesystem::path hlvrConfigPath = GetPathFor("/HLVRConfig.exe");
-	std::filesystem::path hlvrConfigFolder = GetPathFor("");
-	ShellExecuteA(NULL, "open", hlvrConfigPath.string().c_str(), NULL, hlvrConfigFolder.string().c_str(), SW_SHOWDEFAULT);
-	*/
 }
 
 void VRHelper::Exit(const char* lpErrorMessage)

@@ -37,7 +37,7 @@ namespace HLVRConfig.Utilities.Process
                 {
                     WorkingDirectory = HLVRPaths.HLVRDirectory,
                     FileName = HLVRPaths.HLVRExecutable,
-                    Arguments = "-game vr -console -dev 2 -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0 +gl_vsync 0 +fps_max 90 +fps_override 1",
+                    Arguments = "-console -dev 2 -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0 +gl_vsync 0 +fps_max 90 +fps_override 1",
                     UseShellExecute = false,
                     RedirectStandardError = false,
                     RedirectStandardOutput = false

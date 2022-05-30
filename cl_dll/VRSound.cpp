@@ -684,7 +684,7 @@ void LoadAllSentences()
 		return;
 
 	LoadAllSentences("./valve/sound/sentences.txt");
-	LoadAllSentences("./vr/sound/sentences.txt");
+	LoadAllSentences(gEngfuncs.pfnGetGameDirectory() + std::string("/sound/sentences.txt"));
 
 	if (g_allSentences.empty())
 	{

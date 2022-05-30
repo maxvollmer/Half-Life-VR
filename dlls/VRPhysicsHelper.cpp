@@ -1146,8 +1146,8 @@ bool VRPhysicsHelper::CheckWorld()
 
 				m_currentMapName = std::string{ world->name };
 				const std::string mapName{ m_currentMapName.substr(0, m_currentMapName.find_last_of(".")) };
-				const std::string physicsMapDataFilePath{ UTIL_GetGameDir() + "/" + mapName + ".hlvrphysdata" };
-				const std::string mapFilePath{ UTIL_GetGameDir() + "/" + mapName + ".bsp" };
+				const std::string mapFilePath{ UTIL_GetFilePath("/" + mapName + ".bsp") };
+				const std::string physicsMapDataFilePath{ mapFilePath.substr(0, mapFilePath.length() - 4) + ".hlvrphysdata"};
 
 				ALERT(at_console, "Initializing physics data for current map (%s)...\n", m_currentMapName.data());
 				auto start = std::chrono::system_clock::now();

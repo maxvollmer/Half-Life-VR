@@ -217,7 +217,7 @@ inline BOOL FClassnameIs(entvars_t* pev, const char* szClassname)
 
 class CBaseEntity;
 
-std::string UTIL_GetGameDir();
+std::string UTIL_GetFilePath(const std::string& filename);
 
 // Misc. Prototypes
 extern void UTIL_SetSize(entvars_t* pev, const Vector& vecMin, const Vector& vecMax);

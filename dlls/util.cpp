@@ -20,6 +20,8 @@
 
 */
 
+#include <filesystem>
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -33,12 +35,23 @@
 #include "VRPhysicsHelper.h"
 
 
-// Returns the current game directory as std::string (encapsulates g_engfuncs.pfnGetGameDir)
-std::string UTIL_GetGameDir()
+// Returns a path to the given file:
+// a) in the current mod directory, if a mod is loaded and the file exists in the mod directory,
+// b) or in the valve directory.
+// If the file doesn't exist at all, the valve path is returned as well.
+std::string UTIL_GetFilePath(const std::string& filename)
 {
 	char gameDir[1024] = {};
 	g_engfuncs.pfnGetGameDir(gameDir);
-	return std::string{ gameDir };
+
+	if (std::filesystem::exists(gameDir + filename))
+	{
+		return gameDir + filename;
+	}
+	else
+	{
+		return "valve" + filename;
+	}
 }
 
 

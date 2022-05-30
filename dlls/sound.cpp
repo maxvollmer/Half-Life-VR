@@ -1442,7 +1442,7 @@ bool IsFemaleScientistAudioAvailable(const std::string& soundfile)
 	if (soundfile.find("scientist/") != 0)
 		return false;
 
-	auto femalesoundfile = UTIL_GetGameDir() + "/sound/fsci/" + soundfile.substr(10);
+	auto femalesoundfile = UTIL_GetFilePath("/sound/fsci/" + soundfile.substr(10));
 
 	auto absfemalesoundfile = std::filesystem::absolute(femalesoundfile);
 

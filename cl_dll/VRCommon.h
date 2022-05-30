@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "../vr_shared/VRShared.h"
+#include "hud_iface.h"
 
 inline std::filesystem::path GetRelPathFor(const std::string& file)
 {
@@ -12,7 +13,7 @@ inline std::filesystem::path GetRelPathFor(const std::string& file)
 	}
 	else
 	{
-		return "/valve/" + file;
+		return "valve" + file;
 	}
 }
 

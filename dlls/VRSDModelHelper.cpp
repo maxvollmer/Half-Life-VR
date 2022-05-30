@@ -12,12 +12,6 @@
 
 // Intercept model functions to allow usage of SD versions
 
-inline std::filesystem::path GetPathFor(const std::string& file)
-{
-	std::filesystem::path relativePath = UTIL_GetGameDir() + file;
-	return std::filesystem::absolute(relativePath);
-}
-
 namespace
 {
 	std::unordered_map<std::string, std::shared_ptr<char>> gModelNames;
@@ -41,7 +35,7 @@ char* GetSDModel(const std::string& model)
 		return nullptr;
 
 	std::string sdModel = std::regex_replace(model, std::regex{ "models/" }, "models/SD/");
-	std::filesystem::path sdModelPathRelative{ UTIL_GetGameDir() + "/" + sdModel };
+	std::filesystem::path sdModelPathRelative{ UTIL_GetFilePath("/" + sdModel) };
 
 	std::filesystem::path sdModelPath = std::filesystem::absolute(sdModelPathRelative);
 

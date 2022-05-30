@@ -13,8 +13,8 @@ StudioModel::StudioModel(void* pmodel)
 
 StudioModel::StudioModel(const char* modelname)
 {
-	extern std::string UTIL_GetGameDir();
-	LoadModel((UTIL_GetGameDir() + "/" + modelname).data());
+	extern std::string UTIL_GetFilePath(const std::string& filename);
+	LoadModel((UTIL_GetFilePath("/" + std::string(modelname)).data()));
 }
 
 StudioModel::~StudioModel()
