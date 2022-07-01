@@ -1069,52 +1069,65 @@ Vector SmoothRapidOffsetChanges(const Vector& currentOffset)
 	double currentTime = gVRRenderer.m_clientTime;
 
 	Vector smoothedOffset = currentOffset;
+	bool addNewOffset = true;
 
 	if (offsetThingies.size() > 0 && (smoothSideMotion || smoothUpMotion))
 	{
-		// Calculate average velocity over N:
-		std::array<double, 3> velocitiesSum{ 0.0, 0.0, 0.0 };
-		uint64_t velocitiesCount = 0;
-
-		// add in all the previous ones not older than N seconds ago
-		for (auto offsetThingy = offsetThingies.begin(); offsetThingy != offsetThingies.end(); offsetThingy++)
-		{
-			velocitiesCount++;
-			velocitiesSum[0] += offsetThingy->velocity[0];
-			velocitiesSum[1] += offsetThingy->velocity[1];
-			velocitiesSum[2] += offsetThingy->velocity[2];
-		}
-
-		// add in current offset
 		auto& lastOffsetThingy = offsetThingies.back();
 		double timeDiff = currentTime - lastOffsetThingy.time;
-		currentVelocity[0] = (static_cast<double>(currentOffset.x) - lastOffsetThingy.offset.x) / timeDiff;
-		currentVelocity[1] = (static_cast<double>(currentOffset.y) - lastOffsetThingy.offset.y) / timeDiff;
-		currentVelocity[2] = (static_cast<double>(currentOffset.z) - lastOffsetThingy.offset.z) / timeDiff;
-		velocitiesSum[0] += currentVelocity[0];
-		velocitiesSum[1] += currentVelocity[1];
-		velocitiesSum[2] += currentVelocity[2];
-		velocitiesCount++;
-
-		Vector averageVelocity;
-		averageVelocity.x = static_cast<float>(velocitiesSum[0] / velocitiesCount);
-		averageVelocity.y = static_cast<float>(velocitiesSum[1] / velocitiesCount);
-		averageVelocity.z = static_cast<float>(velocitiesSum[2] / velocitiesCount);
-
-		// Then use average velocity to smooth offset
-		if (smoothSideMotion)
+		if (timeDiff > 0)
 		{
-			smoothedOffset.x = lastOffsetThingy.smoothedOffset.x + averageVelocity.x * timeDiff;
-			smoothedOffset.y = lastOffsetThingy.smoothedOffset.y + averageVelocity.y * timeDiff;
+			// Calculate average velocity over N:
+			std::array<double, 3> velocitiesSum{ 0.0, 0.0, 0.0 };
+			uint64_t velocitiesCount = 0;
+
+			// add in all the previous ones not older than N seconds ago
+			for (auto offsetThingy = offsetThingies.begin(); offsetThingy != offsetThingies.end(); offsetThingy++)
+			{
+				velocitiesCount++;
+				velocitiesSum[0] += offsetThingy->velocity[0];
+				velocitiesSum[1] += offsetThingy->velocity[1];
+				velocitiesSum[2] += offsetThingy->velocity[2];
+			}
+
+			// add in current offset
+			currentVelocity[0] = (static_cast<double>(currentOffset.x) - lastOffsetThingy.offset.x) / timeDiff;
+			currentVelocity[1] = (static_cast<double>(currentOffset.y) - lastOffsetThingy.offset.y) / timeDiff;
+			currentVelocity[2] = (static_cast<double>(currentOffset.z) - lastOffsetThingy.offset.z) / timeDiff;
+			velocitiesSum[0] += currentVelocity[0];
+			velocitiesSum[1] += currentVelocity[1];
+			velocitiesSum[2] += currentVelocity[2];
+			velocitiesCount++;
+
+			Vector averageVelocity;
+			averageVelocity.x = static_cast<float>(velocitiesSum[0] / velocitiesCount);
+			averageVelocity.y = static_cast<float>(velocitiesSum[1] / velocitiesCount);
+			averageVelocity.z = static_cast<float>(velocitiesSum[2] / velocitiesCount);
+
+			// Then use average velocity to smooth offset
+			if (smoothSideMotion)
+			{
+				smoothedOffset.x = lastOffsetThingy.smoothedOffset.x + averageVelocity.x * timeDiff;
+				smoothedOffset.y = lastOffsetThingy.smoothedOffset.y + averageVelocity.y * timeDiff;
+			}
+			if (smoothUpMotion)
+			{
+				smoothedOffset.z = lastOffsetThingy.smoothedOffset.z + averageVelocity.z * timeDiff;
+			}
 		}
-		if (smoothUpMotion)
+		else
 		{
-			smoothedOffset.z = lastOffsetThingy.smoothedOffset.z + averageVelocity.z * timeDiff;
+			// double frame (can happen after a levelchange and cause division by zero if we use it.)
+			addNewOffset = false;
+			smoothedOffset = lastOffsetThingy.smoothedOffset;
 		}
 	}
 
-	// Add the new offset
-	offsetThingies.emplace_back(currentOffset, smoothedOffset, currentVelocity, currentTime);
+	if (addNewOffset)
+	{
+		// Add the new offset
+		offsetThingies.emplace_back(currentOffset, smoothedOffset, currentVelocity, currentTime);
+	}
 
 	return smoothedOffset;
 }

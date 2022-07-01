@@ -32,6 +32,7 @@ namespace
 
 void VRCEGUIWrapper::InitCEGUI()
 {
+	/*
 	if (gCEGUIRenderer != nullptr)
 	{
 		DestroyCEGUI();
@@ -100,6 +101,7 @@ void VRCEGUIWrapper::InitCEGUI()
 		std::string bla = ss.str();
 		std::cout << bla << std::endl;
 	}
+	*/
 }
 
 void VRCEGUIWrapper::DestroyCEGUI()
@@ -117,7 +119,7 @@ void VRCEGUIWrapper::DestroyCEGUI()
 
 void VRCEGUIWrapper::DoTheThing()
 {
-	CEGUI::System::getSingleton().renderAllGUIContexts();
+	//CEGUI::System::getSingleton().renderAllGUIContexts();
 
 	/*
 	gCEGUIRenderer->beginRendering();
@@ -131,11 +133,6 @@ unsigned int VRCEGUIWrapper::GetGUITextureID()
 {
 	//CEGUI::OpenGLTexture& glTexture = static_cast<CEGUI::OpenGLTexture&>(gCEGUIRenderTextureTarget->getTexture());
 	return 0;// glTexture.getOpenGLTexture();
-}
-
-unsigned int TEMPVRGetGetGUITextureID()
-{
-	return VRCEGUIWrapper::GetGUITextureID();
 }
 
 

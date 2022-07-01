@@ -8,7 +8,7 @@
   * Fixed levers and other issues with draggable entities
   * Fixed huge crate gibs in blast pit levels
   * Fixed soda cans not being drinkable
-  * Added feature that smoothes movement when walking up stairs
+  * Added feature that smoothes movement when walking up stairs (might be buggy, enable at own risk)
   * Restored default walk speed and legacy ladder climb speed to pancake defaults
 
  HLVRConfig:

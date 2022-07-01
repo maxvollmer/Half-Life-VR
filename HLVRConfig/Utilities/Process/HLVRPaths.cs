@@ -47,7 +47,7 @@ namespace HLVRConfig.Utilities.Process
         public static string VRLiblistgam { get { return Path.Combine(ValveDirectory, "liblist.gam"); } }
 
 
-        public static string HLVRExecutable { get { return Path.Combine(HLVRDirectory, "hlvr.exe"); } }
+        public static string HLVRExecutable { get { return Path.Combine(HLVRDirectory, "hl.exe"); } }
 
 
         public static string VRModSettingsFileName { get { return "hlvr.cfg"; } }
@@ -220,7 +220,7 @@ namespace HLVRConfig.Utilities.Process
             if (!Directory.Exists(hlvrDir))
                 return false;
 
-            if (!File.Exists(Path.Combine(hlvrDir, "hlvr.exe")))
+            if (!File.Exists(Path.Combine(hlvrDir, "hl.exe")))
                 return false;
 
             if (!File.Exists(Path.Combine(hlvrDir, "HLVRConfig.exe")))
