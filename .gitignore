@@ -1,7 +1,8 @@
 .vs
-*/Debug/
-*/Release/
-/src/packages
 *.sdf
-/___mod/
-/crashdumps/
+__crashdumps/
+Debug/
+Release/
+obj/
+bin/
+packages/
