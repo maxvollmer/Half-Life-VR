@@ -1,4 +1,22 @@
 {
+   "default_bindings": [
+      {
+         "controller_type": "knuckles",
+         "binding_url": "default_knuckles.json"
+      },
+      {
+         "controller_type": "oculus_touch",
+         "binding_url": "default_oculus_touch.json"
+      },
+      {
+         "controller_type": "vive_controller",
+         "binding_url": "default_vive_controller.json"
+      },
+      {
+         "controller_type": "holographic_controller",
+         "binding_url": "default_holographic_controller.json"
+      }
+   ],
    "action_sets" : [
       {
          "name" : "/actions/input",
@@ -421,12 +439,6 @@
          "name" : "/actions/custom/in/ExampleCustomAction",
          "requirement" : "optional",
          "type" : "boolean"
-      }
-   ],
-   "default_bindings" : [
-      {
-         "binding_url" : "default_vive_controller.json",
-         "controller_type" : "vive_controller"
       }
    ],
    "localization" : [

@@ -1,0 +1,164 @@
+{
+   "action_manifest_version" : 0,
+   "alias_info" : {},
+   "bindings" : {
+      "/actions/damagefeedback" : {
+         "sources" : []
+      },
+      "/actions/feedback" : {
+         "sources" : []
+      },
+      "/actions/input" : {
+         "chords" : [
+            {
+               "inputs" : [
+                  [ "/user/hand/left/input/grip", "grab" ],
+                  [ "/user/hand/right/input/b", "click" ]
+               ],
+               "output" : "/actions/input/in/longjump"
+            }
+         ],
+         "skeleton" : [
+            {
+               "output" : "/actions/input/in/lefthandskeleton",
+               "path" : "/user/hand/left/input/skeleton/left"
+            },
+            {
+               "output" : "/actions/input/in/righthandskeleton",
+               "path" : "/user/hand/right/input/skeleton/right"
+            }
+         ],
+         "sources" : [
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/quicksave"
+                  },
+                  "position" : {
+                     "output" : "/actions/input/in/moveforwardbackwardsideways"
+                  }
+               },
+               "mode" : "joystick",
+               "path" : "/user/hand/left/input/thumbstick"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/altfireweapon"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "grab" : {
+                     "output" : "/actions/input/in/leftgrab"
+                  }
+               },
+               "mode" : "grab",
+               "path" : "/user/hand/left/input/grip"
+            },
+            {
+               "inputs" : {
+                  "grab" : {
+                     "output" : "/actions/input/in/rightgrab"
+                  }
+               },
+               "mode" : "grab",
+               "path" : "/user/hand/right/input/grip"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/legacyuse"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/a"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/jump"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/b"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/nextweapon"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/b"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/previousweapon"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/a"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/holsterweapon"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/trackpad"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/toggleflashlight"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/trackpad"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/fireweapon"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/right/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "center" : {
+                     "output" : "/actions/input/in/quickload"
+                  },
+                  "east" : {
+                     "output" : "/actions/input/in/turn45right"
+                  },
+                  "west" : {
+                     "output" : "/actions/input/in/turn45left"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "sub_mode" : "touch"
+               },
+               "path" : "/user/hand/right/input/thumbstick"
+            }
+         ]
+      },
+      "/actions/poses" : {
+         "sources" : []
+      }
+   },
+   "category" : "steamvr_input",
+   "controller_type" : "knuckles",
+   "description" : "Default knuckles binds for Half-Life: VR, made by Rorin.\n\nLeft grip + right B for long jump.",
+   "name" : "Half-Life: VR Default Knuckles Binds",
+   "options" : {},
+   "simulated_actions" : []
+}

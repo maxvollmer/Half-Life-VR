@@ -1,17 +1,115 @@
 {
+   "action_manifest_version" : 0,
    "alias_info" : {},
-   "app_key" : "system.generated.hl.exe",
    "bindings" : {
       "/actions/custom" : {
          "sources" : []
       },
       "/actions/input" : {
-         "sources" : []
+         "sources" : [
+            {
+               "inputs" : {
+                  "east" : {
+                     "output" : "/actions/input/in/turnright"
+                  },
+                  "north" : {
+                     "output" : "/actions/input/in/jump"
+                  },
+                  "south" : {
+                     "output" : "/actions/input/in/crouch"
+                  },
+                  "west" : {
+                     "output" : "/actions/input/in/turnleft"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "sub_mode" : "click"
+               },
+               "path" : "/user/hand/right/input/trackpad"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/rightgrab"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/grip"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/fireweapon"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/right/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/legacyuse"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/leftgrab"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/grip"
+            },
+            {
+               "inputs" : {
+                  "east" : {
+                     "output" : "/actions/input/in/moveright"
+                  },
+                  "north" : {
+                     "output" : "/actions/input/in/moveforward"
+                  },
+                  "south" : {
+                     "output" : "/actions/input/in/movebackward"
+                  },
+                  "west" : {
+                     "output" : "/actions/input/in/moveleft"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "sub_mode" : "click"
+               },
+               "path" : "/user/hand/left/input/trackpad"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/toggleflashlight"
+                  }
+               },
+               "mode" : "toggle_button",
+               "path" : "/user/hand/left/input/application_menu"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/reloadweapon"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/application_menu"
+            }
+         ]
       }
    },
+   "category" : "steamvr_input",
    "controller_type" : "vive_controller",
-   "description" : "Half-Life: VR - Default input configuration for Vive Controller",
-   "name" : "Half-Life: VR - Default input configuration for Vive Controller",
+   "name" : "Half-Life: VR Default Vive Binds",
+   "description" : "Default Vive controller binds for Half-Life: VR, made by HanSoSlow.",
    "options" : {},
    "simulated_actions" : []
 }
