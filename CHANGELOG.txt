@@ -1,5 +1,6 @@
 0.6.30-beta -
  Mod:
+  * First Release on Steam
   * Fixed skybox in VR menu
   * Fixed audio left and right being switched when using FMOD
   * Fixed wall collision and other visual bugs in roomscale VR if playerturn is disabled
@@ -10,6 +11,7 @@
   * Fixed soda cans not being drinkable
   * Added feature that smoothes movement when walking up stairs (might be buggy, enable at own risk)
   * Restored default walk speed and legacy ladder climb speed to pancake defaults
+  * Added default binds for Vive, Index, Oculus Touch, and WMR
 
  HLVRConfig:
   * Added game window size to launcher config
