@@ -62,7 +62,7 @@ a.lambda1vrbox
 
 div.content
 {
-  margin-bottom: 130px;
+  padding-bottom: 130px;
   padding-top: 30px;
   text-align: center;
 }
@@ -125,7 +125,8 @@ div.button_overlay
 
 img.button_icon
 {
-  height: 50px;
+  max-height: 50px;
+  max-width: 50px;
 }
 
 div.button_text
@@ -146,6 +147,11 @@ a.button3
 a.button6
 {
   width: 10%;
+}
+
+a.button50
+{
+  line-height: 50px;
 }
 
 div.faq
