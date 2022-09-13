@@ -14,6 +14,7 @@
 #include "VRCommon.h"
 #include "VRRenderer.h"
 #include "VRHelper.h"
+#include "VRTextureHelper.h"
 
 #include "IGameConsole.h"
 
@@ -37,6 +38,14 @@ namespace
 		}
 		return gGameConsole && gGameConsole->IsConsoleVisible();
 	}
+
+	unsigned int GetVRMenuTextureHandle()
+	{
+		//return gVRRenderer.GetHelper()->GetVRGLMenuTexture();
+		//return gVRRenderer.GetHelper()->GetVRGLCEGUITexture();
+		return VRTextureHelper::Instance().GetTexture("vr_menu_placeholder.png");
+	}
+
 }  // namespace
 
 void VRInput::CreateHLMenu()
@@ -56,7 +65,7 @@ void VRInput::CreateHLMenu()
 	vr::Texture_t texture;
 	texture.eColorSpace = vr::ColorSpace_Gamma;
 	texture.eType = vr::TextureType_OpenGL;
-	texture.handle = reinterpret_cast<void*>(gVRRenderer.GetHelper()->GetVRGLMenuTexture());// GetVRGLCEGUITexture());
+	texture.handle = reinterpret_cast<void*>(GetVRMenuTextureHandle());
 	error = vr::VROverlay()->SetOverlayTexture(m_hlMenu, &texture);
 	if (error != vr::VROverlayError_None)
 	{
@@ -166,7 +175,7 @@ void VRInput::ShowHLMenu()
 	vr::Texture_t texture;
 	texture.eColorSpace = vr::ColorSpace_Auto;
 	texture.eType = vr::TextureType_OpenGL;
-	texture.handle = reinterpret_cast<void*>(gVRRenderer.GetHelper()->GetVRGLMenuTexture());// GetVRGLCEGUITexture());
+	texture.handle = reinterpret_cast<void*>(GetVRMenuTextureHandle());
 	error = vr::VROverlay()->SetOverlayTexture(m_hlMenu, &texture);
 	if (error != vr::VROverlayError_None)
 	{

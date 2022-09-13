@@ -1883,7 +1883,7 @@ bool CBasePlayer::IsUsableTrackTrain(CBaseEntity* pTrain)
 		&& !IsTrashCompactor(pTrain);
 }
 
-void CBasePlayer::PreThink(void)
+void CBasePlayer::PreThink()
 {
 	// gets reset by ClientPrecache everytime new map is loaded (new game, changelevel, load save)
 	if (g_vrNeedRecheckForSpecialEntities)
@@ -3322,6 +3322,17 @@ int CBasePlayer::Restore(CRestore& restore)
 	vr_IsJustRestored = true;
 	vr_hasSentRestoreYawMsgToClient = false;
 	vr_hasSentSpawnYawToClient = false;
+
+	// ugly but easy hack to ensure damage visuals don't disturb the end scene with gman
+	// if player health is very low
+	if (pev->health < 100)
+	{
+		std::string mapname = STRING(INDEXENT(0)->v.model);
+		if (mapname == std::string{ "maps/c5a1.bsp" })
+		{
+			pev->health = 100;
+		}
+	}
 
 	return status ? 1 : 0;
 }

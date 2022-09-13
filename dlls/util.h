@@ -33,8 +33,6 @@ void* GET_MODEL_PTR(edict_t* pent);
 constexpr const int VR_DEFAULT_VIEW_DIST_TO_WALLS = 5;
 constexpr const char* VR_DEFAULT_VIEW_DIST_TO_WALLS_AS_STRING = "5";  // for cvar
 
-inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, entvars_t* ent);  // implementation later in this file
-
 constexpr const float EPSILON = 0.000001f;
 constexpr const float EPSILON_D = 0.000001;
 
@@ -146,13 +144,6 @@ BOOL FWorldEnt(const edict_t* pent);
 BOOL FWorldEnt(entvars_t* pev);
 
 
-
-
-
-inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, entvars_t* ent)
-{
-	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ENT(ent));
-}
 
 // Testing strings for nullity
 #define iStringNull 0
