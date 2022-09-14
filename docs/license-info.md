@@ -1,6 +1,6 @@
-# Half-Life: VR
+# <img src="../art/game_icon.png" alt="HLVR Game Icon" width="50"/> Half-Life: VR
 
-<img src="art/game_icon.png" alt="HLVR Game Icon" width="50"/> A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
+A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 
 ---
 
@@ -12,7 +12,7 @@
 
 Copyright (c) 2017-2022 Max Vollmer (if not otherwise stated)
 
-Half-Life: VR team consists of Max Vollmer, Formic.Sapien, Rorin, DoomMarine23, and Junt.
+Half-Life: VR is made by Max Vollmer with help from Formic.Sapien, Rorin, DoomMarine23, and Junt.
 
 Based on the Half-Life SDK by Valve Corporation. The Valve SDK LICENSE applies. Not affiliated with Valve. All rights reserved.
 

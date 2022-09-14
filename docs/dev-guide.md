@@ -1,6 +1,6 @@
-# Half-Life: VR
+# <img src="../art/game_icon.png" alt="HLVR Game Icon" width="50"/> Half-Life: VR
 
-<img src="art/game_icon.png" alt="HLVR Game Icon" width="50"/> A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
+A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 
 ---
 
