@@ -770,7 +770,29 @@ void CFuncRotating::RotatingUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 			SetThink(&CFuncRotating::SpinUp);
 			EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, STRING(pev->noiseRunning), 0.01, m_flAttenuation, 0, FANPITCHMIN);
 
-			pev->nextthink = pev->ltime + 0.1;
+
+			// Check if this is the big fan in Blast Pit.
+			// In VR it's impossible for players to get up quickly enough before it spins up,
+			// so we delay things here and make it non-solid if players chose that option.
+			if (FStrEq(STRING(pev->target), "silofan") && FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a4e.bsp"))
+			{
+				float delay = CVAR_GET_FLOAT("vr_blastpit_fan_delay");
+				if (delay <= 0.f)
+					delay = 0.f;
+
+				pev->nextthink = pev->ltime + delay + 0.1f;
+
+				if (CVAR_GET_FLOAT("vr_blastpit_fan_nonsolid") != 0.f)
+				{
+					pev->solid = SOLID_NOT;
+					pev->skin = CONTENTS_EMPTY;
+					pev->movetype = MOVETYPE_PUSH;
+				}
+			}
+			else
+			{
+				pev->nextthink = pev->ltime + 0.1f;
+			}
 		}
 	}
 	else if (!FBitSet(pev->spawnflags, SF_BRUSH_ACCDCC))  //this is a normal start/stop brush.

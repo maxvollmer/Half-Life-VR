@@ -43,11 +43,14 @@ namespace HLVRConfig.Utilities.Settings
             new I18N.I18NString("InputSettings.MovementSpeed", "Movement Speed"));
 
         public static readonly SettingCategory CategoryAttachments = new SettingCategory(
-            new I18N.I18NString("InputSettings.Attachments", "Attachments")); 
+            new I18N.I18NString("InputSettings.Attachments", "Attachments"));
 
 
         public static readonly SettingCategory CategoryGeneralImmersion = new SettingCategory(
             new I18N.I18NString("ImmersionSettings.General", "General"));
+
+        public static readonly SettingCategory CategoryCompatibility = new SettingCategory(
+            new I18N.I18NString("ImmersionSettings.Compatibility", "VR Compatibility"));
 
         public static readonly SettingCategory CategoryLadders = new SettingCategory(
             new I18N.I18NString("ImmersionSettings.Ladders", "Ladders"));
@@ -57,6 +60,9 @@ namespace HLVRConfig.Utilities.Settings
 
         public static readonly SettingCategory CategoryMountedGuns = new SettingCategory(
             new I18N.I18NString("ImmersionSettings.MountedGuns", "Mounted guns"));
+
+        public static readonly SettingCategory CategoryNPCs = new SettingCategory(
+            new I18N.I18NString("ImmersionSettings.NPCs", "NPCs"));
 
 
         public static readonly SettingCategory CategoryRenderer = new SettingCategory(
@@ -100,8 +106,8 @@ namespace HLVRConfig.Utilities.Settings
         public static readonly SettingCategory CategoryIndividualWeaponScaling = new SettingCategory(
             new I18N.I18NString("OtherSettings.IndividualWeaponScaling", "Individual weapon scaling"));
 
-        public static readonly SettingCategory CategoryOther = new SettingCategory(
-            new I18N.I18NString("OtherSettings.Other", "Other"));
+        public static readonly SettingCategory CategoryClassicMode = new SettingCategory(
+            new I18N.I18NString("OtherSettings.ClassicMode", "Classic Mode"));
 
 
 
@@ -165,7 +171,14 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_use_animated_weapons", Setting.Create( new I18N.I18NString("vr_use_animated_weapons", "Use weapon models with animated movement (affects aiming)"), false ) },
                 { "vr_make_levers_nonsolid", Setting.Create( new I18N.I18NString("vr_make_levers_nonsolid", "Make levers non-solid (fixes some collision issues)"), true ) },
                 { "vr_headset_offset", Setting.Create( new I18N.I18NString("vr_headset_offset", "HMD height offset"), SettingType.DISTANCE, "0" ) },
-           } },
+            } },
+
+            { CategoryCompatibility, new OrderedDictionary<string, Setting>() {
+                { "vr_force_introtrainride", Setting.Create( new I18N.I18NString("vr_force_introtrainride", "Enable hacky fix for issues with intro train ride"), true ) },
+                { "vr_blastpit_fan_nonsolid", Setting.Create( new I18N.I18NString("vr_blastpit_fan_nonsolid", "Make Blast Pit fan non-solid"), true) },
+                { "vr_blastpit_fan_delay", Setting.Create( new I18N.I18NString("vr_blastpit_fan_delay", "Extra delay (in seconds) for Blast Pit fan to spin up"), SettingType.FACTOR, "1" ) },
+                { "vr_view_dist_to_walls", Setting.Create( new I18N.I18NString("vr_view_dist_to_walls", "Minimum view distance to walls"), SettingType.DISTANCE, "5" ) },
+            } },
 
             { CategoryLadders, new OrderedDictionary<string, Setting>() {
                 { "vr_ladder_immersive_movement_enabled", Setting.Create( new I18N.I18NString("vr_ladder_immersive_movement_enabled", "Enabled immersive climbing of ladders"), true ) },
@@ -190,6 +203,10 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_tankcontrols_instant_turn", Setting.Create( new I18N.I18NString("vr_tankcontrols_instant_turn", "Enable instant-turn (if off, guns turn with a predefined speed, lagging behind your hands)"), false, new SettingDependency("vr_tankcontrols", "0", SettingDependency.MatchMode.MUST_NOT_MATCH) ) },
                 { "vr_make_mountedguns_nonsolid", Setting.Create( new I18N.I18NString("vr_make_mountedguns_nonsolid", "Make mounted guns non-solid (fixes some collision issues)"), true ) },
                 { "vr_legacy_tankcontrols_enabled", Setting.Create( new I18N.I18NString("vr_legacy_tankcontrols_enabled", "Enable control of usable guns with 'LegacyUse'."), false ) },
+            } },
+
+            { CategoryNPCs, new OrderedDictionary<string, Setting>() {
+                { "vr_npc_gunpoint", Setting.Create( new I18N.I18NString("vr_npc_gunpoint", "NPCs at gunpoint"), new OrderedDictionary<string, I18N.I18NString>(){ { "0", new I18N.I18NString("vr_npc_gunpoint.Disabled", "Disabled") }, { "1", new I18N.I18NString("vr_npc_gunpoint.React", "React, but don't get angry") }, { "2", new I18N.I18NString("vr_npc_gunpoint.ReactGetAngry", "React and get angry") } }, "1" ) },
             } },
         };
 
@@ -277,6 +294,10 @@ namespace HLVRConfig.Utilities.Settings
 
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> OtherSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
         {
+            { CategoryClassicMode, new OrderedDictionary<string, Setting>() {
+                { "vr_classic_mode", Setting.Create( new I18N.I18NString("vr_classic_mode", "Enable Classic mode (unchanged vanilla 1998 models and textures, overrides HD graphics settings)"), false ) },
+            } },
+
             { CategoryAdvancedHUD, new OrderedDictionary<string, Setting>() {
                 { "vr_hud_size", Setting.Create( new I18N.I18NString("vr_hud_size", "HUD scale"), SettingType.FACTOR, "1" ) },
                 { "vr_hud_textscale", Setting.Create( new I18N.I18NString("vr_hud_textscale", "HUD text scale"), SettingType.FACTOR, "1" ) },
@@ -314,13 +335,6 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_satchel_scale", Setting.Create( new I18N.I18NString("vr_satchel_scale", "Satchel scale"), SettingType.FACTOR, "1" ) },
                 { "vr_satchel_radio_scale", Setting.Create( new I18N.I18NString("vr_satchel_radio_scale", "Satchel radio scale"), SettingType.FACTOR, "1" ) },
                 { "vr_squeak_scale", Setting.Create( new I18N.I18NString("vr_squeak_scale", "Snark scale"), SettingType.FACTOR, "1" ) },
-            } },
-
-            { CategoryOther, new OrderedDictionary<string, Setting>() {
-                { "vr_force_introtrainride", Setting.Create( new I18N.I18NString("vr_force_introtrainride", "Enable hacky fix for issues with intro train ride"), true ) },
-                { "vr_view_dist_to_walls", Setting.Create( new I18N.I18NString("vr_view_dist_to_walls", "Minimum view distance to walls"), SettingType.DISTANCE, "5" ) },
-                { "vr_classic_mode", Setting.Create( new I18N.I18NString("vr_classic_mode", "Classic mode (unchanged vanilla 1998 models and textures, overrides HD graphics settings)"), false ) },
-                { "vr_npc_gunpoint", Setting.Create( new I18N.I18NString("vr_npc_gunpoint", "NPCs at gunpoint"), new OrderedDictionary<string, I18N.I18NString>(){ { "0", new I18N.I18NString("vr_npc_gunpoint.Disabled", "Disabled") }, { "1", new I18N.I18NString("vr_npc_gunpoint.React", "React, but don't get angry") }, { "2", new I18N.I18NString("vr_npc_gunpoint.ReactGetAngry", "React and get angry") } }, "1" ) },
             } },
         };
 

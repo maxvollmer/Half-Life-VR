@@ -127,6 +127,8 @@ void VRSettings::Init()
 	RegisterCVAR("vr_eye_mode", "0");
 	RegisterCVAR("vr_breakable_gib_percentage", "100");
 	RegisterCVAR("vr_breakable_max_gibs", "50");
+	RegisterCVAR("vr_blastpit_fan_nonsolid", "1");
+	RegisterCVAR("vr_blastpit_fan_delay", "1");
 
 	RegisterCVAR("vr_use_fmod", "1");
 	RegisterCVAR("vr_fmod_3d_occlusion", "1");
