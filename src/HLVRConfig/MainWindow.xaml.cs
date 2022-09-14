@@ -19,6 +19,11 @@ using HLVRConfig.Utilities.Settings;
 using HLVRConfig.Utilities.UI.Config;
 using HLVRConfig.Utilities.Process;
 using HLVRConfig.Utilities.CustomActions;
+using MarkdownSharp;
+using HTMLConverter;
+using System.Windows.Markup;
+using System.Diagnostics;
+using System.Windows.Navigation;
 
 namespace HLVRConfig
 {
@@ -62,18 +67,44 @@ namespace HLVRConfig
             }
         }
 
+        private static void OpenReadmeURL(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
+        }
+
+        private static IEnumerable<DependencyObject> CollectChildrenRecursive(DependencyObject root)
+        {
+            foreach (var child in LogicalTreeHelper.GetChildren(root).OfType<DependencyObject>())
+            {
+                yield return child;
+                foreach (var childchild in CollectChildrenRecursive(child))
+                {
+                    yield return childchild;
+                }
+            }
+        }
+
         private void LoadReadme()
         {
-            AboutText.Inlines.Clear();
+            AboutTextBox.Document = new FlowDocument();
             try
             {
-                AboutText.Inlines.Add(File.ReadAllText(HLVRPaths.VRReadme, new UTF8Encoding(false)));
+                string aboutHTML = new Markdown().Transform(File.ReadAllText(HLVRPaths.VRReadme, new UTF8Encoding(false)));
+                var aboutXaml = HtmlToXamlConverter.ConvertHtmlToXaml(aboutHTML, true);
+                var flowDocument = XamlReader.Parse(aboutXaml) as FlowDocument;
+                foreach (var hyperLink in CollectChildrenRecursive(flowDocument).OfType<Hyperlink>())
+                {
+                    hyperLink.RequestNavigate += OpenReadmeURL;
+                }
+                AboutTextBox.Document = flowDocument;
             }
             catch (IOException e)
             {
-                AboutText.Inlines.Clear();
-                var errorMsg = new I18N.I18NString("ErrorMsgCouldNotLoadReadme", "Couldn't load README.txt: %s");
-                AboutText.Inlines.Add(new Regex(Regex.Escape("%s")).Replace(I18N.Get(errorMsg), e.Message, 1));
+                var errorMsg = new I18N.I18NString("ErrorMsgCouldNotLoadReadme", "Couldn't load README.md: %s");
+                var errorParagraph = new Paragraph();
+                errorParagraph.Inlines.Add(new Regex(Regex.Escape("%s")).Replace(I18N.Get(errorMsg), e.Message, 1));
+                AboutTextBox.Document = new FlowDocument(errorParagraph);
             }
         }
 

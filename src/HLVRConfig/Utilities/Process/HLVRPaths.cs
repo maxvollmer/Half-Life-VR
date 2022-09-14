@@ -52,7 +52,7 @@ namespace HLVRConfig.Utilities.Process
 
         public static string VRModSettingsFileName { get { return "hlvr.cfg"; } }
         public static string VRModSettingsFile { get { return Path.Combine(HLVRPaths.HLVRDirectory, VRModSettingsFileName); } }
-        public static string VRReadme { get { return Path.Combine(HLVRPaths.HLVRDirectory, "README.txt"); } }
+        public static string VRReadme { get { return Path.Combine(HLVRPaths.HLVRDirectory, "README.md"); } }
         public static string VRLogFile { get { return Path.Combine(HLVRPaths.HLVRDirectory, "hlvr_log.txt"); } }
 
         public static string VRActionsManifest { get { return Path.Combine(HLVRPaths.ValveDirectory, "actions", "actions.manifest"); } }

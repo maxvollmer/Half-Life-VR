@@ -40,6 +40,12 @@
     <ApplicationIcon>HLVRConfig.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HtmlToXamlConverter, Version=1.0.5727.24510, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlToXamlConverter.1.0.5727.24510\lib\net45\HtmlToXamlConverter.dll</HintPath>
+    </Reference>
+    <Reference Include="MarkdownSharp, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MarkdownSharp.2.0.5\lib\net40\MarkdownSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Experimental.Collections, Version=1.0.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Experimental.Collections.1.0.6-e190117-3\lib\netstandard2.0\Microsoft.Experimental.Collections.dll</HintPath>
     </Reference>
@@ -47,6 +53,7 @@
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />

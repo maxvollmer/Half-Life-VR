@@ -83,6 +83,16 @@ https://www.newtonsoft.com/json
 Copyright (c) James Newton-King 2008  
 
 ---
+This mod uses HtmlToXamlConverter  
+https://www.nuget.org/packages/HtmlToXamlConverter  
+Copyright (c) 2015 Microsoft Corporation  
+
+---
+This mod uses MarkdownSharp  
+https://github.com/StackExchange/MarkdownSharp  
+Copyright (c) 2018 Stack Exchange  
+
+---
 This mod uses FMOD Core API  
 https://fmod.com/resources/documentation-api?version=2.0&page=core-api.html  
 Copyright (c), Firelight Technologies Pty, Ltd. 2004-2019.  
@@ -104,3 +114,4 @@ This mod uses CEGUI 0.8.7
 http://cegui.org.uk/  
 Copyright (c) 2004 - 2014 Paul D Turner & The CEGUI Development Team  
 NOTE: CEGUI uses several additional third parties listed in the licenses subfolder!  
+

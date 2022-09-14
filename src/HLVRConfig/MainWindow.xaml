@@ -141,7 +141,7 @@
             </controls:I18NTabItem>
             <controls:I18NTabItem Key="GUI.Tab.About" DefaultValue="About">
                 <DockPanel>
-                    <RichTextBox Background="Transparent" BorderThickness="1" Padding="5" Margin="10" DockPanel.Dock="Bottom" IsReadOnly="True"
+                    <RichTextBox x:Name="AboutTextBox" Background="Transparent" BorderThickness="1" Padding="5" Margin="10" DockPanel.Dock="Bottom" IsReadOnly="True" IsDocumentEnabled="True"
                                  ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
                         <FlowDocument PageWidth="999999">
                             <Paragraph FontSize="14" FontFamily="Courier New" x:Name="AboutText"></Paragraph>

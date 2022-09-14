@@ -72,9 +72,11 @@ Half-Life: VR is a heavily modified version of Half-Life. If you don't have Half
       - [EasyHook32.dll](../src/cl_dll/EasyHook/bin/EasyHook32.dll)
       - [fmod.dll](../src/cl_dll/fmod/lib/x86/fmod.dll)
       - [fmodL.dll](../src/cl_dll/fmod/lib/x86/fmodL.dll)
-    - HLVRConfig dependencies (please check for these in your respective [packages](src/packages) folder:
+    - HLVRConfig NuGet dependencies (you can find these in your NuGet packages folder after installing the packages):
       - Microsoft.Experimental.Collections.dll
       - Newtonsoft.Json.dll
+      - MarkdownSharp.dll
+      - HtmlToXamlConverter.dll
 
 5. Now follow the [Build The Mod](#build-the-mod) instructions above to build `client.dll`, `hl.dll`, and `HLVRConfig.exe`.
 
