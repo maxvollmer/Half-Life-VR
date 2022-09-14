@@ -29,8 +29,8 @@ If the installer doesn't work, you can manually install the mod [using the zip f
 2. Extract the zip file anywhere you want.
 
 3. Copy the `vr` folder into your `Half-Life` folder.
-  - Make sure the resulting folder structure looks like this:
-    `Path/To/SteamLibrary/steamapps/common/Half-Life/vr/HLVRConfig.exe`
+    - Make sure the resulting folder structure looks like this:  
+      `Path/To/SteamLibrary/steamapps/common/Half-Life/vr/HLVRConfig.exe`
 
 4. Restart Steam
 
@@ -50,7 +50,7 @@ No matter how you installed the mod, after restarting Steam, you will find `Half
 - Run `Half-Life/vr/HLVRConfig.exe` to modify any of the many settings.
 
 - Alternatively, you can manually edit the `Half-Life/vr/hlvr.cfg` file.
-  - Note that this file won't exist until you have run the mod at least once.
+   - Note that this file won't exist until you have run the mod at least once.
 
 ---
 #### How to Setup or Edit SteamVR bindings
