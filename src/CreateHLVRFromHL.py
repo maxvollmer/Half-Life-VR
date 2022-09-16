@@ -14,30 +14,16 @@
 import sys, getopt, os, shutil, pathlib
 
 dlls_to_copy = [
+"cl_dll/openvr/openvr_api.dll",
+
+"cl_dll/EasyHook/bin/EasyHook32.dll",
+"cl_dll/fmod/lib/x86/fmod.dll",
+"cl_dll/fmod/lib/x86/fmodL.dll",
+
 "packages/Microsoft.Experimental.Collections.1.0.6-e190117-3/lib/netstandard2.0/Microsoft.Experimental.Collections.dll",
 "packages/MarkdownSharp.2.0.5/lib/net40/MarkdownSharp.dll",
 "packages/Newtonsoft.Json.13.0.1/lib/net45/Newtonsoft.Json.dll",
-"packages/HtmlToXamlConverter.1.0.5727.24510/lib/net45/HtmlToXamlConverter.dll",
-
-"cegui/bin/CEGUIBase-0.dll",
-"cegui/bin/CEGUICommonDialogs-0.dll",
-"cegui/bin/CEGUICoreWindowRendererSet.dll",
-"cegui/bin/CEGUIExpatParser.dll",
-"cegui/bin/CEGUIOpenGLRenderer-0.dll",
-"cegui/bin/CEGUISILLYImageCodec.dll",
-"cegui/bin/freetype.dll",
-"cegui/bin/glew.dll",
-"cegui/bin/glfw.dll",
-"cegui/bin/jpeg.dll",
-"cegui/bin/libpng.dll",
-"cegui/bin/pcre.dll",
-"cegui/bin/SILLY.dll",
-"cegui/bin/zlib.dll",
-
-"cl_dll/openvr/openvr_api.dll",
-"cl_dll/EasyHook/bin/EasyHook32.dll",
-"cl_dll/fmod/lib/x86/fmod.dll",
-"cl_dll/fmod/lib/x86/fmodL.dll"
+"packages/HtmlToXamlConverter.1.0.5727.24510/lib/net45/HtmlToXamlConverter.dll"
 ]
 
 folders_to_copy = [
@@ -116,6 +102,7 @@ def main(argv):
         print('Removing obsolete folder "valve_hd".')
         shutil.rmtree(os.path.join(hlvrpath, 'valve_hd'))
 
+    shutil.copy(os.path.join(script_location, '../game/README.md'), hlvrpath)
     shutil.copy(os.path.join(script_location, '../art/game_icon.ico'), os.path.join(hlvrpath, 'valve', 'game.ico'))
 
     print('All done! New Half-Life: VR folder created at "'+hlvrpath+'". NOTE: You still need to build client.dll, hl.dll, and HLVRConfig.exe for the mod to work.')

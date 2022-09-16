@@ -106,7 +106,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Debug\client.dll</OutputFile>
       <ImportLibrary>.\Debug\client.lib</ImportLibrary>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;fmod/lib/x86/fmodL_vc.lib;EasyHook/lib/EasyHook32.lib;../cegui/lib/CEGUIBase-0_d.lib;../cegui/lib/CEGUIOpenGLRenderer-0_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;fmod/lib/x86/fmodL_vc.lib;EasyHook/lib/EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
@@ -157,7 +157,7 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\client.dll</OutputFile>
       <ImportLibrary>.\Release\client.lib</ImportLibrary>
-      <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;fmod/lib/x86/fmod_vc.lib;EasyHook/lib/EasyHook32.lib;../cegui/lib/CEGUIBase-0.lib;../cegui/lib/CEGUIOpenGLRenderer-0.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;../utils/vgui/lib/win32_vc6/vgui.lib;wsock32.lib;openvr/openvr_api.lib;opengl32.lib;fmod/lib/x86/fmod_vc.lib;EasyHook/lib/EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
@@ -256,10 +256,10 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
     <ClCompile Include="vgui_TeamFortressViewport.cpp" />
     <ClCompile Include="vgui_teammenu.cpp" />
     <ClCompile Include="view.cpp" />
-    <ClCompile Include="VRCEGUIWrapper.cpp" />
     <ClCompile Include="VRClientDLLUnloadHandler.cpp" />
     <ClCompile Include="VRDebugPhysicsRenderer.cpp" />
     <ClCompile Include="VREngineRandomInterceptor.cpp" />
+    <ClCompile Include="VRGUIRenderer.cpp" />
     <ClCompile Include="VRHUDRenderer.cpp" />
     <ClCompile Include="VRInputHLMenu.cpp" />
     <ClCompile Include="VRInputHLWindow.cpp" />
@@ -332,9 +332,9 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
     <ClInclude Include="vgui_SpectatorPanel.h" />
     <ClInclude Include="vgui_TeamFortressViewport.h" />
     <ClInclude Include="view.h" />
-    <ClInclude Include="VRCEGUIWrapper.h" />
     <ClInclude Include="VRCommon.h" />
     <ClInclude Include="VREngineRandomInterceptor.h" />
+    <ClInclude Include="VRGUIRenderer.h" />
     <ClInclude Include="VRInputAction.h" />
     <ClInclude Include="VRInputHandlers.h" />
     <ClInclude Include="VROpenGLInterceptor.h" />

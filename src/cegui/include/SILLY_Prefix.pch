@@ -1,5 +1,0 @@
-//
-// Prefix header for all source files of the 'SILLY' target in the 'SILLY' project.
-//
-
-#include <Carbon/Carbon.h>

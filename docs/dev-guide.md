@@ -10,6 +10,13 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 
 ### Developer Guide
 
+#### Contributing
+
+Help with code is always very welcome.
+
+Before you dive into the code to tackle a bug or implement a feature, please join my Discord Server [Max Makes Mods](https://discord.gg/jujwEGf62K) and talk to me, so we won't accidentally work on the same issue in parallel.
+
+---
 #### Prerequisites
 
 - Visual Studio 2022
@@ -32,7 +39,7 @@ All source code lives in [src](../src).
 
 2. Open [HLVR.sln](../src/HLVR.sln) with Visual Studio.
 
-3. To build `HLVRConfig` you need to ensure all NuGet packages are installed. Please refer to NuGet documentation if you don't know how.
+3. To build `HLVRConfig` you need to ensure all NuGet packages are installed. Please refer to [NuGet documentation](https://docs.microsoft.com/en-us/nuget/) if you don't know how.
 
 4. After building the game DLLs, Visual Studio runs `DLLIncludeFixer.py`. For this you need Python. Without this script, Half-Life: VR will use the wrong Steam API DLL and the game will crash.
 
@@ -68,21 +75,6 @@ If you don't have Half-Life: VR installed, e.g. if you are following this guide 
     - If you are prompted, confirm to override any files.
 
 4. Copy third-party libraries directly into `Half-Life VR`:
-    - CEGUI and dependencies:
-      - [CEGUIBase-0.dll](../src/cegui/bin/CEGUIBase-0.dll)
-      - [CEGUICommonDialogs-0.dll](../src/cegui/bin/CEGUICommonDialogs-0.dll)
-      - [CEGUICoreWindowRendererSet.dll](../src/cegui/bin/CEGUICoreWindowRendererSet.dll)
-      - [CEGUIExpatParser.dll](../src/cegui/bin/CEGUIExpatParser.dll)
-      - [CEGUIOpenGLRenderer-0.dll](../src/cegui/bin/CEGUIOpenGLRenderer-0.dll)
-      - [CEGUISILLYImageCodec.dll](../src/cegui/bin/CEGUISILLYImageCodec.dll)
-      - [freetype.dll](../src/cegui/bin/freetype.dll)
-      - [glew.dll](../src/cegui/bin/glew.dll)
-      - [glfw.dll](../src/cegui/bin/glfw.dll)
-      - [jpeg.dll](../src/cegui/bin/jpeg.dll)
-      - [libpng.dll](../src/cegui/bin/libpng.dll)
-      - [pcre.dll](../src/cegui/bin/pcre.dll)
-      - [SILLY.dll](../src/cegui/bin/SILLY.dll)
-      - [zlib.dll](../src/cegui/bin/zlib.dll)
     - OpenVR (SteamVR):
       - [openvr_api.dll](../src/cl_dll/openvr/openvr_api.dll)
     - Client DLLS for 3D Sound:

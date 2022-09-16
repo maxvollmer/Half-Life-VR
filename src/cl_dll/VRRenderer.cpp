@@ -4,8 +4,8 @@
 #include <string>
 #include <regex>
 
-#include "VRCEGUIWrapper.h"
 #include "VRTextureHelper.h"
+#include "VRGUIRenderer.h"
 
 #include "Matrices.h"
 
@@ -97,8 +97,6 @@ VRRenderer::~VRRenderer()
 {
 	delete vrHelper;
 	vrHelper = nullptr;
-
-	VRCEGUIWrapper::DestroyCEGUI();
 }
 
 void VRRenderer::Init()
@@ -107,8 +105,6 @@ void VRRenderer::Init()
 
 	extern void InstallModExtraDataCacheHook();
 	InstallModExtraDataCacheHook();
-
-	VRCEGUIWrapper::InitCEGUI();
 }
 
 void VRRenderer::VidInit()
@@ -198,7 +194,7 @@ void VRRenderer::Frame(double frametime)
 	glDisable(GL_DEPTH_TEST);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	VRCEGUIWrapper::DoTheThing();
+	VRGUIRenderer::RenderGUI();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glPopAttrib();

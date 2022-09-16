@@ -391,7 +391,7 @@
     <ClCompile Include="VREngineRandomInterceptor.cpp">
       <Filter>VR\helpers\random</Filter>
     </ClCompile>
-    <ClCompile Include="VRCEGUIWrapper.cpp">
+    <ClCompile Include="VRGUIRenderer.cpp">
       <Filter>VR\renderer</Filter>
     </ClCompile>
   </ItemGroup>
@@ -591,7 +591,7 @@
     <ClInclude Include="DoOnDestruct.h">
       <Filter>VR\stuff</Filter>
     </ClInclude>
-    <ClInclude Include="VRCEGUIWrapper.h">
+    <ClInclude Include="VRGUIRenderer.h">
       <Filter>VR\renderer</Filter>
     </ClInclude>
   </ItemGroup>
