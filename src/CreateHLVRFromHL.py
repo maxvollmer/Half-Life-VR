@@ -2,10 +2,10 @@
 
 # This script creates a new Half-Life: VR directory from a vanilla Half-Life installation.
 # Must be run from the 'src' directory within a freshly (and completely) cloned Half-Life: VR repository (https://github.com/maxvollmer/Half-Life-VR).
-# Run like so: CreateHLVRFromHL.py -h <hlpath>
+# Run like so: python CreateHLVRFromHL.py -h <hlpath>
 # where <hlpath> is the full path to your Half-Life installation.
 # NOTE: This just prepares the folder.
-# NOTE: You still need to build client.dll, hl.dll, and HLVRConfig.exe for the mod do actually work.
+# NOTE: You still need to build client.dll, hl.dll, and HLVRConfig.exe for the mod to actually work.
 
 # THIS SCRIPT IS FOR DEVELOPERS WHO WANT TO BUILD THE MOD
 # IT IS NOT INTENDED FOR PLAYERS
@@ -86,22 +86,29 @@ def main(argv):
         print('Error: "' + hlvrpath + '" already exists, aborting.')
         sys.exit(2)
 
-    print('Creating Half-Life: VR folder at "' + hlvrpath + '" from Half-Life folder at "' + hlpath + '". Please wait, this can take a while.')
 
+    # copy Half-Life
+    print('Creating Half-Life: VR folder at "' + hlvrpath + '" from Half-Life folder at "' + hlpath + '". Please wait, this can take a while.')
     shutil.copytree(hlpath, hlvrpath)
 
+    # copy dlls to game folder
     for dll in dlls_to_copy:
         print('Copying "'+os.path.join(script_location, dll)+'".')
         shutil.copy(os.path.join(script_location, dll), hlvrpath)
 
+    # copy folders to valve/
     for folder in folders_to_copy:
         print('Copying "'+os.path.join(script_location, folder)+'" to "'+os.path.join(hlvrpath, 'valve', os.path.basename(folder))+'".')
         shutil.copytree(os.path.join(script_location, folder), os.path.join(hlvrpath, 'valve', os.path.basename(folder)), dirs_exist_ok=True)
 
+    # delete obsolete valve_hd folder (HD models are handled differently in HL:VR)
     if os.path.exists(os.path.join(hlvrpath, 'valve_hd')):
         print('Removing obsolete folder "valve_hd".')
         shutil.rmtree(os.path.join(hlvrpath, 'valve_hd'))
 
+    # additional stuff
+    print('Copying licenses, readme, and game icon.')
+    shutil.copytree(os.path.join(script_location, '../docs/licenses'), os.path.join(hlvrpath, 'licenses'), dirs_exist_ok=True)
     shutil.copy(os.path.join(script_location, '../game/README.md'), hlvrpath)
     shutil.copy(os.path.join(script_location, '../art/game_icon.ico'), os.path.join(hlvrpath, 'valve', 'game.ico'))
 

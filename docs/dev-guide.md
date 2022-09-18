@@ -16,6 +16,8 @@ Help with code is always very welcome.
 
 Before you dive into the code to tackle a bug or implement a feature, please join my Discord Server [Max Makes Mods](https://discord.gg/jujwEGf62K) and talk to me, so we won't accidentally work on the same issue in parallel.
 
+See [Contributing](contributing.md) for more details.
+
 ---
 #### Prerequisites
 

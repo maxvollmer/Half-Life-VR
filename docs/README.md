@@ -21,8 +21,9 @@ Play with beautiful AI upscaled textures, HD models, and a truly equal opportuni
 ---
 #### Docs
 
-- [Developer Guide](dev-guide.md)
 - [Player Guide](player-guide.md)
+- [Developer Guide](dev-guide.md)
+  - [Contributing](contributing.md)
 - [License Info](license-info.md)
 - [Release Notes](release-notes.md)
 
