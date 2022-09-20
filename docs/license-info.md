@@ -110,8 +110,6 @@ https://github.com/hzqst/MetaRenderer
 Copyright (c), LAGonauta, nagist, hzqst  
 
 ---
-This mod uses CEGUI 0.8.7  
-http://cegui.org.uk/  
-Copyright (c) 2004 - 2014 Paul D Turner & The CEGUI Development Team  
-NOTE: CEGUI uses several additional third parties listed in the licenses subfolder!  
-
+This mod uses Nuklear  
+https://github.com/Immediate-Mode-UI/Nuklear  
+Copyleft Micha Mettke  

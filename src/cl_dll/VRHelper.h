@@ -45,7 +45,7 @@ public:
 
 	unsigned int GetVRTexture(vr::EVREye eEye);
 	unsigned int GetVRGLMenuTexture();
-	unsigned int GetVRGLCEGUITexture();
+	unsigned int GetVRGLGUITexture();
 
 	int GetVRGLMenuTextureWidth() { return m_vrGLMenuTextureWidth; }
 	int GetVRGLMenuTextureHeight() { return m_vrGLMenuTextureHeight; }
@@ -126,9 +126,9 @@ private:
 	int m_vrGLMenuTextureWidth = 0;
 	int m_vrGLMenuTextureHeight = 0;
 
-	unsigned int vrGLCEGUITexture = 0;
-	int m_vrGLCEGUITextureWidth = 0;
-	int m_vrGLCEGUITextureHeight = 0;
+	unsigned int vrGLGUITexture = 0;
+	int m_vrGLGUITextureWidth = 0;
+	int m_vrGLGUITextureHeight = 0;
 
 	unsigned int vrRenderWidth = 0;
 	unsigned int vrRenderHeight = 0;
@@ -187,10 +187,12 @@ public:
 	bool HasValidLeftController() { return m_fLeftControllerValid; }
 	Vector GetLeftControllerPosition() { return m_leftControllerPosition; }
 	Vector GetLeftControllerAngles() { return m_leftControllerAngles; }
+	Vector GetLeftControllerForward() { return m_leftControllerForward; }
 
 	bool HasValidRightController() { return m_fRightControllerValid; }
 	Vector GetRightControllerPosition() { return m_rightControllerPosition; }
 	Vector GetRightControllerAngles() { return m_rightControllerAngles; }
+	Vector GetRightControllerForward() { return m_rightControllerForward; }
 
 	bool HasValidWeaponController();
 	Vector GetWeaponPosition();

@@ -96,10 +96,12 @@ public:
 	bool HasValidLeftController();
 	Vector GetLeftControllerPosition();
 	Vector GetLeftControllerAngles();
+	Vector GetLeftControllerForward();
 
 	bool HasValidRightController();
 	Vector GetRightControllerPosition();
 	Vector GetRightControllerAngles();
+	Vector GetRightControllerForward();
 
 	bool IsDeadInGame();
 	bool IsInGame();

@@ -15,6 +15,7 @@
 #include "VRRenderer.h"
 #include "VRHelper.h"
 #include "VRTextureHelper.h"
+#include "VRGUIRenderer.h"
 
 #include "IGameConsole.h"
 
@@ -42,8 +43,8 @@ namespace
 	unsigned int GetVRMenuTextureHandle()
 	{
 		//return gVRRenderer.GetHelper()->GetVRGLMenuTexture();
-		//return gVRRenderer.GetHelper()->GetVRGLCEGUITexture();
-		return VRTextureHelper::Instance().GetTexture("vr_menu_placeholder.png");
+		return gVRRenderer.GetHelper()->GetVRGLGUITexture();
+		//return VRTextureHelper::Instance().GetTexture("vr_menu_placeholder.png");
 	}
 
 }  // namespace
@@ -57,10 +58,19 @@ void VRInput::CreateHLMenu()
 		return;
 	}
 
-	// TODO: Make these cvars and handle changes
-	float width = 1.f;
-	float distance = 1.f;
-	float opacity = 0.9f;
+	int vr_menu_placement = (int)CVAR_GET_FLOAT("vr_menu_placement");
+	float scale = CVAR_GET_FLOAT("vr_menu_scale");
+	float distance = CVAR_GET_FLOAT("vr_menu_distance");
+	float opacity = CVAR_GET_FLOAT("vr_menu_opacity");
+
+	if (scale < 0.1f) scale = 0.1f;
+	if (scale > 10.f) scale = 10.f;
+
+	if (distance < -10.f) distance = -10.f;
+	if (distance > 10.f) distance = 10.f;
+
+	if (opacity < 0.1f) opacity = 0.1f;
+	if (opacity > 1.f) opacity = 1.f;
 
 	vr::Texture_t texture;
 	texture.eColorSpace = vr::ColorSpace_Gamma;
@@ -77,9 +87,29 @@ void VRInput::CreateHLMenu()
 
 	vr::VROverlay()->SetOverlayAlpha(m_hlMenu, opacity);  // no error handling, we don't care if this fails
 
-	vr::HmdMatrix34_t transform = {
-		1.f, 0.0f, 0.0f, 0.f, 0.0f, 1.f, 0.0f, 0.2f, 0.0f, 0.0f, 1.0f, -1.f };
-	error = vr::VROverlay()->SetOverlayTransformTrackedDeviceRelative(m_hlMenu, vr::k_unTrackedDeviceIndex_Hmd, &transform);
+	vr::HmdMatrix34_t transform =
+	{
+		scale, 0.0f, 0.0f, 0.f,
+		0.0f, scale, 0.0f, 0.f,
+		0.0f, 0.0f, scale, -distance
+	};
+
+	vr::TrackedDeviceIndex_t menuDeviceIndex;
+	switch (vr_menu_placement)
+	{
+	case 1:
+		menuDeviceIndex = vr::VRSystem()->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_LeftHand);
+		break;
+	case 2:
+		menuDeviceIndex = vr::VRSystem()->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
+		break;
+	case 0:
+	default:
+		menuDeviceIndex = vr::k_unTrackedDeviceIndex_Hmd;
+		break;
+	}
+
+	error = vr::VROverlay()->SetOverlayTransformTrackedDeviceRelative(m_hlMenu, menuDeviceIndex, &transform);
 	//error = vr::VROverlay()->SetOverlayTransformAbsolute(m_hlMenu, vr::TrackingUniverseStanding, &transform);
 	if (error != vr::VROverlayError_None)
 	{
@@ -102,6 +132,10 @@ void VRInput::CreateHLMenu()
 
 void VRInput::HandleHLMenuInput()
 {
+
+	// Annoyingly Valve removed support for interactive overlays in apps in 2018.
+	// Just why Valve?
+#if 0
 	vr::VREvent_t event{ 0 };
 	while (vr::VROverlay()->PollNextOverlayEvent(m_hlMenu, &event, sizeof(vr::VREvent_t)))
 	{
@@ -130,6 +164,52 @@ void VRInput::HandleHLMenuInput()
 			break;
 		}
 	}
+#endif
+
+	bool useRightController;
+	int vr_menu_placement = (int)CVAR_GET_FLOAT("vr_menu_placement");
+	switch (vr_menu_placement)
+	{
+	case 1: // left hand
+		useRightController = true;
+		break;
+	case 2: // right hand
+		useRightController = false;
+		break;
+	case 0: // hmd
+	default:
+		useRightController = CVAR_GET_FLOAT("vr_lefthand_mode") == 0.f;
+		break;
+	}
+
+	Vector position = useRightController ? gVRRenderer.GetRightControllerPosition() : gVRRenderer.GetLeftControllerPosition();
+	Vector direction = useRightController ? gVRRenderer.GetRightControllerForward() : gVRRenderer.GetLeftControllerForward();
+	bool pressed = useRightController ? g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand) : g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);
+
+	vr::VROverlayIntersectionParams_t params;
+	params.eOrigin = vr::TrackingUniverseStanding;
+	for (int i = 0; i < 3; i++)
+	{
+		params.vSource.v[i] = position[i];
+		params.vDirection.v[i] = direction[i];
+	}
+
+	VRGUIRenderer::VRControllerState uiControllerState;
+	uiControllerState.isPressed = pressed;
+
+	vr::VROverlayIntersectionResults_t results;
+	if (vr::VROverlay()->ComputeOverlayIntersection(m_hlMenu, &params, &results))
+	{
+		uiControllerState.isOverGUI = true;
+		uiControllerState.x = results.vUVs.v[0];
+		uiControllerState.y = 1.f - results.vUVs.v[1];
+	}
+	else
+	{
+		uiControllerState.isOverGUI = false;
+	}
+
+	VRGUIRenderer::Instance().UpdateControllerState(uiControllerState);
 }
 
 void VRInput::ShowHLMenu()

@@ -194,12 +194,12 @@ void VRRenderer::Frame(double frametime)
 	glDisable(GL_DEPTH_TEST);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	VRGUIRenderer::RenderGUI();
+	VRGUIRenderer::Instance().UpdateGUI(IsInGame());
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glPopAttrib();
 
-	CaptureCurrentScreenToTexture(vrHelper->GetVRGLCEGUITexture());
+	CaptureCurrentScreenToTexture(vrHelper->GetVRGLGUITexture());
 
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -927,8 +927,6 @@ void DrawMapSkyFacesIntoStencilBuffer()
 }
 
 #endif
-
-
 
 
 

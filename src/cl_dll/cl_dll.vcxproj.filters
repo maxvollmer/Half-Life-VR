@@ -394,6 +394,12 @@
     <ClCompile Include="VRGUIRenderer.cpp">
       <Filter>VR\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="VRGameFunctions.cpp">
+      <Filter>VR\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRCommon.cpp">
+      <Filter>VR\vr_shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parsemsg.h">
@@ -593,6 +599,12 @@
     </ClInclude>
     <ClInclude Include="VRGUIRenderer.h">
       <Filter>VR\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="nuklear.h">
+      <Filter>VR\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="VRGameFunctions.h">
+      <Filter>VR\helpers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

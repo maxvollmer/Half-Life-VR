@@ -109,6 +109,8 @@ namespace HLVRConfig.Utilities.Settings
         public static readonly SettingCategory CategoryClassicMode = new SettingCategory(
             new I18N.I18NString("OtherSettings.ClassicMode", "Classic Mode"));
 
+        public static readonly SettingCategory CategoryVRMenu = new SettingCategory(
+            new I18N.I18NString("OtherSettings.VRMenu", "VR Menu"));
 
 
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> InputSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
@@ -296,6 +298,14 @@ namespace HLVRConfig.Utilities.Settings
         {
             { CategoryClassicMode, new OrderedDictionary<string, Setting>() {
                 { "vr_classic_mode", Setting.Create( new I18N.I18NString("vr_classic_mode", "Enable Classic mode (unchanged vanilla 1998 models and textures, overrides HD graphics settings)"), false ) },
+            } },
+
+            { CategoryVRMenu, new OrderedDictionary<string, Setting>() {
+                { "vr_menu_placement", Setting.Create( new I18N.I18NString("vr_menu_placement", "VR Menu Placement"), new OrderedDictionary<string, I18N.I18NString>(){ { "1", new I18N.I18NString("vr_menu_placement.LeftHand", "Left Hand") }, { "2", new I18N.I18NString("vr_menu_placement.RightHand", "Right Hand)") }, { "0", new I18N.I18NString("vr_menu_placement.HMD", "HMD") } }, "1" ) },
+
+                { "vr_menu_scale", Setting.Create( new I18N.I18NString("vr_menu_scale", "VR Menu Scale"), SettingType.FACTOR, "1" ) },
+                { "vr_menu_distance", Setting.Create( new I18N.I18NString("vr_menu_distance", "VR Menu Distance"), SettingType.FACTOR, "0.2" ) },
+                { "vr_menu_opacity", Setting.Create( new I18N.I18NString("vr_menu_opacity", "VR Menu Opacity"), SettingType.FACTOR, "0.9" ) },
             } },
 
             { CategoryAdvancedHUD, new OrderedDictionary<string, Setting>() {

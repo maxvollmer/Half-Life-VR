@@ -731,17 +731,17 @@ unsigned int VRHelper::GetVRGLMenuTexture()
 	return vrGLMenuTexture;
 }
 
-unsigned int VRHelper::GetVRGLCEGUITexture()
+unsigned int VRHelper::GetVRGLGUITexture()
 {
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	if (m_vrGLCEGUITextureWidth != viewport[2] || m_vrGLCEGUITextureHeight != viewport[3])
+	if (m_vrGLGUITextureWidth != viewport[2] || m_vrGLGUITextureHeight != viewport[3])
 	{
-		m_vrGLCEGUITextureWidth = viewport[2];
-		m_vrGLCEGUITextureHeight = viewport[3];
-		CreateGLTexture(&vrGLCEGUITexture, m_vrGLCEGUITextureWidth, m_vrGLCEGUITextureHeight);
+		m_vrGLGUITextureWidth = viewport[2];
+		m_vrGLGUITextureHeight = viewport[3];
+		CreateGLTexture(&vrGLGUITexture, m_vrGLGUITextureWidth, m_vrGLGUITextureHeight);
 	}
-	return vrGLCEGUITexture;
+	return vrGLGUITexture;
 }
 
 void VRHelper::GetViewAngles(vr::EVREye eEye, float* angles)

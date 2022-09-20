@@ -605,6 +605,10 @@ Vector VRRenderer::GetLeftControllerAngles()
 {
 	return vrHelper->GetLeftControllerAngles();
 }
+Vector VRRenderer::GetLeftControllerForward()
+{
+	return vrHelper->GetLeftControllerForward();
+}
 
 bool VRRenderer::HasValidRightController()
 {
@@ -617,6 +621,10 @@ Vector VRRenderer::GetRightControllerPosition()
 Vector VRRenderer::GetRightControllerAngles()
 {
 	return vrHelper->GetRightControllerAngles();
+}
+Vector VRRenderer::GetRightControllerForward()
+{
+	return vrHelper->GetRightControllerForward();
 }
 
 // For extern declarations in cl_util.h

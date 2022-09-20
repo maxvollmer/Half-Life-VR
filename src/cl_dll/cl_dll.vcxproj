@@ -257,8 +257,10 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
     <ClCompile Include="vgui_teammenu.cpp" />
     <ClCompile Include="view.cpp" />
     <ClCompile Include="VRClientDLLUnloadHandler.cpp" />
+    <ClCompile Include="VRCommon.cpp" />
     <ClCompile Include="VRDebugPhysicsRenderer.cpp" />
     <ClCompile Include="VREngineRandomInterceptor.cpp" />
+    <ClCompile Include="VRGameFunctions.cpp" />
     <ClCompile Include="VRGUIRenderer.cpp" />
     <ClCompile Include="VRHUDRenderer.cpp" />
     <ClCompile Include="VRInputHLMenu.cpp" />
@@ -315,6 +317,7 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
     <ClInclude Include="LodePNG\lodepng.h" />
     <ClInclude Include="Matrices.h" />
     <ClInclude Include="metahook.h" />
+    <ClInclude Include="nuklear.h" />
     <ClInclude Include="overview.h" />
     <ClInclude Include="parsemsg.h" />
     <ClInclude Include="snd_hook.h" />
@@ -334,6 +337,7 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
     <ClInclude Include="view.h" />
     <ClInclude Include="VRCommon.h" />
     <ClInclude Include="VREngineRandomInterceptor.h" />
+    <ClInclude Include="VRGameFunctions.h" />
     <ClInclude Include="VRGUIRenderer.h" />
     <ClInclude Include="VRInputAction.h" />
     <ClInclude Include="VRInputHandlers.h" />
