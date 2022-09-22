@@ -10,7 +10,7 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 
 ### Release Notes
 
-#### 0.6.30-beta - TBA
+#### 0.7.0-beta - TBA
 
 ##### Mod:
   - First Release on Steam
@@ -24,14 +24,16 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
   - Fixed soda cans not being drinkable
   - Added fixes for Blast Pit fan (see HLVRConfig)
   - Added feature that smoothes movement when walking up stairs (might be buggy, enable at own risk)
-  - Restored default walk speed and legacy ladder climb speed to pancake defaults
+  - Added basic working VR menu
   - Added default binds for Vive, Index, Oculus Touch, and WMR
+  - Restored default walk speed and legacy ladder climb speed to pancake defaults
 
 ##### HLVRConfig:
   - Added game window size to launcher config
   - Added settings for stair smoothing (on/off and intensity)
   - Added configurable extra delay for Blast Pit fan
   - Added option to make Blast Pit fan non-solid
+  - Added scale and position settings for VR menu
 
 ---
 #### 0.6.29-beta - 2021-10-02
