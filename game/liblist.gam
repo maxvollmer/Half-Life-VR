@@ -1,0 +1,12 @@
+// Valve Game Info file
+//  These are key/value pairs.  Certain mods will use different settings.
+//
+game "Half-Life: VR Mod"
+version "0.7.0-beta"
+startmap "c0a0"
+trainmap "t0a0"
+mpentity "info_player_deathmatch"
+gamedll "dlls\hl.dll"
+secure "1"
+type "singleplayer_only"
+

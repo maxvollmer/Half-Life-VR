@@ -108,9 +108,10 @@ def main(argv):
         shutil.rmtree(os.path.join(hlvrpath, 'valve_hd'))
 
     # additional stuff
-    print('Copying licenses, readme, and game icon.')
+    print('Copying licenses, readme, liblist.gam, and game icon.')
     shutil.copytree(os.path.join(script_location, '../docs/licenses'), os.path.join(hlvrpath, 'licenses'), dirs_exist_ok=True)
     shutil.copy(os.path.join(script_location, '../game/README.md'), hlvrpath)
+    shutil.copy(os.path.join(script_location, '../game/liblist.gam'), os.path.join(hlvrpath, 'valve', 'liblist.gam'))
     shutil.copy(os.path.join(script_location, '../art/game_icon.ico'), os.path.join(hlvrpath, 'valve', 'game.ico'))
 
     print('All done! New Half-Life: VR folder created at "'+hlvrpath+'". NOTE: You still need to build client.dll, hl.dll, and HLVRConfig.exe for the mod to work.')
