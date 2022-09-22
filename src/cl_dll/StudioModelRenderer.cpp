@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_set>
 #include <unordered_map>
+#include <filesystem>
 
 #include "hud.h"
 #include "cl_util.h"
@@ -34,6 +35,7 @@
 #include "GameStudioModelRenderer.h"
 
 #include "VRRenderer.h"
+#include "VRCommon.h"
 #include "DoOnDestruct.h"
 
 
@@ -1363,10 +1365,17 @@ void CStudioModelRenderer::StudioDrawVRHand(const ControllerModelData& controlle
 {
 	std::string controllermodelname = controllerModelData.controller.modelname;
 
-	if (gVRRenderer.IsHandSkeletalModel(controllermodelname.c_str()) && gVRRenderer.HasSkeletalDataForHand(mirrored))
+	// TODO: Skeleton hand models not properly working yet
+#if 0
+	if (gVRRenderer.IsHandModel(controllermodelname.c_str()) && gVRRenderer.HasSkeletalDataForHand(mirrored))
 	{
-		controllermodelname = gVRRenderer.HandModelToHandSkeletalModel(controllermodelname.c_str());
+		std::string skeletalModel = gVRRenderer.HandModelToHandSkeletalModel(controllermodelname.c_str());
+		if (std::filesystem::exists(GetPathFor("/" + skeletalModel)))
+		{
+			controllermodelname = skeletalModel;
+		}
 	}
+#endif
 
 	if (DrawVREntity(controllermodelname.c_str(),
 		origin, angles,
