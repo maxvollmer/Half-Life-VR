@@ -119,7 +119,7 @@ void VRGUIRenderer::Init()
     font_text = nk_font_atlas_add_from_file(&atlas, font_path.c_str(), 48, 0);
     font_text_smol = nk_font_atlas_add_from_file(&atlas, font_path.c_str(), 36, 0);
 
-    if (!font_heading || !font_heading || !font_heading)
+    if (!font_heading || !font_text || !font_text_smol)
     {
         // TODO: Print warning
     }
