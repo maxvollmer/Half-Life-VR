@@ -113,3 +113,8 @@ Copyright (c), LAGonauta, nagist, hzqst
 This mod uses Nuklear  
 https://github.com/Immediate-Mode-UI/Nuklear  
 Copyleft Micha Mettke  
+
+---
+This mod uses the Roboto font  
+https://fonts.google.com/specimen/Roboto/about  
+Copyright (c) Google; Designed by Christian Robertson  

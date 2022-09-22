@@ -34,6 +34,7 @@ folders_to_copy = [
 
 '../game/actions',
 '../game/resource',
+'../game/fonts'
 ]
 
 def main(argv):
