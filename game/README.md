@@ -14,11 +14,6 @@ Comes with a **Config Tool** that lets you modify over a hundred settings for in
 - **Modern Rendition or Classic Experience.**  
 Play with beautiful AI upscaled textures, HD models, and a truly equal opportunity Black Mesa. Or enable **Classic Mode** for a pure 1998 Half-Life experience in VR.
 
-#### Support the Mod!
-
-[🍵 Ko-Fi](https://www.ko-fi.com/maxmakesmods)
-
----
 #### Links
 
 - [Player Guide](https://github.com/maxvollmer/Half-Life-VR/tree/main/docs/player-guide.md)
