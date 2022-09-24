@@ -53,6 +53,10 @@ namespace
         {
             nk_style_set_font(&ctx, &atlas.default_font->handle);
         }
+        else
+        {
+            VRGameFunctions::PrintToConsole("SetFont failed: No font!\n");
+        }
     }
 
 // TODO: Make menu colors fit HL:VR
@@ -121,7 +125,7 @@ void VRGUIRenderer::Init()
 
     if (!font_heading || !font_text || !font_text_smol)
     {
-        // TODO: Print warning
+        VRGameFunctions::PrintToConsole("SetFont failed: Failed to load font!\n");
     }
 
     int width, height;
@@ -165,7 +169,7 @@ void VRGUIRenderer::UpdateControllerState(VRControllerState& state)
     currentState = state;
 }
 
-void VRGUIRenderer::UpdateGUI(bool isInGame)
+void VRGUIRenderer::UpdateGUI(int guiWidth, int guiHeight, bool isInGame)
 {
     if (!isInitialized)
     {
@@ -176,34 +180,43 @@ void VRGUIRenderer::UpdateGUI(bool isInGame)
     {
         if (atlas.default_font)
         {
-            // TODO: Print warning
+            VRGameFunctions::PrintToConsole("UpdateGUI: ctx.style.font was null, falling back to default!\n");
             ctx.style.font = &atlas.default_font->handle;
         }
         else
         {
-            // TODO: Print error!
+            VRGameFunctions::PrintToConsole("UpdateGUI failed: ctx.style.font is null and no default font!\n");
             return;
         }
     }
 
     //lastState = currentState;
     //currentState = state;
-    UpdateVRCursor();
+    UpdateVRCursor(guiWidth, guiHeight);
 
-    UpdateGUIElements(isInGame);
+    UpdateGUIElements(guiWidth, guiHeight, isInGame);
 
-    DrawGUI();
+    DrawGUI(guiWidth, guiHeight);
 
     nk_clear(&ctx);
 }
 
-void VRGUIRenderer::UpdateVRCursor()
+void VRGUIRenderer::UpdateVRCursor(int guiWidth, int guiHeight)
 {
+    VRGameFunctions::PrintToConsole(
+        (std::string("UpdateVRCursor: ")
+        + (currentState.isOverGUI ? "YesOverGui" : "NotOverGui") + ", "
+        + (currentState.isPressed ? "YesPressed" : "Notpressed") + ", "
+        + std::to_string(currentState.x) + ", "
+        + std::to_string(currentState.y) + "\n"
+        ).c_str()
+    );
+
     nk_input_begin(&ctx);
     if (currentState.isOverGUI)
     {
-        int x = (int)(currentState.x * GuiWidth);
-        int y = (int)(currentState.y * GuiHeight);
+        int x = (int)(currentState.x * guiWidth);
+        int y = (int)(currentState.y * guiHeight);
         nk_input_motion(&ctx, x, y);
         nk_input_button(&ctx, nk_buttons::NK_BUTTON_LEFT, x, y, currentState.isPressed);
     }
@@ -215,14 +228,14 @@ void VRGUIRenderer::UpdateVRCursor()
     nk_input_end(&ctx);
 }
 
-void VRGUIRenderer::UpdateGUIElements(bool isInGame)
+void VRGUIRenderer::UpdateGUIElements(int guiWidth, int guiHeight, bool isInGame)
 {
     static bool isInNewGameMenu = false;
     static int skill = 2;
     static nk_size volume = 100;
     static int i = 20;
 
-    if (nk_begin(&ctx, "HLVRMainMenu", nk_rect(0, 0, GuiWidth, GuiHeight), NK_WINDOW_NO_SCROLLBAR))
+    if (nk_begin(&ctx, "HLVRMainMenu", nk_rect(0, 0, (float)guiWidth, (float)guiHeight), NK_WINDOW_NO_SCROLLBAR))
     {
         SetFont(font_heading);
         nk_layout_row_dynamic(&ctx, 0, 1);
@@ -371,13 +384,9 @@ void VRGUIRenderer::UpdateGUIElements(bool isInGame)
             {
                 system("start https://discord.gg/jujwEGf62K");
             }
-            if (nk_button_label(&ctx, "Support the Mod (Ko-Fi)"))
+            if (nk_button_label(&ctx, "\"Max Makes Mods\" on Youtube"))
             {
-                system("start https://www.ko-fi.com/maxmakesmods");
-            }
-            if (nk_button_label(&ctx, "Support the Mod (Patreon)"))
-            {
-                system("start https://www.patreon.com/maxmakesmods");
+                system("start https://www.youtube.com/MaxMakesMods");
             }
             if (nk_button_label(&ctx, "Mod Website"))
             {
@@ -389,19 +398,14 @@ void VRGUIRenderer::UpdateGUIElements(bool isInGame)
     nk_end(&ctx);
 }
 
-void VRGUIRenderer::DrawGUI()
+void VRGUIRenderer::DrawGUI(int guiWidth, int guiHeight)
 {
     glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-    int viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
-    glViewport(0, 0, (GLsizei)GuiWidth, (GLsizei)GuiHeight);
 
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
-    glOrtho(0.0f, GuiWidth, GuiHeight, 0.0f, -1.0f, 1.0f);
+    glOrtho(0.0f, guiWidth, guiHeight, 0.0f, -1.0f, 1.0f);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadIdentity();
@@ -462,7 +466,7 @@ void VRGUIRenderer::DrawGUI()
         {
             if (!cmd->elem_count) continue;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
-            glScissor((GLint)(cmd->clip_rect.x), (GLint)(GuiHeight - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)), (GLint)(cmd->clip_rect.w), (GLint)(cmd->clip_rect.h));
+            glScissor((GLint)(cmd->clip_rect.x), (GLint)(guiHeight - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)), (GLint)(cmd->clip_rect.w), (GLint)(cmd->clip_rect.h));
             glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
             offset += cmd->elem_count;
         }
@@ -480,8 +484,6 @@ void VRGUIRenderer::DrawGUI()
     glPopMatrix();
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
-
-    glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 
     glPopAttrib();
 }

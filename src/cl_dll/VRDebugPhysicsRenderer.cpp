@@ -39,8 +39,6 @@
 #include "vr_gl.h"
 
 
-extern globalvars_t* gpGlobals;
-
 
 // Collect faces of world
 #include <vector>

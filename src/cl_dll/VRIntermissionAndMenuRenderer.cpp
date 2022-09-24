@@ -43,7 +43,6 @@
 #include "vr_gl.h"
 
 
-extern globalvars_t* gpGlobals;
 extern engine_studio_api_t IEngineStudio;
 
 

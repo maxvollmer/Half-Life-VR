@@ -12,4 +12,5 @@ public:
 	static void QuickSave();
 	static void QuitGame();
 	static bool QuickSaveExists();
+	static void PrintToConsole(const char* s);
 };

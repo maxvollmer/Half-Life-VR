@@ -135,8 +135,10 @@ void VRRenderer::Frame(double frametime)
 
 	if (m_isInMenu || !IsInGame())
 	{
+		vrHelper->PollEvents(false, m_isInMenu);
+
 		// don't show menu during levelchange (we show it after 2 seconds, in case the load failed or froze)
-		if (gVR_LastLevelChangeTime > (m_clientTime - 2.f))
+		if (gVR_LastLevelChangeTime != 0.0 && gVR_LastLevelChangeTime > (m_clientTime - 2.f))
 		{
 			g_vrInput.HideHLMenu();
 		}
@@ -144,7 +146,7 @@ void VRRenderer::Frame(double frametime)
 		{
 			g_vrInput.ShowHLMenu();
 		}
-		vrHelper->PollEvents(false, m_isInMenu);
+
 		VRSoundUpdate(true, frametime);
 		ResetOffsetThingies();
 	}
@@ -156,7 +158,7 @@ void VRRenderer::Frame(double frametime)
 
 	if (!IsInGame() || (m_isInMenu && m_wasMenuJustRendered))
 	{
-		CaptureCurrentScreenToTexture(vrHelper->GetVRGLMenuTexture());
+		CaptureCurrentScreenToTexture(vrHelper->GetHLMenuTexture());
 		m_wasMenuJustRendered = false;
 		ResetOffsetThingies();
 	}
@@ -194,7 +196,7 @@ void VRRenderer::Frame(double frametime)
 	glDisable(GL_DEPTH_TEST);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	VRGUIRenderer::Instance().UpdateGUI(IsInGame());
+	VRGUIRenderer::Instance().UpdateGUI(vrHelper->GetVRGLGUITextureWidth(), vrHelper->GetVRGLGUITextureHeight(), IsInGame());
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glPopAttrib();

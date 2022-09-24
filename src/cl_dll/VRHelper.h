@@ -44,11 +44,14 @@ public:
 	void FinishVRScene(float width, float height);
 
 	unsigned int GetVRTexture(vr::EVREye eEye);
-	unsigned int GetVRGLMenuTexture();
+	unsigned int GetHLMenuTexture();
 	unsigned int GetVRGLGUITexture();
 
-	int GetVRGLMenuTextureWidth() { return m_vrGLMenuTextureWidth; }
-	int GetVRGLMenuTextureHeight() { return m_vrGLMenuTextureHeight; }
+	int GetHLMenuTextureWidth() { return m_vrGLHLMenuTextureWidth; }
+	int GetHLMenuTextureHeight() { return m_vrGLHLMenuTextureHeight; }
+
+	int GetVRGLGUITextureWidth() { return m_vrGLGUITextureWidth; }
+	int GetVRGLGUITextureHeight() { return m_vrGLGUITextureHeight; }
 
 	void GetViewAngles(vr::EVREye eEye, float* angles);
 	void GetViewMatrix(vr::EVREye eEye, float* matrix);
@@ -121,10 +124,10 @@ private:
 
 	unsigned int vrGLLeftEyeTexture = 0;
 	unsigned int vrGLRightEyeTexture = 0;
-	unsigned int vrGLMenuTexture = 0;
 
-	int m_vrGLMenuTextureWidth = 0;
-	int m_vrGLMenuTextureHeight = 0;
+	unsigned int vrGLHLMenuTexture = 0;
+	int m_vrGLHLMenuTextureWidth = 0;
+	int m_vrGLHLMenuTextureHeight = 0;
 
 	unsigned int vrGLGUITexture = 0;
 	int m_vrGLGUITextureWidth = 0;

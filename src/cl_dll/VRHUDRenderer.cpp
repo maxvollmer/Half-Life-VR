@@ -40,8 +40,6 @@
 #include "vr_gl.h"
 
 
-extern globalvars_t* gpGlobals;
-
 enum class HUDRenderMode
 {
 	NONE,

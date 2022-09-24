@@ -149,7 +149,7 @@ private:
 	VRHelper* vrHelper = nullptr;
 
 	bool m_isInGame{ false };
-	bool m_isInMenu{ false };
+	bool m_isInMenu{ true };
 	bool m_wasMenuJustRendered{ false };
 	bool m_CalcRefdefWasCalled{ false };
 	bool m_HUDRedrawWasCalled{ false };
@@ -168,7 +168,7 @@ private:
 	int m_hudRedrawIntermission{ 0 };
 
 	bool m_isDrawingDamage{ false };
-	float m_flDrawingDamageTime = 0.f;
+	float m_flDrawingDamageTime{ 0.f };
 	Vector m_damageColor;
 
 	VREyeMode m_eyeMode{ VREyeMode::Both };

@@ -15,6 +15,11 @@ namespace
 	long long lastTimeQuickSaveChecked = 0;
 }
 
+void VRGameFunctions::PrintToConsole(const char* s)
+{
+	gEngfuncs.Con_DPrintf(s);
+}
+
 void VRGameFunctions::SetSkill(int skill)
 {
 	gEngfuncs.Cvar_SetValue("skill", (float)skill);

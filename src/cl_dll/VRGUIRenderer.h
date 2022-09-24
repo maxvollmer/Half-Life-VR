@@ -14,23 +14,20 @@ public:
 	static VRGUIRenderer& Instance();
 
 	void Init();
-	void UpdateGUI(bool isInGame);
+	void UpdateGUI(int guiWidth, int guiHeight, bool isInGame);
 	void ShutDown();
 
 	void UpdateControllerState(VRControllerState& state);
 
 private:
-	void UpdateVRCursor();
-	void UpdateGUIElements(bool isInGame);
-	void DrawGUI();
+	void UpdateVRCursor(int guiWidth, int guiHeight);
+	void UpdateGUIElements(int guiWidth, int guiHeight, bool isInGame);
+	void DrawGUI(int guiWidth, int guiHeight);
 
 	bool isInitialized = false;
 
 	VRControllerState lastState;
 	VRControllerState currentState;
-
-	static constexpr float GuiWidth = 2048.f;
-	static constexpr float GuiHeight = 2048.f;
 
 	static VRGUIRenderer instance;
 };

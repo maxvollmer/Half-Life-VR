@@ -372,10 +372,10 @@ void VRHelper::Init()
 			CreateGLTexture(&vrGLRightEyeTexture, vrRenderWidth, vrRenderHeight);
 			int viewport[4];
 			glGetIntegerv(GL_VIEWPORT, viewport);
-			m_vrGLMenuTextureWidth = viewport[2];
-			m_vrGLMenuTextureHeight = viewport[3];
-			CreateGLTexture(&vrGLMenuTexture, viewport[2], viewport[3]);
-			if (vrGLLeftEyeTexture == 0 || vrGLRightEyeTexture == 0 || vrGLMenuTexture == 0)
+			m_vrGLHLMenuTextureWidth = viewport[2];
+			m_vrGLHLMenuTextureHeight = viewport[3];
+			CreateGLTexture(&vrGLHLMenuTexture, viewport[2], viewport[3]);
+			if (vrGLLeftEyeTexture == 0 || vrGLRightEyeTexture == 0 || vrGLHLMenuTexture == 0)
 			{
 				Exit("Failed to initialize OpenGL textures for VR enviroment. Make sure you have a graphics card that can handle VR and up-to-date drivers. (Or if you are living in the future, not up-to-date drivers, but drivers that are kind of old enough to still have the features this mod needs. I dunno, ask hyperreddit or whatever you cybernetic future people have.)");
 			}
@@ -718,17 +718,17 @@ unsigned int VRHelper::GetVRTexture(vr::EVREye eEye)
 	return eEye == vr::EVREye::Eye_Left ? vrGLLeftEyeTexture : vrGLRightEyeTexture;
 }
 
-unsigned int VRHelper::GetVRGLMenuTexture()
+unsigned int VRHelper::GetHLMenuTexture()
 {
 	int viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	if (m_vrGLMenuTextureWidth != viewport[2] || m_vrGLMenuTextureHeight != viewport[3])
+	if (m_vrGLHLMenuTextureWidth != viewport[2] || m_vrGLHLMenuTextureHeight != viewport[3])
 	{
-		m_vrGLMenuTextureWidth = viewport[2];
-		m_vrGLMenuTextureHeight = viewport[3];
-		CreateGLTexture(&vrGLMenuTexture, m_vrGLMenuTextureWidth, m_vrGLMenuTextureHeight);
+		m_vrGLHLMenuTextureWidth = viewport[2];
+		m_vrGLHLMenuTextureHeight = viewport[3];
+		CreateGLTexture(&vrGLHLMenuTexture, m_vrGLHLMenuTextureWidth, m_vrGLHLMenuTextureHeight);
 	}
-	return vrGLMenuTexture;
+	return vrGLHLMenuTexture;
 }
 
 unsigned int VRHelper::GetVRGLGUITexture()
