@@ -60,7 +60,11 @@ void VRInput::CreateHLMenu()
 
 	int vr_menu_placement = (int)CVAR_GET_FLOAT("vr_menu_placement");
 	float scale = CVAR_GET_FLOAT("vr_menu_scale");
-	float distance = CVAR_GET_FLOAT("vr_menu_distance");
+	if (vr_menu_placement == 0)
+	{
+		scale *= 0.5f;
+	}
+	float distance = vr_menu_placement == 0 ? 1.f : 0.f;
 	float opacity = CVAR_GET_FLOAT("vr_menu_opacity");
 
 	if (scale < 0.1f) scale = 0.1f;
@@ -110,7 +114,6 @@ void VRInput::CreateHLMenu()
 	}
 
 	error = vr::VROverlay()->SetOverlayTransformTrackedDeviceRelative(m_hlMenu, menuDeviceIndex, &transform);
-	//error = vr::VROverlay()->SetOverlayTransformAbsolute(m_hlMenu, vr::TrackingUniverseStanding, &transform);
 	if (error != vr::VROverlayError_None)
 	{
 		gEngfuncs.Con_DPrintf("Could not set transform for HL menu overlay: %s\n", vr::VROverlay()->GetOverlayErrorNameFromEnum(error));
@@ -302,7 +305,7 @@ void VRInput::HandleHLMenuInput()
 
 		uiControllerState.isOverGUI = true;
 		uiControllerState.x = results.vUVs.v[0];
-		uiControllerState.y = 1.f - results.vUVs.v[1];
+		uiControllerState.y = results.vUVs.v[1];
 	}
 	else
 	{

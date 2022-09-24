@@ -179,8 +179,8 @@ void VRInput::RegisterActionSets()
 
 		RegisterAction("input", "Teleport", &VR::Input::Other::HandleTeleport);
 		RegisterAction("input", "ToggleFlashlight", &VR::Input::Other::HandleFlashlight);
-		RegisterAction("input", "LeftGrab", &VR::Input::Other::HandleLeftGrab);
-		RegisterAction("input", "RightGrab", &VR::Input::Other::HandleRightGrab);
+		RegisterAction("input", "LeftGrab", &VR::Input::Other::HandleLeftGrab, true);
+		RegisterAction("input", "RightGrab", &VR::Input::Other::HandleRightGrab, true);
 		RegisterAction("input", "LegacyUse", &VR::Input::Other::HandleLegacyUse);
 		RegisterAction("input", "LetGoOffLadder", &VR::Input::Other::HandleLetGoOffLadder);
 
@@ -190,8 +190,8 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "PauseGame", &VR::Input::Other::HandlePauseGame, true);
 		RegisterAction("input", "ExitGame", &VR::Input::Other::HandleExitGame, true);
 
-		RegisterAction("input", "LeftHandSkeleton", &VR::Input::Other::HandleLeftHandSkeleton);
-		RegisterAction("input", "RightHandSkeleton", &VR::Input::Other::HandleRightHandSkeleton);
+		RegisterAction("input", "LeftHandSkeleton", &VR::Input::Other::HandleLeftHandSkeleton, true);
+		RegisterAction("input", "RightHandSkeleton", &VR::Input::Other::HandleRightHandSkeleton, true);
 	}
 	if (RegisterActionSet("feedback", false))
 	{

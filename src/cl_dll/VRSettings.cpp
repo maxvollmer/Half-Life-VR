@@ -148,9 +148,8 @@ void VRSettings::Init()
 	RegisterCVAR("vr_texturemode", "GL_LINEAR_MIPMAP_LINEAR");
 	RegisterCVAR("vr_display_game", "0");
 
-	RegisterCVAR("vr_menu_placement", "1");
+	RegisterCVAR("vr_menu_placement", "0");
 	RegisterCVAR("vr_menu_scale", "1");
-	RegisterCVAR("vr_menu_distance", "0.2");
 	RegisterCVAR("vr_menu_opacity", "0.9");
 
 	// Initialize time that settings file was last changed

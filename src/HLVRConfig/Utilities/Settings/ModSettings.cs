@@ -301,10 +301,9 @@ namespace HLVRConfig.Utilities.Settings
             } },
 
             { CategoryVRMenu, new OrderedDictionary<string, Setting>() {
-                { "vr_menu_placement", Setting.Create( new I18N.I18NString("vr_menu_placement", "VR Menu Placement"), new OrderedDictionary<string, I18N.I18NString>(){ { "1", new I18N.I18NString("vr_menu_placement.LeftHand", "Left Hand") }, { "2", new I18N.I18NString("vr_menu_placement.RightHand", "Right Hand)") }, { "0", new I18N.I18NString("vr_menu_placement.HMD", "HMD") } }, "1" ) },
+                { "vr_menu_placement", Setting.Create( new I18N.I18NString("vr_menu_placement", "VR Menu Placement"), new OrderedDictionary<string, I18N.I18NString>(){ { "1", new I18N.I18NString("vr_menu_placement.LeftHand", "Left Hand") }, { "2", new I18N.I18NString("vr_menu_placement.RightHand", "Right Hand)") }, { "0", new I18N.I18NString("vr_menu_placement.HMD", "HMD") } }, "0" ) },
 
                 { "vr_menu_scale", Setting.Create( new I18N.I18NString("vr_menu_scale", "VR Menu Scale"), SettingType.FACTOR, "1" ) },
-                { "vr_menu_distance", Setting.Create( new I18N.I18NString("vr_menu_distance", "VR Menu Distance"), SettingType.FACTOR, "0.2" ) },
                 { "vr_menu_opacity", Setting.Create( new I18N.I18NString("vr_menu_opacity", "VR Menu Opacity"), SettingType.FACTOR, "0.9" ) },
             } },
 
