@@ -17,6 +17,7 @@ Play with beautiful AI upscaled textures, HD models, and a truly equal opportuni
 #### Support the Mod!
 
 [🍵 Ko-Fi](https://www.ko-fi.com/maxmakesmods)
+[💸 Patreon](https://www.patreon.com/maxmakesmods)
 
 ---
 #### Docs
