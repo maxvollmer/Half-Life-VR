@@ -60,8 +60,21 @@ namespace VR
 			if (data.bChanged)
 			{
 				bool on = data.bActive && data.bState;
-				ClientCmd(on ? "+use" : "-use");
+				if (on)
+				{
+					// don't +on if in menu!
+					if (g_vrInput.IsInGame() && !g_vrInput.IsInMenu())
+					{
+						ClientCmd("+use");
+					}
+				}
+				else
+				{
+					ClientCmd("-use");
+				}
 			}
+
+			g_vrInput.SetVRMenuUseStatus(data.bActive && data.bState);
 		}
 
 		void Other::HandleLetGoOffLadder(const vr::InputDigitalActionData_t& data, const std::string& action)
@@ -116,6 +129,12 @@ namespace VR
 			{
 				g_vrInput.ExecuteCustomAction(action);
 			}
+		}
+
+		void Other::HandleClickVRMenu(const vr::InputDigitalActionData_t& data, const std::string& action)
+		{
+			bool on = data.bActive && data.bState;
+			g_vrInput.SetVRMenuClickStatus(on);
 		}
 
 		void Other::HandleLeftHandSkeleton(const vr::VRSkeletalSummaryData_t& data, const vr::VRBoneTransform_t* bones, bool hasFingers, bool hasBones, const std::string& action)

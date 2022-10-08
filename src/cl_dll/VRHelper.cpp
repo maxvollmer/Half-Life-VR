@@ -569,7 +569,7 @@ void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 			break;
 		}
 	}
-	g_vrInput.HandleInput(isInGame);
+	g_vrInput.HandleInput(isInGame, isInMenu);
 }
 
 bool VRHelper::UpdatePositions(int viewent)
@@ -1388,7 +1388,7 @@ Vector VRHelper::GetMovementAngles()
 		else
 		{
 			// fallback to pose
-			attachment = VR_MOVEMENT_ATTACHMENT_WEAPON;
+			attachment = VR_MOVEMENT_ATTACHMENT_POSE;
 		}
 	}
 

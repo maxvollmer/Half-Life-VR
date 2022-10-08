@@ -60,7 +60,7 @@ void VRInput::CreateHLMenu()
 
 	int vr_menu_placement = (int)CVAR_GET_FLOAT("vr_menu_placement");
 	float scale = CVAR_GET_FLOAT("vr_menu_scale");
-	if (vr_menu_placement == 0)
+	if (vr_menu_placement != 0)
 	{
 		scale *= 0.5f;
 	}
@@ -216,23 +216,6 @@ void VRInput::HandleHLMenuInput()
 		direction[2] = -trackedDevicePoses[controllerDeviceIndex].mDeviceToAbsoluteTracking.m[2][2];
 	}
 
-	bool pressed = useRightController ? g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand) : g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);
-
-	gEngfuncs.Con_DPrintf("HandleHLMenuInput: position: %f %f %f, direction: %f %f %f, position: %f %f %f, direction: %f %f %f\n",
-		position[0],
-		position[1],
-		position[2],
-		direction[0],
-		direction[1],
-		direction[2],
-		position.x,
-		position.y,
-		position.z,
-		direction.x,
-		direction.y,
-		direction.z
-	);
-
 	vr::VROverlayIntersectionParams_t params{};
 	params.eOrigin = vr::TrackingUniverseStanding;
 	for (int i = 0; i < 3; i++)
@@ -242,75 +225,29 @@ void VRInput::HandleHLMenuInput()
 	}
 
 	VRGUIRenderer::VRControllerState uiControllerState;
-	uiControllerState.isPressed = pressed;
-
-	gEngfuncs.Con_DPrintf("HandleHLMenuInput: params.vSource: %f %f %f, params.vDirection: %f %f %f\n",
-		params.vSource.v[0],
-		params.vSource.v[1],
-		params.vSource.v[2],
-		params.vDirection.v[0],
-		params.vDirection.v[1],
-		params.vDirection.v[2]
-	);
-
-	vr::HmdMatrix34_t transform;
-
-	vr::HmdVector2_t coords;
-	coords.v[0] = 0.f;
-	coords.v[1] = 0.f;
-	vr::VROverlay()->GetTransformForOverlayCoordinates(m_hlMenu, vr::TrackingUniverseStanding, coords, &transform);
-	vr::HmdVector3_t corner1;
-	corner1.v[0] = transform.m[0][3];
-	corner1.v[1] = transform.m[1][3];
-	corner1.v[2] = transform.m[2][3];
-
-	coords.v[0] = 1.f;
-	coords.v[1] = 1.f;
-	vr::VROverlay()->GetTransformForOverlayCoordinates(m_hlMenu, vr::TrackingUniverseStanding, coords, &transform);
-	vr::HmdVector3_t corner2;
-	corner2.v[0] = transform.m[0][3];
-	corner2.v[1] = transform.m[1][3];
-	corner2.v[2] = transform.m[2][3];
-
-	gEngfuncs.Con_DPrintf("HandleHLMenuInput corner1: %f %f %f, corner2: %f %f %f\n",
-		corner1.v[0],
-		corner1.v[1],
-		corner1.v[2],
-		corner2.v[0],
-		corner2.v[1],
-		corner2.v[2]
-	);
+	switch ((int)CVAR_GET_FLOAT("vr_menu_click_source"))
+	{
+	case 1:
+		uiControllerState.isPressed = g_vrInput.GetVRMenuUseStatus();
+		break;
+	case 2:
+		uiControllerState.isPressed = g_vrInput.GetVRMenuClickStatus();
+		break;
+	case 0:
+	default:
+		uiControllerState.isPressed = g_vrInput.GetVRMenuFireStatus();
+		break;
+	}
 
 	vr::VROverlayIntersectionResults_t results;
 	if (vr::VROverlay()->ComputeOverlayIntersection(m_hlMenu, &params, &results))
 	{
-		gEngfuncs.Con_DPrintf("HandleHLMenuInput results.vUVs: %f %f, results.vPoint: %f %f %f, results.vNormal: %f %f %f, results.fDistance: %f\n",
-			results.vUVs.v[0],
-			results.vUVs.v[1],
-			results.vPoint.v[0],
-			results.vPoint.v[1],
-			results.vPoint.v[2],
-			results.vNormal.v[0],
-			results.vNormal.v[1],
-			results.vNormal.v[2],
-			results.fDistance
-		);
-
-		vr::VROverlay()->GetTransformForOverlayCoordinates(m_hlMenu, vr::TrackingUniverseStanding, results.vUVs, &transform);
-		gEngfuncs.Con_DPrintf("HandleHLMenuInput test: %f %f %f\n",
-			transform.m[0][3],
-			transform.m[1][3],
-			transform.m[2][3]
-		);
-
 		uiControllerState.isOverGUI = true;
 		uiControllerState.x = results.vUVs.v[0];
 		uiControllerState.y = results.vUVs.v[1];
 	}
 	else
 	{
-		gEngfuncs.Con_DPrintf("HandleHLMenuInput nope.\n");
-
 		uiControllerState.isOverGUI = false;
 	}
 

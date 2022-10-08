@@ -151,6 +151,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_menu_placement", "0");
 	RegisterCVAR("vr_menu_scale", "1");
 	RegisterCVAR("vr_menu_opacity", "0.9");
+	RegisterCVAR("vr_menu_click_source", "0");
 
 	// Initialize time that settings file was last changed
 	std::filesystem::path settingsPath = "./hlvr.cfg";

@@ -22,7 +22,7 @@ class VRInput
 public:
 	void Init();
 
-	void HandleInput(bool isInGame);
+	void HandleInput(bool isInGame, bool isInMenu);
 
 	inline bool RotateLeft() const
 	{
@@ -62,6 +62,30 @@ public:
 	{
 		m_letGoOffLadder = letGoOffLadder;
 	}
+	inline void SetVRMenuClickStatus(bool vrMenuClickStatus)
+	{
+		m_vrMenuClickStatus = vrMenuClickStatus;
+	}
+	inline bool GetVRMenuClickStatus()
+	{
+		return m_vrMenuClickStatus;
+	}
+	inline void SetVRMenuUseStatus(bool vrMenuUseStatus)
+	{
+		m_vrMenuUseStatus = vrMenuUseStatus;
+	}
+	inline bool GetVRMenuUseStatus()
+	{
+		return m_vrMenuUseStatus;
+	}
+	inline void SetVRMenuFireStatus(bool vrMenuFireStatus)
+	{
+		m_vrMenuFireStatus = vrMenuFireStatus;
+	}
+	inline bool GetVRMenuFireStatus()
+	{
+		return m_vrMenuFireStatus;
+	}
 
 	enum class FeedbackType
 	{
@@ -100,6 +124,9 @@ public:
 
 	float damageintensity = 0.f;
 	float recoilintensity = 0.f;
+
+	inline bool IsInGame() { return m_isInGame; }
+	inline bool IsInMenu() { return m_isInMenu; }
 
 private:
 	class FingerSkeletalData
@@ -156,6 +183,9 @@ private:
 	bool m_isDucking{ false };
 	bool m_isVRDucking{ false };
 	bool m_letGoOffLadder{ false };
+	bool m_vrMenuClickStatus{ false };
+	bool m_vrMenuUseStatus{ false };
+	bool m_vrMenuFireStatus{ false };
 
 	std::unordered_map<std::string, ActionSet> m_actionSets;
 	std::unordered_map<std::string, CustomAction> m_customActions;
@@ -163,6 +193,9 @@ private:
 	std::unordered_map<vr::ETrackedControllerRole, bool> m_dragStates;
 
 	std::unordered_map<vr::ETrackedControllerRole, std::shared_ptr<FingerSkeletalData>> m_fingerSkeletalData;
+
+	bool m_isInGame{ false };
+	bool m_isInMenu{ true };
 };
 
 extern VRInput g_vrInput;

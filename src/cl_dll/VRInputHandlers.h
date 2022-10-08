@@ -69,6 +69,7 @@ namespace VR
 			static void HandlePauseGame(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleExitGame(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleCustomAction(const vr::InputDigitalActionData_t& data, const std::string& action);
+			static void HandleClickVRMenu(const vr::InputDigitalActionData_t& data, const std::string& action);
 			static void HandleLeftHandSkeleton(const vr::VRSkeletalSummaryData_t& data, const vr::VRBoneTransform_t* bones, bool hasFingers, bool hasBones, const std::string& action);
 			static void HandleRightHandSkeleton(const vr::VRSkeletalSummaryData_t& data, const vr::VRBoneTransform_t* bones, bool hasFingers, bool hasBones, const std::string& action);
 		};

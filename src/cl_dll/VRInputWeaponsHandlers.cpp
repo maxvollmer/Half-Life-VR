@@ -29,10 +29,20 @@ namespace VR
 			if (data.bChanged)
 			{
 				if (data.bState)
-					ClientCmd("+attack");
+				{
+					// don't +attack if in menu!
+					if (g_vrInput.IsInGame() && !g_vrInput.IsInMenu())
+					{
+						ClientCmd("+attack");
+					}
+				}
 				else
+				{
 					ClientCmd("-attack");
+				}
 			}
+
+			g_vrInput.SetVRMenuFireStatus(data.bActive && data.bState);
 		}
 
 		void Weapons::HandleAltFire(const vr::InputDigitalActionData_t& data, const std::string& action)

@@ -169,7 +169,7 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "MoveForwardBackwardSidewaysUpDown", &VR::Input::Movement::HandleMoveForwardBackwardSidewaysUpDown);
 		RegisterAction("input", "MoveForwardBackwardTurnUpDown", &VR::Input::Movement::HandleMoveForwardBackwardTurnUpDown);
 
-		RegisterAction("input", "FireWeapon", &VR::Input::Weapons::HandleFire);
+		RegisterAction("input", "FireWeapon", &VR::Input::Weapons::HandleFire, true);
 		RegisterAction("input", "AltFireWeapon", &VR::Input::Weapons::HandleAltFire);
 		RegisterAction("input", "AnalogFireWeapon", &VR::Input::Weapons::HandleAnalogFire);
 		RegisterAction("input", "ReloadWeapon", &VR::Input::Weapons::HandleReload);
@@ -181,7 +181,7 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "ToggleFlashlight", &VR::Input::Other::HandleFlashlight);
 		RegisterAction("input", "LeftGrab", &VR::Input::Other::HandleLeftGrab, true);
 		RegisterAction("input", "RightGrab", &VR::Input::Other::HandleRightGrab, true);
-		RegisterAction("input", "LegacyUse", &VR::Input::Other::HandleLegacyUse);
+		RegisterAction("input", "LegacyUse", &VR::Input::Other::HandleLegacyUse, true);
 		RegisterAction("input", "LetGoOffLadder", &VR::Input::Other::HandleLetGoOffLadder);
 
 		RegisterAction("input", "QuickSave", &VR::Input::Other::HandleQuickSave, true);
@@ -189,6 +189,8 @@ void VRInput::RegisterActionSets()
 		RegisterAction("input", "RestartCurrentMap", &VR::Input::Other::HandleRestartCurrentMap, true);
 		RegisterAction("input", "PauseGame", &VR::Input::Other::HandlePauseGame, true);
 		RegisterAction("input", "ExitGame", &VR::Input::Other::HandleExitGame, true);
+
+		RegisterAction("input", "ClickVRMenu", &VR::Input::Other::HandleClickVRMenu, true);
 
 		RegisterAction("input", "LeftHandSkeleton", &VR::Input::Other::HandleLeftHandSkeleton, true);
 		RegisterAction("input", "RightHandSkeleton", &VR::Input::Other::HandleRightHandSkeleton, true);
@@ -546,8 +548,11 @@ void VRInput::FireDamageFeedback(const std::string& action, float durationInSeco
 	vr::VRInput()->TriggerHapticVibrationAction(m_actionSets["damagefeedback"].feedbackActions[action], 0.f, durationInSeconds, frequency, amplitude, vr::k_ulInvalidInputValueHandle);
 }
 
-void VRInput::HandleInput(bool isInGame)
+void VRInput::HandleInput(bool isInGame, bool isInMenu)
 {
+	m_isInGame = isInGame;
+	m_isInMenu = isInMenu;
+
 	m_vrInputThisFrame = false;
 	m_fingerSkeletalData.clear();
 
@@ -571,7 +576,7 @@ void VRInput::HandleInput(bool isInGame)
 		{
 			for (auto& [actionName, action] : actionSet->actions)
 			{
-				action.HandleInput(isInGame);
+				action.HandleInput(isInGame && !isInMenu);
 			}
 		}
 	}

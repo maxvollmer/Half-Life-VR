@@ -271,6 +271,11 @@
          "type" : "boolean"
       },
       {
+         "name" : "/actions/input/in/ClickVRMenu",
+         "requirement" : "optional",
+         "type" : "boolean"
+      },
+      {
          "name": "/actions/input/in/LeftHandSkeleton",
          "type": "skeleton",
          "skeleton": "/skeleton/hand/left"
@@ -481,6 +486,7 @@
          "/actions/input/in/AnalogFireWeapon" : "Analog fire weapon (controls speed)",
          "/actions/input/in/Crouch" : "Crouch",
          "/actions/input/in/ExitGame" : "Exit Game",
+         "/actions/input/in/ClickVRMenu" : "Click VR Menu",
          "/actions/input/in/FireWeapon" : "Fire weapon",
          "/actions/input/in/LeftGrab" : "Grab/Interact (This is for rotating valves, pulling/lifting crates, interacting with NPCs etc. using a VR controller.)",
          "/actions/input/in/RightGrab" : "Grab/Interact (This is for rotating valves, pulling/lifting crates, interacting with NPCs etc. using a VR controller.)",
