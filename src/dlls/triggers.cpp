@@ -1997,9 +1997,13 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 		extern cvar_t* g_psv_gravity;
 		if (pev->movedir.z > 0.f && pev->speed > (g_psv_gravity->value * pOther->pev->gravity))
 		{
-			dynamic_cast<CBasePlayer*>(pOther)->SetCurrentUpwardsTriggerPush(this);
+			// this is broken, upwards push still works the usual way for now - Max Vollmer, 2022-10-05
+			//dynamic_cast<CBasePlayer*>(pOther)->SetCurrentUpwardsTriggerPush(this);
 		}
-		return;
+		else
+		{
+			return;
+		}
 	}
 
 	if (pevToucher->solid != SOLID_NOT && pevToucher->solid != SOLID_BSP)
