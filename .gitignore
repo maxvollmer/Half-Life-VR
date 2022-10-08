@@ -1,6 +1,7 @@
 .vs
 *.sdf
 __crashdumps/
+__keys/
 Debug/
 Release/
 obj/
