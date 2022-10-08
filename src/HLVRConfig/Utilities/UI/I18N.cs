@@ -73,8 +73,6 @@ namespace HLVRConfig.Utilities.UI
                 }
                 if (File.Exists(I18NFile))
                 {
-                    texts.Clear();
-
                     using (StringReader reader = new StringReader(File.ReadAllText(I18NFile, new UTF8Encoding(false))))
                     {
                         string line;
@@ -83,7 +81,7 @@ namespace HLVRConfig.Utilities.UI
                             var pair = line.Split(new char[] { '=' }, 2);
                             if (pair.Length == 2)
                             {
-                                texts[pair[0]] = pair[1];
+                                texts[pair[0]] = pair[1].Replace("\\n", "\n");
                             }
                         }
                     }
@@ -106,7 +104,7 @@ namespace HLVRConfig.Utilities.UI
                 {
                     Directory.CreateDirectory(HLVRPaths.VRI18NDirectory);
                 }
-                var lines = texts.ToList().ConvertAll(pair => pair.Key + "=" + pair.Value);
+                var lines = texts.ToList().ConvertAll(pair => pair.Key + "=" + pair.Value.Replace("\n", "\\n"));
                 lines.Sort();
                 File.WriteAllText(I18NFile, string.Join("\n", lines), new UTF8Encoding(false));
             }

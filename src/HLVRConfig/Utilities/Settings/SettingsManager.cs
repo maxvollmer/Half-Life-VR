@@ -70,6 +70,11 @@ namespace HLVRConfig.Utilities.Settings
             {
                 HLVRPaths.RestoreLastHLDirectory();
             }
+
+            if (string.IsNullOrEmpty(HLVRPaths.SteamExeDirectory))
+            {
+                HLVRPaths.RestoreLastSteamDirectory();
+            }
         }
 
         private static void InitModSettings()
@@ -234,7 +239,10 @@ namespace HLVRConfig.Utilities.Settings
             }
 
             if (isLauncherSetting)
+            {
                 DelayedStoreLauncherSettings();
+                Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (Application.Current?.MainWindow as MainWindow)?.UpdateState()));
+            }
             else
                 DelayedStoreModSettings();
 

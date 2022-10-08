@@ -28,7 +28,9 @@ namespace HLVRConfig.Utilities.Settings
 
 
         public static readonly SettingCategory CategoryGeneralInput = new SettingCategory(
-            new I18N.I18NString("InputSettings.General", "General"));
+            new I18N.I18NString("InputSettings.General", "General")
+            , new I18N.I18NString("InputSettings.General.LeftyNote", "Note: If you enable Left Hand Mode you must select or create left-handed bindings instead of Default Bindings in SteamVR,\nor your buttons will literally be on the wrong hands. The mod sadly cannot automagically do this for you.")
+            );
 
         public static readonly SettingCategory CategoryAntinauseaFeatures = new SettingCategory(
             new I18N.I18NString("InputSettings.AntinauseaFeatures", "Anti-nausea features"));
@@ -120,6 +122,11 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_enable_aim_laser", Setting.Create( new I18N.I18NString("vr_enable_aim_laser", "Enable aim laser pointer for range weapons"), false ) },
                 { "vr_crowbar_vanilla_attack_enabled", Setting.Create( new I18N.I18NString("vr_crowbar_vanilla_attack_enabled", "Enable crowbar melee attack on 'fire' action."), false ) },
                 { "vr_lefthand_mode", Setting.Create( new I18N.I18NString("vr_lefthand_mode", "Enable Left Hand Mode."), false ) },
+
+                { "vr_teleport_attachment", Setting.Create( new I18N.I18NString("vr_teleport_location", "Teleporter location"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.OffHand", "Off Hand") }, { "1", new I18N.I18NString("vr_attachment.DominantHand", "Dominant Hand") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.CustomPose", "Custom SteamVR Input Pose") } }, "0" ) },
+                { "vr_flashlight_attachment", Setting.Create( new I18N.I18NString("vr_flashlight_location", "Flashlight location"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.OffHand", "Off Hand") }, { "1", new I18N.I18NString("vr_attachment.DominantHand", "Dominant Hand") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.CustomPose", "Custom SteamVR Input Pose") } }, "0") },
+                { "vr_movement_attachment", Setting.Create( new I18N.I18NString("vr_movement_direction", "Movement direction"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.OffHand", "Off Hand") }, { "1", new I18N.I18NString("vr_attachment.DominantHand", "Dominant Hand") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.CustomPose", "Custom SteamVR Input Pose") } }, "0") },
+
                 { "vr_weapon_grenade_mode", Setting.Create( new I18N.I18NString("vr_weapon_grenade_mode", "Grenade throw mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_weapon_grenade_mode.ControllerVelocity", "Use controller velocity") }, { "1", new I18N.I18NString("vr_weapon_grenade_mode.ControllerAimGameVelocity", "Aim with controller, but fly with fixed speed (as in original game)") } }, "0" ) },
                 { "vr_togglewalk", Setting.Create( new I18N.I18NString("vr_togglewalk", "Walk Input Mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_togglewalk.Hold", "Hold (Hold to Walk, release to run)") }, { "1", new I18N.I18NString("vr_togglewalk.Toggle", "Toggle (Click to switch between walking and running)") } }, "0" ) },
                 { "vr_melee_swing_speed", Setting.Create( new I18N.I18NString("vr_melee_swing_speed", "Minimum controller speed to trigger melee damage"), SettingType.SPEED, "100" ) },
@@ -158,12 +165,6 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_yawspeed", Setting.Create( new I18N.I18NString("vr_yawspeed", "Turn speed (degrees/s)"), SettingType.COUNT, "210" ) },
                 { "vr_walkspeedfactor", Setting.Create( new I18N.I18NString("vr_walkspeedfactor", "Speed factor when 'walk' is active"), SettingType.FACTOR, "0.3" ) },
             } },
-
-            { CategoryAttachments, new OrderedDictionary<string, Setting>() {
-                { "vr_teleport_attachment", Setting.Create( new I18N.I18NString("vr_teleport_attachment", "Teleporter attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0" ) },
-                { "vr_flashlight_attachment", Setting.Create( new I18N.I18NString("vr_flashlight_attachment", "Flashlight attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0") },
-                { "vr_movement_attachment", Setting.Create( new I18N.I18NString("vr_movement_attachment", "Movement attachment"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_attachment.Hand", "Hand") }, { "1", new I18N.I18NString("vr_attachment.Weapon", "Weapon") }, { "2", new I18N.I18NString("vr_attachment.Head", "Head (HMD)") }, { "3", new I18N.I18NString("vr_attachment.Pose", "SteamVR Input pose") } }, "0") },
-            } },
         };
 
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> ImmersionSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
@@ -178,7 +179,7 @@ namespace HLVRConfig.Utilities.Settings
             { CategoryCompatibility, new OrderedDictionary<string, Setting>() {
                 { "vr_force_introtrainride", Setting.Create( new I18N.I18NString("vr_force_introtrainride", "Enable hacky fix for issues with intro train ride"), true ) },
                 { "vr_blastpit_fan_nonsolid", Setting.Create( new I18N.I18NString("vr_blastpit_fan_nonsolid", "Make Blast Pit fan non-solid"), true) },
-                { "vr_blastpit_fan_delay", Setting.Create( new I18N.I18NString("vr_blastpit_fan_delay", "Extra delay (in seconds) for Blast Pit fan to spin up"), SettingType.FACTOR, "1" ) },
+                { "vr_blastpit_fan_delay", Setting.Create( new I18N.I18NString("vr_blastpit_fan_delay", "Extra delay (in seconds) for Blast Pit fan to spin up"), SettingType.FACTOR, "1.0" ) },
                 { "vr_view_dist_to_walls", Setting.Create( new I18N.I18NString("vr_view_dist_to_walls", "Minimum view distance to walls"), SettingType.DISTANCE, "5" ) },
             } },
 
@@ -256,10 +257,10 @@ namespace HLVRConfig.Utilities.Settings
             } },
 
             { CategoryWorldCustomizationAndScaling, new OrderedDictionary<string, Setting>() {
-                { WorldScale, Setting.Create( new I18N.I18NString(WorldScale, "World scale"), SettingType.FACTOR, "1" ) },
-                { "vr_world_z_strech", Setting.Create( new I18N.I18NString("vr_world_z_strech", "World height factor"), SettingType.FACTOR, "1" ) },
+                { WorldScale, Setting.Create( new I18N.I18NString(WorldScale, "World scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_world_z_strech", Setting.Create( new I18N.I18NString("vr_world_z_strech", "World height factor"), SettingType.FACTOR, "1.0" ) },
 
-                { "vr_npcscale", Setting.Create( new I18N.I18NString("vr_npcscale", "NPC scale"), SettingType.FACTOR, "1" ) },
+                { "vr_npcscale", Setting.Create( new I18N.I18NString("vr_npcscale", "NPC scale"), SettingType.FACTOR, "1.0" ) },
             } },
 
             { CategoryHUD, new OrderedDictionary<string, Setting>() {
@@ -301,15 +302,17 @@ namespace HLVRConfig.Utilities.Settings
             } },
 
             { CategoryVRMenu, new OrderedDictionary<string, Setting>() {
-                { "vr_menu_placement", Setting.Create( new I18N.I18NString("vr_menu_placement", "VR Menu Placement"), new OrderedDictionary<string, I18N.I18NString>(){ { "1", new I18N.I18NString("vr_menu_placement.LeftHand", "Left Hand") }, { "2", new I18N.I18NString("vr_menu_placement.RightHand", "Right Hand)") }, { "0", new I18N.I18NString("vr_menu_placement.HMD", "HMD") } }, "0" ) },
+                //{ "vr_menu_placement", Setting.Create( new I18N.I18NString("vr_menu_placement", "VR Menu Placement"), new OrderedDictionary<string, I18N.I18NString>(){ { "1", new I18N.I18NString("vr_menu_placement.LeftHand", "Left Hand") }, { "2", new I18N.I18NString("vr_menu_placement.RightHand", "Right Hand)") }, { "0", new I18N.I18NString("vr_menu_placement.HMD", "HMD") } }, "0" ) },
 
-                { "vr_menu_scale", Setting.Create( new I18N.I18NString("vr_menu_scale", "VR Menu Scale"), SettingType.FACTOR, "1" ) },
+                { "vr_menu_scale", Setting.Create( new I18N.I18NString("vr_menu_scale", "VR Menu Scale"), SettingType.FACTOR, "1.0" ) },
                 { "vr_menu_opacity", Setting.Create( new I18N.I18NString("vr_menu_opacity", "VR Menu Opacity"), SettingType.FACTOR, "0.9" ) },
+
+                { "vr_menu_click_source", Setting.Create( new I18N.I18NString("vr_menu_click_source", "VR Menu Click Source"), new OrderedDictionary<string, I18N.I18NString>(){ { "0", new I18N.I18NString("vr_menu_click_source.FireAction", "Click with Fire Action") }, { "1", new I18N.I18NString("vr_menu_click_source.LegacyUse", "Click with Legacy Use)") }, { "2", new I18N.I18NString("vr_menu_click_source.Dedicated", "Use dedicated VR Menu Click Action") } }, "0" ) },
             } },
 
             { CategoryAdvancedHUD, new OrderedDictionary<string, Setting>() {
-                { "vr_hud_size", Setting.Create( new I18N.I18NString("vr_hud_size", "HUD scale"), SettingType.FACTOR, "1" ) },
-                { "vr_hud_textscale", Setting.Create( new I18N.I18NString("vr_hud_textscale", "HUD text scale"), SettingType.FACTOR, "1" ) },
+                { "vr_hud_size", Setting.Create( new I18N.I18NString("vr_hud_size", "HUD scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_hud_textscale", Setting.Create( new I18N.I18NString("vr_hud_textscale", "HUD text scale"), SettingType.FACTOR, "1.0" ) },
 
                 { "vr_hud_ammo_offset_x", Setting.Create( new I18N.I18NString("vr_hud_ammo_offset_x", "HUD ammo display offset X"), SettingType.COUNT, "3", new SettingDependency("vr_hud_ammo", "1") ) },
                 { "vr_hud_ammo_offset_y", Setting.Create( new I18N.I18NString("vr_hud_ammo_offset_y", "HUD ammo display offset Y"), SettingType.COUNT, "-3", new SettingDependency("vr_hud_ammo", "1") ) },
@@ -322,28 +325,28 @@ namespace HLVRConfig.Utilities.Settings
             } },
 
             { CategoryIndividualWeaponScaling, new OrderedDictionary<string, Setting>() {
-                { "vr_weaponscale", Setting.Create( new I18N.I18NString("vr_weaponscale", "Weapon scale"), SettingType.FACTOR, "1" ) },
+                { "vr_weaponscale", Setting.Create( new I18N.I18NString("vr_weaponscale", "Weapon scale"), SettingType.FACTOR, "1.0" ) },
 
-                { "vr_gordon_hand_scale", Setting.Create( new I18N.I18NString("vr_gordon_hand_scale", "Hand scale"), SettingType.FACTOR, "1" ) },
-                { "vr_crowbar_scale", Setting.Create( new I18N.I18NString("vr_crowbar_scale", "Crowbar scale"), SettingType.FACTOR, "1" ) },
+                { "vr_gordon_hand_scale", Setting.Create( new I18N.I18NString("vr_gordon_hand_scale", "Hand scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_crowbar_scale", Setting.Create( new I18N.I18NString("vr_crowbar_scale", "Crowbar scale"), SettingType.FACTOR, "1.0" ) },
 
-                { "vr_9mmhandgun_scale", Setting.Create( new I18N.I18NString("vr_9mmhandgun_scale", "9mm handgun scale"), SettingType.FACTOR, "1" ) },
-                { "vr_357_scale", Setting.Create( new I18N.I18NString("vr_357_scale", "357 scale"), SettingType.FACTOR, "1" ) },
+                { "vr_9mmhandgun_scale", Setting.Create( new I18N.I18NString("vr_9mmhandgun_scale", "9mm handgun scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_357_scale", Setting.Create( new I18N.I18NString("vr_357_scale", "357 scale"), SettingType.FACTOR, "1.0" ) },
 
-                { "vr_9mmar_scale", Setting.Create( new I18N.I18NString("vr_9mmar_scale", "9mm AR scale"), SettingType.FACTOR, "1" ) },
-                { "vr_shotgun_scale", Setting.Create( new I18N.I18NString("vr_shotgun_scale", "Shotgun scale"), SettingType.FACTOR, "1" ) },
-                { "vr_crossbow_scale", Setting.Create( new I18N.I18NString("vr_crossbow_scale", "Crossbow scale"), SettingType.FACTOR, "1" ) },
+                { "vr_9mmar_scale", Setting.Create( new I18N.I18NString("vr_9mmar_scale", "9mm AR scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_shotgun_scale", Setting.Create( new I18N.I18NString("vr_shotgun_scale", "Shotgun scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_crossbow_scale", Setting.Create( new I18N.I18NString("vr_crossbow_scale", "Crossbow scale"), SettingType.FACTOR, "1.0" ) },
 
-                { "vr_rpg_scale", Setting.Create( new I18N.I18NString("vr_rpg_scale", "RPG scale"), SettingType.FACTOR, "1" ) },
-                { "vr_gauss_scale", Setting.Create( new I18N.I18NString("vr_gauss_scale", "Gauss scale"), SettingType.FACTOR, "1" ) },
-                { "vr_egon_scale", Setting.Create( new I18N.I18NString("vr_egon_scale", "Egon scale"), SettingType.FACTOR, "1" ) },
-                { "vr_hgun_scale", Setting.Create( new I18N.I18NString("vr_hgun_scale", "Hornet gun scale"), SettingType.FACTOR, "1" ) },
+                { "vr_rpg_scale", Setting.Create( new I18N.I18NString("vr_rpg_scale", "RPG scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_gauss_scale", Setting.Create( new I18N.I18NString("vr_gauss_scale", "Gauss scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_egon_scale", Setting.Create( new I18N.I18NString("vr_egon_scale", "Egon scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_hgun_scale", Setting.Create( new I18N.I18NString("vr_hgun_scale", "Hornet gun scale"), SettingType.FACTOR, "1.0" ) },
 
-                { "vr_grenade_scale", Setting.Create( new I18N.I18NString("vr_grenade_scale", "Grenade scale"), SettingType.FACTOR, "1" ) },
-                { "vr_tripmine_scale", Setting.Create( new I18N.I18NString("vr_tripmine_scale", "Tripmine scale"), SettingType.FACTOR, "1" ) },
-                { "vr_satchel_scale", Setting.Create( new I18N.I18NString("vr_satchel_scale", "Satchel scale"), SettingType.FACTOR, "1" ) },
-                { "vr_satchel_radio_scale", Setting.Create( new I18N.I18NString("vr_satchel_radio_scale", "Satchel radio scale"), SettingType.FACTOR, "1" ) },
-                { "vr_squeak_scale", Setting.Create( new I18N.I18NString("vr_squeak_scale", "Snark scale"), SettingType.FACTOR, "1" ) },
+                { "vr_grenade_scale", Setting.Create( new I18N.I18NString("vr_grenade_scale", "Grenade scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_tripmine_scale", Setting.Create( new I18N.I18NString("vr_tripmine_scale", "Tripmine scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_satchel_scale", Setting.Create( new I18N.I18NString("vr_satchel_scale", "Satchel scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_satchel_radio_scale", Setting.Create( new I18N.I18NString("vr_satchel_radio_scale", "Satchel radio scale"), SettingType.FACTOR, "1.0" ) },
+                { "vr_squeak_scale", Setting.Create( new I18N.I18NString("vr_squeak_scale", "Snark scale"), SettingType.FACTOR, "1.0" ) },
             } },
         };
 
@@ -372,7 +375,15 @@ namespace HLVRConfig.Utilities.Settings
                 {
                     if (bar.Value.TryGetValue(key, out Setting setting))
                     {
-                        setting.SetValue(value);
+                        // don't clear out paths, always reset to default value instead
+                        if (setting.IsFolder && string.IsNullOrEmpty(value))
+                        {
+                            setting.SetValue(setting.DefaultValue);
+                        }
+                        else
+                        {
+                            setting.SetValue(value);
+                        }
                         return true;
                     }
                 }

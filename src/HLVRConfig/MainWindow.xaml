@@ -12,6 +12,12 @@
             <controls:I18NTabItem Key="GUI.Tab.ModStatus" DefaultValue="Mod Status">
                 <DockPanel>
                     <StackPanel Orientation="Vertical" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="SteamNotFoundPanel">
+                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">
+                                <controls:I18NText Key="GUI.SteamNotFoundMessage" DefaultValue="Couldn't find Steam.exe. Please go to &quot;Launcher Config&quot; to fix."></controls:I18NText>
+                            </TextBlock>
+                        </StackPanel>
+
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="ModNotFoundPanel">
                             <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">
                                 <controls:I18NText Key="GUI.ModNotFoundMessage" DefaultValue="Couldn't find Half-Life: VR folder. Please go to &quot;Launcher Config&quot; to fix."></controls:I18NText>

@@ -50,6 +50,7 @@ namespace HLVRConfig.Utilities.Settings
         public static readonly string AutoCloseLauncher = "AutoCloseLauncher";
         public static readonly string AutoCloseGame = "AutoCloseGame";
         public static readonly string HLVRDirectory = "HLVRDirectory";
+        public static readonly string SteamExeDirectory = "SteamExeDirectory";
         public static readonly string Language = "Language";
         public static readonly string NumberOfDisplayedLogLines = "NumberOfDisplayedLogLines";
         public static readonly string EnableMiniDumpButton = "EnableMiniDumpButton";
@@ -60,6 +61,7 @@ namespace HLVRConfig.Utilities.Settings
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> GeneralSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
         {
             { CategoryModSpecifics, new OrderedDictionary<string, Setting>() {
+                { SteamExeDirectory, Setting.Create( new I18N.I18NString(SteamExeDirectory, "Steam.exe Directory"), HLVRPaths.LastSteamExeDirectory ).MakeFolderSetting() },
                 { HLVRDirectory, Setting.Create( new I18N.I18NString(HLVRDirectory, "Half-Life: VR Directory"), HLVRPaths.LastHLVRDirectory ).MakeFolderSetting() },
                 { ModWindowSize, Setting.Create( new I18N.I18NString(ModWindowSize, "Mod Window Size"), MakeAllowedWindowSizes(), "-width 1600 -height 1200" ) },
             } },
@@ -155,7 +157,15 @@ namespace HLVRConfig.Utilities.Settings
                 {
                     if (bar.Value.TryGetValue(key, out Setting setting))
                     {
-                        setting.SetValue(value);
+                        // don't clear out paths, always reset to default value instead
+                        if (setting.IsFolder && string.IsNullOrEmpty(value))
+                        {
+                            setting.SetValue(setting.DefaultValue);
+                        }
+                        else
+                        {
+                            setting.SetValue(value);
+                        }
                         return true;
                     }
                 }

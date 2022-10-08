@@ -67,7 +67,7 @@ namespace HLVRConfig.Utilities.Process
 
             if (!hlvrModLauncher.IsGameRunning())
             {
-                ShowError("Can't create mini dump, Half-Life isn't running. (How did you press this button, it should be invisible?!)");
+                ShowError("Can't create mini dump, Half-Life VR isn't running. (How did you press this button, it should be invisible?!)");
                 return;
             }
 

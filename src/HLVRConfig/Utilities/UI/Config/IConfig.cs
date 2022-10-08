@@ -102,11 +102,11 @@ namespace HLVRConfig.Utilities.UI.Config
                     inputPanel.Children.Add(meterTextbox);
                     inputPanel.Children.Add(CreateMiniText(value.Type == SettingType.SPEED ? "cm/s" : "cm"));
 
-                    inputPanel.Children.Add(CreateDefaultLabel(value.DefaultValue + "/" + UnitToMeter(value.DefaultValue)));
+                    inputPanel.Children.Add(CreateDefaultLabel(value.DefaultValue + "/" + UnitToMeter(value.DefaultValue), value.IsFolder));
                 }
                 else
                 {
-                    inputPanel.Children.Add(CreateDefaultLabel(value.DefaultValue));
+                    inputPanel.Children.Add(CreateDefaultLabel(value.DefaultValue, value.IsFolder));
                 }
             }
             else
@@ -141,16 +141,18 @@ namespace HLVRConfig.Utilities.UI.Config
                 inputPanel.Children.Add(combobox);
 
                 if (defaultValue != null)
-                    inputPanel.Children.Add(CreateDefaultLabel(I18N.Get(defaultValue)));
+                    inputPanel.Children.Add(CreateDefaultLabel(I18N.Get(defaultValue), value.IsFolder));
             }
 
             panel.Children.Add(inputPanel);
         }
 
-        private TextBlock CreateDefaultLabel(string defaultValue)
+        private TextBlock CreateDefaultLabel(string defaultValue, bool isFolder)
         {
-            if (defaultValue.Contains("("))
+            if (!isFolder && defaultValue.Contains("("))
+            {
                 defaultValue = defaultValue.Substring(0, defaultValue.IndexOf("(")).Trim();
+            }
 
             return CreateMiniText("(" + I18N.Get(DefaultLabel) + ": " + defaultValue + ")", 20);
         }

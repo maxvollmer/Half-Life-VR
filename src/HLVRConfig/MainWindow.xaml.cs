@@ -116,9 +116,10 @@ namespace HLVRConfig
                 OnWindowStateChanged();
             }
             if (HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryLauncher][LauncherSettings.AutoRunMod].IsTrue()
-                && HLVRPaths.CheckHLVRDirectory())
+                && HLVRPaths.CheckHLVRDirectory()
+                && HLVRPaths.CheckSteamDirectory())
             {
-                hlvrModLauncher.LaunchMod(false);
+                hlvrModLauncher.LaunchMod();
             }
         }
 
@@ -175,8 +176,17 @@ namespace HLVRConfig
         public void UpdateState()
         {
             UpdateSettingsAndLanguage();
-            if (!HLVRPaths.CheckHLVRDirectory())
+            if (!HLVRPaths.CheckSteamDirectory())
             {
+                SteamNotFoundPanel.Visibility = Visibility.Visible;
+                ModNotFoundPanel.Visibility = Visibility.Collapsed;
+                NotRunningGamePanel.Visibility = Visibility.Collapsed;
+                RunningGamePannel.Visibility = Visibility.Collapsed;
+                CreateMiniDumpButton.Visibility = Visibility.Collapsed;
+            }
+            else if (!HLVRPaths.CheckHLVRDirectory())
+            {
+                SteamNotFoundPanel.Visibility = Visibility.Collapsed;
                 ModNotFoundPanel.Visibility = Visibility.Visible;
                 NotRunningGamePanel.Visibility = Visibility.Collapsed;
                 RunningGamePannel.Visibility = Visibility.Collapsed;
@@ -184,6 +194,7 @@ namespace HLVRConfig
             }
             else
             {
+                SteamNotFoundPanel.Visibility = Visibility.Collapsed;
                 ModNotFoundPanel.Visibility = Visibility.Collapsed;
                 NotRunningGamePanel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Collapsed : Visibility.Visible;
                 RunningGamePannel.Visibility = hlvrModLauncher.IsGameRunning() ? Visibility.Visible : Visibility.Collapsed;
@@ -232,7 +243,7 @@ namespace HLVRConfig
 
         private void LaunchMod_Click(object sender, RoutedEventArgs e)
         {
-            hlvrModLauncher.LaunchMod(true);
+            hlvrModLauncher.LaunchMod();
             UpdateState();
         }
 

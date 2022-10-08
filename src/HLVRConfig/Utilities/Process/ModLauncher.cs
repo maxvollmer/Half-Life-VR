@@ -4,6 +4,7 @@ using Microsoft.Win32.SafeHandles;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows.Media;
 
 namespace HLVRConfig.Utilities.Process
@@ -15,40 +16,46 @@ namespace HLVRConfig.Utilities.Process
 
         private System.Diagnostics.Process hlProcess = null;
 
-        public void LaunchMod(bool terminateIfAlreadyRunning)
+        public void LaunchMod()
         {
             lock (gameLock)
             {
-                if (IsGameRunning())
+                if (!IsGameRunning())
                 {
-                    if (terminateIfAlreadyRunning)
+                    string windowsize = HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.ModWindowSize].Value;
+
+                    // Steam runs game default with the following arguments:
+                    // -console -dev 2 -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0 +gl_vsync 0 +fps_max 90 +fps_override 1
+
+                    // windowsize contains custom size set by player or default ("-width 1600 -height 1200")
+
+                    // steam://rungameid/1908720
+                    // Steam.exe -applaunch 1908720 -width 1600 -height 1200
+
+                    hlProcess = System.Diagnostics.Process.Start(new ProcessStartInfo
                     {
-                        TerminateGame();
-                    }
-                    else
+                        WorkingDirectory = HLVRPaths.SteamExeDirectory,
+                        FileName = HLVRPaths.SteamExecutable,
+                        Arguments = "-applaunch 1908720 " + windowsize,
+                        UseShellExecute = false,
+                        RedirectStandardError = false,
+                        RedirectStandardOutput = false
+                    });
+
+                    // ugly wait loop that checks if hl.exe has been launched by Steam
+                    // and then hookes into it
+                    // tries for maximum 2 seconds, then gives up
+                    int tries = 0;
+                    while (!IsGameRunning() && tries < 20)
                     {
-                        return;
+                        Thread.Sleep(100);
+                        tries++;
                     }
                 }
-
-                string windowsize = HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.ModWindowSize].Value;
-
-                hlProcess = System.Diagnostics.Process.Start(new ProcessStartInfo
-                {
-                    WorkingDirectory = HLVRPaths.HLVRDirectory,
-                    FileName = HLVRPaths.HLVRExecutable,
-                    Arguments = "-console -dev 2 -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +sv_lan 1 +cl_mousegrab 0 +gl_vsync 0 +fps_max 90 +fps_override 1",
-                    UseShellExecute = false,
-                    RedirectStandardError = false,
-                    RedirectStandardOutput = false
-                });
-
-                HookIntoHLProcess();
 
                 System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() =>
                 {
                     (System.Windows.Application.Current?.MainWindow as MainWindow)?.UpdateState();
-                    //HookIntoHLProcess();
                 }));
             }
         }
@@ -83,7 +90,7 @@ namespace HLVRConfig.Utilities.Process
                 }
                 catch (Exception e)
                 {
-                    string error = "ERROR Couldn't connect to Half-Life console: " + e.Message + "\n\n" + e.StackTrace;
+                    string error = "ERROR Couldn't connect to Half-Life VR console: " + e.Message + "\n\n" + e.StackTrace;
                     System.Windows.Application.Current?.Dispatcher?.BeginInvoke((Action)(() => (System.Windows.Application.Current?.MainWindow as MainWindow)?.ConsoleLog(error, Brushes.Red)));
                 }
             }
@@ -123,6 +130,11 @@ namespace HLVRConfig.Utilities.Process
         {
             lock (gameLock)
             {
+                if (hlProcess != null && hlProcess.HasExited)
+                {
+                    hlProcess = null;
+                }
+
                 if (hlProcess == null)
                 {
                     var potentialHLProcesses = System.Diagnostics.Process.GetProcessesByName("hl");
@@ -140,10 +152,15 @@ namespace HLVRConfig.Utilities.Process
                 }
 
                 if (hlProcess == null)
+                {
                     return false;
+                }
 
                 if (hlProcess.HasExited)
+                {
+                    hlProcess = null;
                     return false;
+                }
 
                 try { System.Diagnostics.Process.GetProcessById(hlProcess.Id); }
                 catch (InvalidOperationException) { return false; }

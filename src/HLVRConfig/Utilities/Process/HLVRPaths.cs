@@ -17,6 +17,7 @@ namespace HLVRConfig.Utilities.Process
     public class HLVRPaths
     {
         public static string LastHLVRDirectory { get; private set; } = "";
+        public static string LastSteamExeDirectory { get; private set; } = "";
 
         public static string HLVRDirectory
         {
@@ -29,6 +30,20 @@ namespace HLVRConfig.Utilities.Process
             {
                 HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.HLVRDirectory].Value = value;
                 LastHLVRDirectory = value;
+            }
+        }
+
+        public static string SteamExeDirectory
+        {
+            get
+            {
+                return HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.SteamExeDirectory].Value;
+            }
+
+            private set
+            {
+                HLVRSettingsManager.LauncherSettings.GeneralSettings[LauncherSettings.CategoryModSpecifics][LauncherSettings.SteamExeDirectory].Value = value;
+                LastSteamExeDirectory = value;
             }
         }
 
@@ -48,6 +63,7 @@ namespace HLVRConfig.Utilities.Process
 
 
         public static string HLVRExecutable { get { return Path.Combine(HLVRDirectory, "hl.exe"); } }
+        public static string SteamExecutable { get { return Path.Combine(SteamExeDirectory, "Steam.exe"); } }
 
 
         public static string VRModSettingsFileName { get { return "hlvr.cfg"; } }
@@ -68,7 +84,10 @@ namespace HLVRConfig.Utilities.Process
 
         public static void Initialize()
         {
-            // first try current location (we might be in the mod folder)
+            // first find steam
+            InitializeSteamDirectory();
+
+            // try current location (we might be in the mod folder)
             if (!InitializeFromLocation())
             {
                 // if that fails use steam to find Half-Life
@@ -79,6 +98,11 @@ namespace HLVRConfig.Utilities.Process
         public static void RestoreLastHLDirectory()
         {
             HLVRDirectory = LastHLVRDirectory;
+        }
+
+        public static void RestoreLastSteamDirectory()
+        {
+            SteamExeDirectory = LastSteamExeDirectory;
         }
 
         private static bool InitializeFromLocation()
@@ -152,21 +176,21 @@ namespace HLVRConfig.Utilities.Process
 
         private static string FindHLVRDirectoryFromSteam()
         {
-            string steamDirectory = GetSteamDirectory();
-            if (steamDirectory == null || steamDirectory.Length == 0)
+            InitializeSteamDirectory();
+            if (!CheckSteamDirectory())
                 return null;
 
-            string hlmanifest = Path.Combine(Path.Combine(steamDirectory, "steamapps"), "appmanifest_1908720.acf");
+            string hlmanifest = Path.Combine(Path.Combine(SteamExeDirectory, "steamapps"), "appmanifest_1908720.acf");
             if (File.Exists(hlmanifest))
             {
-                string hlDirectory = GetHLVRDirectoryFromManifest(steamDirectory, hlmanifest);
+                string hlDirectory = GetHLVRDirectoryFromManifest(SteamExeDirectory, hlmanifest);
                 if (Directory.Exists(hlDirectory))
                 {
                     return hlDirectory;
                 }
             }
 
-            string libraryfolders = Path.Combine(Path.Combine(steamDirectory, "steamapps"), "libraryfolders.vdf");
+            string libraryfolders = Path.Combine(Path.Combine(SteamExeDirectory, "steamapps"), "libraryfolders.vdf");
             if (!File.Exists(libraryfolders))
             {
                 return null;
@@ -198,6 +222,18 @@ namespace HLVRConfig.Utilities.Process
             return null;
         }
 
+        private static void InitializeSteamDirectory()
+        {
+            if (!CheckSteamDirectory())
+            {
+                var steamDirectory = GetSteamDirectory();
+                if (IsSteamDirectory(steamDirectory))
+                {
+                    SteamExeDirectory = steamDirectory;
+                }
+            }
+        }
+
         private static void InitializeFromSteam()
         {
             var directory = FindHLVRDirectoryFromSteam();
@@ -210,6 +246,16 @@ namespace HLVRConfig.Utilities.Process
         public static bool CheckHLVRDirectory()
         {
             return IsHLVRDirectory(HLVRDirectory);
+        }
+
+        public static bool CheckSteamDirectory()
+        {
+            return IsSteamDirectory(SteamExeDirectory);
+        }
+
+        private static bool IsSteamDirectory(string steamDir)
+        {
+            return steamDir != null && Directory.Exists(steamDir) && File.Exists(Path.Combine(steamDir, "Steam.exe"));
         }
 
         private static bool IsHLVRDirectory(string hlvrDir)
