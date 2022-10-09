@@ -1,5 +1,7 @@
 # <img src="../art/game_icon.png" alt="HLVR Game Icon" width="50"/> Half-Life: VR
 
+**Steam: [Half-Life: VR Mod](https://store.steampowered.com/app/1908720/HalfLife_VR_Mod/)**
+
 A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 
 - **Highly Immersive VR Experience.**
@@ -32,7 +34,6 @@ Play with beautiful AI upscaled textures, HD models, and a truly equal opportuni
 #### Links
 
 - Web: [halflifevr.de](https://www.halflifevr.de/)
-- Steam: **Coming Soon!**
 - Discord: [Max Makes Mods](https://discord.gg/jujwEGf62K)
 - Youtube: [Max Makes Mods](https://youtube.com/maxmakesmods)
 
