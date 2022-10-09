@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommand>$(HLVRInstallDirectory)hl.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>-num_edicts 3072 -heapsize 131072 -dev 5 -env -console -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +cl_mousegrab 0 +sv_lan 1 +gl_vsync 0 +fps_max 90 +fps_override 1</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(HLVRInstallDirectory)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerAttach>false</LocalDebuggerAttach>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommand>$(HLVRInstallDirectory)hl.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-num_edicts 3072 -heapsize 131072 -dev 5 -env -console -insecure -nomouse -nowinmouse -nojoy -noip -nofbo -window -width 1600 -height 1200 +cl_mousegrab 0 +sv_lan 1 +gl_vsync 0 +fps_max 90 +fps_override 1</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>$(HLVRInstallDirectory)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerAttach>false</LocalDebuggerAttach>
+  </PropertyGroup>
+</Project>

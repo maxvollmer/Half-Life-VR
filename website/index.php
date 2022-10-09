@@ -52,17 +52,24 @@
     <div class="content">
 
       <div class="content_row">
-        <a class="button" href="https://github.com/maxvollmer/Half-Life-VR">
+        <a class="button button6 button50" href="https://www.ko-fi.com/maxmakesmods">
+          <img class="button_icon" src="kofi.png" alt="patreon logo">
+          <div class="button_text">Ko-Fi</div>
+        </a>
+        <a class="button button6 button50" href="https://discord.gg/jujwEGf62K">
+          <img class="button_icon" src="discord.png" alt="discord logo">
+          <div class="button_text">Discord</div>
+        </a>
+        <a class="button button6 button50" href="https://github.com/maxvollmer/Half-Life-VR">
           <img class="button_icon" src="github.png" alt="github logo">
-          <div class="button_text">Source Code<br>Readme, Credits, Licensing</div>
+          <div class="button_text">Github</div>
         </a>
       </div>
 
       <div class="content_row">
         <div class="content_video">
-          <iframe width="420" height="315" src="https://www.youtube.com/embed/tgbNymZ7vqY"></iframe>
+          <iframe width="600" height="334" src="https://www.youtube.com/embed/4JhCGvUQyT4"></iframe>
         </div>
-        <div class="subnote">Didn't finish a promotional video for the mod in time. So you get this instead.</div>
       </div>
 
       <div class="content_row">
@@ -70,18 +77,6 @@
           <p><b>NOTE</b></p>
           <p>This mod is currently released as beta. There are a bunch of planned features not yet implemented, and it probably has plenty of bugs. If you are looking for a fully fleshed out experience, don't play the mod at this point.</p>
         </div>
-      </div>
-
-      <div class="content_row">
-        <div class="content_title"><h3>Community</h3></div>
-        <a class="button button3" href="https://discord.gg/32VbCSt">
-          <img class="button_icon" src="discord.png" alt="discord logo">
-          <div class="button_text">Join our Discord server</div>
-        </a>
-        <a class="button button3" href="https://www.reddit.com/r/HalfLife_VR/">
-          <img class="button_icon" src="reddit_logo.png" alt="reddit logo">
-          <div class="button_text">Half-Life: VR subreddit</div>
-        </a>
       </div>
 
       <div class="content_row">
@@ -114,16 +109,6 @@
         </a>
         <br><br>
         <a href="https://github.com/maxvollmer/Half-Life-VR/releases/">Older versions</a>
-      </div>
-
-      <div class="content_row">
-        <div class="content_title"><h3>Support</h3></div>
-        <a class="button button6" href="https://www.patreon.com/maxvollmer">
-          <img class="button_icon" src="patreon.png" alt="patreon logo" title="Support">
-        </a>
-        <a class="button button6" href="https://www.paypal.me/maxvollmer">
-          <img class="button_icon" src="paypal.png" alt="paypal logo" title="Donate">
-        </a>
       </div>
 
       <div class="content_row">

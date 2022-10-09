@@ -1,0 +1,149 @@
+{
+   "action_manifest_version" : 0,
+   "alias_info" : {},
+   "bindings" : {
+      "/actions/feedback" : {
+         "sources" : []
+      },
+      "/actions/input" : {
+         "sources" : [
+            {
+               "inputs" : {
+                  "position" : {
+                     "output" : "/actions/input/in/moveforwardbackwardsideways"
+                  }
+               },
+               "mode" : "joystick",
+               "parameters" : {
+                  "maxzone_pct" : "25",
+                  "sticky_click" : "false"
+               },
+               "path" : "/user/hand/left/input/joystick"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/quicksave"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/application_menu"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/leftgrab"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/grip"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/reloadweapon"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/application_menu"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/rightgrab"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/grip"
+            },
+            {
+               "inputs" : {
+                  "east" : {
+                     "output" : "/actions/input/in/toggleflashlight"
+                  },
+                  "north" : {
+                     "output" : "/actions/input/in/jump"
+                  },
+                  "south" : {
+                     "output" : "/actions/input/in/crouch"
+                  },
+                  "west" : {
+                     "output" : "/actions/input/in/longjump"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "sub_mode" : "click"
+               },
+               "path" : "/user/hand/right/input/trackpad"
+            },
+            {
+               "inputs" : {
+                  "east" : {
+                     "output" : "/actions/input/in/nextweapon"
+                  },
+                  "north" : {
+                     "output" : "/actions/input/in/reloadweapon"
+                  },
+                  "south" : {
+                     "output" : "/actions/input/in/legacyuse"
+                  },
+                  "west" : {
+                     "output" : "/actions/input/in/previousweapon"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "sub_mode" : "click"
+               },
+               "path" : "/user/hand/left/input/trackpad"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/fireweapon"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "east" : {
+                     "output" : "/actions/input/in/turn45right"
+                  },
+                  "north" : {
+                     "output" : "/actions/input/in/letgooffladder"
+                  },
+                  "south" : {
+                     "output" : "/actions/input/in/teleport"
+                  },
+                  "west" : {
+                     "output" : "/actions/input/in/turn45left"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "sub_mode" : "touch"
+               },
+               "path" : "/user/hand/right/input/joystick"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/altfireweapon"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/trigger"
+            }
+         ]
+      }
+   },
+   "category" : "steamvr_input",
+   "controller_type" : "holographic_controller",
+   "description" : "Default WMR controller binds for Half-Life: VR, made by kato0909.",
+   "name" : "Half-Life: VR Default WMR Binds",
+   "options" : {},
+   "simulated_actions" : []
+}

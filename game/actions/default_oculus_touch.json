@@ -1,0 +1,154 @@
+{
+   "action_manifest_version" : 0,
+   "alias_info" : {},
+   "bindings" : {
+      "/actions/custom" : {
+         "sources" : []
+      },
+      "/actions/feedback" : {
+         "sources" : []
+      },
+      "/actions/input" : {
+         "sources" : [
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/altfireweapon"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/reloadweapon"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/x"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/fireweapon"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/right/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/jump"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/a"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/crouch"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/b"
+            },
+            {
+               "inputs" : {
+                  "east" : {
+                     "output" : "/actions/input/in/turnright"
+                  },
+                  "north" : {
+                     "output" : "/actions/input/in/nextweapon"
+                  },
+                  "south" : {
+                     "output" : "/actions/input/in/previousweapon"
+                  },
+                  "west" : {
+                     "output" : "/actions/input/in/turnleft"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "sticky" : "true",
+                  "sub_mode" : "touch"
+               },
+               "path" : "/user/hand/right/input/joystick"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/leftgrab"
+                  },
+                  "touch" : {
+                     "output" : "/actions/input/in/leftgrab"
+                  }
+               },
+               "mode" : "button",
+               "parameters" : {
+                  "touchy_click" : "false"
+               },
+               "path" : "/user/hand/left/input/grip"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/rightgrab"
+                  },
+                  "touch" : {
+                     "output" : "/actions/input/in/rightgrab"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/grip"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/legacyuse"
+                  }
+               },
+               "mode" : "button",
+               "parameters" : {
+                  "force_input" : "",
+                  "touchy_click" : "false"
+               },
+               "path" : "/user/hand/right/input/joystick"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/toggleflashlight"
+                  }
+               },
+               "mode" : "toggle_button",
+               "path" : "/user/hand/left/input/y"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/input/in/teleport"
+                  },
+                  "position" : {
+                     "output" : "/actions/input/in/moveforwardbackwardsideways"
+                  }
+               },
+               "mode" : "joystick",
+               "path" : "/user/hand/left/input/joystick"
+            }
+         ]
+      },
+      "/actions/poses" : {
+         "chords" : [ {}, {}, {} ],
+         "sources" : []
+      }
+   },
+   "category" : "steamvr_input",
+   "controller_type" : "oculus_touch",
+   "description" : "Default Quest 2 Oculus Touch binds for Half-Life: VR, made by Lolingive.\n\nL.Trigger - Alt.Fire * R.Trigger - Fire\nL.Stick - Move * R.Stick - Smooth Turn and Select weapon\nL3 - Teleport * R3 - Use\nY - Flashlight * B - Jump\nX - Reload * A - Crouch",
+   "name" : "Half-Life: VR Default Oculus Touch Binds",
+   "options" : {},
+   "simulated_actions" : []
+}
