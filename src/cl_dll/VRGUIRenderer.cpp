@@ -39,7 +39,7 @@ namespace
         nk_byte col[4];
     };
 
-    void SetFont(nk_font* font)
+    void SafeSetFont(nk_font* font)
     {
         if (font)
         {
@@ -104,12 +104,18 @@ VRGUIRenderer& VRGUIRenderer::Instance()
     return VRGUIRenderer::instance;
 }
 
-void VRGUIRenderer::Init()
+void VRGUIRenderer::Init(int guiWidth, int guiHeight)
 {
     if (isInitialized)
     {
         ShutDown();
     }
+
+    // GUI is designed for a 2048x2048 square, scale all size/widths/etc accordingly.
+    m_guiWidth = guiWidth;
+    m_guiHeight = guiHeight;
+    m_guiScaleW = guiWidth / 2048.f;
+    m_guiScaleH = guiHeight / 2048.f;
 
     nulltexture.texture.id = VRTextureHelper::Instance().GetTexture("null.png");
     nulltexture.uv = { 0.f, 0.f };
@@ -119,9 +125,9 @@ void VRGUIRenderer::Init()
 
     std::string font_path = GetPathFor("/fonts/Roboto-Regular.ttf").u8string();
 
-    font_heading = nk_font_atlas_add_from_file(&atlas, font_path.c_str(), 60, 0);
-    font_text = nk_font_atlas_add_from_file(&atlas, font_path.c_str(), 48, 0);
-    font_text_smol = nk_font_atlas_add_from_file(&atlas, font_path.c_str(), 36, 0);
+    font_heading = nk_font_atlas_add_from_file(&atlas, font_path.c_str(), 60 * m_guiScaleH, 0);
+    font_text = nk_font_atlas_add_from_file(&atlas, font_path.c_str(), 48 * m_guiScaleH, 0);
+    font_text_smol = nk_font_atlas_add_from_file(&atlas, font_path.c_str(), 36 * m_guiScaleH, 0);
 
     if (!font_heading || !font_text || !font_text_smol)
     {
@@ -149,7 +155,7 @@ void VRGUIRenderer::Init()
 
     nk_style_load_all_cursors(&ctx, atlas.cursors);
 
-    SetFont(font_text);
+    SafeSetFont(font_text);
 
     isInitialized = true;
 }
@@ -171,9 +177,9 @@ void VRGUIRenderer::UpdateControllerState(VRControllerState& state)
 
 void VRGUIRenderer::UpdateGUI(int guiWidth, int guiHeight, bool isInGame)
 {
-    if (!isInitialized)
+    if (!isInitialized || guiWidth != m_guiWidth || guiHeight != m_guiHeight)
     {
-        Init();
+        Init(guiWidth, guiHeight);
     }
 
     if (!ctx.style.font)
@@ -190,33 +196,22 @@ void VRGUIRenderer::UpdateGUI(int guiWidth, int guiHeight, bool isInGame)
         }
     }
 
-    //lastState = currentState;
-    //currentState = state;
-    UpdateVRCursor(guiWidth, guiHeight);
+    UpdateVRCursor();
 
-    UpdateGUIElements(guiWidth, guiHeight, isInGame);
+    UpdateGUIElements(isInGame);
 
-    DrawGUI(guiWidth, guiHeight);
+    DrawGUI();
 
     nk_clear(&ctx);
 }
 
-void VRGUIRenderer::UpdateVRCursor(int guiWidth, int guiHeight)
+void VRGUIRenderer::UpdateVRCursor()
 {
-    VRGameFunctions::PrintToConsole(
-        (std::string("UpdateVRCursor: ")
-        + (currentState.isOverGUI ? "YesOverGui" : "NotOverGui") + ", "
-        + (currentState.isPressed ? "YesPressed" : "Notpressed") + ", "
-        + std::to_string(currentState.x) + ", "
-        + std::to_string(currentState.y) + "\n"
-        ).c_str()
-    );
-
     nk_input_begin(&ctx);
     if (currentState.isOverGUI)
     {
-        int x = (int)(currentState.x * guiWidth);
-        int y = (int)(currentState.y * guiHeight);
+        int x = (int)(currentState.x * m_guiWidth);
+        int y = (int)(currentState.y * m_guiHeight);
         nk_input_motion(&ctx, x, y);
         nk_input_button(&ctx, nk_buttons::NK_BUTTON_LEFT, x, y, currentState.isPressed);
     }
@@ -228,53 +223,57 @@ void VRGUIRenderer::UpdateVRCursor(int guiWidth, int guiHeight)
     nk_input_end(&ctx);
 }
 
-void VRGUIRenderer::UpdateGUIElements(int guiWidth, int guiHeight, bool isInGame)
+void VRGUIRenderer::UpdateGUIElements(bool isInGame)
 {
     static bool isInNewGameMenu = false;
     static int skill = 2;
     static nk_size volume = 100;
-    static int i = 20;
 
-    if (nk_begin(&ctx, "HLVRMainMenu", nk_rect(0, 0, (float)guiWidth, (float)guiHeight), NK_WINDOW_NO_SCROLLBAR))
+    if (nk_begin(&ctx, "HLVRMainMenu", nk_rect(0, 0, (float)m_guiWidth, (float)m_guiHeight), NK_WINDOW_NO_SCROLLBAR))
     {
-        SetFont(font_heading);
-        nk_layout_row_dynamic(&ctx, 0, 1);
+        SafeSetFont(font_heading);
+        nk_layout_row_begin(&ctx, NK_STATIC, 0, 7);
         {
+            nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+            nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+            nk_layout_row_push(&ctx, 1600 * m_guiScaleW);
             nk_label(&ctx, "Welcome to Half-Life: VR!", NK_TEXT_LEFT);
         }
+        nk_layout_row_end(&ctx);
 
-        SetFont(font_text_smol);
-        nk_layout_row_dynamic(&ctx, 0, 1);
+        SafeSetFont(font_text);
+        nk_layout_row_begin(&ctx, NK_STATIC, 0, 7);
         {
-            nk_label_wrap(&ctx, "This is a minimal VR menu added for your convenience. A more powerful menu is in the works.");
-            nk_label_wrap(&ctx, "To access the console, load savegames, or change settings use the desktop game window or HLVRConfig.");
-        }
+            nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+            nk_label(&ctx, " ", NK_TEXT_LEFT);
 
-        SetFont(font_text);
-        nk_layout_row_begin(&ctx, NK_STATIC, 0, 5);
-        {
-            nk_layout_row_push(&ctx, 300);
+            nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Easy", skill == 1))
             {
                 skill = 1;
                 VRGameFunctions::SetSkill(skill);
             }
-            nk_layout_row_push(&ctx, 300);
+            nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Normal", skill == 2))
             {
                 skill = 2;
                 VRGameFunctions::SetSkill(skill);
             }
-            nk_layout_row_push(&ctx, 300);
+            nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Hard", skill == 3))
             {
                 skill = 3;
                 VRGameFunctions::SetSkill(skill);
             }
 
-            nk_layout_row_push(&ctx, 300);
+            nk_layout_row_push(&ctx, 200 * m_guiScaleW);
+            nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+            nk_layout_row_push(&ctx, 200 * m_guiScaleW);
             nk_label(&ctx, "Volume:", NK_TEXT_LEFT);
-            nk_layout_row_push(&ctx, 500);
+
+            nk_layout_row_push(&ctx, 600 * m_guiScaleW);
             if (nk_progress(&ctx, &volume, 100, true))
             {
                 VRGameFunctions::SetVolume(volume / 100.f);
@@ -282,45 +281,96 @@ void VRGUIRenderer::UpdateGUIElements(int guiWidth, int guiHeight, bool isInGame
         }
         nk_layout_row_end(&ctx);
 
+        nk_layout_row_dynamic(&ctx, 100 * m_guiScaleH, 1);
+        nk_label_wrap(&ctx, " ");
+
         if (isInNewGameMenu)
         {
-            nk_layout_row_dynamic(&ctx, 0, 4);
+            nk_layout_row_begin(&ctx, NK_STATIC, 0, 2);
             {
+                nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+                nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+                nk_layout_row_push(&ctx, 855 * m_guiScaleW);
                 if (nk_button_label(&ctx, "Intro Train Ride"))
                 {
                     VRGameFunctions::StartNewGame(false);
                     isInNewGameMenu = false;
                 }
+            }
+            nk_layout_row_end(&ctx);
+
+            nk_layout_row_dynamic(&ctx, 30 * m_guiScaleH, 1);
+            nk_label_wrap(&ctx, " ");
+
+            nk_layout_row_begin(&ctx, NK_STATIC, 0, 2);
+            {
+                nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+                nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+                nk_layout_row_push(&ctx, 855 * m_guiScaleW);
                 if (nk_button_label(&ctx, "Straight to Black Mesa Inbound"))
                 {
                     VRGameFunctions::StartNewGame(true);
                     isInNewGameMenu = false;
                 }
+            }
+            nk_layout_row_end(&ctx);
+
+            nk_layout_row_dynamic(&ctx, 30 * m_guiScaleH, 1);
+            nk_label_wrap(&ctx, " ");
+
+            nk_layout_row_begin(&ctx, NK_STATIC, 0, 2);
+            {
+                nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+                nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+                nk_layout_row_push(&ctx, 855 * m_guiScaleW);
                 if (nk_button_label(&ctx, "Hazard Course (Training)"))
                 {
                     VRGameFunctions::StartHazardCourse();
+                    isInNewGameMenu = false;
                 }
+            }
+            nk_layout_row_end(&ctx);
+
+            nk_layout_row_dynamic(&ctx, 30 * m_guiScaleH, 1);
+            nk_label_wrap(&ctx, " ");
+
+            nk_layout_row_begin(&ctx, NK_STATIC, 0, 2);
+            {
+                nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+                nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+                nk_layout_row_push(&ctx, 855 * m_guiScaleW);
                 if (nk_button_label(&ctx, "Nevermind (Back)"))
                 {
                     isInNewGameMenu = false;
                 }
             }
+            nk_layout_row_end(&ctx);
         }
         else
         {
             bool canContinue = isInGame || VRGameFunctions::QuickSaveExists();
 
-            nk_layout_row_begin(&ctx, NK_STATIC, 0, canContinue ? 2 : 1);
+            nk_layout_row_begin(&ctx, NK_STATIC, 0, canContinue ? 4 : 3);
             {
-                nk_layout_row_push(&ctx, 400);
+                nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+                nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+                nk_layout_row_push(&ctx, 400 * m_guiScaleW);
                 if (nk_button_label(&ctx, "New Game"))
                 {
                     isInNewGameMenu = true;
                 }
 
+                nk_layout_row_push(&ctx, 20 * m_guiScaleW);
+                nk_label(&ctx, " ", NK_TEXT_LEFT);
+
                 if (canContinue)
                 {
-                    nk_layout_row_push(&ctx, 400);
+                    nk_layout_row_push(&ctx, 400 * m_guiScaleW);
                     if (nk_button_label(&ctx, "Continue"))
                     {
                         if (isInGame)
@@ -336,20 +386,29 @@ void VRGUIRenderer::UpdateGUIElements(int guiWidth, int guiHeight, bool isInGame
             }
             nk_layout_row_end(&ctx);
 
+            nk_layout_row_dynamic(&ctx, 30 * m_guiScaleH, 1);
+            nk_label_wrap(&ctx, " ");
+
             bool canQuickLoad = VRGameFunctions::QuickSaveExists();
-            nk_layout_row_begin(&ctx, NK_STATIC, 0, canQuickLoad ? 2 : 1);
+            nk_layout_row_begin(&ctx, NK_STATIC, 0, canQuickLoad ? 4 : 3);
             {
+                nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+                nk_label(&ctx, " ", NK_TEXT_LEFT);
+
                 if (isInGame)
                 {
-                    nk_layout_row_push(&ctx, 400);
+                    nk_layout_row_push(&ctx, 400 * m_guiScaleW);
                     if (nk_button_label(&ctx, "Quick Save"))
                     {
                         VRGameFunctions::QuickSave();
                     }
 
+                    nk_layout_row_push(&ctx, 20 * m_guiScaleW);
+                    nk_label(&ctx, " ", NK_TEXT_LEFT);
+
                     if (canQuickLoad)
                     {
-                        nk_layout_row_push(&ctx, 400);
+                        nk_layout_row_push(&ctx, 400 * m_guiScaleW);
                         if (nk_button_label(&ctx, "Quick Load"))
                         {
                             VRGameFunctions::QuickLoad();
@@ -359,53 +418,101 @@ void VRGUIRenderer::UpdateGUIElements(int guiWidth, int guiHeight, bool isInGame
             }
             nk_layout_row_end(&ctx);
 
-            nk_layout_row_static(&ctx, 0, 400, 1);
-            if (nk_button_label(&ctx, "Quit Game (Does Not Auto Save!)"))
+            nk_layout_row_dynamic(&ctx, 30 * m_guiScaleH, 1);
+            nk_label_wrap(&ctx, " ");
+
+            nk_layout_row_begin(&ctx, NK_STATIC, 0, 2);
             {
-                VRGameFunctions::QuitGame();
+                nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+                nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+                nk_layout_row_push(&ctx, 855 * m_guiScaleW);
+                if (nk_button_label(&ctx, "Quit Game (Does Not Auto Save!)"))
+                {
+                    VRGameFunctions::QuitGame();
+                }
             }
+            nk_layout_row_end(&ctx);
+
+            nk_layout_row_begin(&ctx, NK_STATIC, 0, 2);
+            {
+                nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+                nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+                nk_layout_row_push(&ctx, 0 * m_guiScaleW);
+                nk_button_label(&ctx, " ");
+            }
+            nk_layout_row_end(&ctx);
+
+            nk_layout_row_dynamic(&ctx, 30 * m_guiScaleH, 1);
+            nk_label_wrap(&ctx, " ");
         }
 
-        SetFont(font_heading);
-        nk_layout_row_dynamic(&ctx, 100, 1);
+        SafeSetFont(font_heading);
+        nk_layout_row_dynamic(&ctx, 200 * m_guiScaleH, 1);
         nk_label_wrap(&ctx, " ");
 
-        SetFont(font_text_smol);
-        nk_layout_row_dynamic(&ctx, 0, 1);
+        SafeSetFont(font_text_smol);
+        nk_layout_row_begin(&ctx, NK_STATIC, 0, 2);
         {
-            nk_label_wrap(&ctx, "Half-Life: VR is made by Max Vollmer with the help of Rorin, Formic.Sapien, DoomMarine23, and Junt.");
-        }
+            nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+            nk_label(&ctx, " ", NK_TEXT_LEFT);
 
-        nk_layout_row_static(&ctx, 0, 400, 4);
+            nk_layout_row_push(&ctx, 1600 * m_guiScaleW);
+            nk_label_wrap(&ctx, "This is a minimal VR menu added for your convenience. A more powerful menu is in the works. To access the console, load savegames, or change settings use the desktop game window or HLVRConfig.");
+        }
+        nk_layout_row_end(&ctx);
+
+        SafeSetFont(font_text_smol);
+        nk_layout_row_begin(&ctx, NK_STATIC, 0, 2);
         {
-            // TODO: "start" is Windows. If I (or someone else) ever get around to adding support
-            // for other systems, depending on the system the command is "xdg-open" or "open".
-            if (nk_button_label(&ctx, "Join \"Max Makes Mods\" Discord"))
-            {
-                system("start https://discord.gg/jujwEGf62K");
-            }
-            if (nk_button_label(&ctx, "\"Max Makes Mods\" on Youtube"))
-            {
-                system("start https://www.youtube.com/MaxMakesMods");
-            }
-            if (nk_button_label(&ctx, "Mod Website"))
-            {
-                system("start https://www.halflifevr.de");
-            }
-        }
+            nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+            nk_label(&ctx, " ", NK_TEXT_LEFT);
 
+            nk_layout_row_push(&ctx, 1600 * m_guiScaleW);
+            nk_label_wrap(&ctx, "Half-Life: VR is made by Max Vollmer with the help of Rorin, Formic.Sapien, DoomMarine23, and Junt. Not affiliated with Valve.");
+        }
+        nk_layout_row_end(&ctx);
+
+        nk_layout_row_begin(&ctx, NK_STATIC, 50 * m_guiScaleH, 2);
+        {
+            nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+            nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+            nk_layout_row_push(&ctx, 1600 * m_guiScaleW);
+            nk_label_wrap(&ctx, "halflifevr.de");
+
+            nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+            nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+            nk_layout_row_push(&ctx, 1600 * m_guiScaleW);
+            nk_label_wrap(&ctx, "maxmakesmods.de");
+
+            nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+            nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+            nk_layout_row_push(&ctx, 1600 * m_guiScaleW);
+            nk_label_wrap(&ctx, "youtube.com/maxmakesmods");
+
+            nk_layout_row_push(&ctx, 50 * m_guiScaleW);
+            nk_label(&ctx, " ", NK_TEXT_LEFT);
+
+            nk_layout_row_push(&ctx, 1600 * m_guiScaleW);
+            nk_label_wrap(&ctx, "discord.gg/jujwEGf62K or maxmakesmods.de/discord");
+        }
     }
     nk_end(&ctx);
 }
 
-void VRGUIRenderer::DrawGUI(int guiWidth, int guiHeight)
+// Adapted from nuklear_sdl_gl2.h
+void VRGUIRenderer::DrawGUI()
 {
     glPushAttrib(GL_ALL_ATTRIB_BITS);
 
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
-    glOrtho(0.0f, guiWidth, guiHeight, 0.0f, -1.0f, 1.0f);
+    glOrtho(0.0f, m_guiWidth, m_guiHeight, 0.0f, -1.0f, 1.0f);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadIdentity();
@@ -466,7 +573,7 @@ void VRGUIRenderer::DrawGUI(int guiWidth, int guiHeight)
         {
             if (!cmd->elem_count) continue;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
-            glScissor((GLint)(cmd->clip_rect.x), (GLint)(guiHeight - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)), (GLint)(cmd->clip_rect.w), (GLint)(cmd->clip_rect.h));
+            glScissor((GLint)(cmd->clip_rect.x), (GLint)(m_guiHeight - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)), (GLint)(cmd->clip_rect.w), (GLint)(cmd->clip_rect.h));
             glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
             offset += cmd->elem_count;
         }
