@@ -44,7 +44,6 @@ namespace
 	{
 		//return gVRRenderer.GetHelper()->GetHLMenuTexture();
 		return gVRRenderer.GetHelper()->GetVRGLGUITexture();
-		//return VRTextureHelper::Instance().GetTexture("vr_menu_placeholder.png");
 	}
 
 }  // namespace
@@ -173,13 +172,13 @@ void VRInput::HandleHLMenuInput()
 	int vr_menu_placement = (int)CVAR_GET_FLOAT("vr_menu_placement");
 	switch (vr_menu_placement)
 	{
-	case 1: // left hand
+	case 1: // menu is on left hand, use right hand for cursor
 		useRightController = true;
 		break;
-	case 2: // right hand
+	case 2: // menu is on right hand, use left hand for cursor
 		useRightController = false;
 		break;
-	case 0: // hmd
+	case 0: // menu is on hmd, use dominant hand for cursor
 	default:
 		useRightController = CVAR_GET_FLOAT("vr_lefthand_mode") == 0.f;
 		break;
@@ -188,11 +187,11 @@ void VRInput::HandleHLMenuInput()
 	vr::TrackedDeviceIndex_t controllerDeviceIndex;
 	if (useRightController)
 	{
-		controllerDeviceIndex = vr::VRSystem()->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_LeftHand);
+		controllerDeviceIndex = vr::VRSystem()->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
 	}
 	else
 	{
-		controllerDeviceIndex = vr::VRSystem()->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_RightHand);
+		controllerDeviceIndex = vr::VRSystem()->GetTrackedDeviceIndexForControllerRole(vr::ETrackedControllerRole::TrackedControllerRole_LeftHand);
 	}
 
 	static std::array<vr::TrackedDevicePose_t, vr::k_unMaxTrackedDeviceCount> trackedDevicePoses = { { 0 } };
