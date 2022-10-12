@@ -17,6 +17,7 @@ Play with beautiful AI upscaled textures, HD models, and a truly equal opportuni
 #### Links
 
 - [Player Guide](https://github.com/maxvollmer/Half-Life-VR/tree/main/docs/player-guide.md)
+- [Changelog](https://github.com/maxvollmer/Half-Life-VR/tree/main/docs/release-notes.md)
 - [halflifevr.de](https://www.halflifevr.de/)
 - [Discord](https://discord.gg/jujwEGf62K)
 - [Youtube](https://youtube.com/maxmakesmods)
