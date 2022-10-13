@@ -129,6 +129,15 @@
             {
                "inputs" : {
                   "click" : {
+                     "output" : "/actions/input/in/pausegame"
+                  }
+               },
+               "mode" : "toggle_button",
+               "path" : "/user/hand/right/input/y"
+            },
+            {
+               "inputs" : {
+                  "click" : {
                      "output" : "/actions/input/in/teleport"
                   },
                   "position" : {
@@ -147,7 +156,7 @@
    },
    "category" : "steamvr_input",
    "controller_type" : "oculus_touch",
-   "description" : "Default Quest 2 Oculus Touch binds for Half-Life: VR, made by Lolingive.\n\nL.Trigger - Alt.Fire * R.Trigger - Fire\nL.Stick - Move * R.Stick - Smooth Turn and Select weapon\nL3 - Teleport * R3 - Use\nY - Flashlight * B - Jump\nX - Reload * A - Crouch",
+   "description" : "Default Quest 2 Oculus Touch binds for Half-Life: VR, based on binds by Lolingive.\n\nL.Trigger - Alt.Fire * R.Trigger - Fire\nL.Stick - Move * R.Stick - Smooth Turn and Select weapon\nL3 - Teleport * R3 - Use\nY - Flashlight * B - Jump\nX - Reload * A - Crouch * R.Y - Menu",
    "name" : "Half-Life: VR Default Oculus Touch Binds",
    "options" : {},
    "simulated_actions" : []
