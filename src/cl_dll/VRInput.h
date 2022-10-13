@@ -86,6 +86,14 @@ public:
 	{
 		return m_vrMenuFireStatus;
 	}
+	inline void SetVRMenuAnalogFireStatus(bool vrMenuAnalogFireStatus)
+	{
+		m_vrMenuAnalogFireStatus = vrMenuAnalogFireStatus;
+	}
+	inline bool GetVRMenuAnalogFireStatus()
+	{
+		return m_vrMenuAnalogFireStatus;
+	}
 
 	enum class FeedbackType
 	{
@@ -186,6 +194,7 @@ private:
 	bool m_vrMenuClickStatus{ false };
 	bool m_vrMenuUseStatus{ false };
 	bool m_vrMenuFireStatus{ false };
+	bool m_vrMenuAnalogFireStatus{ false };
 
 	std::unordered_map<std::string, ActionSet> m_actionSets;
 	std::unordered_map<std::string, CustomAction> m_customActions;
