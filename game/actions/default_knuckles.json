@@ -2,10 +2,33 @@
    "action_manifest_version" : 0,
    "alias_info" : {},
    "bindings" : {
+      "/actions/custom" : {
+         "sources" : []
+      },
       "/actions/damagefeedback" : {
+         "haptics" : [
+            {
+               "output" : "/actions/damagefeedback/out/all",
+               "path" : "/user/hand/right/output/haptic"
+            },
+            {
+               "output" : "/actions/damagefeedback/out/all",
+               "path" : "/user/hand/left/output/haptic"
+            }
+         ],
          "sources" : []
       },
       "/actions/feedback" : {
+         "haptics" : [
+            {
+               "output" : "/actions/feedback/out/recoil",
+               "path" : "/user/hand/right/output/haptic"
+            },
+            {
+               "output" : "/actions/feedback/out/allbutrecoil",
+               "path" : "/user/hand/left/output/haptic"
+            }
+         ],
          "sources" : []
       },
       "/actions/input" : {
@@ -16,7 +39,8 @@
                   [ "/user/hand/right/input/b", "click" ]
                ],
                "output" : "/actions/input/in/longjump"
-            }
+            },
+            {}
          ],
          "skeleton" : [
             {
@@ -31,9 +55,6 @@
          "sources" : [
             {
                "inputs" : {
-                  "click" : {
-                     "output" : "/actions/input/in/quicksave"
-                  },
                   "position" : {
                      "output" : "/actions/input/in/moveforwardbackwardsideways"
                   }
@@ -72,6 +93,9 @@
                "inputs" : {
                   "click" : {
                      "output" : "/actions/input/in/legacyuse"
+                  },
+                  "double" : {
+                     "output" : "/actions/input/in/reloadweapon"
                   }
                },
                "mode" : "button",
@@ -106,26 +130,8 @@
             },
             {
                "inputs" : {
-                  "click" : {
-                     "output" : "/actions/input/in/holsterweapon"
-                  }
-               },
-               "mode" : "button",
-               "path" : "/user/hand/right/input/trackpad"
-            },
-            {
-               "inputs" : {
-                  "click" : {
-                     "output" : "/actions/input/in/toggleflashlight"
-                  }
-               },
-               "mode" : "button",
-               "path" : "/user/hand/left/input/trackpad"
-            },
-            {
-               "inputs" : {
-                  "click" : {
-                     "output" : "/actions/input/in/fireweapon"
+                  "pull" : {
+                     "output" : "/actions/input/in/analogfireweapon"
                   }
                },
                "mode" : "trigger",
@@ -133,9 +139,6 @@
             },
             {
                "inputs" : {
-                  "center" : {
-                     "output" : "/actions/input/in/quickload"
-                  },
                   "east" : {
                      "output" : "/actions/input/in/turn45right"
                   },
@@ -148,17 +151,74 @@
                   "sub_mode" : "touch"
                },
                "path" : "/user/hand/right/input/thumbstick"
+            },
+            {
+               "inputs" : {
+                  "north" : {
+                     "output" : "/actions/input/in/toggleflashlight"
+                  },
+                  "south" : {
+                     "output" : "/actions/input/in/pausegame"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "sub_mode" : "click"
+               },
+               "path" : "/user/hand/left/input/trackpad"
+            },
+            {
+               "inputs" : {
+                  "north" : {
+                     "output" : "/actions/input/in/teleport"
+                  },
+                  "south" : {
+                     "output" : "/actions/input/in/clickvrmenu"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "sub_mode" : "click"
+               },
+               "path" : "/user/hand/right/input/trackpad"
             }
          ]
       },
       "/actions/poses" : {
+         "poses" : [
+            {
+               "output" : "none",
+               "path" : "/user/hand/right/pose/tip"
+            },
+            {
+               "output" : "none",
+               "path" : "/user/hand/left/pose/base"
+            },
+            {
+               "output" : "none",
+               "path" : "/user/hand/left/pose/raw"
+            },
+            {
+               "output" : "none",
+               "path" : "/user/hand/right/pose/raw"
+            },
+            {
+               "output" : "none",
+               "path" : "/user/hand/right/pose/gdc2015"
+            },
+            {
+               "output" : "none",
+               "path" : "/user/hand/right/pose/base"
+            }
+         ],
          "sources" : []
       }
    },
    "category" : "steamvr_input",
    "controller_type" : "knuckles",
-   "description" : "Default knuckles binds for Half-Life: VR, made by Rorin.\n\nLeft grip + right B for long jump.",
+   "description" : "Default knuckles binds for Half-Life: VR, made by Rorin.\n\nLeft controller: thumbstick for movement, north trackpad for flashlight, south trackpad for pause. trigger is secondary fire. A is previous weapon, B is next weapon. Grip is left grab. \n\nRight controller: B jump, A is legacy use and double A is reload, North Trackpad is teleport and South Trackpad is ClickVRMenu, Trigger is fire weapon, thumbstick left/right snap turning.  Grip is right Grab.\n\nChords: Left Grip + Right B for long jump",
    "name" : "Half-Life: VR Default Knuckles Binds",
+   "interaction_profile" : "",
    "options" : {},
    "simulated_actions" : []
 }

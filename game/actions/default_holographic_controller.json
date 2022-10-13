@@ -23,7 +23,7 @@
             {
                "inputs" : {
                   "click" : {
-                     "output" : "/actions/input/in/quicksave"
+                     "output" : "/actions/input/in/pausegame"
                   }
                },
                "mode" : "button",
@@ -142,7 +142,7 @@
    },
    "category" : "steamvr_input",
    "controller_type" : "holographic_controller",
-   "description" : "Default WMR controller binds for Half-Life: VR, made by kato0909.",
+   "description" : "Default WMR controller binds for Half-Life: VR, based on binds by kato0909.",
    "name" : "Half-Life: VR Default WMR Binds",
    "options" : {},
    "simulated_actions" : []
