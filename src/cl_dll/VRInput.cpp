@@ -171,7 +171,7 @@ void VRInput::RegisterActionSets()
 
 		RegisterAction("input", "FireWeapon", &VR::Input::Weapons::HandleFire, true);
 		RegisterAction("input", "AltFireWeapon", &VR::Input::Weapons::HandleAltFire);
-		RegisterAction("input", "AnalogFireWeapon", &VR::Input::Weapons::HandleAnalogFire);
+		RegisterAction("input", "AnalogFireWeapon", &VR::Input::Weapons::HandleAnalogFire, true);
 		RegisterAction("input", "ReloadWeapon", &VR::Input::Weapons::HandleReload);
 		RegisterAction("input", "HolsterWeapon", &VR::Input::Weapons::HandleHolster);
 		RegisterAction("input", "NextWeapon", &VR::Input::Weapons::HandleNext);

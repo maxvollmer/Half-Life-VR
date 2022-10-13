@@ -234,7 +234,7 @@ void VRInput::HandleHLMenuInput()
 		break;
 	case 0:
 	default:
-		uiControllerState.isPressed = g_vrInput.GetVRMenuFireStatus();
+		uiControllerState.isPressed = g_vrInput.GetVRMenuFireStatus() || g_vrInput.GetVRMenuAnalogFireStatus();
 		break;
 	}
 

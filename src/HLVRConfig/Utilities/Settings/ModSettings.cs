@@ -118,7 +118,7 @@ namespace HLVRConfig.Utilities.Settings
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> InputSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
         {
             { CategoryGeneralInput, new OrderedDictionary<string, Setting>() {
-                { "vr_flashlight_toggle", Setting.Create( new I18N.I18NString("vr_flashlight_toggle", "Flashlight should toggle"), false ) },
+                { "vr_flashlight_toggle", Setting.Create( new I18N.I18NString("vr_flashlight_toggle", "Flashlight should toggle"), true ) },
                 { "vr_enable_aim_laser", Setting.Create( new I18N.I18NString("vr_enable_aim_laser", "Enable aim laser pointer for range weapons"), false ) },
                 { "vr_crowbar_vanilla_attack_enabled", Setting.Create( new I18N.I18NString("vr_crowbar_vanilla_attack_enabled", "Enable crowbar melee attack on 'fire' action."), false ) },
                 { "vr_lefthand_mode", Setting.Create( new I18N.I18NString("vr_lefthand_mode", "Enable Left Hand Mode."), false ) },

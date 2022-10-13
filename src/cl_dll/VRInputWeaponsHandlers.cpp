@@ -59,6 +59,9 @@ namespace VR
 		void Weapons::HandleAnalogFire(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
 			float analogfire = (data.bActive) ? fabs(data.x) : 0.f;
+
+			g_vrInput.SetVRMenuAnalogFireStatus(analogfire != 0.f);
+
 			if (analogfire == 0.f && g_vrInput.analogfire != 0.f)
 			{
 				g_vrInput.analogfire = 0.f;
@@ -66,10 +69,14 @@ namespace VR
 			}
 			else if (analogfire != 0.f)
 			{
-				g_vrInput.analogfire = analogfire;
-				char cmdAnalogFire[MAX_COMMAND_SIZE] = { 0 };
-				sprintf_s(cmdAnalogFire, "vr_anlgfire %.2f", analogfire);
-				gEngfuncs.pfnClientCmd(cmdAnalogFire);
+				// don't +attack if in menu!
+				if (g_vrInput.IsInGame() && !g_vrInput.IsInMenu())
+				{
+					g_vrInput.analogfire = analogfire;
+					char cmdAnalogFire[MAX_COMMAND_SIZE] = { 0 };
+					sprintf_s(cmdAnalogFire, "vr_anlgfire %.2f", analogfire);
+					gEngfuncs.pfnClientCmd(cmdAnalogFire);
+				}
 			}
 		}
 
