@@ -10,6 +10,7 @@
 #include "VRInput.h"
 #include "eiface.h"
 #include "VRRenderer.h"
+#include "VRGameFunctions.h"
 
 namespace VR
 {
@@ -111,7 +112,8 @@ namespace VR
 		{
 			if (data.bActive && data.bState && data.bChanged)
 			{
-				ClientCmd("pause");
+				//ClientCmd("pause");
+				VRGameFunctions::ToggleMenu();
 			}
 		}
 

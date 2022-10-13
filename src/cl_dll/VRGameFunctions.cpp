@@ -43,9 +43,8 @@ void VRGameFunctions::StartHazardCourse()
 	gEngfuncs.pfnClientCmd("map t0a0");
 }
 
-void VRGameFunctions::CloseMenu()
+void VRGameFunctions::ToggleMenu()
 {
-	// TODO: Not sure if this actually works
 	gEngfuncs.pfnClientCmd("escape");
 }
 

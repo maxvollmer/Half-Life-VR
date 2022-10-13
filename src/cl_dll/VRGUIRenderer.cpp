@@ -375,7 +375,7 @@ void VRGUIRenderer::UpdateGUIElements(bool isInGame)
                     {
                         if (isInGame)
                         {
-                            VRGameFunctions::CloseMenu();
+                            VRGameFunctions::ToggleMenu();
                         }
                         else
                         {
