@@ -35,12 +35,12 @@
          "chords" : [
             {
                "inputs" : [
-                  [ "/user/hand/left/input/grip", "grab" ],
-                  [ "/user/hand/right/input/b", "click" ]
+                  [ "/user/hand/right/input/grip", "grab" ],
+                  [ "/user/hand/right/input/b", "click" ],
+                  [ "/user/hand/left/input/grip", "grab" ]
                ],
                "output" : "/actions/input/in/longjump"
-            },
-            {}
+            }
          ],
          "skeleton" : [
             {
@@ -93,9 +93,6 @@
                "inputs" : {
                   "click" : {
                      "output" : "/actions/input/in/legacyuse"
-                  },
-                  "double" : {
-                     "output" : "/actions/input/in/reloadweapon"
                   }
                },
                "mode" : "button",
@@ -173,7 +170,7 @@
                      "output" : "/actions/input/in/teleport"
                   },
                   "south" : {
-                     "output" : "/actions/input/in/clickvrmenu"
+                     "output" : "/actions/input/in/reloadweapon"
                   }
                },
                "mode" : "dpad",
@@ -216,7 +213,7 @@
    },
    "category" : "steamvr_input",
    "controller_type" : "knuckles",
-   "description" : "Default knuckles binds for Half-Life: VR, made by Rorin.\n\nLeft controller: thumbstick for movement, north trackpad for flashlight, south trackpad for pause. trigger is secondary fire. A is previous weapon, B is next weapon. Grip is left grab. \n\nRight controller: B jump, A is legacy use and double A is reload, North Trackpad is teleport and South Trackpad is ClickVRMenu, Trigger is fire weapon, thumbstick left/right snap turning.  Grip is right Grab.\n\nChords: Left Grip + Right B for long jump",
+   "description" : "Default knuckles binds for Half-Life: VR, made by Rorin.\n\nLeft controller: thumbstick for movement, north trackpad for flashlight, south trackpad for pause. trigger is secondary fire. A is previous weapon, B is next weapon. Grip is left grab. \n\nRight controller: B jump, A is legacy use, North Trackpad is teleport and South Trackpad is Reload.  Trigger is fire weapon, thumbstick left/right snap turning.  Grip is right Grab.\n\nChords: Left Grip + Right Grip + Right B for long jump",
    "name" : "Half-Life: VR Default Knuckles Binds",
    "interaction_profile" : "",
    "options" : {},
