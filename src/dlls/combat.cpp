@@ -663,6 +663,9 @@ Killed
 */
 void CBaseMonster::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	unsigned int cCount = 0;
 	BOOL fDone = FALSE;
 

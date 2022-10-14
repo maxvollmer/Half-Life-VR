@@ -269,6 +269,9 @@ void CFlockingFlyer::MakeSound(void)
 //=========================================================
 void CFlockingFlyer::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	EHANDLE<CFlockingFlyer> pSquad = m_pSquadLeader;
 
 	while (pSquad)

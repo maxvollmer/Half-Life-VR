@@ -3356,3 +3356,20 @@ void CHANGE_LEVEL(char* s1, char* s2)
 
 	g_engfuncs.pfnChangeLevel(s1, s2);
 }
+
+void UTIL_VRGiveAchievement(CBaseEntity* pPlayer, VRAchievement achievement)
+{
+	extern int gmsgVRAchievement;
+	MESSAGE_BEGIN(MSG_ONE, gmsgVRAchievement, nullptr, pPlayer->edict());
+	WRITE_LONG((int)achievement);
+	MESSAGE_END();
+}
+
+void UTIL_VRGiveAchievementAll(VRAchievement achievement)
+{
+	extern int gmsgVRAchievement;
+	MESSAGE_BEGIN(MSG_ALL, gmsgVRAchievement);
+	WRITE_LONG((int)achievement);
+	MESSAGE_END();
+}
+

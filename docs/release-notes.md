@@ -26,6 +26,7 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
   - Added feature that smoothes movement when walking up stairs (might be buggy, enable at own risk)
   - Added basic working VR menu
   - Added default binds for Vive, Index, Oculus Touch, and WMR
+  - Added Steam achievements
   - Restored default walk speed and legacy ladder climb speed to pancake defaults
 
 ##### HLVRConfig:

@@ -488,6 +488,15 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			continue;
 		}
 
+		if (FClassnameIs(pEntity->pev, "monster_houndeye")
+			&& !controller.HasDraggedEntity()
+			&& isTouching
+			&& (isDragging || controller.IsDragging())
+			&& controller.GetWeaponId() == WEAPON_BAREHAND)
+		{
+			UTIL_VRGiveAchievement(pPlayer, VRAchievement::GEN_PETDOGGO);
+		}
+
 		// vibrate if touching something solid (but not if we are dragging it!)
 		if (isTouching && pEntity->m_vrDragger != pPlayer && pEntity->m_vrDragController != controller.GetID() && !controller.IsDraggedEntity(pEntity))
 		{

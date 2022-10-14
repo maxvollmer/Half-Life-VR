@@ -67,6 +67,8 @@ void CWorldsSmallestCup::Spawn()
 
 void CWorldsSmallestCup::HandleDragStart()
 {
+	UTIL_VRGiveAchievement(m_vrDragger, VRAchievement::AM_SMALLCUP);
+
 	pev->flags &= ~FL_ALWAYSTHINK;
 }
 
@@ -125,6 +127,8 @@ void CWorldsSmallestCup::CupThink()
 			{
 				if (m_hKleiner->FOkToSpeak())
 				{
+					UTIL_VRGiveAchievement(m_vrDragger, VRAchievement::HID_SMALLESTCUP);
+
 					CTalkMonster::g_talkWaitTime = gpGlobals->time + 20;
 					m_hKleiner->Talk(20);
 					m_hKleiner->m_hTalkTarget = UTIL_PlayerByIndex(0);

@@ -399,6 +399,9 @@
     <ClCompile Include="VRNetworkManager.cpp">
       <Filter>VR\Network</Filter>
     </ClCompile>
+    <ClCompile Include="VRAchievementsAndStatsTracker.cpp">
+      <Filter>VR\stuff</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activity.h">
@@ -604,6 +607,12 @@
     </ClInclude>
     <ClInclude Include="VRNetworkManager.h">
       <Filter>VR\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vr_shared\VRAchievements.h">
+      <Filter>VR\vr_shared</Filter>
+    </ClInclude>
+    <ClInclude Include="VRAchievementsAndStatsTracker.h">
+      <Filter>VR\stuff</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

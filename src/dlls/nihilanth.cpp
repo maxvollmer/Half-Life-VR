@@ -838,6 +838,20 @@ void CNihilanth::NextActivity()
 					{
 						m_iTeleport++;
 						pev->sequence = LookupSequence("attack1");  // zap
+
+						// check if we went through all tele targets!
+						{
+							sprintf_s(szText, "%s%d", m_szTeleportTouch, m_iTeleport);
+							pTouch = UTIL_FindEntityByTargetname(nullptr, szText);
+
+							sprintf_s(szText, "%s%d", m_szTeleportUse, m_iTeleport);
+							pTrigger = UTIL_FindEntityByTargetname(nullptr, szText);
+
+							if (pTrigger == nullptr || pTouch == nullptr)
+							{
+								UTIL_VRGiveAchievementAll(VRAchievement::N_EXPLORER);
+							}
+						}
 					}
 				}
 			}
@@ -859,6 +873,8 @@ void CNihilanth::HuntThink(void)
 	// if dead, force cancelation of current animation
 	if (pev->health <= 0)
 	{
+		UTIL_VRGiveAchievementAll(VRAchievement::N_BRRR);
+
 		SetThink(&CNihilanth::DyingThink);
 		m_fSequenceFinished = TRUE;
 		return;

@@ -726,6 +726,49 @@ void CBaseButton::TriggerAndWait(void)
 	pev->frame = 1;  // use alternate textures
 
 
+	// used by player
+	if (m_hActivator && m_hActivator->IsNetClient())
+	{
+		// entrance map
+		if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a0.bsp"))
+		{
+			// button for that laptop with "important messages"
+			if (FStrEq(STRING(pev->target), "introroomgizmomm"))
+			{
+				UTIL_VRGiveAchievement(m_hActivator, VRAchievement::AM_IMPORTANTMSG);
+			}
+			// alarm button on barney's desk
+			else if (FStrEq(STRING(pev->target), "buzzerlightsonmm"))
+			{
+				UTIL_VRGiveAchievement(m_hActivator, VRAchievement::AM_TROUBLE);
+			}
+			// light switch in that one office
+			else if (FStrEq(STRING(pev->target), "office1mm"))
+			{
+				UTIL_VRGiveAchievement(m_hActivator, VRAchievement::AM_LIGHTSOFF);
+			}
+		}
+		// rocket map
+		else if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a2h.bsp"))
+		{
+			// button that launches rocket
+			if (FStrEq(STRING(pev->target), "launch_countdownmm"))
+			{
+				UTIL_VRGiveAchievement(m_hActivator, VRAchievement::OAR_INFINITY);
+			}
+		}
+		// blast pit map
+		else if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a4i.bsp"))
+		{
+			// button that launches rocket
+			if (FStrEq(STRING(pev->target), "init_rocket_fire"))
+			{
+				VRAchievementsAndStatsTracker::PlayerLaunchedTentacleRocketFire(m_hActivator);
+			}
+		}
+	}
+
+
 	SUB_UseTargets(m_hActivator, USE_TOGGLE, 0);
 }
 

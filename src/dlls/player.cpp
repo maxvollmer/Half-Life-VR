@@ -246,6 +246,7 @@ int gmsgVRScreenShake = 0;
 int gmsgVRTouch = 0;
 int gmsgVRWalkedIntoWall = 0;
 int gmsgVRLevelChange = 0;
+int gmsgVRAchievement = 0;
 
 
 void LinkUserMessages(void)
@@ -305,6 +306,7 @@ void LinkUserMessages(void)
 	gmsgVRTouch = REG_USER_MSG("VRTouch", 5);
 	gmsgVRWalkedIntoWall = REG_USER_MSG("VRWlkWl", 0);
 	gmsgVRLevelChange = REG_USER_MSG("VRLvlChng", 0);
+	gmsgVRAchievement = REG_USER_MSG("VRAchvmnt", sizeof(int));
 }
 
 LINK_ENTITY_TO_CLASS(player, CBasePlayer);
@@ -488,6 +490,22 @@ int CBasePlayer::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 		// Refuse the damage
 		return 0;
 	}
+
+	//  start of office complex
+	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a2.bsp"))
+	{
+		// ceiling light that zaps the player
+		if (FStrEq(STRING(pevInflictor->classname), "trigger_hurt") && FStrEq(STRING(pevInflictor->targetname), "kill_player_zap"))
+		{
+			UTIL_VRGiveAchievement(this, VRAchievement::OC_OSHAVIOLATION);
+		}
+		// fan that kills player in vents if not ducked
+		else if (FStrEq(STRING(pevInflictor->classname), "func_rotating") && FStrEq(STRING(pevInflictor->model), "*76"))
+		{
+			UTIL_VRGiveAchievement(this, VRAchievement::OC_DUCK);
+		}
+	}
+
 
 	// keep track of amount of damage last sustained
 	m_lastDamageAmount = flDamage;
@@ -961,6 +979,14 @@ void CBasePlayer::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 	else
 	{
 		ALERT(at_console, "Killed by world, damage type: %s, iGib: %s\n", DamageBitsToString(bitsDamageType).data(), GibToString(iGib));
+	}
+
+	if (pevAttacker
+		&& FClassnameIs(pevAttacker, "func_tank")
+		&& (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a5c.bsp") || FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a5e.bsp") || FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a2g.bsp"))
+		&& (FStrEq(STRING(pevAttacker->targetname), "sniper1") || FStrEq(STRING(pevAttacker->targetname), "sniper2")))
+	{
+		UTIL_VRGiveAchievement(this, VRAchievement::GEN_SNIPED);
 	}
 
 	CSound* pSound;
@@ -1508,6 +1534,46 @@ void CBasePlayer::StartObserver(Vector vecPosition, Vector vecViewAngle)
 	UTIL_SetOrigin(pev, vecPosition);
 }
 
+float GetTrainSpeed(const char* cvarname)
+{
+	float speed = CVAR_GET_FLOAT(cvarname);
+
+	if (speed <= 0.f)
+		return 0.25f;
+
+	if (speed > 1.f)
+		return 1.f;
+
+	return speed;
+}
+
+bool IsTrashCompactor(CBaseEntity* pEntity)
+{
+	if (!pEntity)
+		return false;
+
+	std::string modelname = STRING(pEntity->pev->model);
+
+	if (modelname.empty() || modelname[0] != '*')
+		return false;
+
+	std::string mapname = STRING(INDEXENT(0)->v.model);
+
+	if (mapname != std::string{ "maps/c2a3e.bsp" })
+		return false;
+
+	return modelname == "*6" || modelname == "*13";
+}
+
+bool CBasePlayer::IsUsableTrackTrain(CBaseEntity* pTrain)
+{
+	return pTrain
+		&& !FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL)
+		&& FBitSet(pTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE)
+		&& pTrain->OnControls(pev)
+		&& !IsTrashCompactor(pTrain);
+}
+
 //
 // PlayerUse - handles USE keypress
 //
@@ -1552,10 +1618,18 @@ void CBasePlayer::PlayerUse(void)
 						m_iTrain = TrainSpeed(pMaybeTrain->pev->speed, pMaybeTrain->pev->impulse);
 						m_iTrain |= TRAIN_NEW;
 						EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM);
+						VRAchievementsAndStatsTracker::PlayerUsedTrain(this);
 						return;
 					}
 				}
 			}
+		}
+
+		// Check if player tries to use the trash compactors as train (which is possible in vanilla halflife)
+		CBaseEntity* pMaybeTrash = CBaseEntity::InstanceOrWorld(pev->groundentity);
+		if (IsTrashCompactor(pMaybeTrash))
+		{
+			UTIL_VRGiveAchievement(this, VRAchievement::HID_NOTTRAINS);
 		}
 	}
 
@@ -1846,45 +1920,46 @@ bool CBasePlayer::CheckVRTRainButtonTouched(const Vector& buttonLeftPos, const V
 	return false;
 }
 
-float GetTrainSpeed(const char* cvarname)
-{
-	float speed = CVAR_GET_FLOAT(cvarname);
-
-	if (speed <= 0.f)
-		return 0.25f;
-
-	if (speed > 1.f)
-		return 1.f;
-
-	return speed;
-}
-
-bool IsTrashCompactor(CBaseEntity* pEntity)
-{
-	std::string modelname = STRING(pEntity->pev->model);
-
-	if (modelname.empty() || modelname[0] != '*')
-		return false;
-
-	std::string mapname = STRING(INDEXENT(0)->v.model);
-
-	if (mapname != std::string{ "maps/c2a3e.bsp" })
-		return false;
-
-	return modelname == "*6" || modelname == "*13";
-}
-
-bool CBasePlayer::IsUsableTrackTrain(CBaseEntity* pTrain)
-{
-	return pTrain
-		&& !FBitSet(pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL)
-		&& FBitSet(pTrain->ObjectCaps(), FCAP_DIRECTIONAL_USE)
-		&& pTrain->OnControls(pev)
-		&& !IsTrashCompactor(pTrain);
-}
-
 void CBasePlayer::PreThink()
 {
+	if (!UTIL_FindEntityByClassname(nullptr, "vr_statstracker"))
+	{
+		CBaseEntity::Create<CBaseEntity>("vr_statstracker", pev->origin, pev->angles);
+	}
+
+	if (!m_vrHasSurfacedInThatMapWithTheTank)
+	{
+		if (pev->origin.z > 0.f && FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a5b.bsp"))
+		{
+			m_vrHasSurfacedInThatMapWithTheTank = true;
+			VRAchievementsAndStatsTracker::PlayerSurfacedInThatMapWithTheTank(this);
+		}
+	}
+
+	if (m_vrJustGotYeetedByBPTrain && FBitSet(pev->flags, FL_ONGROUND))
+	{
+		// we landed after getting yeeted by that train at the beginning of Blast Pit
+		m_vrJustGotYeetedByBPTrain = false;
+
+		// sanity check that map is still correct
+		if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a4.bsp"))
+		{
+			// check that player landed roughly in pipe opening
+			if (pev->absmin.z > -3290.f && pev->absmin.z < -3130.f
+				&& pev->origin.x > -990.f && pev->origin.x < -780.f
+				&& pev->origin.y > -2610.f && pev->origin.y < -2470.f)
+			{
+				UTIL_VRGiveAchievement(this, VRAchievement::BP_PERFECT);
+			}
+		}
+	}
+
+	extern bool VRGlobalGetNoclipMode();
+	if (VRGlobalGetNoclipMode())
+	{
+		VRAchievementsAndStatsTracker::PlayerUsedNoclip(this);
+	}
+
 	// gets reset by ClientPrecache everytime new map is loaded (new game, changelevel, load save)
 	if (g_vrNeedRecheckForSpecialEntities)
 	{
@@ -1990,6 +2065,7 @@ void CBasePlayer::PreThink()
 				m_iTrain = TrainSpeed(pMaybeTrain->pev->speed, pMaybeTrain->pev->impulse);
 				m_iTrain |= TRAIN_NEW;
 				EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM);
+				VRAchievementsAndStatsTracker::PlayerUsedTrain(this);
 			}
 		}
 	}
@@ -3045,6 +3121,8 @@ ReturnSpot:
 
 void CBasePlayer::Spawn(void)
 {
+	VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(this);
+
 	ClearLadderGrabbingControllers();
 	StopPullingLedge();
 
@@ -3233,6 +3311,8 @@ void CBasePlayer::StoreVROffsetsForLevelchange()
 
 int CBasePlayer::Restore(CRestore& restore)
 {
+	VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(this);
+
 	ClearLadderGrabbingControllers();
 	StopPullingLedge();
 

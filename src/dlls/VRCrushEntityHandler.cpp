@@ -208,6 +208,7 @@ bool VRCrushEntityHandler::CheckEntAndMaybeCrushPlayer(CBaseEntity* pEntity, CBa
 		CVAR_GET_FLOAT("vr_cheat_enable_healing_exploit") != 0.f &&
 		pEntity->pev->dmg < 0.f)
 	{
+		VRAchievementsAndStatsTracker::PlayerTakeNegativeCrushDamage(pPlayer, pEntity->pev->dmg);
 		pPlayer->TakeDamage(pEntity->pev, pEntity->pev, pEntity->pev->dmg, DMG_CRUSH);
 		return true;  // dont unstuck
 	}

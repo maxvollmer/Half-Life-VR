@@ -43,7 +43,12 @@ void VRGameFunctions::StartHazardCourse()
 	gEngfuncs.pfnClientCmd("map t0a0");
 }
 
-void VRGameFunctions::ToggleMenu()
+void VRGameFunctions::OpenMenu()
+{
+	gEngfuncs.pfnClientCmd("toggleconsole");
+}
+
+void VRGameFunctions::CloseMenu()
 {
 	gEngfuncs.pfnClientCmd("escape");
 }

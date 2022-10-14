@@ -512,6 +512,13 @@ public:
 	bool VRCanAttack();
 
 	void VRJustTeleported(const Vector& fromOrigin, const Vector& fromAngles);
+
+	// for achievement "Perfect Landing"
+	inline void VRJustGotYeetedByBPTrain() { m_vrJustGotYeetedByBPTrain = true; }
+
+private:
+	bool m_vrHasSurfacedInThatMapWithTheTank{ false };
+	bool m_vrJustGotYeetedByBPTrain{ false };
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

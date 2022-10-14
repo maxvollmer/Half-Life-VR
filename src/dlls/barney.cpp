@@ -58,7 +58,7 @@ public:
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	BOOL CheckRangeAttack1(float flDot, float flDist);
 
-	void DeclineFollowing(void);
+	virtual void DeclineFollowing(CBaseEntity* pCaller) override;
 
 	// Override these to set behavior
 	Schedule_t* GetScheduleOfType(int Type);
@@ -606,6 +606,9 @@ void CBarney::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir,
 
 void CBarney::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	if (pev->body < BARNEY_BODY_GUNGONE)
 	{  // drop the gun!
 		Vector vecGunPos;
@@ -763,7 +766,7 @@ MONSTERSTATE CBarney::GetIdealState(void)
 
 
 
-void CBarney::DeclineFollowing(void)
+void CBarney::DeclineFollowing(CBaseEntity* pCaller)
 {
 	PlaySentence("BA_POK", 2, VOL_NORM, ATTN_NORM);
 }

@@ -163,6 +163,9 @@ void CSqueakGrenade::Precache(void)
 
 void CSqueakGrenade::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	pev->model = iStringNull;  // make invisible
 	SetThink(&CSqueakGrenade::SUB_Remove);
 	SetTouch(nullptr);

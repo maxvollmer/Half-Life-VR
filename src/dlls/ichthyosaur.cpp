@@ -388,6 +388,9 @@ void CIchthyosaur::SetYawSpeed(void)
 //
 void CIchthyosaur::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	CBaseMonster::Killed(pevAttacker, bitsDamageType, iGib);
 	pev->velocity = Vector(0, 0, 0);
 }

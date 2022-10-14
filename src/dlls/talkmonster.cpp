@@ -610,6 +610,9 @@ void CTalkMonster::RunTask(Task_t* pTask)
 
 void CTalkMonster::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	// If a client killed me (unless I was already Barnacle'd), make everyone else mad/afraid of them
 	if ((pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE)
 	{
@@ -1381,6 +1384,17 @@ void CTalkMonster::StartFollowing(CBaseEntity* pLeader)
 	m_hTalkTarget = m_hTargetEnt;
 	ClearConditions(bits_COND_CLIENT_PUSH);
 	ClearSchedule();
+
+
+	// first map of "We've Got Hostiles", panicing scientist who shouts "oh god we're doomed" and then runs into a tripmine
+	// if we are here, player managed to save us
+	if (pLeader && pLeader->IsNetClient()
+		&& FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a3.bsp")
+		&& FStrEq(STRING(pev->classname), "monster_scientist")
+		&& FStrEq(STRING(pev->targetname), "glassman"))
+	{
+		VRAchievementsAndStatsTracker::PlayerSavedDoomedScientist(pLeader);
+	}
 }
 
 
@@ -1410,7 +1424,7 @@ void CTalkMonster::FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		// Pre-disaster followers can't be used
 		if (pev->spawnflags & SF_MONSTER_PREDISASTER)
 		{
-			DeclineFollowing();
+			DeclineFollowing(pCaller);
 		}
 		else if (CanFollow())
 		{
@@ -1477,5 +1491,11 @@ void CTalkMonster::GibAttack(EHANDLE<CBaseEntity> thrower, const Vector& pos, in
 
 	MakeIdealYaw(thrower->pev->origin);
 	IdleHeadTurn(thrower->pev->origin);
+
+
+	if (thrower->IsNetClient())
+	{
+		UTIL_VRGiveAchievement(thrower, VRAchievement::GEN_CATCH);
+	}
 }
 

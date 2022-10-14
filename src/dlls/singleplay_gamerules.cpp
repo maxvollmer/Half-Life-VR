@@ -180,6 +180,10 @@ void CHalfLifeRules::DeathNotice(CBasePlayer* pVictim, entvars_t* pKiller, entva
 //=========================================================
 void CHalfLifeRules::PlayerGotWeapon(CBasePlayer* pPlayer, CBasePlayerItem* pWeapon)
 {
+	if (FStrEq(STRING(pWeapon->pev->classname),"weapon_crowbar"))
+	{
+		UTIL_VRGiveAchievement(pPlayer, VRAchievement::UC_RIGHTTOOL);
+	}
 }
 
 //=========================================================

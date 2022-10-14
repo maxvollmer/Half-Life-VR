@@ -269,6 +269,9 @@ int CISlave::ISoundMask(void)
 
 void CISlave::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	ClearBeams();
 	CSquadMonster::Killed(pevAttacker, bitsDamageType, iGib);
 }

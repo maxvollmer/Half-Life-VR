@@ -7,7 +7,8 @@ public:
 	static void SetVolume(float volume);
 	static void StartNewGame(bool skipTrainRide);
 	static void StartHazardCourse();
-	static void ToggleMenu();
+	static void OpenMenu();
+	static void CloseMenu();
 	static void QuickLoad();
 	static void QuickSave();
 	static void QuitGame();

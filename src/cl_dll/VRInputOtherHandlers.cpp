@@ -112,8 +112,14 @@ namespace VR
 		{
 			if (data.bActive && data.bState && data.bChanged)
 			{
-				//ClientCmd("pause");
-				VRGameFunctions::ToggleMenu();
+				if (g_vrInput.IsInMenu())
+				{
+					VRGameFunctions::CloseMenu();
+				}
+				else
+				{
+					VRGameFunctions::OpenMenu();
+				}
 			}
 		}
 

@@ -578,6 +578,13 @@ void CHeadCrab::BaseBalled(CBaseEntity* pPlayer, const Vector& velocity)
 
 		// prevent attack for 2 seconds
 		m_flNextAttack = gpGlobals->time + 2.f;
+
+
+		// if baseballed by player in mid-air, give achievement
+		if (!FBitSet(pev->flags, FL_ONGROUND) && pPlayer && pPlayer->IsNetClient())
+		{
+			UTIL_VRGiveAchievement(pPlayer, VRAchievement::GEN_BASEBALLED);
+		}
 	}
 
 	// take off ground

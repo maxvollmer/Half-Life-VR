@@ -614,6 +614,41 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 
 void CBreakable::Die(void)
 {
+	// destroyed by player
+	if (m_hKiller && m_hKiller->IsNetClient() && m_killMethod == KillMethod::TRIGGER)
+	{
+		// map with kitchen
+		if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a0d.bsp"))
+		{
+			// microwave stew
+			if (FStrEq(STRING(pev->targetname), "stewgibs"))
+			{
+				UTIL_VRGiveAchievement(m_hKiller, VRAchievement::AM_MAGNUSSON);
+			}
+		}
+	}
+
+	// Blast Pit map outside tentacles/rocket silo
+	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a4b.bsp"))
+	{
+		if (FStrEq(STRING(pev->targetname), "barrel_explosion_1")
+			|| FStrEq(STRING(pev->targetname), "barrel_explosion_1d")
+			|| FStrEq(STRING(pev->targetname), "barrel_explosion_1e"))
+		{
+			VRAchievementsAndStatsTracker::PlayerDestroyedBlastPitBridge();
+		}
+	}
+	// Blast Pit map with that big fan
+	else if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a4e.bsp"))
+	{
+		// grate above big fan, if this breaks, player solved puzzle or cheated
+		if (FStrEq(STRING(pev->model), "*24"))
+		{
+			VRAchievementsAndStatsTracker::PlayerSolvedBlastPitFan();
+		}
+	}
+
+
 	Vector vecSpot;      // shard origin
 	Vector vecVelocity;  // shard velocity
 	CBaseEntity* pEntity = nullptr;
