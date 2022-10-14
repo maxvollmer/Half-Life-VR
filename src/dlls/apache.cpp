@@ -194,6 +194,9 @@ void CApache::StartupUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 
 void CApache::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	pev->movetype = MOVETYPE_TOSS;
 	pev->gravity = 0.3;
 

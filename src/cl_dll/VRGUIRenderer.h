@@ -24,6 +24,9 @@ private:
 	void UpdateGUIElements(bool isInGame);
 	void DrawGUI();
 
+	void VerticalSpacer(int height);
+	void HorizontalSpacer(int width);
+
 	int m_guiWidth{ 2048 };
 	int m_guiHeight{ 2048 };
 	float m_guiScaleW{ 1.f };

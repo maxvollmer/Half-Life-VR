@@ -190,6 +190,9 @@ int CController::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 
 void CController::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	// shut off balls
 	/*
 	m_iBall[0] = 0;

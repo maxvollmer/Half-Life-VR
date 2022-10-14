@@ -1014,6 +1014,7 @@ void CBaseTrigger::HurtTouch(CBaseEntity* pOther)
 	else
 		pOther->TakeDamage(pev, pev, fldmg, m_bitsDamageInflict);
 
+
 	// Store pain time so we can get all of the other entities on this frame
 	pev->pain_finished = gpGlobals->time;
 
@@ -1235,6 +1236,38 @@ void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator)
 		SetTouch(nullptr);
 		pev->nextthink = gpGlobals->time + 0.1;
 		SetThink(&CBaseTrigger::SUB_Remove);
+
+		// activated by player
+		if (pActivator && pActivator->IsNetClient())
+		{
+			// start map with hev suit
+			if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a0d.bsp"))
+			{
+				// hev suit trigger
+				if (FStrEq(STRING(pev->target), "suit_cd_audio"))
+				{
+					UTIL_VRGiveAchievement(pActivator, VRAchievement::AM_HELLOGORDON);
+				}
+			}
+			// surface tension map where the player reaches the cliffs
+			else if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a5a.bsp"))
+			{
+				// trigger that starts the jet
+				if (FStrEq(STRING(pev->target), "plane"))
+				{
+					UTIL_VRGiveAchievement(pActivator, VRAchievement::ST_VIEW);
+				}
+			}
+			// blast pit map with elevator that crashes
+			else if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a4f.bsp"))
+			{
+				// trigger that causes elevator to crash
+				if (FStrEq(STRING(pev->target), "ele_halt_beginfall_mm"))
+				{
+					UTIL_VRGiveAchievement(pActivator, VRAchievement::BP_BROKENELVTR);
+				}
+			}
+		}
 	}
 }
 
@@ -2013,7 +2046,27 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 		{
 			pevToucher->velocity = pevToucher->velocity + (pev->speed * pev->movedir);
 			if (pevToucher->velocity.z > 0)
+			{
 				pevToucher->flags &= ~FL_ONGROUND;
+
+				if (pOther->IsNetClient())
+				{
+					CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pOther);
+					if (pPlayer)
+					{
+						// first blast pit map right after we've got hostiles
+						if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a4.bsp"))
+						{
+							// trigger_push that yeets players off that fast train after it crashes into the end of the rails
+							if (FStrEq(STRING(pev->targetname), "stopbars"))
+							{
+								pPlayer->VRJustGotYeetedByBPTrain();
+							}
+						}
+					}
+				}
+			}
+
 			UTIL_Remove(this);
 		}
 		else
@@ -2172,24 +2225,11 @@ public:
 	void EXPORT EndSectionTouch(CBaseEntity* pOther);
 	void KeyValue(KeyValueData* pkvd);
 	void EXPORT EndSectionUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+
+private:
+	void EndSection(CBaseEntity* pPlayer);
 };
 LINK_ENTITY_TO_CLASS(trigger_endsection, CTriggerEndSection);
-
-
-void CTriggerEndSection::EndSectionUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
-{
-	// Only save on clients
-	if (pActivator && !pActivator->IsNetClient())
-		return;
-
-	SetUse(nullptr);
-
-	if (pev->message)
-	{
-		g_engfuncs.pfnEndSection(STRING(pev->message));
-	}
-	UTIL_Remove(this);
-}
 
 void CTriggerEndSection::Spawn(void)
 {
@@ -2202,24 +2242,10 @@ void CTriggerEndSection::Spawn(void)
 	InitTrigger();
 
 	SetUse(&CTriggerEndSection::EndSectionUse);
+
 	// If it is a "use only" trigger, then don't set the touch function.
 	if (!(pev->spawnflags & SF_ENDSECTION_USEONLY))
 		SetTouch(&CTriggerEndSection::EndSectionTouch);
-}
-
-void CTriggerEndSection::EndSectionTouch(CBaseEntity* pOther)
-{
-	// Only save on clients
-	if (!pOther->IsNetClient())
-		return;
-
-	SetTouch(nullptr);
-
-	if (pev->message)
-	{
-		g_engfuncs.pfnEndSection(STRING(pev->message));
-	}
-	UTIL_Remove(this);
 }
 
 void CTriggerEndSection::KeyValue(KeyValueData* pkvd)
@@ -2233,6 +2259,41 @@ void CTriggerEndSection::KeyValue(KeyValueData* pkvd)
 	}
 	else
 		CBaseTrigger::KeyValue(pkvd);
+}
+
+void CTriggerEndSection::EndSectionUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	// Only save on clients
+	if (pActivator && !pActivator->IsNetClient())
+		return;
+
+	EndSection(pActivator);
+}
+
+void CTriggerEndSection::EndSectionTouch(CBaseEntity* pOther)
+{
+	// Only save on clients
+	if (!pOther->IsNetClient())
+		return;
+
+	EndSection(pOther);
+}
+
+void CTriggerEndSection::EndSection(CBaseEntity* pPlayer)
+{
+	SetUse(nullptr);
+	SetTouch(nullptr);
+
+	if (pev->message)
+	{
+		if (FStrEq(STRING(pev->message), "_oem_end_training"))
+		{
+			UTIL_VRGiveAchievement(pPlayer, VRAchievement::HC_SAFETYFIRST);
+		}
+		g_engfuncs.pfnEndSection(STRING(pev->message));
+	}
+
+	UTIL_Remove(this);
 }
 
 

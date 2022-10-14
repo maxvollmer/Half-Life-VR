@@ -1741,6 +1741,7 @@ void VRHelper::SetSkyboxFromMap(const char* mapName)
 
 bool VRHelper::CanAttack()
 {
+	// TODO: This doesn't work for some reason
 	cl_entity_t* localPlayer = SaveGetLocalPlayer();
 	if (localPlayer)
 	{

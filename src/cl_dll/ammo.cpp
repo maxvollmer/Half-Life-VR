@@ -765,7 +765,7 @@ void CHudAmmo::UserCmd_Close(void)
 		PlaySound("common/wpn_hudoff.wav", 1);
 	}
 	else
-		ClientCmd("escape");
+		ClientCmd("escape");	// ClientCmd("cancelselect");?
 }
 
 

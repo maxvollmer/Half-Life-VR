@@ -250,6 +250,13 @@ class CItemBattery : public CItem
 
 			//EMIT_SOUND_SUIT(ENT(pev), szcharge);
 			pPlayer->SetSuitUpdate(szcharge, FALSE, SUIT_NEXT_IN_30SEC);
+
+			// start map with hev suit
+			if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a0d.bsp"))
+			{
+				UTIL_VRGiveAchievement(pPlayer, VRAchievement::AM_WELLPREPARED);
+			}
+
 			return TRUE;
 		}
 		return FALSE;

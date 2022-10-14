@@ -899,6 +899,9 @@ void CGargantua::DeathEffect(void)
 
 void CGargantua::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	EyeOff();
 	UTIL_Remove(m_pEyeGlow);
 	m_pEyeGlow = nullptr;

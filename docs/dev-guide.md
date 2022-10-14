@@ -88,6 +88,9 @@ If you don't have Half-Life: VR installed, e.g. if you are following this guide 
       - Newtonsoft.Json.dll
       - MarkdownSharp.dll
       - HtmlToXamlConverter.dll
+    - Steam API:
+	  - [steam_api.dll](../src/steam/lib/steam_api.dll) => `steamapi2.dll`  
+	  **IMPORTANT!** DO NOT OVERWRITE THE EXISTING `steam_api.dll`! You **MUST** rename this file to `steamapi2.dll`. This is because GoldSrc loads a different version of the Steam API. Both DLLs are needed for the mod to work. If they get mixed up, or if one is missing, the game will crash or simply not start.
 
 5. If it exists, delete the folder `valve_hd`.
 

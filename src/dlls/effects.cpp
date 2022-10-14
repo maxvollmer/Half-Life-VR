@@ -2307,4 +2307,10 @@ void CItemSoda::Drink(CBaseEntity* pDrinker)
 	SetTouch(nullptr);
 	SetThink(&CItemSoda::SUB_Remove);
 	pev->nextthink = gpGlobals->time;
+
+
+	if (pDrinker && pDrinker->IsNetClient())
+	{
+		UTIL_VRGiveAchievement(pDrinker, VRAchievement::GEN_REFRESHING);
+	}
 }

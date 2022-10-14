@@ -54,19 +54,24 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 	edict_t* pentground = nullptr;
 
 	// Take train if conditions are met
-	bool forceIntroTrainRide = CVAR_GET_FLOAT("vr_force_introtrainride") != 0.f;
 	std::string mapName{ STRING(INDEXENT(0)->v.model) };
-	if (forceIntroTrainRide && IntroTrainRideMapNames.count(mapName) != 0)
+	if (IntroTrainRideMapNames.count(mapName) != 0)
 	{
 		pentground = FIND_ENTITY_BY_STRING(nullptr, "targetname", "train");
 		if (!FNullEnt(pentground))
 		{
-			// if we fell out, teleport us back in
 			if (!UTIL_PointInsideBBox(m_pPlayer->pev->origin, pentground->v.absmin, pentground->v.absmax) || m_pPlayer->pev->origin.z < (pentground->v.origin.z + pentground->v.mins.z))
 			{
-				m_pPlayer->pev->origin = pentground->v.origin;
-				m_pPlayer->pev->origin.z += 64.f;
-				m_pPlayer->pev->velocity = Vector{};
+				UTIL_VRGiveAchievement(m_pPlayer, VRAchievement::HID_HOW);
+
+				// if we fell out, teleport us back in
+				bool forceIntroTrainRide = CVAR_GET_FLOAT("vr_force_introtrainride") != 0.f;
+				if (forceIntroTrainRide)
+				{
+					m_pPlayer->pev->origin = pentground->v.origin;
+					m_pPlayer->pev->origin.z += 64.f;
+					m_pPlayer->pev->velocity = Vector{};
+				}
 			}
 		}
 	}

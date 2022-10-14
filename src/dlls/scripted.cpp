@@ -462,6 +462,29 @@ BOOL CCineMonster::StartSequence(CBaseMonster* pTarget, int iszSeq, BOOL complet
 		return FALSE;
 	}
 
+	// Barney that gets revived after resonance cascade
+	if (FClassnameIs(pTarget->pev, "monster_barney")
+		&& FStrEq(STRING(iszSeq), "cprbarneyrevive")
+		&& FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a0c.bsp"))
+	{
+		// find players within 500 unit radius
+		CBaseEntity* pEnt = nullptr;
+		while ((pEnt = UTIL_FindEntityInSphere(pEnt, pev->origin, 500)) != nullptr)
+		{
+			// check if player is watching the reviving sequence
+			if (pEnt->IsNetClient() && UTIL_IsFacing(pEnt->pev->origin, pEnt->pev->angles.ToViewAngles(), pev->origin))
+			{
+				TraceResult tr;
+				UTIL_TraceLine(pEnt->EyePosition(), pev->origin, ignore_monsters, ignore_glass, edict(), &tr);
+				if (tr.flFraction == 1.f)
+				{
+					// yay, you totally helped
+					UTIL_VRGiveAchievement(pEnt, VRAchievement::UC_CPR);
+				}
+			}
+		}
+	}
+
 	pTarget->pev->sequence = pTarget->LookupSequence(STRING(iszSeq));
 
 	// TODO: FIXME: HACKHACK: The female scientist model currently doesn't have all animations,

@@ -34,6 +34,7 @@
 #include "vgui_scorepanel.h"
 
 #include "VRRenderer.h"
+#include "VRSteamworksManager.h"
 
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
@@ -245,6 +246,14 @@ int __MsgFunc_VRLvlChng(const char* pszName, int iSize, void* pbuf)
 	return 0;
 }
 
+int __MsgFunc_VRAchvmnt(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	int achievement = READ_LONG();
+	VRSteamworksManager::GiveAchievement((VRAchievement)achievement);
+	return 0;
+}
+
 // Sends index of current grund entity
 int __MsgFunc_GroundEnt(const char* pszName, int iSize, void* pbuf)
 {
@@ -405,6 +414,7 @@ void CHud::Init(void)
 	HOOK_MESSAGE(VRTouch);
 	HOOK_MESSAGE(VRWlkWl);
 	HOOK_MESSAGE(VRLvlChng);
+	HOOK_MESSAGE(VRAchvmnt);
 
 	CVAR_CREATE("hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO);  // controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE("hud_takesshots", "0", FCVAR_ARCHIVE);                      // controls whether or not to automatically take screenshots at the end of a round

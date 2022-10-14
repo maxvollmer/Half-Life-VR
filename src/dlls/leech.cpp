@@ -687,6 +687,9 @@ void CLeech::SwimThink(void)
 
 void CLeech::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	Vector vecSplatDir;
 	TraceResult tr;
 

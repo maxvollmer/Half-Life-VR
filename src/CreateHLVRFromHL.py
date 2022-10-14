@@ -113,6 +113,7 @@ def main(argv):
     shutil.copy(os.path.join(script_location, '../game/README.md'), hlvrpath)
     shutil.copy(os.path.join(script_location, '../game/liblist.gam'), os.path.join(hlvrpath, 'valve', 'liblist.gam'))
     shutil.copy(os.path.join(script_location, '../art/game_icon.ico'), os.path.join(hlvrpath, 'valve', 'game.ico'))
+    shutil.copy(os.path.join(script_location, 'steam/lib/steam_api.dll'), os.path.join(hlvrpath, 'steamapi2.dll'))
 
     print('All done! New Half-Life: VR folder created at "'+hlvrpath+'". NOTE: You still need to build client.dll, hl.dll, and HLVRConfig.exe for the mod to work.')
 

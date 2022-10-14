@@ -400,6 +400,9 @@
     <ClCompile Include="VRCommon.cpp">
       <Filter>VR\vr_shared</Filter>
     </ClCompile>
+    <ClCompile Include="VRSteamworksManager.cpp">
+      <Filter>VR\helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parsemsg.h">
@@ -605,6 +608,12 @@
     </ClInclude>
     <ClInclude Include="VRGameFunctions.h">
       <Filter>VR\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="VRSteamworksManager.h">
+      <Filter>VR\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vr_shared\VRAchievements.h">
+      <Filter>VR\vr_shared</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

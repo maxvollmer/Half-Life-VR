@@ -231,9 +231,25 @@ void CFuncWallToggle::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	if (ShouldToggle(useType, status))
 	{
 		if (status)
+		{
+			if (pActivator && pActivator->IsNetClient())
+			{
+				if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a1f.bsp"))
+				{
+					// collapsing bridge in entrance area
+					if (FStrEq(STRING(pev->targetname), "breakbar"))
+					{
+						UTIL_VRGiveAchievement(pActivator, VRAchievement::UC_OOPS);
+					}
+				}
+			}
+
 			TurnOff();
+		}
 		else
+		{
 			TurnOn();
+		}
 	}
 }
 

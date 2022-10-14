@@ -53,6 +53,7 @@ CBaseEntity
 #include <unordered_set>
 
 #include "VRCommons.h"
+#include "VRAchievementsAndStatsTracker.h"
 
 // C functions for external declarations that call the appropriate C++ methods
 

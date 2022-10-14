@@ -145,7 +145,7 @@ public:
 	BOOL IsFollowing(void) { return m_hTargetEnt != nullptr && m_hTargetEnt->IsPlayer(); }
 	void StopFollowing(BOOL clearSchedule);
 	void StartFollowing(CBaseEntity* pLeader);
-	virtual void DeclineFollowing(void) {}
+	virtual void DeclineFollowing(CBaseEntity* pCaller) {}
 	void LimitFollowers(CBaseEntity* pPlayer, int maxFollowers);
 
 	void EXPORT FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);

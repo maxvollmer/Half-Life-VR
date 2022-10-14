@@ -487,6 +487,12 @@ void CTentacle::Cycle(void)
 
 	if (pSound)
 	{
+		// the tentacles always react to the player existing, but for the achievement it's enough to never make an actual audible noise
+		if (FBitSet(pSound->m_iType, bits_SOUND_PLAYER) && pSound->m_iVolume > 0)
+		{
+			VRAchievementsAndStatsTracker::PlayerGotHeardByTentacles();
+		}
+
 		Vector vecDir;
 		if (gpGlobals->time - m_flPrevSoundTime < 0.5f)
 		{

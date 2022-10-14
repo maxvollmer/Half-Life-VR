@@ -125,6 +125,9 @@ void CSquadMonster::ScheduleChange(void)
 //=========================================================
 void CSquadMonster::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	VacateSlot();
 
 	if (InSquad())

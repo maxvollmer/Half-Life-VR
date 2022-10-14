@@ -86,7 +86,7 @@ public:
 	void SetActivity(Activity newActivity);
 	Activity GetStoppedActivity(void);
 	int ISoundMask(void);
-	void DeclineFollowing(void);
+	virtual void DeclineFollowing(CBaseEntity* pCaller) override;
 
 	float CoverRadius(void) { return 1200; }  // Need more room for cover because scientists want to get far away!
 	BOOL DisregardEnemy(CBaseEntity* pEnemy) { return !pEnemy->IsAlive() || (gpGlobals->time - m_fearTime) > 15; }
@@ -120,6 +120,8 @@ private:
 	float m_painTime = 0.f;
 	float m_healTime = 0.f;
 	float m_fearTime = 0.f;
+
+	bool m_vrHasDeclinedFollowRequest = false;
 
 protected:
 	BOOL m_fIsFemale{ FALSE };
@@ -412,11 +414,40 @@ DEFINE_CUSTOM_SCHEDULES(CScientist) {
 IMPLEMENT_CUSTOM_SCHEDULES(CScientist, CTalkMonster);
 
 
-void CScientist::DeclineFollowing(void)
+namespace
+{
+	// a bit inelegant solution, but it kinda works, so whatever
+
+	// c1a0.bsp => 9
+	// c1a0a.bsp => 4
+	// c1a0b.bsp => 7
+	// c1a0d.bsp => 6
+	// c1a0e.bsp => 2
+	// total => 28
+
+	constexpr const int TARGET_DECLINED_FOLLOWREQUESTS = 28;
+	int declinedFollowRequests = 0;
+}
+
+
+void CScientist::DeclineFollowing(CBaseEntity* pCaller)
 {
 	Talk(10);
 	m_hTalkTarget = m_hEnemy;
 	PlaySentence("SC_POK", 2, VOL_NORM, ATTN_NORM);
+
+	// count number of scientists that player has "bothered" ("i can't be bothered right now")
+	// and give achievement if number matches total number of pre-disaster scientists
+	if (pCaller && pCaller->IsNetClient() && !m_vrHasDeclinedFollowRequest)
+	{
+		declinedFollowRequests++;
+		m_vrHasDeclinedFollowRequest = true;
+
+		if (declinedFollowRequests >= TARGET_DECLINED_FOLLOWREQUESTS)
+		{
+			UTIL_VRGiveAchievement(pCaller, VRAchievement::AM_BOTHERSOME);
+		}
+	}
 }
 
 
@@ -796,8 +827,24 @@ int CScientist::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 		StopFollowing(TRUE);
 	}
 
+	const float prevHealth = pev->health;
+
 	// make sure friends talk about it if player hurts scientist...
-	return CTalkMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
+	int result = CTalkMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
+
+	// we got killed (we have to do this here instead of in Killed(), bc we need pevInflictor)
+	if (prevHealth > 0.f && pev->health <= 0.f)
+	{
+		// first map of "We've Got Hostiles", panicing scientist who shouts "oh god we're doomed" and then runs into a tripmine
+		if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a3.bsp")
+			&& FStrEq(STRING(pev->targetname), "glassman")
+			&& FStrEq(STRING(pevInflictor->classname), "monster_tripmine"))
+		{
+			UTIL_VRGiveAchievementAll(VRAchievement::WGH_DOOMED);
+		}
+	}
+
+	return result;
 }
 
 
@@ -845,6 +892,9 @@ void CScientist::DeathSound(void)
 
 void CScientist::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	VRAchievementsAndStatsTracker::SmthKilledSmth(pevAttacker, pev, bitsDamageType);
+
+
 	SetUse(nullptr);
 	CTalkMonster::Killed(pevAttacker, bitsDamageType, iGib);
 }

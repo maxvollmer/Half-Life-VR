@@ -631,3 +631,8 @@ int UTIL_SharedRandomLong(unsigned int seed, int low, int high);
 float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);
 
 float UTIL_WeaponTimeBase(void);
+
+#include "../vr_shared/VRAchievements.h"
+void UTIL_VRGiveAchievement(CBaseEntity* pPlayer, VRAchievement achievement);
+void UTIL_VRGiveAchievementAll(VRAchievement achievement);
+

@@ -48,6 +48,7 @@
 #include "VRSettings.h"
 #include "VRSound.h"
 #include "VREngineRandomInterceptor.h"
+#include "VRSteamworksManager.h"
 
 #define HARDWARE_MODE
 #include "com_model.h"
@@ -101,6 +102,8 @@ VRRenderer::~VRRenderer()
 
 void VRRenderer::Init()
 {
+	VRSteamworksManager::Init();
+
 	vrHelper->Init();
 
 	extern void InstallModExtraDataCacheHook();
@@ -113,6 +116,8 @@ void VRRenderer::VidInit()
 
 void VRRenderer::Frame(double frametime)
 {
+	VRSteamworksManager::Update();
+
 	extern void ResetOffsetThingies();
 
 	const static auto begin = std::chrono::steady_clock::now();

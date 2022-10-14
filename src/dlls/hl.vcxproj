@@ -104,7 +104,7 @@
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Release;..\steam\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>..\DLLIncludeFixer.py -i "$(HLVRInstallDirectory)valve/dlls/hl.dll"
+      <Command>..\DLLIncludeFixer.py -i "./$(Configuration)/hl.dll"
 
 copy .\$(Configuration)\hl.dll "$(HLVRInstallDirectory)valve/dlls/hl.dll"
 copy .\$(Configuration)\hl.pdb "$(HLVRInstallDirectory)valve/dlls/hl.pdb"
@@ -164,7 +164,7 @@ copy .\$(Configuration)\hl.pdb "$(HLVRInstallDirectory)valve/dlls/hl.pdb"
       <AdditionalLibraryDirectories>..\reactphysics3d\lib\Debug;..\steam\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>..\DLLIncludeFixer.py -i "$(HLVRInstallDirectory)valve/dlls/hl.dll"
+      <Command>..\DLLIncludeFixer.py -i "./$(Configuration)/hl.dll"
 
 copy .\$(Configuration)\hl.dll "$(HLVRInstallDirectory)valve/dlls/hl.dll"
 copy .\$(Configuration)\hl.pdb "$(HLVRInstallDirectory)valve/dlls/hl.pdb"
@@ -272,6 +272,7 @@ copy .\$(Configuration)\hl.pdb "$(HLVRInstallDirectory)valve/dlls/hl.pdb"
     <ClCompile Include="tripmine.cpp" />
     <ClCompile Include="turret.cpp" />
     <ClCompile Include="util.cpp" />
+    <ClCompile Include="VRAchievementsAndStatsTracker.cpp" />
     <ClCompile Include="VRCommons.cpp" />
     <ClCompile Include="VRController.cpp" />
     <ClCompile Include="VRControllerInteractionManager.cpp" />
@@ -300,6 +301,7 @@ copy .\$(Configuration)\hl.pdb "$(HLVRInstallDirectory)valve/dlls/hl.pdb"
     <ClInclude Include="..\pm_shared\pm_materials.h" />
     <ClInclude Include="..\pm_shared\pm_movevars.h" />
     <ClInclude Include="..\pm_shared\pm_shared.h" />
+    <ClInclude Include="..\vr_shared\VRAchievements.h" />
     <ClInclude Include="..\vr_shared\VRShared.h" />
     <ClInclude Include="activity.h" />
     <ClInclude Include="activitymap.h" />
@@ -322,6 +324,7 @@ copy .\$(Configuration)\hl.pdb "$(HLVRInstallDirectory)valve/dlls/hl.pdb"
     <ClInclude Include="hlmv_mathlib.h" />
     <ClInclude Include="hornet.h" />
     <ClInclude Include="items.h" />
+    <ClInclude Include="VRAchievementsAndStatsTracker.h" />
     <ClInclude Include="VRDebugBBoxDrawer.h" />
     <ClInclude Include="VRMovementHandler.h" />
     <ClInclude Include="VRNetworkManager.h" />
