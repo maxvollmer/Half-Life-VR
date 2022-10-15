@@ -29,6 +29,10 @@ public:
 
 	static void PlayerSolvedBlastPitFan();
 
+	static void ResidueBarneyStartedRunning();
+
+	static void ResidueBarneyIsAlive();
+
 
 	static void GiveAchievementBasedOnMap(CBaseEntity* pPlayer);
 };

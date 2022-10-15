@@ -32,6 +32,10 @@ public:
 	int m_wentIntoBlastPit = 0;
 	int m_didTentaclesHearPlayer = 0;
 	int m_bpBridgesDestroyed = 0;
+	int m_exp1HeadcrabKilled = 0;
+	int m_exp2HeadcrabKilled = 0;
+
+	float m_residueBarneyStartedRunningTime = 0.f;
 
 	float m_negativeCrushDamage = 0.f;
 
@@ -98,6 +102,10 @@ TYPEDESCRIPTION CVRAchievementsAndStatsTracker::m_SaveData[] =
 	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_wentIntoBlastPit, FIELD_INTEGER),
 	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_didTentaclesHearPlayer, FIELD_INTEGER),
 	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_bpBridgesDestroyed, FIELD_INTEGER),
+	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_exp1HeadcrabKilled, FIELD_INTEGER),
+	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_exp2HeadcrabKilled, FIELD_INTEGER),
+
+	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_residueBarneyStartedRunningTime, FIELD_TIME),
 
 	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_negativeCrushDamage, FIELD_FLOAT),
 
@@ -169,6 +177,68 @@ void VRAchievementsAndStatsTracker::PlayerTakeNegativeCrushDamage(CBaseEntity* p
 	}
 }
 
+void CheckRigorousResearchAchievement()
+{
+	if (GetTracker()->m_exp1HeadcrabKilled >= 5 && GetTracker()->m_exp2HeadcrabKilled >= 7)
+	{
+		UTIL_VRGiveAchievementAll(VRAchievement::QE_RIGOROUS);
+	}
+}
+
+bool CheckQuestionableEthicsHumanKilled(struct entvars_s* pKilled)
+{
+	if (FClassnameIs(pKilled, "monster_scientist") || FClassnameIs(pKilled, "monster_barney"))
+	{
+		GetTracker()->m_friendlyKillCount++;
+		UTIL_VRGiveAchievementAll(VRAchievement::QE_ATALLCOSTS);
+		return true;
+	}
+	else if (FClassnameIs(pKilled, "monster_human_grunt"))
+	{
+		UTIL_VRGiveAchievementAll(VRAchievement::QE_EFFECTIVE);
+		return true;
+	}
+
+	return false;
+}
+
+void CheckQuestionableEthicsKills(struct entvars_s* pKiller, struct entvars_s* pKilled)
+{
+	// First questionable ethics experiment
+	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a4d.bsp"))
+	{
+		// first questionable ethics experiment
+		if (FStrEq(STRING(pKiller->targetname), "ster1_hurt"))
+		{
+			if (!CheckQuestionableEthicsHumanKilled(pKilled))
+			{
+				if (FClassnameIs(pKilled, "monster_headcrab"))
+				{
+					GetTracker()->m_exp1HeadcrabKilled++;
+					CheckRigorousResearchAchievement();
+				}
+			}
+			GetTracker()->m_totalKillCount++;
+		}
+	}
+	// 2nd questionable ethics experiments
+	else if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a4e.bsp"))
+	{
+		if (FStrEq(STRING(pKiller->targetname), "ster1_hurt"))
+		{
+			if (!CheckQuestionableEthicsHumanKilled(pKilled))
+			{
+				if (FClassnameIs(pKilled, "monster_headcrab"))
+				{
+					GetTracker()->m_exp2HeadcrabKilled++;
+					CheckRigorousResearchAchievement();
+				}
+			}
+			GetTracker()->m_totalKillCount++;
+		}
+	}
+}
+
 void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, struct entvars_s* pKilled, int bitsDamageType)
 {
 	if (!pKiller || !pKilled)
@@ -193,6 +263,26 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 			GetTracker()->m_totalKillCount++;
 			return;
 		}
+	}
+
+	if (FClassnameIs(pKiller, "trigger_hurt"))
+	{
+		CheckQuestionableEthicsKills(pKiller, pKilled);
+		return;
+	}
+
+	// Those weird rotating tools in questionable ethics
+	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a4e.bsp")
+		&& FClassnameIs(pKiller, "func_rotating")
+		&& FStrEq(STRING(pKiller->targetname), "psychobot"))
+	{
+		if (FClassnameIs(pKilled, "monster_scientist"))
+		{
+			UTIL_VRGiveAchievementAll(VRAchievement::QE_PRECISURGERY);
+			GetTracker()->m_friendlyKillCount++;
+		}
+		GetTracker()->m_totalKillCount++;
+		return;
 	}
 
 	CBasePlayer* pPlayer = CBaseEntity::SafeInstance<CBasePlayer>(pKiller->pContainingEntity);
@@ -350,6 +440,22 @@ void VRAchievementsAndStatsTracker::PlayerSolvedBlastPitFan()
 			}
 			break;
 		}
+	}
+}
+
+void VRAchievementsAndStatsTracker::ResidueBarneyStartedRunning()
+{
+	GetTracker()->m_residueBarneyStartedRunningTime = gpGlobals->time;
+}
+
+void VRAchievementsAndStatsTracker::ResidueBarneyIsAlive()
+{
+	// check that barney started running, AND that that's at least 5 seconds ago
+	if (GetTracker()->m_residueBarneyStartedRunningTime != 0.f
+		&& (gpGlobals->time > (GetTracker()->m_residueBarneyStartedRunningTime + 5.f)))
+	{
+		UTIL_VRGiveAchievementAll(VRAchievement::RP_PARENTAL);
+		GetTracker()->m_residueBarneyStartedRunningTime = 0.f;	// clear this, so we won't fire the achievement again
 	}
 }
 

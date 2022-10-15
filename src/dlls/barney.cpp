@@ -696,6 +696,17 @@ Schedule_t* CBarney::GetSchedule(void)
 		PlaySentence("BA_KILL", 4, VOL_NORM, ATTN_NORM);
 	}
 
+	if (m_MonsterState != MONSTERSTATE_SCRIPT && m_MonsterState != MONSTERSTATE_PRONE && !m_pCine && IsAlive())
+	{
+		// we are the barney at the start of the first Residue Processing level, who runs into a barnacle.
+		// if we are alive without a script, a player probably saved us
+		if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a4a.bsp")
+			&& FStrEq(STRING(pev->targetname), "barn_run_barn"))
+		{
+			VRAchievementsAndStatsTracker::ResidueBarneyIsAlive();
+		}
+	}
+
 	switch (m_MonsterState)
 	{
 	case MONSTERSTATE_COMBAT:

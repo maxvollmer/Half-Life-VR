@@ -3373,3 +3373,8 @@ void UTIL_VRGiveAchievementAll(VRAchievement achievement)
 	MESSAGE_END();
 }
 
+void UTIL_AutoSave()
+{
+	// TODO: Create backups of previous saves
+	SERVER_COMMAND("autosave\n");
+}

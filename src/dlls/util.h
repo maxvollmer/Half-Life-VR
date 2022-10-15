@@ -636,3 +636,4 @@ float UTIL_WeaponTimeBase(void);
 void UTIL_VRGiveAchievement(CBaseEntity* pPlayer, VRAchievement achievement);
 void UTIL_VRGiveAchievementAll(VRAchievement achievement);
 
+void UTIL_AutoSave();

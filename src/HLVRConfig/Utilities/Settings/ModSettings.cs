@@ -137,7 +137,7 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_move_instant_decelerate", Setting.Create( new I18N.I18NString("vr_move_instant_decelerate", "Instant deceleration"), true ) },
                 { "vr_rotate_with_trains", Setting.Create( new I18N.I18NString("vr_rotate_with_trains", "Rotate with trains/elevators"), true ) },
                 { "vr_no_gauss_recoil", Setting.Create( new I18N.I18NString("vr_no_gauss_recoil", "Disable gauss recoil"), true ) },
-                { "vr_disable_triggerpush", Setting.Create( new I18N.I18NString("vr_disable_triggerpush", "Disable areas that push the player (e.g. strong wind)"), true ) },
+                //{ "vr_disable_triggerpush", Setting.Create( new I18N.I18NString("vr_disable_triggerpush", "Disable areas that push the player (e.g. strong wind)"), false ) },
                 { "vr_disable_func_friction", Setting.Create( new I18N.I18NString("vr_disable_func_friction", "Disable slippery surfaces"), true ) },
                 { "vr_xenjumpthingies_teleporteronly", Setting.Create( new I18N.I18NString("vr_xenjumpthingies_teleporteronly", "Disable being pushed up by xen jump thingies (you can use the teleporter on those things)"), true ) },
                 { "vr_semicheat_spinthingyspeed", Setting.Create( new I18N.I18NString("vr_semicheat_spinthingyspeed", "Set maximum speed for those fast spinning platforms near the tentacle monster (map c1a4f) (Game Default: 110)"), SettingType.SPEED, "50" ) },

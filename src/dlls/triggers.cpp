@@ -2022,6 +2022,7 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 		return;
 	}
 
+#if 0 // Removed, causes too many issues.
 	// Allow disabling trigger_pushs to avoid nausea in VR - Max Vollmer, 2019-04-13
 	if (pOther->IsPlayer() && CVAR_GET_FLOAT("vr_disable_triggerpush") != 0.f)
 	{
@@ -2038,6 +2039,9 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 			return;
 		}
 	}
+#endif
+
+
 
 	if (pevToucher->solid != SOLID_NOT && pevToucher->solid != SOLID_BSP)
 	{
@@ -2061,6 +2065,15 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 							if (FStrEq(STRING(pev->targetname), "stopbars"))
 							{
 								pPlayer->VRJustGotYeetedByBPTrain();
+							}
+						}
+						// residue processing map with all those conveyor belts
+						else if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a4c.bsp"))
+						{
+							// trigger_push that player has to pass when taking the wrong turn and coming back to start
+							if (FStrEq(STRING(pev->model), "*78"))
+							{
+								UTIL_VRGiveAchievement(pPlayer, VRAchievement::RP_MOEBIUS);
 							}
 						}
 					}
@@ -2213,7 +2226,8 @@ void CTriggerSave::SaveTouch(CBaseEntity* pOther)
 
 	SetTouch(nullptr);
 	UTIL_Remove(this);
-	SERVER_COMMAND("autosave\n");
+
+	UTIL_AutoSave();
 }
 
 #define SF_ENDSECTION_USEONLY 0x0001

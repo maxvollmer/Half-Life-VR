@@ -28,6 +28,7 @@ void VRSettings::Init()
 	CVAR_CREATE("vr_debug_controllers", "0", 0);
 	CVAR_CREATE("vr_noclip", "0", 0);
 	CVAR_CREATE("vr_cheat_enable_healing_exploit", "0", 0);
+	CVAR_CREATE("vr_show_achievements", "0", 0);
 
 	// These are all stored in hlsettings.cfg and synchronized with HLVRConfig
 	RegisterCVAR("vr_357_scale", "1");
@@ -37,7 +38,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_crowbar_scale", "1");
 	RegisterCVAR("vr_crowbar_vanilla_attack_enabled", "0");
 	RegisterCVAR("vr_disable_func_friction", "1");
-	RegisterCVAR("vr_disable_triggerpush", "1");
+	//RegisterCVAR("vr_disable_triggerpush", "0");
 	RegisterCVAR("vr_egon_scale", "1");
 	RegisterCVAR("vr_enable_aim_laser", "0");
 	RegisterCVAR("vr_speech_commands_enabled", "0");
