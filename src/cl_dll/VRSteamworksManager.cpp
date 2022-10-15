@@ -11,6 +11,7 @@
 #include <string>
 #include <memory>
 #include <unordered_set>
+#include <sstream>
 
 namespace
 {
@@ -73,6 +74,77 @@ void VRSteamworksManager::Update()
 	{
 		SteamUserStats()->StoreStats();
 		achievementsNeedStoring = false;
+	}
+
+
+	// debug: prints all achieved and unachieved achievements to the console
+	float vr_show_achievements = VRGameFunctions::GetCVar("vr_show_achievements");
+	if (vr_show_achievements != 0.f)
+	{
+		if (didGetUserStats)
+		{
+			std::vector<std::string> achieved;
+			std::vector<std::string> unachieved;
+
+			int numAchievements = SteamUserStats()->GetNumAchievements();
+			for (int i = 0; i < numAchievements; i++)
+			{
+				const char* achievementKey = SteamUserStats()->GetAchievementName(i);
+
+				bool isHidden = SteamUserStats()->GetAchievementDisplayAttribute(achievementKey, "hidden")[0] == '1';
+
+				bool hasAchieved = false;
+				SteamUserStats()->GetAchievement(achievementKey, &hasAchieved);
+
+				std::stringstream achievementString;
+
+				if (isHidden)
+				{
+					achievementString << "[Hidden] ";
+				}
+
+				if (hasAchieved || !isHidden || vr_show_achievements == 2.f)
+				{
+					const char* achievementName = SteamUserStats()->GetAchievementDisplayAttribute(achievementKey, "name");
+					const char* achievementDescription = SteamUserStats()->GetAchievementDisplayAttribute(achievementKey, "desc");
+
+					achievementString << achievementName << " - " << achievementDescription << "\n";
+				}
+
+				if (hasAchieved)
+				{
+					achieved.push_back(achievementString.str());
+				}
+				else
+				{
+					unachieved.push_back(achievementString.str());
+				}
+			}
+
+			VRGameFunctions::PrintToConsole("\n");
+
+			VRGameFunctions::PrintToConsole("**Achieved (unlocked) Achievements:**\n");
+			for (auto& a : achieved)
+			{
+				VRGameFunctions::PrintToConsole(a.c_str());
+			}
+
+			VRGameFunctions::PrintToConsole("\n");
+
+			VRGameFunctions::PrintToConsole("**Unachieved (locked) Achievements:**\n");
+			for (auto& a : unachieved)
+			{
+				VRGameFunctions::PrintToConsole(a.c_str());
+			}
+
+			VRGameFunctions::PrintToConsole("\n");
+			VRGameFunctions::PrintToConsole("\n");
+		}
+		else
+		{
+			VRGameFunctions::PrintToConsole("Polling Steam API, please try again in a few seconds...\n");
+		}
+		VRGameFunctions::SetCVar("vr_show_achievements", 0.f);
 	}
 }
 

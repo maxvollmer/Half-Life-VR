@@ -83,3 +83,13 @@ bool VRGameFunctions::QuickSaveExists()
 
 	return quickSaveExists;
 }
+
+float VRGameFunctions::GetCVar(const char* cvar)
+{
+	return gEngfuncs.pfnGetCvarFloat(cvar);
+}
+
+void VRGameFunctions::SetCVar(const char* cvar, float value)
+{
+	gEngfuncs.Cvar_SetValue(cvar, value);
+}

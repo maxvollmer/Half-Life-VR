@@ -14,4 +14,6 @@ public:
 	static void QuitGame();
 	static bool QuickSaveExists();
 	static void PrintToConsole(const char* s);
+	static float GetCVar(const char* cvar);
+	static void SetCVar(const char* cvar, float value);
 };

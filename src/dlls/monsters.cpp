@@ -3074,6 +3074,15 @@ BOOL CBaseMonster::FCheckAITrigger(void)
 
 	if (fFireTarget)
 	{
+		// one of the headcrabs at the start of the first Residue Processing level
+		// both headcrab's death trigger the sequence where barney runs into the barnacle
+		if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a4a.bsp")
+			&& FStrEq(STRING(m_iszTriggerTarget), "barn_run_ms")
+			&& FClassnameIs(pev, "monster_headcrab"))
+		{
+			VRAchievementsAndStatsTracker::ResidueBarneyStartedRunning();
+		}
+
 		// fire the target, then set the trigger conditions to NONE so we don't fire again
 		ALERT(at_aiconsole, "AI Trigger Fire Target\n");
 		FireTargets(STRING(m_iszTriggerTarget), this, this, USE_TOGGLE, 0);
