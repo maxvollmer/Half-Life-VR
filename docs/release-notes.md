@@ -35,6 +35,7 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
   - Added configurable extra delay for Blast Pit fan
   - Added option to make Blast Pit fan non-solid
   - Added scale and position settings for VR menu
+  - Renamed and reordered some settings for better usability
 
 ---
 #### 0.6.29-beta - 2021-10-02
