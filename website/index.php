@@ -60,9 +60,9 @@
           <img class="button_icon" src="discord.png" alt="discord logo">
           <div class="button_text">Discord</div>
         </a>
-        <a class="button button6 button50" href="https://github.com/maxvollmer/Half-Life-VR">
-          <img class="button_icon" src="github.png" alt="github logo">
-          <div class="button_text">Github</div>
+        <a class="button button6 button50" href="https://patreon.com/maxmakesmods">
+          <img class="button_icon" src="patreon.png" alt="patreon logo">
+          <div class="button_text">Patreon</div>
         </a>
       </div>
 
@@ -74,41 +74,16 @@
 
       <div class="content_row">
         <div class="content_box">
-          <p><b>NOTE</b></p>
-          <p>This mod is currently released as beta. There are a bunch of planned features not yet implemented, and it probably has plenty of bugs. If you are looking for a fully fleshed out experience, don't play the mod at this point.</p>
+          <p><b>ON STEAM OCT 19th/20th</b></p>
+          <a style="border: none !important" href="https://store.steampowered.com/app/1908720/HalfLife_VR_Mod/">
+            <img style="width: 300px" src="hlvrmod.jpg" alt="HLVR Mod Steam banner">
+          </a>
+          <p></p>
         </div>
       </div>
 
       <div class="content_row">
-        <div class="content_title">
-          <h3>Downloads</h3>
-        </div>
-        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/download/<?php echo $MOD_VERSION; ?>/HLVR_<?php echo $MOD_VERSION; ?>-Installer.exe">
-          <div class="button_text">
-            <h4>Download Installer</h4>
-            <p>
-              <ul>
-                <li>Download</li>
-                <li>Install</li>
-                <li>Play</li>
-              </ul>
-            </p>
-          </div>
-        </a>
-        <a class="button button2" href="https://github.com/maxvollmer/Half-Life-VR/releases/download/<?php echo $MOD_VERSION; ?>/HLVR_<?php echo $MOD_VERSION; ?>.zip">
-          <div class="button_text">
-            <h4>Download Archive</h4>
-            <p>
-              <ul>
-                <li>Download</li>
-                <li>Copy vr folder into Half-Life directory</li>
-                <li>Play</li>
-              </ul>
-            </p>
-          </div>
-        </a>
-        <br><br>
-        <a href="https://github.com/maxvollmer/Half-Life-VR/releases/">Older versions</a>
+        <a href="https://github.com/maxvollmer/Half-Life-VR/releases/">Older versions on Github</a>
       </div>
 
       <div class="content_row">
@@ -116,32 +91,47 @@
         <div class="feature_list">
           <p>
             <ul>
-              <li>Dedicated HLVRConfig.exe that let's you modify almost anything to your liking</li>
-              <li>Supports every headset and controller compatible with SteamVR</li>
-              <li>Every weapon can act as melee weapon</li>
-              <li>Free locomotion with a variety of options</li>
-              <li>VR teleporter with support for ladders, xen jump pads and more</li>
-              <li>Full finger tracking for controllers that support it</li>
-              <li>Pull levers, grab and rotate valves, push buttons</li>
-              <li>Push, pull and grab boxes</li>
-              <li>Grab and climb ladders</li>
-              <li>Pull yourself up on ledges</li>
-              <li>Give NPCs commands via Windows backed speech recognition</li>
-              <li>Immersive controls for mounted guns and controllable trains</li>
-              <li>Virtual backpack</li>
-              <li>Crouch via button or through real-life ducking/lying down (with configurable height)</li>
-              <li>Auto-crouch when moving or jumping against ducts, holes and caves</li>
-              <li>Single-button long jump for easy jump&amp;run</li>
-              <li>Customizable input actions (bind any controller input to any ingame command)</li>
-              <li>Optional HD textures and HD models</li>
-              <li>Female scientists with all voice files from the original game in a female voice</li>
-              <li>Immersive HUD (can be attached to HMD or controller)</li>
-              <li>Immersive flashlight (can be attached to HMD or controller)</li>
-              <li>Plenty of anti-nausea features for the light-stomached</li>
-              <li>Scalable world, NPCs and weapons for people of different body heights and sizes</li>
-              <li>Support for play without controllers (aim with your head, shoot with ENTER or mouse)</li>
-              <li>Support for 3d sound and occlusion using FMOD</li>
-              <li>Classic mode: Play as if it was 1998 - just in VR!</li>
+              <li>Highly configurable experience</li>
+              <ul>
+                <li>Dedicated config tool that let's you modify almost anything to your liking</li>
+                <li>Crouch via button or through real-life ducking/lying down (with configurable height)</li>
+                <li>Customizable input actions (bind any controller input to any ingame command)</li>
+                <li>Over 100 different settings to customize the mod</li>
+              </ul>
+              <li>True immersion</li>
+              <ul>
+                <li>Give NPCs commands via Windows backed speech recognition</li>
+                <li>Control mounted guns and trains with your hands</li>
+                <li>Every weapon can act as melee weapon</li>
+                <li>Full finger tracking for controllers that support it</li>
+                <li>Push, pull and grab boxes</li>
+                <li>Grab and climb ladders</li>
+                <li>Pull yourself up on ledges</li>
+                <li>Pull levers, grab and rotate valves, push buttons</li>
+                <li>Immersive HUD and flashlight</li>
+                <li>HD and SD female scientists with all voice lines from the original game re-recorded by Katie Otten</li>
+              </ul>
+              <li>Quality of Life</li>
+              <ul>
+                <li>Supports every headset and controller compatible with SteamVR</li>
+                <li>Free locomotion with a variety of options</li>
+                <li>VR teleporter with support for ladders, xen jump pads and more</li>
+                <li>Plenty of anti-nausea features for the light-stomached</li>
+                <li>Scalable world, NPCs and weapons for people of different body heights and sizes</li>
+                <li>Support for 3D sound and occlusion using FMOD</li>
+                <li>Auto-crouch when moving or jumping against ducts, holes and caves</li>
+                <li>Single-button long jump for easy jump&amp;run</li>
+              </ul>
+              <li>Limited Mod support</li>
+              <ul>
+                <li>Full support for any Half-Life mod that doesn't modify code or weapon models</li>
+                <li>Limited support for any Half-Life mod that doesn't modify code but has custom weapon models</li>
+                <li>Half-Life mods that modify code can't be supported for technical reasons</li>
+              </ul>
+              <li>Experience Half-Life on your terms</li>
+              <ul>
+                <li>HD textures and HD models or Classic mode: Play as if it was 1998 - just in VR!</li>
+              </ul>
             </ul>
           </p>
         </div>
@@ -152,14 +142,40 @@
         <div class="feature_list">
           <p>
             <ul>
-              <li>Two-handed weapon handling</li>
-              <li>Gunstock configuration</li>
-              <li>Forward pulling with controllers while crouching</li>
-              <li>Stair/step-smoothing</li>
-              <li>Proper main and config menus in VR</li>
-              <li>Proper teleporter arc (following path of jumping player)</li>
-              <li></li>
-              <li></li>
+              <li>Improved immersive weapons</li>
+              <ul>
+                <li>Two-handed weapon handling</li>
+                <li>Manual reloading</li>
+                <li>Gunstock configuration</li>
+                <li>Virtual Backpack</li>
+                <li>Weapon selection wheel</li>
+                <li>Improved grenade throwing</li>
+              </ul>
+              <li>Improved accessibility</li>
+              <ul>
+                <li>Option to reduce amount of beam effects</li>
+                <li>Support for play without controllers</li>
+                <li>Configurable damage feedback strength</li>
+                <li>Subtitles</li>
+              </ul>
+              <li>And more...</li>
+            </ul>
+          </p>
+        </div>
+      </div>
+
+      <div class="content_row">
+        <div class="content_title"><h3>Known Bugs</h3></div>
+        <div class="feature_list">
+          <p>
+            <ul>
+              <li>Teleport doesn't work on some Xen jump pads</li>
+              <li>Train controls are sometimes in a weird location</li>
+              <li>Ladders in tight spaces are hard to climb</li>
+              <li>"Rapid fire bug" (Visual glitch when shooting through walls)</li>
+              <li>Teleporting on ladders sometimes bugs out</li>
+              <li>HUD text is rendered in the world instead of the HUD</li>
+              <li>Several minor visual glitches</li>
             </ul>
           </p>
         </div>
@@ -168,16 +184,7 @@
       <div class="content_row">
         <div class="content_title"><h3>FAQ</h3></div>
         <div class="faq">
-          <?php
-            $faqfile = file_get_contents("faq.txt");
-            $lines = explode("\n", $faqfile);
-            foreach($lines as $line) {
-              $q_and_a = explode("|", $line);
-              $question = $q_and_a[0];
-              $answer = $q_and_a[1];
-              echo "<div class='faq_box'><h5>$question</h5><p>$answer</p></div>";
-            }
-          ?>
+          For further questions, or to file Bug Reports, please join my Discord <a href="https://discord.gg/jujwEGf62K">Max Makes Mods</a>.
         </div>
       </div>
 
