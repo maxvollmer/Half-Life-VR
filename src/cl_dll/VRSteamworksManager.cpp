@@ -108,8 +108,10 @@ void VRSteamworksManager::Update()
 					const char* achievementName = SteamUserStats()->GetAchievementDisplayAttribute(achievementKey, "name");
 					const char* achievementDescription = SteamUserStats()->GetAchievementDisplayAttribute(achievementKey, "desc");
 
-					achievementString << achievementName << " - " << achievementDescription << "\n";
+					achievementString << achievementName << " - " << achievementDescription;
 				}
+
+				achievementString << "\n";
 
 				if (hasAchieved)
 				{
