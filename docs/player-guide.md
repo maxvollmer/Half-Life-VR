@@ -10,7 +10,14 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 
 ### Player Guide
 
-#### How to Install the Mod Version
+#### How to Install the Mod
+
+The mod is available on Steam here: [Half-Life: VR Mod](https://store.steampowered.com/app/1908720/HalfLife_VR_Mod/)
+
+---
+#### How to Install Older Versions
+
+It is not recommended to manually install older versions, but if you know what you are doing, here is how:
 
 ##### Using the Installer
 
@@ -35,21 +42,18 @@ If the installer doesn't work, you can manually install the mod [using the zip f
 4. Restart Steam
 
 ---
-#### How to Install the Standalone Version
-
-The mod isn't out on Steam yet and a release date isn't set yet. This guide will be updated once the standalone version becomes available.
-
----
 #### How to Play the Mod
 
-No matter how you installed the mod, after restarting Steam, you will find `Half-Life: VR` in your Steam library. You can then run it like any other game.
+Steam Version: `Half-Life: VR Mod` will show up in your Steam library and can be run like any other game.  
+
+Mod Version: After restarting Steam, `Half-Life: VR` will show up in your Steam library and can be run like any other game.
 
 ---
 #### How to Configure the Mod
 
-- Run `Half-Life/vr/HLVRConfig.exe` to modify any of the many settings.
+- Run `HLVRConfig.exe` to modify any of the many settings.
 
-- Alternatively, you can manually edit the `Half-Life/vr/hlvr.cfg` file.
+- Alternatively, you can manually edit the `hlvr.cfg` file.
    - Note that this file won't exist until you have run the mod at least once.
 
 ---
