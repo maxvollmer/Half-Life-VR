@@ -8,8 +8,23 @@
 #include "cbase.h"
 #include "player.h"
 
-// keep track of up to 20 past maps. used for shadow achievements (skipping sections etc)
-constexpr const int NUM_PAST_MAPS_TO_TRACK = 20;
+namespace
+{
+	constexpr const int MAX_MAPS_NAME_LENGTH = 16;
+
+	constexpr const int HAS_TRIPPED_MINE_OR_LASER		= 1 << 0;
+	constexpr const int HAS_USED_TRAIN_IN_ON_A_RAIL		= 1 << 1;
+	constexpr const int HAS_SAVED_DOOMED_SCIENTIST		= 1 << 2;
+	constexpr const int HAS_USED_NOCLIP					= 1 << 3;
+	constexpr const int HAS_BEEN_IN_WGH_MAPS			= 1 << 4;
+	constexpr const int HAS_BEEN_IN_PU_MAPS				= 1 << 5;
+	constexpr const int HAS_BEEN_IN_ON_A_RAIL			= 1 << 6;
+	constexpr const int HAS_BEEN_IN_BLASTPIT			= 1 << 7;
+	constexpr const int HAS_ALERTED_TENTACLES			= 1 << 8;
+	constexpr const int HAS_KILLED_ANY					= 1 << 9;
+	constexpr const int HAS_KILLED_FRIENDS				= 1 << 10;
+	constexpr const int HAS_SURFACED_IN_THAT_MAP_WITH_THAT_TANK		 = 1 << 11;
+}
 
 class CVRAchievementsAndStatsTracker : public CBaseEntity
 {
@@ -19,69 +34,28 @@ public:
 	virtual int ObjectCaps(void) override { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	static TYPEDESCRIPTION m_SaveData[];
 
-	int m_friendlyKillCount = 0;
-	int m_totalKillCount = 0;
-	int m_trippedMineOrLaser = 0;
-	int m_usedTrainInOnARail = 0;
-	int m_SavedDoomedScientist = 0;
-	int m_usedNoclip = 0;
-	int m_wentIntoWGHMaps = 0;
-	int m_wentIntoPUMaps = 0;
-	int m_hasSurfacedInThatMapWithTheTank = 0;
-	int m_wentIntoOAR = 0;
-	int m_wentIntoBlastPit = 0;
-	int m_didTentaclesHearPlayer = 0;
-	int m_bpBridgesDestroyed = 0;
-	int m_exp1HeadcrabKilled = 0;
-	int m_exp2HeadcrabKilled = 0;
-
+	int m_bitFlags = 0;
+	uint8_t m_bpBridgesDestroyed = 0;
+	uint8_t m_exp1HeadcrabsKilled = 0;
+	uint8_t m_exp2HeadcrabsKilled = 0;
+	float m_totalNegativeCrushDamage = 0.f;
 	float m_residueBarneyStartedRunningTime = 0.f;
 
-	float m_negativeCrushDamage = 0.f;
+	// remember last map. used for certain achievements
+	string_t m_prevMap = 0;
 
-	char m_prevMaps[NUM_PAST_MAPS_TO_TRACK][128] = {0};
 
-	// placeholders to stay save compatible. hopefully these are enough
-	int iplaceHolder0 = 0;
-	int iplaceHolder1 = 0;
-	int iplaceHolder2 = 0;
-	int iplaceHolder3 = 0;
-	int iplaceHolder4 = 0;
-	int iplaceHolder5 = 0;
-	int iplaceHolder6 = 0;
-	int iplaceHolder7 = 0;
-	int iplaceHolder8 = 0;
-	int iplaceHolder9 = 0;
-
-	float fplaceHolder0 = 0;
-	float fplaceHolder1 = 0;
-	float fplaceHolder2 = 0;
-	float fplaceHolder3 = 0;
-	float fplaceHolder4 = 0;
-	float fplaceHolder5 = 0;
-	float fplaceHolder6 = 0;
-	float fplaceHolder7 = 0;
-	float fplaceHolder8 = 0;
-	float fplaceHolder9 = 0;
-
-	char splaceHolder0[128] = { 0 };
-	char splaceHolder1[128] = { 0 };
-	char splaceHolder2[128] = { 0 };
-	char splaceHolder3[128] = { 0 };
-	char splaceHolder4[128] = { 0 };
-	char splaceHolder5[128] = { 0 };
-	char splaceHolder6[128] = { 0 };
-	char splaceHolder7[128] = { 0 };
-	char splaceHolder8[128] = { 0 };
-	char splaceHolder9[128] = { 0 };
-
-	void UpdateMap(const char* mapname)
+	void FriendlyKilled()
 	{
-		for (int i = NUM_PAST_MAPS_TO_TRACK - 1; i > 0; i--)
-		{
-			strncpy_s(m_prevMaps[i], m_prevMaps[i - 1], 128);
-		}
-		strncpy_s(m_prevMaps[0], mapname, 128);
+		//m_friendlyKillCount++;
+		m_bitFlags |= HAS_KILLED_FRIENDS;
+		AnyKilled();
+	}
+
+	void AnyKilled()
+	{
+		//m_totalKillCount++;
+		m_bitFlags |= HAS_KILLED_ANY;
 	}
 };
 
@@ -89,60 +63,13 @@ LINK_ENTITY_TO_CLASS(vr_statstracker, CVRAchievementsAndStatsTracker);
 
 TYPEDESCRIPTION CVRAchievementsAndStatsTracker::m_SaveData[] =
 {
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_friendlyKillCount, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_totalKillCount, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_trippedMineOrLaser, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_usedTrainInOnARail, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_SavedDoomedScientist, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_usedNoclip, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_wentIntoWGHMaps, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_wentIntoPUMaps, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_hasSurfacedInThatMapWithTheTank, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_wentIntoOAR, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_wentIntoBlastPit, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_didTentaclesHearPlayer, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_bpBridgesDestroyed, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_exp1HeadcrabKilled, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_exp2HeadcrabKilled, FIELD_INTEGER),
-
+	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_bitFlags, FIELD_INTEGER),
+	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_bpBridgesDestroyed, FIELD_CHARACTER),
+	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_exp1HeadcrabsKilled, FIELD_CHARACTER),
+	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_exp2HeadcrabsKilled, FIELD_CHARACTER),
+	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_totalNegativeCrushDamage, FIELD_FLOAT),
 	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_residueBarneyStartedRunningTime, FIELD_TIME),
-
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_negativeCrushDamage, FIELD_FLOAT),
-
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, m_prevMaps, FIELD_CHARACTER, 128 * NUM_PAST_MAPS_TO_TRACK),
-
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, iplaceHolder0, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, iplaceHolder1, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, iplaceHolder2, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, iplaceHolder3, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, iplaceHolder4, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, iplaceHolder5, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, iplaceHolder6, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, iplaceHolder7, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, iplaceHolder8, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, iplaceHolder9, FIELD_INTEGER),
-
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, fplaceHolder0, FIELD_FLOAT),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, fplaceHolder1, FIELD_FLOAT),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, fplaceHolder2, FIELD_FLOAT),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, fplaceHolder3, FIELD_FLOAT),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, fplaceHolder4, FIELD_FLOAT),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, fplaceHolder5, FIELD_FLOAT),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, fplaceHolder6, FIELD_FLOAT),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, fplaceHolder7, FIELD_FLOAT),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, fplaceHolder8, FIELD_FLOAT),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, fplaceHolder9, FIELD_FLOAT),
-
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, splaceHolder0, FIELD_CHARACTER, 128),
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, splaceHolder1, FIELD_CHARACTER, 128),
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, splaceHolder2, FIELD_CHARACTER, 128),
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, splaceHolder3, FIELD_CHARACTER, 128),
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, splaceHolder4, FIELD_CHARACTER, 128),
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, splaceHolder5, FIELD_CHARACTER, 128),
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, splaceHolder6, FIELD_CHARACTER, 128),
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, splaceHolder7, FIELD_CHARACTER, 128),
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, splaceHolder8, FIELD_CHARACTER, 128),
-	DEFINE_ARRAY(CVRAchievementsAndStatsTracker, splaceHolder9, FIELD_CHARACTER, 128)
+	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_prevMap, FIELD_STRING),
 };
 
 IMPLEMENT_SAVERESTORE(CVRAchievementsAndStatsTracker, CBaseEntity);
@@ -169,9 +96,9 @@ namespace
 
 void VRAchievementsAndStatsTracker::PlayerTakeNegativeCrushDamage(CBaseEntity* pPlayer, float dmg)
 {
-	GetTracker()->m_negativeCrushDamage += dmg;
+	GetTracker()->m_totalNegativeCrushDamage += dmg;
 
-	if (GetTracker()->m_negativeCrushDamage < -1000.f)
+	if (GetTracker()->m_totalNegativeCrushDamage < -1000.f)
 	{
 		UTIL_VRGiveAchievement(pPlayer, VRAchievement::HID_NOTCHEATING);
 	}
@@ -179,7 +106,7 @@ void VRAchievementsAndStatsTracker::PlayerTakeNegativeCrushDamage(CBaseEntity* p
 
 void CheckRigorousResearchAchievement()
 {
-	if (GetTracker()->m_exp1HeadcrabKilled >= 5 && GetTracker()->m_exp2HeadcrabKilled >= 7)
+	if (GetTracker()->m_exp1HeadcrabsKilled >= 5 && GetTracker()->m_exp1HeadcrabsKilled >= 7)
 	{
 		UTIL_VRGiveAchievementAll(VRAchievement::QE_RIGOROUS);
 	}
@@ -189,12 +116,13 @@ bool CheckQuestionableEthicsHumanKilled(struct entvars_s* pKilled)
 {
 	if (FClassnameIs(pKilled, "monster_scientist") || FClassnameIs(pKilled, "monster_barney"))
 	{
-		GetTracker()->m_friendlyKillCount++;
+		GetTracker()->FriendlyKilled();
 		UTIL_VRGiveAchievementAll(VRAchievement::QE_ATALLCOSTS);
 		return true;
 	}
 	else if (FClassnameIs(pKilled, "monster_human_grunt"))
 	{
+		GetTracker()->AnyKilled();
 		UTIL_VRGiveAchievementAll(VRAchievement::QE_EFFECTIVE);
 		return true;
 	}
@@ -214,11 +142,11 @@ void CheckQuestionableEthicsKills(struct entvars_s* pKiller, struct entvars_s* p
 			{
 				if (FClassnameIs(pKilled, "monster_headcrab"))
 				{
-					GetTracker()->m_exp1HeadcrabKilled++;
+					GetTracker()->m_exp1HeadcrabsKilled++;
 					CheckRigorousResearchAchievement();
 				}
 			}
-			GetTracker()->m_totalKillCount++;
+			GetTracker()->AnyKilled();
 		}
 	}
 	// 2nd questionable ethics experiments
@@ -230,11 +158,11 @@ void CheckQuestionableEthicsKills(struct entvars_s* pKiller, struct entvars_s* p
 			{
 				if (FClassnameIs(pKilled, "monster_headcrab"))
 				{
-					GetTracker()->m_exp2HeadcrabKilled++;
+					GetTracker()->m_exp2HeadcrabsKilled++;
 					CheckRigorousResearchAchievement();
 				}
 			}
-			GetTracker()->m_totalKillCount++;
+			GetTracker()->AnyKilled();
 		}
 	}
 }
@@ -252,7 +180,7 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 			&& FStrEq(STRING(pKiller->targetname), "electro_hurt"))
 		{
 			UTIL_VRGiveAchievementAll(VRAchievement::PU_BBQ);
-			GetTracker()->m_totalKillCount++;
+			GetTracker()->AnyKilled();
 			return;
 		}
 		// Forget About Freeman gargantua
@@ -260,7 +188,7 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 			&& FBitSet(bitsDamageType, DMG_MORTAR))
 		{
 			UTIL_VRGiveAchievementAll(VRAchievement::FAF_FIREINHOLE);
-			GetTracker()->m_totalKillCount++;
+			GetTracker()->AnyKilled();
 			return;
 		}
 	}
@@ -279,9 +207,12 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 		if (FClassnameIs(pKilled, "monster_scientist"))
 		{
 			UTIL_VRGiveAchievementAll(VRAchievement::QE_PRECISURGERY);
-			GetTracker()->m_friendlyKillCount++;
+			GetTracker()->FriendlyKilled();
 		}
-		GetTracker()->m_totalKillCount++;
+		else
+		{
+			GetTracker()->AnyKilled();
+		}
 		return;
 	}
 
@@ -324,16 +255,19 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 
 void VRAchievementsAndStatsTracker::PlayerKilledSmth(CBaseEntity* pPlayer, bool friendlyFire)
 {
-	GetTracker()->m_totalKillCount++;
 	if (friendlyFire)
 	{
-		GetTracker()->m_friendlyKillCount++;
+		GetTracker()->FriendlyKilled();
+	}
+	else
+	{
+		GetTracker()->AnyKilled();
 	}
 }
 
 void VRAchievementsAndStatsTracker::PlayerTrippedMineOrLaser(CBaseEntity* pPlayer)
 {
-	GetTracker()->m_trippedMineOrLaser++;
+	GetTracker()->m_bitFlags |= HAS_TRIPPED_MINE_OR_LASER;
 }
 
 namespace
@@ -357,7 +291,7 @@ void VRAchievementsAndStatsTracker::PlayerUsedTrain(CBaseEntity* pPlayer)
 {
 	if (onARailMaps.find(STRING(INDEXENT(0)->v.model)) != onARailMaps.end())
 	{
-		GetTracker()->m_usedTrainInOnARail++;
+		GetTracker()->m_bitFlags |= HAS_USED_TRAIN_IN_ON_A_RAIL;
 	}
 
 	UTIL_VRGiveAchievement(pPlayer, VRAchievement::OAR_CHOOCHOO);
@@ -365,20 +299,20 @@ void VRAchievementsAndStatsTracker::PlayerUsedTrain(CBaseEntity* pPlayer)
 
 void VRAchievementsAndStatsTracker::PlayerUsedNoclip(CBaseEntity* pPlayer)
 {
-	GetTracker()->m_usedNoclip = 1;
+	GetTracker()->m_bitFlags |= HAS_USED_NOCLIP;
 }
 
 void VRAchievementsAndStatsTracker::PlayerSavedDoomedScientist(CBaseEntity* pPlayer)
 {
 	UTIL_VRGiveAchievement(pPlayer, VRAchievement::WGH_NOTDOOMED);
 
-	GetTracker()->m_SavedDoomedScientist = 1;
+	GetTracker()->m_bitFlags |= HAS_SAVED_DOOMED_SCIENTIST;
 }
 
 void VRAchievementsAndStatsTracker::PlayerSurfacedInThatMapWithTheTank(CBaseEntity* pPlayer)
 {
 	// ignore if already surfaced
-	if (GetTracker()->m_hasSurfacedInThatMapWithTheTank)
+	if (FBitSet(GetTracker()->m_bitFlags, HAS_SURFACED_IN_THAT_MAP_WITH_THAT_TANK))
 		return;
 
 	// double check that player actually surfaced
@@ -390,7 +324,7 @@ void VRAchievementsAndStatsTracker::PlayerSurfacedInThatMapWithTheTank(CBaseEnti
 		return;
 
 	// remember that the player surfaced
-	GetTracker()->m_hasSurfacedInThatMapWithTheTank = true;
+	GetTracker()->m_bitFlags |= HAS_SURFACED_IN_THAT_MAP_WITH_THAT_TANK;
 
 	// check if the player surfaced behind the tank
 	if (pPlayer->pev->origin.y < -976.f)
@@ -401,7 +335,7 @@ void VRAchievementsAndStatsTracker::PlayerSurfacedInThatMapWithTheTank(CBaseEnti
 
 void VRAchievementsAndStatsTracker::PlayerLaunchedTentacleRocketFire(CBaseEntity* pPlayer)
 {
-	if (!GetTracker()->m_didTentaclesHearPlayer)
+	if (!FBitSet(GetTracker()->m_bitFlags, HAS_ALERTED_TENTACLES))
 	{
 		UTIL_VRGiveAchievement(pPlayer, VRAchievement::BP_SNEAKY);
 	}
@@ -409,7 +343,7 @@ void VRAchievementsAndStatsTracker::PlayerLaunchedTentacleRocketFire(CBaseEntity
 
 void VRAchievementsAndStatsTracker::PlayerGotHeardByTentacles()
 {
-	GetTracker()->m_didTentaclesHearPlayer = 1;
+	GetTracker()->m_bitFlags |= HAS_ALERTED_TENTACLES;
 }
 
 void VRAchievementsAndStatsTracker::PlayerDestroyedBlastPitBridge()
@@ -425,7 +359,7 @@ void VRAchievementsAndStatsTracker::PlayerDestroyedBlastPitBridge()
 void VRAchievementsAndStatsTracker::PlayerSolvedBlastPitFan()
 {
 	// must not have used noclip
-	if (GetTracker()->m_usedNoclip)
+	if (FBitSet(GetTracker()->m_bitFlags, HAS_USED_NOCLIP))
 		return;
 
 	// must have activated silofan
@@ -473,14 +407,14 @@ void VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(CBaseEntity* pPlay
 		|| FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a3c.bsp")
 		|| FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a3d.bsp"))
 	{
-		GetTracker()->m_wentIntoWGHMaps = 1;
+		GetTracker()->m_bitFlags |= HAS_BEEN_IN_WGH_MAPS;
 	}
 
 	// PU maps
 	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a1a.bsp")
 		|| FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a1b.bsp"))
 	{
-		GetTracker()->m_wentIntoPUMaps = 1;
+		GetTracker()->m_bitFlags |= HAS_BEEN_IN_PU_MAPS;
 	}
 
 	// first blast pit map
@@ -489,24 +423,25 @@ void VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(CBaseEntity* pPlay
 		// check if player skipped We've Got Hostiles
 		// must have saved the doomed scientist, never used noclip, never visited a WGH map, and come from c1a3
 		// (still possible to cheat, but there is only so much you can do)
-		if (!GetTracker()->m_wentIntoBlastPit
-			&& GetTracker()->m_SavedDoomedScientist
-			&& !GetTracker()->m_usedNoclip
-			&& FStrEq(GetTracker()->m_prevMaps[0], "maps/c1a3.bsp")
-			&& !GetTracker()->m_wentIntoWGHMaps)
+		if (!FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_BLASTPIT)
+			&& FBitSet(GetTracker()->m_bitFlags, HAS_SAVED_DOOMED_SCIENTIST)
+			&& !FBitSet(GetTracker()->m_bitFlags, HAS_USED_NOCLIP)
+			&& FStrEq(STRING(GetTracker()->m_prevMap), "maps/c1a3.bsp")
+			&& !FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_WGH_MAPS))
 		{
 			UTIL_VRGiveAchievement(pPlayer, VRAchievement::HID_SKIP_WGH);
 		}
 		else
 		{
 			// only give WGH achievements, if player played the chapter
-			if (GetTracker()->m_trippedMineOrLaser == 0)
+			if (FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_WGH_MAPS)
+				&& !FBitSet(GetTracker()->m_bitFlags, HAS_TRIPPED_MINE_OR_LASER))
 			{
 				UTIL_VRGiveAchievement(pPlayer, VRAchievement::WGH_PERFECT);
 			}
 		}
 
-		GetTracker()->m_wentIntoBlastPit = 1;
+		GetTracker()->m_bitFlags |= HAS_BEEN_IN_BLASTPIT;
 	}
 
 	// first On A Rail map
@@ -514,15 +449,15 @@ void VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(CBaseEntity* pPlay
 	{
 		// check if player skipped Power Up
 		// must never have used noclip, never visited a Power Up map, and come from c2a1
-		if (!GetTracker()->m_wentIntoOAR
-			&& !GetTracker()->m_usedNoclip
-			&& FStrEq(GetTracker()->m_prevMaps[0], "maps/c2a1.bsp")
-			&& !GetTracker()->m_wentIntoPUMaps)
+		if (!FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_ON_A_RAIL)
+			&& !FBitSet(GetTracker()->m_bitFlags, HAS_USED_NOCLIP)
+			&& FStrEq(STRING(GetTracker()->m_prevMap), "maps/c2a1.bsp")
+			&& !FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_PU_MAPS))
 		{
 			UTIL_VRGiveAchievement(pPlayer, VRAchievement::HID_SKIP_PU);
 		}
 
-		GetTracker()->m_wentIntoOAR = 1;
+		GetTracker()->m_bitFlags |= HAS_BEEN_IN_ON_A_RAIL;
 	}
 
 	// first xen map
@@ -543,15 +478,15 @@ void VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(CBaseEntity* pPlay
 		UTIL_VRGiveAchievement(pPlayer, VRAchievement::END_GMAN);
 
 		// basic sanity check that player has actually played the game, and not just used "map c5a1" to get here.
-		if (GetTracker()->m_wentIntoOAR
-			&& GetTracker()->m_wentIntoBlastPit
-			&& FStrEq(GetTracker()->m_prevMaps[0], "maps/c4a3.bsp"))
+		if (FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_ON_A_RAIL)
+			&& FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_BLASTPIT)
+			&& FStrEq(STRING(GetTracker()->m_prevMap), "maps/c4a3.bsp"))
 		{
-			if (GetTracker()->m_totalKillCount == 0)
+			if (!FBitSet(GetTracker()->m_bitFlags, HAS_KILLED_ANY))
 			{
 				UTIL_VRGiveAchievement(pPlayer, VRAchievement::GEN_PACIFIST);
 			}
-			if (GetTracker()->m_friendlyKillCount == 0)
+			if (!FBitSet(GetTracker()->m_bitFlags, HAS_KILLED_FRIENDS))
 			{
 				UTIL_VRGiveAchievement(pPlayer, VRAchievement::GEN_TEAMPLAYER);
 			}
@@ -560,14 +495,13 @@ void VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(CBaseEntity* pPlay
 
 	// transitioning from "on a rail" to "apprehension", and never used a train
 	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a3.bsp")
-		&& FStrEq(GetTracker()->m_prevMaps[0], "maps/c2a2g.bsp")
-		&& GetTracker()->m_wentIntoOAR
-		&& !GetTracker()->m_usedTrainInOnARail)
+		&& FStrEq(STRING(GetTracker()->m_prevMap), "maps/c2a2g.bsp")
+		&& FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_ON_A_RAIL)
+		&& !FBitSet(GetTracker()->m_bitFlags, HAS_USED_TRAIN_IN_ON_A_RAIL))
 	{
 		UTIL_VRGiveAchievement(pPlayer, VRAchievement::HID_OFFARAIL);
 	}
 
-
-	GetTracker()->UpdateMap(STRING(INDEXENT(0)->v.model));
+	GetTracker()->m_prevMap = INDEXENT(0)->v.model;
 }
 
