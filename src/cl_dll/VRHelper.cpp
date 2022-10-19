@@ -240,7 +240,7 @@ void VRHelper::UpdateWorldRotation()
 				m_groundEntity = groundEntity;
 				m_hasGroundEntityYaw = false;
 			}
-			if (CVAR_GET_FLOAT("vr_rotate_with_trains") != 0.f)
+			if (CVAR_GET_FLOAT("vr_dont_rotate_with_trains") == 0.f)
 			{
 				if (m_hasGroundEntityYaw)
 				{

@@ -92,7 +92,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_playerturn_enabled", "1");
 	RegisterCVAR("vr_rl_duck_height", "36");
 	RegisterCVAR("vr_rl_ducking_enabled", "1");
-	RegisterCVAR("vr_rotate_with_trains", "1");
+	RegisterCVAR("vr_dont_rotate_with_trains", "1");
 	RegisterCVAR("vr_rpg_scale", "1");
 	RegisterCVAR("vr_satchel_radio_scale", "1");
 	RegisterCVAR("vr_satchel_scale", "1");
