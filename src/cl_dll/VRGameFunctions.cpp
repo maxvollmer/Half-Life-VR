@@ -27,6 +27,56 @@ void VRGameFunctions::SetSkill(int skill)
 	//gEngfuncs.pfnServerCmd("skill " + skill);
 }
 
+void VRGameFunctions::SetGraphicsMode(int graphics)
+{
+	switch (graphics)
+	{
+	case 1:
+		// classic mode
+		gEngfuncs.Cvar_SetValue("vr_classic_mode", 1);
+		gEngfuncs.Cvar_SetValue("vr_hd_textures_enabled", 0);
+		gEngfuncs.Cvar_SetValue("vr_use_hd_models", 0);
+		gEngfuncs.pfnClientCmd("gl_texturemode GL_NEAREST");
+		gEngfuncs.pfnClientCmd("vr_texturemode GL_NEAREST");
+		break;
+	case 2:
+		// SD mode
+		gEngfuncs.Cvar_SetValue("vr_classic_mode", 0);
+		gEngfuncs.Cvar_SetValue("vr_hd_textures_enabled", 0);
+		gEngfuncs.Cvar_SetValue("vr_use_hd_models", 0);
+		gEngfuncs.pfnClientCmd("gl_texturemode GL_LINEAR_MIPMAP_LINEAR");
+		gEngfuncs.pfnClientCmd("vr_texturemode GL_LINEAR_MIPMAP_LINEAR");
+		break;
+	case 3:
+		// HD mode
+		gEngfuncs.Cvar_SetValue("vr_classic_mode", 0);
+		gEngfuncs.Cvar_SetValue("vr_hd_textures_enabled", 1);
+		gEngfuncs.Cvar_SetValue("vr_use_hd_models", 1);
+		gEngfuncs.pfnClientCmd("gl_texturemode GL_LINEAR_MIPMAP_LINEAR");
+		gEngfuncs.pfnClientCmd("vr_texturemode GL_LINEAR_MIPMAP_LINEAR");
+		break;
+	}
+}
+
+void VRGameFunctions::SetMovement(int movement)
+{
+	switch (movement)
+	{
+	case 1:
+		// off hand
+		gEngfuncs.Cvar_SetValue("vr_movement_attachment", 0);
+		break;
+	case 2:
+		// weapon hand
+		gEngfuncs.Cvar_SetValue("vr_movement_attachment", 1);
+		break;
+	case 3:
+		// HMD
+		gEngfuncs.Cvar_SetValue("vr_movement_attachment", 2);
+		break;
+	}
+}
+
 void VRGameFunctions::SetVolume(float volume)
 {
 	gEngfuncs.Cvar_SetValue("volume", volume);
