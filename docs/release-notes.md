@@ -10,7 +10,7 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 
 ### Release Notes
 
-#### 0.7.0-beta - TBA
+#### 0.7.0-beta - 2021-10-19
 
 ##### Mod:
   - First Release on Steam
@@ -27,6 +27,7 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
   - Added basic working VR menu
   - Added default binds for Vive, Index, Oculus Touch, and WMR
   - Added Steam achievements
+  - Added SD version for the female scientists
   - Restored default walk speed and legacy ladder climb speed to pancake defaults
 
 ##### HLVRConfig:
