@@ -10,7 +10,7 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 
 ### Release Notes
 
-#### 0.7.0-beta - 2021-10-19
+#### 0.7.0-beta - 2022-10-19
 
 ##### Mod:
   - First Release on Steam
