@@ -20,6 +20,55 @@ void VRGameFunctions::PrintToConsole(const char* s)
 	gEngfuncs.Con_DPrintf(s);
 }
 
+int VRGameFunctions::GetSkill()
+{
+	return (int)gEngfuncs.pfnGetCvarFloat("skill");
+}
+
+int VRGameFunctions::GetGraphicsMode()
+{
+	static const std::string hdTexMode("GL_LINEAR_MIPMAP_LINEAR");
+
+	if (gEngfuncs.pfnGetCvarFloat("vr_classic_mode") != 0.f)
+	{
+		// Classic Mode
+		return 1;
+	}
+	else
+	{
+		if (hdTexMode == gEngfuncs.pfnGetCvarString("vr_hd_textures_enabled")
+			&& hdTexMode == gEngfuncs.pfnGetCvarString("vr_hd_textures_enabled"))
+		{
+			float hd_textures = gEngfuncs.pfnGetCvarFloat("vr_hd_textures_enabled");
+			float hd_models = gEngfuncs.pfnGetCvarFloat("vr_use_hd_models");
+			if (hd_textures == 0.f && hd_models == 0.f)
+			{
+				// SD Mode
+				return 2;
+			}
+			else if (hd_textures != 0.f && hd_models != 0.f)
+			{
+				// HD Mode
+				return 3;
+			}
+		}
+	}
+
+	// Custom
+	return -1;
+}
+
+int VRGameFunctions::GetMovement()
+{
+	return ((int)gEngfuncs.pfnGetCvarFloat("vr_movement_attachment")) + 1;
+}
+
+float VRGameFunctions::GetVolume()
+{
+	return gEngfuncs.pfnGetCvarFloat("volume");
+}
+
+
 void VRGameFunctions::SetSkill(int skill)
 {
 	gEngfuncs.Cvar_SetValue("skill", (float)skill);

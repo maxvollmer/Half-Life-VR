@@ -62,7 +62,7 @@
     <Filter Include="VR\sound\dr_wav">
       <UniqueIdentifier>{bfecc395-0c6f-45b6-8406-a34247469240}</UniqueIdentifier>
     </Filter>
-    <Filter Include="VR\helpers\random">
+    <Filter Include="VR\helpers\engine">
       <UniqueIdentifier>{45d5e476-1401-4eab-bf6c-e088b58a734b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -388,8 +388,8 @@
     <ClCompile Include="VRClientDLLUnloadHandler.cpp">
       <Filter>VR\stuff</Filter>
     </ClCompile>
-    <ClCompile Include="VREngineRandomInterceptor.cpp">
-      <Filter>VR\helpers\random</Filter>
+    <ClCompile Include="VREngineInterceptor.cpp">
+      <Filter>VR\helpers\engine</Filter>
     </ClCompile>
     <ClCompile Include="VRGUIRenderer.cpp">
       <Filter>VR\renderer</Filter>
@@ -402,6 +402,12 @@
     </ClCompile>
     <ClCompile Include="VRSteamworksManager.cpp">
       <Filter>VR\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="VRRandom.cpp">
+      <Filter>VR\helpers\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="VRFileManager.cpp">
+      <Filter>VR\helpers\engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -594,8 +600,8 @@
     <ClInclude Include="dr_wav.h">
       <Filter>VR\sound\dr_wav</Filter>
     </ClInclude>
-    <ClInclude Include="VREngineRandomInterceptor.h">
-      <Filter>VR\helpers\random</Filter>
+    <ClInclude Include="VREngineInterceptor.h">
+      <Filter>VR\helpers\engine</Filter>
     </ClInclude>
     <ClInclude Include="DoOnDestruct.h">
       <Filter>VR\stuff</Filter>
@@ -614,6 +620,12 @@
     </ClInclude>
     <ClInclude Include="..\vr_shared\VRAchievements.h">
       <Filter>VR\vr_shared</Filter>
+    </ClInclude>
+    <ClInclude Include="VRRandom.h">
+      <Filter>VR\helpers\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="VRFileManager.h">
+      <Filter>VR\helpers\engine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

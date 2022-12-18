@@ -20,22 +20,11 @@ LINK_ENTITY_TO_CLASS(vr_easteregg, CWorldsSmallestCup);
 
 extern const model_t* VRGetBSPModel(edict_t* pent);
 
-EHANDLE<CWorldsSmallestCup> CWorldsSmallestCup::m_instance{};
-
-namespace
-{
-	std::string m_lastMap;
-	bool m_wasDraggedLastMap{ false };
-
-	EHANDLE<CTalkMonster> m_hKleiner;
-	float m_flKleinerFaceStart{ 0.f };
-	std::unordered_set<EHANDLE<CTalkMonster>, EHANDLE<CTalkMonster>::Hash, EHANDLE<CTalkMonster>::Equal> m_hAlreadySpokenKleiners;
-}
-
-
 TYPEDESCRIPTION CWorldsSmallestCup::m_SaveData[] =
 {
-	DEFINE_FIELD(CWorldsSmallestCup, m_spawnOrigin, FIELD_POSITION_VECTOR)
+	DEFINE_FIELD(CWorldsSmallestCup, m_spawnOrigin, FIELD_POSITION_VECTOR),
+	DEFINE_FIELD(CWorldsSmallestCup, m_lastMap, FIELD_STRING),
+	DEFINE_FIELD(CWorldsSmallestCup, m_wasDraggedLastMap, FIELD_BOOLEAN),
 };
 
 IMPLEMENT_SAVERESTORE(CWorldsSmallestCup, CGib);
@@ -54,15 +43,12 @@ void CWorldsSmallestCup::Spawn()
 	m_bloodColor = DONT_BLEED;
 	m_cBloodDecals = 0;
 
+	m_hAlreadySpokenKleiners.clear();
+	m_wasDraggedLastMap = false;
+
 	SetThink(&CWorldsSmallestCup::CupThink);
 	pev->nextthink = gpGlobals->time;
 	pev->flags |= FL_ALWAYSTHINK;
-
-	if (m_instance && m_instance != this)
-	{
-		m_instance->SetThink(&CBaseEntity::SUB_Remove);
-	}
-	m_instance = this;
 }
 
 void CWorldsSmallestCup::HandleDragStart()
@@ -90,17 +76,9 @@ void CWorldsSmallestCup::CupThink()
 	pev->nextthink = gpGlobals->time;
 	pev->flags |= FL_ALWAYSTHINK;
 
-	if (m_instance && m_instance != this)
+	if (!FStrEq(STRING(m_lastMap), STRING(INDEXENT(0)->v.model)))
 	{
-		SetThink(&CBaseEntity::SUB_Remove);
-		return;
-	}
-
-	m_instance = this;
-
-	if (m_lastMap != STRING(INDEXENT(0)->v.model))
-	{
-		m_lastMap = STRING(INDEXENT(0)->v.model);
+		m_lastMap = INDEXENT(0)->v.model;
 		m_hAlreadySpokenKleiners.clear();
 		m_wasDraggedLastMap = false;
 	}
@@ -131,7 +109,7 @@ void CWorldsSmallestCup::CupThink()
 
 					CTalkMonster::g_talkWaitTime = gpGlobals->time + 20;
 					m_hKleiner->Talk(20);
-					m_hKleiner->m_hTalkTarget = UTIL_PlayerByIndex(0);
+					m_hKleiner->m_hTalkTarget = UTIL_PlayerByIndex(1);
 					EMIT_SOUND_DYN(m_hKleiner->edict(), CHAN_VOICE, "easteregg/smallestcup.wav", 1, ATTN_NORM, 0, m_hKleiner->GetVoicePitch());
 					SetBits(m_hKleiner->m_bitsSaid, bit_saidHelloPlayer);
 					m_hAlreadySpokenKleiners.insert(m_hKleiner);
@@ -186,76 +164,4 @@ bool CWorldsSmallestCup::AmIInKleinersFace(CTalkMonster* pKleiner)
 	UTIL_MakeAimVectorsPrivate(pKleiner->pev->angles, forward, nullptr, nullptr);
 	Vector pos = pKleiner->EyePosition() + (forward * 16.f);
 	return UTIL_PointInsideBBox(pev->origin, pos - Vector{ 8.f, 8.f, 8.f }, pos + Vector{ 8.f, 8.f, 8.f });
-}
-
-void CWorldsSmallestCup::EnsureInstance(CBasePlayer* pPlayer)
-{
-	if (!pPlayer)
-		return;
-
-	if (!m_instance)
-	{
-		bool spawnnew = false;
-		CBaseEntity* pEasterEgg = UTIL_FindEntityByClassname(nullptr, "vr_easteregg");
-		if (pEasterEgg)
-		{
-			CWorldsSmallestCup* pWorldsSmallestCup = dynamic_cast<CWorldsSmallestCup*>(pEasterEgg);
-			if (pWorldsSmallestCup)
-			{
-				m_instance = pWorldsSmallestCup;
-			}
-			else
-			{
-				UTIL_Remove(pEasterEgg);
-				spawnnew = true;
-			}
-		}
-		else
-		{
-			// If player carried cup last map, spawn a new one.
-			spawnnew = m_wasDraggedLastMap;
-			m_wasDraggedLastMap = false;
-		}
-		if (spawnnew)
-		{
-			edict_t* pentinstance = CREATE_NAMED_ENTITY(MAKE_STRING("vr_easteregg"));
-			if (!FNullEnt(pentinstance))
-			{
-				pentinstance->v.origin = pPlayer->pev->origin;
-				DispatchSpawn(pentinstance);
-			}
-		}
-		return;
-	}
-
-	if (m_instance->m_spawnOrigin.LengthSquared() == 0.f)
-	{
-		m_instance->m_spawnOrigin = pPlayer->pev->origin;
-	}
-
-	// if easteregg is being dragged, all is well
-	if (m_instance->IsBeingDragged())
-	{
-		EHANDLE<CBasePlayer> hPlayer = m_instance->m_vrDragger;
-		if (hPlayer)
-		{
-			auto& controller = hPlayer->GetController(m_instance->m_vrDragController);
-			if (controller.IsValid() && controller.IsDragging() && controller.IsDraggedEntity(m_instance))
-			{
-				return;
-			}
-		}
-	}
-
-	// ensure easteregg thinks
-	m_instance->m_vrDragger = nullptr;
-	m_instance->m_vrDragController = VRControllerID::INVALID;
-	m_instance->SetThink(&CWorldsSmallestCup::CupThink);
-	m_instance->pev->nextthink = gpGlobals->time;
-	m_instance->pev->flags |= FL_ALWAYSTHINK;
-}
-
-void EnsureEasteregg(CBasePlayer* pPlayer)
-{
-	CWorldsSmallestCup::EnsureInstance(pPlayer);
 }

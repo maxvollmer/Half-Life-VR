@@ -30,7 +30,17 @@ namespace
 
 	void UserStatsCallback::OnUserStatsReceived(UserStatsReceived_t* pCallback)
 	{
-		didGetUserStats = true;
+		if (pCallback->m_nGameID == 1908720)
+		{
+			didGetUserStats = true;
+			return;
+		}
+		else
+		{
+			VRGameFunctions::PrintToConsole(("Warning: Achievements couldn't be initialized, wrong Steam APP Id: "
+				+ std::to_string(pCallback->m_nGameID)
+				+ ". Make sure you run the game through Steam or have a steam_appid.txt with the correct APP Id.\n").c_str());
+		}
 	}
 
 	std::unique_ptr<UserStatsCallback> pUserStatsCallback;
@@ -48,8 +58,10 @@ bool VRSteamworksManager::Init()
 
 	pUserStatsCallback = std::make_unique<UserStatsCallback>();
 
+	const char* name = SteamFriends()->GetPersonaName();
+
 	// need to call this for achievements to work
-	SteamUserStats()->RequestCurrentStats();
+	bool result = SteamUserStats()->RequestCurrentStats();
 
 	return true;
 }
@@ -61,13 +73,36 @@ void VRSteamworksManager::Update()
 
 	SteamAPI_RunCallbacks();
 
-	if (didGetUserStats && !achievementsToGive.empty())
+	if (didGetUserStats)
 	{
-		for (auto& achievement : achievementsToGive)
+		if (!achievementsToGive.empty())
 		{
-			GiveAchievement((VRAchievement)achievement);
+			for (auto& achievement : achievementsToGive)
+			{
+				GiveAchievement((VRAchievement)achievement);
+			}
+			achievementsToGive.clear();
 		}
-		achievementsToGive.clear();
+
+		// This fixes a bug shipped with the first Steam release,
+		// where players got the "How?" achievement wrongly,
+		// and didn't get the "StartGame" achievement.
+		constexpr const int VERSION = 1;
+		int version = 0;
+		if (SteamUserStats()->GetStat("Version", &version))
+		{
+			if (version != VERSION)
+			{
+				bool hasHow = false;
+				if (SteamUserStats()->GetAchievement("How", &hasHow) && hasHow)
+				{
+					SteamUserStats()->ClearAchievement("How");
+					SteamUserStats()->SetAchievement("StartGame");
+				}
+				SteamUserStats()->SetStat("Version", VERSION);
+				achievementsNeedStoring = true;
+			}
+		}
 	}
 
 	if (achievementsNeedStoring)
@@ -75,7 +110,6 @@ void VRSteamworksManager::Update()
 		SteamUserStats()->StoreStats();
 		achievementsNeedStoring = false;
 	}
-
 
 	// debug: prints all achieved and unachieved achievements to the console
 	float vr_show_achievements = VRGameFunctions::GetCVar("vr_show_achievements");

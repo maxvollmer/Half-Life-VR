@@ -766,9 +766,6 @@ void PlayerPostThink(edict_t* pEntity)
 	if (pPlayer)
 	{
 		pPlayer->PostThink();
-
-		extern void EnsureEasteregg(CBasePlayer* pPlayer);
-		EnsureEasteregg(pPlayer);
 	}
 }
 

@@ -7,6 +7,7 @@
 #include "player.h"
 #include "pm_defs.h"
 #include "com_model.h"
+#include "trains.h"
 
 #include "VRGroundEntityHandler.h"
 #include "VRPhysicsHelper.h"
@@ -58,19 +59,29 @@ void VRGroundEntityHandler::DetectAndSetGroundEntity()
 	if (IntroTrainRideMapNames.count(mapName) != 0)
 	{
 		pentground = FIND_ENTITY_BY_STRING(nullptr, "targetname", "train");
-		if (!FNullEnt(pentground))
+		if (!FNullEnt(pentground) && FClassnameIs(pentground, "func_tracktrain"))
 		{
-			if (!UTIL_PointInsideBBox(m_pPlayer->pev->origin, pentground->v.absmin, pentground->v.absmax) || m_pPlayer->pev->origin.z < (pentground->v.origin.z + pentground->v.mins.z))
+			CFuncTrackTrain* pTrain = CBaseEntity::SafeInstance<CFuncTrackTrain>(pentground);
+			if (pTrain->m_ppath) // only do this if the train is actually on a path
 			{
-				UTIL_VRGiveAchievement(m_pPlayer, VRAchievement::HID_HOW);
-
-				// if we fell out, teleport us back in
-				bool forceIntroTrainRide = CVAR_GET_FLOAT("vr_force_introtrainride") != 0.f;
-				if (forceIntroTrainRide)
+				if (!UTIL_PointInsideBBox(m_pPlayer->pev->origin, pentground->v.absmin, pentground->v.absmax) || m_pPlayer->pev->origin.z < (pentground->v.origin.z + pentground->v.mins.z))
 				{
-					m_pPlayer->pev->origin = pentground->v.origin;
-					m_pPlayer->pev->origin.z += 64.f;
-					m_pPlayer->pev->velocity = Vector{};
+					// wait two seconds after spawn to prevent this achievement from being given bc of spawn anomalies
+					float a = m_pPlayer->m_spawnTime;
+					float b = gpGlobals->time;
+					if ((gpGlobals->time - m_pPlayer->m_spawnTime) > 2.f)
+					{
+						UTIL_VRGiveAchievement(m_pPlayer, VRAchievement::HID_HOW);
+					}
+
+					// if we fell out, teleport us back in
+					bool forceIntroTrainRide = CVAR_GET_FLOAT("vr_force_introtrainride") != 0.f;
+					if (forceIntroTrainRide)
+					{
+						m_pPlayer->pev->origin = pentground->v.origin;
+						m_pPlayer->pev->origin.z += 64.f;
+						m_pPlayer->pev->velocity = Vector{};
+					}
 				}
 			}
 		}

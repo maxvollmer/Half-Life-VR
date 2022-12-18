@@ -260,11 +260,13 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
     <ClCompile Include="vgui_TeamFortressViewport.cpp" />
     <ClCompile Include="vgui_teammenu.cpp" />
     <ClCompile Include="view.cpp" />
+    <ClCompile Include="VRFileManager.cpp" />
+    <ClCompile Include="VRRandom.cpp" />
     <ClCompile Include="VRSteamworksManager.cpp" />
     <ClCompile Include="VRClientDLLUnloadHandler.cpp" />
     <ClCompile Include="VRCommon.cpp" />
     <ClCompile Include="VRDebugPhysicsRenderer.cpp" />
-    <ClCompile Include="VREngineRandomInterceptor.cpp" />
+    <ClCompile Include="VREngineInterceptor.cpp" />
     <ClCompile Include="VRGameFunctions.cpp" />
     <ClCompile Include="VRGUIRenderer.cpp" />
     <ClCompile Include="VRHUDRenderer.cpp" />
@@ -341,9 +343,11 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
     <ClInclude Include="vgui_SpectatorPanel.h" />
     <ClInclude Include="vgui_TeamFortressViewport.h" />
     <ClInclude Include="view.h" />
+    <ClInclude Include="VRFileManager.h" />
+    <ClInclude Include="VRRandom.h" />
     <ClInclude Include="VRSteamworksManager.h" />
     <ClInclude Include="VRCommon.h" />
-    <ClInclude Include="VREngineRandomInterceptor.h" />
+    <ClInclude Include="VREngineInterceptor.h" />
     <ClInclude Include="VRGameFunctions.h" />
     <ClInclude Include="VRGUIRenderer.h" />
     <ClInclude Include="VRInputAction.h" />

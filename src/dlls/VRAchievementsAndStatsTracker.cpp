@@ -26,103 +26,51 @@ namespace
 	constexpr const int HAS_SURFACED_IN_THAT_MAP_WITH_THAT_TANK		 = 1 << 11;
 }
 
-class CVRAchievementsAndStatsTracker : public CBaseEntity
+void CVRAchievementsAndStatsData::FriendlyKilled()
 {
-public:
-	virtual int Save(CSave& save) override;
-	virtual int Restore(CRestore& restore) override;
-	virtual int ObjectCaps(void) override { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
-	static TYPEDESCRIPTION m_SaveData[];
+	m_bitFlags |= HAS_KILLED_FRIENDS;
+	AnyKilled();
+}
 
-	int m_bitFlags = 0;
-	uint8_t m_bpBridgesDestroyed = 0;
-	uint8_t m_exp1HeadcrabsKilled = 0;
-	uint8_t m_exp2HeadcrabsKilled = 0;
-	float m_totalNegativeCrushDamage = 0.f;
-	float m_residueBarneyStartedRunningTime = 0.f;
-
-	// remember last map. used for certain achievements
-	string_t m_prevMap = 0;
-
-
-	void FriendlyKilled()
-	{
-		//m_friendlyKillCount++;
-		m_bitFlags |= HAS_KILLED_FRIENDS;
-		AnyKilled();
-	}
-
-	void AnyKilled()
-	{
-		//m_totalKillCount++;
-		m_bitFlags |= HAS_KILLED_ANY;
-	}
-};
-
-LINK_ENTITY_TO_CLASS(vr_statstracker, CVRAchievementsAndStatsTracker);
-
-TYPEDESCRIPTION CVRAchievementsAndStatsTracker::m_SaveData[] =
+void CVRAchievementsAndStatsData::AnyKilled()
 {
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_bitFlags, FIELD_INTEGER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_bpBridgesDestroyed, FIELD_CHARACTER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_exp1HeadcrabsKilled, FIELD_CHARACTER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_exp2HeadcrabsKilled, FIELD_CHARACTER),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_totalNegativeCrushDamage, FIELD_FLOAT),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_residueBarneyStartedRunningTime, FIELD_TIME),
-	DEFINE_FIELD(CVRAchievementsAndStatsTracker, m_prevMap, FIELD_STRING),
-};
-
-IMPLEMENT_SAVERESTORE(CVRAchievementsAndStatsTracker, CBaseEntity);
-
-
-namespace
-{
-	EHANDLE<CVRAchievementsAndStatsTracker> hTracker;
-	CVRAchievementsAndStatsTracker* GetTracker()
-	{
-		if (!hTracker)
-		{
-			hTracker = dynamic_cast<CVRAchievementsAndStatsTracker*>(UTIL_FindEntityByClassname(nullptr, "vr_statstracker"));
-			if (!hTracker)
-			{
-				hTracker = CBaseEntity::Create<CVRAchievementsAndStatsTracker>("vr_statstracker", g_vecZero, g_vecZero);
-			}
-		}
-
-		return hTracker;
-	}
+	m_bitFlags |= HAS_KILLED_ANY;
 }
 
 
 void VRAchievementsAndStatsTracker::PlayerTakeNegativeCrushDamage(CBaseEntity* pPlayer, float dmg)
 {
-	GetTracker()->m_totalNegativeCrushDamage += dmg;
+	CBasePlayer* pActualPlayer = dynamic_cast<CBasePlayer*>(pPlayer);
+	if (!pActualPlayer)
+		return;
 
-	if (GetTracker()->m_totalNegativeCrushDamage < -1000.f)
+	pActualPlayer->GetAchievementsAndStatsData().m_totalNegativeCrushDamage += dmg;
+
+	if (pActualPlayer->GetAchievementsAndStatsData().m_totalNegativeCrushDamage < -1000.f)
 	{
-		UTIL_VRGiveAchievement(pPlayer, VRAchievement::HID_NOTCHEATING);
+		UTIL_VRGiveAchievement(pActualPlayer, VRAchievement::HID_NOTCHEATING);
 	}
 }
 
-void CheckRigorousResearchAchievement()
+void CheckRigorousResearchAchievement(CBasePlayer* pPlayer)
 {
-	if (GetTracker()->m_exp1HeadcrabsKilled >= 5 && GetTracker()->m_exp1HeadcrabsKilled >= 7)
+	if (pPlayer->GetAchievementsAndStatsData().m_exp1HeadcrabsKilled >= 5 && pPlayer->GetAchievementsAndStatsData().m_exp1HeadcrabsKilled >= 7)
 	{
 		UTIL_VRGiveAchievementAll(VRAchievement::QE_RIGOROUS);
 	}
 }
 
-bool CheckQuestionableEthicsHumanKilled(struct entvars_s* pKilled)
+bool CheckQuestionableEthicsHumanKilled(CBasePlayer* pPlayer, struct entvars_s* pKilled)
 {
 	if (FClassnameIs(pKilled, "monster_scientist") || FClassnameIs(pKilled, "monster_barney"))
 	{
-		GetTracker()->FriendlyKilled();
+		pPlayer->GetAchievementsAndStatsData().FriendlyKilled();
 		UTIL_VRGiveAchievementAll(VRAchievement::QE_ATALLCOSTS);
 		return true;
 	}
 	else if (FClassnameIs(pKilled, "monster_human_grunt"))
 	{
-		GetTracker()->AnyKilled();
+		pPlayer->GetAchievementsAndStatsData().AnyKilled();
 		UTIL_VRGiveAchievementAll(VRAchievement::QE_EFFECTIVE);
 		return true;
 	}
@@ -130,7 +78,7 @@ bool CheckQuestionableEthicsHumanKilled(struct entvars_s* pKilled)
 	return false;
 }
 
-void CheckQuestionableEthicsKills(struct entvars_s* pKiller, struct entvars_s* pKilled)
+void CheckQuestionableEthicsKills(CBasePlayer* pPlayer, struct entvars_s* pKiller, struct entvars_s* pKilled)
 {
 	// First questionable ethics experiment
 	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a4d.bsp"))
@@ -138,15 +86,15 @@ void CheckQuestionableEthicsKills(struct entvars_s* pKiller, struct entvars_s* p
 		// first questionable ethics experiment
 		if (FStrEq(STRING(pKiller->targetname), "ster1_hurt"))
 		{
-			if (!CheckQuestionableEthicsHumanKilled(pKilled))
+			if (!CheckQuestionableEthicsHumanKilled(pPlayer, pKilled))
 			{
 				if (FClassnameIs(pKilled, "monster_headcrab"))
 				{
-					GetTracker()->m_exp1HeadcrabsKilled++;
-					CheckRigorousResearchAchievement();
+					pPlayer->GetAchievementsAndStatsData().m_exp1HeadcrabsKilled++;
+					CheckRigorousResearchAchievement(pPlayer);
 				}
 			}
-			GetTracker()->AnyKilled();
+			pPlayer->GetAchievementsAndStatsData().AnyKilled();
 		}
 	}
 	// 2nd questionable ethics experiments
@@ -154,15 +102,15 @@ void CheckQuestionableEthicsKills(struct entvars_s* pKiller, struct entvars_s* p
 	{
 		if (FStrEq(STRING(pKiller->targetname), "ster1_hurt"))
 		{
-			if (!CheckQuestionableEthicsHumanKilled(pKilled))
+			if (!CheckQuestionableEthicsHumanKilled(pPlayer, pKilled))
 			{
 				if (FClassnameIs(pKilled, "monster_headcrab"))
 				{
-					GetTracker()->m_exp2HeadcrabsKilled++;
-					CheckRigorousResearchAchievement();
+					pPlayer->GetAchievementsAndStatsData().m_exp2HeadcrabsKilled++;
+					CheckRigorousResearchAchievement(pPlayer);
 				}
 			}
-			GetTracker()->AnyKilled();
+			pPlayer->GetAchievementsAndStatsData().AnyKilled();
 		}
 	}
 }
@@ -172,6 +120,8 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 	if (!pKiller || !pKilled)
 		return;
 
+	CBasePlayer* pHostPlayer = UTIL_PlayerByIndex(1);
+
 	if (FClassnameIs(pKilled, "monster_gargantua"))
 	{
 		// Power Up gargantua
@@ -180,7 +130,7 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 			&& FStrEq(STRING(pKiller->targetname), "electro_hurt"))
 		{
 			UTIL_VRGiveAchievementAll(VRAchievement::PU_BBQ);
-			GetTracker()->AnyKilled();
+			pHostPlayer->GetAchievementsAndStatsData().AnyKilled();
 			return;
 		}
 		// Forget About Freeman gargantua
@@ -188,14 +138,14 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 			&& FBitSet(bitsDamageType, DMG_MORTAR))
 		{
 			UTIL_VRGiveAchievementAll(VRAchievement::FAF_FIREINHOLE);
-			GetTracker()->AnyKilled();
+			pHostPlayer->GetAchievementsAndStatsData().AnyKilled();
 			return;
 		}
 	}
 
 	if (FClassnameIs(pKiller, "trigger_hurt"))
 	{
-		CheckQuestionableEthicsKills(pKiller, pKilled);
+		CheckQuestionableEthicsKills(pHostPlayer, pKiller, pKilled);
 		return;
 	}
 
@@ -207,11 +157,11 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 		if (FClassnameIs(pKilled, "monster_scientist"))
 		{
 			UTIL_VRGiveAchievementAll(VRAchievement::QE_PRECISURGERY);
-			GetTracker()->FriendlyKilled();
+			pHostPlayer->GetAchievementsAndStatsData().FriendlyKilled();
 		}
 		else
 		{
-			GetTracker()->AnyKilled();
+			pHostPlayer->GetAchievementsAndStatsData().AnyKilled();
 		}
 		return;
 	}
@@ -253,21 +203,21 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 	}
 }
 
-void VRAchievementsAndStatsTracker::PlayerKilledSmth(CBaseEntity* pPlayer, bool friendlyFire)
+void VRAchievementsAndStatsTracker::PlayerKilledSmth(CBasePlayer* pPlayer, bool friendlyFire)
 {
 	if (friendlyFire)
 	{
-		GetTracker()->FriendlyKilled();
+		pPlayer->GetAchievementsAndStatsData().FriendlyKilled();
 	}
 	else
 	{
-		GetTracker()->AnyKilled();
+		pPlayer->GetAchievementsAndStatsData().AnyKilled();
 	}
 }
 
-void VRAchievementsAndStatsTracker::PlayerTrippedMineOrLaser(CBaseEntity* pPlayer)
+void VRAchievementsAndStatsTracker::PlayerTrippedMineOrLaser(CBasePlayer* pPlayer)
 {
-	GetTracker()->m_bitFlags |= HAS_TRIPPED_MINE_OR_LASER;
+	pPlayer->GetAchievementsAndStatsData().m_bitFlags |= HAS_TRIPPED_MINE_OR_LASER;
 }
 
 namespace
@@ -287,32 +237,36 @@ namespace
 	};
 }
 
-void VRAchievementsAndStatsTracker::PlayerUsedTrain(CBaseEntity* pPlayer)
+void VRAchievementsAndStatsTracker::PlayerUsedTrain(CBasePlayer* pPlayer)
 {
 	if (onARailMaps.find(STRING(INDEXENT(0)->v.model)) != onARailMaps.end())
 	{
-		GetTracker()->m_bitFlags |= HAS_USED_TRAIN_IN_ON_A_RAIL;
+		pPlayer->GetAchievementsAndStatsData().m_bitFlags |= HAS_USED_TRAIN_IN_ON_A_RAIL;
 	}
 
 	UTIL_VRGiveAchievement(pPlayer, VRAchievement::OAR_CHOOCHOO);
 }
 
-void VRAchievementsAndStatsTracker::PlayerUsedNoclip(CBaseEntity* pPlayer)
+void VRAchievementsAndStatsTracker::PlayerUsedNoclip(CBasePlayer* pPlayer)
 {
-	GetTracker()->m_bitFlags |= HAS_USED_NOCLIP;
+	pPlayer->GetAchievementsAndStatsData().m_bitFlags |= HAS_USED_NOCLIP;
 }
 
 void VRAchievementsAndStatsTracker::PlayerSavedDoomedScientist(CBaseEntity* pPlayer)
 {
-	UTIL_VRGiveAchievement(pPlayer, VRAchievement::WGH_NOTDOOMED);
+	CBasePlayer* pActualPlayer = dynamic_cast<CBasePlayer*>(pPlayer);
+	if (!pActualPlayer)
+		return;
 
-	GetTracker()->m_bitFlags |= HAS_SAVED_DOOMED_SCIENTIST;
+	UTIL_VRGiveAchievement(pActualPlayer, VRAchievement::WGH_NOTDOOMED);
+
+	pActualPlayer->GetAchievementsAndStatsData().m_bitFlags |= HAS_SAVED_DOOMED_SCIENTIST;
 }
 
-void VRAchievementsAndStatsTracker::PlayerSurfacedInThatMapWithTheTank(CBaseEntity* pPlayer)
+void VRAchievementsAndStatsTracker::PlayerSurfacedInThatMapWithTheTank(CBasePlayer* pPlayer)
 {
 	// ignore if already surfaced
-	if (FBitSet(GetTracker()->m_bitFlags, HAS_SURFACED_IN_THAT_MAP_WITH_THAT_TANK))
+	if (FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_SURFACED_IN_THAT_MAP_WITH_THAT_TANK))
 		return;
 
 	// double check that player actually surfaced
@@ -324,7 +278,7 @@ void VRAchievementsAndStatsTracker::PlayerSurfacedInThatMapWithTheTank(CBaseEnti
 		return;
 
 	// remember that the player surfaced
-	GetTracker()->m_bitFlags |= HAS_SURFACED_IN_THAT_MAP_WITH_THAT_TANK;
+	pPlayer->GetAchievementsAndStatsData().m_bitFlags |= HAS_SURFACED_IN_THAT_MAP_WITH_THAT_TANK;
 
 	// check if the player surfaced behind the tank
 	if (pPlayer->pev->origin.y < -976.f)
@@ -335,7 +289,9 @@ void VRAchievementsAndStatsTracker::PlayerSurfacedInThatMapWithTheTank(CBaseEnti
 
 void VRAchievementsAndStatsTracker::PlayerLaunchedTentacleRocketFire(CBaseEntity* pPlayer)
 {
-	if (!FBitSet(GetTracker()->m_bitFlags, HAS_ALERTED_TENTACLES))
+	CBasePlayer* pActualPlayer = dynamic_cast<CBasePlayer*>(pPlayer);
+
+	if (pActualPlayer && !FBitSet(pActualPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_ALERTED_TENTACLES))
 	{
 		UTIL_VRGiveAchievement(pPlayer, VRAchievement::BP_SNEAKY);
 	}
@@ -343,14 +299,18 @@ void VRAchievementsAndStatsTracker::PlayerLaunchedTentacleRocketFire(CBaseEntity
 
 void VRAchievementsAndStatsTracker::PlayerGotHeardByTentacles()
 {
-	GetTracker()->m_bitFlags |= HAS_ALERTED_TENTACLES;
+	CBasePlayer* pPlayer = UTIL_PlayerByIndex(1);
+
+	pPlayer->GetAchievementsAndStatsData().m_bitFlags |= HAS_ALERTED_TENTACLES;
 }
 
 void VRAchievementsAndStatsTracker::PlayerDestroyedBlastPitBridge()
 {
-	GetTracker()->m_bpBridgesDestroyed++;
+	CBasePlayer* pPlayer = UTIL_PlayerByIndex(1);
 
-	if (GetTracker()->m_bpBridgesDestroyed == 3)
+	pPlayer->GetAchievementsAndStatsData().m_bpBridgesDestroyed++;
+
+	if (pPlayer->GetAchievementsAndStatsData().m_bpBridgesDestroyed == 3)
 	{
 		UTIL_VRGiveAchievementAll(VRAchievement::BP_BLOWUPBRIDGES);
 	}
@@ -358,8 +318,10 @@ void VRAchievementsAndStatsTracker::PlayerDestroyedBlastPitBridge()
 
 void VRAchievementsAndStatsTracker::PlayerSolvedBlastPitFan()
 {
+	CBasePlayer* pPlayer = UTIL_PlayerByIndex(1);
+
 	// must not have used noclip
-	if (FBitSet(GetTracker()->m_bitFlags, HAS_USED_NOCLIP))
+	if (FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_USED_NOCLIP))
 		return;
 
 	// must have activated silofan
@@ -379,114 +341,132 @@ void VRAchievementsAndStatsTracker::PlayerSolvedBlastPitFan()
 
 void VRAchievementsAndStatsTracker::ResidueBarneyStartedRunning()
 {
-	GetTracker()->m_residueBarneyStartedRunningTime = gpGlobals->time;
+	CBasePlayer* pPlayer = UTIL_PlayerByIndex(1);
+
+	pPlayer->GetAchievementsAndStatsData().m_residueBarneyStartedRunningTime = gpGlobals->time;
 }
 
 void VRAchievementsAndStatsTracker::ResidueBarneyIsAlive()
 {
+	CBasePlayer* pPlayer = UTIL_PlayerByIndex(1);
+
 	// check that barney started running, AND that that's at least 5 seconds ago
-	if (GetTracker()->m_residueBarneyStartedRunningTime != 0.f
-		&& (gpGlobals->time > (GetTracker()->m_residueBarneyStartedRunningTime + 5.f)))
+	if (pPlayer->GetAchievementsAndStatsData().m_residueBarneyStartedRunningTime != 0.f
+		&& (gpGlobals->time > (pPlayer->GetAchievementsAndStatsData().m_residueBarneyStartedRunningTime + 5.f)))
 	{
 		UTIL_VRGiveAchievementAll(VRAchievement::RP_PARENTAL);
-		GetTracker()->m_residueBarneyStartedRunningTime = 0.f;	// clear this, so we won't fire the achievement again
+		pPlayer->GetAchievementsAndStatsData().m_residueBarneyStartedRunningTime = 0.f;	// clear this, so we won't fire the achievement again
 	}
 }
 
-void VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(CBaseEntity* pPlayer)
+void VRAchievementsAndStatsTracker::Update(CBasePlayer* pPlayer)
 {
+	if (FStringNull(INDEXENT(0)->v.model))
+		return;
+
+	if (!FStrEq(pPlayer->GetAchievementsAndStatsData().m_prevMap, STRING(INDEXENT(0)->v.model)))
+	{
+		GiveAchievementBasedOnMap(pPlayer, STRING(INDEXENT(0)->v.model));
+		strncpy_s(pPlayer->GetAchievementsAndStatsData().m_prevMap, STRING(INDEXENT(0)->v.model), 32);
+	}
+}
+
+void VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(CBasePlayer* pPlayer, const char* mapname)
+{
+	ALERT(at_console, "GiveAchievementBasedOnMap: %s\n", mapname);
+
 	// game start (train intro)
-	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c0a0.bsp"))
+	if (FStrEq(mapname, "maps/c0a0.bsp"))
 	{
 		UTIL_VRGiveAchievement(pPlayer, VRAchievement::BMI_STARTTHEGAME);
 	}
 
 	// WGH maps
-	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a3a.bsp")
-		|| FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a3b.bsp")
-		|| FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a3c.bsp")
-		|| FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a3d.bsp"))
+	if (FStrEq(mapname, "maps/c1a3a.bsp")
+		|| FStrEq(mapname, "maps/c1a3b.bsp")
+		|| FStrEq(mapname, "maps/c1a3c.bsp")
+		|| FStrEq(mapname, "maps/c1a3d.bsp"))
 	{
-		GetTracker()->m_bitFlags |= HAS_BEEN_IN_WGH_MAPS;
+		pPlayer->GetAchievementsAndStatsData().m_bitFlags |= HAS_BEEN_IN_WGH_MAPS;
 	}
 
 	// PU maps
-	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a1a.bsp")
-		|| FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a1b.bsp"))
+	if (FStrEq(mapname, "maps/c2a1a.bsp")
+		|| FStrEq(mapname, "maps/c2a1b.bsp"))
 	{
-		GetTracker()->m_bitFlags |= HAS_BEEN_IN_PU_MAPS;
+		pPlayer->GetAchievementsAndStatsData().m_bitFlags |= HAS_BEEN_IN_PU_MAPS;
 	}
 
 	// first blast pit map
-	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a4.bsp"))
+	if (FStrEq(mapname, "maps/c1a4.bsp"))
 	{
 		// check if player skipped We've Got Hostiles
 		// must have saved the doomed scientist, never used noclip, never visited a WGH map, and come from c1a3
 		// (still possible to cheat, but there is only so much you can do)
-		if (!FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_BLASTPIT)
-			&& FBitSet(GetTracker()->m_bitFlags, HAS_SAVED_DOOMED_SCIENTIST)
-			&& !FBitSet(GetTracker()->m_bitFlags, HAS_USED_NOCLIP)
-			&& FStrEq(STRING(GetTracker()->m_prevMap), "maps/c1a3.bsp")
-			&& !FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_WGH_MAPS))
+		if (!FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_BEEN_IN_BLASTPIT)
+			&& FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_SAVED_DOOMED_SCIENTIST)
+			&& !FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_USED_NOCLIP)
+			&& FStrEq(pPlayer->GetAchievementsAndStatsData().m_prevMap, "maps/c1a3.bsp")
+			&& !FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_BEEN_IN_WGH_MAPS))
 		{
 			UTIL_VRGiveAchievement(pPlayer, VRAchievement::HID_SKIP_WGH);
 		}
 		else
 		{
 			// only give WGH achievements, if player played the chapter
-			if (FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_WGH_MAPS)
-				&& !FBitSet(GetTracker()->m_bitFlags, HAS_TRIPPED_MINE_OR_LASER))
+			if (FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_BEEN_IN_WGH_MAPS)
+				&& !FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_TRIPPED_MINE_OR_LASER))
 			{
 				UTIL_VRGiveAchievement(pPlayer, VRAchievement::WGH_PERFECT);
 			}
 		}
 
-		GetTracker()->m_bitFlags |= HAS_BEEN_IN_BLASTPIT;
+		pPlayer->GetAchievementsAndStatsData().m_bitFlags |= HAS_BEEN_IN_BLASTPIT;
 	}
 
 	// first On A Rail map
-	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a2.bsp"))
+	if (FStrEq(mapname, "maps/c2a2.bsp"))
 	{
 		// check if player skipped Power Up
 		// must never have used noclip, never visited a Power Up map, and come from c2a1
-		if (!FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_ON_A_RAIL)
-			&& !FBitSet(GetTracker()->m_bitFlags, HAS_USED_NOCLIP)
-			&& FStrEq(STRING(GetTracker()->m_prevMap), "maps/c2a1.bsp")
-			&& !FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_PU_MAPS))
+		if (!FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_BEEN_IN_ON_A_RAIL)
+			&& !FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_USED_NOCLIP)
+			&& FStrEq(pPlayer->GetAchievementsAndStatsData().m_prevMap, "maps/c2a1.bsp")
+			&& !FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_BEEN_IN_PU_MAPS))
 		{
 			UTIL_VRGiveAchievement(pPlayer, VRAchievement::HID_SKIP_PU);
 		}
 
-		GetTracker()->m_bitFlags |= HAS_BEEN_IN_ON_A_RAIL;
+		pPlayer->GetAchievementsAndStatsData().m_bitFlags |= HAS_BEEN_IN_ON_A_RAIL;
 	}
 
 	// first xen map
-	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c4a1.bsp"))
+	if (FStrEq(mapname, "maps/c4a1.bsp"))
 	{
 		UTIL_VRGiveAchievement(pPlayer, VRAchievement::XEN_VIEW);
 	}
 
 	// nihilanth
-	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c4a3.bsp"))
+	if (FStrEq(mapname, "maps/c4a3.bsp"))
 	{
 		UTIL_VRGiveAchievement(pPlayer, VRAchievement::N_WHAT);
 	}
 
 	// game end (gman)
-	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c5a1.bsp"))
+	if (FStrEq(mapname, "maps/c5a1.bsp"))
 	{
 		UTIL_VRGiveAchievement(pPlayer, VRAchievement::END_GMAN);
 
 		// basic sanity check that player has actually played the game, and not just used "map c5a1" to get here.
-		if (FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_ON_A_RAIL)
-			&& FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_BLASTPIT)
-			&& FStrEq(STRING(GetTracker()->m_prevMap), "maps/c4a3.bsp"))
+		if (FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_BEEN_IN_ON_A_RAIL)
+			&& FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_BEEN_IN_BLASTPIT)
+			&& FStrEq(pPlayer->GetAchievementsAndStatsData().m_prevMap, "maps/c4a3.bsp"))
 		{
-			if (!FBitSet(GetTracker()->m_bitFlags, HAS_KILLED_ANY))
+			if (!FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_KILLED_ANY))
 			{
 				UTIL_VRGiveAchievement(pPlayer, VRAchievement::GEN_PACIFIST);
 			}
-			if (!FBitSet(GetTracker()->m_bitFlags, HAS_KILLED_FRIENDS))
+			if (!FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_KILLED_FRIENDS))
 			{
 				UTIL_VRGiveAchievement(pPlayer, VRAchievement::GEN_TEAMPLAYER);
 			}
@@ -494,14 +474,12 @@ void VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(CBaseEntity* pPlay
 	}
 
 	// transitioning from "on a rail" to "apprehension", and never used a train
-	if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a3.bsp")
-		&& FStrEq(STRING(GetTracker()->m_prevMap), "maps/c2a2g.bsp")
-		&& FBitSet(GetTracker()->m_bitFlags, HAS_BEEN_IN_ON_A_RAIL)
-		&& !FBitSet(GetTracker()->m_bitFlags, HAS_USED_TRAIN_IN_ON_A_RAIL))
+	if (FStrEq(mapname, "maps/c2a3.bsp")
+		&& FStrEq(pPlayer->GetAchievementsAndStatsData().m_prevMap, "maps/c2a2g.bsp")
+		&& FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_BEEN_IN_ON_A_RAIL)
+		&& !FBitSet(pPlayer->GetAchievementsAndStatsData().m_bitFlags, HAS_USED_TRAIN_IN_ON_A_RAIL))
 	{
 		UTIL_VRGiveAchievement(pPlayer, VRAchievement::HID_OFFARAIL);
 	}
-
-	GetTracker()->m_prevMap = INDEXENT(0)->v.model;
 }
 

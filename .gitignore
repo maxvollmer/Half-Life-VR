@@ -2,6 +2,7 @@
 *.sdf
 __crashdumps/
 __keys/
+__saves/
 Debug/
 Release/
 obj/

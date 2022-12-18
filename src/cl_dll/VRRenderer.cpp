@@ -47,7 +47,7 @@
 #include "VRInput.h"
 #include "VRSettings.h"
 #include "VRSound.h"
-#include "VREngineRandomInterceptor.h"
+#include "VRRandom.h"
 #include "VRSteamworksManager.h"
 
 #define HARDWARE_MODE

@@ -9,7 +9,7 @@ class CBasePlayer;
 class CWorldsSmallestCup : public CGib
 {
 public:
-	virtual int ObjectCaps() { return FCAP_ACROSS_TRANSITION; }  // | FCAP_MUST_SPAWN; }
+	virtual int ObjectCaps() { return FCAP_ACROSS_TRANSITION | FCAP_FORCE_TRANSITION; }  // | FCAP_MUST_SPAWN; }
 
 	virtual void Spawn() override;
 	void EXPORT CupThink(void);
@@ -23,13 +23,16 @@ public:
 	virtual void HandleDragStop() override;
 	virtual void HandleDragUpdate(const Vector& origin, const Vector& velocity, const Vector& angles) override;
 
-	static void EnsureInstance(CBasePlayer* pPlayer);
-
 private:
 	bool AmIInKleinersFace(CTalkMonster* pKleiner);
 	bool IsFallingOutOfWorld();
 
 	Vector m_spawnOrigin;
 
-	static EHANDLE<CWorldsSmallestCup> m_instance;
+	string_t m_lastMap = 0;
+	int m_wasDraggedLastMap = 0;
+
+	EHANDLE<CTalkMonster> m_hKleiner;
+	float m_flKleinerFaceStart{ 0.f };
+	std::unordered_set<EHANDLE<CTalkMonster>, EHANDLE<CTalkMonster>::Hash, EHANDLE<CTalkMonster>::Equal> m_hAlreadySpokenKleiners;
 };

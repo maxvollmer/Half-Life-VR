@@ -614,8 +614,8 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 
 void CBreakable::Die(void)
 {
-	// destroyed by player
-	if (m_hKiller && m_hKiller->IsNetClient() && m_killMethod == KillMethod::TRIGGER)
+	// destroyed by trigger
+	if (m_killMethod == KillMethod::TRIGGER)
 	{
 		// map with kitchen
 		if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a0d.bsp"))
@@ -623,7 +623,7 @@ void CBreakable::Die(void)
 			// microwave stew
 			if (FStrEq(STRING(pev->targetname), "stewgibs"))
 			{
-				UTIL_VRGiveAchievement(m_hKiller, VRAchievement::AM_MAGNUSSON);
+				UTIL_VRGiveAchievementAll(VRAchievement::AM_MAGNUSSON);
 			}
 		}
 	}
