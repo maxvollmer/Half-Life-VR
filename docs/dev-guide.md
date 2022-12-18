@@ -39,11 +39,14 @@ All source code lives in [src](../src).
     - If you don't have Half-Life: VR installed, see [Create a Half-Life: VR folder from Half-Life](#create-a-half-life-vr-folder-from-half-life) below.
     - Visual Studio will automagically copy the generated files into your Half-Life: VR installation. The debugger will also correctly launch Half-Life: VR out of the box.
 
-2. Open [HLVR.sln](../src/HLVR.sln) with Visual Studio.
+2. Find (or create if not there) the file `steam_appid.txt` directly in the `Half-Life VR` folder, and make sure it contains nothing but the Steam App ID for the mod (1908720).
+    - Important: Set the file to `readonly`, as otherwise `hl.exe` will overwrite it with 70 (the App ID for Half-Life).
 
-3. To build `HLVRConfig` you need to ensure all NuGet packages are installed. Please refer to [NuGet documentation](https://docs.microsoft.com/en-us/nuget/) if you don't know how.
+3. Open [HLVR.sln](../src/HLVR.sln) with Visual Studio.
 
-4. After building the game DLLs, Visual Studio runs `DLLIncludeFixer.py`. For this you need Python. Without this script, Half-Life: VR will use the wrong Steam API DLL and the game will crash.
+4. To build `HLVRConfig` you need to ensure all NuGet packages are installed. Please refer to [NuGet documentation](https://docs.microsoft.com/en-us/nuget/) if you don't know how.
+
+5. After building the game DLLs, Visual Studio runs `DLLIncludeFixer.py`. For this you need Python. Without this script, Half-Life: VR will use the wrong Steam API DLL and the game will crash.
 
 If there are issues or if you have questions, join my Discord Server [Max Makes Mods](https://discord.gg/jujwEGf62K) to ask for support!
 

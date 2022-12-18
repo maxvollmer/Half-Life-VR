@@ -175,6 +175,13 @@
               <li>"Rapid fire bug" (Visual glitch when shooting through walls)</li>
               <li>Teleporting on ladders sometimes bugs out</li>
               <li>HUD text is rendered in the world instead of the HUD</li>
+              <li>FMOD sound stops playing after prolonged play
+			    <ul>
+			      <li>Quick fix: Disabling and re-enabling FMOD solves this</li>
+				</ul>
+			  </li>
+              <li>There is a rare crash bug in the engine during save or levelchanges</li>
+              <li>Some achievements don't work right</li>
               <li>Several minor visual glitches</li>
             </ul>
           </p>
