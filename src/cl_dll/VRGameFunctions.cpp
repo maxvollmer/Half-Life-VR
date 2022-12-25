@@ -36,8 +36,8 @@ int VRGameFunctions::GetGraphicsMode()
 	}
 	else
 	{
-		if (hdTexMode == gEngfuncs.pfnGetCvarString("vr_hd_textures_enabled")
-			&& hdTexMode == gEngfuncs.pfnGetCvarString("vr_hd_textures_enabled"))
+		if (hdTexMode == gEngfuncs.pfnGetCvarString("vr_texturemode")
+			&& hdTexMode == gEngfuncs.pfnGetCvarString("gl_texturemode"))
 		{
 			float hd_textures = gEngfuncs.pfnGetCvarFloat("vr_hd_textures_enabled");
 			float hd_models = gEngfuncs.pfnGetCvarFloat("vr_use_hd_models");
