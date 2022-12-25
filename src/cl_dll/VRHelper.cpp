@@ -26,6 +26,7 @@
 #include "../vr_shared/VRShared.h"
 #include "VROpenGLInterceptor.h"
 #include "VRCommon.h"
+#include "VREngineInterceptor.h"
 
 #ifndef DUCK_SIZE
 #define DUCK_SIZE 36
@@ -408,10 +409,14 @@ void VRHelper::Init()
 		}
 	}
 
-	extern bool VRHookRandomFunctions();
-	if (!VRHookRandomFunctions())
+	if (!VREngineInterceptor::HookEngineFunctions())
 	{
-		gEngfuncs.Con_DPrintf("Warning: Failed to intercept game engine's random number generator. Some visual effects will look... weird.\n");
+		gEngfuncs.Con_DPrintf("Warning: Failed to intercept game engine functions. Visual effects will look... weird.\n");
+	}
+
+	if (!VREngineInterceptor::HookIOFunctions())
+	{
+		gEngfuncs.Con_DPrintf("Warning: Failed to intercept system IO functions. Levelchanges might cause crashes.\n");
 	}
 }
 

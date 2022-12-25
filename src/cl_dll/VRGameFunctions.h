@@ -3,10 +3,16 @@
 class VRGameFunctions
 {
 public:
-	static void SetSkill(int skill);
 	static void SetVolume(float volume);
+	static void SetSkill(int skill);
 	static void SetGraphicsMode(int graphics);
 	static void SetMovement(int movement);
+
+	static int GetSkill();
+	static int GetGraphicsMode();
+	static int GetMovement();
+	static float GetVolume();
+
 	static void StartNewGame(bool skipTrainRide);
 	static void StartHazardCourse();
 	static void OpenMenu();

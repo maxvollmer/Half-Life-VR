@@ -72,6 +72,18 @@ TYPEDESCRIPTION g_vrLevelChangeDataSaveData[] =
 	DEFINE_FIELD(VRLevelChangeData, currentYaw, FIELD_FLOAT),
 };
 
+// Savedata descriptor for vr level change data
+TYPEDESCRIPTION g_vrAchievementsAndStatsData[] =
+{
+	DEFINE_FIELD(CVRAchievementsAndStatsData, m_bitFlags, FIELD_INTEGER),
+	DEFINE_FIELD(CVRAchievementsAndStatsData, m_bpBridgesDestroyed, FIELD_CHARACTER),
+	DEFINE_FIELD(CVRAchievementsAndStatsData, m_exp1HeadcrabsKilled, FIELD_CHARACTER),
+	DEFINE_FIELD(CVRAchievementsAndStatsData, m_exp2HeadcrabsKilled, FIELD_CHARACTER),
+	DEFINE_FIELD(CVRAchievementsAndStatsData, m_totalNegativeCrushDamage, FIELD_FLOAT),
+	DEFINE_FIELD(CVRAchievementsAndStatsData, m_residueBarneyStartedRunningTime, FIELD_FLOAT),
+	DEFINE_ARRAY(CVRAchievementsAndStatsData, m_prevMap, FIELD_CHARACTER, 32)
+};
+
 #include "pm_defs.h"
 #include "pm_movevars.h"
 extern playermove_t* pmove;
@@ -1922,10 +1934,7 @@ bool CBasePlayer::CheckVRTRainButtonTouched(const Vector& buttonLeftPos, const V
 
 void CBasePlayer::PreThink()
 {
-	if (!UTIL_FindEntityByClassname(nullptr, "vr_statstracker"))
-	{
-		CBaseEntity::Create<CBaseEntity>("vr_statstracker", pev->origin, pev->angles);
-	}
+	VRAchievementsAndStatsTracker::Update(this);
 
 	if (!m_vrHasSurfacedInThatMapWithTheTank)
 	{
@@ -3121,8 +3130,6 @@ ReturnSpot:
 
 void CBasePlayer::Spawn(void)
 {
-	VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(this);
-
 	ClearLadderGrabbingControllers();
 	StopPullingLedge();
 
@@ -3288,7 +3295,12 @@ int CBasePlayer::Save(CSave& save)
 
 	StoreVROffsetsForLevelchange();
 
-	return save.WriteFields("PLAYER", this, m_playerSaveData, (int)std::size(m_playerSaveData)) && save.WriteFields("PLAYERVROffsetsForLevelchange", &g_vrLevelChangeData, g_vrLevelChangeDataSaveData, (int)std::size(g_vrLevelChangeDataSaveData));
+	int result = save.WriteFields("PLAYER", this, m_playerSaveData, (int)std::size(m_playerSaveData));
+
+	save.WriteFields("PLAYERVROffsetsForLevelchange", &g_vrLevelChangeData, g_vrLevelChangeDataSaveData, (int)std::size(g_vrLevelChangeDataSaveData));
+	save.WriteFields("PLAYERVRAchievementsAndStatsData", &m_vrAchievementsAndStatsData, g_vrAchievementsAndStatsData, (int)std::size(g_vrAchievementsAndStatsData));
+
+	return result;
 }
 
 
@@ -3311,15 +3323,16 @@ void CBasePlayer::StoreVROffsetsForLevelchange()
 
 int CBasePlayer::Restore(CRestore& restore)
 {
-	VRAchievementsAndStatsTracker::GiveAchievementBasedOnMap(this);
-
 	ClearLadderGrabbingControllers();
 	StopPullingLedge();
 
 	if (!CBaseMonster::Restore(restore))
 		return 0;
 
-	bool status = restore.ReadFields("PLAYER", this, m_playerSaveData, (int)std::size(m_playerSaveData)) && restore.ReadFields("PLAYERVROffsetsForLevelchange", &g_vrLevelChangeData, g_vrLevelChangeDataSaveData, (int)std::size(g_vrLevelChangeDataSaveData));
+	bool status = restore.ReadFields("PLAYER", this, m_playerSaveData, (int)std::size(m_playerSaveData));
+
+	restore.ReadFields("PLAYERVROffsetsForLevelchange", &g_vrLevelChangeData, g_vrLevelChangeDataSaveData, (int)std::size(g_vrLevelChangeDataSaveData));
+	restore.ReadFields("PLAYERVRAchievementsAndStatsData", &m_vrAchievementsAndStatsData, g_vrAchievementsAndStatsData, (int)std::size(g_vrAchievementsAndStatsData));
 
 	SAVERESTOREDATA* pSaveData = static_cast<SAVERESTOREDATA*>(gpGlobals->pSaveData);
 	// landmark isn't present.

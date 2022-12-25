@@ -280,10 +280,13 @@ void VRGUIRenderer::HorizontalSpacer(int width)
 void VRGUIRenderer::UpdateGUIElements(bool isInGame)
 {
     static bool isInNewGameMenu = false;
-    static int skill = 2;
-    static int graphics = 2;
-    static int movement = 1;
-    static nk_size volume = 100;
+
+    int skill = VRGameFunctions::GetSkill();
+    int graphics = VRGameFunctions::GetGraphicsMode();
+    int movement = VRGameFunctions::GetMovement();
+    nk_size volume = (nk_size)(VRGameFunctions::GetVolume() * 100);
+    if (volume < 0) volume = 0;
+    if (volume > 100) volume = 100;
 
     if (nk_begin(&ctx, "HLVRMainMenu", nk_rect(0, 0, (float)m_guiWidth, (float)m_guiHeight), NK_WINDOW_NO_SCROLLBAR))
     {
@@ -324,20 +327,17 @@ void VRGUIRenderer::UpdateGUIElements(bool isInGame)
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Easy", skill == 1))
             {
-                skill = 1;
-                VRGameFunctions::SetSkill(skill);
+                VRGameFunctions::SetSkill(1);
             }
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Normal", skill == 2))
             {
-                skill = 2;
-                VRGameFunctions::SetSkill(skill);
+                VRGameFunctions::SetSkill(2);
             }
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Hard", skill == 3))
             {
-                skill = 3;
-                VRGameFunctions::SetSkill(skill);
+                VRGameFunctions::SetSkill(3);
             }
 
             nk_layout_row_push(&ctx, 20 * m_guiScaleW);
@@ -363,20 +363,17 @@ void VRGUIRenderer::UpdateGUIElements(bool isInGame)
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Classic", graphics == 1))
             {
-                graphics = 1;
-                VRGameFunctions::SetGraphicsMode(graphics);
+                VRGameFunctions::SetGraphicsMode(1);
             }
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "SD", graphics == 2))
             {
-                graphics = 2;
-                VRGameFunctions::SetGraphicsMode(graphics);
+                VRGameFunctions::SetGraphicsMode(2);
             }
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "HD", graphics == 3))
             {
-                graphics = 3;
-                VRGameFunctions::SetGraphicsMode(graphics);
+                VRGameFunctions::SetGraphicsMode(3);
             }
 
             nk_layout_row_push(&ctx, 20 * m_guiScaleW);
@@ -386,20 +383,17 @@ void VRGUIRenderer::UpdateGUIElements(bool isInGame)
             nk_layout_row_push(&ctx, 230 * m_guiScaleW);
             if (nk_option_label(&ctx, "Off Hand", movement == 1))
             {
-                movement = 1;
-                VRGameFunctions::SetMovement(movement);
+                VRGameFunctions::SetMovement(1);
             }
             nk_layout_row_push(&ctx, 230 * m_guiScaleW);
             if (nk_option_label(&ctx, "Wpn Hand", movement == 2))
             {
-                movement = 2;
-                VRGameFunctions::SetMovement(movement);
+                VRGameFunctions::SetMovement(2);
             }
             nk_layout_row_push(&ctx, 230 * m_guiScaleW);
             if (nk_option_label(&ctx, "HMD", movement == 3))
             {
-                movement = 3;
-                VRGameFunctions::SetMovement(movement);
+                VRGameFunctions::SetMovement(3);
             }
         }
         nk_layout_row_end(&ctx);

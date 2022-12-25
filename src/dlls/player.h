@@ -183,7 +183,7 @@ public:
 	int m_iFOV = 0;        // field of view
 	int m_iClientFOV = 0;  // client's known FOV
 	// usable player items
-	EHANDLE<CBasePlayerItem> m_rgpPlayerItems[MAX_ITEM_TYPES];
+	EHANDLE<CBasePlayerItem> m_rgpPlayerItems[MAX_ITEM_TYPES]{ 0 };
 	EHANDLE<CBasePlayerItem> m_pActiveItem;
 	EHANDLE<CBasePlayerItem> m_pClientActiveItem;  // client version of the active item
 	EHANDLE<CBasePlayerItem> m_pLastItem;
@@ -515,6 +515,9 @@ public:
 
 	// for achievement "Perfect Landing"
 	inline void VRJustGotYeetedByBPTrain() { m_vrJustGotYeetedByBPTrain = true; }
+
+	CVRAchievementsAndStatsData m_vrAchievementsAndStatsData;
+	inline CVRAchievementsAndStatsData& GetAchievementsAndStatsData() { return m_vrAchievementsAndStatsData; }
 
 private:
 	bool m_vrHasSurfacedInThatMapWithTheTank{ false };

@@ -131,6 +131,7 @@ class EHANDLE
 private:
 	edict_t* m_pent{ nullptr };
 	int m_serialnumber{ 0 };
+	void* m_privateData{ nullptr };
 
 public:
 	EHANDLE()
@@ -143,7 +144,10 @@ public:
 		{
 			m_pent = ENT(pEntity->pev);
 			if (m_pent)
+			{
 				m_serialnumber = m_pent->serialnumber;
+				m_privateData = m_pent->pvPrivateData;
+			}
 		}
 	}
 
@@ -158,11 +162,14 @@ public:
 	{
 		m_pent = other.m_pent;
 		m_serialnumber = other.m_serialnumber;
+		m_privateData = other.m_privateData;
 	}
 
 	edict_t* Get(void) const
 	{
-		if ((FWorldEnt(m_pent) || !FNullEnt(m_pent)) && m_pent->serialnumber == m_serialnumber)
+		if ((FWorldEnt(m_pent) || !FNullEnt(m_pent))
+			&& m_pent->serialnumber == m_serialnumber
+			&& m_pent->pvPrivateData == m_privateData)
 		{
 			return m_pent;
 		}
@@ -175,10 +182,12 @@ public:
 		if (pent)
 		{
 			m_serialnumber = m_pent->serialnumber;
+			m_privateData = m_pent->pvPrivateData;
 		}
 		else
 		{
 			m_serialnumber = 0;
+			m_privateData = nullptr;
 		}
 		return pent;
 	};
@@ -227,7 +236,8 @@ public:
 		{
 			std::hash<int> intHasher;
 			std::hash<edict_t*> entHasher;
-			return intHasher(e.m_serialnumber) ^ entHasher(e.m_pent);
+			std::hash<void*> ptrHasher;
+			return intHasher(e.m_serialnumber) ^ entHasher(e.m_pent) ^ ptrHasher(e.m_privateData);
 		}
 	};
 
@@ -236,7 +246,7 @@ public:
 	public:
 		bool operator()(const EHANDLE& e1, const EHANDLE& e2) const
 		{
-			return e1.m_serialnumber == e2.m_serialnumber && e1.m_pent == e2.m_pent;
+			return e1.m_serialnumber == e2.m_serialnumber && e1.m_pent == e2.m_pent && e1.m_privateData == e2.m_privateData;
 		}
 	};
 };

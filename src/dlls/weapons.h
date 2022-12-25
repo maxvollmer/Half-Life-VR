@@ -557,7 +557,7 @@ public:
 	BOOL PackWeapon(CBasePlayerItem* pWeapon);
 	BOOL PackAmmo(int iszName, int iCount);
 
-	EHANDLE<CBasePlayerItem> m_rgpPlayerItems[MAX_ITEM_TYPES];  // one slot for each
+	EHANDLE<CBasePlayerItem> m_rgpPlayerItems[MAX_ITEM_TYPES]{ 0 };  // one slot for each
 
 	int m_rgiszAmmo[MAX_AMMO_SLOTS] = { 0 };  // ammo names
 	int m_rgAmmo[MAX_AMMO_SLOTS] = { 0 };     // ammo quantities
