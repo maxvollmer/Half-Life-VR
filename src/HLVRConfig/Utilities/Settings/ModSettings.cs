@@ -307,7 +307,6 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_menu_scale", Setting.Create( new I18N.I18NString("vr_menu_scale", "VR Menu Scale"), SettingType.FACTOR, "1.0" ) },
                 { "vr_menu_opacity", Setting.Create( new I18N.I18NString("vr_menu_opacity", "VR Menu Opacity"), SettingType.FACTOR, "0.99" ) },
 
-                { "vr_menu_click_source", Setting.Create( new I18N.I18NString("vr_menu_click_source", "VR Menu Click Source"), new OrderedDictionary<string, I18N.I18NString>(){ { "0", new I18N.I18NString("vr_menu_click_source.FireAction", "Click with Fire Action") }, { "1", new I18N.I18NString("vr_menu_click_source.LegacyUse", "Click with Legacy Use)") }, { "2", new I18N.I18NString("vr_menu_click_source.Dedicated", "Use dedicated VR Menu Click Action") } }, "0" ) },
             } },
 
             { CategoryAdvancedHUD, new OrderedDictionary<string, Setting>() {

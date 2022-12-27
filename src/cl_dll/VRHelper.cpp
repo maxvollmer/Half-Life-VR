@@ -543,6 +543,18 @@ Vector VRHelper::GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4& a
 
 void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 {
+	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
+
+	if (leftHandMode)
+	{
+		vr::VRInput()->SetDominantHand(vr::TrackedControllerRole_LeftHand);
+	}
+	else
+	{
+		vr::VRInput()->SetDominantHand(vr::TrackedControllerRole_RightHand);
+	}
+
+
 	UpdateVRHLConversionVectors();
 	if (isInGame)
 	{
@@ -565,9 +577,10 @@ void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 		{
 		case vr::EVREventType::VREvent_Quit:
 		case vr::EVREventType::VREvent_ProcessQuit:
-		case vr::EVREventType::VREvent_QuitAborted_UserPrompt:
+		//case vr::EVREventType::VREvent_QuitAborted_UserPrompt: // this was removed in OpenVR v1.8.19
 		case vr::EVREventType::VREvent_QuitAcknowledged:
 		case vr::EVREventType::VREvent_DriverRequestedQuit:
+		case vr::EVREventType::VREvent_RestartRequested:
 			Exit();
 			return;
 		default:
@@ -1295,6 +1308,9 @@ void VRHelper::SetPose(VRPoseType poseType, const vr::TrackedDevicePose_t& pose,
 		return;
 	}
 
+	// TODO: Hand grip and tip (pointer) poses
+
+	/*
 	if (poseType == VRPoseType::FLASHLIGHT)
 	{
 		cl_entity_t* localPlayer = SaveGetLocalPlayer();
@@ -1325,10 +1341,12 @@ void VRHelper::SetPose(VRPoseType poseType, const vr::TrackedDevicePose_t& pose,
 		m_movementAngles = GetHLAnglesFromVRMatrix(movementAbsoluteTrackingMatrix);
 		m_hasMovementAngles = true;
 	}
+	*/
 }
 
 void VRHelper::ClearPose(VRPoseType poseType)
 {
+	/*
 	if (poseType == VRPoseType::FLASHLIGHT)
 	{
 		gEngfuncs.pfnClientCmd("vr_flashlight 0");
@@ -1341,6 +1359,7 @@ void VRHelper::ClearPose(VRPoseType poseType)
 	{
 		m_hasMovementAngles = false;
 	}
+	*/
 }
 
 constexpr const int VR_MOVEMENT_ATTACHMENT_HAND = 0;

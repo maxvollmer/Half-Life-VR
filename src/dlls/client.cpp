@@ -513,7 +513,7 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "vr_lngjump"))
 	{
-		pPlayer->DoLongJump();
+		pPlayer->DoLongJump(true, false);
 	}
 	else if (FStrEq(pcmd, "vr_restartmap"))
 	{

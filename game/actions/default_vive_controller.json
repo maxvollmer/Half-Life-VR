@@ -2,44 +2,234 @@
    "action_manifest_version" : 0,
    "alias_info" : {},
    "bindings" : {
-      "/actions/custom" : {
-         "sources" : []
-      },
-      "/actions/input" : {
-         "chords" : [
+        "/actions/haptics": {
+         "haptics" : [
             {
-               "inputs" : [
-                  [ "/user/hand/right/input/grip", "grab" ],
-                  [ "/user/hand/right/input/trigger", "trigger" ]
-               ],
-               "output" : "/actions/input/in/altfireweapon"
+               "output" : "/actions/poses/in/hapticvibration",
+               "path" : "/user/hand/left/output/haptic"
             },
             {
-               "inputs" : [
-                  [ "/user/hand/left/input/application_menu", "button" ],
-                  [ "/user/hand/right/input/application_menu", "button" ]
-               ],
-               "output" : "/actions/input/in/pausegame"
+               "output" : "/actions/poses/in/hapticvibration",
+               "path" : "/user/hand/right/output/haptic"
+            }
+         ]
+        },
+        "/actions/poses" : {
+         "poses" : [
+            {
+               "output" : "/actions/poses/in/handposeleft",
+               "path" : "/user/hand/left/pose/handgrip"
+            },
+            {
+               "output" : "/actions/poses/in/handposeright",
+               "path" : "/user/hand/right/pose/handgrip"
+            },
+            {
+               "output" : "/actions/poses/in/handpointerleft",
+               "path" : "/user/hand/left/pose/tip"
+            },
+            {
+               "output" : "/actions/poses/in/handpointerright",
+               "path" : "/user/hand/right/pose/tip"
+            }
+         ],
+         "skeleton" : [
+            {
+               "output" : "/actions/poses/in/handskeletonleft",
+               "path" : "/user/hand/left/input/skeleton/left"
+            },
+            {
+               "output" : "/actions/poses/in/handskeletonright",
+               "path" : "/user/hand/right/input/skeleton/right"
             }
          ],
          "sources" : [
             {
                "inputs" : {
+                  "pull" : {
+                     "output" : "/actions/poses/in/handcurl"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "pull" : {
+                     "output" : "/actions/poses/in/triggerpull"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "pull" : {
+                     "output" : "/actions/poses/in/handcurl"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/right/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "pull" : {
+                     "output" : "/actions/poses/in/triggerpull"
+                  }
+               },
+               "mode" : "trigger",
+               "path" : "/user/hand/right/input/trigger"
+            }
+         ]
+      },
+      "/actions/menu" : {
+         "sources" : [
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/menu/in/clickvrmenu"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/menu/in/clickvrmenu"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "long" : {
+                     "output" : "/actions/menu/in/togglevrmenu"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/application_menu"
+            }
+         ]
+      },
+      "/actions/interact" : {
+         "sources" : [
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/interact/in/legacyuse"
+                  }
+               },
+               "mode" : "button",
+               "parameters" : {
+                  "click_activate_threshold" : "0.8",
+                  "click_deactivate_threshold" : "0.8",
+                  "haptic_amplitude" : "0"
+               },
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/interact/in/legacyuse"
+                  }
+               },
+               "mode" : "button",
+               "parameters" : {
+                  "click_activate_threshold" : "0.8",
+                  "click_deactivate_threshold" : "0.8",
+                  "haptic_amplitude" : "0"
+               },
+               "path" : "/user/hand/right/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "grab" : {
+                     "output" : "/actions/interact/in/grab"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/grip"
+            },
+            {
+               "inputs" : {
+                  "grab" : {
+                     "output" : "/actions/interact/in/grab"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/right/input/grip"
+            }
+         ]
+      },
+      "/actions/move" : {
+         "sources" : [
+            {
+               "inputs" : {
+                  "position" : {
+                     "output" : "/actions/move/in/move"
+                  }
+               },
+               "mode" : "trackpad",
+               "parameters" : {
+                  "deadzone_pct" : "15",
+                  "exponent" : "2",
+                  "maxzone_pct" : "85"
+               },
+               "path" : "/user/hand/left/input/trackpad"
+            },
+            {
+               "inputs" : {
                   "east" : {
-                     "output" : "/actions/input/in/turnright"
-                  },
-                  "north" : {
-                     "output" : "/actions/input/in/jump"
-                  },
-                  "south" : {
-                     "output" : "/actions/input/in/crouch"
+                     "output" : "/actions/move/in/turnright"
                   },
                   "west" : {
-                     "output" : "/actions/input/in/turnleft"
+                     "output" : "/actions/move/in/turnleft"
                   }
                },
                "mode" : "dpad",
                "parameters" : {
+                  "overlap_pct" : "0",
+                  "sticky" : "true",
+                  "sub_mode" : "click"
+               },
+               "path" : "/user/hand/right/input/trackpad"
+            },
+            {
+               "inputs" : {
+                  "position" : {
+                     "output" : "/actions/move/in/continuousturn"
+                  }
+               },
+               "mode" : "trackpad",
+               "parameters" : {
+                  "deadzone_pct" : "15",
+                  "maxzone_pct" : "85",
+                  "exponent" : "2",
+                  "sticky_click" : "false"
+               },
+               "path" : "/user/hand/right/input/trackpad"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/move/in/crouch"
+                  }
+               },
+               "mode" : "button",
+               "path" : "/user/hand/left/input/application_menu"
+            },
+            {
+               "inputs" : {
+                  "north" : {
+                     "output" : "/actions/move/in/jump"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "overlap_pct" : "0",
+                  "sticky" : "true",
                   "sub_mode" : "click"
                },
                "path" : "/user/hand/right/input/trackpad"
@@ -47,7 +237,61 @@
             {
                "inputs" : {
                   "click" : {
-                     "output" : "/actions/input/in/rightgrab"
+                     "output" : "/actions/move/in/walk"
+                  }
+               },
+               "mode" : "button",
+               "parameters" : {
+                  "touchy_click" : "true"
+               },
+               "path" : "/user/hand/left/input/trackpad"
+            }
+         ]
+      },
+      "/actions/weapon" : {
+         "sources" : [
+            {
+               "inputs" : {
+                  "south" : {
+                     "output" : "/actions/weapon/in/reload"
+                  }
+               },
+               "mode" : "dpad",
+               "parameters" : {
+                  "overlap_pct" : "0",
+                  "sticky" : "true",
+                  "sub_mode" : "click"
+               },
+               "path" : "/user/hand/right/input/trackpad"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/weapon/in/attack"
+                  }
+               },
+               "mode" : "button",
+               "parameters" : {
+                  "haptic_amplitude" : "0"
+               },
+               "path" : "/user/hand/left/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/weapon/in/attack"
+                  }
+               },
+               "mode" : "button",
+               "parameters" : {
+                  "haptic_amplitude" : "0"
+               },
+               "path" : "/user/hand/right/input/trigger"
+            },
+            {
+               "inputs" : {
+                  "click" : {
+                     "output" : "/actions/weapon/in/attack2"
                   }
                },
                "mode" : "button",
@@ -56,64 +300,7 @@
             {
                "inputs" : {
                   "click" : {
-                     "output" : "/actions/input/in/fireweapon"
-                  }
-               },
-               "mode" : "trigger",
-               "path" : "/user/hand/right/input/trigger"
-            },
-            {
-               "inputs" : {
-                  "click" : {
-                     "output" : "/actions/input/in/legacyuse"
-                  }
-               },
-               "mode" : "trigger",
-               "path" : "/user/hand/left/input/trigger"
-            },
-            {
-               "inputs" : {
-                  "click" : {
-                     "output" : "/actions/input/in/leftgrab"
-                  }
-               },
-               "mode" : "button",
-               "path" : "/user/hand/left/input/grip"
-            },
-            {
-               "inputs" : {
-                  "east" : {
-                     "output" : "/actions/input/in/moveright"
-                  },
-                  "north" : {
-                     "output" : "/actions/input/in/moveforward"
-                  },
-                  "south" : {
-                     "output" : "/actions/input/in/movebackward"
-                  },
-                  "west" : {
-                     "output" : "/actions/input/in/moveleft"
-                  }
-               },
-               "mode" : "dpad",
-               "parameters" : {
-                  "sub_mode" : "click"
-               },
-               "path" : "/user/hand/left/input/trackpad"
-            },
-            {
-               "inputs" : {
-                  "click" : {
-                     "output" : "/actions/input/in/toggleflashlight"
-                  }
-               },
-               "mode" : "button",
-               "path" : "/user/hand/left/input/application_menu"
-            },
-            {
-               "inputs" : {
-                  "click" : {
-                     "output" : "/actions/input/in/reloadweapon"
+                     "output" : "/actions/weapon/in/select"
                   }
                },
                "mode" : "button",
@@ -124,8 +311,8 @@
    },
    "category" : "steamvr_input",
    "controller_type" : "vive_controller",
-   "name" : "Half-Life: VR Default Vive Binds",
-   "description" : "Default Vive controller binds for Half-Life: VR, made by HanSoSlow.",
+   "description" : "Default two handed bindings with movement on the off hand",
+   "name" : "Dual Controllers (Movement on Off Hand)",
    "options" : {},
    "simulated_actions" : []
 }

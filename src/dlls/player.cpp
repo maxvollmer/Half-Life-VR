@@ -1727,12 +1727,28 @@ void CBasePlayer::Jump()
 
 	// If this isn't the first frame pressing the jump button, break out.
 	if (!FBitSet(m_afButtonPressed, IN_JUMP))
+	{
 		return;  // don't pogo stick
+	}
 
 	if (!(pev->flags & FL_ONGROUND) || !pev->groundentity)
 	{
+		if (m_fLongJump)
+		{
+			// Check for double jump if longjump module is equipped
+			float flMaxDoubleJumpDelay = 1.f;
+			if ((m_vrLastJumpTime + flMaxDoubleJumpDelay) > gpGlobals->time)
+			{
+				DoLongJump(false, true);
+				m_vrLastJumpTime = 0;
+			}
+		}
+
 		return;
 	}
+
+	// Set the time that we jumped
+	m_vrLastJumpTime = gpGlobals->time;
 
 	// many features in this function use v_forward, so makevectors now.
 	UTIL_MakeVectors(pev->angles);
@@ -2242,6 +2258,10 @@ void CBasePlayer::PreThink()
 	if (!FBitSet(pev->flags, FL_ONGROUND))
 	{
 		m_flFallVelocity = -pev->velocity.z;
+	}
+	else
+	{
+		m_vrLastJumpTime = 0;
 	}
 
 	// StudioFrameAdvance( );//!!!HACKHACK!!! Can't be hit by traceline when not animating?
@@ -5803,44 +5823,65 @@ float CalculateWeaponTimeOffsetReverse(float offset)
 // - Max Vollmer - 2019-04-13
 #define BUNNYJUMP_MAX_SPEED_FACTOR 1.7f
 #define PLAYER_LONGJUMP_SPEED      350
-void CBasePlayer::DoLongJump()
+void CBasePlayer::DoLongJump(bool playStepSound, bool force)
 {
-	if (pev->waterlevel)
-		return;
+	if (!force)
+	{
+		if (pev->waterlevel)
+			return;
 
-	if (pev->button & IN_JUMP)
-		return;
+		if (pev->button & IN_JUMP)
+			return;
 
-	if (pev->oldbuttons & IN_JUMP)
-		return;
+		if (pev->oldbuttons & IN_JUMP)
+			return;
 
-	if (pmove->waterjumptime)
-		return;
+		if (pmove->waterjumptime)
+			return;
 
-	if (!(pev->flags & FL_ONGROUND))
-		return;
+		if (!(pev->flags & FL_ONGROUND))
+			return;
+	}
 
 	float maxscaledspeed = BUNNYJUMP_MAX_SPEED_FACTOR * pmove->maxspeed;
 	if (maxscaledspeed <= 0.f)
 		return;
 
-	extern void PM_PlayStepSound(int step, float fvol);
-	extern int PM_MapTextureTypeStepType(char chTextureType);
-	PM_PlayStepSound(PM_MapTextureTypeStepType(pmove->chtexturetype), 1.0f);
+	if (playStepSound)
+	{
+		extern void PM_PlayStepSound(int step, float fvol);
+		extern int PM_MapTextureTypeStepType(char chTextureType);
+		PM_PlayStepSound(PM_MapTextureTypeStepType(pmove->chtexturetype), 1.0f);
+	}
 
 	if (m_fLongJump)
 	{
 		pev->punchangle.x = -5.f;
 
-		if (pev->velocity.Length2D() < EPSILON)
+		Vector forward = pmove->forward;
+		if (pmove->forward.Length2D() > EPSILON)
 		{
-			pev->velocity = vr_hmdForward;
+			forward = pmove->forward;
 		}
-		pev->velocity.z = 0.f;
-		pev->velocity = pev->velocity.Normalize();
-		pev->velocity.x = pmove->velocity.x * PLAYER_LONGJUMP_SPEED * 1.6f;
-		pev->velocity.y = pmove->velocity.y * PLAYER_LONGJUMP_SPEED * 1.6f;
+		else if (pmove->velocity.Length2D() < EPSILON)
+		{
+			forward = pmove->velocity;
+		}
+		else if (pev->velocity.Length2D() < EPSILON)
+		{
+			forward = pev->velocity;
+		}
+		else
+		{
+			forward = vr_hmdForward; // TODO: This should fall back to the device used for movement, not simply the HMD
+		}
+		forward.z = 0.f;
+		forward = forward.Normalize();
+
+		pev->velocity.x = forward.x * PLAYER_LONGJUMP_SPEED * 1.6f;
+		pev->velocity.y = forward.y * PLAYER_LONGJUMP_SPEED * 1.6f;
 		pev->velocity.z = sqrt(2.f * 800.f * 56.f);
+
 		SetAnimation(PLAYER_SUPERJUMP);
 	}
 	else
@@ -5849,7 +5890,7 @@ void CBasePlayer::DoLongJump()
 		SetAnimation(PLAYER_JUMP);
 	}
 
-	pev->velocity.z -= (pev->gravity * g_psv_gravity->value * gpGlobals->frametime * 0.5f);
+	//pev->velocity.z -= (pev->gravity * g_psv_gravity->value * gpGlobals->frametime * 0.5f);
 
 	if (pev->velocity.x > pmove->movevars->maxvelocity)
 		pev->velocity.x = pmove->movevars->maxvelocity;
@@ -5865,8 +5906,14 @@ void CBasePlayer::DoLongJump()
 		pev->velocity.z = -pmove->movevars->maxvelocity;
 }
 
-void CBasePlayer::HolsterWeapon()
+void CBasePlayer::HolsterWeapon(bool force)
 {
+	// force last item to be nullptr if we are already holstered
+	// (SelectItem doesn't do that as it's a no-op if the item doesn't change)
+	if (force && m_pActiveItem == nullptr)
+	{
+		m_pLastItem = nullptr;
+	}
 	SelectItem("weapon_barehand");
 }
 
@@ -6139,7 +6186,7 @@ void CBasePlayer::VRUseOrUnuseTank()
 				m_vrTankVRControllerAngles = UTIL_VecToAngles(direction);
 
 				// make sure no weapon is selected (noop if no weapon is selected)
-				HolsterWeapon();
+				HolsterWeapon(true);
 
 				// fire the gun
 				m_pTank->Use(this, this, USE_SET, 2);
@@ -6181,7 +6228,7 @@ void CBasePlayer::VRUseOrUnuseTank()
 			m_pTank->Use(this, this, USE_ON, 1337);  // 1337 is hacky way to tell CFuncTank that this is a VR initiated control
 			m_vrIsUsingTankWithVRControllers = true;
 			m_vrTankVRControllerAngles = m_pTank->pev->angles;
-			HolsterWeapon();
+			HolsterWeapon(true);
 		}
 	}
 }

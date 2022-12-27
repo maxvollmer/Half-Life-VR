@@ -70,30 +70,6 @@ public:
 	{
 		return m_vrMenuClickStatus;
 	}
-	inline void SetVRMenuUseStatus(bool vrMenuUseStatus)
-	{
-		m_vrMenuUseStatus = vrMenuUseStatus;
-	}
-	inline bool GetVRMenuUseStatus()
-	{
-		return m_vrMenuUseStatus;
-	}
-	inline void SetVRMenuFireStatus(bool vrMenuFireStatus)
-	{
-		m_vrMenuFireStatus = vrMenuFireStatus;
-	}
-	inline bool GetVRMenuFireStatus()
-	{
-		return m_vrMenuFireStatus;
-	}
-	inline void SetVRMenuAnalogFireStatus(bool vrMenuAnalogFireStatus)
-	{
-		m_vrMenuAnalogFireStatus = vrMenuAnalogFireStatus;
-	}
-	inline bool GetVRMenuAnalogFireStatus()
-	{
-		return m_vrMenuAnalogFireStatus;
-	}
 
 	enum class FeedbackType
 	{
@@ -112,6 +88,8 @@ public:
 	bool HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, VRQuaternion* bone_quaternions, Vector* bone_positions) const;
 
 	void ExecuteCustomAction(const std::string& action);
+
+	vr::ETrackedControllerRole GetRole(vr::VRInputValueHandle_t origin);
 
 	bool m_rotateLeft{ false };
 	bool m_rotateRight{ false };
@@ -192,9 +170,6 @@ private:
 	bool m_isVRDucking{ false };
 	bool m_letGoOffLadder{ false };
 	bool m_vrMenuClickStatus{ false };
-	bool m_vrMenuUseStatus{ false };
-	bool m_vrMenuFireStatus{ false };
-	bool m_vrMenuAnalogFireStatus{ false };
 
 	std::unordered_map<std::string, ActionSet> m_actionSets;
 	std::unordered_map<std::string, CustomAction> m_customActions;
@@ -205,6 +180,9 @@ private:
 
 	bool m_isInGame{ false };
 	bool m_isInMenu{ true };
+
+public:
+	std::unordered_map<vr::ETrackedControllerRole, std::array<float, vr::VRFinger_Count>> m_fallbackFingerCurlData;
 };
 
 extern VRInput g_vrInput;

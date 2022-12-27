@@ -480,10 +480,10 @@ public:
 	void SetTeleporterPose(const Vector& offset, const Vector& angles);
 	void ClearTeleporterPose();
 
-	void DoLongJump();
+	void DoLongJump(bool playStepSound, bool force);
 	void RestartCurrentMap();
 
-	void HolsterWeapon();
+	void HolsterWeapon(bool force);
 
 	float GetAnalogFire();
 	void SetAnalogFire(float analogfire);
@@ -522,6 +522,8 @@ public:
 private:
 	bool m_vrHasSurfacedInThatMapWithTheTank{ false };
 	bool m_vrJustGotYeetedByBPTrain{ false };
+
+	float m_vrLastJumpTime{ 0.f };
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

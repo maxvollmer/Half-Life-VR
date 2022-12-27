@@ -224,19 +224,7 @@ void VRInput::HandleHLMenuInput()
 	}
 
 	VRGUIRenderer::VRControllerState uiControllerState;
-	switch ((int)CVAR_GET_FLOAT("vr_menu_click_source"))
-	{
-	case 1:
-		uiControllerState.isPressed = g_vrInput.GetVRMenuUseStatus();
-		break;
-	case 2:
-		uiControllerState.isPressed = g_vrInput.GetVRMenuClickStatus();
-		break;
-	case 0:
-	default:
-		uiControllerState.isPressed = g_vrInput.GetVRMenuFireStatus() || g_vrInput.GetVRMenuAnalogFireStatus();
-		break;
-	}
+	uiControllerState.isPressed = g_vrInput.GetVRMenuClickStatus();
 
 	vr::VROverlayIntersectionResults_t results;
 	if (vr::VROverlay()->ComputeOverlayIntersection(m_hlMenu, &params, &results))
