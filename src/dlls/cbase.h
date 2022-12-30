@@ -361,7 +361,7 @@ public:
 	virtual void KeyValue(KeyValueData* pkvd) { pkvd->fHandled = FALSE; }
 	virtual int Save(CSave& save);
 	virtual int Restore(CRestore& restore);
-	virtual int ObjectCaps(void) { return FCAP_ACROSS_TRANSITION; }
+	virtual int ObjectCaps(void) { return m_objectCaps; }
 	virtual void Activate(void) {}
 
 	// Setup the object->object collision box (pev->mins / pev->maxs is the object->world collision box)
@@ -724,6 +724,9 @@ public:
 
 	// Remember if entity is in PVS this frame (last frame? doesn't matter), set in AddToFullPack in client.cpp - Max Vollmer, 2020-03-08
 	bool m_isInPVS = false;
+
+	// So we can add or remove object caps to any entity without changing the ObjectCaps function
+	int m_objectCaps = FCAP_ACROSS_TRANSITION;
 };
 
 

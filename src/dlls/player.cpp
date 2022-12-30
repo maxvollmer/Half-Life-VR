@@ -977,6 +977,7 @@ entvars_t* g_pevLastInflictor;  // Set in combat.cpp.  Used to pass the damage i
 
 void CBasePlayer::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	FlashlightTurnOff();
 	ClearLadderGrabbingControllers();
 	StopPullingLedge();
 
@@ -3363,18 +3364,19 @@ int CBasePlayer::Restore(CRestore& restore)
 		// default to normal spawn
 		edict_t* pentSpawnSpot = EntSelectSpawnPoint(this);
 		pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
+
+		// Restore VR offsets if levelchange has stored them (fixes origin issues in roomscale) - Max Vollmer, 2018-04-02
+		if (g_vrLevelChangeData.hasData)
+		{
+			this->vr_lastHMDOffset = g_vrLevelChangeData.lastHMDOffset;
+			this->vr_ClientOriginOffset = g_vrLevelChangeData.clientOriginOffset;
+			this->vr_prevYaw = g_vrLevelChangeData.prevYaw;
+			this->vr_currentYaw = g_vrLevelChangeData.currentYaw;
+			vr_needsToSendRestoreYawMsgToClient = true;
+		}
 	}
 
-	// Restore VR offsets if levelchange has stored them (fixes origin issues in roomscale) - Max Vollmer, 2018-04-02
-	if (g_vrLevelChangeData.hasData)
-	{
-		this->vr_lastHMDOffset = g_vrLevelChangeData.lastHMDOffset;
-		this->vr_ClientOriginOffset = g_vrLevelChangeData.clientOriginOffset;
-		this->vr_prevYaw = g_vrLevelChangeData.prevYaw;
-		this->vr_currentYaw = g_vrLevelChangeData.currentYaw;
-		g_vrLevelChangeData.hasData = false;
-		vr_needsToSendRestoreYawMsgToClient = true;
-	}
+	g_vrLevelChangeData.hasData = false;
 
 	pev->v_angle.z = 0;  // Clear out roll
 	pev->angles = pev->v_angle;
@@ -3801,6 +3803,7 @@ void CBasePlayer::FlashlightTurnOn(void)
 		if (!hFlashLight)
 		{
 			hFlashLight = CBaseEntity::Create<CBaseEntity>("info_target", pev->origin, Vector());
+			hFlashLight->m_objectCaps = FCAP_DONT_SAVE;
 			SET_MODEL(hFlashLight->edict(), "sprites/black.spr");
 			UTIL_SetOrigin(hFlashLight->pev, pev->origin);
 			UTIL_SetSize(hFlashLight->pev, Vector(-4, -4, -4), Vector(4, 4, 4));
