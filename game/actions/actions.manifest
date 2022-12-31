@@ -117,7 +117,7 @@
             "type": "boolean"
         },
         {
-            "name": "/actions/interact/in/ToggleFlashlight",
+            "name": "/actions/interact/in/Flashlight",
             "type": "boolean"
         },
 		
