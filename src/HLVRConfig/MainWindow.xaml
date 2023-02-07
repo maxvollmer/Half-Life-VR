@@ -25,9 +25,9 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="NotRunningGamePanel">
-                            <Button Click="LaunchMod_Click" Padding="5" Margin="5">
-                                <controls:I18NText Key="GUI.LaunchMod" DefaultValue="Launch Half-Life: VR"></controls:I18NText>
-                            </Button>
+                            <TextBlock TextWrapping="WrapWithOverflow" Padding="5" Margin="5" Focusable="True">
+                                <controls:I18NText Key="GUI.HLIsNotRunningMessage" DefaultValue="Half-Life: VR is not running. Close HLVRConfig, then launch Half-Life: VR through Steam or SteamVR."></controls:I18NText>
+                            </TextBlock>
                         </StackPanel>
 
                         <StackPanel Orientation="Vertical" Visibility="Collapsed" x:Name="RunningGamePannel">
