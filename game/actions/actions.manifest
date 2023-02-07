@@ -24,6 +24,10 @@
         {
             "name": "/actions/menu",
             "usage": "leftright"
+        },
+        {
+            "name": "/actions/custom",
+            "usage": "leftright"
         }
     ],
     "actions": [
@@ -161,6 +165,11 @@
         {
             "name": "/actions/menu/in/ClickVRMenu",
             "requirement": "mandatory",
+            "type": "boolean"
+        },
+		
+        {
+            "name": "/actions/custom/in/ExampleCustomAction",
             "type": "boolean"
         }
     ],
