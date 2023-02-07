@@ -175,7 +175,7 @@ void VRInput::RegisterActionSets()
 		RegisterAction("interact", "Teleport", &VR::Input::Interact::HandleTeleport);
 
 		// TODO: MISSING IN ALL BINDINGS!!!!
-		RegisterAction("interact", "ToggleFlashlight", &VR::Input::Interact::HandleFlashlight);
+		RegisterAction("interact", "Flashlight", &VR::Input::Interact::HandleFlashlight);
 	}
 
 	if (RegisterActionSet("weapon", false))
@@ -702,3 +702,22 @@ vr::ETrackedControllerRole VRInput::GetRole(vr::VRInputValueHandle_t origin)
 	}
 	return role;
 }
+
+bool VRInput::IsWeapon(vr::ETrackedControllerRole role)
+{
+	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
+
+	if (leftHandMode && role == vr::TrackedControllerRole_LeftHand)
+	{
+		return !gVRRenderer.IsHandModel(gHUD.m_leftControllerModelData.controller.modelname)
+			&& !gVRRenderer.IsHandSkeletalModel(gHUD.m_leftControllerModelData.controller.modelname);
+	}
+	else if (!leftHandMode && role == vr::TrackedControllerRole_RightHand)
+	{
+		return !gVRRenderer.IsHandModel(gHUD.m_rightControllerModelData.controller.modelname)
+			&& !gVRRenderer.IsHandSkeletalModel(gHUD.m_rightControllerModelData.controller.modelname);
+	}
+
+	return false;
+}
+

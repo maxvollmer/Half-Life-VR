@@ -555,7 +555,7 @@ void ClientCommand(edict_t* pEntity)
 	else if (FStrEq(pcmd, "vrupdctrl"))  // Client sends update for VR related data - Max Vollmer, 2017-08-18
 	{
 		int size = CMD_ARGC();
-		if (size == 15)
+		if (size == 16)
 		{
 			int timestamp = atoi(CMD_ARGV(1));
 			bool isValid = atoi(CMD_ARGV(2)) != 0;
@@ -565,7 +565,8 @@ void ClientCommand(edict_t* pEntity)
 			Vector angles(atof(CMD_ARGV(8)), atof(CMD_ARGV(9)), atof(CMD_ARGV(10)));
 			Vector velocity(atof(CMD_ARGV(11)), atof(CMD_ARGV(12)), atof(CMD_ARGV(13)));
 			bool isDragging = atoi(CMD_ARGV(14)) != 0;
-			pPlayer->UpdateVRController(id, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging);
+			bool isFiring = atoi(CMD_ARGV(15)) != 0;
+			pPlayer->UpdateVRController(id, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging, isFiring);
 		}
 		else
 		{

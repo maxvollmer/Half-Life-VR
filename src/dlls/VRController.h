@@ -22,7 +22,7 @@ public:
 		HARD_TOUCH
 	};
 
-	void Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, VRControllerID id, int weaponId);
+	void Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, bool isFiring, VRControllerID id, int weaponId);
 	void PostFrame();
 
 	CVRControllerModel* GetModel() const;
@@ -48,6 +48,7 @@ public:
 	bool HasAnyEntites() const;
 
 	bool IsDragging() const;
+	bool IsFiring() const;
 	bool GetAttachment(size_t index, Vector& attachment) const;
 
 	const Vector GetGunPosition() const;
@@ -116,6 +117,7 @@ private:
 	float m_lastUpdateServertime{ 0.f };
 	bool m_isValid{ false };
 	bool m_isDragging{ false };
+	bool m_isFiring{ false };
 	bool m_isMirrored{ false };
 	bool m_isBlocked{ true };
 	bool m_hasFlashlight{ false };

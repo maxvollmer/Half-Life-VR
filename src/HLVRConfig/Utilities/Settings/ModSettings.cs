@@ -28,9 +28,7 @@ namespace HLVRConfig.Utilities.Settings
 
 
         public static readonly SettingCategory CategoryGeneralInput = new SettingCategory(
-            new I18N.I18NString("InputSettings.General", "General")
-            , new I18N.I18NString("InputSettings.General.LeftyNote", "Note: If you enable Left Hand Mode you must select or create left-handed bindings instead of Default Bindings in SteamVR,\nor your buttons will literally be on the wrong hands. The mod sadly cannot automagically do this for you.")
-            );
+            new I18N.I18NString("InputSettings.General", "General"));
 
         public static readonly SettingCategory CategoryAntinauseaFeatures = new SettingCategory(
             new I18N.I18NString("InputSettings.AntinauseaFeatures", "Anti-nausea features"));
@@ -43,9 +41,6 @@ namespace HLVRConfig.Utilities.Settings
 
         public static readonly SettingCategory CategoryMovementSpeed = new SettingCategory(
             new I18N.I18NString("InputSettings.MovementSpeed", "Movement Speed"));
-
-        public static readonly SettingCategory CategoryAttachments = new SettingCategory(
-            new I18N.I18NString("InputSettings.Attachments", "Attachments"));
 
 
         public static readonly SettingCategory CategoryGeneralImmersion = new SettingCategory(
@@ -117,6 +112,24 @@ namespace HLVRConfig.Utilities.Settings
 
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> InputSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
         {
+            { CategoryMovement, new OrderedDictionary<string, Setting>() {
+                { "vr_move_snapturn_enabled", Setting.Create( new I18N.I18NString("vr_move_snapturn_enabled", "Turn Mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_move_snapturn_enabled.Smooth", "Smooth Turn") }, { "1", new I18N.I18NString("vr_move_snapturn_enabled.Snap", "Snap Turn") } }, "1" ) },
+                { "vr_move_snapturn_angle", Setting.Create( new I18N.I18NString("vr_move_snapturn_angle", "Turn angle (degrees)"), SettingType.COUNT, "30", new SettingDependency("vr_move_snapturn_enabled", "1", SettingDependency.MatchMode.MUST_MATCH) ) },
+                { "vr_yawspeed", Setting.Create( new I18N.I18NString("vr_yawspeed", "Turn speed (degrees/s)"), SettingType.COUNT, "210", new SettingDependency("vr_move_snapturn_enabled", "0", SettingDependency.MatchMode.MUST_MATCH) ) },
+                { "vr_rl_ducking_enabled", Setting.Create( new I18N.I18NString("vr_rl_ducking_enabled", "Enable real-life crouch detection"), true ) },
+                { "vr_rl_duck_height", Setting.Create( new I18N.I18NString("vr_rl_duck_height", "Real-life crouch height"), SettingType.DISTANCE, "36", new SettingDependency("vr_rl_ducking_enabled", "1") ) },
+                { "vr_autocrouch_enabled", Setting.Create( new I18N.I18NString("vr_autocrouch_enabled", "Enable automatic crouching"), true ) },
+                { "vr_toggle_crouch", Setting.Create( new I18N.I18NString("vr_toggle_crouch", "Toggle crouch"), false ) },
+            } },
+
+            { CategoryMovementSpeed, new OrderedDictionary<string, Setting>() {
+                { "vr_forwardspeed", Setting.Create( new I18N.I18NString("vr_forwardspeed", "Forward speed"), SettingType.SPEED, "270" ) },
+                { "vr_backspeed", Setting.Create( new I18N.I18NString("vr_backspeed", "Backward speed"), SettingType.SPEED, "270" ) },
+                { "vr_sidespeed", Setting.Create( new I18N.I18NString("vr_sidespeed", "Sideways speed"), SettingType.SPEED, "270" ) },
+                { "vr_upspeed", Setting.Create( new I18N.I18NString("vr_upspeed", "Up/Down speed"), SettingType.SPEED, "270" ) },
+                { "vr_walkspeedfactor", Setting.Create( new I18N.I18NString("vr_walkspeedfactor", "Speed factor when 'walk' is active"), SettingType.FACTOR, "0.3" ) },
+            } },
+
             { CategoryGeneralInput, new OrderedDictionary<string, Setting>() {
                 { "vr_flashlight_toggle", Setting.Create( new I18N.I18NString("vr_flashlight_toggle", "Flashlight should toggle"), true ) },
                 { "vr_enable_aim_laser", Setting.Create( new I18N.I18NString("vr_enable_aim_laser", "Enable aim laser pointer for range weapons"), false ) },
@@ -145,26 +158,15 @@ namespace HLVRConfig.Utilities.Settings
                 { "vr_smooth_steps_intensity", Setting.Create( new I18N.I18NString("vr_smooth_steps_intensity", "Smoothing intensity"), SettingType.FACTOR, "0.5", new SettingDependency("vr_smooth_steps", "1") ) },
             } },
 
+            /*
             { CategoryMovement, new OrderedDictionary<string, Setting>() {
-                { "vr_rl_ducking_enabled", Setting.Create( new I18N.I18NString("vr_rl_ducking_enabled", "Enable real-life crouch detection"), true ) },
-                { "vr_rl_duck_height", Setting.Create( new I18N.I18NString("vr_rl_duck_height", "Real-life crouch height"), SettingType.DISTANCE, "36", new SettingDependency("vr_rl_ducking_enabled", "1") ) },
-                { "vr_playerturn_enabled", Setting.Create( new I18N.I18NString("vr_playerturn_enabled", "Enable player turning"), true ) },
-                { "vr_autocrouch_enabled", Setting.Create( new I18N.I18NString("vr_autocrouch_enabled", "Enable automatic crouching"), true ) },
                 { "vr_move_analogforward_inverted", Setting.Create( new I18N.I18NString("vr_move_analogforward_inverted", "Invert analog forward input"), false ) },
                 { "vr_move_analogsideways_inverted", Setting.Create( new I18N.I18NString("vr_move_analogsideways_inverted", "Invert analog sideways input"), false ) },
                 { "vr_move_analogupdown_inverted", Setting.Create( new I18N.I18NString("vr_move_analogupdown_inverted", "Invert analog updown input"), false ) },
                 { "vr_move_analogturn_inverted", Setting.Create( new I18N.I18NString("vr_move_analogturn_inverted", "Invert analog turn input"), false ) },
                 { "vr_move_analog_deadzone", Setting.Create( new I18N.I18NString("vr_move_analog_deadzone", "Minimum analog input to trigger action"), SettingType.FACTOR, "0.1" ) },
             } },
-
-            { CategoryMovementSpeed, new OrderedDictionary<string, Setting>() {
-                { "vr_forwardspeed", Setting.Create( new I18N.I18NString("vr_forwardspeed", "Forward speed"), SettingType.SPEED, "270" ) },
-                { "vr_backspeed", Setting.Create( new I18N.I18NString("vr_backspeed", "Backward speed"), SettingType.SPEED, "270" ) },
-                { "vr_sidespeed", Setting.Create( new I18N.I18NString("vr_sidespeed", "Sideways speed"), SettingType.SPEED, "270" ) },
-                { "vr_upspeed", Setting.Create( new I18N.I18NString("vr_upspeed", "Up/Down speed"), SettingType.SPEED, "270" ) },
-                { "vr_yawspeed", Setting.Create( new I18N.I18NString("vr_yawspeed", "Turn speed (degrees/s)"), SettingType.COUNT, "210" ) },
-                { "vr_walkspeedfactor", Setting.Create( new I18N.I18NString("vr_walkspeedfactor", "Speed factor when 'walk' is active"), SettingType.FACTOR, "0.3" ) },
-            } },
+             */
         };
 
         public OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>> ImmersionSettings = new OrderedDictionary<SettingCategory, OrderedDictionary<string, Setting>>()
@@ -184,11 +186,10 @@ namespace HLVRConfig.Utilities.Settings
             } },
 
             { CategoryLadders, new OrderedDictionary<string, Setting>() {
-                { "vr_ladder_immersive_movement_enabled", Setting.Create( new I18N.I18NString("vr_ladder_immersive_movement_enabled", "Enabled immersive climbing of ladders"), true ) },
-                { "vr_ladder_immersive_movement_swinging_enabled", Setting.Create( new I18N.I18NString("vr_ladder_immersive_movement_swinging_enabled", "Enable momentum from immersive ladder climbing"), true, new SettingDependency("vr_ladder_immersive_movement_enabled", "1") ) },
-                { "vr_ladder_legacy_movement_enabled", Setting.Create( new I18N.I18NString("vr_ladder_legacy_movement_enabled", "Enable legacy climbing of ladders"), false ) },
-                { "vr_ladder_legacy_movement_only_updown", Setting.Create( new I18N.I18NString("vr_ladder_legacy_movement_only_updown", "Restrict movement on ladders to up/down only (legacy movement)"), false, new SettingDependency("vr_ladder_legacy_movement_enabled", "1") ) },
-                { "vr_ladder_legacy_movement_speed", Setting.Create( new I18N.I18NString("vr_ladder_legacy_movement_speed", "Climb speed on ladders (legacy movement)"), SettingType.SPEED, "200", new SettingDependency("vr_ladder_legacy_movement_enabled", "1") ) },
+                { "vr_ladder_mode", Setting.Create( new I18N.I18NString("vr_ladder_mode", "Ladder Climb Mode"), new OrderedDictionary<string, I18N.I18NString>(){ {"0", new I18N.I18NString("vr_ladder_mode.Combined", "Combined") }, { "1", new I18N.I18NString("vr_ladder_mode.ImmersiveOnly", "Immersive Climbing Only") }, { "2", new I18N.I18NString("vr_ladder_mode.LegacyOnly", "Legacy Climbing Only") } }, "0" ) },
+                { "vr_ladder_immersive_movement_swinging_enabled", Setting.Create( new I18N.I18NString("vr_ladder_immersive_movement_swinging_enabled", "Enable momentum from immersive ladder climbing"), true, new SettingDependency("vr_ladder_mode", "2", SettingDependency.MatchMode.MUST_NOT_MATCH) ) },
+                { "vr_ladder_legacy_movement_speed", Setting.Create( new I18N.I18NString("vr_ladder_legacy_movement_speed", "Climb speed on ladders (updown)"), SettingType.SPEED, "200", new SettingDependency("vr_ladder_mode", "1", SettingDependency.MatchMode.MUST_NOT_MATCH) ) },
+                { "vr_ladder_legacy_sideways_speed", Setting.Create( new I18N.I18NString("vr_ladder_legacy_sideways_speed", "Climb speed on ladders (sideways)"), SettingType.SPEED, "50", new SettingDependency("vr_ladder_mode", "1", SettingDependency.MatchMode.MUST_NOT_MATCH) ) },
             } },
 
             { CategoryTrains, new OrderedDictionary<string, Setting>() {

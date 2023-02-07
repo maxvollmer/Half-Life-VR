@@ -10,6 +10,8 @@
 #include "VRInput.h"
 #include "eiface.h"
 
+#include "VRRenderer.h"
+
 namespace
 {
 	WEAPON* g_pHolsteredWeapon{ nullptr };
@@ -26,15 +28,16 @@ namespace VR
 	{
 		void Weapons::HandleFire(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
+			g_vrInput.SetFiring(g_vrInput.GetRole(data.activeOrigin), data.bActive && data.bState);
+
+			if (!g_vrInput.IsWeapon(g_vrInput.GetRole(data.activeOrigin)))
+				return;
+
 			if (data.bChanged)
 			{
-				if (data.bState)
+				if (data.bActive && data.bState)
 				{
-					// don't +attack if in menu!
-					if (g_vrInput.IsInGame() && !g_vrInput.IsInMenu())
-					{
-						ClientCmd("+attack");
-					}
+					ClientCmd("+attack");
 				}
 				else
 				{
@@ -45,12 +48,19 @@ namespace VR
 
 		void Weapons::HandleAltFire(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
+			if (!g_vrInput.IsWeapon(g_vrInput.GetRole(data.activeOrigin)))
+				return;
+
 			if (data.bChanged)
 			{
-				if (data.bState)
+				if (data.bActive && data.bState)
+				{
 					ClientCmd("+attack2");
+				}
 				else
+				{
 					ClientCmd("-attack2");
+				}
 			}
 		}
 
@@ -58,7 +68,7 @@ namespace VR
 		{
 			if (data.bChanged)
 			{
-				if (data.bState)
+				if (data.bActive && data.bState)
 					ClientCmd("+reload");
 				else
 					ClientCmd("-reload");

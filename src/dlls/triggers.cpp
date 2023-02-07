@@ -1415,7 +1415,6 @@ public:
 	void EXPORT TouchChangeLevel(CBaseEntity* pOther);
 	void ChangeLevelNow(CBaseEntity* pActivator);
 
-	static edict_t* FindLandmark(const char* pLandmarkName);
 	static int ChangeList(LEVELLIST* pLevelList, int maxList);
 	static int AddTransitionToList(LEVELLIST* pLevelList, int listCount, const char* pMapName, const char* pLandmarkName, edict_t* pentLandmark);
 	static int InTransitionVolume(CBaseEntity* pEntity, char* pVolumeName);
@@ -1516,23 +1515,6 @@ void CChangeLevel::ExecuteChangeLevel(void)
 FILE_GLOBAL char st_szNextMap[cchMapNameMost];
 FILE_GLOBAL char st_szNextSpot[cchMapNameMost];
 
-edict_t* CChangeLevel::FindLandmark(const char* pLandmarkName)
-{
-	edict_t* pentLandmark;
-
-	pentLandmark = FIND_ENTITY_BY_STRING(nullptr, "targetname", pLandmarkName);
-	while (!FNullEnt(pentLandmark))
-	{
-		// Found the landmark
-		if (FClassnameIs(pentLandmark, "info_landmark"))
-			return pentLandmark;
-		else
-			pentLandmark = FIND_ENTITY_BY_STRING(pentLandmark, "targetname", pLandmarkName);
-	}
-	ALERT(at_error, "Can't find landmark %s\n", pLandmarkName);
-	return nullptr;
-}
-
 
 //=========================================================
 // CChangeLevel :: Use - allows level transitions to be
@@ -1594,7 +1576,7 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 	st_szNextSpot[0] = 0;  // Init landmark to nullptr
 
 	// look for a landmark entity
-	pentLandmark = FindLandmark(m_szLandmarkName);
+	pentLandmark = UTIL_FindLandmark(m_szLandmarkName);
 	if (!FNullEnt(pentLandmark))
 	{
 		strcpy_s(st_szNextSpot, m_szLandmarkName);
@@ -1728,7 +1710,7 @@ int CChangeLevel::ChangeList(LEVELLIST* pLevelList, int maxList)
 		if (pTrigger)
 		{
 			// Find the corresponding landmark
-			pentLandmark = FindLandmark(pTrigger->m_szLandmarkName);
+			pentLandmark = UTIL_FindLandmark(pTrigger->m_szLandmarkName);
 			if (pentLandmark)
 			{
 				// Build a list of unique transitions
@@ -2142,18 +2124,18 @@ void CBaseTrigger::TeleportTouch(CBaseEntity* pOther)
 	Vector prevOrigin = pOther->pev->origin;
 	Vector prevAngles = pOther->pev->angles;
 
-	Vector tmp = VARS(pentTarget)->origin;
+	Vector newOrigin = VARS(pentTarget)->origin;
 
 	if (pOther->IsPlayer())
 	{
-		tmp.z -= pOther->pev->mins.z;  // make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
+		newOrigin.z -= pOther->pev->mins.z;  // make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
 	}
 
-	tmp.z++;
+	newOrigin.z++;
 
 	pevToucher->flags &= ~FL_ONGROUND;
 
-	UTIL_SetOrigin(pevToucher, tmp);
+	UTIL_SetOrigin(pevToucher, newOrigin);
 
 	pevToucher->angles = pentTarget->v.angles;
 

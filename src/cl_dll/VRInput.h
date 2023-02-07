@@ -70,6 +70,18 @@ public:
 	{
 		return m_vrMenuClickStatus;
 	}
+	inline bool IsFiring(vr::ETrackedControllerRole controllerRole) const
+	{
+		const auto& state = m_isControllerFiring.find(controllerRole);
+		if (state != m_isControllerFiring.end())
+			return state->second;
+		else
+			return false;
+	}
+	void SetFiring(vr::ETrackedControllerRole controllerRole, bool on)
+	{
+		m_isControllerFiring[controllerRole] = on;
+	}
 
 	enum class FeedbackType
 	{
@@ -90,6 +102,9 @@ public:
 	void ExecuteCustomAction(const std::string& action);
 
 	vr::ETrackedControllerRole GetRole(vr::VRInputValueHandle_t origin);
+	bool IsWeapon(vr::ETrackedControllerRole role);
+
+	bool m_crouchState{ false };
 
 	bool m_rotateLeft{ false };
 	bool m_rotateRight{ false };
@@ -175,6 +190,7 @@ private:
 	std::unordered_map<std::string, CustomAction> m_customActions;
 
 	std::unordered_map<vr::ETrackedControllerRole, bool> m_dragStates;
+	std::unordered_map<vr::ETrackedControllerRole, bool> m_isControllerFiring;
 
 	std::unordered_map<vr::ETrackedControllerRole, std::shared_ptr<FingerSkeletalData>> m_fingerSkeletalData;
 

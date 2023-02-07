@@ -359,9 +359,6 @@ public:
 	// Remember time when player points gun at us (scare/anger them for more immersive VR experience) - Max Vollmer, 2018-01-02
 	float vr_flGunPointTime = 0;
 
-	// Remember time when player touches our shoulder (follow-command for more immersive VR experience) - Max Vollmer, 2018-01-02
-	float vr_flShoulderTouchTime = 0;
-
 	// Remember time when player holds flat hand in front of our face (stop-command for more immersive VR experience) - Max Vollmer, 2018-01-02
 	float vr_flStopSignalTime = 0;
 

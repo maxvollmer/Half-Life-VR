@@ -2064,10 +2064,8 @@ void CBasePlayer::PreThink()
 	}
 
 	// VR stuff: Calculate controller interactions with world
-	for (auto& controller : m_vrControllers)
-	{
-		m_vrControllerInteractionManager.CheckAndPressButtons(this, controller.second);
-	}
+	m_vrControllerInteractionManager.CheckAndPressButtons(this, m_vrControllers[VRControllerID::HAND], m_vrControllers[VRControllerID::WEAPON]);
+	m_vrControllerInteractionManager.CheckAndPressButtons(this, m_vrControllers[VRControllerID::WEAPON], m_vrControllers[VRControllerID::HAND]);
 
 	// Special interaction with 2 controllers at once (e.g. pull up on ledges)
 	if (m_vrControllers[VRControllerID::HAND].IsValid() && m_vrControllers[VRControllerID::WEAPON].IsValid())
@@ -2259,10 +2257,6 @@ void CBasePlayer::PreThink()
 	if (!FBitSet(pev->flags, FL_ONGROUND))
 	{
 		m_flFallVelocity = -pev->velocity.z;
-	}
-	else
-	{
-		m_vrLastJumpTime = 0;
 	}
 
 	// StudioFrameAdvance( );//!!!HACKHACK!!! Can't be hit by traceline when not animating?
@@ -3364,16 +3358,25 @@ int CBasePlayer::Restore(CRestore& restore)
 		// default to normal spawn
 		edict_t* pentSpawnSpot = EntSelectSpawnPoint(this);
 		pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
-
-		// Restore VR offsets if levelchange has stored them (fixes origin issues in roomscale) - Max Vollmer, 2018-04-02
-		if (g_vrLevelChangeData.hasData)
+	}
+	else
+	{
+		// Fix weird bug that puts players slightly too low under the actual spawn location in c4a1f
+		if (STRING(INDEXENT(0)->v.model) == std::string{ "maps/c4a1f.bsp" })
 		{
-			this->vr_lastHMDOffset = g_vrLevelChangeData.lastHMDOffset;
-			this->vr_ClientOriginOffset = g_vrLevelChangeData.clientOriginOffset;
-			this->vr_prevYaw = g_vrLevelChangeData.prevYaw;
-			this->vr_currentYaw = g_vrLevelChangeData.currentYaw;
-			vr_needsToSendRestoreYawMsgToClient = true;
+			edict_t* pentLandmark = UTIL_FindLandmark("c4a1f");
+			pev->origin = VARS(pentLandmark)->origin + Vector(0, 0, 1);
 		}
+	}
+
+	// Restore VR offsets if levelchange has stored them (fixes origin issues in roomscale) - Max Vollmer, 2018-04-02
+	if (g_vrLevelChangeData.hasData)
+	{
+		this->vr_lastHMDOffset = g_vrLevelChangeData.lastHMDOffset;
+		this->vr_ClientOriginOffset = g_vrLevelChangeData.clientOriginOffset;
+		this->vr_prevYaw = g_vrLevelChangeData.prevYaw;
+		this->vr_currentYaw = g_vrLevelChangeData.currentYaw;
+		vr_needsToSendRestoreYawMsgToClient = true;
 	}
 
 	g_vrLevelChangeData.hasData = false;
@@ -5323,7 +5326,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	vr_hmdForward.InlineNormalize();
 }
 
-void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging)
+void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, bool isFiring)
 {
 	int weaponId = WEAPON_BAREHAND;
 	if (vrControllerID == VRControllerID::WEAPON)
@@ -5334,7 +5337,31 @@ void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const 
 			weaponId = itemInfo.iId;
 		}
 	}
-	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging, vrControllerID, weaponId);
+
+	bool wasDragging = m_vrControllers[vrControllerID].IsDragging();
+
+	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging, isFiring, vrControllerID, weaponId);
+
+	if (vrControllerID == VRControllerID::HAND
+		&& isValid
+		&& isDragging
+		&& !wasDragging
+		&& !m_vrControllers[vrControllerID].HasDraggedEntity())
+	{
+		constexpr const float VR_FLASHLIGHT_TOGGLE_DISTANCE_TO_HEAD = 16.f;
+		float distance = (m_vrControllers[vrControllerID].GetPosition() - this->EyePosition()).Length();
+		if (distance < VR_FLASHLIGHT_TOGGLE_DISTANCE_TO_HEAD + (std::max)(0.f, CVAR_GET_FLOAT("vr_view_dist_to_walls")))
+		{
+			if (FlashlightIsOn())
+			{
+				FlashlightTurnOff();
+			}
+			else
+			{
+				FlashlightTurnOn();
+			}
+		}
+	}
 }
 
 const Vector CBasePlayer::GetWeaponPosition()
@@ -5666,7 +5693,7 @@ void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 
 	// either attachment is pose or we fallback to pose because no other attachment was available
 	position = EyePosition();
-	UTIL_MakeAimVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
+	UTIL_MakeVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
 }
 
 void CBasePlayer::SetTeleporterPose(const Vector& offset, const Vector& angles)
@@ -5762,7 +5789,7 @@ void CBasePlayer::GetTeleporterPose(Vector& position, Vector& dir)
 
 	// either attachment is pose or we fallback to pose because no other attachment was available
 	position = EyePosition();
-	UTIL_MakeAimVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
+	UTIL_MakeVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
 }
 
 
@@ -5866,11 +5893,11 @@ void CBasePlayer::DoLongJump(bool playStepSound, bool force)
 		{
 			forward = pmove->forward;
 		}
-		else if (pmove->velocity.Length2D() < EPSILON)
+		else if (pmove->velocity.Length2D() > EPSILON)
 		{
 			forward = pmove->velocity;
 		}
-		else if (pev->velocity.Length2D() < EPSILON)
+		else if (pev->velocity.Length2D() > EPSILON)
 		{
 			forward = pev->velocity;
 		}
@@ -5975,7 +6002,7 @@ bool CBasePlayer::IsLadderGrabbingController(VRControllerID controller, CBaseEnt
 
 int CBasePlayer::GetGrabbedLadderEntIndex()
 {
-	if (m_ladderGrabbingControllers.empty() || CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") == 0.f)
+	if (m_ladderGrabbingControllers.empty() || (VRGetLadderMode() == VR_LADDER_MODE_LEGACY_ONLY))
 		return 0;
 
 	return ENTINDEX(m_ladderGrabbingControllers.back().ladder.Get());
@@ -6109,6 +6136,7 @@ bool IsValidTankDraggingController(const VRController& controller, entvars_t* pe
 {
 	return controller.IsValid() &&
 		controller.IsDragging() &&
+		!controller.HasDraggedEntity() &&
 		((controller.GetPosition() - pevTank->origin).Length() < CVAR_GET_FLOAT("vr_tankcontrols_max_distance"));
 }
 
@@ -6377,4 +6405,20 @@ void CBasePlayer::UpdateVRLaserSpot()
 			m_hLaserSpot = nullptr;
 		}
 	}
+}
+
+bool CBasePlayer::IsAnyControllerFiringAndHoldingThisTank(CBaseEntity* pTank)
+{
+	if (pTank != m_pTank)
+		return false;
+
+	for (auto& [id, controller] : m_vrControllers)
+	{
+		if (controller.IsFiring() && IsValidTankDraggingController(controller, pTank->pev))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

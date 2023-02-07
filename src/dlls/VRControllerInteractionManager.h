@@ -8,7 +8,7 @@ struct VRPhysicsHelperModelBBoxIntersectResult;
 class VRControllerInteractionManager
 {
 public:
-	void CheckAndPressButtons(CBasePlayer* pPlayer, VRController& controller);
+	void CheckAndPressButtons(CBasePlayer* pPlayer, VRController& controller, VRController& otherController);
 	void DoMultiControllerActions(CBasePlayer* pPlayer, const VRController& controller1, const VRController& controller2);
 
 private:
@@ -56,14 +56,14 @@ private:
 	bool HandleLadders(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
 	bool HandleTossables(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
 
-	void DoFollowUnfollowCommands(CBasePlayer* pPlayer, CTalkMonster* pMonster, const VRController& controller, bool isTouching);
+	void DoFollowUnfollowCommands(CBasePlayer* pPlayer, CTalkMonster* pMonster, const VRController& controller, const Interaction& interaction);
 	void GetAngryIfAtGunpoint(CBasePlayer* pPlayer, CTalkMonster* pMonster, const VRController& controller);
 
 	float DoDamage(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const VRPhysicsHelperModelBBoxIntersectResult& intersectResult);
 
 	void HitWorld(CBasePlayer* pPlayer, VRController& controller);
 
-	bool CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult);
+	bool CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const VRController& otherController, VRPhysicsHelperModelBBoxIntersectResult* intersectResult);
 	bool IsDraggableEntity(CBaseEntity* pEntity);
 	bool IsDraggableEntityThatCanTouchStuff(CBaseEntity* pEntity);
 };

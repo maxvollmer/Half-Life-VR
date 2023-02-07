@@ -37,32 +37,26 @@ namespace VR
 
 		void Movement::HandleContinuousTurn(const vr::InputAnalogActionData_t& data, const std::string& action)
 		{
-			if (data.bActive
-				/*&& CVAR_GET_FLOAT("vr_move_snapturn_enabled") == 0.f*/
-				)
+			if (data.bActive && CVAR_GET_FLOAT("vr_move_snapturn_enabled") == 0.f)
 			{
-				TryAddInAnalogSpeed(g_vrInput.analogturn, data.x, "vr_move_analogturn_inverted");
+				TryAddInAnalogSpeed(g_vrInput.analogturn, -data.x, "vr_move_analogturn_inverted");
 			}
 		}
 
 		void Movement::HandleTurnLeft(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
-			if (data.bActive && data.bState && data.bChanged
-				/*&& CVAR_GET_FLOAT("vr_move_snapturn_enabled") != 0.f*/
-				)
+			if (data.bActive && data.bState && data.bChanged && CVAR_GET_FLOAT("vr_move_snapturn_enabled") != 0.f)
 			{
-				float angle = 45.f; // TODO: CVAR_GET_FLOAT("vr_move_snapturn_angle");
+				float angle = CVAR_GET_FLOAT("vr_move_snapturn_angle");
 				gVRRenderer.GetHelper()->InstantRotateYaw(angle);
 			}
 		}
 
 		void Movement::HandleTurnRight(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
-			if (data.bActive && data.bState && data.bChanged
-				/*&& CVAR_GET_FLOAT("vr_move_snapturn_enabled") != 0.f*/
-				)
+			if (data.bActive && data.bState && data.bChanged && CVAR_GET_FLOAT("vr_move_snapturn_enabled") != 0.f)
 			{
-				float angle = 45.f; // TODO: CVAR_GET_FLOAT("vr_move_snapturn_angle");
+				float angle = CVAR_GET_FLOAT("vr_move_snapturn_angle");
 				gVRRenderer.GetHelper()->InstantRotateYaw(-angle);
 			}
 		}
@@ -80,25 +74,26 @@ namespace VR
 
 		void Movement::HandleCrouch(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
-			if (data.bChanged)
+			if (CVAR_GET_FLOAT("vr_toggle_crouch") != 0.f)
 			{
-				if (data.bState)
-					ClientCmd("+duck");
-				else
-					ClientCmd("-duck");
+				g_vrInput.m_crouchState = data.bActive && data.bState;
+			}
+			else
+			{
+				g_vrInput.m_crouchState = false;
+				if (data.bChanged)
+				{
+					if (data.bState)
+					{
+						ClientCmd("+duck");
+					}
+					else
+					{
+						ClientCmd("-duck");
+					}
+				}
 			}
 		}
-
-		/*
-		// TODO: Longjump by long pressing jump or double-pressing jump
-		void Movement::HandleLongJump(const vr::InputDigitalActionData_t& data, const std::string& action)
-		{
-			if (data.bActive && data.bState && data.bChanged)
-			{
-				ClientCmd("vr_lngjump");
-			}
-		}
-		*/
 
 		void Movement::HandleWalk(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{

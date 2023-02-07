@@ -48,7 +48,6 @@ constexpr const int VR_INITIAL_ANGRY_GUNPOINT_TIME = 2;
 constexpr const int VR_MIN_ANGRY_GUNPOINT_TIME = 2;
 constexpr const int VR_MAX_ANGRY_GUNPOINT_TIME = 5;
 
-constexpr const int VR_SHOULDER_TOUCH_TIME = 1.5f;
 constexpr const int VR_STOP_SIGNAL_TIME = 1;
 
 constexpr const int VR_SHOULDER_TOUCH_MIN_Z = 56;
@@ -170,7 +169,7 @@ bool IsTriggerOrButton(CBaseEntity *pEntity)
 	return false;
 }
 
-bool CheckIfEntityAndHitboxesTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, const std::vector<StudioHitBox>& hitboxes, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
+bool CheckIfEntityAndHitboxesTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, const std::vector<StudioHitBox>& hitboxes, const VRController& otherController, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
 {
 	// Check each hitbox of current weapon
 	for (auto hitbox : hitboxes)
@@ -179,6 +178,24 @@ bool CheckIfEntityAndHitboxesTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, c
 		// (simple check for non-important stuff like ammo, strict check using physics engine for important things like triggers, NPCs and buttons)
 		if (!IsReachable(pPlayer, pEntity->edict(), hitbox, IsTriggerOrButton(pEntity)))
 			continue;
+
+		// extend ladders up by 72 units to allow climbing upwards onto ledges
+		if (FClassnameIs(pEntity->pev, "func_ladder")
+			&& otherController.HasDraggedEntity()
+			&& otherController.GetDraggedEntity()->pev == pEntity->pev)
+		{
+			if (UTIL_BBoxIntersectsBBox(pEntity->pev->absmin, pEntity->pev->absmax + Vector(0, 0, 72), hitbox.origin + hitbox.mins, hitbox.origin + hitbox.maxs)
+				|| UTIL_PointInsideBBox(hitbox.abscenter, pEntity->pev->absmin, pEntity->pev->absmax + Vector(0, 0, 72)))
+			{
+				if (!intersectResult->hasresult)
+				{
+					intersectResult->hitpoint = hitbox.abscenter;
+					intersectResult->hitgroup = 0;
+					intersectResult->hasresult = true;
+				}
+				return true;
+			}
+		}
 
 		if (VRPhysicsHelper::Instance().ModelIntersectsBBox(pEntity, hitbox.origin, hitbox.mins, hitbox.maxs, hitbox.angles, intersectResult)
 			// TODO: Use VRPhysicsHelper to check if point is inside entity with proper raytracing
@@ -196,7 +213,7 @@ bool CheckIfEntityAndHitboxesTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, c
 	return false;
 }
 
-bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
+bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const VRController& otherController, VRPhysicsHelperModelBBoxIntersectResult* intersectResult)
 {
 	if (!controller.IsValid())
 	{
@@ -268,7 +285,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 #endif
 
 	// first check controller hitboxes
-	if (CheckIfEntityAndHitboxesTouch(pPlayer, pEntity, controller.GetHitBoxes(), intersectResult))
+	if (CheckIfEntityAndHitboxesTouch(pPlayer, pEntity, controller.GetHitBoxes(), otherController, intersectResult))
 	{
 #ifdef RENDER_DEBUG_BBOXES
 		g_VRDebugBBoxDrawer.DrawPoint(pEntity, intersectResult->hitpoint);
@@ -292,7 +309,7 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 					draggedentityhitboxes.resize(numhitboxes);
 					if (GetHitboxesAndAttachments(pDraggedEntity->pev, pmodel, pDraggedEntity->pev->sequence, pDraggedEntity->pev->frame, draggedentityhitboxes.data(), nullptr))
 					{
-						if (CheckIfEntityAndHitboxesTouch(pPlayer, pDraggedEntity, draggedentityhitboxes, intersectResult))
+						if (CheckIfEntityAndHitboxesTouch(pPlayer, pDraggedEntity, draggedentityhitboxes, otherController, intersectResult))
 						{
 							return true;
 						}
@@ -318,7 +335,7 @@ bool VRControllerInteractionManager::IsDraggableEntity(CBaseEntity* pEntity)
 		|| FClassnameIs(pEntity->pev, "momentary_rot_button")
 		|| (FClassnameIs(pEntity->pev, "func_door_rotating") && FBitSet(pEntity->pev->spawnflags, SF_DOOR_USE_ONLY))
 		|| FClassnameIs(pEntity->pev, "func_pushable")
-		|| (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f && FClassnameIs(pEntity->pev, "func_ladder"))
+		|| ((VRGetLadderMode() != VR_LADDER_MODE_LEGACY_ONLY) && FClassnameIs(pEntity->pev, "func_ladder"))
 		|| pEntity->IsDraggable();
 }
 
@@ -344,13 +361,17 @@ constexpr const int VR_DRAG_DISTANCE_TOLERANCE = 64;
 
 bool DistanceTooBigForDragging(CBaseEntity* pEntity, const VRController& controller)
 {
+	// never let go of ladders
+	if (FClassnameIs(pEntity->pev, "func_ladder"))
+		return false;
+
 	Vector entityCenter = pEntity->Center();
 	float entityRadius = pEntity->pev->size.Length() * 0.5f;
 	float distance = (controller.GetPosition() - entityCenter).Length();
 	return distance > (controller.GetRadius() + entityRadius + VR_DRAG_DISTANCE_TOLERANCE);
 }
 
-void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, VRController& controller)
+void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, VRController& controller, VRController& otherController)
 {
 	// Skip invalid controllers.
 	// (Except if it has any entities, as we need to tell them that they were let go.
@@ -396,14 +417,14 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 		bool isHitting;
 		bool didHitChange;
 
-		CBaseEntity *pEntity = CBaseEntity::UnsafeInstance(pent);
+		CBaseEntity *pEntity = CBaseEntity::SafeInstance<CBaseEntity>(pent);
 		if (!pEntity)
 		{
 			continue;
 		}
 
 		VRPhysicsHelperModelBBoxIntersectResult intersectResult;
-		isTouching = CheckIfEntityAndControllerTouch(pPlayer, pEntity, controller, &intersectResult);
+		isTouching = CheckIfEntityAndControllerTouch(pPlayer, pEntity, controller, otherController, &intersectResult);
 
 #ifdef RENDER_DEBUG_BBOXES
 		if (isTouching)
@@ -1144,7 +1165,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, CBas
 
 bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction)
 {
-	if (FClassnameIs(pEntity->pev, "func_ladder") && CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f)
+	if (FClassnameIs(pEntity->pev, "func_ladder") && (VRGetLadderMode() != VR_LADDER_MODE_LEGACY_ONLY))
 	{
 		if (interaction.dragging.didChange)
 		{
@@ -1249,14 +1270,12 @@ bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer* pPlayer, 
 			if (interaction.hitDamage > 0.f)
 			{
 				pMonster->vr_flStopSignalTime = 0;
-				pMonster->vr_flShoulderTouchTime = 0;
 			}
 
 			// Make scientists and barneys move away if holding weapons in their face, or we hit them
 			if (interaction.touching.isSet && (interaction.hitDamage > 0.f || IsWeapon(controller.GetWeaponId())))
 			{
 				pMonster->vr_flStopSignalTime = 0;
-				pMonster->vr_flShoulderTouchTime = 0;
 				pMonster->SetConditions(bits_COND_CLIENT_PUSH);
 				pMonster->MakeIdealYaw(controller.GetPosition());
 				pMonster->Touch(pPlayer);
@@ -1265,7 +1284,7 @@ bool VRControllerInteractionManager::HandleAlliedMonsters(CBasePlayer* pPlayer, 
 			// Follow/Unfollow commands
 			if (interaction.hitDamage == 0.f && !pMonster->HasMemory(bits_MEMORY_PROVOKED))
 			{
-				DoFollowUnfollowCommands(pPlayer, pMonster, controller, interaction.touching.isSet);
+				DoFollowUnfollowCommands(pPlayer, pMonster, controller, interaction);
 			}
 		}
 		return true;
@@ -1296,7 +1315,6 @@ void VRControllerInteractionManager::GetAngryIfAtGunpoint(CBasePlayer* pPlayer, 
 		&& UTIL_CheckTraceIntersectsEntity(pPlayer->GetGunPosition(), pPlayer->GetGunPosition() + (pPlayer->GetAutoaimVector() * VR_MAX_ANGRY_GUNPOINT_DIST), pMonster))
 	{
 		pMonster->vr_flStopSignalTime = 0;
-		pMonster->vr_flShoulderTouchTime = 0;
 		if (pMonster->vr_flGunPointTime == 0)
 		{
 			pMonster->vr_flGunPointTime = gpGlobals->time + VR_INITIAL_ANGRY_GUNPOINT_TIME;
@@ -1373,44 +1391,39 @@ void VRControllerInteractionManager::GetAngryIfAtGunpoint(CBasePlayer* pPlayer, 
 	}
 }
 
-void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer* pPlayer, CTalkMonster* pMonster, const VRController& controller, bool isTouching)
+void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer* pPlayer, CTalkMonster* pMonster, const VRController& controller, const Interaction& interaction)
 {
-	// Check if we're touching the shoulder for 1 second (follow me!)
-	if (isTouching)
+	// Check if we're touching the NPC
+	if (interaction.touching.isSet)
 	{
+		// look at player
+		pMonster->MakeIdealYaw(pPlayer->pev->origin);
+
+		// cancel stop signal
 		pMonster->vr_flStopSignalTime = 0;
-		if (!IsWeapon(controller.GetWeaponId()) && ((controller.IsDragging() && !controller.HasDraggedEntity()) || CheckShoulderTouch(pMonster, controller.GetPosition())))
+
+		// check if we are grabbing the shoulder (follow me!)
+		if (interaction.dragging.isSet
+			&& interaction.dragging.didChange
+			&& !IsWeapon(controller.GetWeaponId())
+			&& CheckShoulderTouch(pMonster, controller.GetPosition()))
 		{
 			pMonster->ClearConditions(bits_COND_CLIENT_PUSH);
-			if (pMonster->CanFollow())  // Ignore if can't follow
+			if (pMonster->IsFollowing(pPlayer))
 			{
-				if (pMonster->vr_flShoulderTouchTime == 0)
-				{
-					pMonster->vr_flShoulderTouchTime = gpGlobals->time;
-				}
-				else if ((gpGlobals->time - pMonster->vr_flShoulderTouchTime) > VR_SHOULDER_TOUCH_TIME)
-				{
-					pMonster->FollowerUse(pPlayer, pPlayer, USE_ON, 1.f);
-					pMonster->vr_flShoulderTouchTime = 0;
-				}
+				pMonster->StopFollowing(TRUE);
 			}
-			else
+			else if (pMonster->CanFollow())
 			{
-				pMonster->vr_flShoulderTouchTime = 0;
+				pMonster->FollowerUse(pPlayer, pPlayer, USE_ON, 1.f);
 			}
-		}
-		// Otherwise just look at player
-		else
-		{
-			pMonster->vr_flStopSignalTime = 0;
-			pMonster->vr_flShoulderTouchTime = 0;
-			pMonster->MakeIdealYaw(pPlayer->pev->origin);
 		}
 	}
 	// Tell allies to stop following by holding hand in front of their face
-	else if (pMonster->IsFollowing() && !IsWeapon(controller.GetWeaponId()) && CheckStopSignal(pMonster, controller.GetPosition(), controller.GetAngles()))
+	else if (pMonster->IsFollowing(pPlayer)
+		&& !IsWeapon(controller.GetWeaponId())
+		&& CheckStopSignal(pMonster, controller.GetPosition(), controller.GetAngles()))
 	{
-		pMonster->vr_flShoulderTouchTime = 0;
 		if (pMonster->vr_flStopSignalTime == 0)
 		{
 			pMonster->vr_flStopSignalTime = gpGlobals->time;
@@ -1424,7 +1437,6 @@ void VRControllerInteractionManager::DoFollowUnfollowCommands(CBasePlayer* pPlay
 	else
 	{
 		pMonster->vr_flStopSignalTime = 0;
-		pMonster->vr_flShoulderTouchTime = 0;
 	}
 }
 

@@ -143,6 +143,7 @@ public:
 	// For following
 	BOOL CanFollow(void);
 	BOOL IsFollowing(void) { return m_hTargetEnt != nullptr && m_hTargetEnt->IsPlayer(); }
+	BOOL IsFollowing(CBaseEntity* pPlayer) { return pPlayer != nullptr && IsFollowing() && m_hTargetEnt->pev == pPlayer->pev; }
 	void StopFollowing(BOOL clearSchedule);
 	void StartFollowing(CBaseEntity* pLeader);
 	virtual void DeclineFollowing(CBaseEntity* pCaller) {}

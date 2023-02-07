@@ -31,7 +31,6 @@
 playermove_t* pmove = nullptr;
 static int pm_shared_initialized = 0;
 
-
 // and again we are in include hell and use an extern declaration to escape :S
 extern bool VRGlobalIsInstantAccelerateOn();
 extern bool VRGlobalIsInstantDecelerateOn();
@@ -39,9 +38,8 @@ extern void VRGlobalGetEntityOrigin(int ent, float* entorigin);
 extern bool VRGlobalGetNoclipMode();
 extern bool VRNotifyStuckEnt(int player, int ent);
 extern bool VRGlobalIsPointInsideEnt(const float* point, int ent);
-extern float VRGetMaxClimbSpeed();
-extern bool VRIsLegacyLadderMoveEnabled();
-extern bool VRGetMoveOnlyUpDownOnLadder();
+extern void VRGetMaxClimbSpeed(float& updown, float& sideways);
+extern int VRGetLadderMode();
 extern int VRGetGrabbedLadder(int player);  // For client or server to use to identify (index into edicts or cl_entities)
 inline bool VRIsGrabbingLadder() { return VRGetGrabbedLadder(pmove->player_index) > 0; }
 extern bool VRIsPullingOnLedge(int player);
@@ -76,7 +74,8 @@ float vJumpAngles[3];
 
 //typedef enum {mod_brush, mod_sprite, mod_alias, mod_studio} modtype_t;
 
-#define DEFAULT_MAX_CLIMB_SPEED 100
+#define DEFAULT_MAX_CLIMB_SPEED 200
+#define DEFAULT_MAX_SIDEWAYS_SPEED 50
 
 #define TIME_TO_DUCK       0.4
 #define VEC_DUCK_HULL_MIN  -18
@@ -2112,16 +2111,14 @@ void PM_Duck(void)
 
 void PM_LadderMove(physent_t* pLadder)
 {
-	if (VRGlobalGetNoclipMode() || VRIsGrabbingLadder() || !VRIsLegacyLadderMoveEnabled())
+	if (VRGlobalGetNoclipMode())
 	{
-		/*
-		for (int i = 0; i < 3; i++)
-		{
-			pmove->velocity[i] = pmove->forward[i] * pmove->cmd.forwardmove + pmove->right[i] * pmove->cmd.sidemove;
-		}
-		pmove->velocity[2] += pmove->cmd.upmove;
-		PM_CheckVelocity();
-		*/
+		return;
+	}
+
+	int ladderMode = VRGetLadderMode();
+	if (ladderMode == VR_LADDER_MODE_IMMERSIVE_ONLY)
+	{
 		return;
 	}
 
@@ -2151,87 +2148,65 @@ void PM_LadderMove(physent_t* pLadder)
 	float result = pmove->PM_TraceModel(pLadder, pmove->origin, ladderCenter, &trace);
 	if (result >= 0.f && result < 1.f && trace.fraction >= 0.f && trace.fraction < 1.f && !IS_NAN(trace.plane.normal[0]) && !IS_NAN(trace.plane.normal[1]) && !IS_NAN(trace.plane.normal[2]))
 	{
-		if (pmove->cmd.buttons & IN_JUMP)
+		if ((pmove->cmd.buttons & IN_JUMP) && ladderMode == VR_LADDER_MODE_LEGACY_ONLY)
 		{
 			pmove->movetype = MOVETYPE_NOCLIP;  // pmove->movetype = MOVETYPE_WALK; Restore to MOVETYPE_NOCLIP in VR
 			VectorScale(trace.plane.normal, 270, pmove->velocity);
 		}
 		else
 		{
-			float maxClimbSpeed = VRGetMaxClimbSpeed();
-			if (maxClimbSpeed <= 1.f)
-			{
-				maxClimbSpeed = DEFAULT_MAX_CLIMB_SPEED;
-			}
-
-			float forward = 0.f;
-			if (pmove->cmd.buttons & IN_BACK)
-				forward -= maxClimbSpeed;
-			if (pmove->cmd.buttons & IN_FORWARD)
-				forward += maxClimbSpeed;
-
-			float right = 0.f;
-			if (pmove->cmd.buttons & IN_MOVELEFT)
-				right -= maxClimbSpeed;
-			if (pmove->cmd.buttons & IN_MOVERIGHT)
-				right += maxClimbSpeed;
+			float maxClimbSpeed = 0.f;
+			float maxSidewaysSpeed = 0.f;
+			VRGetMaxClimbSpeed(maxClimbSpeed, maxSidewaysSpeed);
+			if (maxClimbSpeed <= 1.f) maxClimbSpeed = DEFAULT_MAX_CLIMB_SPEED;
+			if (maxSidewaysSpeed <= 1.f) maxSidewaysSpeed = DEFAULT_MAX_SIDEWAYS_SPEED;
 
 			float up = 0.f;
-			if (pmove->cmd.buttons_ex & X_IN_UP)
+			if (pmove->cmd.buttons & IN_FORWARD || pmove->cmd.buttons_ex & X_IN_UP)
 				up += maxClimbSpeed;
-			if (pmove->cmd.buttons_ex & X_IN_DOWN)
+			if (pmove->cmd.buttons & IN_BACK || pmove->cmd.buttons_ex & X_IN_DOWN)
 				up -= maxClimbSpeed;
 
-			if (forward != 0.f || right != 0.f || up != 0.f)
-			{
-				// get direction vectors for climbing on this ladder
-				vec3_t v_forward{ 1.f, 0.f, 0.f };
-				vec3_t v_right{ 0.f, 1.f, 0.f };
-				AngleVectors(pmove->angles, v_forward, v_right, nullptr);
+			float right = 0.f;
+			if (pmove->cmd.buttons & IN_MOVERIGHT)
+				right += maxSidewaysSpeed;
+			if (pmove->cmd.buttons & IN_MOVELEFT)
+				right -= maxSidewaysSpeed;
 
-				// remove any sideways movement from forward/backward input
+			if (up != 0.f || right != 0.f)
+			{
+				vec3_t ladderSize;
+				VectorSubtract(pLadder->maxs, pLadder->mins, ladderSize);
+
+				// get direction vectors for climbing on this ladder
+				vec3_t v_up{ 0.f, 0.f, 0.f };
+				vec3_t v_right{ 0.f, 0.f, 0.f };
+
+				// ladder is horizontal
 				if (trace.plane.normal[2] > 0.995f)
 				{
-					// ladder is horizontal, leave v_forward as it is
-				}
-				else if (trace.plane.normal[2] != 0.f)
-				{
-					// ladder is not straight up or down
-					// calculate vector in ladder plane
-					bool downwards = v_forward[2] < 0.f;
-					if (fabs(trace.plane.normal[0] > trace.plane.normal[1]))
+					// guesstimate vectors in horizontal ladder plane
+					if (ladderSize[0] > ladderSize[1])
 					{
-						CrossProduct(trace.plane.normal, vec3_t{ 0.f, 1.f, 0.f }, v_forward);
+						v_up[0] = 1.f;
+						v_right[1] = 1.f;
 					}
 					else
 					{
-						CrossProduct(trace.plane.normal, vec3_t{ 1.f, 0.f, 0.f }, v_forward);
-					}
-					if (downwards != (v_forward[2] < 0.f))
-					{
-						// flip vector if pointing in wrong direction
-						VectorScale(v_forward, -1.f, v_forward);
+						v_up[1] = 1.f;
+						v_right[0] = -1.f;
 					}
 				}
 				else
 				{
-					// if ladder is straight up or down, forward just becomes 0,0,1 or 0,0,-1
-					v_forward[0] = 0.f;
-					v_forward[1] = 0.f;
-					VectorNormalize(v_forward);
+					// calculate vectors in vertical ladder plane
+					CrossProduct(trace.plane.normal, vec3_t{ 0.f, 0.f, 1.f }, v_right);
+					CrossProduct(v_right, trace.plane.normal, v_up);
 				}
-
-				// remove any upwards/downwards movement from sideways input
-				v_right[2] = 0.f;
-				VectorNormalize(v_right);
-
-				// up vector is always simply just that
-				vec3_t v_up{ 0.f, 0.f, 1.f };
 
 				// Calculate velocity
 				vec3_t velocity;
 				VectorScale(v_up, up, velocity);
-				VectorMA(velocity, forward, v_forward, velocity);
 				VectorMA(velocity, right, v_right, velocity);
 
 				if (onFloor && velocity[2] < 0.f)
@@ -2241,12 +2216,6 @@ void PM_LadderMove(physent_t* pLadder)
 				else
 				{
 					VectorCopy(velocity, pmove->velocity);
-					// Throw out sideways movement if setting is set (TODO: still needed with the new ladder movement?)
-					if (VRGetMoveOnlyUpDownOnLadder())
-					{
-						pmove->velocity[0] = 0.f;
-						pmove->velocity[1] = 0.f;
-					}
 				}
 			}
 			else
@@ -2282,7 +2251,7 @@ physent_t* PM_Ladder2(void)
 					return pe;
 				}
 			}
-			else if (VRIsLegacyLadderMoveEnabled())
+			else if (VRGetLadderMode() == VR_LADDER_MODE_LEGACY_ONLY)
 			{
 				vec3_t test;
 				hull_t* hull = static_cast<hull_t*>(pmove->PM_HullForBsp(pe, test));

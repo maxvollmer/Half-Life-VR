@@ -416,6 +416,8 @@ public:
 
 	VRController& GetController(VRControllerID id) { return m_vrControllers[id]; }
 
+	bool IsAnyControllerFiringAndHoldingThisTank(CBaseEntity* pTank);
+
 
 // private VR methods:
 private:
@@ -462,7 +464,7 @@ public:
 	bool IsWeaponPositionValid();
 
 	void UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const float offsetZ, const Vector& forward, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg, bool hasReceivedSpawnYaw);
-	void UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool dragOn);
+	void UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, bool isFiring);
 
 	void StoreVROffsetsForLevelchange();
 

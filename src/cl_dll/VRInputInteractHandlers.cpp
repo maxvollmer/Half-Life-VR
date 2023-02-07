@@ -24,16 +24,15 @@ namespace VR
 
 		void Interact::HandleLegacyUse(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
+			if (g_vrInput.IsWeapon(g_vrInput.GetRole(data.activeOrigin)))
+				return;
+
 			if (data.bChanged)
 			{
 				bool on = data.bActive && data.bState;
 				if (on)
 				{
-					// don't +on if in menu!
-					if (g_vrInput.IsInGame() && !g_vrInput.IsInMenu())
-					{
-						ClientCmd("+use");
-					}
+					ClientCmd("+use");
 				}
 				else
 				{

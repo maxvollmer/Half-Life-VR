@@ -327,16 +327,19 @@ void VRGUIRenderer::UpdateGUIElements(bool isInGame)
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Easy", skill == 1))
             {
+                skill = 1;
                 VRGameFunctions::SetSkill(1);
             }
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Normal", skill == 2))
             {
+                skill = 2;
                 VRGameFunctions::SetSkill(2);
             }
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Hard", skill == 3))
             {
+                skill = 3;
                 VRGameFunctions::SetSkill(3);
             }
 
@@ -363,16 +366,19 @@ void VRGUIRenderer::UpdateGUIElements(bool isInGame)
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "Classic", graphics == 1))
             {
+                graphics = 1;
                 VRGameFunctions::SetGraphicsMode(1);
             }
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "SD", graphics == 2))
             {
+                graphics = 2;
                 VRGameFunctions::SetGraphicsMode(2);
             }
             nk_layout_row_push(&ctx, 250 * m_guiScaleW);
             if (nk_option_label(&ctx, "HD", graphics == 3))
             {
+                graphics = 3;
                 VRGameFunctions::SetGraphicsMode(3);
             }
 
@@ -383,16 +389,19 @@ void VRGUIRenderer::UpdateGUIElements(bool isInGame)
             nk_layout_row_push(&ctx, 230 * m_guiScaleW);
             if (nk_option_label(&ctx, "Off Hand", movement == 1))
             {
+                movement = 1;
                 VRGameFunctions::SetMovement(1);
             }
             nk_layout_row_push(&ctx, 230 * m_guiScaleW);
             if (nk_option_label(&ctx, "Wpn Hand", movement == 2))
             {
+                movement = 2;
                 VRGameFunctions::SetMovement(2);
             }
             nk_layout_row_push(&ctx, 230 * m_guiScaleW);
             if (nk_option_label(&ctx, "HMD", movement == 3))
             {
+                movement = 3;
                 VRGameFunctions::SetMovement(3);
             }
         }
