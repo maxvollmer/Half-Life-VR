@@ -64,6 +64,8 @@ constexpr const int VR_STOP_SIGNAL_MAX_Y = 12;
 
 constexpr const float VR_MAX_DRAG_START_TIME = 0.5f;
 
+constexpr const float VR_LADDER_EXTENSION_HEIGHT = 36.0f;
+
 
 bool CheckShoulderTouch(CBaseMonster* pMonster, const Vector& pos)
 {
@@ -179,13 +181,13 @@ bool CheckIfEntityAndHitboxesTouch(CBasePlayer* pPlayer, CBaseEntity* pEntity, c
 		if (!IsReachable(pPlayer, pEntity->edict(), hitbox, IsTriggerOrButton(pEntity)))
 			continue;
 
-		// extend ladders up by 72 units to allow climbing upwards onto ledges
+		// extend ladders up by some units to allow climbing upwards onto ledges
 		if (FClassnameIs(pEntity->pev, "func_ladder")
 			&& otherController.HasDraggedEntity()
 			&& otherController.GetDraggedEntity()->pev == pEntity->pev)
 		{
-			if (UTIL_BBoxIntersectsBBox(pEntity->pev->absmin, pEntity->pev->absmax + Vector(0, 0, 72), hitbox.origin + hitbox.mins, hitbox.origin + hitbox.maxs)
-				|| UTIL_PointInsideBBox(hitbox.abscenter, pEntity->pev->absmin, pEntity->pev->absmax + Vector(0, 0, 72)))
+			if (UTIL_BBoxIntersectsBBox(pEntity->pev->absmin, pEntity->pev->absmax + Vector(0, 0, VR_LADDER_EXTENSION_HEIGHT), hitbox.origin + hitbox.mins, hitbox.origin + hitbox.maxs)
+				|| UTIL_PointInsideBBox(hitbox.abscenter, pEntity->pev->absmin, pEntity->pev->absmax + Vector(0, 0, VR_LADDER_EXTENSION_HEIGHT)))
 			{
 				if (!intersectResult->hasresult)
 				{
@@ -246,6 +248,27 @@ bool VRControllerInteractionManager::CheckIfEntityAndControllerTouch(CBasePlayer
 		g_VRDebugBBoxDrawer.Clear(pEntity);
 #endif
 		return false;
+	}
+
+	if (FClassnameIs(pEntity->pev, "func_ladder"))
+	{
+		if (otherController.HasDraggedEntity()
+			&& otherController.GetDraggedEntity()->pev == pEntity->pev)
+		{
+			return UTIL_BBoxIntersectsBBox(
+				pEntity->pev->absmin,
+				pEntity->pev->absmax + Vector(0, 0, VR_LADDER_EXTENSION_HEIGHT),
+				controller.GetPosition() - Vector(16, 16, 16),
+				controller.GetPosition() + Vector(16, 16, 16));
+		}
+		else
+		{
+			return UTIL_BBoxIntersectsBBox(
+				pEntity->pev->absmin,
+				pEntity->pev->absmax,
+				controller.GetPosition() - Vector(16, 16, 16),
+				controller.GetPosition() + Vector(16, 16, 16));
+		}
 	}
 
 	// Rule out entities too far away
@@ -361,9 +384,14 @@ constexpr const int VR_DRAG_DISTANCE_TOLERANCE = 64;
 
 bool DistanceTooBigForDragging(CBaseEntity* pEntity, const VRController& controller)
 {
-	// never let go of ladders
 	if (FClassnameIs(pEntity->pev, "func_ladder"))
-		return false;
+	{
+		return !UTIL_BBoxIntersectsBBox(
+			pEntity->pev->absmin,
+			pEntity->pev->absmax + Vector(0, 0, VR_LADDER_EXTENSION_HEIGHT),
+			controller.GetPosition() - Vector(16, 16, 16),
+			controller.GetPosition() + Vector(16, 16, 16));
+	}
 
 	Vector entityCenter = pEntity->Center();
 	float entityRadius = pEntity->pev->size.Length() * 0.5f;
@@ -562,7 +590,7 @@ void VRControllerInteractionManager::CheckAndPressButtons(CBasePlayer* pPlayer, 
 			;
 		else if (HandlePushables(pPlayer, pEntity, controller, interaction))
 			;
-		else if (HandleLadders(pPlayer, pEntity, controller, interaction))
+		else if (HandleLadders(pPlayer, pEntity, controller, otherController, interaction))
 			;
 		else if (HandleAlliedMonsters(pPlayer, pEntity, controller, interaction))
 			;
@@ -1163,7 +1191,7 @@ bool VRControllerInteractionManager::HandleGrabbables(CBasePlayer* pPlayer, CBas
 	return false;
 }
 
-bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction)
+bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const VRController& otherController, const Interaction& interaction)
 {
 	if (FClassnameIs(pEntity->pev, "func_ladder") && (VRGetLadderMode() != VR_LADDER_MODE_LEGACY_ONLY))
 	{
@@ -1181,10 +1209,14 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, CBaseEn
 				pPlayer->ClearLadderGrabbingController(controller.GetID());
 				if (CVAR_GET_FLOAT("vr_ladder_immersive_movement_swinging_enabled") != 0.f)
 				{
-					// we let go off the ladder, let's take the controller velocity to push us a bit (allows for swinging)
-					if (pPlayer->GetGrabbedLadderEntIndex() == 0)
+					if (!otherController.HasDraggedEntity()
+						|| !FClassnameIs(otherController.GetDraggedEntity()->pev, "func_ladder"))
 					{
-						pPlayer->pev->velocity = -controller.GetVelocity();
+						// we let go off the ladder, let's take the controller velocity to push us a bit (allows for swinging)
+						if (pPlayer->GetGrabbedLadderEntIndex() == 0)
+						{
+							pPlayer->pev->velocity = -controller.GetVelocity();
+						}
 					}
 				}
 			}
@@ -1206,18 +1238,16 @@ bool VRControllerInteractionManager::HandleLadders(CBasePlayer* pPlayer, CBaseEn
 					dummy,
 					dummy))
 				{
-					// get new position from controller movement
-					Vector targetPos = playerDragStartOrigin + controllerDragStartOffset - controller.GetOffset();
+					// move to new position from controller movement
+					Vector targetPos = pPlayer->pev->origin + controller.GetPreviousOffset() - controller.GetOffset();
 
-					// prevent moving into or away from ladder (nausea!)
-					if (fabs(pEntity->pev->size.x) > fabs(pEntity->pev->size.y))
-						targetPos.y = pPlayer->pev->origin.y;
-					else
-						targetPos.x = pPlayer->pev->origin.x;
+					extern bool pmoveIgnoreLadders;
+					pmoveIgnoreLadders = true;
 
-					// move!
-					pPlayer->pev->origin = VRMovementHandler::DoMovement(pPlayer->pev->origin, targetPos);
+					pPlayer->pev->origin = VRMovementHandler::DoMovement(pPlayer->pev->origin, targetPos, nullptr, true);
 					UTIL_SetOrigin(pPlayer->pev, pPlayer->pev->origin);
+
+					pmoveIgnoreLadders = false;
 				}
 			}
 		}

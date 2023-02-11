@@ -33,6 +33,7 @@ public:
 
 	inline VRControllerID GetID() const { return m_id; }
 	inline const Vector& GetOffset() const { return m_offset; }
+	inline const Vector& GetPreviousOffset() const { return m_previousOffset; }
 	inline const Vector& GetPosition() const { return m_position; }
 	inline const Vector& GetAngles() const { return m_angles; }
 	inline const Vector& GetPreviousAngles() const { return m_previousAngles; }
@@ -108,6 +109,7 @@ private:
 
 	VRControllerID m_id{ VRControllerID::INVALID };
 	Vector m_offset;
+	Vector m_previousOffset;
 	Vector m_position;
 	Vector m_angles;
 	Vector m_previousAngles;

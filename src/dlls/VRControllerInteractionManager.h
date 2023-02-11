@@ -53,7 +53,7 @@ private:
 	bool HandlePushables(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
 	bool HandleAlliedMonsters(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
 	bool HandleGrabbables(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
-	bool HandleLadders(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
+	bool HandleLadders(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const VRController& otherController, const Interaction& interaction);
 	bool HandleTossables(CBasePlayer* pPlayer, CBaseEntity* pEntity, const VRController& controller, const Interaction& interaction);
 
 	void DoFollowUnfollowCommands(CBasePlayer* pPlayer, CTalkMonster* pMonster, const VRController& controller, const Interaction& interaction);

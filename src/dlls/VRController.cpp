@@ -111,6 +111,7 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 	// Store data
 	m_id = id;
 	m_isValid = isValid;
+	m_previousOffset = m_offset;
 	m_offset = offset;
 	m_position = pPlayer->GetClientOrigin() + offset;
 	m_angles = angles;

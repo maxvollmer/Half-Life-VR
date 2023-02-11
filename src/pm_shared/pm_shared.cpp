@@ -31,6 +31,8 @@
 playermove_t* pmove = nullptr;
 static int pm_shared_initialized = 0;
 
+bool pmoveIgnoreLadders = false;
+
 // and again we are in include hell and use an extern declaration to escape :S
 extern bool VRGlobalIsInstantAccelerateOn();
 extern bool VRGlobalIsInstantDecelerateOn();
@@ -3407,7 +3409,7 @@ void PM_PlayerMove(qboolean server)
 
 	g_onladder = 0;
 	// Don't run ladder code if dead or on a train
-	if (!pmove->dead && !(pmove->flags & FL_STUCK_ONTRAIN))
+	if (!pmove->dead && !(pmove->flags & FL_STUCK_ONTRAIN) && !pmoveIgnoreLadders)
 	{
 		pLadder = PM_Ladder();
 		if (pLadder)
@@ -3680,8 +3682,14 @@ and client.  This will ensure that prediction behaves appropriately.
 
 void PM_Move(struct playermove_s* ppmove, int server)
 {
-	if (VRIsGrabbingLadder() || VRIsPullingOnLedge(ppmove->player_index))
+	if (VRIsPullingOnLedge(ppmove->player_index))
 		return;
+
+	if (VRGetLadderMode() == VR_LADDER_MODE_IMMERSIVE_ONLY
+		&& VRIsGrabbingLadder())
+	{
+		return;
+	}
 
 	assert(pm_shared_initialized);
 
