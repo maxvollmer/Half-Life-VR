@@ -151,8 +151,8 @@ void VRInput::RegisterActionSets()
 		RegisterAction("poses", "HandPointerRight", &VR::Input::Poses::HandleHandPointerRight, true);
 		RegisterAction("poses", "HandSkeletonLeft", &VR::Input::Poses::HandleHandSkeletonLeft, true);
 		RegisterAction("poses", "HandSkeletonRight", &VR::Input::Poses::HandleHandSkeletonRight, true);
-		RegisterAction("poses", "HandCurl", &VR::Input::Poses::HandleHandCurl, true);
-		RegisterAction("poses", "TriggerPull", &VR::Input::Poses::HandleTriggerPull, true);
+		RegisterAction("poses", "HandCurl", &VR::Input::Poses::HandleHandCurl, true, true);
+		RegisterAction("poses", "TriggerPull", &VR::Input::Poses::HandleTriggerPull, true, true);
 	}
 
 	if (RegisterActionSet("move", false))
@@ -168,7 +168,7 @@ void VRInput::RegisterActionSets()
 
 	if (RegisterActionSet("interact", false))
 	{
-		RegisterAction("interact", "Grab", &VR::Input::Interact::HandleGrab);
+		RegisterAction("interact", "Grab", &VR::Input::Interact::HandleGrab, false, true);
 		RegisterAction("interact", "LegacyUse", &VR::Input::Interact::HandleLegacyUse);
 
 		// TODO: MISSING IN VIVE BINDINGS!!!
@@ -180,8 +180,8 @@ void VRInput::RegisterActionSets()
 
 	if (RegisterActionSet("weapon", false))
 	{
-		RegisterAction("weapon", "Attack", &VR::Input::Weapons::HandleFire);
-		RegisterAction("weapon", "Attack2", &VR::Input::Weapons::HandleAltFire);
+		RegisterAction("weapon", "Attack", &VR::Input::Weapons::HandleFire, false, true);
+		RegisterAction("weapon", "Attack2", &VR::Input::Weapons::HandleAltFire, false, true);
 		RegisterAction("weapon", "Next", &VR::Input::Weapons::HandleNext);
 		RegisterAction("weapon", "Previous", &VR::Input::Weapons::HandlePrevious);
 		RegisterAction("weapon", "Select", &VR::Input::Weapons::HandleSelect);
@@ -223,7 +223,7 @@ bool VRInput::RegisterActionSet(const std::string& actionSet, bool handleWhenNot
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame, bool handAgnostic)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -247,12 +247,12 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame, handAgnostic };
 		return true;
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame, bool handAgnostic)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -264,12 +264,12 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame, handAgnostic };
 		return true;
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame, bool handAgnostic)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -281,12 +281,12 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame, handAgnostic };
 		return true;
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::SkeletalActionHandler handler, bool handleWhenNotInGame)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::SkeletalActionHandler handler, bool handleWhenNotInGame, bool handAgnostic)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -298,7 +298,7 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame, handAgnostic };
 		return true;
 	}
 }

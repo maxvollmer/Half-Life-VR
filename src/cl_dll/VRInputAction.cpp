@@ -16,46 +16,50 @@ VRInputAction::VRInputAction() :
 {
 }
 
-VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, DigitalActionHandler handler, bool handleWhenNotInGame) :
+VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, DigitalActionHandler handler, bool handleWhenNotInGame, bool handAgnostic) :
 	m_id{ id },
 	m_handle{ handle },
 	m_type{ ActionType::DIGITAL },
 	m_digitalActionHandler{ handler },
-	m_handleWhenNotInGame{ handleWhenNotInGame }
+	m_handleWhenNotInGame{ handleWhenNotInGame },
+	m_handAgnostic{ handAgnostic }
 {
 }
 
-VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, AnalogActionHandler handler, bool handleWhenNotInGame) :
+VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, AnalogActionHandler handler, bool handleWhenNotInGame, bool handAgnostic) :
 	m_id{ id },
 	m_handle{ handle },
 	m_type{ ActionType::ANALOG },
 	m_analogActionHandler{ handler },
-	m_handleWhenNotInGame{ handleWhenNotInGame }
+	m_handleWhenNotInGame{ handleWhenNotInGame },
+	m_handAgnostic{ handAgnostic }
 {
 }
 
-VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, PoseActionHandler handler, bool handleWhenNotInGame) :
+VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, PoseActionHandler handler, bool handleWhenNotInGame, bool handAgnostic) :
 	m_id{ id },
 	m_handle{ handle },
 	m_type{ ActionType::POSE },
 	m_poseActionHandler{ handler },
-	m_handleWhenNotInGame{ handleWhenNotInGame }
+	m_handleWhenNotInGame{ handleWhenNotInGame },
+	m_handAgnostic{ handAgnostic }
 {
 }
 
-VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, SkeletalActionHandler handler, bool handleWhenNotInGame) :
+VRInputAction::VRInputAction(const std::string& id, vr::VRActionHandle_t handle, SkeletalActionHandler handler, bool handleWhenNotInGame, bool handAgnostic) :
 	m_id{ id },
 	m_handle{ handle },
 	m_type{ ActionType::SKELETAL },
 	m_skeletalActionHandler{ handler },
-	m_handleWhenNotInGame{ handleWhenNotInGame }
+	m_handleWhenNotInGame{ handleWhenNotInGame },
+	m_handAgnostic{ handAgnostic }
 {
 }
 
-void VRInputAction::HandleDigitalInput()
+void VRInputAction::HandleDigitalInput(vr::VRInputValueHandle_t device)
 {
 	vr::InputDigitalActionData_t data{ 0 };
-	vr::EVRInputError result = vr::VRInput()->GetDigitalActionData(m_handle, &data, sizeof(vr::InputDigitalActionData_t), vr::k_ulInvalidInputValueHandle);
+	vr::EVRInputError result = vr::VRInput()->GetDigitalActionData(m_handle, &data, sizeof(vr::InputDigitalActionData_t), device);
 	if (result == vr::VRInputError_None)
 	{
 		if (data.bActive && data.bChanged && data.bState)
@@ -70,10 +74,10 @@ void VRInputAction::HandleDigitalInput()
 	}
 }
 
-void VRInputAction::HandleAnalogInput()
+void VRInputAction::HandleAnalogInput(vr::VRInputValueHandle_t device)
 {
 	vr::InputAnalogActionData_t data{ 0 };
-	vr::EVRInputError result = vr::VRInput()->GetAnalogActionData(m_handle, &data, sizeof(vr::InputAnalogActionData_t), vr::k_ulInvalidInputValueHandle);
+	vr::EVRInputError result = vr::VRInput()->GetAnalogActionData(m_handle, &data, sizeof(vr::InputAnalogActionData_t), device);
 	if (result == vr::VRInputError_None)
 	{
 		if (data.bActive && (fabs(data.deltaX) > CVAR_GET_FLOAT("vr_move_analog_deadzone")
@@ -90,10 +94,10 @@ void VRInputAction::HandleAnalogInput()
 	}
 }
 
-void VRInputAction::HandlePoseInput()
+void VRInputAction::HandlePoseInput(vr::VRInputValueHandle_t device)
 {
 	vr::InputPoseActionData_t data{ 0 };
-	vr::EVRInputError result = vr::VRInput()->GetPoseActionDataRelativeToNow(m_handle, vr::TrackingUniverseStanding, 0.f, &data, sizeof(vr::InputPoseActionData_t), vr::k_ulInvalidInputValueHandle);
+	vr::EVRInputError result = vr::VRInput()->GetPoseActionDataRelativeToNow(m_handle, vr::TrackingUniverseStanding, 0.f, &data, sizeof(vr::InputPoseActionData_t), device);
 	if (result == vr::VRInputError_None)
 	{
 		(m_poseActionHandler)(data, m_id);
@@ -147,16 +151,37 @@ void VRInputAction::HandleInput(bool isInGame)
 	if (!isInGame && !m_handleWhenNotInGame)
 		return;
 
+	vr::VRInputValueHandle_t leftHandHandle = vr::k_ulInvalidInputValueHandle;
+	vr::VRInputValueHandle_t rightHandHandle = vr::k_ulInvalidInputValueHandle;
+	vr::VRInput()->GetInputSourceHandle("/user/hand/left", &leftHandHandle);
+	vr::VRInput()->GetInputSourceHandle("/user/hand/right", &rightHandHandle);
+
 	switch (m_type)
 	{
 	case ActionType::DIGITAL:
-		HandleDigitalInput();
+		if (m_handAgnostic)
+		{
+			HandleDigitalInput(leftHandHandle);
+			HandleDigitalInput(rightHandHandle);
+		}
+		else
+		{
+			HandleDigitalInput(vr::k_ulInvalidInputValueHandle);
+		}
 		break;
 	case ActionType::ANALOG:
-		HandleAnalogInput();
+		if (m_handAgnostic)
+		{
+			HandleAnalogInput(leftHandHandle);
+			HandleAnalogInput(rightHandHandle);
+		}
+		else
+		{
+			HandleAnalogInput(vr::k_ulInvalidInputValueHandle);
+		}
 		break;
 	case ActionType::POSE:
-		HandlePoseInput();
+		HandlePoseInput(vr::k_ulInvalidInputValueHandle);
 		break;
 	case ActionType::SKELETAL:
 		HandleSkeletalInput();

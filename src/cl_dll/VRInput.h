@@ -160,10 +160,10 @@ private:
 	void LoadCustomActions();
 	void RegisterActionSets();
 	bool RegisterActionSet(const std::string& actionSet, bool handleWhenNotInGame);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame = false);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame = false);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame = false);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::SkeletalActionHandler handler, bool handleWhenNotInGame = false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame = false, bool handAgnostic = false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame = false, bool handAgnostic = false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame = false, bool handAgnostic = false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::SkeletalActionHandler handler, bool handleWhenNotInGame = false, bool handAgnostic = false);
 	bool RegisterFeedback(const std::string& actionSet, const std::string& action);
 
 	vr::VROverlayHandle_t m_hlMenu{ vr::k_ulOverlayHandleInvalid };
