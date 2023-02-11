@@ -94,6 +94,14 @@ void VRGetMaxClimbSpeed(float& updown, float& sideways)
 	sideways = CVAR_GET_FLOAT("vr_ladder_legacy_sideways_speed");
 }
 
+void VRGetCVARSpeeds(float& forwardSpeed, float& backSpeed, float& sideSpeed, float& upSpeed)
+{
+	forwardSpeed = CVAR_GET_FLOAT("vr_forwardspeed");
+	backSpeed = CVAR_GET_FLOAT("vr_backspeed");
+	sideSpeed = CVAR_GET_FLOAT("vr_sidespeed");
+	upSpeed = CVAR_GET_FLOAT("vr_upspeed");
+}
+
 int VRGetLadderMode()
 {
 	return (int)CVAR_GET_FLOAT("vr_ladder_mode");

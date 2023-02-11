@@ -39,6 +39,7 @@ extern bool VRGlobalGetNoclipMode();
 extern bool VRNotifyStuckEnt(int player, int ent);
 extern bool VRGlobalIsPointInsideEnt(const float* point, int ent);
 extern void VRGetMaxClimbSpeed(float& updown, float& sideways);
+extern void VRGetCVARSpeeds(float& forwardSpeed, float& backSpeed, float& sideSpeed, float& upSpeed);
 extern int VRGetLadderMode();
 extern int VRGetGrabbedLadder(int player);  // For client or server to use to identify (index into edicts or cl_entities)
 inline bool VRIsGrabbingLadder() { return VRGetGrabbedLadder(pmove->player_index) > 0; }
@@ -74,6 +75,7 @@ float vJumpAngles[3];
 
 //typedef enum {mod_brush, mod_sprite, mod_alias, mod_studio} modtype_t;
 
+#define DEFAULT_MOVEMENT_SPEED 270
 #define DEFAULT_MAX_CLIMB_SPEED 200
 #define DEFAULT_MAX_SIDEWAYS_SPEED 50
 
@@ -2155,23 +2157,33 @@ void PM_LadderMove(physent_t* pLadder)
 		}
 		else
 		{
-			float maxClimbSpeed = 0.f;
-			float maxSidewaysSpeed = 0.f;
+			float forwardSpeed = DEFAULT_MOVEMENT_SPEED;
+			float backSpeed = DEFAULT_MOVEMENT_SPEED;
+			float sideSpeed = DEFAULT_MOVEMENT_SPEED;
+			float upSpeed = DEFAULT_MOVEMENT_SPEED;
+			float maxClimbSpeed = DEFAULT_MAX_CLIMB_SPEED;
+			float maxSidewaysSpeed = DEFAULT_MAX_SIDEWAYS_SPEED;
+			VRGetCVARSpeeds(forwardSpeed, backSpeed, sideSpeed, upSpeed);
 			VRGetMaxClimbSpeed(maxClimbSpeed, maxSidewaysSpeed);
+			if (forwardSpeed <= 1.f) forwardSpeed = DEFAULT_MOVEMENT_SPEED;
+			if (backSpeed <= 1.f) backSpeed = DEFAULT_MOVEMENT_SPEED;
+			if (sideSpeed <= 1.f) sideSpeed = DEFAULT_MOVEMENT_SPEED;
+			if (upSpeed <= 1.f) upSpeed = DEFAULT_MOVEMENT_SPEED;
 			if (maxClimbSpeed <= 1.f) maxClimbSpeed = DEFAULT_MAX_CLIMB_SPEED;
 			if (maxSidewaysSpeed <= 1.f) maxSidewaysSpeed = DEFAULT_MAX_SIDEWAYS_SPEED;
 
-			float up = 0.f;
-			if (pmove->cmd.buttons & IN_FORWARD || pmove->cmd.buttons_ex & X_IN_UP)
-				up += maxClimbSpeed;
-			if (pmove->cmd.buttons & IN_BACK || pmove->cmd.buttons_ex & X_IN_DOWN)
-				up -= maxClimbSpeed;
+			float up;
+			if (pmove->cmd.forwardmove > 0.f)
+			{
+				up = (pmove->cmd.forwardmove / forwardSpeed) * maxClimbSpeed;
+			}
+			else
+			{
+				up = (pmove->cmd.forwardmove / backSpeed) * maxClimbSpeed;
+			}
+			up += (pmove->cmd.upmove / upSpeed) * maxClimbSpeed;
 
-			float right = 0.f;
-			if (pmove->cmd.buttons & IN_MOVERIGHT)
-				right += maxSidewaysSpeed;
-			if (pmove->cmd.buttons & IN_MOVELEFT)
-				right -= maxSidewaysSpeed;
+			float right = (pmove->cmd.sidemove / sideSpeed) * maxSidewaysSpeed;
 
 			if (up != 0.f || right != 0.f)
 			{
@@ -2183,25 +2195,25 @@ void PM_LadderMove(physent_t* pLadder)
 				vec3_t v_right{ 0.f, 0.f, 0.f };
 
 				// ladder is horizontal
-				if (trace.plane.normal[2] > 0.995f)
+				if (fabs(trace.plane.normal[2]) > 0.995f)
 				{
 					// guesstimate vectors in horizontal ladder plane
 					if (ladderSize[0] > ladderSize[1])
 					{
 						v_up[0] = 1.f;
-						v_right[1] = 1.f;
+						v_right[1] = -1.f;
 					}
 					else
 					{
 						v_up[1] = 1.f;
-						v_right[0] = -1.f;
+						v_right[0] = 1.f;
 					}
 				}
 				else
 				{
 					// calculate vectors in vertical ladder plane
-					CrossProduct(trace.plane.normal, vec3_t{ 0.f, 0.f, 1.f }, v_right);
-					CrossProduct(v_right, trace.plane.normal, v_up);
+					CrossProduct(vec3_t{ 0.f, 0.f, 1.f }, trace.plane.normal, v_right);
+					CrossProduct(trace.plane.normal, v_right, v_up);
 				}
 
 				// Calculate velocity
