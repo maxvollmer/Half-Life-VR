@@ -193,5 +193,7 @@
     ],
     "localization_files": {
         "en_US": "actions_en_US.json"
-    }
+    },
+    "version": 2,
+    "minimum_required_version": 2
 }

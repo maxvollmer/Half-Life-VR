@@ -1,5 +1,5 @@
 {
-    "action_manifest_version": 0,
+    "action_manifest_version": 2,
     "alias_info": {},
     "bindings": {
         "/actions/haptics": {
