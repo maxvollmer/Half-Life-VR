@@ -363,6 +363,9 @@ public:
 	float vr_flStopSignalTime = 0;
 
 	bool HasClearSight(const Vector& pos);
+
+	// Fixes yaw speed at high fps (see https://github.com/ValveSoftware/halflife/issues/2458) - Max Vollmer, 2023-02-12
+	float m_flLastYawTime = 0;
 };
 
 
