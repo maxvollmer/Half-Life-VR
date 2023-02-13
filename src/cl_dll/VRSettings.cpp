@@ -66,8 +66,6 @@ void VRSettings::Init()
 	RegisterCVAR("vr_hud_size", "1");
 	RegisterCVAR("vr_hud_textscale", "1");
 
-	RegisterCVAR("vr_toggle_crouch", "0");
-
 	RegisterCVAR("vr_ladder_mode", "0");
 	RegisterCVAR("vr_ladder_immersive_movement_swinging_enabled", "1");
 	RegisterCVAR("vr_ladder_legacy_movement_speed", "200");
@@ -101,6 +99,8 @@ void VRSettings::Init()
 	RegisterCVAR("vr_yawspeed", "210");			// cl_yawspeed
 	RegisterCVAR("vr_walkspeedfactor", "0.3");	// cl_movespeedkey
 	RegisterCVAR("vr_togglewalk", "0");
+
+	RegisterCVAR("vr_toggle_crouch", "0");
 
 	RegisterCVAR("vr_no_gauss_recoil", "1");
 	RegisterCVAR("vr_npcscale", "1");

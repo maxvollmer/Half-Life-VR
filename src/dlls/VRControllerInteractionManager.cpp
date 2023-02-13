@@ -43,12 +43,12 @@ static VRDebugBBoxDrawer g_VRDebugBBoxDrawer;
 
 #define bits_COND_CLIENT_PUSH (bits_COND_SPECIAL1)
 
-constexpr const int VR_MAX_ANGRY_GUNPOINT_DIST = 256;
+constexpr const int VR_MAX_ANGRY_GUNPOINT_DIST = 128;
 constexpr const int VR_INITIAL_ANGRY_GUNPOINT_TIME = 2;
 constexpr const int VR_MIN_ANGRY_GUNPOINT_TIME = 2;
 constexpr const int VR_MAX_ANGRY_GUNPOINT_TIME = 5;
 
-constexpr const int VR_STOP_SIGNAL_TIME = 1;
+constexpr const float VR_STOP_SIGNAL_TIME = 0.75f;
 
 constexpr const int VR_SHOULDER_TOUCH_MIN_Z = 56;
 constexpr const int VR_SHOULDER_TOUCH_MAX_Z = 62;
