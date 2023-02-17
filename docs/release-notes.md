@@ -11,6 +11,29 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 ### Release Notes
 
 
+#### 0.7.5-beta - 2023-02-13
+
+##### Mod:
+  - Fixed bug that allowed players to climb through the floor or ceilings in immersive ladder move
+  - Fixed bug that prevented players from moving perpendicular to ladder in immersive ladder move
+  - Fixed combined ladder mode not working
+  - Fixed yaw speed of NPCs being too slow at high fps
+  - Added version to actions manifest (fixes issues when upgrading to the new binding scheme)
+
+##### HLVRConfig:
+  - No changes
+
+---
+#### 0.7.4-beta - 2023-02-11
+
+##### Mod:
+  - Fixed issues with input actions that are bound to both hands (e.g. grab)
+  - Fixed speed and direction in legacy ladder climbing
+
+##### HLVRConfig:
+  - No changes
+
+---
 #### 0.7.3-beta - 2023-02-07
 
 ##### Mod:
