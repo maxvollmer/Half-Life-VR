@@ -22,7 +22,7 @@ public:
 		HARD_TOUCH
 	};
 
-	void Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, VRControllerID id, int weaponId);
+	void Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, bool isFiring, VRControllerID id, int weaponId);
 	void PostFrame();
 
 	CVRControllerModel* GetModel() const;
@@ -33,6 +33,7 @@ public:
 
 	inline VRControllerID GetID() const { return m_id; }
 	inline const Vector& GetOffset() const { return m_offset; }
+	inline const Vector& GetPreviousOffset() const { return m_previousOffset; }
 	inline const Vector& GetPosition() const { return m_position; }
 	inline const Vector& GetAngles() const { return m_angles; }
 	inline const Vector& GetPreviousAngles() const { return m_previousAngles; }
@@ -48,6 +49,7 @@ public:
 	bool HasAnyEntites() const;
 
 	bool IsDragging() const;
+	bool IsFiring() const;
 	bool GetAttachment(size_t index, Vector& attachment) const;
 
 	const Vector GetGunPosition() const;
@@ -107,6 +109,7 @@ private:
 
 	VRControllerID m_id{ VRControllerID::INVALID };
 	Vector m_offset;
+	Vector m_previousOffset;
 	Vector m_position;
 	Vector m_angles;
 	Vector m_previousAngles;
@@ -116,6 +119,7 @@ private:
 	float m_lastUpdateServertime{ 0.f };
 	bool m_isValid{ false };
 	bool m_isDragging{ false };
+	bool m_isFiring{ false };
 	bool m_isMirrored{ false };
 	bool m_isBlocked{ true };
 	bool m_hasFlashlight{ false };

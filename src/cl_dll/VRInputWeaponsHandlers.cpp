@@ -10,6 +10,8 @@
 #include "VRInput.h"
 #include "eiface.h"
 
+#include "VRRenderer.h"
+
 namespace
 {
 	WEAPON* g_pHolsteredWeapon{ nullptr };
@@ -26,56 +28,38 @@ namespace VR
 	{
 		void Weapons::HandleFire(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
+			g_vrInput.SetFiring(g_vrInput.GetRole(data.activeOrigin), data.bActive && data.bState);
+
+			if (!g_vrInput.IsWeapon(g_vrInput.GetRole(data.activeOrigin)))
+				return;
+
 			if (data.bChanged)
 			{
-				if (data.bState)
+				if (data.bActive && data.bState)
 				{
-					// don't +attack if in menu!
-					if (g_vrInput.IsInGame() && !g_vrInput.IsInMenu())
-					{
-						ClientCmd("+attack");
-					}
+					ClientCmd("+attack");
 				}
 				else
 				{
 					ClientCmd("-attack");
 				}
 			}
-
-			g_vrInput.SetVRMenuFireStatus(data.bActive && data.bState);
 		}
 
 		void Weapons::HandleAltFire(const vr::InputDigitalActionData_t& data, const std::string& action)
 		{
+			if (!g_vrInput.IsWeapon(g_vrInput.GetRole(data.activeOrigin)))
+				return;
+
 			if (data.bChanged)
 			{
-				if (data.bState)
-					ClientCmd("+attack2");
-				else
-					ClientCmd("-attack2");
-			}
-		}
-
-		void Weapons::HandleAnalogFire(const vr::InputAnalogActionData_t& data, const std::string& action)
-		{
-			float analogfire = (data.bActive) ? fabs(data.x) : 0.f;
-
-			g_vrInput.SetVRMenuAnalogFireStatus(analogfire != 0.f);
-
-			if (analogfire == 0.f && g_vrInput.analogfire != 0.f)
-			{
-				g_vrInput.analogfire = 0.f;
-				ClientCmd("vr_anlgfire 0");
-			}
-			else if (analogfire != 0.f)
-			{
-				// don't +attack if in menu!
-				if (g_vrInput.IsInGame() && !g_vrInput.IsInMenu())
+				if (data.bActive && data.bState)
 				{
-					g_vrInput.analogfire = analogfire;
-					char cmdAnalogFire[MAX_COMMAND_SIZE] = { 0 };
-					sprintf_s(cmdAnalogFire, "vr_anlgfire %.2f", analogfire);
-					gEngfuncs.pfnClientCmd(cmdAnalogFire);
+					ClientCmd("+attack2");
+				}
+				else
+				{
+					ClientCmd("-attack2");
 				}
 			}
 		}
@@ -84,7 +68,7 @@ namespace VR
 		{
 			if (data.bChanged)
 			{
-				if (data.bState)
+				if (data.bActive && data.bState)
 					ClientCmd("+reload");
 				else
 					ClientCmd("-reload");
@@ -162,6 +146,13 @@ namespace VR
 					gHUD.m_Ammo.Think();
 				}
 			}
+		}
+
+		void Weapons::HandleSelect(const vr::InputDigitalActionData_t& data, const std::string& action)
+		{
+			// TODO: Weapon selection wheel
+			// For now, this just calls HandleNext
+			HandleNext(data, action);
 		}
 	}  // namespace Input
 }  // namespace VR

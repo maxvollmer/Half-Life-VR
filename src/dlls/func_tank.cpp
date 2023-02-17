@@ -424,7 +424,9 @@ void CFuncTank::ControllerPostFrame(void)
 	if (gpGlobals->time < m_flNextAttack)
 		return;
 
-	if (FBitSet(m_pController->pev->button, IN_ATTACK) || (m_pController->GetAnalogFire() > 0.f))
+	if (FBitSet(m_pController->pev->button, IN_ATTACK)
+		|| (m_pController->GetAnalogFire() > 0.f)
+		|| m_pController->IsAnyControllerFiringAndHoldingThisTank(this))
 	{
 		Vector vecForward;
 		UTIL_MakeVectorsPrivate(pev->angles, vecForward, nullptr, nullptr);

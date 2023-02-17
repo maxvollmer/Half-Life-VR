@@ -261,6 +261,7 @@ copy .\$(Configuration)\client.pdb "$(HLVRInstallDirectory)valve/cl_dlls/client.
     <ClCompile Include="vgui_teammenu.cpp" />
     <ClCompile Include="view.cpp" />
     <ClCompile Include="VRFileManager.cpp" />
+    <ClCompile Include="VRInputInteractHandlers.cpp" />
     <ClCompile Include="VRRandom.cpp" />
     <ClCompile Include="VRSteamworksManager.cpp" />
     <ClCompile Include="VRClientDLLUnloadHandler.cpp" />

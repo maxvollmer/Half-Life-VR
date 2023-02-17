@@ -3378,3 +3378,20 @@ void UTIL_AutoSave()
 	// TODO: Create backups of previous saves
 	SERVER_COMMAND("autosave\n");
 }
+
+edict_t* UTIL_FindLandmark(const char* pLandmarkName)
+{
+	edict_t* pentLandmark;
+
+	pentLandmark = FIND_ENTITY_BY_STRING(nullptr, "targetname", pLandmarkName);
+	while (!FNullEnt(pentLandmark))
+	{
+		// Found the landmark
+		if (FClassnameIs(pentLandmark, "info_landmark"))
+			return pentLandmark;
+		else
+			pentLandmark = FIND_ENTITY_BY_STRING(pentLandmark, "targetname", pLandmarkName);
+	}
+	ALERT(at_error, "Can't find landmark %s\n", pLandmarkName);
+	return nullptr;
+}

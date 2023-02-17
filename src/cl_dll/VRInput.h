@@ -70,29 +70,17 @@ public:
 	{
 		return m_vrMenuClickStatus;
 	}
-	inline void SetVRMenuUseStatus(bool vrMenuUseStatus)
+	inline bool IsFiring(vr::ETrackedControllerRole controllerRole) const
 	{
-		m_vrMenuUseStatus = vrMenuUseStatus;
+		const auto& state = m_isControllerFiring.find(controllerRole);
+		if (state != m_isControllerFiring.end())
+			return state->second;
+		else
+			return false;
 	}
-	inline bool GetVRMenuUseStatus()
+	void SetFiring(vr::ETrackedControllerRole controllerRole, bool on)
 	{
-		return m_vrMenuUseStatus;
-	}
-	inline void SetVRMenuFireStatus(bool vrMenuFireStatus)
-	{
-		m_vrMenuFireStatus = vrMenuFireStatus;
-	}
-	inline bool GetVRMenuFireStatus()
-	{
-		return m_vrMenuFireStatus;
-	}
-	inline void SetVRMenuAnalogFireStatus(bool vrMenuAnalogFireStatus)
-	{
-		m_vrMenuAnalogFireStatus = vrMenuAnalogFireStatus;
-	}
-	inline bool GetVRMenuAnalogFireStatus()
-	{
-		return m_vrMenuAnalogFireStatus;
+		m_isControllerFiring[controllerRole] = on;
 	}
 
 	enum class FeedbackType
@@ -112,6 +100,11 @@ public:
 	bool HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, VRQuaternion* bone_quaternions, Vector* bone_positions) const;
 
 	void ExecuteCustomAction(const std::string& action);
+
+	vr::ETrackedControllerRole GetRole(vr::VRInputValueHandle_t origin);
+	bool IsWeapon(vr::ETrackedControllerRole role);
+
+	bool m_crouchState{ false };
 
 	bool m_rotateLeft{ false };
 	bool m_rotateRight{ false };
@@ -167,10 +160,10 @@ private:
 	void LoadCustomActions();
 	void RegisterActionSets();
 	bool RegisterActionSet(const std::string& actionSet, bool handleWhenNotInGame);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame = false);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame = false);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame = false);
-	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::SkeletalActionHandler handler, bool handleWhenNotInGame = false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame = false, bool handAgnostic = false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame = false, bool handAgnostic = false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame = false, bool handAgnostic = false);
+	bool RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::SkeletalActionHandler handler, bool handleWhenNotInGame = false, bool handAgnostic = false);
 	bool RegisterFeedback(const std::string& actionSet, const std::string& action);
 
 	vr::VROverlayHandle_t m_hlMenu{ vr::k_ulOverlayHandleInvalid };
@@ -192,19 +185,20 @@ private:
 	bool m_isVRDucking{ false };
 	bool m_letGoOffLadder{ false };
 	bool m_vrMenuClickStatus{ false };
-	bool m_vrMenuUseStatus{ false };
-	bool m_vrMenuFireStatus{ false };
-	bool m_vrMenuAnalogFireStatus{ false };
 
 	std::unordered_map<std::string, ActionSet> m_actionSets;
 	std::unordered_map<std::string, CustomAction> m_customActions;
 
 	std::unordered_map<vr::ETrackedControllerRole, bool> m_dragStates;
+	std::unordered_map<vr::ETrackedControllerRole, bool> m_isControllerFiring;
 
 	std::unordered_map<vr::ETrackedControllerRole, std::shared_ptr<FingerSkeletalData>> m_fingerSkeletalData;
 
 	bool m_isInGame{ false };
 	bool m_isInMenu{ true };
+
+public:
+	std::unordered_map<vr::ETrackedControllerRole, std::array<float, vr::VRFinger_Count>> m_fallbackFingerCurlData;
 };
 
 extern VRInput g_vrInput;

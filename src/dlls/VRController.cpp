@@ -87,7 +87,7 @@ const char* GetAnimatedWeaponModelName(const char* modelName)
 }
 
 
-void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, VRControllerID id, int weaponId)
+void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, bool isFiring, VRControllerID id, int weaponId)
 {
 	m_hPlayer = pPlayer;
 
@@ -106,11 +106,12 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 		m_previousAngles = angles;
 	}
 
-	bool m_wasDragging = m_isDragging;
+	bool wasDragging = m_isDragging;
 
 	// Store data
 	m_id = id;
 	m_isValid = isValid;
+	m_previousOffset = m_offset;
 	m_offset = offset;
 	m_position = pPlayer->GetClientOrigin() + offset;
 	m_angles = angles;
@@ -118,10 +119,11 @@ void VRController::Update(CBasePlayer* pPlayer, const int timestamp, const bool 
 	m_lastUpdateServertime = gpGlobals->time;
 	m_lastUpdateClienttime = timestamp;
 	m_isDragging = m_isValid && isDragging;
+	m_isFiring = m_isValid && isFiring;
 	m_isMirrored = isMirrored;
 	m_weaponId = weaponId;
 
-	if (!m_wasDragging && m_isDragging)
+	if (!wasDragging && m_isDragging)
 	{
 		m_dragStartTime = gpGlobals->time;
 	}
@@ -627,6 +629,11 @@ bool VRController::IsDragging() const
 		return false;
 	}
 	return m_isDragging;
+}
+
+bool VRController::IsFiring() const
+{
+	return m_isFiring;
 }
 
 bool VRController::HasAnyEntites() const

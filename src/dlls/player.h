@@ -416,6 +416,8 @@ public:
 
 	VRController& GetController(VRControllerID id) { return m_vrControllers[id]; }
 
+	bool IsAnyControllerFiringAndHoldingThisTank(CBaseEntity* pTank);
+
 
 // private VR methods:
 private:
@@ -462,7 +464,7 @@ public:
 	bool IsWeaponPositionValid();
 
 	void UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset, const float offsetZ, const Vector& forward, const Vector2D& hmdYawOffsetDelta, float prevYaw, float currentYaw, bool hasReceivedRestoreYawMsg, bool hasReceivedSpawnYaw);
-	void UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool dragOn);
+	void UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, bool isFiring);
 
 	void StoreVROffsetsForLevelchange();
 
@@ -480,10 +482,10 @@ public:
 	void SetTeleporterPose(const Vector& offset, const Vector& angles);
 	void ClearTeleporterPose();
 
-	void DoLongJump();
+	void DoLongJump(bool playStepSound, bool force);
 	void RestartCurrentMap();
 
-	void HolsterWeapon();
+	void HolsterWeapon(bool force);
 
 	float GetAnalogFire();
 	void SetAnalogFire(float analogfire);
@@ -522,6 +524,8 @@ public:
 private:
 	bool m_vrHasSurfacedInThatMapWithTheTank{ false };
 	bool m_vrJustGotYeetedByBPTrain{ false };
+
+	float m_vrLastJumpTime{ 0.f };
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

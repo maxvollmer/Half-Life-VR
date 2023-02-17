@@ -11,7 +11,25 @@
 
 constexpr const byte VR_MOVEMENT_FAKE_FRAMETIME = 10;
 
-Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to, CBaseEntity* pMovingEntityForTouch /*= nullptr*/)
+class RAIIImpl
+{
+public:
+	RAIIImpl(std::function<void()> callback) :
+		m_callback{ callback }
+	{
+	}
+
+	~RAIIImpl()
+	{
+		m_callback();
+	}
+
+private:
+
+	std::function<void()> m_callback;
+};
+
+Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to, CBaseEntity* pMovingEntityForTouch /*= nullptr*/, bool allowZ /*= false*/)
 {
 	extern playermove_t* pmove;
 	extern void PM_PlayerMove(qboolean server);
@@ -37,6 +55,10 @@ Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to, CBase
 	if (VRGlobalGetNoclipMode())
 		return to;
 
+	int backupUsehull = pmove->usehull;
+	RAIIImpl restoreHull{ [backupUsehull]() { pmove->usehull = backupUsehull; } };
+	pmove->usehull = 0;
+
 	// if "to" is free, we can move there
 	if (pmove->PM_TestPlayerPosition(to, nullptr) == -1)
 		return to;
@@ -59,7 +81,10 @@ Vector VRMovementHandler::DoMovement(const Vector& from, const Vector& to, CBase
 
 	// get move direction and distance (length)
 	Vector moveDir = (to - from);
-	moveDir.z = 0.f;  // clear any z (there shouldn't be any z, but still)
+	if (!allowZ)
+	{
+		moveDir.z = 0.f;
+	}
 	float moveDist = moveDir.Length();
 	moveDir = moveDir.Normalize();
 

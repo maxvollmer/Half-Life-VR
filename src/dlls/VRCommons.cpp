@@ -7,6 +7,7 @@
 #include "cbase.h"
 #include "player.h"
 #include "VRPhysicsHelper.h"
+#include "pm_defs.h"
 
 VRLevelChangeData g_vrLevelChangeData;
 GlobalXenMounds gGlobalXenMounds;
@@ -87,24 +88,28 @@ bool VRGlobalIsPointInsideEnt(const float* point, int ent)
 	return UTIL_PointInsideRotatedBBox(INDEXENT(ent)->v.origin, INDEXENT(ent)->v.angles, INDEXENT(ent)->v.mins, INDEXENT(ent)->v.maxs, Vector{ point[0], point[1], point[2] });
 }
 
-float VRGetMaxClimbSpeed()
+void VRGetMaxClimbSpeed(float& updown, float& sideways)
 {
-	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_speed");
+	updown = CVAR_GET_FLOAT("vr_ladder_legacy_movement_speed");
+	sideways = CVAR_GET_FLOAT("vr_ladder_legacy_sideways_speed");
 }
 
-bool VRIsLegacyLadderMoveEnabled()
+void VRGetCVARSpeeds(float& forwardSpeed, float& backSpeed, float& sideSpeed, float& upSpeed)
 {
-	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_enabled") != 0.f;
+	forwardSpeed = CVAR_GET_FLOAT("vr_forwardspeed");
+	backSpeed = CVAR_GET_FLOAT("vr_backspeed");
+	sideSpeed = CVAR_GET_FLOAT("vr_sidespeed");
+	upSpeed = CVAR_GET_FLOAT("vr_upspeed");
 }
 
-bool VRGetMoveOnlyUpDownOnLadder()
+int VRGetLadderMode()
 {
-	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_only_updown") != 0.f;
+	return (int)CVAR_GET_FLOAT("vr_ladder_mode");
 }
 
 int VRGetGrabbedLadder(int player)
 {
-	if (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f)
+	if ((VRGetLadderMode() != VR_LADDER_MODE_LEGACY_ONLY))
 	{
 		CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(UTIL_PlayerByIndex(player + 1));
 		if (pPlayer == nullptr)

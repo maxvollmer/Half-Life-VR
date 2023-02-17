@@ -790,7 +790,7 @@ void CFuncRotating::RotatingUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 			// Check if this is the big fan in Blast Pit.
 			// In VR it's impossible for players to get up quickly enough before it spins up,
 			// so we delay things here and make it non-solid if players chose that option.
-			if (FStrEq(STRING(pev->target), "silofan") && FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a4e.bsp"))
+			if (FStrEq(STRING(pev->targetname), "silofan") && FStrEq(STRING(INDEXENT(0)->v.model), "maps/c1a4e.bsp"))
 			{
 				float delay = CVAR_GET_FLOAT("vr_blastpit_fan_delay");
 				if (delay <= 0.f)

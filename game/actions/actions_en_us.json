@@ -1,0 +1,44 @@
+{
+  "/actions/haptic": "Haptic",
+  "/actions/haptic/in/HapticVibration": "Haptic Vibration",
+
+  "/actions/poses": "Poses",
+  "/actions/poses/in/HandPoseLeft": "Hand Pose (Left)",
+  "/actions/poses/in/HandPoseRight": "Hand Pose (Right)",
+  "/actions/poses/in/HandPointerLeft": "Pointer Pose (Left)",
+  "/actions/poses/in/HandPointerRight": "Pointer Pose (Right)",
+  "/actions/poses/in/HandSkeletonLeft": "Skeleton (Left)",
+  "/actions/poses/in/HandSkeletonRight": "Skeleton (Right)",
+  "/actions/poses/in/HandCurl": "Hand Curl",
+  "/actions/poses/in/TriggerPull": "Trigger Pull",
+
+  "/actions/move": "Move",
+  "/actions/move/in/Move": "Move",
+  "/actions/move/in/ContinuousTurn": "Continuous Turn",
+  "/actions/move/in/TurnLeft": "Turn Left",
+  "/actions/move/in/TurnRight": "Turn Right",
+  "/actions/move/in/Walk": "Walk",
+  "/actions/move/in/Jump": "Jump",
+  "/actions/move/in/Crouch": "Crouch",
+
+  "/actions/interact": "Interact",
+  "/actions/interact/in/LegacyUse": "Legacy Use",
+  "/actions/interact/in/Grab": "Grab",
+  "/actions/interact/in/Teleport": "Teleport",
+  "/actions/interact/in/Flashlight": "Flashlight",
+
+  "/actions/weapon": "Weapon",
+  "/actions/weapon/in/Attack": "Fire",
+  "/actions/weapon/in/Attack2": "Alt Fire",
+  "/actions/weapon/in/Next": "Cycle to next weapon",
+  "/actions/weapon/in/Previous": "Cycle to previous weapon",
+  "/actions/weapon/in/Select": "Open weapon selection",
+  "/actions/weapon/in/Reload": "Reload",
+  "/actions/weapon/in/Holster": "Holster",
+
+  "/actions/menu": "Menu",
+  "/actions/menu/in/ToggleVRMenu": "Toggle VR Menu",
+  "/actions/menu/in/ClickVRMenu": "Click VR Menu",
+
+  "language_tag": "en_US"
+}

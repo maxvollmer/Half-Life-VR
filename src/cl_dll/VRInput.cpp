@@ -138,103 +138,64 @@ void VRInput::LoadCustomActions()
 
 void VRInput::RegisterActionSets()
 {
-	if (RegisterActionSet("input", true))
+	if (RegisterActionSet("haptic", false))
 	{
-		RegisterAction("input", "MoveForward", &VR::Input::Movement::HandleMoveForward);
-		RegisterAction("input", "MoveBackward", &VR::Input::Movement::HandleMoveBackward);
-		RegisterAction("input", "MoveLeft", &VR::Input::Movement::HandleMoveLeft);
-		RegisterAction("input", "MoveRight", &VR::Input::Movement::HandleMoveRight);
-		RegisterAction("input", "MoveUp", &VR::Input::Movement::HandleMoveUp);
-		RegisterAction("input", "MoveDown", &VR::Input::Movement::HandleMoveDown);
-		RegisterAction("input", "TurnLeft", &VR::Input::Movement::HandleTurnLeft);
-		RegisterAction("input", "TurnRight", &VR::Input::Movement::HandleTurnRight);
-		RegisterAction("input", "Turn90Left", &VR::Input::Movement::HandleTurn90Left);
-		RegisterAction("input", "Turn90Right", &VR::Input::Movement::HandleTurn90Right);
-		RegisterAction("input", "Turn45Left", &VR::Input::Movement::HandleTurn45Left);
-		RegisterAction("input", "Turn45Right", &VR::Input::Movement::HandleTurn45Right);
-		RegisterAction("input", "Turn180", &VR::Input::Movement::HandleTurn180);
-		RegisterAction("input", "Jump", &VR::Input::Movement::HandleJump);
-		RegisterAction("input", "Crouch", &VR::Input::Movement::HandleCrouch);
-		RegisterAction("input", "LongJump", &VR::Input::Movement::HandleLongJump);
-		RegisterAction("input", "AnalogJump", &VR::Input::Movement::HandleAnalogJump);
-		RegisterAction("input", "AnalogCrouch", &VR::Input::Movement::HandleAnalogCrouch);
-		RegisterAction("input", "AnalogLongJump", &VR::Input::Movement::HandleAnalogLongJump);
-		RegisterAction("input", "MoveForwardBackward", &VR::Input::Movement::HandleMoveForwardBackward);
-		RegisterAction("input", "MoveSideways", &VR::Input::Movement::HandleMoveSideways);
-		RegisterAction("input", "MoveUpDown", &VR::Input::Movement::HandleMoveUpDown);
-		RegisterAction("input", "Walk", &VR::Input::Movement::HandleWalk);
-		RegisterAction("input", "Turn", &VR::Input::Movement::HandleTurn);
-		RegisterAction("input", "MoveForwardBackwardSideways", &VR::Input::Movement::HandleMoveForwardBackwardSideways);
-		RegisterAction("input", "MoveForwardBackwardTurn", &VR::Input::Movement::HandleMoveForwardBackwardTurn);
-		RegisterAction("input", "MoveForwardBackwardSidewaysUpDown", &VR::Input::Movement::HandleMoveForwardBackwardSidewaysUpDown);
-		RegisterAction("input", "MoveForwardBackwardTurnUpDown", &VR::Input::Movement::HandleMoveForwardBackwardTurnUpDown);
-
-		RegisterAction("input", "FireWeapon", &VR::Input::Weapons::HandleFire, true);
-		RegisterAction("input", "AltFireWeapon", &VR::Input::Weapons::HandleAltFire);
-		RegisterAction("input", "AnalogFireWeapon", &VR::Input::Weapons::HandleAnalogFire, true);
-		RegisterAction("input", "ReloadWeapon", &VR::Input::Weapons::HandleReload);
-		RegisterAction("input", "HolsterWeapon", &VR::Input::Weapons::HandleHolster);
-		RegisterAction("input", "NextWeapon", &VR::Input::Weapons::HandleNext);
-		RegisterAction("input", "PreviousWeapon", &VR::Input::Weapons::HandlePrevious);
-
-		RegisterAction("input", "Teleport", &VR::Input::Other::HandleTeleport);
-		RegisterAction("input", "ToggleFlashlight", &VR::Input::Other::HandleFlashlight);
-		RegisterAction("input", "LeftGrab", &VR::Input::Other::HandleLeftGrab, true);
-		RegisterAction("input", "RightGrab", &VR::Input::Other::HandleRightGrab, true);
-		RegisterAction("input", "LegacyUse", &VR::Input::Other::HandleLegacyUse, true);
-		RegisterAction("input", "LetGoOffLadder", &VR::Input::Other::HandleLetGoOffLadder);
-
-		RegisterAction("input", "QuickSave", &VR::Input::Other::HandleQuickSave, true);
-		RegisterAction("input", "QuickLoad", &VR::Input::Other::HandleQuickLoad, true);
-		RegisterAction("input", "RestartCurrentMap", &VR::Input::Other::HandleRestartCurrentMap, true);
-		RegisterAction("input", "PauseGame", &VR::Input::Other::HandlePauseGame, true);
-		RegisterAction("input", "ExitGame", &VR::Input::Other::HandleExitGame, true);
-
-		RegisterAction("input", "ClickVRMenu", &VR::Input::Other::HandleClickVRMenu, true);
-
-		RegisterAction("input", "LeftHandSkeleton", &VR::Input::Other::HandleLeftHandSkeleton, true);
-		RegisterAction("input", "RightHandSkeleton", &VR::Input::Other::HandleRightHandSkeleton, true);
+		RegisterFeedback("haptic", "HapticVibration");
 	}
-	if (RegisterActionSet("feedback", false))
+
+	if (RegisterActionSet("poses", true))
 	{
-		RegisterFeedback("feedback", "All");
-		RegisterFeedback("feedback", "AllButRecoil");
-		RegisterFeedback("feedback", "Touch");
-		RegisterFeedback("feedback", "Recoil");
-		RegisterFeedback("feedback", "Earthquake");
-		RegisterFeedback("feedback", "TrainShake");
-		RegisterFeedback("feedback", "WaterSplash");
+		RegisterAction("poses", "HandPoseLeft", &VR::Input::Poses::HandleHandPoseLeft, true);
+		RegisterAction("poses", "HandPoseRight", &VR::Input::Poses::HandleHandPoseRight, true);
+		RegisterAction("poses", "HandPointerLeft", &VR::Input::Poses::HandleHandPointerLeft, true);
+		RegisterAction("poses", "HandPointerRight", &VR::Input::Poses::HandleHandPointerRight, true);
+		RegisterAction("poses", "HandSkeletonLeft", &VR::Input::Poses::HandleHandSkeletonLeft, true);
+		RegisterAction("poses", "HandSkeletonRight", &VR::Input::Poses::HandleHandSkeletonRight, true);
+		RegisterAction("poses", "HandCurl", &VR::Input::Poses::HandleHandCurl, true, true);
+		RegisterAction("poses", "TriggerPull", &VR::Input::Poses::HandleTriggerPull, true, true);
 	}
-	if (RegisterActionSet("damagefeedback", false))
+
+	if (RegisterActionSet("move", false))
 	{
-		RegisterFeedback("damagefeedback", "All");
-		RegisterFeedback("damagefeedback", "Bullet");
-		RegisterFeedback("damagefeedback", "Fall");
-		RegisterFeedback("damagefeedback", "Blast");
-		RegisterFeedback("damagefeedback", "Generic");
-		RegisterFeedback("damagefeedback", "Crush");
-		RegisterFeedback("damagefeedback", "Slash");
-		RegisterFeedback("damagefeedback", "Burn");
-		RegisterFeedback("damagefeedback", "Freeze");
-		RegisterFeedback("damagefeedback", "Drown");
-		RegisterFeedback("damagefeedback", "Club");
-		RegisterFeedback("damagefeedback", "Shock");
-		RegisterFeedback("damagefeedback", "Sonic");
-		RegisterFeedback("damagefeedback", "EnergyBeam");
-		RegisterFeedback("damagefeedback", "Nervegas");
-		RegisterFeedback("damagefeedback", "Poison");
-		RegisterFeedback("damagefeedback", "Radiation");
-		RegisterFeedback("damagefeedback", "Acid");
-		RegisterFeedback("damagefeedback", "SlowBurn");
-		RegisterFeedback("damagefeedback", "SlowFreeze");
-		RegisterFeedback("damagefeedback", "Mortar");
+		RegisterAction("move", "Move", &VR::Input::Movement::HandleMove);
+		RegisterAction("move", "ContinuousTurn", &VR::Input::Movement::HandleContinuousTurn);
+		RegisterAction("move", "TurnLeft", &VR::Input::Movement::HandleTurnLeft);
+		RegisterAction("move", "TurnRight", &VR::Input::Movement::HandleTurnRight);
+		RegisterAction("move", "Walk", &VR::Input::Movement::HandleWalk);
+		RegisterAction("move", "Jump", &VR::Input::Movement::HandleJump);
+		RegisterAction("move", "Crouch", &VR::Input::Movement::HandleCrouch);
 	}
-	if (RegisterActionSet("poses", false))
+
+	if (RegisterActionSet("interact", false))
 	{
-		RegisterAction("poses", "Flashlight", &VR::Input::Poses::HandleFlashlight);
-		RegisterAction("poses", "Movement", &VR::Input::Poses::HandleMovement);
-		RegisterAction("poses", "Teleporter", &VR::Input::Poses::HandleTeleporter);
+		RegisterAction("interact", "Grab", &VR::Input::Interact::HandleGrab, false, true);
+		RegisterAction("interact", "LegacyUse", &VR::Input::Interact::HandleLegacyUse);
+
+		// TODO: MISSING IN VIVE BINDINGS!!!
+		RegisterAction("interact", "Teleport", &VR::Input::Interact::HandleTeleport);
+
+		// TODO: MISSING IN ALL BINDINGS!!!!
+		RegisterAction("interact", "Flashlight", &VR::Input::Interact::HandleFlashlight);
 	}
+
+	if (RegisterActionSet("weapon", false))
+	{
+		RegisterAction("weapon", "Attack", &VR::Input::Weapons::HandleFire, false, true);
+		RegisterAction("weapon", "Attack2", &VR::Input::Weapons::HandleAltFire, false, true);
+		RegisterAction("weapon", "Next", &VR::Input::Weapons::HandleNext);
+		RegisterAction("weapon", "Previous", &VR::Input::Weapons::HandlePrevious);
+		RegisterAction("weapon", "Select", &VR::Input::Weapons::HandleSelect);
+		RegisterAction("weapon", "Reload", &VR::Input::Weapons::HandleReload);
+
+		RegisterAction("weapon", "Holster", &VR::Input::Weapons::HandleHolster);
+	}
+
+	if (RegisterActionSet("menu", true))
+	{
+		RegisterAction("menu", "ToggleVRMenu", &VR::Input::Other::HandleToggleVRMenu, true);
+		RegisterAction("menu", "ClickVRMenu", &VR::Input::Other::HandleClickVRMenu, true);
+	}
+
 	if (RegisterActionSet("custom", true))
 	{
 		for (const auto& customAction : m_customActions)
@@ -262,7 +223,7 @@ bool VRInput::RegisterActionSet(const std::string& actionSet, bool handleWhenNot
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::DigitalActionHandler handler, bool handleWhenNotInGame, bool handAgnostic)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -286,12 +247,12 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame, handAgnostic };
 		return true;
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::AnalogActionHandler handler, bool handleWhenNotInGame, bool handAgnostic)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -303,12 +264,12 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame, handAgnostic };
 		return true;
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::PoseActionHandler handler, bool handleWhenNotInGame, bool handAgnostic)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -320,12 +281,12 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame, handAgnostic };
 		return true;
 	}
 }
 
-bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::SkeletalActionHandler handler, bool handleWhenNotInGame)
+bool VRInput::RegisterAction(const std::string& actionSet, const std::string& action, VRInputAction::SkeletalActionHandler handler, bool handleWhenNotInGame, bool handAgnostic)
 {
 	std::string actionName = "/actions/" + actionSet + "/in/" + action;
 	vr::VRActionHandle_t handle{ 0 };
@@ -337,7 +298,7 @@ bool VRInput::RegisterAction(const std::string& actionSet, const std::string& ac
 	}
 	else
 	{
-		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame };
+		m_actionSets[actionSet].actions[action] = VRInputAction{ action, handle, handler, handleWhenNotInGame, handAgnostic };
 		return true;
 	}
 }
@@ -421,18 +382,29 @@ void VRInput::FireFeedbacks()
 
 void VRInput::FireFeedback(FeedbackType feedback, int damageType, float durationInSeconds, float frequency, float amplitude)
 {
+	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
+
+	vr::VRInputValueHandle_t leftHandHandle = vr::k_ulInvalidInputValueHandle;
+	vr::VRInputValueHandle_t rightHandHandle = vr::k_ulInvalidInputValueHandle;
+	vr::VRInput()->GetInputSourceHandle("/user/hand/left", &leftHandHandle);
+	vr::VRInput()->GetInputSourceHandle("/user/hand/right", &rightHandHandle);
+
 	vr::VRActionHandle_t handle{ 0 };
+	vr::VRInputValueHandle_t device = vr::k_ulInvalidInputValueHandle;
 
 	switch (feedback)
 	{
 	case FeedbackType::LEFTTOUCH:
 		handle = m_actionSets["feedback"].feedbackActions["LeftTouch"];
+		device = leftHandHandle;
 		break;
 	case FeedbackType::RIGHTTOUCH:
 		handle = m_actionSets["feedback"].feedbackActions["RightTouch"];
+		device = rightHandHandle;
 		break;
 	case FeedbackType::RECOIL:
 		handle = m_actionSets["feedback"].feedbackActions["Recoil"];
+		device = (leftHandMode) ? leftHandHandle : rightHandHandle;
 		break;
 	case FeedbackType::EARTHQUAKE:
 		handle = m_actionSets["feedback"].feedbackActions["Earthquake"];
@@ -531,21 +503,24 @@ void VRInput::FireFeedback(FeedbackType feedback, int damageType, float duration
 		break;
 	}
 
-	vr::VRInput()->TriggerHapticVibrationAction(handle, 0.f, durationInSeconds, frequency, amplitude, vr::k_ulInvalidInputValueHandle);
+	// TODO: Collect/Combine vibrations for left and right controllers, and then call 
+	// TriggerHapticVibrationAction with /actions/haptic/in/HapticVibration for left and right controller
+
+	//vr::VRInput()->TriggerHapticVibrationAction(handle, 0.f, durationInSeconds, frequency, amplitude, device);
 
 	if (feedback != FeedbackType::DAMAGE)
 	{
-		vr::VRInput()->TriggerHapticVibrationAction(m_actionSets["feedback"].feedbackActions["All"], 0.f, durationInSeconds, frequency, amplitude, vr::k_ulInvalidInputValueHandle);
+		//vr::VRInput()->TriggerHapticVibrationAction(m_actionSets["feedback"].feedbackActions["All"], 0.f, durationInSeconds, frequency, amplitude, device);
 		if (feedback != FeedbackType::RECOIL)
 		{
-			vr::VRInput()->TriggerHapticVibrationAction(m_actionSets["feedback"].feedbackActions["AllButRecoil"], 0.f, durationInSeconds, frequency, amplitude, vr::k_ulInvalidInputValueHandle);
+			//vr::VRInput()->TriggerHapticVibrationAction(m_actionSets["feedback"].feedbackActions["AllButRecoil"], 0.f, durationInSeconds, frequency, amplitude, device);
 		}
 	}
 }
 
 void VRInput::FireDamageFeedback(const std::string& action, float durationInSeconds, float frequency, float amplitude)
 {
-	vr::VRInput()->TriggerHapticVibrationAction(m_actionSets["damagefeedback"].feedbackActions[action], 0.f, durationInSeconds, frequency, amplitude, vr::k_ulInvalidInputValueHandle);
+	//vr::VRInput()->TriggerHapticVibrationAction(m_actionSets["damagefeedback"].feedbackActions[action], 0.f, durationInSeconds, frequency, amplitude, vr::k_ulInvalidInputValueHandle);
 }
 
 void VRInput::HandleInput(bool isInGame, bool isInMenu)
@@ -655,15 +630,30 @@ void VRInput::SetFingerSkeletalData(vr::ETrackedControllerRole controllerRole, c
 
 bool VRInput::HasFingerDataForHand(vr::ETrackedControllerRole controllerRole, float fingerCurl[5]) const
 {
-	auto it = m_fingerSkeletalData.find(controllerRole);
-	if (it != m_fingerSkeletalData.end() && it->second && it->second->hasFingers)
 	{
-		for (int i = 0; i < 5; i++)
+		auto it = m_fingerSkeletalData.find(controllerRole);
+		if (it != m_fingerSkeletalData.end() && it->second && it->second->hasFingers)
 		{
-			fingerCurl[i] = it->second->fingerCurl[i];
+			for (int i = 0; i < 5; i++)
+			{
+				fingerCurl[i] = it->second->fingerCurl[i];
+			}
+			return true;
 		}
-		return true;
 	}
+
+	{
+		auto it = m_fallbackFingerCurlData.find(controllerRole);
+		if (it != m_fallbackFingerCurlData.end())
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				fingerCurl[i] = it->second[i];
+			}
+			return true;
+		}
+	}
+
 	return false;
 }
 
@@ -701,3 +691,33 @@ bool VRInput::HasSkeletalDataForHand(vr::ETrackedControllerRole controllerRole, 
 	}
 	return false;
 }
+
+vr::ETrackedControllerRole VRInput::GetRole(vr::VRInputValueHandle_t origin)
+{
+	vr::InputOriginInfo_t originInfo{ 0 };
+	vr::ETrackedControllerRole role = vr::TrackedControllerRole_Invalid;
+	if (vr::VRInputError_None == vr::VRInput()->GetOriginTrackedDeviceInfo(origin, &originInfo, sizeof(vr::InputOriginInfo_t)))
+	{
+		role = vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(originInfo.trackedDeviceIndex);
+	}
+	return role;
+}
+
+bool VRInput::IsWeapon(vr::ETrackedControllerRole role)
+{
+	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
+
+	if (leftHandMode && role == vr::TrackedControllerRole_LeftHand)
+	{
+		return !gVRRenderer.IsHandModel(gHUD.m_leftControllerModelData.controller.modelname)
+			&& !gVRRenderer.IsHandSkeletalModel(gHUD.m_leftControllerModelData.controller.modelname);
+	}
+	else if (!leftHandMode && role == vr::TrackedControllerRole_RightHand)
+	{
+		return !gVRRenderer.IsHandModel(gHUD.m_rightControllerModelData.controller.modelname)
+			&& !gVRRenderer.IsHandSkeletalModel(gHUD.m_rightControllerModelData.controller.modelname);
+	}
+
+	return false;
+}
+

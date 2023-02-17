@@ -5,5 +5,5 @@
 class VRMovementHandler
 {
 public:
-	static Vector DoMovement(const Vector& from, const Vector& to, CBaseEntity* pMovingEntityForTouch = nullptr);
+	static Vector DoMovement(const Vector& from, const Vector& to, CBaseEntity* pMovingEntityForTouch = nullptr, bool allowZ = false);
 };

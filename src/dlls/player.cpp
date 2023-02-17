@@ -977,6 +977,7 @@ entvars_t* g_pevLastInflictor;  // Set in combat.cpp.  Used to pass the damage i
 
 void CBasePlayer::Killed(entvars_t* pevAttacker, int bitsDamageType, int iGib)
 {
+	FlashlightTurnOff();
 	ClearLadderGrabbingControllers();
 	StopPullingLedge();
 
@@ -1727,12 +1728,28 @@ void CBasePlayer::Jump()
 
 	// If this isn't the first frame pressing the jump button, break out.
 	if (!FBitSet(m_afButtonPressed, IN_JUMP))
+	{
 		return;  // don't pogo stick
+	}
 
 	if (!(pev->flags & FL_ONGROUND) || !pev->groundentity)
 	{
+		if (m_fLongJump)
+		{
+			// Check for double jump if longjump module is equipped
+			float flMaxDoubleJumpDelay = 1.f;
+			if ((m_vrLastJumpTime + flMaxDoubleJumpDelay) > gpGlobals->time)
+			{
+				DoLongJump(false, true);
+				m_vrLastJumpTime = 0;
+			}
+		}
+
 		return;
 	}
+
+	// Set the time that we jumped
+	m_vrLastJumpTime = gpGlobals->time;
 
 	// many features in this function use v_forward, so makevectors now.
 	UTIL_MakeVectors(pev->angles);
@@ -2047,10 +2064,8 @@ void CBasePlayer::PreThink()
 	}
 
 	// VR stuff: Calculate controller interactions with world
-	for (auto& controller : m_vrControllers)
-	{
-		m_vrControllerInteractionManager.CheckAndPressButtons(this, controller.second);
-	}
+	m_vrControllerInteractionManager.CheckAndPressButtons(this, m_vrControllers[VRControllerID::HAND], m_vrControllers[VRControllerID::WEAPON]);
+	m_vrControllerInteractionManager.CheckAndPressButtons(this, m_vrControllers[VRControllerID::WEAPON], m_vrControllers[VRControllerID::HAND]);
 
 	// Special interaction with 2 controllers at once (e.g. pull up on ledges)
 	if (m_vrControllers[VRControllerID::HAND].IsValid() && m_vrControllers[VRControllerID::WEAPON].IsValid())
@@ -3344,6 +3359,15 @@ int CBasePlayer::Restore(CRestore& restore)
 		edict_t* pentSpawnSpot = EntSelectSpawnPoint(this);
 		pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
 	}
+	else
+	{
+		// Fix weird bug that puts players slightly too low under the actual spawn location in c4a1f
+		if (STRING(INDEXENT(0)->v.model) == std::string{ "maps/c4a1f.bsp" })
+		{
+			edict_t* pentLandmark = UTIL_FindLandmark("c4a1f");
+			pev->origin = VARS(pentLandmark)->origin + Vector(0, 0, 1);
+		}
+	}
 
 	// Restore VR offsets if levelchange has stored them (fixes origin issues in roomscale) - Max Vollmer, 2018-04-02
 	if (g_vrLevelChangeData.hasData)
@@ -3352,9 +3376,10 @@ int CBasePlayer::Restore(CRestore& restore)
 		this->vr_ClientOriginOffset = g_vrLevelChangeData.clientOriginOffset;
 		this->vr_prevYaw = g_vrLevelChangeData.prevYaw;
 		this->vr_currentYaw = g_vrLevelChangeData.currentYaw;
-		g_vrLevelChangeData.hasData = false;
 		vr_needsToSendRestoreYawMsgToClient = true;
 	}
+
+	g_vrLevelChangeData.hasData = false;
 
 	pev->v_angle.z = 0;  // Clear out roll
 	pev->angles = pev->v_angle;
@@ -3781,6 +3806,7 @@ void CBasePlayer::FlashlightTurnOn(void)
 		if (!hFlashLight)
 		{
 			hFlashLight = CBaseEntity::Create<CBaseEntity>("info_target", pev->origin, Vector());
+			hFlashLight->m_objectCaps = FCAP_DONT_SAVE;
 			SET_MODEL(hFlashLight->edict(), "sprites/black.spr");
 			UTIL_SetOrigin(hFlashLight->pev, pev->origin);
 			UTIL_SetSize(hFlashLight->pev, Vector(-4, -4, -4), Vector(4, 4, 4));
@@ -5300,7 +5326,7 @@ void CBasePlayer::UpdateVRHeadset(const int timestamp, const Vector2D& hmdOffset
 	vr_hmdForward.InlineNormalize();
 }
 
-void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging)
+void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const int timestamp, const bool isValid, const bool isMirrored, const Vector& offset, const Vector& angles, const Vector& velocity, bool isDragging, bool isFiring)
 {
 	int weaponId = WEAPON_BAREHAND;
 	if (vrControllerID == VRControllerID::WEAPON)
@@ -5311,7 +5337,31 @@ void CBasePlayer::UpdateVRController(const VRControllerID vrControllerID, const 
 			weaponId = itemInfo.iId;
 		}
 	}
-	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging, vrControllerID, weaponId);
+
+	bool wasDragging = m_vrControllers[vrControllerID].IsDragging();
+
+	m_vrControllers[vrControllerID].Update(this, timestamp, isValid, isMirrored, offset, angles, velocity, isDragging, isFiring, vrControllerID, weaponId);
+
+	if (vrControllerID == VRControllerID::HAND
+		&& isValid
+		&& isDragging
+		&& !wasDragging
+		&& !m_vrControllers[vrControllerID].HasDraggedEntity())
+	{
+		constexpr const float VR_FLASHLIGHT_TOGGLE_DISTANCE_TO_HEAD = 16.f;
+		float distance = (m_vrControllers[vrControllerID].GetPosition() - this->EyePosition()).Length();
+		if (distance < VR_FLASHLIGHT_TOGGLE_DISTANCE_TO_HEAD + (std::max)(0.f, CVAR_GET_FLOAT("vr_view_dist_to_walls")))
+		{
+			if (FlashlightIsOn())
+			{
+				FlashlightTurnOff();
+			}
+			else
+			{
+				FlashlightTurnOn();
+			}
+		}
+	}
 }
 
 const Vector CBasePlayer::GetWeaponPosition()
@@ -5643,7 +5693,7 @@ void CBasePlayer::GetFlashlightPose(Vector& position, Vector& dir)
 
 	// either attachment is pose or we fallback to pose because no other attachment was available
 	position = EyePosition();
-	UTIL_MakeAimVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
+	UTIL_MakeVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
 }
 
 void CBasePlayer::SetTeleporterPose(const Vector& offset, const Vector& angles)
@@ -5739,7 +5789,7 @@ void CBasePlayer::GetTeleporterPose(Vector& position, Vector& dir)
 
 	// either attachment is pose or we fallback to pose because no other attachment was available
 	position = EyePosition();
-	UTIL_MakeAimVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
+	UTIL_MakeVectorsPrivate(pev->v_angle + pev->punchangle, dir, nullptr, nullptr);
 }
 
 
@@ -5803,44 +5853,65 @@ float CalculateWeaponTimeOffsetReverse(float offset)
 // - Max Vollmer - 2019-04-13
 #define BUNNYJUMP_MAX_SPEED_FACTOR 1.7f
 #define PLAYER_LONGJUMP_SPEED      350
-void CBasePlayer::DoLongJump()
+void CBasePlayer::DoLongJump(bool playStepSound, bool force)
 {
-	if (pev->waterlevel)
-		return;
+	if (!force)
+	{
+		if (pev->waterlevel)
+			return;
 
-	if (pev->button & IN_JUMP)
-		return;
+		if (pev->button & IN_JUMP)
+			return;
 
-	if (pev->oldbuttons & IN_JUMP)
-		return;
+		if (pev->oldbuttons & IN_JUMP)
+			return;
 
-	if (pmove->waterjumptime)
-		return;
+		if (pmove->waterjumptime)
+			return;
 
-	if (!(pev->flags & FL_ONGROUND))
-		return;
+		if (!(pev->flags & FL_ONGROUND))
+			return;
+	}
 
 	float maxscaledspeed = BUNNYJUMP_MAX_SPEED_FACTOR * pmove->maxspeed;
 	if (maxscaledspeed <= 0.f)
 		return;
 
-	extern void PM_PlayStepSound(int step, float fvol);
-	extern int PM_MapTextureTypeStepType(char chTextureType);
-	PM_PlayStepSound(PM_MapTextureTypeStepType(pmove->chtexturetype), 1.0f);
+	if (playStepSound)
+	{
+		extern void PM_PlayStepSound(int step, float fvol);
+		extern int PM_MapTextureTypeStepType(char chTextureType);
+		PM_PlayStepSound(PM_MapTextureTypeStepType(pmove->chtexturetype), 1.0f);
+	}
 
 	if (m_fLongJump)
 	{
 		pev->punchangle.x = -5.f;
 
-		if (pev->velocity.Length2D() < EPSILON)
+		Vector forward = pmove->forward;
+		if (pmove->forward.Length2D() > EPSILON)
 		{
-			pev->velocity = vr_hmdForward;
+			forward = pmove->forward;
 		}
-		pev->velocity.z = 0.f;
-		pev->velocity = pev->velocity.Normalize();
-		pev->velocity.x = pmove->velocity.x * PLAYER_LONGJUMP_SPEED * 1.6f;
-		pev->velocity.y = pmove->velocity.y * PLAYER_LONGJUMP_SPEED * 1.6f;
+		else if (pmove->velocity.Length2D() > EPSILON)
+		{
+			forward = pmove->velocity;
+		}
+		else if (pev->velocity.Length2D() > EPSILON)
+		{
+			forward = pev->velocity;
+		}
+		else
+		{
+			forward = vr_hmdForward; // TODO: This should fall back to the device used for movement, not simply the HMD
+		}
+		forward.z = 0.f;
+		forward = forward.Normalize();
+
+		pev->velocity.x = forward.x * PLAYER_LONGJUMP_SPEED * 1.6f;
+		pev->velocity.y = forward.y * PLAYER_LONGJUMP_SPEED * 1.6f;
 		pev->velocity.z = sqrt(2.f * 800.f * 56.f);
+
 		SetAnimation(PLAYER_SUPERJUMP);
 	}
 	else
@@ -5849,7 +5920,7 @@ void CBasePlayer::DoLongJump()
 		SetAnimation(PLAYER_JUMP);
 	}
 
-	pev->velocity.z -= (pev->gravity * g_psv_gravity->value * gpGlobals->frametime * 0.5f);
+	//pev->velocity.z -= (pev->gravity * g_psv_gravity->value * gpGlobals->frametime * 0.5f);
 
 	if (pev->velocity.x > pmove->movevars->maxvelocity)
 		pev->velocity.x = pmove->movevars->maxvelocity;
@@ -5865,8 +5936,14 @@ void CBasePlayer::DoLongJump()
 		pev->velocity.z = -pmove->movevars->maxvelocity;
 }
 
-void CBasePlayer::HolsterWeapon()
+void CBasePlayer::HolsterWeapon(bool force)
 {
+	// force last item to be nullptr if we are already holstered
+	// (SelectItem doesn't do that as it's a no-op if the item doesn't change)
+	if (force && m_pActiveItem == nullptr)
+	{
+		m_pLastItem = nullptr;
+	}
 	SelectItem("weapon_barehand");
 }
 
@@ -5925,7 +6002,7 @@ bool CBasePlayer::IsLadderGrabbingController(VRControllerID controller, CBaseEnt
 
 int CBasePlayer::GetGrabbedLadderEntIndex()
 {
-	if (m_ladderGrabbingControllers.empty() || CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") == 0.f)
+	if (m_ladderGrabbingControllers.empty() || (VRGetLadderMode() == VR_LADDER_MODE_LEGACY_ONLY))
 		return 0;
 
 	return ENTINDEX(m_ladderGrabbingControllers.back().ladder.Get());
@@ -6059,6 +6136,7 @@ bool IsValidTankDraggingController(const VRController& controller, entvars_t* pe
 {
 	return controller.IsValid() &&
 		controller.IsDragging() &&
+		!controller.HasDraggedEntity() &&
 		((controller.GetPosition() - pevTank->origin).Length() < CVAR_GET_FLOAT("vr_tankcontrols_max_distance"));
 }
 
@@ -6139,7 +6217,7 @@ void CBasePlayer::VRUseOrUnuseTank()
 				m_vrTankVRControllerAngles = UTIL_VecToAngles(direction);
 
 				// make sure no weapon is selected (noop if no weapon is selected)
-				HolsterWeapon();
+				HolsterWeapon(true);
 
 				// fire the gun
 				m_pTank->Use(this, this, USE_SET, 2);
@@ -6181,7 +6259,7 @@ void CBasePlayer::VRUseOrUnuseTank()
 			m_pTank->Use(this, this, USE_ON, 1337);  // 1337 is hacky way to tell CFuncTank that this is a VR initiated control
 			m_vrIsUsingTankWithVRControllers = true;
 			m_vrTankVRControllerAngles = m_pTank->pev->angles;
-			HolsterWeapon();
+			HolsterWeapon(true);
 		}
 	}
 }
@@ -6327,4 +6405,20 @@ void CBasePlayer::UpdateVRLaserSpot()
 			m_hLaserSpot = nullptr;
 		}
 	}
+}
+
+bool CBasePlayer::IsAnyControllerFiringAndHoldingThisTank(CBaseEntity* pTank)
+{
+	if (pTank != m_pTank)
+		return false;
+
+	for (auto& [id, controller] : m_vrControllers)
+	{
+		if (controller.IsFiring() && IsValidTankDraggingController(controller, pTank->pev))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

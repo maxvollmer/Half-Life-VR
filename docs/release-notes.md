@@ -10,6 +10,73 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 
 ### Release Notes
 
+
+#### 0.7.5-beta - 2023-02-13
+
+##### Mod:
+  - Fixed bug that allowed players to climb through the floor or ceilings in immersive ladder move
+  - Fixed bug that prevented players from moving perpendicular to ladder in immersive ladder move
+  - Fixed combined ladder mode not working
+  - Fixed yaw speed of NPCs being too slow at high fps
+  - Added version to actions manifest (fixes issues when upgrading to the new binding scheme)
+
+##### HLVRConfig:
+  - No changes
+
+---
+#### 0.7.4-beta - 2023-02-11
+
+##### Mod:
+  - Fixed issues with input actions that are bound to both hands (e.g. grab)
+  - Fixed speed and direction in legacy ladder climbing
+
+##### HLVRConfig:
+  - No changes
+
+---
+#### 0.7.3-beta - 2023-02-07
+
+##### Mod:
+  - Improved ladder climbing:
+    - Direction of legacy ladder climbing is now relative to the ladder, not controller/HMD
+	- Added separate sideways speed for legacy ladder climbing
+    - Immersive ladder climbing now extends 72 units (player height) above ladders to allow climbing on top of ledges
+	- New default mode combines both modes
+  - Improved NPC interaction:
+    - Grabbing NPC shoulder acts as "follow/unfollow" command
+  - Improved inputs:
+    - Added flashlight input: Grab head to toggle flashlight
+    - Fixed firing of stationary guns in immersive mode
+    - Fixed longjump on double jump not working
+    - Fixed longjump direction and speed
+    - Fixed weapon firing if trigger on offhand controller is pressed
+    - Fixed smooth turn direction being inverted
+    - Added crouch toggle mode
+  - Fixed yet another rare crash during levelchange
+  - Fixed player spawning in void under floating island before Nihilanth
+  - Fixed VR menu resetting settings
+  - Fixed Blast Pit Fan fixes not working
+  - Fixed custom actions not being in new bindings
+
+##### HLVRConfig:
+  - Removed broken launch button
+  - Updated settings to accomodate mod changes (see above)
+
+---
+#### 0.7.2-beta - 2022-12-31
+
+##### Mod:
+  - Fixed weapon being auto-selected after using a stationary turret
+  - Fixed player spawning with a wrong offset after a no-landmark levelchange
+  - Fixed flashlight leaving a ghost light behind after save/load event
+  - Completely reworked SteamVR Input Bindings
+    - Double-jump to long jump (if long jump module is equipped)
+  - Fixed broken texture in a training map (trrm_vat.png)
+
+##### HLVRConfig:
+  - No changes
+
+---
 #### 0.7.1-beta - 2022-12-25
 
 ##### Mod:

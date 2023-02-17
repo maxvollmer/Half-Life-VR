@@ -31,6 +31,12 @@
 #define PM_TRACELINE_PHYSENTSONLY 0
 #define PM_TRACELINE_ANYVISIBLE   1
 
+constexpr const int VR_LADDER_MODE_COMBINED = 0;
+constexpr const int VR_LADDER_MODE_IMMERSIVE_ONLY = 1;
+constexpr const int VR_LADDER_MODE_LEGACY_ONLY = 2;
+
+extern int VRGetLadderMode();
+
 
 #include "pm_info.h"
 

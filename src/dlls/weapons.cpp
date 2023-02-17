@@ -820,7 +820,7 @@ void CBasePlayerItem::Holster(int skiplocal /* = 0 */)
 		m_pPlayer->pev->viewmodel = MAKE_STRING("models/v_hand_labcoat.mdl");
 	}
 	m_pPlayer->pev->weaponmodel = 0;
-	m_pPlayer->HolsterWeapon();
+	m_pPlayer->HolsterWeapon(false);
 }
 
 void CBasePlayerItem::AttachToPlayer(CBasePlayer* pPlayer)

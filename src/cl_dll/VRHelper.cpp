@@ -120,6 +120,7 @@ void VRHelper::UpdateVRHLConversionVectors()
 
 void VRHelper::UpdateWorldRotation()
 {
+	/*
 	// Is rotating disabled?
 	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
 	{
@@ -146,6 +147,7 @@ void VRHelper::UpdateWorldRotation()
 
 		return;
 	}
+	*/
 
 	if (m_lastYawUpdateTime == gVRRenderer.m_clientTime)
 	{
@@ -271,9 +273,6 @@ void VRHelper::UpdateWorldRotation()
 
 void VRHelper::InstantRotateYaw(float value)
 {
-	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f)
-		return;
-
 	if (g_vrSpawnYaw_HasData)
 		return;
 
@@ -543,6 +542,18 @@ Vector VRHelper::GetPositionInHLSpaceFromAbsoluteTrackingMatrix(const Matrix4& a
 
 void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 {
+	bool leftHandMode = CVAR_GET_FLOAT("vr_lefthand_mode") != 0.f;
+
+	if (leftHandMode)
+	{
+		vr::VRInput()->SetDominantHand(vr::TrackedControllerRole_LeftHand);
+	}
+	else
+	{
+		vr::VRInput()->SetDominantHand(vr::TrackedControllerRole_RightHand);
+	}
+
+
 	UpdateVRHLConversionVectors();
 	if (isInGame)
 	{
@@ -565,9 +576,10 @@ void VRHelper::PollEvents(bool isInGame, bool isInMenu)
 		{
 		case vr::EVREventType::VREvent_Quit:
 		case vr::EVREventType::VREvent_ProcessQuit:
-		case vr::EVREventType::VREvent_QuitAborted_UserPrompt:
+		//case vr::EVREventType::VREvent_QuitAborted_UserPrompt: // this was removed in OpenVR v1.8.19
 		case vr::EVREventType::VREvent_QuitAcknowledged:
 		case vr::EVREventType::VREvent_DriverRequestedQuit:
+		case vr::EVREventType::VREvent_RestartRequested:
 			Exit();
 			return;
 		default:
@@ -874,7 +886,7 @@ Matrix4 VRHelper::GetAbsoluteHMDTransform()
 		}
 	}
 
-	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
+	if (m_currentYaw == 0.f)
 		return hlTransform;
 
 	if (m_prevYaw != m_currentYaw)
@@ -904,7 +916,7 @@ Matrix4 VRHelper::GetAbsoluteTransform(const vr::HmdMatrix34_t& vrTransform)
 	auto hlTransform = ConvertSteamVRMatrixToMatrix4(vrTransform);
 	hlTransform[13] += m_hmdHeightOffset;
 
-	if (CVAR_GET_FLOAT("vr_playerturn_enabled") == 0.f || m_currentYaw == 0.f)
+	if (m_currentYaw == 0.f)
 		return hlTransform;
 
 	auto vrRawHMDTransform = positions.m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking;
@@ -971,11 +983,8 @@ bool VRHelper::UpdateController(
 		cl_entity_t* localPlayer = SaveGetLocalPlayer();
 
 		Vector velocityInVRSpace = Vector(positions.m_rTrackedDevicePose[controllerIndex].vVelocity.v);
-		if (CVAR_GET_FLOAT("vr_playerturn_enabled") != 0.f)
-		{
-			Vector3 rotatedVelocity = Matrix4{}.rotateY(m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
-			velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
-		}
+		Vector3 rotatedVelocity = Matrix4{}.rotateY(m_currentYaw) * Vector3(velocityInVRSpace.x, velocityInVRSpace.y, velocityInVRSpace.z);
+		velocityInVRSpace = Vector(rotatedVelocity.x, rotatedVelocity.y, rotatedVelocity.z);
 
 		controllerMatrix = GetAbsoluteControllerTransform(controllerIndex);
 		MatrixVectors(controllerMatrix, controllerForward, controllerRight, controllerUp);
@@ -1247,6 +1256,9 @@ void VRHelper::SendPositionUpdateToServer()
 	bool leftDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_LeftHand);
 	bool rightDragOn = g_vrInput.IsDragOn(vr::TrackedControllerRole_RightHand);
 
+	bool leftFiring = g_vrInput.IsFiring(vr::TrackedControllerRole_LeftHand);
+	bool rightFiring = g_vrInput.IsFiring(vr::TrackedControllerRole_RightHand);
+
 	VRControllerID leftControllerID;
 	VRControllerID rightControllerID;
 
@@ -1255,10 +1267,10 @@ void VRHelper::SendPositionUpdateToServer()
 	rightControllerID = leftHandMode ? VRControllerID::HAND : VRControllerID::WEAPON;
 
 	char cmdLeftController[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmdLeftController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i", m_vrUpdateTimestamp, m_fLeftControllerValid ? 1 : 0, leftControllerID, 1 /*isMirrored*/, m_leftControllerOffset.x, m_leftControllerOffset.y, m_leftControllerOffset.z, m_leftControllerAngles.x, m_leftControllerAngles.y, m_leftControllerAngles.z, m_leftControllerVelocity.x, m_leftControllerVelocity.y, m_leftControllerVelocity.z, leftDragOn ? 1 : 0);
+	sprintf_s(cmdLeftController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i %i", m_vrUpdateTimestamp, m_fLeftControllerValid ? 1 : 0, leftControllerID, 1 /*isMirrored*/, m_leftControllerOffset.x, m_leftControllerOffset.y, m_leftControllerOffset.z, m_leftControllerAngles.x, m_leftControllerAngles.y, m_leftControllerAngles.z, m_leftControllerVelocity.x, m_leftControllerVelocity.y, m_leftControllerVelocity.z, leftDragOn ? 1 : 0, leftFiring ? 1 : 0);
 
 	char cmdRightController[MAX_COMMAND_SIZE] = { 0 };
-	sprintf_s(cmdRightController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i", m_vrUpdateTimestamp, m_fRightControllerValid ? 1 : 0, rightControllerID, 0 /*isMirrored*/, m_rightControllerOffset.x, m_rightControllerOffset.y, m_rightControllerOffset.z, m_rightControllerAngles.x, m_rightControllerAngles.y, m_rightControllerAngles.z, m_rightControllerVelocity.x, m_rightControllerVelocity.y, m_rightControllerVelocity.z, rightDragOn ? 1 : 0);
+	sprintf_s(cmdRightController, "vrupdctrl %i %i %i %i %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %i %i", m_vrUpdateTimestamp, m_fRightControllerValid ? 1 : 0, rightControllerID, 0 /*isMirrored*/, m_rightControllerOffset.x, m_rightControllerOffset.y, m_rightControllerOffset.z, m_rightControllerAngles.x, m_rightControllerAngles.y, m_rightControllerAngles.z, m_rightControllerVelocity.x, m_rightControllerVelocity.y, m_rightControllerVelocity.z, rightDragOn ? 1 : 0, rightFiring ? 1 : 0);
 
 	gEngfuncs.pfnClientCmd(cmdHMD);
 	gEngfuncs.pfnClientCmd(cmdLeftController);
@@ -1295,6 +1307,9 @@ void VRHelper::SetPose(VRPoseType poseType, const vr::TrackedDevicePose_t& pose,
 		return;
 	}
 
+	// TODO: Hand grip and tip (pointer) poses
+
+	/*
 	if (poseType == VRPoseType::FLASHLIGHT)
 	{
 		cl_entity_t* localPlayer = SaveGetLocalPlayer();
@@ -1325,10 +1340,12 @@ void VRHelper::SetPose(VRPoseType poseType, const vr::TrackedDevicePose_t& pose,
 		m_movementAngles = GetHLAnglesFromVRMatrix(movementAbsoluteTrackingMatrix);
 		m_hasMovementAngles = true;
 	}
+	*/
 }
 
 void VRHelper::ClearPose(VRPoseType poseType)
 {
+	/*
 	if (poseType == VRPoseType::FLASHLIGHT)
 	{
 		gEngfuncs.pfnClientCmd("vr_flashlight 0");
@@ -1341,6 +1358,7 @@ void VRHelper::ClearPose(VRPoseType poseType)
 	{
 		m_hasMovementAngles = false;
 	}
+	*/
 }
 
 constexpr const int VR_MOVEMENT_ATTACHMENT_HAND = 0;
@@ -1820,27 +1838,31 @@ bool VRNotifyStuckEnt(int player, int ent)
 }
 
 // for pm_shared.cpp
-float VRGetMaxClimbSpeed()
+void VRGetMaxClimbSpeed(float& updown, float& sideways)
 {
-	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_speed");
+	updown = CVAR_GET_FLOAT("vr_ladder_legacy_movement_speed");
+	sideways = CVAR_GET_FLOAT("vr_ladder_legacy_sideways_speed");
 }
 
 // for pm_shared.cpp
-bool VRIsLegacyLadderMoveEnabled()
+void VRGetCVARSpeeds(float& forwardSpeed, float& backSpeed, float& sideSpeed, float& upSpeed)
 {
-	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_enabled") != 0.f;
+	forwardSpeed = CVAR_GET_FLOAT("vr_forwardspeed");
+	backSpeed = CVAR_GET_FLOAT("vr_backspeed");
+	sideSpeed = CVAR_GET_FLOAT("vr_sidespeed");
+	upSpeed = CVAR_GET_FLOAT("vr_upspeed");
 }
 
 // for pm_shared.cpp
-bool VRGetMoveOnlyUpDownOnLadder()
+int VRGetLadderMode()
 {
-	return CVAR_GET_FLOAT("vr_ladder_legacy_movement_only_updown") != 0.f;
+	return (int)CVAR_GET_FLOAT("vr_ladder_mode");
 }
 
 // for pm_shared.cpp
 int VRGetGrabbedLadder(int player)
 {
-	if (CVAR_GET_FLOAT("vr_ladder_immersive_movement_enabled") != 0.f)
+	if (VRGetLadderMode() != VR_LADDER_MODE_LEGACY_ONLY)
 	{
 		return gHUD.m_vrGrabbedLadderEntIndex;
 	}

@@ -663,13 +663,18 @@ void DLLEXPORT CL_CreateMove(float frametime, struct usercmd_s* cmd, int active)
 	//
 	cmd->buttons = CL_ButtonBits(1);
 
+	if (g_vrInput.m_crouchState)
+	{
+		cmd->buttons |= IN_DUCK;
+	}
+
 	cmd->buttons_ex = 0;
 	if (g_vrInput.analogforward > EPSILON)
 		cmd->buttons |= IN_FORWARD;
 	if (g_vrInput.analogforward < -EPSILON)
 		cmd->buttons |= IN_BACK;
 	if (g_vrInput.analogsidemove > EPSILON)
-		cmd->buttons |= IN_MOVELEFT;
+		cmd->buttons |= IN_MOVERIGHT;
 	if (g_vrInput.analogsidemove < -EPSILON)
 		cmd->buttons |= IN_MOVELEFT;
 	if (g_vrInput.analogupmove > EPSILON)

@@ -65,11 +65,12 @@ void VRSettings::Init()
 	RegisterCVAR("vr_hud_mode", "2");
 	RegisterCVAR("vr_hud_size", "1");
 	RegisterCVAR("vr_hud_textscale", "1");
-	RegisterCVAR("vr_ladder_immersive_movement_enabled", "1");
+
+	RegisterCVAR("vr_ladder_mode", "0");
 	RegisterCVAR("vr_ladder_immersive_movement_swinging_enabled", "1");
-	RegisterCVAR("vr_ladder_legacy_movement_enabled", "0");
-	RegisterCVAR("vr_ladder_legacy_movement_only_updown", "1");
 	RegisterCVAR("vr_ladder_legacy_movement_speed", "200");
+	RegisterCVAR("vr_ladder_legacy_sideways_speed", "50");
+
 	RegisterCVAR("vr_ledge_pull_mode", "1");
 	RegisterCVAR("vr_ledge_pull_speed", "50");
 	RegisterCVAR("vr_lefthand_mode", "0");
@@ -80,6 +81,7 @@ void VRSettings::Init()
 	RegisterCVAR("vr_train_speed_fast", "0.6");
 	RegisterCVAR("vr_train_speed_back", "0.2");
 	RegisterCVAR("vr_melee_swing_speed", "100");
+
 	RegisterCVAR("vr_move_analogforward_inverted", "0");
 	RegisterCVAR("vr_move_analogsideways_inverted", "0");
 	RegisterCVAR("vr_move_analogturn_inverted", "0");
@@ -87,9 +89,22 @@ void VRSettings::Init()
 	RegisterCVAR("vr_move_analog_deadzone", "0.1");
 	RegisterCVAR("vr_move_instant_accelerate", "1");
 	RegisterCVAR("vr_move_instant_decelerate", "1");
+	RegisterCVAR("vr_move_snapturn_enabled", "1");
+	RegisterCVAR("vr_move_snapturn_angle", "30");
+
+	RegisterCVAR("vr_forwardspeed", "270");		// cl_forwardspeed
+	RegisterCVAR("vr_backspeed", "270");		// cl_backspeed
+	RegisterCVAR("vr_sidespeed", "270");		// cl_sidespeed
+	RegisterCVAR("vr_upspeed", "270");			// cl_upspeed
+	RegisterCVAR("vr_yawspeed", "210");			// cl_yawspeed
+	RegisterCVAR("vr_walkspeedfactor", "0.3");	// cl_movespeedkey
+	RegisterCVAR("vr_togglewalk", "0");
+
+	RegisterCVAR("vr_toggle_crouch", "0");
+
 	RegisterCVAR("vr_no_gauss_recoil", "1");
 	RegisterCVAR("vr_npcscale", "1");
-	RegisterCVAR("vr_playerturn_enabled", "1");
+	//RegisterCVAR("vr_playerturn_enabled", "1");
 	RegisterCVAR("vr_rl_duck_height", "36");
 	RegisterCVAR("vr_rl_ducking_enabled", "1");
 	RegisterCVAR("vr_dont_rotate_with_trains", "1");
@@ -138,21 +153,12 @@ void VRSettings::Init()
 	RegisterCVAR("vr_fmod_water_occlusion", "20");
 	RegisterCVAR("vr_fmod_glass_occlusion", "10");
 
-	RegisterCVAR("vr_forwardspeed", "270");		// cl_forwardspeed
-	RegisterCVAR("vr_backspeed", "270");		// cl_backspeed
-	RegisterCVAR("vr_sidespeed", "270");		// cl_sidespeed
-	RegisterCVAR("vr_upspeed", "270");			// cl_upspeed
-	RegisterCVAR("vr_yawspeed", "210");			// cl_yawspeed
-	RegisterCVAR("vr_walkspeedfactor", "0.3");	// cl_movespeedkey
-	RegisterCVAR("vr_togglewalk", "0");
-
 	RegisterCVAR("vr_texturemode", "GL_LINEAR_MIPMAP_LINEAR");
 	RegisterCVAR("vr_display_game", "0");
 
 	RegisterCVAR("vr_menu_placement", "0");
 	RegisterCVAR("vr_menu_scale", "1");
 	RegisterCVAR("vr_menu_opacity", "0.99");
-	RegisterCVAR("vr_menu_click_source", "0");
 
 	// Initialize time that settings file was last changed
 	std::filesystem::path settingsPath = "./hlvr.cfg";

@@ -409,6 +409,9 @@
     <ClCompile Include="VRFileManager.cpp">
       <Filter>VR\helpers\engine</Filter>
     </ClCompile>
+    <ClCompile Include="VRInputInteractHandlers.cpp">
+      <Filter>VR\input\handlers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="parsemsg.h">

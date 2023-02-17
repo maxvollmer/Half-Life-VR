@@ -3,9 +3,10 @@
 
 enum class VRPoseType
 {
-	FLASHLIGHT,
-	MOVEMENT,
-	TELEPORTER
+	LEFT_HAND,
+	RIGHT_HAND,
+	LEFT_POINTER,
+	RIGHT_POINTER
 };
 
 enum class VRSpeechCommand
