@@ -1267,6 +1267,15 @@ void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator)
 					UTIL_VRGiveAchievement(pActivator, VRAchievement::BP_BROKENELVTR);
 				}
 			}
+			// nihilanth lair
+			else if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c4a3.bsp"))
+			{
+				// teleporter in last nihilanth space
+				if (FStrEq(STRING(pev->model), "*60"))
+				{
+					UTIL_VRGiveAchievement(pActivator, VRAchievement::N_EXPLORER);
+				}
+			}
 		}
 	}
 }
@@ -2049,15 +2058,6 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 								pPlayer->VRJustGotYeetedByBPTrain();
 							}
 						}
-						// residue processing map with all those conveyor belts
-						else if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a4c.bsp"))
-						{
-							// trigger_push that player has to pass when taking the wrong turn and coming back to start
-							if (FStrEq(STRING(pev->model), "*78"))
-							{
-								UTIL_VRGiveAchievement(pPlayer, VRAchievement::RP_MOEBIUS);
-							}
-						}
 					}
 				}
 			}
@@ -2074,6 +2074,20 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 
 			pevToucher->flags |= FL_BASEVELOCITY;
 			//			ALERT( at_console, "Vel %f, base %f\n", pevToucher->velocity.z, pevToucher->basevelocity.z );
+
+			if (pOther->IsNetClient())
+			{
+				CBasePlayer* pPlayer = dynamic_cast<CBasePlayer*>(pOther);
+
+				// player in residue processing map with all those conveyor belts interacts with
+				// trigger_push that player has to pass when taking the wrong turn and coming back to start
+				if (pPlayer
+					&& FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a4c.bsp")
+					&& FStrEq(STRING(pev->model), "*78"))
+				{
+					UTIL_VRGiveAchievement(pPlayer, VRAchievement::RP_MOEBIUS);
+				}
+			}
 		}
 	}
 }
@@ -2153,6 +2167,21 @@ void CBaseTrigger::TeleportTouch(CBaseEntity* pOther)
 		if (pPlayer)
 		{
 			pPlayer->VRJustTeleported(prevOrigin, prevAngles);
+
+			// endgame map
+			if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c5a1.bsp"))
+			{
+				// teleport at the exit of train to black screen (joined g-man)
+				if (FStrEq(STRING(pev->target), "endroom"))
+				{
+					UTIL_VRGiveAchievement(pPlayer, VRAchievement::END_LIMITLESS);
+				}
+				// teleport in the train to grunt army (refused g-man)
+				else if (FStrEq(STRING(pev->target), "loser"))
+				{
+					UTIL_VRGiveAchievement(pPlayer, VRAchievement::END_UNWINNABLE);
+				}
+			}
 		}
 	}
 }

@@ -54,7 +54,7 @@ void VRAchievementsAndStatsTracker::PlayerTakeNegativeCrushDamage(CBaseEntity* p
 
 void CheckRigorousResearchAchievement(CBasePlayer* pPlayer)
 {
-	if (pPlayer->GetAchievementsAndStatsData().m_exp1HeadcrabsKilled >= 5 && pPlayer->GetAchievementsAndStatsData().m_exp1HeadcrabsKilled >= 7)
+	if (pPlayer->GetAchievementsAndStatsData().m_exp1HeadcrabsKilled >= 5 && pPlayer->GetAchievementsAndStatsData().m_exp2HeadcrabsKilled >= 7)
 	{
 		UTIL_VRGiveAchievementAll(VRAchievement::QE_RIGOROUS);
 	}
@@ -126,8 +126,8 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 	{
 		// Power Up gargantua
 		if (FStrEq(STRING(INDEXENT(0)->v.model), "maps/c2a1.bsp")
-			&& FClassnameIs(pKiller, "trigger_hurt")
-			&& FStrEq(STRING(pKiller->targetname), "electro_hurt"))
+			&& FClassnameIs(pKiller, "env_laser")
+			&& FStrEq(STRING(pKiller->targetname), "gargbeams"))
 		{
 			UTIL_VRGiveAchievementAll(VRAchievement::PU_BBQ);
 			pHostPlayer->GetAchievementsAndStatsData().AnyKilled();
