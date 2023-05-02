@@ -159,7 +159,7 @@ void VRAchievementsAndStatsTracker::SmthKilledSmth(struct entvars_s* pKiller, st
 			UTIL_VRGiveAchievementAll(VRAchievement::QE_PRECISURGERY);
 			pHostPlayer->GetAchievementsAndStatsData().FriendlyKilled();
 		}
-		else
+		else if (!FClassnameIs(pKilled, "monster_scientist_dead"))
 		{
 			pHostPlayer->GetAchievementsAndStatsData().AnyKilled();
 		}
