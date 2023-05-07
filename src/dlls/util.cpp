@@ -3359,6 +3359,11 @@ void CHANGE_LEVEL(char* s1, char* s2)
 
 void UTIL_VRGiveAchievement(CBaseEntity* pPlayer, VRAchievement achievement)
 {
+	if (!pPlayer)
+	{
+		UTIL_VRGiveAchievementAll(achievement);
+		return;
+	}
 	extern int gmsgVRAchievement;
 	MESSAGE_BEGIN(MSG_ONE, gmsgVRAchievement, nullptr, pPlayer->edict());
 	WRITE_LONG((int)achievement);
