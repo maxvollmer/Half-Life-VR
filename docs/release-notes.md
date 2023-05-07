@@ -11,6 +11,15 @@ A highly immersive Virtual Reality mod for the classic Half-Life from 1998.
 ### Release Notes
 
 
+#### 0.7.6-beta - 2023-05-07
+
+##### Mod:
+  - Fixed several achievements not correctly working (Thanks DmitryShaburov!)
+  - Fixed rare crash that could happen if a certain achievement was given in the first frame after a levelchange
+
+##### HLVRConfig:
+  - No changes
+
 #### 0.7.5-beta - 2023-02-13
 
 ##### Mod:
