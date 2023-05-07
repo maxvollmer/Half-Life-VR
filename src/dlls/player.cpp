@@ -6308,6 +6308,12 @@ void CBasePlayer::VRJustTeleported(const Vector& fromOrigin, const Vector& fromA
 
 void EXPORT CBaseEntity::DragThink(void)
 {
+	// can happen afer a levelchange, should get fixed in the next VRControllerInteractionManager::HandleGrabbables update
+	if (!m_vrDragger)
+	{
+		return;
+	}
+
 	if (m_isFirstDragThink)
 	{
 		m_isFirstDragThink = false;
